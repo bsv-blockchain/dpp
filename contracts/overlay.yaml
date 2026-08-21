@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  title: DPP overlay service
+  version: 0.1.0-draft
+  description: >-
+    The index that makes passport records and attestation anchors findable
+    without asking the application that wrote them. Status: working draft,
+    pre-1.0, documenting the wire the reference deployment serves today. The
+    contract is the BSV ecosystem's standard overlay wire (BRC-22 submission,
+    BRC-24 lookup); this document pins the two services this standard adds and
+    the queries they answer. Findability is a service concern, not a truth
+    concern: nothing returned here is trusted until it verifies as the
+    specification documents describe.
+  license:
+    name: Open BSV License version 4
+    identifier: LicenseRef-OpenBSV-4
+paths:
+  /submit:
+    post:
+      summary: Announce a transaction to the index
+      description: >-
+        BRC-22. The body is the transaction as BEEF bytes; the X-Topics header
+        names which topics should consider it. Each topic's manager admits the
+        outputs that follow its rules and ignores the rest. Announcing is
+        discoverability, never existence: a record that is broadcast but not
+        announced is less findable and no less true. A deployment may require a
+        bearer token for submission; lookup and health stay open, because
+        verification in a reader's own browser is a stated goal.
+      parameters:
+        - name: X-Topics
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 'JSON array of topic names, for example ["tm_dpp"].'
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: The transaction in BEEF encoding.
+      security:
+        - {}
+        - bearer: []
+      responses:
+        '200':
+          description: >-
+            The engine's admittance answer (STEAK), one entry per topic. The
+            X-Admission response header summarises the outcome per topic as
+            topic=admitted, topic=duplicate or topic=none, and is exposed to
+            browser callers.
+          headers:
+            X-Admission:
+              schema:
+                type: string
+              description: 'Comma-separated per-topic outcomes, e.g. tm_dpp=admitted.'
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    outputsToAdmit:
+                      type: array
+                      items:
+                        type: integer
+                    coinsToRetain:
+                      type: array
+                      items:
+                        type: integer
+        '400':
+          $ref: '#/components/responses/error'
+        '401':
+          $ref: '#/components/responses/error'
+  /lookup:
+    post:
+      summary: Query a lookup service
+      description: >-
+        BRC-24. Names a lookup service and passes it a query of plain string
+        fields (plus an optional numeric limit). Answers are bounded by the
+        service whatever the caller asks for. The outputs come back as BEEF so
+        the caller can verify them against block headers; a compromised index
+        changes what can be found, never what can be believed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/passportLookup'
+                - $ref: '#/components/schemas/anchorLookup'
+      responses:
+        '200':
+          description: The matching outputs.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [type, outputs]
+                properties:
+                  type:
+                    const: output-list
+                  outputs:
+                    type: array
+                    items:
+                      type: object
+                      required: [beef, outputIndex]
+                      properties:
+                        beef:
+                          type: array
+                          items:
+                            type: integer
+                          description: The transaction in BEEF encoding, as bytes.
+                        outputIndex:
+                          type: integer
+        '400':
+          $ref: '#/components/responses/error'
+  /health:
+    get:
+      summary: Liveness, and what this deployment serves
+      responses:
+        '200':
+          description: The service is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    const: ok
+                  topics:
+                    type: array
+                    items:
+                      type: string
+                  services:
+                    type: array
+                    items:
+                      type: string
+                  network:
+                    type: string
+                  startedAt:
+                    type: string
+                    format: date-time
+  /listTopicManagers:
+    get:
+      summary: The topic managers this deployment runs
+      responses:
+        '200':
+          description: Topic manager metadata, keyed by topic name.
+          content:
+            application/json:
+              schema:
+                type: object
+  /listLookupServiceProviders:
+    get:
+      summary: The lookup services this deployment runs
+      responses:
+        '200':
+          description: Lookup service metadata, keyed by service name.
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: Required for submission only when the deployment configures a token.
+  responses:
+    error:
+      description: The request was refused.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status, description]
+            properties:
+              status:
+                const: error
+              description:
+                type: string
+  schemas:
+    passportLookup:
+      type: object
+      required: [service, query]
+      description: >-
+        The passport rail. Resolves a record's chain by its passport identifier
+        or by its data-carrier identifier; exactly one of the two fields.
+      properties:
+        service:
+          const: ls_dpp
+        query:
+          type: object
+          properties:
+            passportId:
+              type: string
+            uid:
+              type: string
+              description: The data-carrier identifier carried in the record's public payload.
+    anchorLookup:
+      type: object
+      required: [service, query]
+      description: >-
+        The anchor rail. Every selector is optional and they combine as AND;
+        answers are bounded to 500 whatever limit is asked for. The issuer
+        selectors answer the question the rail exists for, everything one party
+        has attested; the subject selector answers everything claimed about one
+        passport, from every party.
+      properties:
+        service:
+          const: ls_uora_dpp
+        query:
+          type: object
+          properties:
+            issuer:
+              type: string
+              description: The claiming party, as the did:key the anchor carries.
+            issuerKey:
+              type: string
+              description: The claiming party's compressed public key, hex.
+            subject:
+              type: string
+              description: The passport identifier the claim is about.
+            attestationId:
+              type: string
+            digest:
+              type: string
+              description: The 64-hex-character digest, for an exact-anchor question.
+            uoraType:
+              type: string
+            anchoredBy:
+              type: string
+              description: The anchoring service's identity key, hex.
+            limit:
+              type: number
