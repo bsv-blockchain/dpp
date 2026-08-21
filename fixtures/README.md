@@ -21,5 +21,7 @@ One complete `uora-anchor-v3` anchor, from the attestation claim through its can
 | `lockingKey` | The BRC-42 child the output must lock to, reproducible from `anchoredBy` and the attestation id. |
 | `lockingScript` | The whole output, hex. Deterministic: signatures use RFC 6979 nonces, so this is reproducible on any machine from the test keys. |
 | `boundaryShifted` | Four re-cut variants of the same output with the signature bytes untouched. Every one must be refused. They all verified under the superseded layout, which is why the current one exists. |
+| `uncompressedKey` | The same output with its locking key re-pushed in the 65-byte uncompressed spelling. Attribution still matches after decoding, which is exactly why a lenient reader admitted it invisibly; a conforming reader refuses it at the push. |
+| `malformedTail` | The same output with its drop tail wrong three ways: one drop short, the right total in the wrong opcodes, and a trailing chunk after a correct tail. A conforming reader validates the tail exactly and refuses each. |
 
-A conforming writer reproduces `lockingScript` from `attestation` and the test keys. A conforming reader parses `lockingScript` to the fields above, verifies the field-8 signature over the length-delimited preimage, checks the locking key, and refuses all four `boundaryShifted` scripts.
+A conforming writer reproduces `lockingScript` from `attestation` and the test keys. A conforming reader parses `lockingScript` to the fields above, verifies the field-8 signature over the SHA-256 of the length-delimited preimage, checks the locking key, and refuses every script in `boundaryShifted`, `uncompressedKey` and `malformedTail`.
