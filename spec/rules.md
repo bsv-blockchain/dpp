@@ -32,15 +32,15 @@ A signed attestation is a JSON object with these properties, all covered by the 
 | `recordId` | string | The state within the record. |
 | `uora_type` | string | One of the four types in §2. |
 | `timestamp` | string | ISO 8601. |
-| `issuer` | string | The party making the claim, as a DID. A `did:key` decodes to the signing key with no network; a resolvable DID may be used instead, in which case `issuerKeyDid` must be present. |
-| `issuerKeyId` | string | The published key identifier for the signature. |
+| `issuer` | string | The party making the claim, as a DID. A `did:key` decodes with no network to the issuer's identity key, the parent from which the signing child is derived; a resolvable DID may be used instead, in which case an emitter must put the decodable name in `issuerKeyDid`. |
+| `issuerKeyId` | string | The acting party's published identifier within the issuer, carried for attribution. It participates in no derivation: the signature's key identifier is `passportId`, as the signature paragraph below states. |
 | `profile` | string | The industry data profile the record follows. |
 | `profile_version` | integer | The profile's version. |
-| `issuerKeyDid` | string, optional | The issuer's key as a `did:key`, present only when `issuer` is not itself one. A claim carrying both a `did:key` issuer and this property is malformed. |
+| `issuerKeyDid` | string, optional | The issuer's key as a `did:key`, emitted only when `issuer` is not itself one. A reader resolves the decodable name as: `issuer` when it is a `did:key`, else `issuerKeyDid` when present, else `issuer`. An emitter must never produce both a `did:key` issuer and this property; a reader meeting that shape prefers the `did:key` issuer rather than refusing, so the redundant property can never redirect verification to a key the named issuer does not hold. |
 
 **The two-names rule.** A resolvable DID and a `did:key` are two names for one key, and each sits where its reader can use it: the resolvable name in `issuer` for tooling that can reach a resolver, the offline-decodable name in `issuerKeyDid` and in the anchor's issuer field for a reader holding one transaction and nothing else.
 
-**The signature.** ECDSA in DER over the SHA-256 of the canonical bytes (§4), made with the BRC-42 child of the issuer's key for the BRC-43 protocol identifier `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. This mirrors the record's server signature idiom deliberately, so one verification recipe covers both rails: decode a key, derive the child, check DER. A verifier needs no wallet, no secret, and nothing from any operator beyond what is published.
+**The signature.** ECDSA in DER over the SHA-256 of the canonical bytes (§4), made with the BRC-42 child of the issuer's key for the BRC-43 protocol identifier `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. It travels in the JSON as `signature`, the DER bytes in lower-case hex. This mirrors the record's server signature idiom deliberately, so one verification recipe covers both rails: decode a key, derive the child, check DER. A verifier needs no wallet, no secret, and nothing from any operator beyond what is published.
 
 **What a valid signature proves, exactly.** That the nominated key signed these bytes. When `issuer` is a resolvable DID, tying the key to the party named is a second step that needs the resolver; the claim's payload alone cannot settle it.
 
@@ -58,18 +58,18 @@ One anchor is one output whose locking script is:
 <33-byte compressed public key> OP_CHECKSIG <field 1> ... <field 8> OP_2DROP x4
 ```
 
-The eight fields, all UTF-8:
+Fields 1 to 7 are UTF-8, and each must be non-empty printable text: control characters (C0, `0x7F` and the C1 range) are refused, and a field that fails a UTF-8 round trip refuses the anchor. Field 8 is raw bytes, never UTF-8. Three fields carry length bounds, and they are part of the format: an index admits from whoever can reach it, so a field a stranger controls must not be a field a stranger can make expensive.
 
 | # | Field | Rule |
 |---|---|---|
 | 1 | prefix | The string `uora-anchor-v3`. The prefix versions the layout: a change of layout is a change of prefix. |
 | 2 | digest | 64 lower-case hex characters: the SHA-256 of the attestation's canonical bytes (§4). |
-| 3 | attestation id | The writing service's identifier for the attestation. Bounded length. |
+| 3 | attestation id | The writing service's identifier for the attestation. At most 256 characters. |
 | 4 | issuer | The claiming party's key as a `did:key`. Carried, not proved: the anchor repeats what the attestation says, and the attestation's own signature is what proves it. |
-| 5 | subject | What the claim is about: a passport identifier. Bounded length. |
-| 6 | type | The lifecycle type, verbatim. Bounded length. |
-| 7 | anchored by | The anchoring service's published identity key, in canonical compressed hex. Proved, not merely carried: see the locking rule. |
-| 8 | signature | ECDSA in DER over the signing preimage of fields 1 to 7. |
+| 5 | subject | What the claim is about: a passport identifier. At most 512 characters. |
+| 6 | type | The lifecycle type, verbatim. At most 64 characters. |
+| 7 | anchored by | The anchoring service's published identity key, in canonical compressed lower-case hex. Proved, not merely carried: see the locking rule. |
+| 8 | signature | Raw ECDSA DER bytes, over the SHA-256 of the signing preimage of fields 1 to 7. |
 
 **The signing preimage puts every field behind its own length.** Fields 1 to 7 are serialised as varint length followed by field bytes, concatenated, and field 8 signs that. Any other split of the same bytes is a different preimage, so a reader that rebuilds the preimage from the parsed fields gets boundary integrity from the signature itself. This is the lesson the previous layout taught: a signature over the bare concatenation authenticates the total byte string and says nothing about where one field ends and the next begins, and the two adjacent free-text fields could be re-cut into a different subject and type with the signature copied across unchanged. A conforming reader refuses the superseded `uora-anchor-v2` prefix outright.
 
@@ -77,11 +77,13 @@ The eight fields, all UTF-8:
 
 **An anchor is a leaf.** It is never spent, and it never carries the attestation, only the digest.
 
+**Two places the reference reader is today more lenient than this text**, recorded as implementation defects to tighten rather than as licence: it parses a 65-byte uncompressed locking push beside the 33-byte compressed one, and it stops at the first drop opcode without validating the tail. A conforming writer emits the compressed push and the exact `OP_2DROP x4` tail; a reader should refuse anything else, as the record rail's reader already does for its own layout. This is a deliberate exception to the pre-1.0 tiebreaker, made because enshrining an accident is worse than naming it.
+
 **Two parties appear in an anchor and they are not the same one.** The issuer (field 4) made the claim; the anchoring service (field 7) wrote the output. The anchor proves the second and merely repeats the first. Conflating them is the one misreading this format invites.
 
 ## 6. Verifying an anchor
 
-A verifier holding an attestation and any public copy of the anchoring transaction checks: the canonical bytes of the attestation hash to field 2; the attestation's own signature verifies as §3 describes; the anchor's field-8 signature verifies over the length-delimited preimage against the field-7 service's derived key; and the locking key equals the derived child. No call to the writing service is required at any step.
+A verifier holding an attestation and any public copy of the anchoring transaction checks: the canonical bytes of the attestation hash to field 2; the attestation's own signature verifies as §3 describes; the anchor's field-8 signature verifies over the SHA-256 of the length-delimited preimage against the field-7 service's derived key; and the locking key equals the derived child. No call to the writing service is required at any step.
 
 ## 7. Conformance fixtures
 
