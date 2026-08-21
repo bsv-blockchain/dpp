@@ -189,7 +189,8 @@ components:
       required: [service, query]
       description: >-
         The passport rail. Resolves a record's chain by its passport identifier
-        or by its data-carrier identifier; exactly one of the two fields.
+        or by its data-carrier identifier. At least one of the two must be
+        provided; the service refuses an empty query.
       properties:
         service:
           const: ls_dpp
@@ -205,11 +206,15 @@ components:
       type: object
       required: [service, query]
       description: >-
-        The anchor rail. Every selector is optional and they combine as AND;
-        answers are bounded to 500 whatever limit is asked for. The issuer
-        selectors answer the question the rail exists for, everything one party
-        has attested; the subject selector answers everything claimed about one
-        passport, from every party.
+        The anchor rail. At least one identifying selector must be provided
+        (issuer, issuerKey, subject, attestationId, digest or anchoredBy); the
+        service refuses a query carrying none, so the index cannot be asked to
+        enumerate itself. uoraType refines a selected set and cannot select on
+        its own; limit pages the answer, which is bounded to 500 whatever is
+        asked for. Selectors combine as AND. The issuer selectors answer the
+        question the rail exists for, everything one party has attested; the
+        subject selector answers everything claimed about one passport, from
+        every party.
       properties:
         service:
           const: ls_uora_dpp
