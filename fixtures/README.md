@@ -25,3 +25,24 @@ One complete `uora-anchor-v3` anchor, from the attestation claim through its can
 | `malformedTail` | The same output with its drop tail wrong three ways: one drop short, the right total in the wrong opcodes, and a trailing chunk after a correct tail. A conforming reader validates the tail exactly and refuses each. |
 
 A conforming writer reproduces `lockingScript` from `attestation` and the test keys. A conforming reader parses `lockingScript` to the fields above, verifies the field-8 signature over the SHA-256 of the length-delimited preimage, checks the locking key, and refuses every script in `boundaryShifted`, `uncompressedKey` and `malformedTail`.
+
+## `record-v1.json`
+
+One complete DPP record-model v1 output, from the posted state through its signing preimages, signatures, derived verification keys and full locking script, as [`../spec/record-model.md`](../spec/record-model.md) defines. The leading copy lives beside the reference implementation's tests, which rebuild every pinned byte from `state` and the test keys; this JSON is regenerated verbatim from it. The keys involved are test keys, published deliberately; nothing derived from them will ever hold value.
+
+| Property | What it pins |
+|---|---|
+| `state` | The twelve data fields exactly as posted. |
+| `ownerBlob` | The off-chain owner-tier blob whose SHA-256 is field 11 (spec §7). |
+| `userPreimage`, `serverPreimage` | The two signing preimages: fields 1 to 12 concatenated raw, then the same followed by the user signature bytes (spec §5). |
+| `userSignature`, `serverSignature` | DER ECDSA over SHA-256 of the preimages. Deterministic: RFC 6979 nonces, so both are reproducible on any machine from the test keys. |
+| `userVerificationKey`, `serverVerificationKey` | The BRC-42 children the signatures verify under, re-derivable from on-chain data plus the published service identity (spec §5). |
+| `lockingKey`, `lockingScript` | The whole output: key push, `OP_CHECKSIG`, fourteen minimal pushes, seven `OP_2DROP` (spec §2). |
+| `uncompressedKey` | The same output with its locking key re-pushed in the 65-byte uncompressed spelling; a conforming reader refuses it at the push. |
+| `malformedTail` | The drop tail wrong three ways: one drop short, the right drop total in the wrong opcodes, and a trailing chunk after a correct tail. A conforming reader validates the tail exactly and refuses each. |
+| `rolledTimestamp` | Field 5 as `2026-02-30T00:00:00Z`, a date the calendar does not contain; hosts that roll it into March accepted it invisibly. Refused at decode. |
+| `mangledUtf8` | `payload_public` as the bytes `22 ff 22`: invalid UTF-8 whose lossy decode is the valid JSON string `"�"`. Refused at the bytes, not after them. |
+| `nulPassportId` | `passport_id` pushed non-minimally as the single byte `0x00`, which no field may be: minimal writing spells that value `OP_0`, and `OP_0` reads back as the empty field. Refused. |
+| `emptyPushdata` | `event_data`'s `OP_0` re-encoded as a zero-length `PUSHDATA1`; `OP_0` is the only accepted encoding of the empty field. Refused. |
+
+A conforming writer reproduces `lockingScript` from `state` and the test keys. A conforming reader parses `lockingScript` back to the state, verifies the user signature under `userVerificationKey`, and refuses every script in `uncompressedKey`, `malformedTail`, `rolledTimestamp`, `mangledUtf8`, `nulPassportId` and `emptyPushdata`.
