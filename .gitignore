@@ -1,3 +1,13 @@
+.DS_Store
+# Both spellings on purpose. The trailing slash matches a directory and nothing
+# else, so a *symlinked* node_modules is not ignored by it: a git worktree that
+# borrows the primary checkout's dependencies gets one, and `git add -A` commits
+# an absolute path to somebody's laptop.
+node_modules
 node_modules/
 dist/
-.DS_Store
+
+# Secrets are environment only, in every workspace.
+.env
+.env.*
+!.env.example

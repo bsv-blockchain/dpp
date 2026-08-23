@@ -1,0 +1,30 @@
+# The packages and the fixtures, on every change: build, typecheck, the two
+# test suites (which include the fixture-consistency checks holding
+# fixtures/*.json identical to their source modules), and the index image, so
+# a change that breaks the deployable artefact is caught here rather than at a
+# deployment.
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm test
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .

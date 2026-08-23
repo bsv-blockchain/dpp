@@ -17,8 +17,22 @@ The property the standard protects: a stranger can check a record with the trans
 | `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), the service interfaces | Drafting |
 | `contracts/` | The service interfaces as OpenAPI documents | Drafting |
 | `fixtures/` | Conformance fixtures: the seed of the test suite | Arriving |
-| `packages/` | The reference implementation | Arrives when the current operator's extraction completes |
+| `packages/` | The reference implementation | Landed |
 | `GOVERNANCE.md` | How changes are proposed and agreed | First draft |
+
+## The reference implementation
+
+Two packages, to publish to npm when this repository opens:
+
+- **`@bsv/dpp-core`** (`packages/dpp-core`) — the record model: the 14-field codec, the canonical signature preimages, chain verification including SPV. Everything else asks this package whether a state is valid; nothing may reimplement it.
+- **`@bsv/dpp-overlay-topics`** (`packages/overlay-topics`) — the index: the `tm_dpp` and `tm_uora_dpp` topic managers and the `ls_dpp` and `ls_uora_dpp` lookup services, usable as a library or as an HTTP service speaking exactly the wire `contracts/overlay.yaml` pins. Its Dockerfile builds the deployable index node from this repository alone, so an adopter can run their own index:
+
+```
+npm ci && npm run build && npm test
+docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
+```
+
+The files in `fixtures/` are regenerated verbatim from modules inside these packages' test suites, and the suites hold the two identical: editing either side alone goes red in CI.
 
 ## A working implementation
 

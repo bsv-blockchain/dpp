@@ -1,0 +1,24 @@
+# Docker build context hygiene. The only image built from here is
+# packages/overlay-topics/Dockerfile, whose context is the repository root
+# because the service depends on the @bsv/dpp-core workspace.
+
+# Secrets never enter an image; configuration is environment only.
+.env
+.env.*
+!.env.example
+
+# Reinstalled inside the image, and the largest thing in the tree by far.
+node_modules/
+**/node_modules/
+
+# Build outputs are produced in the image, not copied into it.
+dist/
+**/dist/
+
+.git/
+.github/
+spec/
+fixtures/
+contracts/
+*.log
+.DS_Store
