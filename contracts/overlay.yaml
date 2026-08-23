@@ -29,10 +29,24 @@ paths:
       parameters:
         - name: X-Topics
           in: header
-          required: true
+          required: false
           schema:
             type: string
-          description: 'JSON array of topic names, for example ["tm_dpp"].'
+          description: >-
+            JSON array of topic names, for example ["tm_dpp"]. Omitted or
+            empty, the submission is considered for tm_dpp alone; any other
+            value that is not a JSON array of strings is refused.
+        - name: X-Includes-Off-Chain-Values
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: ['true']
+          description: >-
+            BRC-22 off-chain values. Set to true, the body is a
+            varint-length-prefixed BEEF followed by the off-chain bytes,
+            which ride to the topic managers. Absent, the body is the BEEF
+            alone.
       requestBody:
         required: true
         content:
@@ -40,7 +54,10 @@ paths:
             schema:
               type: string
               format: binary
-              description: The transaction in BEEF encoding.
+              description: >-
+                The transaction in BEEF encoding. Bodies beyond the
+                deployment's size cap (8 MiB in the reference, generous
+                against a few-KB record) are refused with 413.
       security:
         - {}
         - bearer: []
@@ -71,9 +88,20 @@ paths:
                       type: array
                       items:
                         type: integer
+                    coinsRemoved:
+                      type: array
+                      items:
+                        type: integer
+                      description: >-
+                        Present only when the topic ran its mutation phase,
+                        which is what lets the X-Admission header tell a
+                        duplicate (absent) from a refusal (present and the
+                        admissions empty).
         '400':
           $ref: '#/components/responses/error'
         '401':
+          $ref: '#/components/responses/error'
+        '413':
           $ref: '#/components/responses/error'
   /lookup:
     post:
@@ -131,6 +159,16 @@ paths:
                 properties:
                   status:
                     const: ok
+                  topic:
+                    type: string
+                    description: >-
+                      The passport-rail topic, singular. The first
+                      deployment's health probes read the two singular
+                      fields, and a second rail is not a reason to break a
+                      probe; the full sets are beside them.
+                  service:
+                    type: string
+                    description: The passport-rail lookup service, singular.
                   topics:
                     type: array
                     items:
