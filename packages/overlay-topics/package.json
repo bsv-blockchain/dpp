@@ -1,0 +1,41 @@
+{
+  "name": "@bsv/dpp-overlay-topics",
+  "version": "0.1.0",
+  "description": "DPP overlay topic components: tm_dpp topic manager (dpp-core invariants + admission policy) and ls_dpp lookup service, as a library",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "./dist/lib.js",
+  "types": "./dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "default": "./dist/lib.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@bsv/dpp-core": "^0.1.0",
+    "@bsv/overlay": "2.0.3",
+    "@bsv/sdk": "2.1.4",
+    "mongodb": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "mongodb-memory-server": "^11.2.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsv-blockchain/dpp.git",
+    "directory": "packages/overlay-topics"
+  }
+}

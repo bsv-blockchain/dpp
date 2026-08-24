@@ -1,0 +1,7 @@
+# The service reads its whole configuration from the environment
+# (SERVICE_IDENTITY_KEY, SERVER_PRIVATE_KEY, SUBMIT_TOKEN, MONGO_URL and the
+# rest: the Configuration table in README.md). Running it locally means a file
+# beside this one, and none of them belongs in the repository.
+.env
+.env.*
+!.env.example

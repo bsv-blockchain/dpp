@@ -1,0 +1,22 @@
+{
+  "name": "dpp",
+  "private": true,
+  "description": "Digital Product Passport standard: specification, reference implementation, conformance fixtures",
+  "license": "SEE LICENSE IN LICENSE",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "overrides": {
+    "@bsv/overlay": {
+      "@bsv/sdk": "2.1.4"
+    }
+  }
+}
