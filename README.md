@@ -14,7 +14,7 @@ The property the standard protects: a stranger can check a record with the trans
 
 | Part | What it covers | State |
 |---|---|---|
-| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), the service interfaces | Drafting |
+| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), the service interfaces, and the design rationale behind them | Drafting |
 | `contracts/` | The service interfaces as OpenAPI documents | Drafting |
 | `fixtures/` | Conformance fixtures: the seed of the test suite | Arriving |
 | `packages/` | The reference implementation | Landed |
@@ -24,8 +24,8 @@ The property the standard protects: a stranger can check a record with the trans
 
 Two packages, to publish to npm when this repository opens:
 
-- **`@bsv/dpp-core`** (`packages/dpp-core`) — the record model: the 14-field codec, the canonical signature preimages, chain verification including SPV. Everything else asks this package whether a state is valid; nothing may reimplement it.
-- **`@bsv/dpp-overlay-topics`** (`packages/overlay-topics`) — the index: the `tm_dpp` and `tm_uora_dpp` topic managers and the `ls_dpp` and `ls_uora_dpp` lookup services, usable as a library or as an HTTP service speaking exactly the wire `contracts/overlay.yaml` pins. Its Dockerfile builds the deployable index node from this repository alone, so an adopter can run their own index:
+- **`@bsv/dpp-core`** (`packages/dpp-core`) is the record model: the 14-field codec, the canonical signature preimages, chain verification including SPV. Everything else asks this package whether a state is valid; nothing may reimplement it.
+- **`@bsv/dpp-overlay-topics`** (`packages/overlay-topics`) is the index: the `tm_dpp` and `tm_uora_dpp` topic managers and the `ls_dpp` and `ls_uora_dpp` lookup services, usable as a library or as an HTTP service speaking exactly the wire `contracts/overlay.yaml` pins. Its Dockerfile builds the deployable index node from this repository alone, so an adopter can run their own index:
 
 ```
 npm ci && npm run build && npm test
