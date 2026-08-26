@@ -32,5 +32,8 @@
     "type": "git",
     "url": "git+https://github.com/bsv-blockchain/dpp.git",
     "directory": "packages/dpp-core"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
