@@ -1,0 +1,13 @@
+# Security updates only. Version bumps are deliberate here: the reference
+# implementation pins @bsv/sdk to the version the deployed index and the
+# consuming application run, and a routine bump PR would only ever be closed.
+# An open-pull-requests-limit of zero disables version-update pull requests
+# for the ecosystem while leaving Dependabot's security alerts and security
+# pull requests (enabled in the repository's settings) in force.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
