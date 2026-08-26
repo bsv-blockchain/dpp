@@ -19,6 +19,7 @@ The property the standard protects: a stranger can check a record with the trans
 | `fixtures/` | Conformance fixtures: the seed of the test suite | Landed, for both rails |
 | `packages/` | The reference implementation | Landed |
 | `GOVERNANCE.md` | How changes are proposed and agreed | First draft |
+| `CHANGELOG.md` | What changed, and which pull request changed it | Kept from the first commit |
 
 ## The reference implementation
 
