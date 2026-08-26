@@ -6,6 +6,8 @@
 
 ### 2026-08-26
 
+- `examples/verify-passport.mjs`: the standard's own verification recipe as runnable code, against any index or offline against the chain fixture; CI runs the offline form on every change.
+- Both packages declare `publishConfig.access: public` (#24).
 - `fixtures/chain-v1.json`: the chain invariants join the conformance seed. A four-state pinned chain with the DPP output moving to index 1 mid-chain, and nine refusal vectors, one per broken invariant, each readable from raw transaction hex alone.
 - `CHANGELOG.md` begins, seeded from the first commit, and the fixtures README links each file's leading copy (#21).
 - `GOVERNANCE.md` second draft: roles, acceptance thresholds, the conditions for 1.0, security reporting (#22, in review).
