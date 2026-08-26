@@ -18,7 +18,7 @@ The property the standard protects: a stranger can check a record with the trans
 | `contracts/` | The service interfaces as OpenAPI documents | The overlay contract is pinned; the registry's joins when the implementing parties accept it together |
 | `fixtures/` | Conformance fixtures: the seed of the test suite | Landed, for both rails |
 | `packages/` | The reference implementation | Landed |
-| `GOVERNANCE.md` | How changes are proposed and agreed | First draft |
+| `GOVERNANCE.md` | How changes are proposed and agreed | Second draft: roles, thresholds, the conditions for 1.0 |
 | `CHANGELOG.md` | What changed, and which pull request changed it | Kept from the first commit |
 
 ## The reference implementation
@@ -43,6 +43,7 @@ The property the standard protects is not a claim to take on trust. `examples/ve
 npm ci && npm run build
 node examples/verify-passport.mjs 'https://id.gs1.org/01/09506000134352/21/7883451B01B6'
 node examples/verify-passport.mjs --fixture     # the chain fixture, offline, as CI runs it
+node examples/verify-anchor.mjs                 # the anchor rail: fixtures/anchor-v3.json, every check and every refusal
 ```
 
 ## A working implementation

@@ -23,6 +23,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: node examples/verify-passport.mjs --fixture
+      - run: node examples/verify-anchor.mjs
 
   image:
     runs-on: ubuntu-latest

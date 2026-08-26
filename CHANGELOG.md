@@ -6,6 +6,9 @@
 
 ### 2026-08-26
 
+- `examples/verify-anchor.mjs`: the anchor rail's verification recipe as runnable code, against `fixtures/anchor-v3.json`, every check of rules.md §6 and every refusal vector; CI runs it on every change.
+- Security-only Dependabot configuration; vulnerability alerts and automated security fixes switched on (#27).
+- `GOVERNANCE.md` second draft merged (#22); `rules.md` §5 records the anchor reader's leniencies as removed (#25).
 - `examples/verify-passport.mjs`: the standard's own verification recipe as runnable code, against any index or offline against the chain fixture; CI runs the offline form on every change.
 - Both packages declare `publishConfig.access: public` (#24).
 - `fixtures/chain-v1.json`: the chain invariants join the conformance seed. A four-state pinned chain with the DPP output moving to index 1 mid-chain, and nine refusal vectors, one per broken invariant, each readable from raw transaction hex alone.
