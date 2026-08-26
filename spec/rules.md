@@ -77,7 +77,7 @@ Fields 1 to 7 are UTF-8, and each must be non-empty printable text: control char
 
 **An anchor is a leaf.** It is never spent, and it never carries the attestation, only the digest.
 
-**Two places the reference reader is today more lenient than this text**, recorded as implementation defects to tighten rather than as licence: it parses a 65-byte uncompressed locking push beside the 33-byte compressed one, and it stops at the first drop opcode without validating the tail. A conforming writer emits the compressed push and the exact `OP_2DROP x4` tail; a reader should refuse anything else, as the record rail's reader already does for its own layout. This is a deliberate exception to the pre-1.0 tiebreaker, made because enshrining an accident is worse than naming it.
+**The locking push and the tail are exact.** A conforming writer emits the 33-byte compressed push and the exact `OP_2DROP x4` tail, and a conforming reader refuses anything else, as the record rail's reader does for its own layout. The reference reader once accepted a 65-byte uncompressed push and stopped at the first drop opcode without validating the tail; both leniencies were recorded here as defects rather than licence, both have been removed, and the fixture's `uncompressedKey` and `malformedTail` vectors are what keeps them removed.
 
 **Two parties appear in an anchor and they are not the same one.** The issuer (field 4) made the claim; the anchoring service (field 7) wrote the output. The anchor proves the second and merely repeats the first. Conflating them is the one misreading this format invites.
 
