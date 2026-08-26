@@ -28,7 +28,7 @@ A conforming reader refuses non-canonical key encodings, non-minimal empty pushe
 
 ## Why two rails, never one output
 
-The record rail says what this thing is and what happened to it; the anchor rail says who claimed that, and when the claim existed. They never share an output, and stopping either leaves the other verifying. Merging them was considered and declined: a merged output couples the record's lifetime to the attestation service's availability and puts attestation content a step away from the chain, and the two rails have different privacy budgets, with the record carrying its public tier by design while the anchor rail is built so attestation content *structurally cannot* reach the chain, because only the digest is written.
+The record rail says what this thing is and what happened to it; the anchor rail says who claimed that, and when the claim existed. They never share an output, and stopping either leaves the other verifying. The rails stay separate because a merged output would couple the record's lifetime to the attestation service's availability and put attestation content a step away from the chain, and because the two rails have different privacy budgets, with the record carrying its public tier by design while the anchor rail is built so attestation content *structurally cannot* reach the chain, because only the digest is written.
 
 ## Why the anchor carries its query in the clear
 
