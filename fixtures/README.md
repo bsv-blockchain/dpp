@@ -46,3 +46,15 @@ One complete DPP record-model v1 output, from the posted state through its signi
 | `emptyPushdata` | `event_data`'s `OP_0` re-encoded as a zero-length `PUSHDATA1`; `OP_0` is the only accepted encoding of the empty field. Refused. |
 
 A conforming writer reproduces `lockingScript` from `state` and the test keys. A conforming reader parses `lockingScript` back to the state, verifies the user signature under `userVerificationKey`, and refuses every script in `uncompressedKey`, `malformedTail`, `rolledTimestamp`, `mangledUtf8`, `nulPassportId` and `emptyPushdata`.
+
+## `chain-v1.json`
+
+One complete DPP record-model v1 passport chain, four states long, and the broken links a verifier must refuse, as [`../spec/record-model.md`](../spec/record-model.md) §6 defines. `record-v1.json` pins one output; this pins what holds outputs together. The leading copy is [`../packages/dpp-core/test/chain-v1-fixture.ts`](../packages/dpp-core/test/chain-v1-fixture.ts), whose neighbouring test rebuilds every transaction from `states[].data` and the test keys; this JSON is regenerated verbatim from it, and a test in that package holds the two identical. The keys are the record fixture's three plus `44` repeated for the second owner; test keys, published deliberately.
+
+| Property | What it pins |
+|---|---|
+| `makerKey`, `serverKey`, `owner1Key`, `owner2Key`, `lockingKey` | The four test identities and the custody-neutral locking key (the maker's throughout). |
+| `states[]` | Four states in chain order: `ACTIVATE` by the maker, `SOLD` by the maker, `TRANSFER` to the second owner signed by the first, `REPAIRED` by the second owner. Each carries `data` (the twelve posted fields), both signatures, `txid`, `outputIndex`, the output's `lockingScript`, and the complete `rawTx`. The `SOLD` transaction carries its DPP output at index 1 behind an `OP_RETURN`, so outpoint tracking is tested rather than assumed. |
+| `refusals[]` | Nine transactions, each extending a prefix of the valid chain (`appendAfter` names the last valid state kept; `-1` means the vector stands alone as a genesis) and breaking exactly one invariant: a genesis that is not `ACTIVATE`, a genesis carrying `previous_txid`, two DPP outputs in one transaction, `ACTIVATE` after genesis, `previous_txid` naming a transaction other than the one spent, spending a different output of the right transaction, a changed `passport_id`, an owner change off `TRANSFER`, a payload change off `ACTIVATE`/`EDIT`/`TRANSFER`. Each names the `error` a conforming verifier reports. |
+
+A conforming verifier parses every `rawTx`, needs no source transactions hydrated (the spend is checked from the input's own outpoint), accepts the four-state chain with every user signature valid and every link satisfied, verifies every server signature against `serverKey` when configured with it, and reports each refusal vector's chain invalid for the pinned reason.
