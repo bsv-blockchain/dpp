@@ -20,5 +20,6 @@ dist/
 spec/
 fixtures/
 contracts/
+examples/
 *.log
 .DS_Store

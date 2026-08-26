@@ -35,6 +35,16 @@ docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
 
 The files in `fixtures/` are regenerated verbatim from modules inside these packages' test suites, and the suites hold the two identical: editing either side alone goes red in CI. CI runs the build, the type checks, both suites and the container image on every change.
 
+## Check a record yourself
+
+The property the standard protects is not a claim to take on trust. `examples/verify-passport.mjs` does what the specification says a stranger can do: it asks an index only for the bytes, then verifies every signature, every link and every merkle proof against public block headers, and reports one sentence per check, never a score.
+
+```
+npm ci && npm run build
+node examples/verify-passport.mjs 'https://id.gs1.org/01/09506000134352/21/7883451B01B6'
+node examples/verify-passport.mjs --fixture     # the chain fixture, offline, as CI runs it
+```
+
 ## A working implementation
 
 The standard is developed against a live demonstration: a multi-industry passport application publishing real records to BSV mainnet, with a public verification surface at [dpp.bsvb.net/verify](https://dpp.bsvb.net/verify) that anyone can run against a record in their own browser. Its source is [bsv-blockchain-demos/dpp-app](https://github.com/bsv-blockchain-demos/dpp-app), the first consuming application built on this standard (private today). A consuming application is not part of the standard: no service or frontend is mandatory, and any compatible provider can operate the same services or build alternatives.
