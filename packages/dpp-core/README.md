@@ -22,6 +22,7 @@ specifier anything needs:
 | `transition.ts` | Which operation may change what, state by state |
 | `verifyChain.ts` | Chain verification from genesis, including SPV inclusion |
 | `blob.ts` | Owner-tier blob hash binding (§7) |
+| `canonical.ts` | The canonical bytes an attestation is signed and hashed over: a refusing subset of JCS (`spec/rules.md` §4) |
 | `constants.ts`, `types.ts` | The shared vocabulary both of the above are written against |
 
 ## Working on it

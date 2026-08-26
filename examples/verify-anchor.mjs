@@ -13,9 +13,9 @@
  * field-7 service key (both are what the reader's parse enforces: it returns
  * nothing for an output that fails either); the issuer DID decodes to the
  * issuer key the attestation names; and every refusal vector the fixture
- * carries is refused. Canonicalising the claim itself is the writing
- * service's step; this recipe verifies the digest over the canonical bytes
- * the fixture carries, exactly as a reader holding the claim would.
+ * carries is refused. The claim is canonicalised here, with the standard's own
+ * canonicaliser, so the recipe starts from the claim and not from bytes it
+ * was handed.
  *
  * Results print one sentence per check, never a score.
  */
@@ -23,6 +23,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Hash, LockingScript, Utils } from '@bsv/sdk'
+import { canonicalBytes, canonicalString } from '@bsv/dpp-core'
 import { identityKeyFromDidKey, tryParseUoraAnchor, expectedLockingKey } from '@bsv/dpp-overlay-topics'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -35,8 +36,10 @@ const say = (ok, sentence) => {
   if (!ok) failures++
 }
 
-const digest = Utils.toHex(Hash.sha256(Utils.toArray(F.canonical, 'utf8')))
-say(digest === F.digest, `the attestation's canonical bytes hash to ${digest.slice(0, 12)}..., which is field 2.`)
+const canonical = canonicalString(F.attestation)
+say(canonical === F.canonical, 'the claim canonicalises to the pinned bytes: keys sorted, no whitespace, strings and safe integers only.')
+const digest = Utils.toHex(Hash.sha256(canonicalBytes(F.attestation)))
+say(digest === F.digest, `those bytes hash to ${digest.slice(0, 12)}..., which is field 2.`)
 
 const anchor = tryParseUoraAnchor(LockingScript.fromHex(F.lockingScript))
 say(anchor != null, 'the anchor parses: eight fields, the v3 prefix, a signature that verifies over the length-delimited preimage, and a locking key derived from the anchoring service in field 7.')

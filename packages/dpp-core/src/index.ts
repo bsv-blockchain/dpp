@@ -7,6 +7,7 @@
  * - chain verification incl. SPV (§6, §8)
  * - owner-tier blob hash binding (§7)
  * - did:key for identity keys, and the derivation a verifier needs (`spec/identity.md`)
+ * - the canonical bytes an attestation is signed and hashed over (`spec/rules.md` §4)
  *
  * Imported by the overlay topic manager and every consuming application.
  */
@@ -19,3 +20,4 @@ export * from './transition.js'
 export * from './verifyChain.js'
 export * from './blob.js'
 export * from './did.js'
+export * from './canonical.js'
