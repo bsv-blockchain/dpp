@@ -9,7 +9,7 @@ Two rules these files follow, and any future fixture must:
 
 ## `anchor-v3.json`
 
-One complete `uora-anchor-v3` anchor, from the attestation claim through its canonical bytes, digest, derived locking key and full locking script, as [`../spec/rules.md`](../spec/rules.md) defines. The keys involved are test keys, published deliberately; nothing derived from them will ever hold value.
+One complete `uora-anchor-v3` anchor, from the attestation claim through its canonical bytes, digest, derived locking key and full locking script, as [`../spec/rules.md`](../spec/rules.md) defines. The leading copy is [`../packages/overlay-topics/test/anchor-v3-fixture.ts`](../packages/overlay-topics/test/anchor-v3-fixture.ts); this JSON is regenerated verbatim from it, and a test in that package holds the two identical. The keys involved are test keys, published deliberately; nothing derived from them will ever hold value.
 
 | Property | What it pins |
 |---|---|
@@ -28,7 +28,7 @@ A conforming writer reproduces `lockingScript` from `attestation` and the test k
 
 ## `record-v1.json`
 
-One complete DPP record-model v1 output, from the posted state through its signing preimages, signatures, derived verification keys and full locking script, as [`../spec/record-model.md`](../spec/record-model.md) defines. The leading copy lives beside the reference implementation's tests, which rebuild every pinned byte from `state` and the test keys; this JSON is regenerated verbatim from it. The keys involved are test keys, published deliberately; nothing derived from them will ever hold value.
+One complete DPP record-model v1 output, from the posted state through its signing preimages, signatures, derived verification keys and full locking script, as [`../spec/record-model.md`](../spec/record-model.md) defines. The leading copy is [`../packages/dpp-core/test/record-v1-fixture.ts`](../packages/dpp-core/test/record-v1-fixture.ts), whose neighbouring tests rebuild every pinned byte from `state` and the test keys; this JSON is regenerated verbatim from it, and a test in that package holds the two identical. The keys involved are test keys, published deliberately; nothing derived from them will ever hold value.
 
 | Property | What it pins |
 |---|---|
