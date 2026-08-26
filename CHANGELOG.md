@@ -6,6 +6,9 @@
 
 ### 2026-08-26
 
+- `fixtures/chain-v1.json`: the chain invariants join the conformance seed. A four-state pinned chain with the DPP output moving to index 1 mid-chain, and nine refusal vectors, one per broken invariant, each readable from raw transaction hex alone.
+- `CHANGELOG.md` begins, seeded from the first commit, and the fixtures README links each file's leading copy (#21).
+- `GOVERNANCE.md` second draft: roles, acceptance thresholds, the conditions for 1.0, security reporting (#22, in review).
 - The README describes the repository as it is: present tense, the five spec documents named, both fixtures landed, CI stated (#19).
 - The design rationale states reasons for the two rails staying separate and claims nothing about how the decision was reached (#20).
 
