@@ -2,7 +2,7 @@
 
 **Status: working draft, pre-1.0.** Everything here is subject to change until version 1.0 is declared, and breaking changes are expected while the draft is assembled. This repository is private while that happens; when it opens, its history opens with it.
 
-A standard for digital product passports on the BSV blockchain. It will define how passport records and the services around them must behave: a published specification, a conformance test suite anyone can run against their own implementation, and a reference implementation proving the specification can be built and operated.
+A standard for digital product passports on the BSV blockchain. It defines how passport records and the services around them must behave: a published specification, conformance fixtures seeding a test suite anyone can run against their own implementation, and a reference implementation proving the specification can be built and operated.
 
 ## The idea
 
@@ -10,13 +10,13 @@ A product passport lives on chain as a chain of token states, each state spendin
 
 The property the standard protects: a stranger can check a record with the transaction bytes and public block headers alone. No account, no credential from any operator, and no service that has to stay online for the record to remain true.
 
-## What will live here
+## What lives here
 
 | Part | What it covers | State |
 |---|---|---|
-| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), the service interfaces, and the design rationale behind them | Drafting |
-| `contracts/` | The service interfaces as OpenAPI documents | Drafting |
-| `fixtures/` | Conformance fixtures: the seed of the test suite | Arriving |
+| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), identity, the services, and the design rationale behind them | Working drafts, all five documents |
+| `contracts/` | The service interfaces as OpenAPI documents | The overlay contract is pinned; the registry's joins when the implementing parties accept it together |
+| `fixtures/` | Conformance fixtures: the seed of the test suite | Landed, for both rails |
 | `packages/` | The reference implementation | Landed |
 | `GOVERNANCE.md` | How changes are proposed and agreed | First draft |
 
@@ -32,7 +32,7 @@ npm ci && npm run build && npm test
 docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
 ```
 
-The files in `fixtures/` are regenerated verbatim from modules inside these packages' test suites, and the suites hold the two identical: editing either side alone goes red in CI.
+The files in `fixtures/` are regenerated verbatim from modules inside these packages' test suites, and the suites hold the two identical: editing either side alone goes red in CI. CI runs the build, the type checks, both suites and the container image on every change.
 
 ## A working implementation
 

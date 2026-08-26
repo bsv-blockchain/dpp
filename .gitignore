@@ -11,3 +11,7 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Private working documents: the BRC proposal draft stays local until the
+# standard goes public and the proposal is submitted to bitcoin-sv/BRCs.
+brc/
