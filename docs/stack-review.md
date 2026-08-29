@@ -6,69 +6,9 @@
 
 **Three decisions were taken before this document was written** and are recorded as the agreed direction rather than as open questions: the overlay contract becomes a profile of the stack's upstream contract (§4.1); the fixtures gain additive vectors in the stack's conformance format while the existing files stay verbatim (§5.1); and the record model recommends, without requiring, UHRP hosting and BRC-2 style encryption for the owner tier (§1.6).
 
-**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`. The rules (former §2, five findings) landed in `spec/rules.md`. Identity (former §3, four findings) landed in `spec/identity.md`.
+**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`. The rules (former §2, five findings) landed in `spec/rules.md`. Identity (former §3, four findings) landed in `spec/identity.md`. The services and the overlay profile (former §4, six findings) landed in `spec/services.md` and a rewritten `contracts/overlay.yaml`.
 
 **How each item is written.** *Gap* says what is missing or wrong. *Evidence* says where to look. *Proposed change* says what the normative text should say, precisely enough to draft from. *Status* is `proposed` until a pull request lands, at which point the item goes.
-
-## 4. The services and the overlay contract (`spec/services.md`, `contracts/overlay.yaml`)
-
-### 4.1 The contract should be a profile of the upstream wire (agreed direction)
-
-*Gap.* `contracts/overlay.yaml` describes itself as "the BSV ecosystem's standard overlay wire (BRC-22 submission, BRC-24 lookup)" and then restates that wire in its own words, so a reader cannot tell what is the ecosystem's and what is this standard's. Restating also drifts: the stack's contract has grown routes the DPP document does not know about, and the SDK's client behaves in ways the DPP document does not describe.
-
-*Evidence.* The upstream contract is `ts-stack/specs/overlay/overlay-http.yaml`, documented at the overlay HTTP page of the site and served by `packages/overlays/overlay-express/src/OverlayExpress.ts`. Divergences: (a) `/getDocumentationForTopicManager` and `/getDocumentationForLookupServiceProvider` are absent from the DPP contract although `DppTopicManager` and `DppLookupService` implement `getDocumentation()` (`dpp-app/packages/overlay-topics/src/tmDpp.ts`, `lsDpp.ts`); (b) the SDK's `LookupResolver` sends `X-Aggregation: yes` by default and accepts either the binary aggregated answer or the JSON `output-list` by content type; the DPP index serves only the JSON form, which works and is nowhere written down; (c) `/health/live` and `/health/ready` are absent; (d) GASP (`/requestSyncResponse`, `/requestForeignGASPNode`) and `/arc-ingest` exist upstream and the DPP contract is silent on whether an index may implement them; (e) the mainnet preset of `LookupResolver` refuses plain HTTP and times out at two seconds by default, both of which an operator must know. The reference's HTTP host is a hand-written `node:http` server (`packages/overlay-topics/src/index.ts`) with its own engine storage (`engineStorage.ts`); every canonical topic in the stack is instead mounted on `OverlayExpress`, which provides all of the above, and the site's "Run an overlay node" guide is the recipe.
-
-*Proposed change.* `contracts/overlay.yaml` is rewritten as a profile: it declares conformance to the upstream overlay HTTP contract by reference, and specifies only what this standard adds or fixes: the two topics (`tm_dpp`, `tm_uora_dpp`) and two lookup services (`ls_dpp`, `ls_uora_dpp`) with their query schemas and answer bounds; the admission rules each topic applies, by reference to the record model and the rules; the `X-Admission` response header and the optional bearer token on submission as extensions; the additional `/health` fields; a statement that a DPP index MUST serve the documentation routes, MAY serve the binary aggregated lookup answer and MUST serve the JSON `output-list` answer, MAY implement GASP and `/arc-ingest`, and SHOULD be reachable over HTTPS. `services.md` §2 points at the upstream contract as the wire and at the profile as what is DPP-specific, and adds a non-normative sentence that mounting the topics on `@bsv/overlay-express` satisfies the whole profile.
-
-*Status.* proposed.
-
-### 4.2 Interchangeable copies with no way to find them
-
-*Gap.* `services.md` §1 says "an operator's copy and a stranger's copy are interchangeable". Nothing in the standard says how a reader finds a stranger's copy, so in practice every reader is configured with one operator's URL and the interchangeability is theoretical.
-
-*Evidence.* The stack has the mechanism: SHIP advertisements for topics and SLAP advertisements for lookup services, created by `WalletAdvertiser` in `ts-stack/packages/overlays/overlay-discovery-services` with a funded BRC-100 wallet and served by the Engine's `syncAdvertisements`; readers use `LookupResolver` (`packages/sdk/src/overlay-tools/LookupResolver.ts`), which asks SLAP trackers which hosts serve a named lookup service and merges their answers, or pins a host with `hostOverrides`; writers announce with `TopicBroadcaster` to every SHIP-advertised host of a topic. The reference omits the advertiser on purpose: its host's header comment says advertising "would need this service to hold a funded wallet of its own", which is a limitation of that deployment, not of the standard.
-
-*Proposed change.* `services.md` §1 or §2 gains a paragraph: a public index SHOULD advertise its topics and lookup services through SHIP and SLAP so that a reader who knows only the service name finds it; a reader MAY pin a known host instead; the discovery mechanism is the ecosystem's and is not redefined here. The reference's omission is recorded here, not in the standard.
-
-*Status.* proposed.
-
-### 4.3 Two valid orders of announce and broadcast
-
-*Gap.* `services.md` §2 requires that "a conforming writer must not fail a record over a failed announcement", which assumes the writer broadcasts first and announces after. There is a second order with a property worth having: submit to the index first with the transaction unsent, broadcast only on admission, and abort otherwise. Because a topic manager runs the same checks a verifier runs, an invalid state then never reaches the chain.
-
-*Evidence.* Mandala's client does this: `createAction` with `noSend`, `POST /submit`, then `createAction` with `sendWith` on a non-empty admission and `abortAction` on rejection (`mandala/lib/README.md`; `mandala/docs/superpowers/specs/2026-07-07-go-overlay-port-appendix-b-wire-contract.md` §1). The DPP topic manager applies the record model's decode rules, both signatures and the transition rules (`tmDpp.ts`), so admission is a verifier's verdict.
-
-*Proposed change.* §2 keeps the existing rule for broadcast-first writers and adds a MAY: a writer may announce before broadcasting and treat refusal as a reason not to broadcast; a writer that does so still must not treat an unreachable index as a refusal. Reference only; no Mandala vocabulary enters the text.
-
-*Status.* proposed.
-
-### 4.4 Admission must be idempotent
-
-*Gap.* Nothing in `services.md` §6 says what happens when an index sees the same output twice. It will: GASP re-synchronisation and reorganisation replay both re-admit outputs, and a lookup service that appends a row per admission double-counts.
-
-*Evidence.* Mandala's robustness audit found exactly this in its own lookup service (`mandala/docs/overlay-topics-robustness-patches.md`, item 4: "Admin-history rows duplicate on re-admit"). The reference already gets it right: `dpp-app/packages/overlay-topics/src/storage.ts` and `anchorStorage.ts` upsert on a unique `(txid, outputIndex)` index, so a second admission is a no-op. That is a property of one implementation, and it should be a rule.
-
-*Proposed change.* §6 adds: admitting an output the index already holds is a no-op, and a conforming index produces the same answers after any replay of its inputs. One sentence, with the reason.
-
-*Status.* proposed.
-
-### 4.5 The topics belong in `@bsv/overlay-topics`
-
-*Gap.* `services.md` §2 describes the index's two topics without saying where their canonical implementations should live. The stack has one place for first-class topics, and being there is what makes a topic mountable by any overlay operator with one import.
-
-*Evidence.* `ts-stack/packages/overlays/topics/src/index.ts` exports every canonical topic manager and lookup service (`tm_did`, `tm_uhrp`, `tm_identity`, `tm_kvstore`, `tm_mandala` and the rest), each with Markdown documentation in a `*Docs.md.ts` file returned by `getDocumentation()`. The reference's `tm_uora_dpp` already depends only on `@bsv/sdk` and `@bsv/overlay` so that it can be contributed there without dragging the token core along (`uoraAnchor.ts`, "Why this file imports nothing of ours"; dpp-app decision D-CR7). The reference's `getDocumentation()` returns a few joined lines rather than a document.
-
-*Proposed change.* §2 names `@bsv/overlay-topics` as the intended home of `tm_dpp`, `ls_dpp`, `tm_uora_dpp` and `ls_uora_dpp`, so that "anyone may operate them" has a concrete path, and says a topic's `getDocumentation()` returns the admission rules in Markdown, since the upstream contract exposes it to operators.
-
-*Status.* proposed.
-
-### 4.6 Lookup answer shape: intentional omissions
-
-*Gap.* None. Recorded so nobody "fixes" it: the upstream `LookupAnswer` allows optional `context` and `txid` on each output; the DPP schema omits both. A DPP answer carries everything a verifier needs inside the BEEF, and the client re-derives the txid.
-
-*Proposed change.* One sentence in the profile (4.1) saying the omission is deliberate.
-
-*Status.* proposed.
 
 ## 5. The fixtures (`fixtures/`)
 
@@ -117,4 +57,4 @@ Each of these is an external write and needs explicit approval before anything i
 
 ## 8. Suggested order of work
 
-One pull request per component, in the order the findings are numbered: the services and the overlay profile (4.1 to 4.6), then the fixtures (5.1 and 5.2). The record model, the rules and identity landed first. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
+The fixtures (5.1 and 5.2) remain; every other component has landed. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
