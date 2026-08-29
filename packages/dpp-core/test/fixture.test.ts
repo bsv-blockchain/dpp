@@ -105,6 +105,7 @@ describe('record-v1 fixture: the reader refuses what it must', () => {
     ['mangledUtf8', F.mangledUtf8],
     ['nulPassportId', F.nulPassportId],
     ['emptyPushdata', F.emptyPushdata],
+    ['overlongPassportId', F.overlongPassportId],
   ])('refuses %s', (_name, hex) => {
     expect(tryParseDppOutput(LockingScript.fromHex(hex))).toBeNull()
   })
@@ -117,6 +118,7 @@ describe('record-v1 fixture: the reader refuses what it must', () => {
       F.mangledUtf8,
       F.nulPassportId,
       F.emptyPushdata,
+      F.overlongPassportId,
     ]
     expect(new Set(all).size).toBe(all.length)
     for (const hex of all) expect(hex).not.toBe(F.lockingScript)

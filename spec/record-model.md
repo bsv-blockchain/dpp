@@ -1,6 +1,6 @@
 # The record model
 
-**DPP Token Standard, version 1. Status: working draft, pre-1.0.** This document defines the on-chain record: what one passport state is, how states form a chain, and what a verifier checks. The services around records, the industry data profiles and the attestation anchoring rail are defined in their own documents. Until version 1.0 is declared, the reference implementation is the tiebreaker where this text is ambiguous; it is being extracted into `packages/` in this repository, and until that lands it lives in the consuming application the README names.
+**DPP Token Standard, version 1. Status: working draft, pre-1.0.** This document defines the on-chain record: what one passport state is, how states form a chain, and what a verifier checks. The services around records, the industry data profiles and the attestation anchoring rail are defined in their own documents. Until version 1.0 is declared, the reference implementation in this repository is the tiebreaker where this text is ambiguous.
 
 ## 1. Overview
 

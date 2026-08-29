@@ -115,6 +115,8 @@ describe('codec validation', () => {
     ['wrong protocol marker', (f: number[][]) => { f[0] = utf8('nft') }],
     ['unsupported version', (f: number[][]) => { f[1] = utf8('2') }],
     ['empty passport_id', (f: number[][]) => { f[2] = [] }],
+    ['passport_id over 512 bytes', (f: number[][]) => { f[2] = utf8('a'.repeat(513)) }],
+    ['actor_keyID over 256 bytes', (f: number[][]) => { f[7] = utf8('k'.repeat(257)) }],
     ['unknown op', (f: number[][]) => { f[3] = utf8('BURNED') }],
     ['non-ISO timestamp', (f: number[][]) => { f[4] = utf8('last tuesday') }],
     ['rolled-over timestamp (30 February)', (f: number[][]) => { f[4] = utf8('2026-02-30T00:00:00Z') }],
@@ -160,6 +162,19 @@ describe('codec validation', () => {
     expect(chunks[10].op).toBe(0)
     chunks[10] = { op: 0x4c, data: [] }
     expect(tryParseDppOutput(new LockingScript(chunks))).toBeNull()
+  })
+
+  it('accepts passport_id and actor_keyID exactly at their bounds: 512 and 256 bytes', () => {
+    const fields = valid()
+    fields[2] = utf8('a'.repeat(512))
+    fields[7] = utf8('k'.repeat(256))
+    expect(tryParseDppOutput(rawScript(fields))).not.toBeNull()
+  })
+
+  it('counts the bounds in bytes, not characters: 171 three-byte characters are 513 bytes', () => {
+    const fields = valid()
+    fields[2] = utf8('\u20AC'.repeat(171))
+    expect(tryParseDppOutput(rawScript(fields))).toBeNull()
   })
 
   it('accepts NUL inside a longer value: the 0x00 refusal is the single byte only', () => {

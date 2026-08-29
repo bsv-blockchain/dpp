@@ -29,6 +29,17 @@ export const STANDARD_VERSION = '1'
  */
 export const DPP_PROTOCOL_ID: WalletProtocol = [1, 'dpp token v1']
 
+/**
+ * Upper bounds on the two fields that are also BRC-42 key identifiers
+ * (`spec/record-model.md` §3, §5): passport_id keys the server signature,
+ * actor_keyID keys the user signature. A conforming wallet refuses a key
+ * identifier above 800 characters, so an unbounded field would be a valid
+ * record no wallet can sign; the standard bounds them tighter, in bytes of
+ * UTF-8, and matches the anchor's subject bound for passport_id.
+ */
+export const MAX_PASSPORT_ID_BYTES = 512
+export const MAX_ACTOR_KEY_ID_BYTES = 256
+
 /** Total PushDrop fields per state (`spec/record-model.md` §3). */
 export const FIELD_COUNT = 14
 
