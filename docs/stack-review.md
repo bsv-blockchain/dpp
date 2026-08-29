@@ -6,81 +6,9 @@
 
 **Three decisions were taken before this document was written** and are recorded as the agreed direction rather than as open questions: the overlay contract becomes a profile of the stack's upstream contract (§4.1); the fixtures gain additive vectors in the stack's conformance format while the existing files stay verbatim (§5.1); and the record model recommends, without requiring, UHRP hosting and BRC-2 style encryption for the owner tier (§1.6).
 
+**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`.
+
 **How each item is written.** *Gap* says what is missing or wrong. *Evidence* says where to look. *Proposed change* says what the normative text should say, precisely enough to draft from. *Status* is `proposed` until a pull request lands, at which point the item goes.
-
-## 1. The record model (`spec/record-model.md`)
-
-### 1.1 The output is a BRC-48 PushDrop, and the text does not say so
-
-*Gap.* §2 defines the locking script from opcodes upward and never names the pattern. The script is byte-for-byte what the stack's `PushDrop` template emits with `lockPosition: 'before'` and `includeSignature: false`: the key push, `OP_CHECKSIG`, the fields as minimal pushes, then `OP_2DROP` for each pair and `OP_DROP` for an odd one. Naming it buys three things at once: any BRC-48 tool recognises a passport state as a PushDrop output, an implementer in another language knows which published pattern to follow, and the standard's minimal-push rules stop looking like an invention.
-
-*Evidence.* `ts-stack/packages/sdk/src/script/templates/PushDrop.ts`, `lock`. The reference codec, `dpp-app/packages/dpp-core/src/codec.ts`, copies `createMinimallyEncodedScriptChunk` verbatim and says so in its comment, because the SDK does not export it. The stack's BRC index lists BRC-48 as the PushDrop token protocol.
-
-There is one incompatibility, and it must travel with the name. `PushDrop.decode` reads `OP_0` back as the single byte `0x00`; the standard reads it as the empty field. `PushDrop.decode` also stops at the first drop opcode without validating the tail, and accepts a 65-byte uncompressed key push through `PublicKey.fromString`. All three are correct for PushDrop's own value domain and wrong for this layout, which is why `dpp-app/docs/PROTOCOL_COMPATIBILITY.md` already carries a section titled "The SDK's own PushDrop reader is not a substitute for dpp-core". That warning belongs in the standard, not in one consumer's compatibility notes. The fixture vectors `nulPassportId` and `emptyPushdata` in `fixtures/record-v1.json` already pin the `OP_0` rule.
-
-*Proposed change.* §2 opens by stating that the output is a BRC-48 PushDrop output with the locking key first and no appended PushDrop signature, cites BRC-48, and adds one paragraph: a general-purpose PushDrop decoder is a discovery tool for this layout and not a conforming reader, because it maps `OP_0` to `0x00`, does not validate the drop tail, and accepts an uncompressed key; a conforming reader applies the rules of this section. The framing note in §5 gains a cross-reference.
-
-*Status.* proposed.
-
-### 1.2 The derivation is described, not specified
-
-*Gap.* §5 says both signatures use "keys derived under BRC-42 with the BRC-43 protocol identifier `[1, 'dpp token v1']` and counterparty `anyone`". That is enough for a reader who has the stack's `KeyDeriver` and nothing else. An implementer in Go, Rust or Python needs the invoice number string, what `anyone` is as a key, and which side of the ECDH is the root and which the counterparty, or they will produce a key that verifies against nothing.
-
-*Evidence.* `ts-stack/packages/sdk/src/wallet/KeyDeriver.ts`: `computeInvoiceNumber` returns `${securityLevel}-${protocolName}-${keyID}` with the protocol name lower-cased and trimmed; the constructor treats the root `'anyone'` as the private key `1`, and `normalizeCounterparty('anyone')` as that key's public key; `derivePublicKey` with `forSelf` false computes `counterparty.deriveChild(rootKey, invoiceNumber)`. The reference does exactly this in `dpp-app/packages/dpp-core/src/signatures.ts` with `new CachedKeyDeriver('anyone').derivePublicKey(DPP_PROTOCOL_ID, keyID, parentKey)`, and the signer side is BRC-100 `createSignature`, which derives the matching private key as `rootKey.deriveChild(anyonePublicKey, invoiceNumber)`. The two agree by the symmetry BRC-42 defines.
-
-*Proposed change.* §5 states the two invoice numbers in full, `1-dpp token v1-<actor_keyID>` for the user signature and `1-dpp token v1-<passport_id>` for the server signature; states that counterparty `anyone` is the public key of the secp256k1 private key `1`; states the verifier's computation as the BRC-42 child of the parent key for that invoice number with the `anyone` private key as the deriving secret; and cites BRC-42 for the shared-secret and HMAC construction rather than restating it. The same sentence structure is reused in `rules.md` §3 and §5 and `identity.md` §2 (findings 2.3 and 3.2).
-
-*Status.* proposed.
-
-### 1.3 A key identifier length nobody bounded
-
-*Gap.* `passport_id` is the key identifier for the server signature and `actor_keyID` for the user signature. BRC-42 as implemented refuses key identifiers longer than 800 characters and shorter than one. §3 requires both to be non-empty and bounds neither above, so a record with a 900-character `passport_id` is a valid record by this document and unsignable by every conforming wallet. The anchor rail already bounds its equivalents (`rules.md` §5: attestation id at most 256, subject at most 512); the record rail should not be the one place a stranger-controlled field has no ceiling.
-
-*Evidence.* `KeyDeriver.computeInvoiceNumber`: `if (keyID.length > 800) throw`. `passport_id` in practice is a GS1 Digital Link URI, well under 200 characters. The fixture's `actorKeyId` is `maker batch 1`.
-
-*Proposed change.* §3 bounds `passport_id` at 512 bytes of UTF-8 to match the anchor's subject bound, since the two carry the same identifier, and `actor_keyID` at 256, and states the reason in the table cell: both are BRC-42 key identifiers and a conforming wallet refuses longer ones. `rules.md` §3 gains the same bound on `passportId` (finding 2.3). The record fixture gains a refusal vector for an over-long `passport_id` when the change lands.
-
-*Status.* proposed.
-
-### 1.4 Any BRC-100 wallet can produce a state, and that is a property worth naming
-
-*Gap.* The standard's strongest interoperability property is unstated: both signatures are exactly the BRC-100 `createSignature` operation with `data` set to the preimage, the protocol identifier, the key identifier and counterparty `anyone`, so a state can be signed by a user's own wallet with no key ever leaving it, and spent with the same wallet's `PushDrop.unlock`. A reader who does not know this may build a bespoke signing service where a wallet call would do.
-
-*Evidence.* `ts-stack/packages/sdk/src/wallet/ProtoWallet.ts`, `createSignature`: hashes `data` with SHA-256 unless `hashToDirectlySign` is given, signs with `derivePrivateKey(protocolID, keyID, counterparty)`. `WalletClient` exposes the same call against a user's wallet. The reference's `DataSigner` interface in `packages/dpp-core/src/signatures.ts` is that one method, satisfied by `ProtoWallet` on the server and `WalletClient` in the browser. `PushDrop.unlock` in the SDK signs a spend under the same protocol, key identifier and counterparty.
-
-*Proposed change.* §5 gains a short paragraph: a signature over either preimage is the BRC-100 `createSignature` operation with the stated arguments, producible by any conforming wallet without key export, and a state is spent by a standard PushDrop unlock. §9 keeps basket names, satoshi values, fees and broadcast as a build's own choice and adds that the BRC-100 wallet interface is the boundary at which interoperability is measured.
-
-*Status.* proposed.
-
-### 1.5 Inclusion: name the formats and the abstraction
-
-*Gap.* §8 says a merkle path "validates against public block headers" and defines three outcomes, which is the right shape, but does not name the path format, the transport that carries paths and ancestors together, or the abstraction that turns a header source into a yes, a no, or a failure to answer. An implementer must otherwise reverse-engineer them from the reference.
-
-*Evidence.* `ts-stack/packages/sdk/src/transaction/MerklePath.ts` implements BRC-74 (BUMP) and `verify(txid, chainTracker)` computes the root then asks `chainTracker.isValidRootForHeight(root, blockHeight)`; `Beef.ts` implements BRC-62 (BEEF) and `verify(chainTracker)` checks every root a BEEF carries; `ChainTracker.ts` is the interface. The reference's `verifyChain` in `packages/dpp-core/src/verifyChain.ts` maps `false` to `failed`, a throw to `pending`, and pre-flights `computeRoot(txid)` so a path that does not contain the transaction fails locally, which is exactly the three-outcome rule §8 already states. The stack ships three header sources: `WhatsOnChain` (the SDK default), `BlockHeadersService`, and a self-hostable `infra/chaintracks-server`, so no third party is structurally required. The reference wraps its tracker in a cache with shared in-flight requests and a short failure back-off (`dpp-app/packages/dpp-service/src/chain-tracker.ts`) because a free-tier header API rate-limits a busy verification page; that is an operational concern, not a rule.
-
-*Proposed change.* §8 names the merkle path as a BRC-74 BUMP, names BEEF (BRC-62) as the transport for a chain and its proofs, describes the header source as a function from `(root, height)` to true, false or no answer, and maps those to `verified`, `failed` and `pending` as the section already does. It adds that a verifier may run its own header source, so the "no service must stay online" property holds even against header services, and a non-normative note that a verifier facing a rate-limited public source should cache agreements and back off on failure rather than report `failed`.
-
-*Status.* proposed.
-
-### 1.6 The owner tier: hosting and encryption (agreed direction)
-
-*Gap.* §7 fixes the binding (the SHA-256 of the ciphertext is field 11) and is silent on where the ciphertext lives and how it was encrypted. Both silences are defensible in a core standard, but the stack has a settled answer to each and the reference already uses one of them; saying so, without requiring it, stops implementers inventing incompatible arrangements.
-
-*Evidence.* Hosting: field 11 is exactly a UHRP (BRC-26) content address. `ts-stack/packages/sdk/src/storage/StorageUtils.ts` `getURLForHash` turns a 32-byte SHA-256 into a `uhrp://` URL, `StorageDownloader` fetches from any advertised host and verifies the hash, `StorageUploader` publishes to one or more hosts, and the `tm_uhrp` and `ls_uhrp` topic in `packages/overlays/topics/src/uhrp` makes hosts findable; the UHRP specification page describes the same flow. Encryption: the reference encrypts the owner tier with AES-256-GCM through the SDK's `SymmetricKey`, keyed by `deriveSymmetricKey([2, 'dpp owner data v1'], passportId, 'self')` on the owner's identity key (`dpp-app/packages/dpp-service/src/identities.ts`, `blobKey` and `encryptOwnerTier`), which is the BRC-2 construction and the same operation as BRC-100 `encrypt` and `decrypt` on the owner's wallet.
-
-*Proposed change.* §7 keeps its MUST unchanged (the ciphertext hashes to field 11 or the record is unverified) and gains two SHOULD-level paragraphs. Hosting: an owner-tier blob SHOULD be retrievable by its UHRP content address, so that field 11 is also the URL and a reader needs no registry to find the bytes; any host may serve it and the hash check is what makes the host irrelevant. Encryption: the blob SHOULD be encrypted with AES-256-GCM under a BRC-42 symmetric key derived from the owner's identity key with a protocol identifier named by the profile and `passport_id` as the key identifier, so that the owner's wallet decrypts it with a BRC-100 `decrypt` call and no key is exported; the counterparty is the profile's choice (`self` for an owner-only tier, a reader's identity key to share it). The protocol identifier string is a decision for the protocol workstream; the reference's `[2, 'dpp owner data v1']` is the candidate.
-
-*Status.* proposed.
-
-### 1.7 The tiebreaker names a package that is not here yet
-
-*Gap.* §1 (and `rules.md` §1 by reference) says "the reference implementation in this repository is the tiebreaker". `packages/` has not arrived; the README says it comes when the current operator's extraction completes. The sentence is true in intent and false on the day.
-
-*Evidence.* `README.md`, the "What will live here" table. `dpp-app/packages/dpp-core/README.md` describes itself as "the only place in this repository the standard is implemented".
-
-*Proposed change.* Until `packages/` lands, the sentence names the reference by its public location; when it lands, the sentence reverts. A one-line change either way, noted here so it is not forgotten.
-
-*Status.* proposed.
 
 ## 2. The rules (`spec/rules.md`)
 
@@ -96,7 +24,7 @@ There is one incompatibility, and it must travel with the name. `PushDrop.decode
 
 ### 2.2 The anchor is a PushDrop too
 
-*Gap.* As with the record, §5 defines the anchor from opcodes upward. It is a BRC-48 PushDrop with the key first and no appended PushDrop signature; the signature is field 8 over the length-delimited preimage the section defines.
+*Gap.* As `record-model.md` §2 did before it landed, §5 defines the anchor from opcodes upward. It is a BRC-48 PushDrop with the key first and no appended PushDrop signature; the signature is field 8 over the length-delimited preimage the section defines.
 
 *Evidence.* `uoraAnchor.ts` says so in its own commentary: the resolver "locks with `includeSignature: false`" and "`PushDrop.lock`'s own signature is not used and cannot be made to serve here: it has no option to commit to boundaries". The v2 lesson the section already tells is precisely the property PushDrop's built-in signature lacks.
 
@@ -106,9 +34,9 @@ There is one incompatibility, and it must travel with the name. `PushDrop.decode
 
 ### 2.3 Invoice numbers, a bound, and the word varint
 
-*Gap.* Three small precision gaps for a cross-language implementer. §3 and §5 name protocol identifiers and key identifiers without the invoice number string. §3's `passportId` is a BRC-42 key identifier with no upper bound (finding 1.3 again, on this rail). §5 says fields are serialised "as varint length followed by field bytes" without saying which varint.
+*Gap.* Three small precision gaps for a cross-language implementer. §3 and §5 name protocol identifiers and key identifiers without the invoice number string. §3's `passportId` is a BRC-42 key identifier with no upper bound (the bound `record-model.md` §3 now sets, on this rail). §5 says fields are serialised "as varint length followed by field bytes" without saying which varint.
 
-*Evidence.* `KeyDeriver.computeInvoiceNumber`, as in 1.2. The anchor's attestation id is bounded at 256, inside BRC-42's 800; the subject at 512. `uoraAnchor.ts` builds the preimage with `Utils.Writer.writeVarIntNum`, the Bitcoin variable-length integer.
+*Evidence.* `KeyDeriver.computeInvoiceNumber`; `record-model.md` §5 now spells the construction out. The anchor's attestation id is bounded at 256, inside BRC-42's 800; the subject at 512. `uoraAnchor.ts` builds the preimage with `Utils.Writer.writeVarIntNum`, the Bitcoin variable-length integer.
 
 *Proposed change.* §3 states the invoice number `1-dpp attestation v1-<passportId>` and bounds `passportId` at 512 bytes. §5 states `1-uora anchor v3-<attestation id>` for the locking derivation and says the length prefix is the Bitcoin VarInt (one byte below 253, then `0xfd`, `0xfe`, `0xff` markers with little-endian widths), citing the SDK's `Writer.writeVarIntNum` as one implementation.
 
@@ -126,9 +54,9 @@ There is one incompatibility, and it must travel with the name. `PushDrop.decode
 
 ### 2.5 The attestation signature is a wallet operation
 
-*Gap.* §3 describes the signature precisely and does not say that it is the BRC-100 `createSignature` call with `data` set to the canonical bytes, so an issuer's wallet signs attestations without exporting a key. Same property as 1.4, second rail.
+*Gap.* §3 describes the signature precisely and does not say that it is the BRC-100 `createSignature` call with `data` set to the canonical bytes, so an issuer's wallet signs attestations without exporting a key. Same property `record-model.md` §5 now states, second rail.
 
-*Evidence.* As 1.4; the reference's `dpp-app/packages/dpp-service/src/attestation.ts` signs through the same interface.
+*Evidence.* As for the record model; the reference's `dpp-app/packages/dpp-service/src/attestation.ts` signs through the same interface.
 
 *Proposed change.* One sentence in §3 after the signature paragraph.
 
@@ -148,7 +76,7 @@ There is one incompatibility, and it must travel with the name. `PushDrop.decode
 
 ### 3.2 The invoice number, again
 
-*Gap.* §2 describes the parent-to-child step in words. Add the invoice number and the `anyone` key, as in 1.2, so the identity document is self-sufficient for a credential verifier who has never read the record model.
+*Gap.* §2 describes the parent-to-child step in words. Add the invoice number and the `anyone` key, as `record-model.md` §5 now does, so the identity document is self-sufficient for a credential verifier who has never read the record model.
 
 *Proposed change.* One sentence: the child is the BRC-42 child of the parent for invoice number `1-dpp token v1-<actor_keyID>` with the `anyone` private key `1` as the deriving secret.
 
@@ -277,8 +205,8 @@ Each of these is an external write and needs explicit approval before anything i
 - **ts-stack, `PushDrop.decode`.** The template's encoder maps both the empty field and the single byte `0x00` to `OP_0`, and its decoder returns `[0x00]`, so decode is not the inverse of encode for empty fields. An issue proposing either that `decode` return the empty array for `OP_0` or that it take an option, with this standard as the motivating consumer.
 - **ts-stack, BRC index.** `docs/reference/brc-index.md` gives BRC-22 and BRC-24 one-line titles that do not match the stack's own overlay contract, which uses those numbers for submission and lookup. A documentation fix.
 - **ts-stack, contributions.** `tm_uora_dpp` and `ls_uora_dpp` to `@bsv/overlay-topics` first (already dependency-clean), `tm_dpp` and `ls_dpp` once the token core is a template in `@bsv/templates`.
-- **dpp-app.** Mount the overlay on `@bsv/overlay-express`; add SHIP and SLAP advertising with a funded wallet; move the PushDrop-reader warning from `docs/PROTOCOL_COMPATIBILITY.md` into the standard once finding 1.1 lands, and delete it there.
+- **dpp-app.** Mount the overlay on `@bsv/overlay-express`; add SHIP and SLAP advertising with a funded wallet; delete the PushDrop-reader warning from `docs/PROTOCOL_COMPATIBILITY.md`, since `record-model.md` §2 now carries it; add a test that the codec refuses `overlongPassportId` and regenerate the fixture from the tests so the leading copy carries the vector too.
 
 ## 8. Suggested order of work
 
-One pull request per component, in the order the findings are numbered: the record model (1.1 to 1.7), the rules (2.1 to 2.5), identity (3.1 to 3.4), the services and the overlay profile (4.1 to 4.6), the fixtures (5.1 and 5.2). Findings 1.1, 2.2, 1.2, 2.3 and 3.2 share sentences and should be drafted together so the three documents say the same thing in the same words. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
+One pull request per component, in the order the findings are numbered: the rules (2.1 to 2.5), identity (3.1 to 3.4), the services and the overlay profile (4.1 to 4.6), the fixtures (5.1 and 5.2). The record model landed first; findings 2.2, 2.3 and 3.2 reuse sentences from its §2 and §5 and should copy them so the three documents say the same thing in the same words. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.

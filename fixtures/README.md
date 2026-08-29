@@ -44,8 +44,9 @@ One complete DPP record-model v1 output, from the posted state through its signi
 | `mangledUtf8` | `payload_public` as the bytes `22 ff 22`: invalid UTF-8 whose lossy decode is the valid JSON string `"�"`. Refused at the bytes, not after them. |
 | `nulPassportId` | `passport_id` pushed non-minimally as the single byte `0x00`, which no field may be: minimal writing spells that value `OP_0`, and `OP_0` reads back as the empty field. Refused. |
 | `emptyPushdata` | `event_data`'s `OP_0` re-encoded as a zero-length `PUSHDATA1`; `OP_0` is the only accepted encoding of the empty field. Refused. |
+| `overlongPassportId` | `passport_id` at 513 bytes, one over the bound spec §3 sets because the field is a BRC-42 key identifier and a conforming wallet has a ceiling. Refused at decode, before any signature is checked. |
 
-A conforming writer reproduces `lockingScript` from `state` and the test keys. A conforming reader parses `lockingScript` back to the state, verifies the user signature under `userVerificationKey`, and refuses every script in `uncompressedKey`, `malformedTail`, `rolledTimestamp`, `mangledUtf8`, `nulPassportId` and `emptyPushdata`.
+A conforming writer reproduces `lockingScript` from `state` and the test keys. A conforming reader parses `lockingScript` back to the state, verifies the user signature under `userVerificationKey`, and refuses every script in `uncompressedKey`, `malformedTail`, `rolledTimestamp`, `mangledUtf8`, `nulPassportId`, `emptyPushdata` and `overlongPassportId`.
 
 ## `chain-v1.json`
 
