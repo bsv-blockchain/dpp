@@ -6,49 +6,9 @@
 
 **Three decisions were taken before this document was written** and are recorded as the agreed direction rather than as open questions: the overlay contract becomes a profile of the stack's upstream contract (§4.1); the fixtures gain additive vectors in the stack's conformance format while the existing files stay verbatim (§5.1); and the record model recommends, without requiring, UHRP hosting and BRC-2 style encryption for the owner tier (§1.6).
 
-**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`. The rules (former §2, five findings) landed in `spec/rules.md`.
+**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`. The rules (former §2, five findings) landed in `spec/rules.md`. Identity (former §3, four findings) landed in `spec/identity.md`.
 
 **How each item is written.** *Gap* says what is missing or wrong. *Evidence* says where to look. *Proposed change* says what the normative text should say, precisely enough to draft from. *Status* is `proposed` until a pull request lands, at which point the item goes.
-
-## 3. Identity (`spec/identity.md`)
-
-### 3.1 `@bsv/did` encodes the same `did:key`, and skips one refusal
-
-*Gap.* §1 defines the `did:key` encoding from first principles and does not mention that the stack ships it. It should, because implementers will reach for `@bsv/did`, and they need to know one thing about it: it does not apply §1's canonical-key refusal.
-
-*Evidence.* `ts-stack/packages/helpers/did/src/utils/multibase.ts`: `publicKeyToDidKey` prepends the same `[0xe7, 0x01]` multicodec prefix and base58btc `z` marker, so the output is byte-identical to §1 and to the reference's `packages/dpp-core/src/did.ts`. `normalizePublicKey` round-trips the input through `PublicKey.fromDER(bytes).toDER()`, and `decodeDidKey` checks the prefix and the 33-byte length and calls `PublicKey.fromDER` for validity; neither compares the re-encoding to the input, so a non-canonical 33-byte encoding is silently turned into the DID of the reduced key, which is exactly the failure §1's first refusal rule exists to prevent. The reference re-implements the fifteen lines rather than depend on `@bsv/did`, to keep a `qrcode` dependency out of a package that promises a two-command clone-to-running (`did.ts`, comment "No new dependency").
-
-*Proposed change.* §1 cites `@bsv/did` as the ecosystem implementation of the same encoding, states that a conforming implementation built on it must add the canonical round-trip check before encoding and after decoding, and records that the encoding is small enough to reproduce where the dependency is unwanted.
-
-*Status.* proposed.
-
-### 3.2 The invoice number, again
-
-*Gap.* §2 describes the parent-to-child step in words. Add the invoice number and the `anyone` key, as `record-model.md` §5 now does, so the identity document is self-sufficient for a credential verifier who has never read the record model.
-
-*Proposed change.* One sentence: the child is the BRC-42 child of the parent for invoice number `1-dpp token v1-<actor_keyID>` with the `anyone` private key `1` as the deriving secret.
-
-*Status.* proposed.
-
-### 3.3 Name the resolvable methods the reference has run, and the one thing they are not
-
-*Gap.* §3 allows "a resolvable DID method" beside `did:key` and names none. Two have been exercised by the reference and a third thing in the stack is easily mistaken for one.
-
-*Evidence.* `dpp-app/packages/dpp-service/src/did-bsv.ts` implements `did:bsv`, an on-chain method with a versioned document and a universal resolver, decoded from the method's own mainnet transactions and written up in `dpp-app/docs/bsv-did/`; `did-web.ts` implements `did:web` for a deployment's identity with key history, which the UN Transparency Protocol's implementer register asks for. In the stack, `@bsv/did-client` (`packages/helpers/did-client`) and the `tm_did` topic (`packages/overlays/topics/src/did`) mint, find and revoke DID tokens by serial number on an overlay; that is a registry of tokens, not a DID method a resolver answers, and its name invites the confusion.
-
-*Proposed change.* §3 gains a non-normative paragraph naming `did:bsv` and `did:web` as resolvable methods the reference has used, each with the property it was chosen for (a versioned on-chain document; a served document with key history), and one sentence distinguishing the stack's DID-token overlay from a DID method.
-
-*Status.* proposed.
-
-### 3.4 Two credential mechanisms, one derivation step
-
-*Gap.* §2 speaks of "a credential issued about the party behind a record" without saying what a credential is in this ecosystem. There are two mechanisms, and the standard is compatible with both because both name the parent key.
-
-*Evidence.* `ts-stack/packages/sdk/src/auth/certificates/Certificate.ts`: a BRC-52 identity certificate whose `subject` is the compressed identity key in hex, signed by a `certifier`, with a `revocationOutpoint`, resolved through `IdentityClient` (`packages/sdk/src/identity`) and the `tm_identity` topic. `@bsv/did` issues SD-JWT verifiable credentials whose issuer and holder binding are the same key as a `did:key`. The reference uses the SD-JWT route. In either case the credential names the parent, and §2's single derivation reaches the child that signed.
-
-*Proposed change.* §2 gains an informative paragraph naming both mechanisms and stating that the derivation step is the same for either.
-
-*Status.* proposed.
 
 ## 4. The services and the overlay contract (`spec/services.md`, `contracts/overlay.yaml`)
 
@@ -157,4 +117,4 @@ Each of these is an external write and needs explicit approval before anything i
 
 ## 8. Suggested order of work
 
-One pull request per component, in the order the findings are numbered: identity (3.1 to 3.4), the services and the overlay profile (4.1 to 4.6), the fixtures (5.1 and 5.2). The record model and the rules landed first; finding 3.2 reuses a sentence from `record-model.md` §5 and should copy it so the three documents say the same thing in the same words. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
+One pull request per component, in the order the findings are numbered: the services and the overlay profile (4.1 to 4.6), then the fixtures (5.1 and 5.2). The record model, the rules and identity landed first. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
