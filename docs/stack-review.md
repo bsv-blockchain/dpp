@@ -6,61 +6,9 @@
 
 **Three decisions were taken before this document was written** and are recorded as the agreed direction rather than as open questions: the overlay contract becomes a profile of the stack's upstream contract (§4.1); the fixtures gain additive vectors in the stack's conformance format while the existing files stay verbatim (§5.1); and the record model recommends, without requiring, UHRP hosting and BRC-2 style encryption for the owner tier (§1.6).
 
-**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`.
+**Landed so far.** The record model (former §1, seven findings) landed in `spec/record-model.md`, with an `overlongPassportId` refusal vector added to `fixtures/record-v1.json`. The rules (former §2, five findings) landed in `spec/rules.md`.
 
 **How each item is written.** *Gap* says what is missing or wrong. *Evidence* says where to look. *Proposed change* says what the normative text should say, precisely enough to draft from. *Status* is `proposed` until a pull request lands, at which point the item goes.
-
-## 2. The rules (`spec/rules.md`)
-
-### 2.1 A paragraph the reference has outgrown
-
-*Gap.* §5 says: "Two places the reference reader is today more lenient than this text ... it parses a 65-byte uncompressed locking push beside the 33-byte compressed one, and it stops at the first drop opcode without validating the tail." Neither is true of the reference any more, and the fixture proves it.
-
-*Evidence.* `dpp-app/packages/overlay-topics/src/uoraAnchor.ts`: the parser returns `null` unless the key push is exactly 33 bytes, with a comment that the 65-byte push "used to parse here", and validates the drop tail exactly as the record codec does ("floor(n/2) OP_2DROPs, one OP_DROP when n is odd, and nothing at all after"). `fixtures/anchor-v3.json` carries `uncompressedKey` and three `malformedTail` refusal vectors, added in the commit "The fixture gains the refusals the leniencies hid".
-
-*Proposed change.* Delete the paragraph. The rule it protected stays: a conforming writer emits the compressed push and the exact tail, a conforming reader refuses anything else. The "deliberate exception to the pre-1.0 tiebreaker" sentence goes with it, since there is no longer a disagreement to except.
-
-*Status.* proposed.
-
-### 2.2 The anchor is a PushDrop too
-
-*Gap.* As `record-model.md` §2 did before it landed, §5 defines the anchor from opcodes upward. It is a BRC-48 PushDrop with the key first and no appended PushDrop signature; the signature is field 8 over the length-delimited preimage the section defines.
-
-*Evidence.* `uoraAnchor.ts` says so in its own commentary: the resolver "locks with `includeSignature: false`" and "`PushDrop.lock`'s own signature is not used and cannot be made to serve here: it has no option to commit to boundaries". The v2 lesson the section already tells is precisely the property PushDrop's built-in signature lacks.
-
-*Proposed change.* §5 states the anchor is a BRC-48 PushDrop output with the locking key first, and keeps the existing explanation of why the template's own signature is not used, now framed as the reason a conforming writer sets `includeSignature` false and signs the preimage itself.
-
-*Status.* proposed.
-
-### 2.3 Invoice numbers, a bound, and the word varint
-
-*Gap.* Three small precision gaps for a cross-language implementer. §3 and §5 name protocol identifiers and key identifiers without the invoice number string. §3's `passportId` is a BRC-42 key identifier with no upper bound (the bound `record-model.md` §3 now sets, on this rail). §5 says fields are serialised "as varint length followed by field bytes" without saying which varint.
-
-*Evidence.* `KeyDeriver.computeInvoiceNumber`; `record-model.md` §5 now spells the construction out. The anchor's attestation id is bounded at 256, inside BRC-42's 800; the subject at 512. `uoraAnchor.ts` builds the preimage with `Utils.Writer.writeVarIntNum`, the Bitcoin variable-length integer.
-
-*Proposed change.* §3 states the invoice number `1-dpp attestation v1-<passportId>` and bounds `passportId` at 512 bytes. §5 states `1-uora anchor v3-<attestation id>` for the locking derivation and says the length prefix is the Bitcoin VarInt (one byte below 253, then `0xfd`, `0xfe`, `0xff` markers with little-endian widths), citing the SDK's `Writer.writeVarIntNum` as one implementation.
-
-*Status.* proposed.
-
-### 2.4 Canonical bytes: nothing to borrow, and that is the right outcome
-
-*Gap.* None in the text. Recorded so the question is not reopened: the stack has no JCS implementation, and the standard's deliberate subset of RFC 8785 with refusals is its own.
-
-*Evidence.* No canonicaliser in `ts-stack/packages/sdk`. Mandala's `MandalaAdmin.canonicalize` (`ts-stack/packages/helpers/ts-templates/src/MandalaAdmin.ts`) takes the same approach, sorted keys and `JSON.stringify` for scalars, and lacks the safe-integer refusal §4 has. The DPP subset is the stricter of the two and there is nothing to import.
-
-*Proposed change.* None to the rule. One sentence in §4 may note that no ecosystem library is required to produce the bytes, which is a feature: a canonicaliser this small is written in an afternoon in any language and the fixture checks it.
-
-*Status.* proposed (informative sentence only).
-
-### 2.5 The attestation signature is a wallet operation
-
-*Gap.* §3 describes the signature precisely and does not say that it is the BRC-100 `createSignature` call with `data` set to the canonical bytes, so an issuer's wallet signs attestations without exporting a key. Same property `record-model.md` §5 now states, second rail.
-
-*Evidence.* As for the record model; the reference's `dpp-app/packages/dpp-service/src/attestation.ts` signs through the same interface.
-
-*Proposed change.* One sentence in §3 after the signature paragraph.
-
-*Status.* proposed.
 
 ## 3. Identity (`spec/identity.md`)
 
@@ -170,7 +118,7 @@
 
 *Evidence.* `ts-stack/conformance/VECTOR-FORMAT.md` and `conformance/schema/vector.schema.json`: a file requires `id`, `name`, `version`, `reference_impl`, `parity_class` and `vectors`; a vector requires `id`, `description`, `input` and `expected`, with optional `tags`, `skip` and `skip_reason`; binary is lower-case hex; identifiers are permanent and files are append-only after publication; deterministic nonces are required, which the fixtures already have (RFC 6979). `fixtures/README.md` rule 2 requires copies to be verbatim, and `dpp-app/packages/dpp-core/test/fixture.test.ts` regenerates the current files from the test keys, so the existing files must not change shape.
 
-*Proposed change.* Add `fixtures/vectors/dpp/record/v1.json` (`id: dpp.record.v1`) and `fixtures/vectors/dpp/anchor/v3.json` (`id: dpp.anchor.v3`), generated from the existing files: `brc` lists BRC-42, BRC-43 and BRC-48; `reference_impl` names `dpp-core@0.1.0`; `parity_class` is `required`; positive vectors carry `happy-path`, refusal vectors carry `error-case` with an `expected` that names the refusal. The existing `anchor-v3.json` and `record-v1.json` stay verbatim. `fixtures/README.md` describes both forms and names the bespoke files as the source the vectors are generated from until the reference implementation's test suite generates both.
+*Proposed change.* Add `fixtures/vectors/dpp/record/v1.json` (`id: dpp.record.v1`) and `fixtures/vectors/dpp/anchor/v3.json` (`id: dpp.anchor.v3`), generated from the existing files: `brc` lists BRC-42, BRC-43 and BRC-48; `reference_impl` names `dpp-core@0.1.0`; `parity_class` is `required`; positive vectors carry `happy-path`, refusal vectors carry `error-case` with an `expected` that names the refusal. The anchor vectors should also gain refusal cases the bespoke fixture does not carry: the three length bounds in `rules.md` §5 (attestation id, subject, type) and the claim's `passportId` bound. The existing `anchor-v3.json` and `record-v1.json` stay verbatim. `fixtures/README.md` describes both forms and names the bespoke files as the source the vectors are generated from until the reference implementation's test suite generates both.
 
 *Status.* proposed.
 
@@ -209,4 +157,4 @@ Each of these is an external write and needs explicit approval before anything i
 
 ## 8. Suggested order of work
 
-One pull request per component, in the order the findings are numbered: the rules (2.1 to 2.5), identity (3.1 to 3.4), the services and the overlay profile (4.1 to 4.6), the fixtures (5.1 and 5.2). The record model landed first; findings 2.2, 2.3 and 3.2 reuse sentences from its §2 and §5 and should copy them so the three documents say the same thing in the same words. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
+One pull request per component, in the order the findings are numbered: identity (3.1 to 3.4), the services and the overlay profile (4.1 to 4.6), the fixtures (5.1 and 5.2). The record model and the rules landed first; finding 3.2 reuses a sentence from `record-model.md` §5 and should copy it so the three documents say the same thing in the same words. Each pull request deletes its items from this file; when the file holds only §6 and §7, those move to `stack.md` and this file is removed.
