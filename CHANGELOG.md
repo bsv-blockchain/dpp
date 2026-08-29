@@ -4,6 +4,14 @@
 
 ## Unreleased
 
+### 2026-08-30
+
+- The standard is aligned with the BSV TypeScript stack, one commit per component (#31). `spec/record-model.md` names the output a BRC-48 PushDrop and says why a generic decoder is not a conforming reader, spells out the BRC-42/43 invoice numbers, bounds `passport_id` at 512 bytes and `actor_keyID` at 256 because both are BRC-42 key identifiers, and recommends UHRP hosting and AES-256-GCM under a wallet-derived key for the owner tier. `@bsv/dpp-core` enforces the bounds and `fixtures/record-v1.json` gains the `overlongPassportId` refusal vector.
+- `spec/rules.md` names the anchor a BRC-48 PushDrop, spells out both invoice numbers, bounds the claim's `passportId` at 512 and defines the preimage's VarInt; `spec/identity.md` cites `@bsv/did` and the canonical-key check it lacks, and names `did:bsv` and `did:web` (#31).
+- `contracts/overlay.yaml` becomes a profile of ts-stack's overlay HTTP contract with an `x-dpp-profile` block of must, should and may; `spec/services.md` adds SHIP/SLAP discoverability, overlay-first announcement and idempotent admission (#31).
+- `fixtures/vectors/`: the same bytes in the stack's cross-language conformance vector format, 25 vectors validated by the stack's runner, with the test private keys published and four anchor refusals the bespoke file lacked (#31).
+- `docs/stack.md`: the map from every rule to the stack component behind it, and the follow-ups that belong in other repositories; `GOVERNANCE.md` rule 3 counts both fixture forms (#31).
+
 ### 2026-08-26
 
 - `@bsv/dpp-core` gains `canonicalBytes` and `canonicalString`, the refusing JCS subset of rules.md §4, previously held only by the implementing services. Pinned to `fixtures/anchor-v3.json`'s canonical string and digest, and the anchor example now canonicalises the claim itself.

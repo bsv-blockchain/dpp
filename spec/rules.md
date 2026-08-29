@@ -28,7 +28,7 @@ A signed attestation is a JSON object with these properties, all covered by the 
 
 | Property | Type | Meaning |
 |---|---|---|
-| `passportId` | string | The record the claim is about. |
+| `passportId` | string | The record the claim is about. At most 512 bytes of UTF-8, the bound [`record-model.md`](record-model.md) §3 sets on the same identifier and for the same reason: it is the key identifier of the signature below, and a conforming wallet refuses a BRC-42 key identifier above 800 characters. |
 | `recordId` | string | The state within the record. |
 | `uora_type` | string | One of the four types in §2. |
 | `timestamp` | string | ISO 8601. |
@@ -40,13 +40,13 @@ A signed attestation is a JSON object with these properties, all covered by the 
 
 **The two-names rule.** A resolvable DID and a `did:key` are two names for one key, and each sits where its reader can use it: the resolvable name in `issuer` for tooling that can reach a resolver, the offline-decodable name in `issuerKeyDid` and in the anchor's issuer field for a reader holding one transaction and nothing else.
 
-**The signature.** ECDSA in DER over the SHA-256 of the canonical bytes (§4), made with the BRC-42 child of the issuer's key for the BRC-43 protocol identifier `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. It travels in the JSON as `signature`, the DER bytes in lower-case hex. This mirrors the record's server signature idiom deliberately, so one verification recipe covers both rails: decode a key, derive the child, check DER. A verifier needs no wallet, no secret, and nothing from any operator beyond what is published.
+**The signature.** ECDSA in DER over the SHA-256 of the canonical bytes (§4), made with the BRC-42 child of the issuer's key for the BRC-43 protocol identifier `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`: the invoice number is `1-dpp attestation v1-<passportId>`, and the construction is the one [`record-model.md`](record-model.md) §5 spells out, with the issuer's key as the parent. It travels in the JSON as `signature`, the DER bytes in lower-case hex. This mirrors the record's server signature idiom deliberately, so one verification recipe covers both rails: decode a key, derive the child, check DER. Making it is the BRC-100 `createSignature` operation with `data` set to the canonical bytes, so an issuer signs from its wallet and no key leaves it. A verifier needs no wallet, no secret, and nothing from any operator beyond what is published.
 
 **What a valid signature proves, exactly.** That the nominated key signed these bytes. When `issuer` is a resolvable DID, tying the key to the party named is a second step that needs the resolver; the claim's payload alone cannot settle it.
 
 ## 4. Canonical bytes
 
-The bytes both sides sign and hash are a deliberate subset of RFC 8785 (JCS), not an implementation of it: keys sorted by code unit, no whitespace, string values JSON-escaped, integer values only when they are safe integers, and a refusal for everything else. The refusal is the feature. JCS is mostly a specification for hard cases this payload does not contain, and a partial implementation that silently mishandled one would let two implementations agree on every value they had tested and differ on the first they had not. Under this rule, two honest encoders of the same claim produce identical bytes or an error, never a second encoding.
+The bytes both sides sign and hash are a deliberate subset of RFC 8785 (JCS), not an implementation of it: keys sorted by code unit, no whitespace, string values JSON-escaped, integer values only when they are safe integers, and a refusal for everything else. The refusal is the feature. JCS is mostly a specification for hard cases this payload does not contain, and a partial implementation that silently mishandled one would let two implementations agree on every value they had tested and differ on the first they had not. Under this rule, two honest encoders of the same claim produce identical bytes or an error, never a second encoding. No ecosystem library is required to produce the bytes, and that is a feature rather than a gap: a canonicaliser this small is written in an afternoon in any language, and the fixture is what checks it.
 
 An absent optional property and a present-but-empty one are different byte strings and therefore different digests; only one of them is a claim. Encoders must omit absent properties entirely, and the canonicaliser refuses an undefined value rather than skipping it.
 
@@ -57,6 +57,8 @@ One anchor is one output whose locking script is:
 ```
 <33-byte compressed public key> OP_CHECKSIG <field 1> ... <field 8> OP_2DROP x4
 ```
+
+The shape is a BRC-48 PushDrop output with the locking key first, as the record's is, and as there the template's own appended signature is not used: it signs the bare concatenation of the fields, which is exactly the property the signing preimage below exists to avoid, so a conforming writer signs the preimage itself and carries the result as field 8. A general-purpose PushDrop decoder is a discovery tool for anchors and not a conforming reader, for the reasons [`record-model.md`](record-model.md) §2 gives.
 
 Fields 1 to 7 are UTF-8, and each must be non-empty printable text: control characters (C0, `0x7F` and the C1 range) are refused, and a field that fails a UTF-8 round trip refuses the anchor. Field 8 is raw bytes, never UTF-8. Three fields carry length bounds, and they are part of the format: an index admits from whoever can reach it, so a field a stranger controls must not be a field a stranger can make expensive.
 
@@ -71,9 +73,9 @@ Fields 1 to 7 are UTF-8, and each must be non-empty printable text: control char
 | 7 | anchored by | The anchoring service's published identity key, in canonical compressed lower-case hex. Proved, not merely carried: see the locking rule. |
 | 8 | signature | Raw ECDSA DER bytes, over the SHA-256 of the signing preimage of fields 1 to 7. |
 
-**The signing preimage puts every field behind its own length.** Fields 1 to 7 are serialised as varint length followed by field bytes, concatenated, and field 8 signs that. Any other split of the same bytes is a different preimage, so a reader that rebuilds the preimage from the parsed fields gets boundary integrity from the signature itself. This is the lesson the previous layout taught: a signature over the bare concatenation authenticates the total byte string and says nothing about where one field ends and the next begins, and the two adjacent free-text fields could be re-cut into a different subject and type with the signature copied across unchanged. A conforming reader refuses the superseded `uora-anchor-v2` prefix outright.
+**The signing preimage puts every field behind its own length.** Fields 1 to 7 are serialised as a Bitcoin VarInt length followed by the field bytes, concatenated, and field 8 signs that. The VarInt is the transaction format's own: one byte below 253, then the markers `0xfd`, `0xfe` and `0xff` followed by two, four or eight little-endian bytes. Any other split of the same bytes is a different preimage, so a reader that rebuilds the preimage from the parsed fields gets boundary integrity from the signature itself. This is the lesson the previous layout taught: a signature over the bare concatenation authenticates the total byte string and says nothing about where one field ends and the next begins, and the two adjacent free-text fields could be re-cut into a different subject and type with the signature copied across unchanged. A conforming reader refuses the superseded `uora-anchor-v2` prefix outright.
 
-**The locking rule is what attributes the anchor.** The output's locking key must be the BRC-42 child of the field-7 identity key, for the BRC-43 protocol identifier `[1, 'uora anchor v3']`, key identifier equal to the attestation id, counterparty `anyone`. Counterparty `anyone` is what makes the attribution checkable by a stranger: reproducing the child key needs only the published identity key, and producing a valid output needs its private half. An index can therefore admit anchors from a service it has never been configured to know, and still say whose each one is.
+**The locking rule is what attributes the anchor.** The output's locking key must be the BRC-42 child of the field-7 identity key, for the BRC-43 protocol identifier `[1, 'uora anchor v3']`, key identifier equal to the attestation id, counterparty `anyone`. The invoice number is therefore `1-uora anchor v3-<attestation id>`, and the 256-character bound on field 3 keeps it inside the 800-character ceiling a conforming wallet applies to key identifiers. Counterparty `anyone` is what makes the attribution checkable by a stranger: reproducing the child key needs only the published identity key, and producing a valid output needs its private half. An index can therefore admit anchors from a service it has never been configured to know, and still say whose each one is.
 
 **An anchor is a leaf.** It is never spent, and it never carries the attestation, only the digest.
 

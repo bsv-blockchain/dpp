@@ -2,6 +2,8 @@ import { LockingScript, OP, PublicKey, Utils, type ScriptChunk } from '@bsv/sdk'
 import {
   DPP_OPS,
   FIELD_COUNT,
+  MAX_ACTOR_KEY_ID_BYTES,
+  MAX_PASSPORT_ID_BYTES,
   NO_EVENT_OPS,
   PROTOCOL_MARKER,
   STANDARD_VERSION,
@@ -196,6 +198,11 @@ export function fieldsToState(fields: number[][]): DppState {
   if (version !== STANDARD_VERSION) {
     throw new DppFormatError(`unsupported standard version "${version}"`)
   }
+  // Bounded in bytes, before decoding: the field is the server signature's
+  // BRC-42 key identifier and a wallet refuses one above 800 characters (§3).
+  if (fields[2].length > MAX_PASSPORT_ID_BYTES) {
+    throw new DppFormatError(`passport_id exceeds ${MAX_PASSPORT_ID_BYTES} bytes`)
+  }
   const passportId = utf8Field(fields[2], 'passport_id')
   if (passportId.length === 0) throw new DppFormatError('passport_id must be non-empty')
   const op = Utils.toUTF8(fields[3]) as DppOp
@@ -212,6 +219,10 @@ export function fieldsToState(fields: number[][]): DppState {
   }
   const ownerIdentityKey = identityKeyHex(fields[5], 'owner_identity_key')
   const actorIdentityKey = identityKeyHex(fields[6], 'actor_identity_key')
+  // Same reason as passport_id: the user signature's BRC-42 key identifier.
+  if (fields[7].length > MAX_ACTOR_KEY_ID_BYTES) {
+    throw new DppFormatError(`actor_keyID exceeds ${MAX_ACTOR_KEY_ID_BYTES} bytes`)
+  }
   const actorKeyId = utf8Field(fields[7], 'actor_keyID')
   if (actorKeyId.length === 0) throw new DppFormatError('actor_keyID must be non-empty')
   const eventData = utf8Field(fields[8], 'event_data')

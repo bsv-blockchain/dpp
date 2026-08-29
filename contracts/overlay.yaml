@@ -1,31 +1,97 @@
 openapi: 3.1.0
 info:
-  title: DPP overlay service
-  version: 0.1.0-draft
+  title: DPP overlay profile
+  version: 0.2.0-draft
   description: >-
-    The index that makes passport records and attestation anchors findable
-    without asking the application that wrote them. Status: working draft,
-    pre-1.0, documenting the wire the reference deployment serves today. The
-    contract is the BSV ecosystem's standard overlay wire (BRC-22 submission,
-    BRC-24 lookup); this document pins the two services this standard adds and
-    the queries they answer. Findability is a service concern, not a truth
-    concern: nothing returned here is trusted until it verifies as the
-    specification documents describe.
+    A profile of the BSV ecosystem's overlay HTTP contract for the two rails
+    this standard adds. Status: working draft, pre-1.0. The wire is the
+    ecosystem's, BRC-22 submission and BRC-24 lookup with STEAK answers and
+    BEEF throughout, and it is not restated here: a conforming index implements
+    the upstream contract named under externalDocs, and this document pins only
+    what the standard adds or fixes on top of it. That is the two topics and
+    their admission rules, the two lookup services and the queries they answer,
+    the extensions the reference deployment serves, and which upstream options
+    an index must, should or may implement (x-dpp-profile). Findability is a
+    service concern, not a truth concern: nothing returned here is trusted
+    until it verifies as the specification documents describe.
   license:
     name: Open BSV License version 4
     identifier: LicenseRef-OpenBSV-4
+externalDocs:
+  description: >-
+    The upstream overlay HTTP contract this profile extends: ts-stack
+    specs/overlay/overlay-http.yaml, served by @bsv/overlay-express and
+    consumed by the @bsv/sdk overlay tools.
+  url: https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/
+x-dpp-profile:
+  upstream: https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/
+  topics:
+    tm_dpp: >-
+      The passport rail. Admits a transaction's single DPP output when it
+      decodes under spec/record-model.md, its user signature verifies, its
+      server signature verifies against the index's configured service key
+      (admission policy, never token validity), and it is either a valid
+      genesis or spends the admitted tip under the chain invariants. Spent
+      tips are retained so the lifecycle stays resolvable.
+    tm_uora_dpp: >-
+      The anchor rail. Admits an anchor output when it decodes under
+      spec/rules.md section 5, its field-8 signature verifies over the
+      length-delimited preimage, and its locking key equals the derived child
+      of the field-7 identity key. Attribution comes from the output's own
+      bytes, so a shared index admits anchors from services it was never
+      configured to know.
+  lookupServices:
+    ls_dpp: passportLookup
+    ls_uora_dpp: anchorLookup
+  must:
+    - Serve POST /submit and POST /lookup as upstream defines them.
+    - >-
+      Serve GET /listTopicManagers, GET /listLookupServiceProviders,
+      GET /getDocumentationForTopicManager and
+      GET /getDocumentationForLookupServiceProvider, with each DPP topic and
+      service returning its admission or query rules as Markdown.
+    - >-
+      Answer /lookup with the JSON output-list form when x-aggregation is
+      absent; the binary aggregated form is optional (see may).
+    - >-
+      Treat admitting an output already held as a no-op, so re-synchronisation
+      and reorganisation replay never duplicate an index entry
+      (spec/services.md section 6).
+  should:
+    - Be reachable over HTTPS; the SDK's mainnet lookup resolver refuses plain HTTP.
+    - >-
+      Advertise its topics through SHIP and its lookup services through SLAP
+      when it is public, so a reader who knows only a service name finds it
+      (spec/services.md section 1).
+    - Serve GET /health/live and GET /health/ready for probes.
+  may:
+    - >-
+      Answer /lookup in the binary aggregated form when x-aggregation is yes;
+      the SDK resolver requests it by default and falls back on the JSON form
+      by content type.
+    - Implement GASP synchronisation (/requestSyncResponse, /requestForeignGASPNode).
+    - Accept merkle proofs through POST /arc-ingest.
+    - Require a bearer token on /submit; /lookup and /health stay open.
+    - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
+  extensions:
+    - X-Admission response header on /submit.
+    - Extra fields on /health (topic, service, topics, services, network, startedAt).
+  intentionalOmissions:
+    - >-
+      Lookup outputs carry no context and no txid hint; everything a verifier
+      needs is inside the BEEF and the client re-derives the txid.
 paths:
   /submit:
     post:
-      summary: Announce a transaction to the index
+      summary: Announce a transaction to the index (as upstream, plus the X-Admission header)
       description: >-
-        BRC-22. The body is the transaction as BEEF bytes; the X-Topics header
-        names which topics should consider it. Each topic's manager admits the
+        BRC-22, exactly as the upstream contract defines it: a BEEF body, an
+        X-Topics header naming the topics that should consider it, an optional
+        off-chain values prefix, a STEAK answer. Each topic's manager admits the
         outputs that follow its rules and ignores the rest. Announcing is
         discoverability, never existence: a record that is broadcast but not
-        announced is less findable and no less true. A deployment may require a
-        bearer token for submission; lookup and health stay open, because
-        verification in a reader's own browser is a stated goal.
+        announced is less findable and no less true. What this profile adds is
+        below.
       parameters:
         - name: X-Topics
           in: header
@@ -33,20 +99,18 @@ paths:
           schema:
             type: string
           description: >-
-            JSON array of topic names, for example ["tm_dpp"]. Omitted or
-            empty, the submission is considered for tm_dpp alone; any other
-            value that is not a JSON array of strings is refused.
+            JSON array of topic names, for example ["tm_dpp"] or
+            ["tm_uora_dpp"]. Upstream requires it; this profile lets an index
+            default an absent or empty header to tm_dpp, and a portable client
+            always sends it. Any other value that is not a JSON array of
+            strings is refused.
         - name: X-Includes-Off-Chain-Values
           in: header
           required: false
           schema:
             type: string
             enum: ['true']
-          description: >-
-            BRC-22 off-chain values. Set to true, the body is a
-            varint-length-prefixed BEEF followed by the off-chain bytes,
-            which ride to the topic managers. Absent, the body is the BEEF
-            alone.
+          description: As upstream. Neither DPP topic reads off-chain values today.
       requestBody:
         required: true
         content:
@@ -55,48 +119,29 @@ paths:
               type: string
               format: binary
               description: >-
-                The transaction in BEEF encoding. Bodies beyond the
-                deployment's size cap (8 MiB in the reference, generous
-                against a few-KB record) are refused with 413.
+                The transaction in BEEF encoding. A non-genesis passport state
+                must carry its predecessor's bytes in the same BEEF, because
+                the topic manager holds the transition rules against the
+                previous state's locking script, which is a stricter need than
+                proof of inclusion. Bodies beyond the deployment's size cap
+                (8 MiB in the reference) are refused with 413.
       security:
         - {}
         - bearer: []
       responses:
         '200':
           description: >-
-            The engine's admittance answer (STEAK), one entry per topic. The
-            X-Admission response header summarises the outcome per topic as
-            topic=admitted, topic=duplicate or topic=none, and is exposed to
-            browser callers.
+            The STEAK, as upstream. The X-Admission response header summarises
+            it per topic and is exposed to browser callers.
           headers:
             X-Admission:
               schema:
                 type: string
-              description: 'Comma-separated per-topic outcomes, e.g. tm_dpp=admitted.'
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: object
-                  properties:
-                    outputsToAdmit:
-                      type: array
-                      items:
-                        type: integer
-                    coinsToRetain:
-                      type: array
-                      items:
-                        type: integer
-                    coinsRemoved:
-                      type: array
-                      items:
-                        type: integer
-                      description: >-
-                        Present only when the topic ran its mutation phase,
-                        which is what lets the X-Admission header tell a
-                        duplicate (absent) from a refusal (present and the
-                        admissions empty).
+              description: >-
+                Comma-separated per-topic outcomes: topic=admitted,
+                topic=duplicate or topic=none. A duplicate is told from a
+                refusal by whether the topic ran its mutation phase, which the
+                STEAK shows as the presence of coinsRemoved.
         '400':
           $ref: '#/components/responses/error'
         '401':
@@ -105,13 +150,15 @@ paths:
           $ref: '#/components/responses/error'
   /lookup:
     post:
-      summary: Query a lookup service
+      summary: Query a lookup service (as upstream, with these two query shapes)
       description: >-
-        BRC-24. Names a lookup service and passes it a query of plain string
-        fields (plus an optional numeric limit). Answers are bounded by the
-        service whatever the caller asks for. The outputs come back as BEEF so
-        the caller can verify them against block headers; a compromised index
-        changes what can be found, never what can be believed.
+        BRC-24, exactly as the upstream contract defines it. The body names a
+        lookup service and passes it a query; the answer is an output list as
+        BEEF so the caller verifies everything against block headers, and a
+        compromised index changes what can be found, never what can be
+        believed. This profile fixes the two query shapes and the answer
+        bounds; whether the binary aggregated answer is served is the index's
+        choice (x-dpp-profile).
       requestBody:
         required: true
         content:
@@ -122,7 +169,9 @@ paths:
                 - $ref: '#/components/schemas/anchorLookup'
       responses:
         '200':
-          description: The matching outputs.
+          description: >-
+            The matching outputs, as the upstream LookupAnswer. A DPP index
+            omits the optional context and txid hint on each output.
           content:
             application/json:
               schema:
@@ -146,9 +195,43 @@ paths:
                           type: integer
         '400':
           $ref: '#/components/responses/error'
+  /getDocumentationForTopicManager:
+    get:
+      summary: As upstream; tm_dpp and tm_uora_dpp return their admission rules as Markdown
+      parameters:
+        - name: manager
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [tm_dpp, tm_uora_dpp]
+      responses:
+        '200':
+          description: Markdown.
+          content:
+            text/markdown:
+              schema:
+                type: string
+  /getDocumentationForLookupServiceProvider:
+    get:
+      summary: As upstream; ls_dpp and ls_uora_dpp return their query rules as Markdown
+      parameters:
+        - name: lookupService
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ls_dpp, ls_uora_dpp]
+      responses:
+        '200':
+          description: Markdown.
+          content:
+            text/markdown:
+              schema:
+                type: string
   /health:
     get:
-      summary: Liveness, and what this deployment serves
+      summary: As upstream, plus what this deployment serves
       responses:
         '200':
           description: The service is up.
@@ -182,26 +265,6 @@ paths:
                   startedAt:
                     type: string
                     format: date-time
-  /listTopicManagers:
-    get:
-      summary: The topic managers this deployment runs
-      responses:
-        '200':
-          description: Topic manager metadata, keyed by topic name.
-          content:
-            application/json:
-              schema:
-                type: object
-  /listLookupServiceProviders:
-    get:
-      summary: The lookup services this deployment runs
-      responses:
-        '200':
-          description: Lookup service metadata, keyed by service name.
-          content:
-            application/json:
-              schema:
-                type: object
 components:
   securitySchemes:
     bearer:
@@ -228,7 +291,10 @@ components:
       description: >-
         The passport rail. Resolves a record's chain by its passport identifier
         or by its data-carrier identifier. At least one of the two must be
-        provided; the service refuses an empty query.
+        provided; the service refuses an empty query. The answer holds the tip
+        and every retained earlier state, bounded to 500 outputs with the
+        newest kept, so a truncated history fails verification rather than
+        presenting a stale tip.
       properties:
         service:
           const: ls_dpp

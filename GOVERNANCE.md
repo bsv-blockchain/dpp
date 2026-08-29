@@ -20,7 +20,7 @@ The core standard versions as a whole and is pre-1.0: breaking changes are expec
 
 1. Open an issue describing the gap or the defect: what an implementer cannot do, or what two conforming implementations would disagree about.
 2. A change lands as a pull request against the normative text, carrying its rationale in the document where the rule lives, not only in the request. A change to a settled design decision engages the reason `spec/design-rationale.md` records, not just the rule.
-3. A change to a wire format or an on-chain layout must update the fixtures in the same request, so the suite and the text cannot drift apart, and it must add the refusal vectors the new rule implies, because a fixture that only accepts certifies nothing.
+3. A change to a wire format or an on-chain layout must update the fixtures in the same request, in both their forms, so the suite and the text cannot drift apart, and it must add the refusal vectors the new rule implies, because a fixture that only accepts certifies nothing.
 4. A change that alters what an already-published record means is not a change; it is a new version identifier, and the old records keep verifying under the old one.
 
 ## Accepting a change
