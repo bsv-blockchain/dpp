@@ -32,7 +32,11 @@ x-dpp-profile:
       server signature verifies against the index's configured service key
       (admission policy, never token validity), and it is either a valid
       genesis or spends the admitted tip under the chain invariants. Spent
-      tips are retained so the lifecycle stays resolvable.
+      tips are retained so the lifecycle stays resolvable. When deployed for
+      a profile that selects the owner-signed transfer (spec/custody.md
+      section 4), a TRANSFER is also refused unless its actor is the previous
+      owner, by equality or by owner_linkage, or a configured transfer
+      authority.
     tm_uora_dpp: >-
       The anchor rail. Admits an anchor output when it decodes under
       spec/rules.md section 5, its field-8 signature verifies over the
@@ -73,6 +77,10 @@ x-dpp-profile:
     - Accept merkle proofs through POST /arc-ingest.
     - Require a bearer token on /submit; /lookup and /health stay open.
     - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
+    - >-
+      Enforce the owner-signed transfer invariant (spec/custody.md section 4)
+      when deployed for a profile that selects it, with its transfer
+      authorities configured and named in the topic documentation.
   extensions:
     - X-Admission response header on /submit.
     - Extra fields on /health (topic, service, topics, services, network, startedAt).
