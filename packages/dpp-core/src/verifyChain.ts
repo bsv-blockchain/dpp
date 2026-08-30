@@ -1,6 +1,7 @@
 import { Beef, PublicKey, Transaction, type ChainTracker } from '@bsv/sdk'
 import { tryParseDppOutput } from './codec.js'
 import { verifyServerSignature, verifyUserSignature } from './signatures.js'
+import { checkOwnerConsent, normaliseTransferAuthorities } from './owner.js'
 import { checkGenesisState, checkTransition } from './transition.js'
 import type { ChainVerifyResult, DppState, StateCheck } from './types.js'
 
@@ -17,6 +18,14 @@ export interface VerifyChainOptions {
    * overlay's topic manager passes its configured key, viewers may omit it.
    */
   serverIdentityKey?: string
+  /**
+   * The optional owner-signed transfer (`spec/custody.md` §4), selected by a
+   * profile. `true` runs the predicate on every TRANSFER; an object also names
+   * the transfer authorities, identity keys whose TRANSFER passes without it
+   * (recovery). A malformed authority throws before any state is read: a
+   * misconfigured authority must be loud, never silently unmatched.
+   */
+  ownerConsent?: boolean | { authorities: string[] }
 }
 
 export interface DppOutputRef {
@@ -79,6 +88,12 @@ export async function verifyChain(
 
   if (txs.length === 0) return fail('empty chain')
 
+  const consentSelected = options.ownerConsent != null && options.ownerConsent !== false
+  const authorities =
+    typeof options.ownerConsent === 'object'
+      ? normaliseTransferAuthorities(options.ownerConsent.authorities)
+      : []
+
   let prev: { state: DppState; txid: string; outputIndex: number } | null = null
   for (let i = 0; i < txs.length; i++) {
     const tx = txs[i]
@@ -109,6 +124,17 @@ export async function verifyChain(
         )
         if (!spendsPrev) linkError = 'state does not spend the previous tip output'
       }
+    }
+
+    // The eighth, optional invariant runs only where it is defined: on a
+    // TRANSFER whose link holds, under a profile that selects it. Anywhere
+    // else it reports null, so a consumer prints "not applicable" and never a
+    // pass the predicate did not earn.
+    let consentError: string | null = null
+    let ownerConsentValid: boolean | null = null
+    if (consentSelected && prev != null && state.op === 'TRANSFER' && linkError == null) {
+      consentError = checkOwnerConsent(prev.state, state, authorities)
+      ownerConsentValid = consentError == null
     }
 
     let spv: StateCheck['spv']
@@ -169,6 +195,7 @@ export async function verifyChain(
       userSignatureValid,
       serverSignatureValid,
       linkageValid: linkError == null,
+      ownerConsentValid,
       spv,
     })
 
@@ -177,6 +204,7 @@ export async function verifyChain(
       return fail(`state ${i} (${txid}): server_signature invalid for configured service key`)
     }
     if (linkError != null) return fail(`state ${i} (${txid}): ${linkError}`)
+    if (consentError != null) return fail(`state ${i} (${txid}): ${consentError}`)
     if (spv === 'failed') {
       return fail(`state ${i} (${txid}): ${spvFailReason}`)
     }

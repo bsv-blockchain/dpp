@@ -12,7 +12,7 @@ export interface DppStateData {
   op: DppOp
   /** Actor-asserted ISO 8601; bounded by neighbouring blocks (§3 field 5). */
   timestamp: string
-  /** Current owner's compressed public key, hex; BRC-42-derived per passport. */
+  /** Current owner's compressed public key, hex; SHOULD be the owner's BRC-42 child under OWNER_PROTOCOL_ID (§3 field 6). */
   ownerIdentityKey: string
   /** Compressed public key, hex, of who performed this state change. */
   actorIdentityKey: string
@@ -54,6 +54,12 @@ export interface StateCheck {
   userSignatureValid: boolean
   serverSignatureValid: boolean | null
   linkageValid: boolean
+  /**
+   * The optional owner-signed transfer (`spec/custody.md` §4). null when the
+   * invariant was not run: the option is off, or the state is not a TRANSFER.
+   * A report says "not applicable" for null rather than a vacuous pass.
+   */
+  ownerConsentValid: boolean | null
   spv: SpvStatus | 'failed'
 }
 
