@@ -14,7 +14,7 @@ The property the standard protects: a stranger can check a record with the trans
 
 | Part | What it covers | State |
 |---|---|---|
-| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), identity, the services, and the design rationale behind them | Working drafts, all five documents |
+| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), identity, custody (where the keys may live, and the owner's consent to a transfer), the services, and the design rationale behind them | Working drafts, all six documents |
 | `contracts/` | The service interfaces as OpenAPI documents | The overlay contract is pinned; the registry's joins when the implementing parties accept it together |
 | `fixtures/` | Conformance fixtures: the seed of the test suite | Landed, for both rails |
 | `packages/` | The reference implementation | Landed |
