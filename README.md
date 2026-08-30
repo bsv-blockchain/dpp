@@ -44,6 +44,7 @@ The property the standard protects is not a claim to take on trust. `examples/ve
 npm ci && npm run build
 node examples/verify-passport.mjs 'https://id.gs1.org/01/09506000134352/21/7883451B01B6'
 node examples/verify-passport.mjs --fixture     # the chain fixture, offline, as CI runs it
+node examples/verify-passport.mjs --fixture --owner-consent   # the same under the owner-signed transfer: its refusals too
 node examples/verify-anchor.mjs                 # the anchor rail: fixtures/anchor-v3.json, every check and every refusal
 ```
 
