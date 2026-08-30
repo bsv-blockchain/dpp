@@ -14,13 +14,13 @@ The property the standard protects: a stranger can check a record with the trans
 
 | Part | What it covers | State |
 |---|---|---|
-| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), identity, custody (where the keys may live, and the owner's consent to a transfer), the services, and the design rationale behind them | Working drafts, all six documents |
+| `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), identity, custody (where the keys may live, and the owner's consent to a transfer), writing (what a writer owes the record: checked, announced, sent, proven, kept), the services, and the design rationale behind them | Working drafts, all seven documents |
 | `contracts/` | The service interfaces as OpenAPI documents | The overlay contract is pinned; the registry's joins when the implementing parties accept it together |
 | `fixtures/` | Conformance fixtures: the seed of the test suite | Landed, for both rails |
 | `packages/` | The reference implementation | Landed |
 | `GOVERNANCE.md` | How changes are proposed and agreed | Second draft: roles, thresholds, the conditions for 1.0 |
 | `CHANGELOG.md` | What changed, and which pull request changed it | Kept from the first commit |
-| `docs/` | Informative material: the map from the standard to the ecosystem stack, and the follow-ups it leaves in other repositories. Never normative | First draft |
+| `docs/` | Informative material: the map from the standard to the ecosystem stack, the deployment that follows the standard's defaults, and the follow-ups it leaves in other repositories. Never normative | First draft |
 
 ## The reference implementation
 
