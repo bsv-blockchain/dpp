@@ -48,6 +48,13 @@ node examples/verify-passport.mjs --fixture --owner-consent   # the same under t
 node examples/verify-anchor.mjs                 # the anchor rail: fixtures/anchor-v3.json, every check and every refusal
 ```
 
+The writer's side is runnable too. `examples/write-passport.mjs` walks the lifecycle `spec/writing.md` sets out, from one BRC-100 wallet under possession: check the unsent state as a verifier would, announce it, send it and report only the network's answer, wait for the proof and push it to the index. Its dry run, which CI runs, rebuilds the fixture's first state byte for byte and shows the writer's own check refusing a state the record model forbids before it could be sent.
+
+```
+node examples/write-passport.mjs --dry-run                                 # no wallet, no network, as CI runs it
+node examples/write-passport.mjs <passportId> [indexUrl] --wait-proof=30    # a live write from the wallet on this machine
+```
+
 ## A working implementation
 
 The standard is developed against a live demonstration: a multi-industry passport application publishing real records to BSV mainnet, with a public verification surface at [dpp.bsvb.net/verify](https://dpp.bsvb.net/verify) that anyone can run against a record in their own browser. Its source is [bsv-blockchain-demos/dpp-app](https://github.com/bsv-blockchain-demos/dpp-app), the first consuming application built on this standard (private today). A consuming application is not part of the standard: no service or frontend is mandatory, and any compatible provider can operate the same services or build alternatives.
