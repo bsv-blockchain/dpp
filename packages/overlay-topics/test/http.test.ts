@@ -7,6 +7,7 @@ import {
   Transaction,
   UnlockingScript,
   Utils,
+  type ChainTracker,
   type LookupAnswer,
   type LookupQuestion,
   type STEAK,
@@ -18,7 +19,12 @@ import { DppTopicManager } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { InMemoryDppStorage } from '../src/storage.js'
 import { InMemoryOverlayStorage } from '../src/engineStorage.js'
-import { startOverlayService, type OverlayEngine, type RunningService } from '../src/index.js'
+import {
+  startOverlayService,
+  type OverlayEngine,
+  type OverlayHttpOptions,
+  type RunningService,
+} from '../src/index.js'
 
 /**
  * The HTTP surface, over a real socket.
@@ -57,6 +63,7 @@ function stubEngine(
     listLookupServiceProviders: async () => ({
       ls_dpp: { name: 'ls_dpp', shortDescription: 'DPP lookup' },
     }),
+    handleNewMerkleProof: async () => {},
     ...overrides,
   } as OverlayEngine
   return { engine, seen }
@@ -84,7 +91,7 @@ afterEach(async () => {
  */
 async function serve(
   engine: OverlayEngine,
-  options: { submitToken?: string; network?: string } = {}
+  options: Omit<OverlayHttpOptions, 'host'> = {}
 ): Promise<string> {
   running = await startOverlayService(engine, { ...options, port: 0, host: HOST })
   return `http://${HOST}:${running.port}`
@@ -570,5 +577,185 @@ describe('a real record, over HTTP', () => {
     })
     expect(emptyQuery.status).toBe(400)
     expect((await bodyOf(emptyQuery)).description).toContain('passportId')
+  })
+})
+
+// ------------------------------------------------------------------- proofs
+
+/**
+ * A synthetic proof for one transaction: the single-leaf path of a block whose
+ * only transaction it is, the same shape the funding output above carries.
+ * The engine here is 'scripts only', so only the route's own check ever sees
+ * a header source, and a stub tracker passed to `serve` is that source.
+ */
+function proofFor(txid: string, height: number): MerklePath {
+  return MerklePath.fromCoinbaseTxidAndHeight(txid, height)
+}
+
+const JSON_BODY = { 'Content-Type': 'application/json' }
+
+async function submitGenesis(base: string): Promise<string> {
+  const beef = await genesisBeef()
+  const submitted = await fetch(`${base}/submit`, {
+    method: 'POST',
+    headers: { ...OCTET, 'x-topics': JSON.stringify(['tm_dpp']) },
+    body: new Uint8Array(beef),
+  })
+  expect(submitted.status).toBe(200)
+  return Transaction.fromBEEF(beef).id('hex')
+}
+
+async function pushProof(
+  base: string,
+  body: unknown,
+  headers: Record<string, string> = {}
+): Promise<Response> {
+  return await fetch(`${base}/arc-ingest`, {
+    method: 'POST',
+    headers: { ...JSON_BODY, ...headers },
+    body: JSON.stringify(body),
+  })
+}
+
+/** The one served state, as the verifier would receive it. */
+async function servedState(base: string): Promise<Transaction> {
+  const response = await fetch(`${base}/lookup`, {
+    method: 'POST',
+    headers: JSON_BODY,
+    body: JSON.stringify({ service: 'ls_dpp', query: { passportId: PASSPORT_ID } }),
+  })
+  const answer = await bodyOf(response)
+  expect(answer.outputs).toHaveLength(1)
+  return Transaction.fromBEEF(answer.outputs[0].beef as number[])
+}
+
+/**
+ * A header source that answers as told. `currentHeight` sits far above the
+ * proofs' height because the SDK's `MerklePath.verify` reads a leaf at index 0
+ * as a coinbase and wants it 100 blocks deep before it asks the source at all,
+ * and the synthetic single-leaf proofs above are exactly that shape.
+ */
+const tracker = (answer: () => Promise<boolean>): ChainTracker => ({
+  isValidRootForHeight: answer,
+  currentHeight: async () => 900_000,
+})
+
+describe('a proof, over HTTP', () => {
+  it('attaches a pushed proof to a held state, and the lookup then serves it', async () => {
+    const base = await serve(realEngine())
+    const txid = await submitGenesis(base)
+    expect((await servedState(base)).merklePath).toBeUndefined()
+
+    const proof = proofFor(txid, 800_001)
+    const pushed = await pushProof(base, { txid, merklePath: proof.toHex(), blockHeight: 800_001 })
+    expect(pushed.status).toBe(200)
+    expect(await bodyOf(pushed)).toEqual({ status: 'applied', txid, blockHeight: 800_001 })
+
+    // spec/services.md section 2: a mined state is served with its merkle path.
+    const served = await servedState(base)
+    expect(served.id('hex')).toBe(txid)
+    expect(served.merklePath?.blockHeight).toBe(800_001)
+    expect(served.merklePath?.computeRoot(txid)).toBe(proof.computeRoot(txid))
+
+    // The same proof again is applied again, not refused: a callback retried
+    // by a broadcaster must not turn into an error.
+    expect((await pushProof(base, { txid, merklePath: proof.toHex() })).status).toBe(200)
+  })
+
+  it('acknowledges and ignores a status-only callback, so a broadcaster does not retry it', async () => {
+    const base = await serve(realEngine())
+    const txid = await submitGenesis(base)
+    for (const body of [{ txid, txStatus: 'SEEN_ON_NETWORK' }, { txid, merklePath: null }]) {
+      const response = await pushProof(base, body)
+      expect(response.status).toBe(200)
+      expect(await bodyOf(response)).toEqual({ status: 'ignored', txid, reason: 'no merkle path' })
+    }
+    expect((await servedState(base)).merklePath).toBeUndefined()
+  })
+
+  it('refuses a body that is not a proof of this transaction, before any engine or header source is asked', async () => {
+    const base = await serve(realEngine(), { chainTracker: tracker(async () => { throw new Error('never asked') }) })
+    const txid = await submitGenesis(base)
+    const other = 'ab'.repeat(32)
+    const cases: Array<[unknown, string]> = [
+      [{ txid, merklePath: 'not hex' }, 'merklePath is not a BUMP'],
+      [{ txid, merklePath: 42 }, 'merklePath must be a BUMP in hex'],
+      [{ txid, merklePath: proofFor(other, 800_001).toHex() }, 'merklePath does not contain txid'],
+      [
+        { txid, merklePath: proofFor(txid, 800_001).toHex(), blockHeight: 800_002 },
+        'blockHeight does not match the merkle path',
+      ],
+      [{ txid: 'nope', merklePath: proofFor(txid, 800_001).toHex() }, 'txid must be 64 lower-case hex characters'],
+      [[1, 2], 'body must be a JSON object with txid and merklePath'],
+    ]
+    for (const [body, description] of cases) {
+      const response = await pushProof(base, body)
+      expect(response.status).toBe(400)
+      expect((await bodyOf(response)).description).toBe(description)
+    }
+    const notJson = await fetch(`${base}/arc-ingest`, { method: 'POST', headers: JSON_BODY, body: '{' })
+    expect(notJson.status).toBe(400)
+    expect((await bodyOf(notJson)).description).toBe('body must be JSON')
+    expect((await servedState(base)).merklePath).toBeUndefined()
+  })
+
+  it('answers 404 for a transaction it does not hold', async () => {
+    const base = await serve(realEngine())
+    const stranger = 'ab'.repeat(32)
+    const response = await pushProof(base, { txid: stranger, merklePath: proofFor(stranger, 800_001).toHex() })
+    expect(response.status).toBe(404)
+    expect((await bodyOf(response)).description).toBe('this index holds no output of that transaction')
+  })
+
+  it('refuses a proof its header source refutes, and stores nothing', async () => {
+    const base = await serve(realEngine(), { chainTracker: tracker(async () => false) })
+    const txid = await submitGenesis(base)
+    const response = await pushProof(base, { txid, merklePath: proofFor(txid, 800_001).toHex() })
+    expect(response.status).toBe(400)
+    expect((await bodyOf(response)).description).toBe('merklePath does not validate against block headers')
+    expect((await servedState(base)).merklePath).toBeUndefined()
+  })
+
+  it('defers, rather than applies or refuses, when the header source cannot be reached', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const base = await serve(realEngine(), {
+        chainTracker: tracker(async () => {
+          throw new Error('connection refused')
+        }),
+      })
+      const txid = await submitGenesis(base)
+      const response = await pushProof(base, { txid, merklePath: proofFor(txid, 800_001).toHex() })
+      expect(response.status).toBe(503)
+      expect((await bodyOf(response)).description).toBe(
+        'header source unavailable; the proof was not applied, try again'
+      )
+      expect((await servedState(base)).merklePath).toBeUndefined()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('applies a proof its header source agrees with', async () => {
+    const base = await serve(realEngine(), { chainTracker: tracker(async () => true) })
+    const txid = await submitGenesis(base)
+    expect((await pushProof(base, { txid, merklePath: proofFor(txid, 800_001).toHex() })).status).toBe(200)
+    expect((await servedState(base)).merklePath?.blockHeight).toBe(800_001)
+  })
+
+  it('requires the callback token when one is configured, as a bearer or as X-Callback-Token', async () => {
+    const base = await serve(realEngine(), { proofToken: 'proof-secret' })
+    const txid = await submitGenesis(base)
+    const body = { txid, merklePath: proofFor(txid, 800_001).toHex() }
+    for (const headers of [{}, { Authorization: 'Bearer wrong' }, { 'X-Callback-Token': 'wrong' }]) {
+      const refused = await pushProof(base, body, headers)
+      expect(refused.status).toBe(401)
+      expect((await bodyOf(refused)).description).toBe('POST /arc-ingest requires the callback token')
+    }
+    expect((await pushProof(base, body, { 'X-Callback-Token': 'proof-secret' })).status).toBe(200)
+    expect((await pushProof(base, body, { Authorization: 'Bearer proof-secret' })).status).toBe(200)
+    // The submit token is a different secret and does not open this route.
+    const other = await serve(realEngine(), { submitToken: 'submit-secret', proofToken: 'proof-secret' })
+    expect((await pushProof(other, body, { Authorization: 'Bearer submit-secret' })).status).toBe(401)
   })
 })

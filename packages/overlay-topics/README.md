@@ -15,8 +15,8 @@ the demonstration app uses it: both components run in process against
 
 **As a service.** `src/index.ts` is an HTTP host for the same two components,
 speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24
-`POST /lookup`, plus `GET /health`), which is exactly the contract
-`contracts/overlay.yaml` in this repository pins. It is reached by path and
+`POST /lookup`, `POST /arc-ingest` for merkle proofs, plus `GET /health`),
+which is exactly the contract `contracts/overlay.yaml` in this repository pins. It is reached by path and
 never by specifier: `npm start` runs `node dist/index.js` and the Dockerfile's
 `CMD` names the same file. That is deliberate, so importing the package can
 never start a server.
@@ -24,6 +24,8 @@ never start a server.
 The service boots only when node runs the file directly, which is how
 `test/http.test.ts` drives `createRequestHandler` and `startOverlayService`
 without a container.
+
+**Proofs.** The host does not broadcast, so no broadcaster's callback reaches it unasked. A writer pushes each state's merkle path to `POST /arc-ingest` once its wallet has it, or points its broadcaster's callback URL here; the proof is checked to contain the transaction and validated against the header source before the stored BEEF is updated, and the lookup then serves the state proven (`spec/services.md` §2, `spec/writing.md` §7). Re-announcing a mined state does nothing: the engine skips a txid it already holds.
 
 ## Running it
 
@@ -60,6 +62,7 @@ admitting without one would admit anything.
 | `WOC_API_KEY` | WhatsOnChain API key for header lookups. Raises the rate limit. | Anonymous access |
 | `CHAIN_TRACKER` | `scripts-only` disables SPV verification of submissions. Local development only; hosted it would admit unproved ancestry. | WhatsOnChain on `NETWORK` |
 | `SUBMIT_TOKEN` | Shared secret required as `Authorization: Bearer` on `POST /submit`. `/lookup` and `/health` stay open. | `/submit` is open to anyone, which is only acceptable on a local container. Set it on any reachable deployment |
+| `ARC_CALLBACK_TOKEN` | Shared secret required on `POST /arc-ingest`, as `Authorization: Bearer` or `X-Callback-Token`, the two ways an ARC-compatible broadcaster sends the token it was given at submission. | `/arc-ingest` is open to anyone. Every proof is still verified against block headers before it is stored, so the open route costs header quota, not truth; set it on any reachable deployment |
 | `ANCHOR_SERVICE_KEYS` | Comma-separated identity keys of the anchoring services this instance carries anchors for. Public keys only. A preference, not a security control: every admitted anchor names its own author either way. | Anchors from any treasury are carried, each still saying whose it is |
 | `OWNER_CONSENT` | `required`: `tm_dpp` also refuses a `TRANSFER` whose actor is neither the previous `owner_identity_key`, nor linked to it by `owner_linkage` in `event_data`, nor a transfer authority. This is the owner-signed transfer of `spec/custody.md` §4, a profile's choice; the topic documentation says it is on. Any other value fails the boot. | Off: any signed `TRANSFER` that spends the tip is admitted, the record model's baseline |
 | `TRANSFER_AUTHORITIES` | Comma-separated identity keys permitted to `TRANSFER` without proving consent (recovery), named in the topic documentation. Public keys only, validated at boot; meaningful with `OWNER_CONSENT`, warned about without it. | None: every `TRANSFER` must prove consent when `OWNER_CONSENT` is set |
