@@ -17,6 +17,10 @@
  *                  {"service":"ls_uora_dpp","query":{"issuer":"did:key:z..."}}
  *                                                  -> {type:"output-list",
  *                                                      outputs:[{beef,outputIndex}]}
+ *   POST /arc-ingest {"txid","merklePath","blockHeight"}
+ *                                                  -> the proof, checked and
+ *                  applied to the held state (spec/services.md section 2);
+ *                  X-Callback-Token or bearer when ARC_CALLBACK_TOKEN is set
  *   GET  /health                                   -> {status:"ok",...}
  *
  * Everything is environment; an unset variable switches its feature off or
@@ -32,6 +36,11 @@
  * second broadcast would only add a failure mode; and SHIP/SLAP advertising
  * would need this service to hold a funded wallet of its own. Neither is
  * needed for the demo, and both can be added later without changing the wire.
+ * Because this host does not broadcast, no broadcaster's callback reaches it
+ * on its own: merkle proofs arrive through POST /arc-ingest, pushed by the
+ * writer once its wallet has them or by a broadcaster whose callback URL a
+ * writer pointed here (spec/writing.md section 7). Re-announcing a mined state
+ * would not do it: the engine skips a txid it already holds.
  */
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
@@ -40,6 +49,7 @@ import { realpathSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { MongoClient } from 'mongodb'
 import {
+  MerklePath,
   PrivateKey,
   Transaction,
   Utils,
@@ -71,7 +81,7 @@ const SHUTDOWN_GRACE_MS = 10_000
 /** The slice of the Engine the HTTP layer uses, so a test can stand one in. */
 export type OverlayEngine = Pick<
   Engine,
-  'submit' | 'lookup' | 'listTopicManagers' | 'listLookupServiceProviders'
+  'submit' | 'lookup' | 'listTopicManagers' | 'listLookupServiceProviders' | 'handleNewMerkleProof'
 >
 
 export interface OverlayHttpOptions {
@@ -82,6 +92,21 @@ export interface OverlayHttpOptions {
    * is only acceptable on a container nobody else can reach.
    */
   submitToken?: string
+  /**
+   * Shared secret required on POST /arc-ingest, as `Authorization: Bearer` or
+   * as `X-Callback-Token`, the two ways an ARC-compatible broadcaster sends the
+   * token it was given at submission. Unset leaves the route open; every proof
+   * is still verified against the header source before it is stored, so an
+   * open route costs header quota rather than truth.
+   */
+  proofToken?: string
+  /**
+   * The header source a pushed proof is validated against before it is
+   * applied, normally the same one the engine verifies submissions with.
+   * 'scripts only' or unset applies a proof on its local check alone, which
+   * is the local-development setting the engine's own option already is.
+   */
+  chainTracker?: ChainTracker | 'scripts only'
   /** Reported by /health. */
   network?: string
   /** Reported by /health. Defaults to the moment the handler was made. */
@@ -190,10 +215,68 @@ function bearerAccepted(request: IncomingMessage, expected: string): boolean {
   if (raw == null) return false
   const match = /^bearer\s+(.+)$/i.exec(raw.trim())
   if (match == null) return false
-  const given = Buffer.from(match[1], 'utf8')
-  const want = Buffer.from(expected, 'utf8')
-  if (given.length !== want.length) return false
-  return timingSafeEqual(given, want)
+  return secretsEqual(match[1], expected)
+}
+
+function secretsEqual(given: string, expected: string): boolean {
+  const a = Buffer.from(given, 'utf8')
+  const b = Buffer.from(expected, 'utf8')
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
+
+/**
+ * The callback token as an ARC-compatible broadcaster presents it: the token
+ * given at submission comes back as `Authorization: Bearer`, and the overlay
+ * host upstream also reads `X-Callback-Token`, so both are accepted.
+ */
+function callbackTokenAccepted(request: IncomingMessage, expected: string): boolean {
+  if (bearerAccepted(request, expected)) return true
+  const header = request.headers['x-callback-token']
+  const raw = Array.isArray(header) ? header[0] : header
+  if (raw == null) return false
+  return secretsEqual(raw.trim(), expected)
+}
+
+/**
+ * The body of a proof callback, as the stack's broadcast contract defines it
+ * (`ArcMerkleCallback`): the txid, the BRC-74 BUMP in hex, and the block
+ * height, which the BUMP also carries. A proof that does not contain the
+ * txid, or a body that disagrees with itself about the height, is refused
+ * rather than trusted on either value. No merkle path means a status-only
+ * callback, which the caller acknowledges rather than refuses.
+ */
+function parseProofCallback(body: Buffer): { txid: string; merklePath?: MerklePath } {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(body.toString('utf8'))
+  } catch {
+    throw new HttpError(400, 'body must be JSON')
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new HttpError(400, 'body must be a JSON object with txid and merklePath')
+  }
+  const { txid, merklePath, blockHeight } = parsed as Record<string, unknown>
+  if (typeof txid !== 'string' || !/^[0-9a-f]{64}$/.test(txid)) {
+    throw new HttpError(400, 'txid must be 64 lower-case hex characters')
+  }
+  if (merklePath == null || merklePath === '') return { txid }
+  if (typeof merklePath !== 'string') throw new HttpError(400, 'merklePath must be a BUMP in hex')
+  let proof: MerklePath
+  try {
+    proof = MerklePath.fromHex(merklePath)
+  } catch {
+    throw new HttpError(400, 'merklePath is not a BUMP')
+  }
+  try {
+    proof.computeRoot(txid)
+  } catch {
+    throw new HttpError(400, 'merklePath does not contain txid')
+  }
+  if (blockHeight != null && blockHeight !== proof.blockHeight) {
+    throw new HttpError(400, 'blockHeight does not match the merkle path')
+  }
+  return { txid, merklePath: proof }
 }
 
 /**
@@ -257,17 +340,28 @@ export function createRequestHandler(
   const startedAt = options.startedAt ?? new Date().toISOString()
   const submitToken =
     options.submitToken != null && options.submitToken !== '' ? options.submitToken : undefined
+  const proofToken =
+    options.proofToken != null && options.proofToken !== '' ? options.proofToken : undefined
+  const chainTracker = options.chainTracker
 
   return (request, response) => {
-    void handle(engine, request, response, { submitToken, network, startedAt })
+    void handle(engine, request, response, { submitToken, proofToken, chainTracker, network, startedAt })
   }
+}
+
+interface HandlerOptions {
+  submitToken?: string
+  proofToken?: string
+  chainTracker?: ChainTracker | 'scripts only'
+  network: string
+  startedAt: string
 }
 
 async function handle(
   engine: OverlayEngine,
   request: IncomingMessage,
   response: ServerResponse,
-  options: { submitToken?: string; network: string; startedAt: string }
+  options: HandlerOptions
 ): Promise<void> {
   const url = new URL(request.url ?? '/', 'http://localhost')
   const route = `${request.method ?? 'GET'} ${url.pathname}`
@@ -277,7 +371,7 @@ async function handle(
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers':
-        'Authorization, Content-Type, X-Topics, X-Includes-Off-Chain-Values',
+        'Authorization, Content-Type, X-Topics, X-Includes-Off-Chain-Values, X-Callback-Token',
     })
     response.end()
     return
@@ -348,6 +442,56 @@ async function handle(
         'X-Admission': outcomes.map(([topic, outcome]) => `${topic}=${outcome}`).join(', '),
         'Access-Control-Expose-Headers': 'X-Admission',
       })
+      return
+    }
+
+    if (route === 'POST /arc-ingest') {
+      // A merkle proof for a state this index holds, in the shape an
+      // ARC-compatible broadcaster's callback carries, so a writer offering a
+      // proof and a broadcaster whose callback URL points here send the same
+      // body (spec/writing.md section 7). The token is checked before the body
+      // is read, as on /submit.
+      if (options.proofToken != null && !callbackTokenAccepted(request, options.proofToken)) {
+        request.resume()
+        json(response, 401, {
+          status: 'error',
+          description: 'POST /arc-ingest requires the callback token',
+        })
+        return
+      }
+      const callback = parseProofCallback(await readBody(request))
+      if (callback.merklePath === undefined) {
+        // A status-only callback (seen, rejected) carries no proof and is not
+        // an error: answering 200 keeps a broadcaster from retrying it forever.
+        json(response, 200, { status: 'ignored', txid: callback.txid, reason: 'no merkle path' })
+        return
+      }
+      const { txid, merklePath } = callback
+      // spec/services.md section 2: a pushed proof is admission of a kind, so
+      // it is validated against the header source before anything is stored.
+      // No answer from the source is neither agreement nor refutation; the
+      // proof is not applied and the caller is told to try again.
+      const tracker = options.chainTracker
+      if (tracker != null && tracker !== 'scripts only') {
+        let proven: boolean
+        try {
+          proven = await merklePath.verify(txid, tracker)
+        } catch (cause) {
+          console.warn(`POST /arc-ingest could not evaluate the proof for ${txid}:`, cause)
+          throw new HttpError(503, 'header source unavailable; the proof was not applied, try again')
+        }
+        if (!proven) throw new HttpError(400, 'merklePath does not validate against block headers')
+      }
+      try {
+        await engine.handleNewMerkleProof(txid, merklePath, merklePath.blockHeight)
+      } catch (cause) {
+        if (cause instanceof Error && /Could not find matching transaction outputs/.test(cause.message)) {
+          throw new HttpError(404, 'this index holds no output of that transaction')
+        }
+        throw cause
+      }
+      console.log(`POST /arc-ingest applied the proof for ${txid} at height ${merklePath.blockHeight}`)
+      json(response, 200, { status: 'applied', txid, blockHeight: merklePath.blockHeight })
       return
     }
 
@@ -517,7 +661,10 @@ function chainTracker(network: 'main' | 'test'): ChainTracker | 'scripts only' {
 }
 
 /** The engine as the environment describes it, plus whatever it has to close. */
-async function engineFromEnvironment(network: 'main' | 'test'): Promise<{
+async function engineFromEnvironment(
+  network: 'main' | 'test',
+  tracker: ChainTracker | 'scripts only'
+): Promise<{
   engine: Engine
   close: () => Promise<void>
 }> {
@@ -582,7 +729,7 @@ async function engineFromEnvironment(network: 'main' | 'test'): Promise<{
       [UORA_SERVICE]: new UoraAnchorLookupService(anchors),
     },
     engineStorage,
-    chainTracker(network),
+    tracker,
     process.env.PUBLIC_URL,
     undefined, // shipTrackers: no peer discovery
     undefined, // slapTrackers
@@ -605,8 +752,24 @@ async function main(): Promise<void> {
     )
   }
 
-  const { engine, close } = await engineFromEnvironment(network)
-  const service = await startOverlayService(engine, { port, submitToken, network })
+  const proofToken = process.env.ARC_CALLBACK_TOKEN
+  if (proofToken == null || proofToken === '') {
+    console.warn(
+      'ARC_CALLBACK_TOKEN is unset: POST /arc-ingest accepts proofs from anyone. Each is still ' +
+        'verified against block headers before it is stored, so an open route costs header quota, ' +
+        'not truth; set it on any deployment a stranger can reach.'
+    )
+  }
+
+  const tracker = chainTracker(network)
+  const { engine, close } = await engineFromEnvironment(network, tracker)
+  const service = await startOverlayService(engine, {
+    port,
+    submitToken,
+    proofToken,
+    chainTracker: tracker,
+    network,
+  })
 
   console.log(`dpp overlay listening on http://localhost:${service.port}`)
   console.log(`topics ${TOPIC}, ${UORA_TOPIC}; services ${SERVICE}, ${UORA_SERVICE}`)

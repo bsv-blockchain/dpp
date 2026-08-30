@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.2.0-draft
+  version: 0.3.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -68,13 +68,18 @@ x-dpp-profile:
       when it is public, so a reader who knows only a service name finds it
       (spec/services.md section 1).
     - Serve GET /health/live and GET /health/ready for probes.
+    - >-
+      Accept merkle proofs through POST /arc-ingest, checked to contain the
+      transaction and validated against the index's header source before they
+      are stored, so a writer or a broadcaster can prove a held state and the
+      index serves mined states with their merkle paths (spec/services.md
+      section 2).
   may:
     - >-
       Answer /lookup in the binary aggregated form when x-aggregation is yes;
       the SDK resolver requests it by default and falls back on the JSON form
       by content type.
     - Implement GASP synchronisation (/requestSyncResponse, /requestForeignGASPNode).
-    - Accept merkle proofs through POST /arc-ingest.
     - Require a bearer token on /submit; /lookup and /health stay open.
     - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
     - >-
@@ -203,6 +208,68 @@ paths:
                           type: integer
         '400':
           $ref: '#/components/responses/error'
+  /arc-ingest:
+    post:
+      summary: Push a merkle proof for a state this index holds (as upstream, plus verification before storage)
+      description: >-
+        The body is the shape an ARC-compatible broadcaster's callback carries,
+        so a writer offering a proof (spec/writing.md section 7) and a
+        broadcaster whose callback URL points here send the same thing. What
+        this profile adds is spec/services.md section 2: the proof must contain
+        the transaction and must validate against the index's header source
+        before it is stored (400 otherwise); a proof the header source cannot
+        evaluate is neither applied nor refused (503, try again); a callback
+        that carries no merkle path is acknowledged and ignored (200, status
+        ignored) so a broadcaster does not retry it; a transaction this index
+        does not hold answers 404; and when the deployment configures a
+        callback token it is required as a bearer or as X-Callback-Token (401
+        otherwise).
+      security:
+        - bearer: []
+        - callbackToken: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [txid]
+              properties:
+                txid:
+                  type: string
+                  pattern: '^[0-9a-f]{64}$'
+                merklePath:
+                  type: [string, 'null']
+                  description: The BRC-74 BUMP in hex. Absent or null on a status-only callback.
+                blockHeight:
+                  type: integer
+                  description: When present, must equal the height the BUMP carries.
+      responses:
+        '200':
+          description: Applied, or acknowledged and ignored when no merkle path was sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, txid]
+                properties:
+                  status:
+                    enum: [applied, ignored]
+                  txid:
+                    type: string
+                  blockHeight:
+                    type: integer
+                  reason:
+                    type: string
+        '400':
+          $ref: '#/components/responses/error'
+        '401':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+        '503':
+          $ref: '#/components/responses/error'
   /getDocumentationForTopicManager:
     get:
       summary: As upstream; tm_dpp and tm_uora_dpp return their admission rules as Markdown
@@ -278,7 +345,14 @@ components:
     bearer:
       type: http
       scheme: bearer
-      description: Required for submission only when the deployment configures a token.
+      description: >-
+        Required on /submit and /arc-ingest only when the deployment configures
+        a token for each; the two are different secrets.
+    callbackToken:
+      type: apiKey
+      in: header
+      name: X-Callback-Token
+      description: The other carrier of the /arc-ingest token, as the upstream host reads it.
   responses:
     error:
       description: The request was refused.

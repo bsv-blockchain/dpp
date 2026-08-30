@@ -50,3 +50,5 @@ A defect that lets a non-conforming record verify, a forged anchor be attributed
 ## Conformance reporting
 
 Conformance checks answer separately, each in its own sentence, including the zeros. There is no aggregate verdict and no score: a report that says "12 of 13" invites exactly the argument a conformance suite exists to end.
+
+A writer's behaviour has no byte vector: nothing in `fixtures/` can certify that a state was checked before it was sent or that its proof was kept. Writer conformance is therefore self-reported against the rules `spec/writing.md` §11 lists, one sentence per rule and in the same style, and a report that passes every fixture says nothing about the writer until those sentences stand beside it.

@@ -50,6 +50,10 @@ A state is locked to one compressed key and `OP_CHECKSIG`, and nothing else: no 
 
 Every service, the index, the registry and a verification page alike, affects findability and convenience, never truth. Announcing to an index is discoverability, not existence: a record broadcast but never announced is less findable and no less true, and a conforming writer must not fail a record over a failed announcement. This is the property that makes the service layer competitive rather than custodial: an operator's copy and a stranger's copy of any service are interchangeable, because neither is load-bearing for what a record means.
 
+## Why the writer has duties
+
+The property protects a verifier who holds transaction bytes and merkle proofs; it says nothing about how those came to exist, and a record nobody proved or kept is true and gone. [`writing.md`](writing.md) answers that gap, and it is deliberately a document about outcomes rather than infrastructure: a state is checked before it is sent, a tip is spent once and its fate learnt before it is spent again, a state is not called written until the network has answered, the proof is obtained and kept and offered to the index, the bytes are retained for the passport's life. Every one of those can be met with any wallet, any broadcaster and any index, which is why none is named. The reference application, which met none of them and whose index answers read `pending` for life, is the evidence that stating them was necessary; stating them as outcomes is what keeps the standard neutral about the stack beneath.
+
 ## Why pre-1.0 says so
 
 Everything publishes as a working draft because parts of the standard are still proposals between implementing parties, and a standard that hides that invites building on sand. Until 1.0, the reference implementation in this repository is the tiebreaker where the text is ambiguous, with the recorded exception that a named implementation defect is a defect, not licence. Declaring 1.0 is a governance act, not a milestone of enthusiasm, and it belongs to the change process `GOVERNANCE.md` describes.
