@@ -334,8 +334,9 @@ async function handle(
       if (refused.length > 0) {
         console.warn(
           `POST /submit admitted nothing on ${refused.join(', ')} for ${txidOf(beef)}: ` +
-            'not a duplicate, so the submission was refused (wrong identity key, or a ' +
-            'predecessor this instance never admitted). Re-announce after repair, ' +
+            'not a duplicate, so the submission was refused (wrong identity key, a ' +
+            'predecessor this instance never admitted, or, when OWNER_CONSENT is set, a ' +
+            'TRANSFER whose actor did not prove they are the previous owner). Re-announce after repair, ' +
             'oldest state first: an index that never admitted a predecessor ' +
             'refuses every later state.'
         )
@@ -471,6 +472,37 @@ export function anchorServiceKeys(): string[] {
 }
 
 /**
+ * The owner-signed transfer (`spec/custody.md` §4) is a profile's choice, and
+ * a deployment selects it with OWNER_CONSENT=required. TRANSFER_AUTHORITIES
+ * then names, comma-separated, the identity keys that may move ownership
+ * without proving consent (recovery); public keys only, as for
+ * ANCHOR_SERVICE_KEYS, and validated when the topic manager is built. Any
+ * other value of OWNER_CONSENT fails the boot rather than being read as a
+ * guess, and authorities set without the policy are a misconfiguration worth a
+ * warning, because they would silently do nothing.
+ */
+export function ownerConsentPolicy(): boolean | { authorities: string[] } {
+  const declared = (process.env.OWNER_CONSENT ?? '').trim()
+  const authorities = (process.env.TRANSFER_AUTHORITIES ?? '')
+    .split(',')
+    .map((key) => key.trim())
+    .filter((key) => key !== '')
+  if (declared === '') {
+    if (authorities.length > 0) {
+      console.warn(
+        'TRANSFER_AUTHORITIES is set but OWNER_CONSENT is not: the authorities are ignored, ' +
+          'because there is no consent rule for them to be exempt from'
+      )
+    }
+    return false
+  }
+  if (declared !== 'required') {
+    throw new Error(`OWNER_CONSENT must be "required" or unset, got "${declared}"`)
+  }
+  return authorities.length === 0 ? true : { authorities }
+}
+
+/**
  * 'scripts only' skips header verification, which is a local-development
  * convenience and never a hosted setting: it would admit a transaction whose
  * ancestry is not proved.
@@ -528,9 +560,21 @@ async function engineFromEnvironment(network: 'main' | 'test'): Promise<{
     )
   }
 
+  const ownerConsent = ownerConsentPolicy()
+  if (ownerConsent === false) {
+    console.log(`${TOPIC} admits any signed TRANSFER that spends the tip (OWNER_CONSENT is unset)`)
+  } else {
+    console.log(
+      `${TOPIC} requires the owner-signed transfer on every TRANSFER` +
+        (typeof ownerConsent === 'object'
+          ? `, except by the transfer authorities ${ownerConsent.authorities.join(', ')}`
+          : ', with no transfer authorities')
+    )
+  }
+
   const engine = new Engine(
     {
-      [TOPIC]: new DppTopicManager(identityKey),
+      [TOPIC]: new DppTopicManager(identityKey, { ownerConsent }),
       [UORA_TOPIC]: new UoraAnchorTopicManager(acceptedAnchorServices),
     },
     {
