@@ -30,6 +30,38 @@ export const STANDARD_VERSION = '1'
 export const DPP_PROTOCOL_ID: WalletProtocol = [1, 'dpp token v1']
 
 /**
+ * BRC-43 protocol ID of the owner key (`spec/custody.md` §2, `spec/record-model.md`
+ * §3 field 6): field 6 SHOULD be the owner's root derived under this protocol
+ * with keyID = passport_id and counterparty 'self', one level, so a BRC-100
+ * wallet produces it with getPublicKey and spends a tip locked to it with the
+ * PushDrop unlock (`spec/custody.md` §3). 'self' is what makes holdings
+ * unlinkable: nobody but the root can compute or confirm the child.
+ */
+export const OWNER_PROTOCOL_ID: WalletProtocol = [1, 'dpp owner v1']
+
+/**
+ * The event_data property a TRANSFER carries to prove, under the optional
+ * owner-signed transfer invariant (`spec/custody.md` §4), that the actor's root
+ * derived the previous owner key: the BRC-69 specific key linkage, 64 lower-case
+ * hex characters. Reserved on TRANSFER; meaningless elsewhere.
+ */
+export const OWNER_LINKAGE_KEY = 'owner_linkage'
+
+/** The one accepted spelling of the linkage scalar: one value, one spelling. */
+export const OWNER_LINKAGE_HEX = /^[0-9a-f]{64}$/
+
+/**
+ * What a BRC-100 wallet encrypts the linkage under when it reveals it
+ * (revealSpecificKeyLinkage: `[2, 'specific linkage revelation <level> <name>']`
+ * of the target protocol, keyID = the target keyID, counterparty = the
+ * verifier). The verifier decrypts with the prover as counterparty.
+ */
+export const OWNER_LINKAGE_REVELATION_PROTOCOL_ID: WalletProtocol = [
+  2,
+  `specific linkage revelation ${OWNER_PROTOCOL_ID[0]} ${OWNER_PROTOCOL_ID[1]}`,
+]
+
+/**
  * Upper bounds on the two fields that are also BRC-42 key identifiers
  * (`spec/record-model.md` §3, §5): passport_id keys the server signature,
  * actor_keyID keys the user signature. A conforming wallet refuses a key

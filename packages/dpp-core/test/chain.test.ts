@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { Transaction, UnlockingScript } from '@bsv/sdk'
-import { verifyChain } from '../src/index.js'
+import { OWNER_CONSENT_REFUSALS, verifyChain } from '../src/index.js'
 import {
   buildChainFixture,
+  buildOwnerConsentFixture,
   idKey,
   makeData,
   makerPriv,
+  makerWallet,
   owner2Priv,
   owner2Wallet,
   serverPriv,
@@ -273,5 +275,92 @@ describe('verifyChain, invariants (§6)', () => {
     const result = await verifyChain([txs[0], tx], { chainTracker: 'scripts only' })
     expect(result.valid).toBe(false)
     expect(result.error).toContain('user_signature invalid')
+  })
+})
+
+describe('verifyChain, the owner-signed transfer (custody.md §4, a profile option)', () => {
+  it('accepts the six-state chain and reports the check on TRANSFERs only', async () => {
+    const { txs } = await buildOwnerConsentFixture()
+    const on = await verifyChain(txs, { chainTracker: 'scripts only', ownerConsent: true })
+    expect(on.error).toBeUndefined()
+    expect(on.valid).toBe(true)
+    expect(on.states.map((s) => s.op)).toEqual([
+      'ACTIVATE', 'SOLD', 'TRANSFER', 'REPAIRED', 'TRANSFER', 'TRANSFER',
+    ])
+    expect(on.states.map((s) => s.ownerConsentValid)).toEqual([null, null, true, null, true, true])
+
+    const off = await verifyChain(txs, { chainTracker: 'scripts only' })
+    expect(off.valid).toBe(true)
+    expect(off.states.every((s) => s.ownerConsentValid === null)).toBe(true)
+  })
+
+  it('refuses a TRANSFER by a stranger under the option, and accepts the same bytes without it', async () => {
+    const { txs, states } = await buildOwnerConsentFixture()
+    const tip = txs[5]
+    const stranger = await signedState(
+      makeData({
+        op: 'TRANSFER',
+        timestamp: '2028-01-01T00:00:00Z',
+        ownerIdentityKey: idKey(owner2Priv),
+        actorIdentityKey: idKey(owner2Priv),
+        actorKeyId: 'not the owner',
+        eventData: '',
+        payloadOwnerHash: states[5].payloadOwnerHash,
+        previousTxid: tip.id('hex'),
+      }),
+      owner2Wallet
+    )
+    const tx = stateTx(stranger, lockKey, { tx: tip, outputIndex: 0 })
+
+    const on = await verifyChain([...txs, tx], { chainTracker: 'scripts only', ownerConsent: true })
+    expect(on.valid).toBe(false)
+    expect(on.error).toContain('state 6')
+    expect(on.error).toContain(OWNER_CONSENT_REFUSALS.noLinkage)
+    expect(on.states[6].ownerConsentValid).toBe(false)
+    expect(on.states[6].linkageValid).toBe(true)
+
+    const off = await verifyChain([...txs, tx], { chainTracker: 'scripts only' })
+    expect(off.valid).toBe(true)
+  })
+
+  it('lets a named transfer authority move ownership, and refuses the same state when none is named', async () => {
+    const { txs, states } = await buildOwnerConsentFixture()
+    const tip = txs[5]
+    const recovery = await signedState(
+      makeData({
+        op: 'TRANSFER',
+        timestamp: '2028-02-02T00:00:00Z',
+        ownerIdentityKey: idKey(owner2Priv),
+        actorIdentityKey: idKey(makerPriv),
+        actorKeyId: 'maker recovery 1',
+        eventData: JSON.stringify({ reason: 'recovery' }),
+        payloadOwnerHash: states[5].payloadOwnerHash,
+        previousTxid: tip.id('hex'),
+      }),
+      makerWallet
+    )
+    const tx = stateTx(recovery, lockKey, { tx: tip, outputIndex: 0 })
+
+    const withAuthority = await verifyChain([...txs, tx], {
+      chainTracker: 'scripts only',
+      ownerConsent: { authorities: [idKey(makerPriv).toUpperCase()] },
+    })
+    expect(withAuthority.error).toBeUndefined()
+    expect(withAuthority.valid).toBe(true)
+    expect(withAuthority.states[6].ownerConsentValid).toBe(true)
+
+    const withoutAuthority = await verifyChain([...txs, tx], { chainTracker: 'scripts only', ownerConsent: true })
+    expect(withoutAuthority.valid).toBe(false)
+    expect(withoutAuthority.error).toContain(OWNER_CONSENT_REFUSALS.noLinkage)
+  })
+
+  it('refuses to start with a malformed transfer authority', async () => {
+    const { txs } = await buildChainFixture()
+    await expect(
+      verifyChain(txs, { chainTracker: 'scripts only', ownerConsent: { authorities: ['not a key'] } })
+    ).rejects.toThrow('transfer authority')
+    await expect(
+      verifyChain(txs, { chainTracker: 'scripts only', ownerConsent: { authorities: [makerPriv.toPublicKey().encode(false, 'hex') as string] } })
+    ).rejects.toThrow('canonical')
   })
 })

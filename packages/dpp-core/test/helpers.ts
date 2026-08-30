@@ -1,18 +1,24 @@
 import {
+  CachedKeyDeriver,
   LockingScript,
   MerklePath,
   OP,
   PrivateKey,
   ProtoWallet,
   PublicKey,
+  PushDrop,
   Transaction,
   UnlockingScript,
   type ChainTracker,
+  type WalletInterface,
 } from '@bsv/sdk'
 import {
+  OWNER_PROTOCOL_ID,
   buildLockingScript,
   completeState,
   ownerBlobHash,
+  ownerKeyFor,
+  ownerLinkageFromDeriver,
   type DppState,
   type DppStateData,
 } from '../src/index.js'
@@ -21,10 +27,21 @@ export const makerPriv = PrivateKey.fromHex('11'.repeat(32))
 export const serverPriv = PrivateKey.fromHex('22'.repeat(32))
 export const owner1Priv = PrivateKey.fromHex('33'.repeat(32))
 export const owner2Priv = PrivateKey.fromHex('44'.repeat(32))
+/**
+ * The third owner, whose passport is the first the fixture locks to an owner key
+ * (`spec/custody.md` §3). `55` also appears in signatures.test.ts as a throwaway
+ * wrong key; nothing there pins it, and nothing derived from it will ever hold a
+ * satoshi.
+ */
+export const owner3Priv = PrivateKey.fromHex('55'.repeat(32))
 
 export const makerWallet = new ProtoWallet(makerPriv)
 export const serverWallet = new ProtoWallet(serverPriv)
+export const owner1Wallet = new ProtoWallet(owner1Priv)
 export const owner2Wallet = new ProtoWallet(owner2Priv)
+export const owner3Wallet = new ProtoWallet(owner3Priv)
+export const owner1Deriver = new CachedKeyDeriver(owner1Priv)
+export const owner3Deriver = new CachedKeyDeriver(owner3Priv)
 
 export const idKey = (priv: PrivateKey): string => priv.toPublicKey().toString()
 
@@ -158,6 +175,77 @@ export async function buildChainFixture(): Promise<ChainFixture> {
   )
   const tx3 = stateTx(s3, lockKey, { tx: tx2, outputIndex: 0 })
   txs.push(tx3); states.push(s3); outputIndexes.push(0)
+
+  return { txs, states, outputIndexes }
+}
+
+/**
+ * The owner's wallet spends a tip locked to its owner key with one derivation and
+ * no key export: the PushDrop unlock under OWNER_PROTOCOL_ID, keyID passport_id,
+ * counterparty 'self' (`spec/custody.md` §3). A ProtoWallet is not a full
+ * WalletInterface, but `unlock().sign` only calls createSignature, and RFC 6979
+ * nonces make the unlocking script reproducible byte for byte. Call it after the
+ * outputs are added: the sighash commits to them.
+ */
+export async function spendAsOwner(
+  tx: Transaction,
+  inputIndex: number,
+  wallet: ProtoWallet,
+  passportId: string = PASSPORT_ID
+): Promise<void> {
+  const unlock = new PushDrop(wallet as unknown as WalletInterface).unlock(
+    OWNER_PROTOCOL_ID,
+    passportId,
+    'self'
+  )
+  tx.inputs[inputIndex].unlockingScript = await unlock.sign(tx, inputIndex)
+}
+
+/**
+ * The demo lifecycle plus the two states `spec/custody.md` §3 and §4 pin: a
+ * TRANSFER by owner 2 (equality form) to owner 3's derived owner key, locked to
+ * that key, then a TRANSFER by owner 3 carrying owner_linkage (linkage form) to
+ * owner 1's derived owner key, spent by owner 3's wallet under the possession
+ * convention. States 1 to 4 are exactly buildChainFixture's.
+ */
+export async function buildOwnerConsentFixture(): Promise<ChainFixture> {
+  const { txs, states, outputIndexes } = await buildChainFixture()
+  const tx3 = txs[3]
+  const owner3OwnerKey = await ownerKeyFor(PASSPORT_ID, owner3Wallet)
+  const owner1OwnerKey = await ownerKeyFor(PASSPORT_ID, owner1Wallet)
+
+  const s4 = await signedState(
+    makeData({
+      op: 'TRANSFER',
+      timestamp: '2027-06-01T09:00:00Z',
+      ownerIdentityKey: owner3OwnerKey,
+      actorIdentityKey: idKey(owner2Priv),
+      actorKeyId: 'owner transfer 2',
+      eventData: '',
+      payloadOwnerHash: ownerBlobHash(BLOB_V2),
+      previousTxid: tx3.id('hex'),
+    }),
+    owner2Wallet
+  )
+  const tx4 = stateTx(s4, PublicKey.fromString(owner3OwnerKey), { tx: tx3, outputIndex: 0 })
+  txs.push(tx4); states.push(s4); outputIndexes.push(0)
+
+  const s5 = await signedState(
+    makeData({
+      op: 'TRANSFER',
+      timestamp: '2027-09-15T14:30:00Z',
+      ownerIdentityKey: owner1OwnerKey,
+      actorIdentityKey: idKey(owner3Priv),
+      actorKeyId: 'owner transfer 3',
+      eventData: JSON.stringify({ owner_linkage: ownerLinkageFromDeriver(PASSPORT_ID, owner3Deriver) }),
+      payloadOwnerHash: ownerBlobHash(BLOB_V2),
+      previousTxid: tx4.id('hex'),
+    }),
+    owner3Wallet
+  )
+  const tx5 = stateTx(s5, PublicKey.fromString(owner1OwnerKey), { tx: tx4, outputIndex: 0 })
+  await spendAsOwner(tx5, 0, owner3Wallet)
+  txs.push(tx5); states.push(s5); outputIndexes.push(0)
 
   return { txs, states, outputIndexes }
 }
