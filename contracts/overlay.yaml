@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.2.0-draft
+  version: 0.3.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -68,13 +68,18 @@ x-dpp-profile:
       when it is public, so a reader who knows only a service name finds it
       (spec/services.md section 1).
     - Serve GET /health/live and GET /health/ready for probes.
+    - >-
+      Accept merkle proofs through POST /arc-ingest, checked to contain the
+      transaction and validated against the index's header source before they
+      are stored, so a writer or a broadcaster can prove a held state and the
+      index serves mined states with their merkle paths (spec/services.md
+      section 2).
   may:
     - >-
       Answer /lookup in the binary aggregated form when x-aggregation is yes;
       the SDK resolver requests it by default and falls back on the JSON form
       by content type.
     - Implement GASP synchronisation (/requestSyncResponse, /requestForeignGASPNode).
-    - Accept merkle proofs through POST /arc-ingest.
     - Require a bearer token on /submit; /lookup and /health stay open.
     - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
     - >-
