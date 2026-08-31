@@ -16,7 +16,7 @@ The property the standard protects: a stranger can check a record with the trans
 |---|---|---|
 | `spec/` | The record model, the rules (anchoring, lifecycle vocabulary, canonical bytes), identity, custody (where the keys may live, and the owner's consent to a transfer), writing (what a writer owes the record: checked, announced, sent, proven, kept), the services, and the design rationale behind them | Working drafts, all seven documents |
 | `contracts/` | The service interfaces as OpenAPI documents | The overlay contract is pinned; the registry's joins when the implementing parties accept it together |
-| `fixtures/` | Conformance fixtures: the seed of the test suite | Landed, for both rails |
+| `fixtures/` | Conformance fixtures, the seed of the test suite, in two forms held to the same bytes: the bespoke files and the BSV stack's cross-language vectors | Landed, for both rails |
 | `packages/` | The reference implementation | Landed |
 | `GOVERNANCE.md` | How changes are proposed and agreed | Second draft: roles, thresholds, the conditions for 1.0 |
 | `CHANGELOG.md` | What changed, and which pull request changed it | Kept from the first commit |
@@ -26,7 +26,7 @@ The property the standard protects: a stranger can check a record with the trans
 
 Two packages, to publish to npm when this repository opens:
 
-- **`@bsv/dpp-core`** (`packages/dpp-core`) is the record model: the 14-field codec, the canonical signature preimages, chain verification including SPV. Everything else asks this package whether a state is valid; nothing may reimplement it.
+- **`@bsv/dpp-core`** (`packages/dpp-core`) is the record model and what both rails share: the 14-field codec, the canonical signature preimages, chain verification including SPV and the optional owner-consent check, and the canonical bytes an attestation is signed and hashed over. Everything else asks this package whether a state is valid; nothing may reimplement it.
 - **`@bsv/dpp-overlay-topics`** (`packages/overlay-topics`) is the index: the `tm_dpp` and `tm_uora_dpp` topic managers and the `ls_dpp` and `ls_uora_dpp` lookup services, usable as a library or as an HTTP service speaking exactly the wire `contracts/overlay.yaml` pins. Its Dockerfile builds the deployable index node from this repository alone, so an adopter can run their own index:
 
 ```
