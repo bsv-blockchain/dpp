@@ -291,8 +291,8 @@ describe('over HTTP, the way the resolver announces', () => {
     }
     expect(health.topic).toBe('tm_dpp')
     expect(health.service).toBe('ls_dpp')
-    expect(health.topics).toEqual(['tm_dpp', UORA_TOPIC])
-    expect(health.services).toEqual(['ls_dpp', UORA_SERVICE])
+    expect(health.topics).toEqual(['tm_dpp', 'tm_attestation', UORA_TOPIC])
+    expect(health.services).toEqual(['ls_dpp', 'ls_attestation', UORA_SERVICE])
   })
 
   it('answers a question addressed to a service that does not exist', async () => {

@@ -84,6 +84,14 @@ export const UORA_ANCHOR_PREFIX = 'uora-anchor-v3'
 export const UORA_ANCHOR_PREFIX_V2 = 'uora-anchor-v2'
 
 /**
+ * The anchoring service's original three-field format, described above. Never
+ * read by this index; named so the capability document can list it as
+ * historical rather than leave a reader guessing why v1 anchors are not
+ * answered.
+ */
+export const UORA_ANCHOR_PREFIX_V1 = 'uora-anchor-v1'
+
+/**
  * BRC-42 child the anchor is locked under. A distinct string from v2's
  * `[1, 'uora anchor v2']` and v1's `[1, 'uora anchor v1']`, because two
  * incompatible formats sharing one protocol name would be two keys wearing one

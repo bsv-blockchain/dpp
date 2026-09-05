@@ -9,15 +9,30 @@
  * and depend on nothing of ours: they are written to be dropped into a shared
  * overlay instance that has never heard of this programme's token core.
  */
-export { DppTopicManager } from './tmDpp.js'
-export { DppLookupService, MAX_LOOKUP_RESULTS, type DppLookupQuery } from './lsDpp.js'
+export { DppTopicManager, DPP_TOPIC, type DppAdmissionOptions } from './tmDpp.js'
+export * from './attestationAnchor.js'
+export * from './attestationStorage.js'
+export * from './tmAttestation.js'
+export * from './lsAttestation.js'
+export { DppLookupService, DPP_SERVICE, MAX_LOOKUP_RESULTS, type DppLookupQuery } from './lsDpp.js'
 export {
   InMemoryDppStorage,
   MongoDppStorage,
+  selectorFilter,
   type DppRecord,
+  type DppRecordInput,
   type DppRecordStore,
+  type RecordSelector,
+  type SequenceRange,
 } from './storage.js'
-export { InMemoryOverlayStorage, MongoOverlayStorage } from './engineStorage.js'
+export { InMemoryOverlayStorage, MongoOverlayStorage, type RetractableStorage } from './engineStorage.js'
+export * from './limits.js'
+export * from './policyConfig.js'
+export * from './history.js'
+export * from './capabilities.js'
+export * from './evidenceExport.js'
+export * from './retraction.js'
+export * from './sync.js'
 export { UoraAnchorTopicManager } from './tmUoraDpp.js'
 export { UoraAnchorLookupService, UORA_SERVICE, UORA_TOPIC } from './lsUoraDpp.js'
 export {
@@ -39,6 +54,7 @@ export {
   UORA_ANCHOR_BASKET,
   UORA_ANCHOR_FIELD_COUNT,
   UORA_ANCHOR_PREFIX,
+  UORA_ANCHOR_PREFIX_V1,
   UORA_ANCHOR_PREFIX_V2,
   UORA_ANCHOR_PROTOCOL,
   type UoraAnchor,

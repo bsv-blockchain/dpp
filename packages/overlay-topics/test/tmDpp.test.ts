@@ -287,9 +287,11 @@ describe('tm_dpp admission, the owner-signed transfer (a profile option)', () =>
     const tm = new DppTopicManager(SERVER_ID, { ownerConsent: true })
     const tip = await ownedByOwner3(tm)
     const stranger = await transferFrom(tip, makerWallet, MAKER, '')
+    // Refused, and the offered coin retained: a refusal that spends the tip
+    // keeps the tip and its lineage (a refused spend of the tip, README).
     expect(await tm.identifyAdmissibleOutputs(stranger.toBEEF(true), [0])).toEqual({
       outputsToAdmit: [],
-      coinsToRetain: [],
+      coinsToRetain: [0],
     })
     expect(warn).toHaveBeenCalledOnce()
     expect(warn.mock.calls[0][0]).toContain(OWNER_CONSENT_REFUSALS.noLinkage)

@@ -3,8 +3,9 @@
  * `@bsv/overlay` Engine.
  *
  *   the passport   `tm_dpp` admits states, `ls_dpp` resolves them
- *   the anchors    `tm_uora_dpp` admits UORA attestation anchors,
- *                  `ls_uora_dpp` looks them up by issuer DID
+ *   the anchors    `tm_attestation` admits generic anchors, `ls_attestation`
+ *                  looks them up; `tm_uora_dpp` and `ls_uora_dpp` carry the
+ *                  historical UORA anchors
  *
  * The wire contract is the ecosystem's standard one (BRC-22 submit, BRC-24
  * lookup), pinned as OpenAPI in `contracts/overlay.yaml`:
@@ -23,9 +24,30 @@
  *                  X-Callback-Token or bearer when ARC_CALLBACK_TOKEN is set
  *   GET  /health                                   -> {status:"ok",...}
  *
+ * And the extensions this reference deployment serves beside them, each in
+ * the shape a contract in `contracts/` fixes:
+ *
+ *   GET  /capabilities                             -> the capability document
+ *                  (contracts/capabilities.schema.json), built from constants
+ *                  and configuration, never typed by hand
+ *   GET  /history?passportId=|uid=&limit=&cursor=  -> one page of a stable
+ *                  snapshot (contracts/paginated-history.schema.json), the
+ *                  export beside the bounded lookup
+ *   GET  /evidence-package?passportId=             -> dpp-evidence-package@1
+ *                  as {manifest, files} (contracts/evidence-package.schema.json),
+ *                  signed with EXPORT_SIGNING_KEY; 503 when it is unset
+ *   POST /retract  {"txid","outputIndex","reason"} -> removes a state the
+ *                  network refused, behind the /submit bearer; 409 when the
+ *                  state is proven, spent or known to the chain tracker
+ *   POST /requestSyncResponse, POST /requestForeignGASPNode
+ *                                                  -> the upstream GASP
+ *                  routes a peer synchronises from, exactly as the overlay
+ *                  protocol defines them
+ *
  * Everything is environment; an unset variable switches its feature off or
- * falls back, and only a missing identity key fails the boot. See the
- * Configuration table in this package's README.
+ * falls back, and only a missing identity key (or a policy file that does not
+ * verify) fails the boot. See the Configuration table in this package's
+ * README.
  *
  * This file is both the entry point and a library: it boots only when node
  * runs it directly, so tests can drive `createRequestHandler` and
@@ -36,6 +58,9 @@
  * second broadcast would only add a failure mode; and SHIP/SLAP advertising
  * would need this service to hold a funded wallet of its own. Neither is
  * needed for the demo, and both can be added later without changing the wire.
+ * Peer synchronisation is present but static: SYNC_PEERS names the operators
+ * this node pulls from through the SDK's GASP (sync.ts), and a state a peer
+ * offers passes the same topic managers as one a writer announces.
  * Because this host does not broadcast, no broadcaster's callback reaches it
  * on its own: merkle proofs arrive through POST /arc-ingest, pushed by the
  * writer once its wallet has them or by a broadcaster whose callback URL a
@@ -57,39 +82,77 @@ import {
   type ChainTracker,
   type STEAK,
 } from '@bsv/sdk'
-import { Engine } from '@bsv/overlay'
-import { DppTopicManager } from './tmDpp.js'
-import { DppLookupService } from './lsDpp.js'
+import { Engine, type LookupService } from '@bsv/overlay'
+import { DppTopicManager, DPP_TOPIC } from './tmDpp.js'
+import { DppLookupService, DPP_SERVICE } from './lsDpp.js'
 import { InMemoryDppStorage, MongoDppStorage, type DppRecordStore } from './storage.js'
-import { InMemoryOverlayStorage, MongoOverlayStorage } from './engineStorage.js'
+import { InMemoryOverlayStorage, MongoOverlayStorage, type RetractableStorage } from './engineStorage.js'
 import { UoraAnchorTopicManager } from './tmUoraDpp.js'
 import { UoraAnchorLookupService, UORA_SERVICE, UORA_TOPIC } from './lsUoraDpp.js'
+import { AttestationTopicManager, ATTESTATION_TOPIC } from './tmAttestation.js'
+import { AttestationLookupService, ATTESTATION_SERVICE } from './lsAttestation.js'
+import { InMemoryAttestationStorage, MongoAttestationStorage, validateAttestationQuery, type AttestationStore } from './attestationStorage.js'
 import {
   InMemoryUoraAnchorStorage,
   MongoUoraAnchorStorage,
   type UoraAnchorStore,
 } from './anchorStorage.js'
+import { MAX_BODY_BYTES, MAX_PAGE_SIZE } from './limits.js'
+import { buildCapabilities, implementationIdentity } from './capabilities.js'
+import { HistoryError, HistoryPaginator } from './history.js'
+import { buildEvidencePackage } from './evidenceExport.js'
+import { RetractionRefused, retractOutput } from './retraction.js'
+import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
+import { startPeerSynchronisation, syncConfigurationFor, syncSettingsFromEnvironment, type SyncSettings } from './sync.js'
 
-export const TOPIC = 'tm_dpp'
-export const SERVICE = 'ls_dpp'
+export const TOPIC = DPP_TOPIC
+export const SERVICE = DPP_SERVICE
 export { UORA_SERVICE, UORA_TOPIC }
-/** Refuse absurd bodies before buffering them. A DPP BEEF is a few KB. */
-const MAX_BODY_BYTES = 8 * 1024 * 1024
+export { ATTESTATION_SERVICE, ATTESTATION_TOPIC }
 /** How long a stop waits for in-flight requests before it gives up. */
 const SHUTDOWN_GRACE_MS = 10_000
 
 /** The slice of the Engine the HTTP layer uses, so a test can stand one in. */
 export type OverlayEngine = Pick<
   Engine,
-  'submit' | 'lookup' | 'listTopicManagers' | 'listLookupServiceProviders' | 'handleNewMerkleProof'
+  | 'submit'
+  | 'lookup'
+  | 'listTopicManagers'
+  | 'listLookupServiceProviders'
+  | 'handleNewMerkleProof'
+  | 'getDocumentationForTopicManager'
+  | 'getDocumentationForLookupServiceProvider'
+  | 'provideForeignSyncResponse'
+  | 'provideForeignGASPNode'
 >
+
+/**
+ * The stores, services and policy the extension routes work on, which the
+ * Engine does not expose through its own surface. `/history` and
+ * `/evidence-package` read the record store and the engine storage;
+ * `/retract` removes from both and tells the lookup services; `/capabilities`
+ * reports the policy. Without them, the read routes answer 503 by name and the
+ * capability document describes a node with no configured policy.
+ */
+export interface NodeComponents {
+  records: DppRecordStore
+  engineStorage: RetractableStorage
+  lookupServices: Record<string, LookupService>
+  publisherPolicy?: PublisherPolicyConfig
+  serviceIdentityKey?: string
+  anchorServiceKeys?: string[]
+  ownerConsent?: boolean | { authorities: string[] }
+  /** SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the Engine holds the same peers as its syncConfiguration. */
+  sync?: Pick<SyncSettings, 'peers' | 'intervalMs'>
+}
 
 export interface OverlayHttpOptions {
   /**
-   * Shared secret required as `Authorization: Bearer` on POST /submit.
+   * Shared secret required as `Authorization: Bearer` on POST /submit and
+   * POST /retract, the two routes that change what the index holds.
    * `/lookup` and `/health` stay open: browser verification is a stated goal,
-   * and a read costs no header quota. Unset leaves `/submit` open too, which
-   * is only acceptable on a container nobody else can reach.
+   * and a read costs no header quota. Unset leaves both open too, which is only
+   * acceptable on a container nobody else can reach.
    */
   submitToken?: string
   /**
@@ -129,6 +192,24 @@ export interface OverlayHttpOptions {
    * socket a caller reaches the socket that was bound.
    */
   host?: string
+  /** What the extension routes work on; see `NodeComponents`. */
+  components?: NodeComponents
+  /**
+   * EXPORT_SIGNING_KEY: the private key, hex, that signs evidence-package
+   * manifests. Unset, GET /evidence-package answers 503 export-unavailable and
+   * the capability document lists the export as unsupported. Malformed, the
+   * handler refuses to be built, which is the boot.
+   */
+  exportSigningKey?: string
+  /**
+   * Whether the network knows a transaction, for POST /retract: asked of the
+   * header source's operator before an output is removed. Unset when there is
+   * no header source (CHAIN_TRACKER=scripts-only); the retraction then runs on
+   * the local merkle-path check alone and its answer says so.
+   */
+  knownOnChain?: (txid: string) => Promise<boolean>
+  /** The clock: snapshot expiry, export time and the policy's "active now" read it. Injectable for tests. */
+  now?: () => Date
 }
 
 /** An error that answers with something other than the default 400. */
@@ -138,6 +219,18 @@ class HttpError extends Error {
     message: string
   ) {
     super(message)
+  }
+}
+
+/** A refusal the wire names, so a client branches on `error` and reads `description` as prose. */
+class NamedError extends HttpError {
+  constructor(
+    status: number,
+    readonly code: string,
+    message: string,
+    readonly hint?: string
+  ) {
+    super(status, message)
   }
 }
 
@@ -279,6 +372,48 @@ function parseProofCallback(body: Buffer): { txid: string; merklePath?: MerklePa
   return { txid, merklePath: proof }
 }
 
+/** A JSON object body, or a 400 naming what it should have carried. */
+function parseJsonObject(body: Buffer, expected: string): Record<string, unknown> {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(body.toString('utf8'))
+  } catch {
+    throw new HttpError(400, 'body must be JSON')
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new HttpError(400, `body must be a JSON object with ${expected}`)
+  }
+  return parsed as Record<string, unknown>
+}
+
+/**
+ * The body of a retraction: the outpoint and the writer's reason, which is
+ * logged and echoed and never interpreted. Bounded so a log line stays a log
+ * line.
+ */
+function parseRetraction(body: Buffer): { txid: string; outputIndex: number; reason: string } {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(body.toString('utf8'))
+  } catch {
+    throw new HttpError(400, 'body must be JSON')
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new HttpError(400, 'body must be a JSON object with txid, outputIndex and reason')
+  }
+  const { txid, outputIndex, reason } = parsed as Record<string, unknown>
+  if (typeof txid !== 'string' || !/^[0-9a-f]{64}$/.test(txid)) {
+    throw new HttpError(400, 'txid must be 64 lower-case hex characters')
+  }
+  if (typeof outputIndex !== 'number' || !Number.isSafeInteger(outputIndex) || outputIndex < 0) {
+    throw new HttpError(400, 'outputIndex must be a non-negative integer')
+  }
+  if (typeof reason !== 'string' || reason.trim() === '' || reason.length > 1000) {
+    throw new HttpError(400, 'reason must be a non-empty string of at most 1000 characters')
+  }
+  return { txid, outputIndex, reason: reason.trim() }
+}
+
 /**
  * The lookup query, checked before it reaches any engine. The Mongo stores
  * build filters from these fields, so a value that is not a plain string is a
@@ -286,7 +421,11 @@ function parseProofCallback(body: Buffer): { txid: string; merklePath?: MerklePa
  * every document. `limit` alone may be a number; `ls_uora_dpp` documents it as
  * the answer's page size and the stores bound it themselves.
  */
-function checkedQuery(query: unknown): Record<string, unknown> {
+function checkedQuery(query: unknown, service?: string): Record<string, unknown> {
+  if (service === ATTESTATION_SERVICE) {
+    try { return { ...validateAttestationQuery(query) } }
+    catch (error) { throw new HttpError(400, error instanceof Error ? error.message : 'invalid attestation query') }
+  }
   if (typeof query !== 'object' || query === null || Array.isArray(query)) {
     throw new HttpError(400, 'query must be an object of string fields')
   }
@@ -329,6 +468,47 @@ function txidOf(beef: number[]): string {
 }
 
 /**
+ * A "duplicate" the engine holds nothing for was refused earlier: the Engine
+ * records every transaction it validates as applied to the topic, admitted or
+ * not, and skips a txid it has applied, so a state refused once for a reason
+ * that has since gone (its predecessor announced after it, a policy version
+ * not yet loaded, a stranger announcing a successor before the writer could
+ * announce its predecessor) would read as a duplicate for ever and the writer
+ * would record success. When this host's storage shows no admitted output of
+ * the txid for a topic that read as a duplicate, it clears the applied record
+ * and submits the transaction again for those topics, so the answer is what
+ * the topic managers say today: admitted, or none. Returns the topics
+ * re-evaluated; `steak` is updated in place for them. Without the storage (a
+ * stand-in engine) nothing changes.
+ */
+async function reconsiderRefusedEarlier(
+  engine: OverlayEngine,
+  options: HandlerOptions,
+  beef: number[],
+  offChainValues: number[] | undefined,
+  steak: STEAK,
+  outcomes: ReadonlyArray<readonly [string, AdmissionOutcome]>
+): Promise<string[]> {
+  const storage = options.components?.engineStorage
+  if (storage == null || storage.deleteAppliedTransaction == null) return []
+  const duplicates = outcomes.filter(([, outcome]) => outcome === 'duplicate').map(([topic]) => topic)
+  if (duplicates.length === 0) return []
+  let txid: string
+  try {
+    txid = Transaction.fromBEEF(beef).id('hex')
+  } catch {
+    return []
+  }
+  const held = await storage.findOutputsForTransaction(txid)
+  const refusedEarlier = duplicates.filter((topic) => !held.some((output) => output.topic === topic))
+  if (refusedEarlier.length === 0) return []
+  for (const topic of refusedEarlier) await storage.deleteAppliedTransaction({ txid, topic })
+  const again = await engine.submit({ beef, topics: refusedEarlier, offChainValues })
+  for (const topic of refusedEarlier) if (again[topic] != null) steak[topic] = again[topic]
+  return refusedEarlier
+}
+
+/**
  * The whole HTTP surface, as a plain node request listener. Separated from the
  * server so a test can exercise the wire contract against a stand-in engine.
  */
@@ -343,9 +523,32 @@ export function createRequestHandler(
   const proofToken =
     options.proofToken != null && options.proofToken !== '' ? options.proofToken : undefined
   const chainTracker = options.chainTracker
+  const now = options.now ?? (() => new Date())
+  const components = options.components
+  // The paginator holds this process's cursor secret, so it lives as long as
+  // the handler: one per node, drawn at boot.
+  const paginator = components == null ? undefined : new HistoryPaginator(components.records, { now })
+  const exportSigner =
+    options.exportSigningKey != null && options.exportSigningKey !== ''
+      ? PrivateKey.fromHex(options.exportSigningKey)
+      : undefined
+  const identity = implementationIdentity()
 
+  const resolved: HandlerOptions = {
+    submitToken,
+    proofToken,
+    chainTracker,
+    network,
+    startedAt,
+    now,
+    components,
+    paginator,
+    exportSigner,
+    knownOnChain: options.knownOnChain,
+    software: `${identity.name}@${identity.version}`,
+  }
   return (request, response) => {
-    void handle(engine, request, response, { submitToken, proofToken, chainTracker, network, startedAt })
+    void handle(engine, request, response, resolved)
   }
 }
 
@@ -355,6 +558,12 @@ interface HandlerOptions {
   chainTracker?: ChainTracker | 'scripts only'
   network: string
   startedAt: string
+  now: () => Date
+  components?: NodeComponents
+  paginator?: HistoryPaginator
+  exportSigner?: PrivateKey
+  knownOnChain?: (txid: string) => Promise<boolean>
+  software: string
 }
 
 async function handle(
@@ -386,11 +595,29 @@ async function handle(
         // to break a probe. The full set is beside them.
         topic: TOPIC,
         service: SERVICE,
-        topics: [TOPIC, UORA_TOPIC],
-        services: [SERVICE, UORA_SERVICE],
+        topics: [TOPIC, ATTESTATION_TOPIC, UORA_TOPIC],
+        services: [SERVICE, ATTESTATION_SERVICE, UORA_SERVICE],
+        legacyTopics: [UORA_TOPIC],
+        legacyServices: [UORA_SERVICE],
         network: options.network,
         startedAt: options.startedAt,
       })
+      return
+    }
+
+    if (route === 'GET /capabilities') {
+      const components = options.components
+      json(response, 200, buildCapabilities({
+        publisherPolicy: components?.publisherPolicy,
+        serviceIdentityKey: components?.serviceIdentityKey,
+        anchorServiceKeys: components?.anchorServiceKeys,
+        ownerConsent: components?.ownerConsent,
+        exportAvailable: options.exportSigner != null,
+        networkOracleConfigured: options.knownOnChain != null,
+        at: options.now(),
+        syncPeers: components?.sync?.peers,
+        syncIntervalMs: components?.sync?.intervalMs,
+      }))
       return
     }
 
@@ -401,6 +628,22 @@ async function handle(
 
     if (route === 'GET /listLookupServiceProviders') {
       json(response, 200, await engine.listLookupServiceProviders())
+      return
+    }
+
+    if (route === 'GET /getDocumentationForTopicManager' || route === 'GET /getDocumentationForLookupServiceProvider') {
+      const params = new URL(request.url ?? '/', 'http://localhost').searchParams
+      const topic = route === 'GET /getDocumentationForTopicManager'
+      const parameter = topic ? 'manager' : 'lookupService'
+      const name = params.get(parameter)
+      const available = topic ? await engine.listTopicManagers() : await engine.listLookupServiceProviders()
+      if (!name || params.getAll(parameter).length !== 1 || !Object.hasOwn(available, name)) {
+        json(response, 400, { status: 'error', description: `unknown or missing ${parameter}` })
+        return
+      }
+      const documentation = topic ? await engine.getDocumentationForTopicManager(name) : await engine.getDocumentationForLookupServiceProvider(name)
+      response.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8', 'Access-Control-Allow-Origin': '*' })
+      response.end(documentation)
       return
     }
 
@@ -421,18 +664,26 @@ async function handle(
       const topics = topicsFrom(request)
       const { beef, offChainValues } = splitBody(request, body)
       const steak = await engine.submit({ beef, topics, offChainValues })
-      const outcomes = topics
+      let outcomes = topics
         .filter((topic) => steak[topic] != null)
         .map((topic) => [topic, admissionOutcome(steak[topic])] as const)
+      const refusedEarlier = await reconsiderRefusedEarlier(engine, options, beef, offChainValues, steak, outcomes)
+      if (refusedEarlier.length > 0) {
+        outcomes = topics
+          .filter((topic) => steak[topic] != null)
+          .map((topic) => [topic, admissionOutcome(steak[topic])] as const)
+      }
       const refused = outcomes.filter(([, outcome]) => outcome === 'none').map(([topic]) => topic)
       if (refused.length > 0) {
+        const again = refused.filter((topic) => refusedEarlier.includes(topic))
         console.warn(
           `POST /submit admitted nothing on ${refused.join(', ')} for ${txidOf(beef)}: ` +
             'not a duplicate, so the submission was refused (wrong identity key, a ' +
             'predecessor this instance never admitted, or, when OWNER_CONSENT is set, a ' +
             'TRANSFER whose actor did not prove they are the previous owner). Re-announce after repair, ' +
             'oldest state first: an index that never admitted a predecessor ' +
-            'refuses every later state.'
+            'refuses every later state.' +
+            (again.length === 0 ? '' : ` This transaction was announced and refused before on ${again.join(', ')} and was re-evaluated now, not skipped.`)
         )
       }
       // The STEAK body stays exactly what the engine returned, because that is
@@ -495,6 +746,53 @@ async function handle(
       return
     }
 
+    if (route === 'POST /requestSyncResponse') {
+      // The first half of a peer's synchronisation (GASP, as the upstream
+      // overlay protocol defines it): which outputs this index holds for the
+      // topic named in X-BSV-Topic since the peer's checkpoint. Read-only, and
+      // open like /lookup: what it lists is findable either way.
+      const header = request.headers['x-bsv-topic']
+      const topic = Array.isArray(header) ? header[0] : header
+      if (topic == null || topic === '') throw new HttpError(400, 'X-BSV-Topic header is required')
+      if (!Object.hasOwn(await engine.listTopicManagers(), topic)) throw new HttpError(400, `unknown topic ${topic}`)
+      const body = parseJsonObject(await readBody(request), 'version and since')
+      const { version, since, limit } = body
+      if (typeof version !== 'number' || !Number.isFinite(version)) throw new HttpError(400, 'version must be a number')
+      if (typeof since !== 'number' || !Number.isSafeInteger(since) || since < 0) throw new HttpError(400, 'since must be a non-negative integer')
+      if (limit !== undefined && (typeof limit !== 'number' || !Number.isSafeInteger(limit) || limit < 1)) {
+        throw new HttpError(400, 'limit must be a positive integer')
+      }
+      // The engine's storage applies no cap of its own, so an absent or a
+      // large limit would hand an anonymous peer every unspent output of the
+      // topic in one answer. The page is bounded as every other answer is;
+      // a peer holding more continues from its checkpoint next round.
+      const page = Math.min(typeof limit === 'number' ? limit : MAX_PAGE_SIZE, MAX_PAGE_SIZE)
+      json(response, 200, await engine.provideForeignSyncResponse({ version, since, limit: page }, topic))
+      return
+    }
+
+    if (route === 'POST /requestForeignGASPNode') {
+      // The second half: one transaction of a graph the peer is assembling,
+      // with its merkle path when this index holds one. The graph identifier
+      // is the outpoint at the tip of the graph, txid.outputIndex.
+      const body = parseJsonObject(await readBody(request), 'graphID, txid and outputIndex')
+      const { graphID, txid, outputIndex } = body
+      if (typeof graphID !== 'string' || !/^[0-9a-f]{64}\.\d+$/.test(graphID)) throw new HttpError(400, 'graphID must be txid.outputIndex')
+      if (typeof txid !== 'string' || !/^[0-9a-f]{64}$/.test(txid)) throw new HttpError(400, 'txid must be 64 lower-case hex characters')
+      if (typeof outputIndex !== 'number' || !Number.isSafeInteger(outputIndex) || outputIndex < 0) {
+        throw new HttpError(400, 'outputIndex must be a non-negative integer')
+      }
+      try {
+        json(response, 200, await engine.provideForeignGASPNode(graphID, txid, outputIndex))
+      } catch (cause) {
+        if (cause instanceof Error && /No matching output found|Unable to find output/.test(cause.message)) {
+          throw new HttpError(404, 'this index holds no such output in that graph')
+        }
+        throw cause
+      }
+      return
+    }
+
     if (route === 'POST /lookup') {
       const body = await readBody(request)
       let question: { service?: unknown; query?: unknown }
@@ -509,16 +807,116 @@ async function handle(
       }
       const answer = await engine.lookup({
         service: question.service,
-        query: checkedQuery(question.query),
+        query: checkedQuery(question.query, question.service),
       })
       json(response, 200, answer)
       return
     }
 
+    if (route === 'GET /history') {
+      // The export beside the bounded lookup (spec/portable-evidence.md
+      // section 1): pages of one snapshot, in the record store's own order.
+      if (options.paginator == null) {
+        throw new NamedError(503, 'history-unavailable', 'this node was started without its record store; GET /history is not served')
+      }
+      const params = url.searchParams
+      const page = await options.paginator.page({
+        selector: { passportId: params.get('passportId') ?? undefined, uid: params.get('uid') ?? undefined },
+        limit: params.get('limit'),
+        cursor: params.get('cursor'),
+      })
+      json(response, 200, page)
+      return
+    }
+
+    if (route === 'GET /evidence-package') {
+      // spec/portable-evidence.md section 2. The signer is the switch: without
+      // one there is no manifest anyone could hold this node to, so the route
+      // says so rather than serving an unsigned bundle.
+      if (options.exportSigner == null) {
+        throw new NamedError(503, 'export-unavailable', 'EXPORT_SIGNING_KEY is unset, so this node signs no evidence package; GET /history and POST /lookup remain')
+      }
+      if (options.components == null || options.paginator == null) {
+        throw new NamedError(503, 'export-unavailable', 'this node was started without its stores; GET /evidence-package is not served')
+      }
+      const passportId = url.searchParams.get('passportId')
+      if (passportId == null || passportId === '') {
+        throw new NamedError(400, 'query-invalid', 'passportId is required')
+      }
+      const envelope = await buildEvidencePackage({
+        passportId,
+        paginator: options.paginator,
+        engineStorage: options.components.engineStorage,
+        signingKey: options.exportSigner,
+        publisherPolicy: options.components.publisherPolicy,
+        serviceIdentityKey: options.components.serviceIdentityKey,
+        ownerConsent: options.components.ownerConsent,
+        chainTracker: options.chainTracker,
+        now: options.now(),
+        software: options.software,
+      })
+      if (envelope == null) {
+        throw new NamedError(404, 'passport-unknown', `this index holds no state of ${passportId}`)
+      }
+      json(response, 200, envelope)
+      return
+    }
+
+    if (route === 'POST /retract') {
+      // A writer announced before sending, as the writing rules allow, and the
+      // network refused the transaction; the index holds a phantom tip. The
+      // same bearer as /submit: whoever may add a state may withdraw one.
+      if (options.submitToken != null && !bearerAccepted(request, options.submitToken)) {
+        request.resume()
+        json(response, 401, { status: 'error', description: 'POST /retract requires the /submit bearer token' })
+        return
+      }
+      if (options.components == null) {
+        request.resume()
+        throw new NamedError(503, 'retraction-unavailable', 'this node was started without its stores; POST /retract is not served')
+      }
+      const { txid, outputIndex, reason } = parseRetraction(await readBody(request))
+      const retraction = await retractOutput({
+        storage: options.components.engineStorage,
+        lookupServices: options.components.lookupServices,
+        records: options.components.records,
+        topic: TOPIC,
+        txid,
+        outputIndex,
+        reason,
+        knownOnChain: options.knownOnChain,
+      })
+      console.warn(
+        `POST /retract removed ${TOPIC} output ${txid}:${outputIndex} (${reason})` +
+          (retraction.restoredTip == null ? '' : `; ${retraction.restoredTip.txid}:${retraction.restoredTip.outputIndex} is the tip again`) +
+          (retraction.networkChecked ? '' : '; the network was not asked, no header source is configured')
+      )
+      json(response, 200, {
+        status: 'retracted',
+        ...retraction,
+        ...(retraction.networkChecked
+          ? {}
+          : { note: 'the network was not asked whether it knows this transaction: no header source is configured (CHAIN_TRACKER=scripts-only), so only the local merkle-path check ran' }),
+      })
+      return
+    }
+
     json(response, 404, { status: 'error', description: `no route for ${route}` })
   } catch (cause) {
-    const status = cause instanceof HttpError ? cause.status : 400
     const description = cause instanceof Error ? cause.message : 'unknown error'
+    if (cause instanceof NamedError || cause instanceof HistoryError || cause instanceof RetractionRefused) {
+      // Named refusals are the client's to branch on and are not failures of
+      // this node, so they are logged as a line rather than a stack.
+      console.warn(`${route} refused (${cause.code}): ${description}`)
+      json(response, cause.status, {
+        status: 'error',
+        error: cause.code,
+        description,
+        ...('hint' in cause && cause.hint != null ? { hint: cause.hint } : {}),
+      })
+      return
+    }
+    const status = cause instanceof HttpError ? cause.status : 400
     console.error(`${route} failed:`, cause)
     json(response, status, { status: 'error', description })
   }
@@ -579,6 +977,13 @@ export async function startOverlayService(
  * configured with, but it grants this container more than it needs.
  */
 export function serviceIdentityKey(): string {
+  const declared = optionalServiceIdentityKey()
+  if (declared != null) return declared
+  throw new Error('Set SERVICE_IDENTITY_KEY (or SERVER_PRIVATE_KEY) so admission can be checked')
+}
+
+/** The same key when the environment names one, or undefined: under a publisher policy the key is optional. */
+function optionalServiceIdentityKey(): string | undefined {
   const declared = process.env.SERVICE_IDENTITY_KEY
   if (declared != null && declared !== '') return declared
   const priv = process.env.SERVER_PRIVATE_KEY
@@ -589,7 +994,7 @@ export function serviceIdentityKey(): string {
     )
     return PrivateKey.fromHex(priv).toPublicKey().toString()
   }
-  throw new Error('Set SERVICE_IDENTITY_KEY (or SERVER_PRIVATE_KEY) so admission can be checked')
+  return undefined
 }
 
 /**
@@ -647,6 +1052,26 @@ export function ownerConsentPolicy(): boolean | { authorities: string[] } {
 }
 
 /**
+ * EXPORT_SIGNING_KEY: the private key that signs evidence-package manifests
+ * (`spec/portable-evidence.md` section 2). Optional, because a node that
+ * exports nothing needs no key; malformed, it fails the boot, because a key
+ * that cannot sign is a promise the capability document would break.
+ */
+export function exportSigningKey(): string | undefined {
+  const declared = (process.env.EXPORT_SIGNING_KEY ?? '').trim()
+  if (declared === '') {
+    console.warn('EXPORT_SIGNING_KEY is unset: GET /evidence-package answers 503 export-unavailable')
+    return undefined
+  }
+  try {
+    PrivateKey.fromHex(declared)
+  } catch {
+    throw new Error('EXPORT_SIGNING_KEY is not a private key in hex')
+  }
+  return declared
+}
+
+/**
  * 'scripts only' skips header verification, which is a local-development
  * convenience and never a hosted setting: it would admit a transaction whose
  * ancestry is not proved.
@@ -660,19 +1085,50 @@ function chainTracker(network: 'main' | 'test'): ChainTracker | 'scripts only' {
   return new WhatsOnChain(network, apiKey != null && apiKey !== '' ? { apiKey } : undefined)
 }
 
-/** The engine as the environment describes it, plus whatever it has to close. */
+/**
+ * Whether the network knows a transaction, asked of the same explorer the
+ * default header source reads, for POST /retract: a transaction it answers is
+ * one the network took, and an index does not retract what a block holds. A
+ * 404 is the one negative; any other failure is neither and is reported as
+ * the source being unavailable.
+ */
+export function whatsOnChainKnows(network: 'main' | 'test', apiKey?: string): (txid: string) => Promise<boolean> {
+  const base = `https://api.whatsonchain.com/v1/bsv/${network}/tx/hash/`
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  if (apiKey != null && apiKey.trim() !== '') headers.Authorization = apiKey
+  return async (txid: string): Promise<boolean> => {
+    const response = await fetch(base + txid, { headers })
+    if (response.status === 404) return false
+    if (response.ok) return true
+    throw new Error(`the explorer answered ${response.status} for ${txid}`)
+  }
+}
+
+/** The engine as the environment describes it, plus what the routes work on and whatever it has to close. */
 async function engineFromEnvironment(
   network: 'main' | 'test',
   tracker: ChainTracker | 'scripts only'
 ): Promise<{
   engine: Engine
+  components: NodeComponents
   close: () => Promise<void>
 }> {
-  const identityKey = serviceIdentityKey()
+  // The policy first: with a chain, the single identity key is optional and,
+  // where the chain covers tm_dpp, not consulted at all.
+  const publisherPolicy = publisherPolicyFromEnvironment()
+  const identityKey = publisherPolicy == null ? serviceIdentityKey() : optionalServiceIdentityKey()
+  if (publisherPolicy != null) {
+    console.log(
+      `${TOPIC} admits under publisher policy versions ${publisherPolicy.versions.join(', ')} from ${publisherPolicy.source} ` +
+        `(${publisherPolicy.chain[publisherPolicy.chain.length - 1].scope.operatorProfile}); ` +
+        (identityKey == null ? 'no SERVICE_IDENTITY_KEY is set' : 'SERVICE_IDENTITY_KEY applies only where the policy does not cover a topic')
+    )
+  }
   const mongoUrl = process.env.MONGO_URL
 
   let records: DppRecordStore
   let anchors: UoraAnchorStore
+  let attestations: AttestationStore
   let engineStorage: InMemoryOverlayStorage | MongoOverlayStorage
   let close = async (): Promise<void> => {}
 
@@ -680,8 +1136,13 @@ async function engineFromEnvironment(
     const client = new MongoClient(mongoUrl)
     await client.connect()
     const db = client.db(process.env.MONGO_DB)
-    records = new MongoDppStorage(db)
+    const mongoRecords = new MongoDppStorage(db)
+    // Indexes and the sequence numbering of rows older than the field, before
+    // a request can ask for a page (storage.ts).
+    await mongoRecords.ensureReady()
+    records = mongoRecords
     anchors = new MongoUoraAnchorStorage(db)
+    attestations = new MongoAttestationStorage(db)
     const storage = new MongoOverlayStorage(db)
     await storage.ensureIndexes()
     engineStorage = storage
@@ -692,6 +1153,7 @@ async function engineFromEnvironment(
   } else {
     records = new InMemoryDppStorage()
     anchors = new InMemoryUoraAnchorStorage()
+    attestations = new InMemoryAttestationStorage()
     engineStorage = new InMemoryOverlayStorage()
     console.warn(
       'MONGO_URL is unset: overlay state is in memory and is lost on restart. ' +
@@ -700,10 +1162,17 @@ async function engineFromEnvironment(
   }
 
   const acceptedAnchorServices = anchorServiceKeys()
-  if (acceptedAnchorServices.length === 0) {
+  // A policy restricts the anchor rail only where its scope covers the topic;
+  // elsewhere the static list is in charge, and an empty static list admits
+  // anchors from anyone. The capability document says the same under
+  // unsupported (anchoring-service-restriction), so the warning and the
+  // document never disagree about what an empty list means.
+  const anchorsRestrictedByPolicy =
+    publisherPolicy != null && policyKeysFor(publisherPolicy.chain, new Date(), 'anchor-publisher', ATTESTATION_TOPIC) != null
+  if (acceptedAnchorServices.length === 0 && !anchorsRestrictedByPolicy) {
     console.warn(
-      `ANCHOR_SERVICE_KEYS is unset: ${UORA_TOPIC} admits any well-formed anchor, ` +
-        'whoever wrote it. Name the anchoring services on any deployment a stranger can reach.'
+      `ANCHOR_SERVICE_KEYS is unset${publisherPolicy == null ? '' : ' and the publisher policy does not cover the anchor topic'}: ` +
+        `${ATTESTATION_TOPIC} admits any well-formed anchor, whoever wrote it. Name the anchoring services on any deployment a stranger can reach.`
     )
   }
 
@@ -719,15 +1188,29 @@ async function engineFromEnvironment(
     )
   }
 
+  const sync = syncSettingsFromEnvironment()
+  if (sync.peers.length > 0) {
+    console.log(
+      `synchronising ${TOPIC} and ${ATTESTATION_TOPIC}${sync.legacy ? ` and ${UORA_TOPIC}` : ''} from ${sync.peers.join(', ')}` +
+        (sync.intervalMs > 0 ? ` every ${sync.intervalMs} ms` : ' once, at startup')
+    )
+  }
+
+  const lookupServices: Record<string, LookupService> = {
+    [SERVICE]: new DppLookupService(records),
+    [ATTESTATION_SERVICE]: new AttestationLookupService(attestations),
+    [UORA_SERVICE]: new UoraAnchorLookupService(anchors),
+  }
   const engine = new Engine(
     {
-      [TOPIC]: new DppTopicManager(identityKey, { ownerConsent }),
+      // The engine's storage is handed to tm_dpp so a state whose BEEF omits
+      // its admitted predecessor (a proven state announced alone, or one a
+      // peer offers) is judged against the predecessor this index holds.
+      [TOPIC]: new DppTopicManager(identityKey ?? '', { ownerConsent, publisherPolicy: publisherPolicy?.chain, admittedOutputs: engineStorage }),
+      [ATTESTATION_TOPIC]: new AttestationTopicManager(acceptedAnchorServices, { publisherPolicy: publisherPolicy?.chain }),
       [UORA_TOPIC]: new UoraAnchorTopicManager(acceptedAnchorServices),
     },
-    {
-      [SERVICE]: new DppLookupService(records),
-      [UORA_SERVICE]: new UoraAnchorLookupService(anchors),
-    },
+    lookupServices,
     engineStorage,
     tracker,
     process.env.PUBLIC_URL,
@@ -735,10 +1218,22 @@ async function engineFromEnvironment(
     undefined, // slapTrackers
     undefined, // broadcaster: the app's wallet already broadcast
     undefined, // advertiser: SHIP/SLAP would need a funded wallet here
-    { [TOPIC]: false, [UORA_TOPIC]: false } // no GASP sync with peers
+    // Static peers per topic when SYNC_PEERS names them, false otherwise: no
+    // GASP with anyone the operator did not name.
+    syncConfigurationFor(sync, { passport: TOPIC, attestation: ATTESTATION_TOPIC, legacy: UORA_TOPIC })
   )
 
-  return { engine, close }
+  const components: NodeComponents = {
+    records,
+    engineStorage,
+    lookupServices,
+    publisherPolicy,
+    serviceIdentityKey: identityKey,
+    anchorServiceKeys: acceptedAnchorServices,
+    ownerConsent,
+    sync: { peers: sync.peers, intervalMs: sync.intervalMs },
+  }
+  return { engine, components, close }
 }
 
 async function main(): Promise<void> {
@@ -747,7 +1242,7 @@ async function main(): Promise<void> {
   const submitToken = process.env.SUBMIT_TOKEN
   if (submitToken == null || submitToken === '') {
     console.warn(
-      'SUBMIT_TOKEN is unset: POST /submit accepts announcements from anyone. ' +
+      'SUBMIT_TOKEN is unset: POST /submit and POST /retract accept requests from anyone. ' +
         'Set it on any deployment a stranger can reach.'
     )
   }
@@ -762,18 +1257,36 @@ async function main(): Promise<void> {
   }
 
   const tracker = chainTracker(network)
-  const { engine, close } = await engineFromEnvironment(network, tracker)
+  const knownOnChain = tracker === 'scripts only'
+    ? undefined
+    : whatsOnChainKnows(network, process.env.WOC_API_KEY)
+  if (knownOnChain == null) {
+    console.warn('CHAIN_TRACKER=scripts-only: POST /retract cannot ask the network about a transaction; its answers say so')
+  }
+  const signingKey = exportSigningKey()
+  const { engine, components, close } = await engineFromEnvironment(network, tracker)
   const service = await startOverlayService(engine, {
     port,
     submitToken,
     proofToken,
     chainTracker: tracker,
     network,
+    components,
+    exportSigningKey: signingKey,
+    knownOnChain,
   })
 
   console.log(`dpp overlay listening on http://localhost:${service.port}`)
-  console.log(`topics ${TOPIC}, ${UORA_TOPIC}; services ${SERVICE}, ${UORA_SERVICE}`)
+  console.log(`topics ${TOPIC}, ${ATTESTATION_TOPIC}; services ${SERVICE}, ${ATTESTATION_SERVICE}; legacy ${UORA_TOPIC}, ${UORA_SERVICE}`)
   console.log(`network ${network}`)
+
+  // The first round after the socket is listening, so a peer that is also a
+  // peer of ours can answer us; later rounds on the interval. Nothing awaits
+  // a round: a peer that is down is a log line, not a stalled node.
+  const synchronisation = components.sync != null && components.sync.peers.length > 0
+    ? startPeerSynchronisation(engine, { intervalMs: components.sync.intervalMs, peers: components.sync.peers })
+    : undefined
+  if (synchronisation != null) void synchronisation.runOnce()
 
   let stopping = false
   for (const signal of ['SIGINT', 'SIGTERM'] as const) {
@@ -781,6 +1294,7 @@ async function main(): Promise<void> {
       if (stopping) return
       stopping = true
       console.log(`${signal} received, draining`)
+      synchronisation?.stop()
       void service
         .close()
         .then(close)
