@@ -1,4 +1,4 @@
-# The packages and the fixtures, on every change: build, typecheck, the two
+# The packages and the fixtures, on every change: build, typecheck, the workspace
 # test suites (which include the fixture-consistency checks holding
 # fixtures/*.json identical to their source modules), and the index image, so
 # a change that breaks the deployable artefact is caught here rather than at a
@@ -25,8 +25,11 @@ jobs:
       - run: npm test
       - run: node examples/verify-passport.mjs --fixture
       - run: node examples/verify-passport.mjs --fixture --owner-consent
+      - run: node examples/verify-passport.mjs --fixture --report
       - run: node examples/write-passport.mjs --dry-run
       - run: node examples/verify-anchor.mjs
+      - run: node examples/verify-attestation-anchor.mjs
+      - run: python3 conformance/independent/python/dpp_verify.py
 
   image:
     runs-on: ubuntu-latest

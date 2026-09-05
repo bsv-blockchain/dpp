@@ -1,25 +1,18 @@
-# Docker build context hygiene. The only image built from here is
+# Docker build context: an allowlist. The only image built from here is
 # packages/overlay-topics/Dockerfile, whose context is the repository root
-# because the service depends on the @bsv/dpp-core workspace.
+# because the service depends on the workspace packages. Everything is
+# excluded unless the Dockerfile copies it, so no local working material,
+# specification, fixture or documentation can enter the context by accident.
+*
+!package.json
+!package-lock.json
+!tsconfig.base.json
+!packages/
 
-# Secrets never enter an image; configuration is environment only.
-.env
-.env.*
-!.env.example
-
-# Reinstalled inside the image, and the largest thing in the tree by far.
-node_modules/
+# Reinstalled and rebuilt inside the image, never copied.
 **/node_modules/
-
-# Build outputs are produced in the image, not copied into it.
-dist/
 **/dist/
 
-.git/
-.github/
-spec/
-fixtures/
-contracts/
-examples/
-*.log
-.DS_Store
+# Secrets never enter an image; configuration is environment only.
+**/.env
+**/.env.*
