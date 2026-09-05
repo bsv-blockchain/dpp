@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/paginated-history.schema.json",
+  "title": "DPP paginated history page, version 1",
+  "description": "One page of an export over a stable snapshot (spec/portable-evidence.md section 1). An extension a service serves beside the standard bounded lookups, never in place of them; completeness is relative to the snapshot's scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pageVersion", "items", "nextCursor", "snapshotId", "scope", "truncated", "completeForSnapshot"],
+  "properties": {
+    "pageVersion": { "const": "1" },
+    "items": { "type": "array", "maxItems": 500 },
+    "nextCursor": { "type": ["string", "null"], "description": "Opaque, bound to the query and the snapshot; null when exhausted." },
+    "snapshotId": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "query"],
+      "properties": {
+        "source": { "type": "string", "description": "The service or topic answered from." },
+        "query": { "type": "object" },
+        "sequenceRange": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "from": { "type": "integer", "minimum": 0 }, "to": { "type": "integer", "minimum": 0 } }
+        }
+      }
+    },
+    "truncated": { "type": "boolean" },
+    "completeForSnapshot": { "type": "boolean" },
+    "pageSize": { "type": "integer", "minimum": 1, "maximum": 500 }
+  }
+}

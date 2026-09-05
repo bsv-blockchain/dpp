@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/native-evidence-extension.schema.json",
+  "title": "DPP native evidence extension, version 1",
+  "description": "A reference, carried inside a credential in an external representation, to evidence that already exists on the native rails (spec/exchange.md section 5). A verifier resolves and verifies each reference independently; the credential's own signature is over these references, so no digest is circular. Identified by urn:bsv:dpp:native-evidence:1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "passportId", "state", "nativeProfile", "mappingVersion"],
+  "properties": {
+    "type": { "const": "urn:bsv:dpp:native-evidence:1" },
+    "passportId": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The exact passport identifier the referenced state carries in field 3." },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["txid", "outputIndex"],
+      "properties": {
+        "txid": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "outputIndex": { "type": "integer", "minimum": 0 },
+        "op": { "enum": ["ACTIVATE", "SOLD", "RESOLD", "REPAIRED", "RECYCLED", "EDIT", "TRANSFER"] }
+      }
+    },
+    "genesis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["txid", "outputIndex"],
+      "properties": {
+        "txid": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "outputIndex": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "nativeClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["representation", "digest"],
+      "properties": {
+        "representation": { "const": "dpp-lifecycle-json-v1" },
+        "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the complete signed native claim's canonical bytes, the digest the anchor commits to." },
+        "issuer": { "type": "string", "maxLength": 512 },
+        "eventType": { "enum": ["Origin", "Transfer", "Transformation", "Disposition"] }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["txid", "outputIndex", "format"],
+      "properties": {
+        "txid": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "outputIndex": { "type": "integer", "minimum": 0 },
+        "format": { "const": "bsv-attestation-anchor-v1" },
+        "anchoredBy": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" }
+      }
+    },
+    "nativeProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "mappingVersion": { "type": "string", "minLength": 1, "description": "The version of the exchange profile's mapping under which the external credential was produced from the native evidence." },
+    "mappingResult": { "enum": ["lossless", "transformed", "unsupported", "insufficient-data"] },
+    "losses": { "type": "array", "items": { "type": "string" }, "description": "What the mapping could not carry, in words; never silent." }
+  }
+}

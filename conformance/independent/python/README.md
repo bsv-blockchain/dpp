@@ -1,0 +1,11 @@
+# An independent reader, in Python
+
+`dpp_verify.py` reads the conformance fixtures with an implementation that shares no code with the reference packages: secp256k1 arithmetic, strict DER, ECDSA verification, the BRC-42 child derivation, the PushDrop layout and its refusals, the two signature preimages, the chain invariants and the owner-signed transfer, the native claim and the generic anchor, all written from the specification text. It uses the Python standard library only.
+
+```
+python3 conformance/independent/python/dpp_verify.py
+```
+
+It prints one sentence per check and never a score, as `GOVERNANCE.md` requires of every conformance surface, and exits 0 only when every sentence holds. It covers the reader roles: it verifies and refuses, and does not sign, so the writer-side vectors are read for what a reader can check in them (the transaction hashes to its identifier and carries one state at the pinned index). For the publisher policy vectors it recomputes every version's canonical JSON preimage and digest, verifies every authorisation and countersignature, follows the digest chain and the version and time order, names the keys active at each probed instant, and re-derives six of the refusal conditions (a bad signature or countersignature, a missing or mismatched supersedes, time order, version order); the remaining policy-rule refusals are checked to name a version in the chain, not re-implemented. For the evidence package vectors it recomputes the manifest preimage, the signature verdict and the inventory verdict (digests, lengths, unlisted files and the path rules), and leaves the structure verdict to the reference.
+
+What this is and is not. It is engineering evidence that the specification is complete enough for a second implementation to reproduce every pinned byte and refuse every refusal vector without reading the reference code. It was written by the same programme as the reference, so it is not the organisationally independent implementation `GOVERNANCE.md` asks for before version 1.0; the ledger row `GOV-independent-implementation` records that distinction.

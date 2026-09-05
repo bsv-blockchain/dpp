@@ -1,0 +1,393 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/verification-report.schema.json",
+  "title": "DPP verification report, version 1",
+  "description": "The report a verifier produces for one passport's evidence, as spec/verification.md defines. Sixteen named checks, four answers each, an independently expected subject, and an observation of the latest state that is never a proof.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reportVersion",
+    "checkedAt",
+    "expectedSubject",
+    "suppliedTip",
+    "policyId",
+    "checks",
+    "observations",
+    "limits"
+  ],
+  "properties": {
+    "reportVersion": {
+      "const": "1"
+    },
+    "checkedAt": {
+      "$ref": "#/$defs/dateTime"
+    },
+    "expectedSubject": {
+      "$ref": "#/$defs/expectedSubject"
+    },
+    "suppliedTip": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/outpoint"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "policyId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/check"
+      },
+      "description": "Exactly one entry per check name, in the order the $defs/checkName enumeration lists them."
+    },
+    "observations": {
+      "$ref": "#/$defs/observations"
+    },
+    "limits": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "dateTime": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "txid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "outpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "txid",
+        "outputIndex"
+      ],
+      "properties": {
+        "txid": {
+          "$ref": "#/$defs/txid"
+        },
+        "outputIndex": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "expectedSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passportId",
+        "source"
+      ],
+      "properties": {
+        "passportId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "source": {
+          "enum": [
+            "request-context",
+            "established-binding",
+            "none"
+          ]
+        },
+        "productIdentifier": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "expectedIssuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "expectedGenesisOutpoint": {
+          "$ref": "#/$defs/outpoint"
+        },
+        "expectedStateOutpoint": {
+          "$ref": "#/$defs/outpoint"
+        }
+      }
+    },
+    "checkName": {
+      "enum": [
+        "recordEncoding",
+        "actorSignatures",
+        "publisherSignatures",
+        "linkage",
+        "inclusion",
+        "nativeAttestationSignature",
+        "anchorSignature",
+        "anchorKeyDerivation",
+        "anchorDigestAndMetadataBinding",
+        "externalCredentialProof",
+        "subjectBinding",
+        "issuerAuthority",
+        "schema",
+        "credentialTime",
+        "credentialStatus",
+        "evidenceAvailability"
+      ]
+    },
+    "checkStatus": {
+      "enum": [
+        "pass",
+        "fail",
+        "unknown",
+        "not-applicable"
+      ]
+    },
+    "reasonCode": {
+      "type": "string",
+      "description": "A shared code from the sharedReasonCode list, or an implementation code beginning with x-.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/sharedReasonCode"
+        },
+        {
+          "pattern": "^x-[a-z0-9]+(-[a-z0-9]+)*$"
+        }
+      ]
+    },
+    "sharedReasonCode": {
+      "enum": [
+        "no-evidence",
+        "not-selected",
+        "publisher-not-selected",
+        "publisher-not-authorised",
+        "publisher-policy-invalid",
+        "decode-failed",
+        "signature-invalid",
+        "key-derivation-mismatch",
+        "link-broken",
+        "consent-not-proven",
+        "proof-absent",
+        "proof-refuted",
+        "header-source-unavailable",
+        "digest-mismatch",
+        "metadata-mismatch",
+        "secured-bytes-absent",
+        "representation-unsupported",
+        "suite-unsupported",
+        "no-external-credential",
+        "subject-mismatch",
+        "subject-not-independent",
+        "genesis-ambiguous",
+        "genesis-mismatch",
+        "state-mismatch",
+        "issuer-mismatch",
+        "policy-missing",
+        "authority-not-required",
+        "authority-unconfirmed",
+        "authority-unavailable",
+        "schema-invalid",
+        "schema-unavailable",
+        "not-yet-valid",
+        "expired",
+        "time-invalid",
+        "status-unset",
+        "status-revoked",
+        "status-suspended",
+        "status-unknown",
+        "status-unauthenticated",
+        "status-stale",
+        "status-purpose-unsupported",
+        "format-defines-no-status",
+        "referenced-artefact-unavailable",
+        "referenced-artefact-mismatch",
+        "verifier-not-supplied",
+        "not-inspected",
+        "resource-limit"
+      ]
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "status",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/checkName"
+        },
+        "status": {
+          "$ref": "#/$defs/checkStatus"
+        },
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "artefact": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "outpoint": {
+              "$ref": "#/$defs/outpoint"
+            },
+            "stateIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "detail": {}
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "fail",
+                  "unknown",
+                  "not-applicable"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "reasonCode"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "pass"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidenceRefs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "observationSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "observedAt",
+        "result"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "overlay-lookup",
+            "spend-status",
+            "header-source",
+            "registry",
+            "other"
+          ]
+        },
+        "observedAt": {
+          "$ref": "#/$defs/dateTime"
+        },
+        "result": {
+          "enum": [
+            "unspent",
+            "spent",
+            "not-found",
+            "unavailable",
+            "conflicting"
+          ]
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blockHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "spendingTxid": {
+          "$ref": "#/$defs/txid"
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "latestState",
+        "sources",
+        "queryScope",
+        "observedAt",
+        "candidateOutpoints"
+      ],
+      "properties": {
+        "latestState": {
+          "enum": [
+            "observed",
+            "superseded",
+            "conflicting",
+            "unknown"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/observationSource"
+          }
+        },
+        "queryScope": {
+          "type": "string"
+        },
+        "observedAt": {
+          "$ref": "#/$defs/dateTime"
+        },
+        "candidateOutpoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/outpoint"
+          }
+        }
+      }
+    }
+  }
+}

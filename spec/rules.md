@@ -1,96 +1,100 @@
-# The rules: attestations, canonical bytes, and the anchor
+# Attestations and complete-representation anchors
 
-**Status: working draft, pre-1.0.** This document defines the second proof rail: the signed lifecycle attestation, the canonical bytes both sides hash, and the on-chain anchor output that commits to it. The record model is defined in [`record-model.md`](record-model.md); the two rails never share an output, and stopping either leaves the other verifying. The attestation wire shape runs in production and remains a proposal between the two implementing workstreams until it is jointly accepted in writing, which is part of what pre-1.0 means here.
+**Status: working draft, pre-1.0.** This document defines native lifecycle claims and the versioned BSV anchor shared by native claims and VSC credentials. [The VSC compatibility profile](vsc-profile.md) defines the separate credential rules. [Historical native claims and anchor v3](legacy-uora-anchor-v3.md) retain their original verification rules. A format name MUST select one exact byte contract.
 
-## 1. The two rails, briefly
+## 1. Independent evidence
 
-The passport rail answers what this thing is and what has happened to it: the record itself, on chain, as `record-model.md` defines. The anchor rail answers who claimed that and when the claim existed: every lifecycle attestation is canonicalised, hashed, and its digest written to chain in an anchor output. The attestation itself never goes on chain, which is what makes it structurally impossible for personal data to reach the chain through this rail.
+The passport token records native state transitions under [record-model.md](record-model.md). A lifecycle issuer signs a claim about an identified subject. An anchoring service commits to the complete secured representation. These roles MAY be performed by different parties. An attestation need not spend a passport token; an anchor never shares the token output.
 
-## 2. The lifecycle vocabulary
+A valid BSV anchor establishes its service's signature over a commitment and metadata. A mining proof establishes inclusion at a chain position. Neither establishes the credential issuer's authority, the truth of an event, current credential status, availability of undisclosed evidence or the absence of later events. Implementations MUST report those checks separately.
 
-Every record operation maps to one of four lifecycle attestation types, drawn from the UORA vocabulary. The mapping is canonical and total:
+## 2. Native lifecycle vocabulary
 
-| Operation | Attestation type |
+The native claim records the token operation's classification. These labels are not a complete UORA credential or VSC event model.
+
+| Native operation | eventType |
 |---|---|
-| `ACTIVATE` | `Origin` |
-| `SOLD` | `Transfer` |
-| `RESOLD` | `Transfer` |
-| `TRANSFER` | `Transfer` |
-| `REPAIRED` | `Transformation` |
-| `EDIT` | `Transformation` |
-| `RECYCLED` | `Disposition` |
+| ACTIVATE | Origin |
+| SOLD, RESOLD, TRANSFER | Transfer |
+| REPAIRED, EDIT | Transformation |
+| RECYCLED | Disposition |
 
-The operation set is the record's own vocabulary; the four types are how a record's history reads to lifecycle-attestation tooling. The type travels in the attestation as `uora_type`.
+An EDIT is a native metadata operation, not evidence that a physical transformation occurred. A transfer of token control does not by itself establish physical movement, custody or legal ownership. A VSC mapping MUST use actual event evidence and report insufficient data where required fields or authority are unavailable. It MUST NOT manufacture locations, actors, serial identities or predecessor events.
 
-## 3. The attestation claim
+A mapping from a native operation to an external lifecycle semantics is conditional, and every profile states its conditions ([`profiles.md`](profiles.md) §2, `eventMappings`; [`exchange.md`](exchange.md) §2). ACTIVATE maps to a manufacture or commissioning event only with manufacturing evidence; SOLD, RESOLD and TRANSFER map to a physical move or change of custody only with actual source, destination or custody evidence; REPAIRED maps to a modification only with repair evidence; EDIT remains a metadata revision; RECYCLED distinguishes disposition of the item from a process whose outputs carry new identities. A mapping result is exactly one of `lossless`, `transformed`, `unsupported` or `insufficient-data`, and a result other than `lossless` carries the list of what was lost or missing. No field is dropped silently. The evidence a mapping asks for is named by facet, and each facet is a reference to a record (a claim digest, an outpoint, a document digest), never a bare flag: `facility`, `time` and `responsibleParty` for an origin; `source` and `destination`, or a `custodyRecord`, for a transfer; `workDone`, `performedBy` and `performedAt` for a repair; `dispositionKind` and, for a process, `outputs` for a disposition. A lifecycle claim that carries these facets under these names in its payload is the evidence; a claim that does not is not.
 
-A signed attestation is a JSON object with these properties, all covered by the signature and the digest; `signature` itself is not among them:
+## 3. Native signed claim
 
-| Property | Type | Meaning |
+A current native claim has exactly the following properties; issuerKeyDid is optional only under the stated rule. Unknown fields and ambiguous legacy/current mixtures MUST be rejected.
+
+| Property | Requirement |
+|---|---|
+| claimFormat | Literal `dpp-lifecycle-v1` |
+| passportId | Nonempty printable UTF-8, at most 512 bytes; the subject identifier |
+| recordId | Nonempty printable UTF-8, at most 512 bytes; exact native state reference |
+| eventType | One of Origin, Transfer, Transformation, Disposition |
+| timestamp | ISO date-time with a timezone and valid calendar date |
+| issuer | DID of the claiming entity, at most 512 UTF-8 bytes |
+| issuerKeyId | Attribution label for the signing role, at most 256 UTF-8 bytes |
+| issuerKeyDid | A compressed secp256k1 did:key, required when issuer is not did:key; forbidden when issuer is did:key |
+| profile | Selected product data profile, at most 256 UTF-8 bytes |
+| profile_version | Positive safe integer; independent of claimFormat and VSC profile versions |
+| signature | Canonical ECDSA DER, encoded as lowercase hex |
+
+String fields MUST reject C0/C1/DEL controls and malformed UTF-8. The signature signs SHA-256 of the restricted canonical JSON of every property except signature. It uses the issuer identity key's BRC-42 child for `[1, 'dpp attestation v1']`, key identifier passportId, counterparty anyone. issuerKeyId is an attribution field, not the derivation key identifier. A BRC-100 createSignature call supplies the canonical bytes as data.
+
+A did:key issuer identifies the native signing root directly. When issuer is resolvable, issuerKeyDid establishes only which key signed. A verifier MUST separately authenticate that key's relationship to the named issuer and applicable signing authority. It MUST NOT treat a key nominated by the payload as proof of that relationship. Application accounts, brands and operator hosting roles confer no authority through this encoding.
+
+## 4. Secured representation bytes
+
+Signing and commitment preimages are different:
+
+| representation | mediaType | Bytes hashed by the anchor |
 |---|---|---|
-| `passportId` | string | The record the claim is about. At most 512 bytes of UTF-8, the bound [`record-model.md`](record-model.md) §3 sets on the same identifier and for the same reason: it is the key identifier of the signature below, and a conforming wallet refuses a BRC-42 key identifier above 800 characters. |
-| `recordId` | string | The state within the record. |
-| `uora_type` | string | One of the four types in §2. |
-| `timestamp` | string | ISO 8601. |
-| `issuer` | string | The party making the claim, as a DID. A `did:key` decodes with no network to the issuer's identity key, the parent from which the signing child is derived; a resolvable DID may be used instead, in which case an emitter must put the decodable name in `issuerKeyDid`. |
-| `issuerKeyId` | string | The acting party's published identifier within the issuer, carried for attribution. It participates in no derivation: the signature's key identifier is `passportId`, as the signature paragraph below states. |
-| `profile` | string | The industry data profile the record follows. |
-| `profile_version` | integer | The profile's version. |
-| `issuerKeyDid` | string, optional | The issuer's key as a `did:key`, emitted only when `issuer` is not itself one. A reader resolves the decodable name as: `issuer` when it is a `did:key`, else `issuerKeyDid` when present, else `issuer`. An emitter must never produce both a `did:key` issuer and this property; a reader meeting that shape prefers the `did:key` issuer rather than refusing, so the redundant property can never redirect verification to a key the named issuer does not hold. |
+| dpp-lifecycle-json-v1 | application/json | Restricted canonical JSON of the complete signed native claim, INCLUDING signature |
+| vsc-seal-json-v1 | application/vc+ld+json | Exact UTF-8 bytes of the complete issued VSC compatibility credential, INCLUDING its Data Integrity proof |
 
-**The two-names rule.** A resolvable DID and a `did:key` are two names for one key, and each sits where its reader can use it: the resolvable name in `issuer` for tooling that can reach a resolver, the offline-decodable name in `issuerKeyDid` and in the anchor's issuer field for a reader holding one transaction and nothing else.
+Restricted canonical JSON sorts property names by code unit, uses JSON string escaping, no whitespace, and only string values or safe integers. Other values are rejected. An omitted optional property differs from an empty value. This rule applies to the native flat claim only. VSC Data Integrity signatures use their selected suite's JSON-LD/RDF canonicalisation; they MUST NOT use the native canonicaliser.
 
-**The signature.** ECDSA in DER over the SHA-256 of the canonical bytes (§4), made with the BRC-42 child of the issuer's key for the BRC-43 protocol identifier `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`: the invoice number is `1-dpp attestation v1-<passportId>`, and the construction is the one [`record-model.md`](record-model.md) §5 spells out, with the issuer's key as the parent. It travels in the JSON as `signature`, the DER bytes in lower-case hex. This mirrors the record's server signature idiom deliberately, so one verification recipe covers both rails: decode a key, derive the child, check DER. Making it is the BRC-100 `createSignature` operation with `data` set to the canonical bytes, so an issuer signs from its wallet and no key leaves it. A verifier needs no wallet, no secret, and nothing from any operator beyond what is published.
+For a VSC credential, even whitespace changes produce different committed representation bytes. Store and return the original bytes. A projection, corrected credential or selectively disclosed presentation is a different representation with its own verification; it cannot inherit an exact-byte anchor merely because some visible claims match. An implementation MUST reject duplicate JSON keys before accepting a secured JSON representation.
 
-**What a valid signature proves, exactly.** That the nominated key signed these bytes. When `issuer` is a resolvable DID, tying the key to the party named is a second step that needs the resolver; the claim's payload alone cannot settle it.
+## 5. BSV anchor v1
 
-## 4. Canonical bytes
+The prefix is `bsv-attestation-anchor-v1`. The locking script is exactly:
 
-The bytes both sides sign and hash are a deliberate subset of RFC 8785 (JCS), not an implementation of it: keys sorted by code unit, no whitespace, string values JSON-escaped, integer values only when they are safe integers, and a refusal for everything else. The refusal is the feature. JCS is mostly a specification for hard cases this payload does not contain, and a partial implementation that silently mishandled one would let two implementations agree on every value they had tested and differ on the first they had not. Under this rule, two honest encoders of the same claim produce identical bytes or an error, never a second encoding. No ecosystem library is required to produce the bytes, and that is a feature rather than a gap: a canonicaliser this small is written in an afternoon in any language, and the fixture is what checks it.
-
-An absent optional property and a present-but-empty one are different byte strings and therefore different digests; only one of them is a claim. Encoders must omit absent properties entirely, and the canonicaliser refuses an undefined value rather than skipping it.
-
-## 5. The anchor output: `uora-anchor-v3`
-
-One anchor is one output whose locking script is:
-
-```
-<33-byte compressed public key> OP_CHECKSIG <field 1> ... <field 8> OP_2DROP x4
+```text
+<33-byte compressed public key> OP_CHECKSIG <field 1> ... <field 10> OP_2DROP x5
 ```
 
-The shape is a BRC-48 PushDrop output with the locking key first, as the record's is, and as there the template's own appended signature is not used: it signs the bare concatenation of the fields, which is exactly the property the signing preimage below exists to avoid, so a conforming writer signs the preimage itself and carries the result as field 8. A general-purpose PushDrop decoder is a discovery tool for anchors and not a conforming reader, for the reasons [`record-model.md`](record-model.md) §2 gives.
-
-Fields 1 to 7 are UTF-8, and each must be non-empty printable text: control characters (C0, `0x7F` and the C1 range) are refused, and a field that fails a UTF-8 round trip refuses the anchor. Field 8 is raw bytes, never UTF-8. Three fields carry length bounds, and they are part of the format: an index admits from whoever can reach it, so a field a stranger controls must not be a field a stranger can make expensive.
-
-| # | Field | Rule |
+| Field | Name | Rule |
 |---|---|---|
-| 1 | prefix | The string `uora-anchor-v3`. The prefix versions the layout: a change of layout is a change of prefix. |
-| 2 | digest | 64 lower-case hex characters: the SHA-256 of the attestation's canonical bytes (§4). |
-| 3 | attestation id | The writing service's identifier for the attestation. At most 256 characters. |
-| 4 | issuer | The claiming party's key as a `did:key`. Carried, not proved: the anchor repeats what the attestation says, and the attestation's own signature is what proves it. |
-| 5 | subject | What the claim is about: a passport identifier. At most 512 characters. |
-| 6 | type | The lifecycle type, verbatim. At most 64 characters. |
-| 7 | anchored by | The anchoring service's published identity key, in canonical compressed lower-case hex. Proved, not merely carried: see the locking rule. |
-| 8 | signature | Raw ECDSA DER bytes, over the SHA-256 of the signing preimage of fields 1 to 7. |
+| 1 | prefix | bsv-attestation-anchor-v1 |
+| 2 | digest | Lowercase 64-hex SHA-256 of the complete secured representation |
+| 3 | attestationId | At most 256 UTF-8 bytes |
+| 4 | issuer | Carried identifier, at most 512 UTF-8 bytes; no secp256k1 restriction |
+| 5 | subject | Carried product/passport identifier, at most 512 UTF-8 bytes |
+| 6 | attestationType | At most 128 UTF-8 bytes; native eventType or VSC-SEAL |
+| 7 | representation | Versioned representation identifier, at most 128 UTF-8 bytes |
+| 8 | mediaType | At most 128 UTF-8 bytes |
+| 9 | anchoredBy | Anchoring service identity key, canonical lowercase compressed secp256k1 hex |
+| 10 | signature | Raw canonical ECDSA DER |
 
-**The signing preimage puts every field behind its own length.** Fields 1 to 7 are serialised as a Bitcoin VarInt length followed by the field bytes, concatenated, and field 8 signs that. The VarInt is the transaction format's own: one byte below 253, then the markers `0xfd`, `0xfe` and `0xff` followed by two, four or eight little-endian bytes. Any other split of the same bytes is a different preimage, so a reader that rebuilds the preimage from the parsed fields gets boundary integrity from the signature itself. This is the lesson the previous layout taught: a signature over the bare concatenation authenticates the total byte string and says nothing about where one field ends and the next begins, and the two adjacent free-text fields could be re-cut into a different subject and type with the signature copied across unchanged. A conforming reader refuses the superseded `uora-anchor-v2` prefix outright.
+Fields 1-9 MUST be nonempty printable text, round-trip UTF-8 and exclude C0/C1/DEL controls. The signature preimage is the concatenation of each field's Bitcoin VarInt byte length and its bytes. The service signs SHA-256 of that preimage using its BRC-42 child for `[1, 'bsv attestation anchor v1']`, key identifier attestationId, counterparty anyone. The locking key MUST equal that same openly derived child.
 
-**The locking rule is what attributes the anchor.** The output's locking key must be the BRC-42 child of the field-7 identity key, for the BRC-43 protocol identifier `[1, 'uora anchor v3']`, key identifier equal to the attestation id, counterparty `anyone`. The invoice number is therefore `1-uora anchor v3-<attestation id>`, and the 256-character bound on field 3 keeps it inside the 800-character ceiling a conforming wallet applies to key identifiers. Counterparty `anyone` is what makes the attribution checkable by a stranger: reproducing the child key needs only the published identity key, and producing a valid output needs its private half. An index can therefore admit anchors from a service it has never been configured to know, and still say whose each one is.
+Readers MUST reject incorrect field counts, prefixes, bounds, UTF-8, keys, signatures or drop tails, including trailing script content. A signature over unframed concatenation is invalid. Unknown representation identifiers may be indexed as opaque commitments, but content verification MUST return unsupported until their rules are known.
 
-**An anchor is a leaf.** It is never spent, and it never carries the attestation, only the digest.
+The anchor carries searchable metadata publicly as well as a digest. Issuers and operators MUST consider disclosure and correlation when selecting identifiers. Keeping the credential body off chain does not make all anchor metadata anonymous.
 
-**The locking push and the tail are exact.** A conforming writer emits the 33-byte compressed push and the exact `OP_2DROP x4` tail, and a conforming reader refuses anything else, as the record rail's reader does for its own layout. The reference reader once accepted a 65-byte uncompressed push and stopped at the first drop opcode without validating the tail; both leniencies were recorded here as defects rather than licence, both have been removed, and the fixture's `uncompressedKey` and `malformedTail` vectors are what keeps them removed.
+## 6. Verification and discovery
 
-**Two parties appear in an anchor and they are not the same one.** The issuer (field 4) made the claim; the anchoring service (field 7) wrote the output. The anchor proves the second and merely repeats the first. Conflating them is the one misreading this format invites.
+A reader checks the exact script, service signature and key derivation, then checks the supplied secured bytes against the digest. It verifies the representation using its own rules and compares the verified issuer, subject, identifier and type with all carried metadata. For native claims, the registry identifier is `urn:sha256:` followed by the complete-representation digest. For VSC, attestationId is the credential id; subject MUST be one of its signed product identifiers. An unsupported or unavailable content check remains distinct from a verified anchor.
 
-## 6. Verifying an anchor
+Mining proof and block-header validation are separate. The new topic is tm_attestation and the lookup service is ls_attestation. They return anchor transaction evidence, not a credential-validity assertion. [The overlay contract](../contracts/overlay.yaml) defines bounded cursor queries. One or multiple operators may serve the same evidence under these rules.
 
-A verifier holding an attestation and any public copy of the anchoring transaction checks: the canonical bytes of the attestation hash to field 2; the attestation's own signature verifies as §3 describes; the anchor's field-8 signature verifies over the SHA-256 of the length-delimited preimage against the field-7 service's derived key; and the locking key equals the derived child. No call to the writing service is required at any step.
+## 7. Compatibility and fixtures
 
-## 7. Conformance fixtures
+Existing uora-anchor-v3 outputs remain historical native commitments over the old unsigned canonical claim. They MUST NOT be interpreted under the new signature-inclusive digest rule. The old uora_type field, prefixes and BRC derivations are preserved only for historical decoding; new native writes use eventType and claimFormat. Superseded uora-anchor-v2 remains refused.
 
-The reference fixture pins one complete anchor byte for byte, from claim JSON through canonical bytes, digest, derived locking key and full locking script, together with re-cut variants that every conforming reader must refuse. It is maintained as a verbatim copy in each implementing repository, because the implementations deliberately cannot import one another; the fixtures in [`../fixtures/`](../fixtures/) are the same bytes. A fixture with only positive vectors certifies that a format accepts what it should, never that it refuses what it must, which is why the refusal vectors are part of the fixture and not an appendix.
+Legacy topics tm_uora_dpp and ls_uora_dpp are separate historical interfaces, not aliases for new-format evidence. Migration adds new stores and indexes, retains original bytes and uses explicit format selection. It never rewrites an old anchor or silently re-ranks historical claims under another policy.
 
-## 8. Normative and implementation
-
-What any conforming implementation must reproduce: the claim properties and their signature rule, the canonical bytes, the eight-field anchor layout, the length-delimited signing preimage, the locking derivation, and verification against any public transaction source plus the attestation. What is a build's own choice: the wallet basket name, the output's satoshi value, how attestations are stored and served, and which index makes anchors findable.
+[The portable anchor fixture](../fixtures/attestation-anchor-v1.json) fixes the signed claim, complete representation bytes, digest, nine framed fields, derived key, signature and script. Independent readers and writers MUST agree on these bytes and reject the mutation cases in the reference tests.

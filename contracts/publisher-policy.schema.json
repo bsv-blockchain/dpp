@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/publisher-policy.schema.json",
+  "title": "DPP publisher key policy, version 1",
+  "description": "The bounded set of keys authorised to countersign admitted states and anchors for an operator or a federation (spec/services.md section 1). Each policy version is a complete statement; a new version names the digest of the one it supersedes and is authorised by a signature that the previous version's rules accept. A retired key keeps authenticating the states it signed while active, and a state is checked against the key active at the state's time, never against the newest list. Canonical JSON for this document: object keys sorted recursively by code point, no whitespace, arrays in order, undefined members omitted, and only strings, booleans and safe integers as values.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "policyFormat",
+    "policyVersion",
+    "scope",
+    "issuedAt",
+    "publishers",
+    "authorisation"
+  ],
+  "properties": {
+    "policyFormat": {
+      "const": "dpp-publisher-policy@1"
+    },
+    "policyVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Strictly increasing within one scope."
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operatorProfile",
+        "operators"
+      ],
+      "properties": {
+        "operatorProfile": {
+          "enum": [
+            "single-operator@1",
+            "federated-operators@1"
+          ]
+        },
+        "operators": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Operator identifiers: a DID or a named deployment. Operator identity is distinct from every publisher key below."
+          }
+        },
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The topics the policy covers; absent means every topic the operators serve."
+        }
+      }
+    },
+    "issuedAt": {
+      "$ref": "#/$defs/dateTime"
+    },
+    "supersedes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policyVersion",
+        "sha256"
+      ],
+      "properties": {
+        "policyVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 of the superseded policy's canonical JSON, signatures included, so history is a chain and no version is silently rewritten."
+        }
+      }
+    },
+    "publishers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "role",
+          "activeFrom"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^0[23][0-9a-f]{64}$",
+            "description": "Compressed public key. For tm_dpp this is the identity key the service's BRC-42 countersignature derives from; for anchors it is the service identity the anchor's field-8 key derives from."
+          },
+          "role": {
+            "enum": [
+              "state-publisher",
+              "anchor-publisher"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "Which operator holds the key; absent in a single-operator scope."
+          },
+          "activeFrom": {
+            "$ref": "#/$defs/dateTime"
+          },
+          "retiredAt": {
+            "$ref": "#/$defs/dateTime",
+            "description": "After this instant the key authorises nothing new; states it signed while active remain authentic."
+          },
+          "custody": {
+            "type": "string",
+            "description": "Where the key lives, in the vocabulary of spec/custody.md section 5; informative."
+          }
+        }
+      }
+    },
+    "authorisation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "signer",
+        "suite",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "genesis",
+            "rotation",
+            "handover"
+          ],
+          "description": "genesis: the first version of a scope, authorised by the identity key of an operator named in scope.operators; rotation: the same operators replace keys, authorised by a key active under the superseded version and, in a federation, countersigned by another operator's identity key; handover: the operator set changes, authorised by a key active under the superseded version and countersigned by an incoming operator's identity key."
+        },
+        "signer": {
+          "type": "string",
+          "pattern": "^0[23][0-9a-f]{64}$"
+        },
+        "suite": {
+          "const": "bsv-ecdsa-der",
+          "description": "ECDSA over SHA-256 of the canonical JSON of this document without authorisation.value and authorisation.countersignature, DER encoded; the countersignature, when present, is over the same bytes."
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        },
+        "countersigner": {
+          "type": "string",
+          "pattern": "^0[23][0-9a-f]{64}$"
+        },
+        "countersignature": {
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "dateTime": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    }
+  }
+}

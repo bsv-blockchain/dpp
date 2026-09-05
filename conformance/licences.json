@@ -1,0 +1,136 @@
+{
+  "description": "Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository itself is under the Open BSV License version 4 (LICENSE), including the packages that declare SEE LICENSE IN LICENSE; a package with no BSV runtime dependency is not thereby unrestricted open source.",
+  "repositoryLicence": "Open BSV License version 4",
+  "pinnedAt": "2026-09-05",
+  "components": [
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.2.0",
+      "licence": "SEE LICENSE IN LICENSE",
+      "dependencies": [
+        {
+          "name": "@bsv/sdk",
+          "range": "2.1.4",
+          "version": "2.1.4",
+          "licence": "SEE LICENSE IN LICENSE.txt"
+        }
+      ]
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.1.0",
+      "licence": "SEE LICENSE IN LICENSE",
+      "dependencies": []
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.2.0",
+      "licence": "SEE LICENSE IN LICENSE",
+      "dependencies": [
+        {
+          "name": "@bsv/dpp-core",
+          "range": "^0.2.0",
+          "version": "0.2.0",
+          "licence": "SEE LICENSE IN LICENSE"
+        },
+        {
+          "name": "@bsv/overlay",
+          "range": "2.0.3",
+          "version": "2.0.3",
+          "licence": "SEE LICENSE IN LICENSE.txt"
+        },
+        {
+          "name": "@bsv/sdk",
+          "range": "2.1.4",
+          "version": "2.1.4",
+          "licence": "SEE LICENSE IN LICENSE.txt"
+        },
+        {
+          "name": "mongodb",
+          "range": "^7.0.0",
+          "version": "7.5.0",
+          "licence": "Apache-2.0"
+        }
+      ]
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.1.0",
+      "licence": "SEE LICENSE IN LICENSE",
+      "dependencies": [
+        {
+          "name": "@digitalbazaar/bbs-2023-cryptosuite",
+          "range": "2.0.1",
+          "version": "2.0.1",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/bls12-381-multikey",
+          "range": "2.2.0",
+          "version": "2.2.0",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/credentials-context",
+          "range": "3.2.0",
+          "version": "3.2.0",
+          "licence": "SEE LICENSE IN LICENSE.md"
+        },
+        {
+          "name": "@digitalbazaar/data-integrity",
+          "range": "2.5.0",
+          "version": "2.5.0",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/data-integrity-context",
+          "range": "2.0.1",
+          "version": "2.0.1",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/ed25519-signature-2020",
+          "range": "5.4.0",
+          "version": "5.4.0",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/ed25519-verification-key-2020",
+          "range": "4.2.0",
+          "version": "4.2.0",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/multikey-context",
+          "range": "2.0.1",
+          "version": "2.0.1",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "ajv",
+          "range": "8.20.0",
+          "version": "8.20.0",
+          "licence": "MIT"
+        },
+        {
+          "name": "ajv-formats",
+          "range": "3.0.1",
+          "version": "3.0.1",
+          "licence": "MIT"
+        },
+        {
+          "name": "did-context",
+          "range": "3.1.1",
+          "version": "3.1.1",
+          "licence": "SEE LICENSE IN LICENSE.md"
+        },
+        {
+          "name": "jsonld-signatures",
+          "range": "11.6.0",
+          "version": "11.6.0",
+          "licence": "BSD-3-Clause"
+        }
+      ]
+    }
+  ]
+}

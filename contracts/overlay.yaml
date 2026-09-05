@@ -1,15 +1,15 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.3.0-draft
+  version: 0.5.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
     ecosystem's, BRC-22 submission and BRC-24 lookup with STEAK answers and
     BEEF throughout, and it is not restated here: a conforming index implements
     the upstream contract named under externalDocs, and this document pins only
-    what the standard adds or fixes on top of it. That is the two topics and
-    their admission rules, the two lookup services and the queries they answer,
+    what the standard adds or fixes on top of it. That includes the current and historical topics,
+    their admission rules, lookup services and query contracts,
     the extensions the reference deployment serves, and which upstream options
     an index must, should or may implement (x-dpp-profile). Findability is a
     service concern, not a truth concern: nothing returned here is trusted
@@ -37,16 +37,22 @@ x-dpp-profile:
       section 4), a TRANSFER is also refused unless its actor is the previous
       owner, by equality or by owner_linkage, or a configured transfer
       authority.
+    tm_attestation: >-
+      Admits bsv-attestation-anchor-v1 with ten fields, a signature over nine
+      length-prefixed fields and a publicly derived anchoring-service key.
+      The digest commits to a declared complete secured representation.
+      Credential proof, identity, authority and status are separate checks.
     tm_uora_dpp: >-
-      The anchor rail. Admits an anchor output when it decodes under
-      spec/rules.md section 5, its field-8 signature verifies over the
+      The legacy native anchor rail, under spec/legacy-uora-anchor-v3.md. Admits an anchor output when it decodes under
+      spec/legacy-uora-anchor-v3.md section 5, its field-8 signature verifies over the
       length-delimited preimage, and its locking key equals the derived child
       of the field-7 identity key. Attribution comes from the output's own
       bytes, so a shared index admits anchors from services it was never
       configured to know.
   lookupServices:
     ls_dpp: passportLookup
-    ls_uora_dpp: anchorLookup
+    ls_attestation: anchorLookup
+    ls_uora_dpp: legacyAnchorLookup
   must:
     - Serve POST /submit and POST /lookup as upstream defines them.
     - >-
@@ -79,7 +85,11 @@ x-dpp-profile:
       Answer /lookup in the binary aggregated form when x-aggregation is yes;
       the SDK resolver requests it by default and falls back on the JSON form
       by content type.
-    - Implement GASP synchronisation (/requestSyncResponse, /requestForeignGASPNode).
+    - >-
+      Synchronise from peers through GASP. The reference serves both upstream
+      routes (POST /requestSyncResponse, POST /requestForeignGASPNode) and
+      pulls from the static peers SYNC_PEERS names, judging every offered
+      output by the same topic managers as /submit.
     - Require a bearer token on /submit; /lookup and /health stay open.
     - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
     - >-
@@ -89,6 +99,18 @@ x-dpp-profile:
   extensions:
     - X-Admission response header on /submit.
     - Extra fields on /health (topic, service, topics, services, network, startedAt).
+    - GET /capabilities, the capability document (contracts/capabilities.schema.json).
+    - >-
+      GET /history, pages of a passport's complete history over a stable
+      snapshot (contracts/paginated-history.schema.json), beside the bounded
+      lookup and never in place of it.
+    - >-
+      GET /evidence-package, the dpp-evidence-package@1 for one passport
+      (contracts/evidence-package.schema.json), signed by the deployment's
+      export key and served as a JSON envelope.
+    - >-
+      POST /retract, the withdrawal of a state the network refused after it
+      was announced, behind the /submit bearer.
   intentionalOmissions:
     - >-
       Lookup outputs carry no context and no txid hint; everything a verifier
@@ -113,7 +135,7 @@ paths:
             type: string
           description: >-
             JSON array of topic names, for example ["tm_dpp"] or
-            ["tm_uora_dpp"]. Upstream requires it; this profile lets an index
+            ["tm_attestation"]. Legacy anchors use ["tm_uora_dpp"]. Upstream requires it; this profile lets an index
             default an absent or empty header to tm_dpp, and a portable client
             always sends it. Any other value that is not a JSON array of
             strings is refused.
@@ -123,7 +145,7 @@ paths:
           schema:
             type: string
             enum: ['true']
-          description: As upstream. Neither DPP topic reads off-chain values today.
+          description: As upstream. These topic implementations do not read off-chain values.
       requestBody:
         required: true
         content:
@@ -163,13 +185,13 @@ paths:
           $ref: '#/components/responses/error'
   /lookup:
     post:
-      summary: Query a lookup service (as upstream, with these two query shapes)
+      summary: Query a lookup service (as upstream, with the declared query shapes)
       description: >-
         BRC-24, exactly as the upstream contract defines it. The body names a
         lookup service and passes it a query; the answer is an output list as
         BEEF so the caller verifies everything against block headers, and a
         compromised index changes what can be found, never what can be
-        believed. This profile fixes the two query shapes and the answer
+        believed. This profile fixes the query shapes and the answer
         bounds; whether the binary aggregated answer is served is the index's
         choice (x-dpp-profile).
       requestBody:
@@ -180,6 +202,7 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/passportLookup'
                 - $ref: '#/components/schemas/anchorLookup'
+                - $ref: '#/components/schemas/legacyAnchorLookup'
       responses:
         '200':
           description: >-
@@ -272,14 +295,14 @@ paths:
           $ref: '#/components/responses/error'
   /getDocumentationForTopicManager:
     get:
-      summary: As upstream; tm_dpp and tm_uora_dpp return their admission rules as Markdown
+      summary: As upstream; Passport, current attestation and legacy topics return their admission rules as Markdown
       parameters:
         - name: manager
           in: query
           required: true
           schema:
             type: string
-            enum: [tm_dpp, tm_uora_dpp]
+            enum: [tm_dpp, tm_attestation, tm_uora_dpp]
       responses:
         '200':
           description: Markdown.
@@ -289,14 +312,14 @@ paths:
                 type: string
   /getDocumentationForLookupServiceProvider:
     get:
-      summary: As upstream; ls_dpp and ls_uora_dpp return their query rules as Markdown
+      summary: As upstream; Passport, current attestation and legacy services return their query rules as Markdown
       parameters:
         - name: lookupService
           in: query
           required: true
           schema:
             type: string
-            enum: [ls_dpp, ls_uora_dpp]
+            enum: [ls_dpp, ls_attestation, ls_uora_dpp]
       responses:
         '200':
           description: Markdown.
@@ -335,11 +358,326 @@ paths:
                     type: array
                     items:
                       type: string
+                  legacyTopics:
+                    type: array
+                    items: { type: string }
+                  legacyServices:
+                    type: array
+                    items: { type: string }
                   network:
                     type: string
                   startedAt:
                     type: string
                     format: date-time
+  /capabilities:
+    get:
+      summary: The capability document of this deployment (an extension; spec/conformance.md section 4)
+      description: >-
+        What this node declares it supports, in the shape
+        contracts/capabilities.schema.json fixes: its roles, the wire versions
+        it speaks (read from the same constants the wire is built from), the
+        operator profile it runs under, the representations it indexes
+        commitments to, the anchor formats it admits, remembers and refuses,
+        its topics and services, the publisher key policy in force (the keys
+        active at the moment of the request, the owner-signed transfer and its
+        transfer authorities), its synchronisation profile, its limits and, by
+        name, what it does not do. A claim of support, checkable against the
+        conformance ledger; never proof of authority or of conformance. Without
+        a publisher policy file the document reports the single configured
+        identity key as an implicit single-operator policy with no rotation
+        history, and says so under unsupported.
+      responses:
+        '200':
+          description: The capability document, as of the moment of the request.
+          content:
+            application/json:
+              schema:
+                $ref: './capabilities.schema.json'
+  /history:
+    get:
+      summary: One page of a passport's complete history over a stable snapshot (an extension; spec/portable-evidence.md section 1)
+      description: >-
+        The export beside the bounded lookup, which stays exactly what it is.
+        The first page pins a snapshot, the highest record sequence the index
+        had assigned at that moment; every later page of the export reads only
+        records at or below it, in the index's own insertion order, so a state
+        admitted while a reader walks the pages appears in none of them and
+        shifts no page boundary, and two readers of one snapshot receive the
+        same pages. Each item carries the record's txid, outputIndex, op,
+        timestamp, previousTxid, spent flag, spendingTxid and sequence; the
+        bytes themselves come from POST /lookup or GET /evidence-package.
+        scope.sequenceRange is the span of sequences the page covers, so
+        consecutive pages tile the snapshot with no gap and no overlap and a
+        reader detects a repeated or a missing page from the ranges alone.
+        completeForSnapshot is true only on the last page, and only about the
+        snapshot's scope. The cursor is opaque, bound to the query and the
+        snapshot and signed under a secret this process drew at startup: a
+        cursor edited in transit, issued by another process or issued for
+        another query answers 400 cursor-invalid, and a snapshot older than ten
+        minutes answers 410 snapshot-expired with the instruction to restart
+        without a cursor, never a silent continuation from the middle.
+      parameters:
+        - name: passportId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The passport identifier. Exactly one of passportId and uid is required, non-empty; neither or both answers 400 query-invalid.
+        - name: uid
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The data-carrier identifier carried in the record's public payload.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+          description: Items per page. Anything that is not an integer from 1 to 500 answers 400 limit-invalid.
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The nextCursor of the previous page; absent on the first page.
+      responses:
+        '200':
+          description: One page of the snapshot.
+          content:
+            application/json:
+              schema:
+                $ref: './paginated-history.schema.json'
+        '400':
+          $ref: '#/components/responses/namedError'
+        '410':
+          $ref: '#/components/responses/namedError'
+        '503':
+          $ref: '#/components/responses/namedError'
+  /evidence-package:
+    get:
+      summary: The evidence package for one passport (an extension; spec/portable-evidence.md section 2)
+      description: >-
+        Everything this index holds about the passport, as a
+        dpp-evidence-package@1: every retained state's raw transaction under
+        transactions/, the BEEF it is held in under proofs/ (the merkle path
+        and ancestors a verifier needs, once a proof has reached /arc-ingest),
+        the publisher policy chain under authority/ when one is configured,
+        this index's spend observations under status/, and a verification
+        report in the shape of spec/verification.md under reports/, inventoried
+        by path, media type, length and SHA-256 in a manifest the deployment
+        signs with its export key. The standard leaves the archive form to the
+        build; this build's is a JSON envelope, the manifest beside a map of
+        every inventoried file to its base64 bytes, so a browser or a script
+        reads it without an archive library and the map is exactly what a
+        reader's inspection takes. The disclosure scope is public and the
+        package is never a recovery backup: the restricted tiers are not held
+        here and are withheld by name, and any state whose transaction or proof
+        could not be produced is declared absent, never implied present. The
+        completeness declaration names the snapshot the export read, the same
+        kind GET /history pages. The signature says this index assembled these
+        bytes and nothing more; a reader verifies every transaction, proof and
+        signature independently.
+      parameters:
+        - name: passportId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The package.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/evidencePackageEnvelope'
+        '400':
+          $ref: '#/components/responses/namedError'
+        '404':
+          $ref: '#/components/responses/namedError'
+        '503':
+          description: The deployment configures no export signing key (error export-unavailable), so no package is signed; the bounded lookup and GET /history remain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/namedError/content/application~1json/schema'
+  /retract:
+    post:
+      summary: Withdraw a state the network refused after it was announced (an extension)
+      description: >-
+        A writer may announce a state before sending it (spec/writing.md), so
+        an index can hold an output no block will ever contain; that phantom
+        sits on the passport as its tip until the writer, who alone knows the
+        network's answer, withdraws it. Behind the same bearer as /submit,
+        because whoever may add a state may withdraw one. Refused with 409
+        retraction-refused when the index holds a merkle path for the output,
+        when the configured header source's operator knows the transaction, or
+        when the output is spent, since a history is never cut in the middle;
+        answered 503 chain-tracker-unavailable, and not applied, when the
+        network could not be asked. Otherwise the output leaves the engine's
+        storage and the record stores as an eviction removes it, the
+        predecessor is the tip again, the transaction may be announced again
+        should the network take it after all, and the retraction is logged
+        with its reason. A deployment without a header source
+        (CHAIN_TRACKER=scripts-only) cannot ask the network; the answer then
+        carries networkChecked false and a note saying so, and the capability
+        document lists retraction-network-check as unsupported.
+      security:
+        - {}
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/retractionRequest'
+      responses:
+        '200':
+          description: Retracted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retraction'
+        '400':
+          $ref: '#/components/responses/error'
+        '401':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/namedError'
+        '409':
+          $ref: '#/components/responses/namedError'
+        '503':
+          $ref: '#/components/responses/namedError'
+  /requestSyncResponse:
+    post:
+      summary: The outputs this index holds for a topic since a checkpoint, for a synchronising peer (as upstream)
+      description: >-
+        The first half of GASP, exactly as the upstream overlay protocol
+        defines it: the body is the SDK's GASPInitialRequest (version, since,
+        optional limit) and the topic comes from the X-BSV-Topic header. The
+        answer lists the unspent outputs the index holds for the topic with a
+        score at or above since, and echoes since. Read-only and open, like
+        /lookup: what it lists is findable either way. Bodies beyond the
+        deployment's size cap are refused with 413; a missing or unknown topic
+        and a malformed request answer 400 in the shape the other POST routes
+        use. The page is bounded to 500 outputs, the request's limit defaulting
+        to that and clamped to it, because the engine's storage applies no cap
+        of its own; a peer holding more continues from its checkpoint on its
+        next round. A peer admits what it fetches through its own topic
+        managers, so nothing listed here is trusted by being listed.
+      parameters:
+        - name: X-BSV-Topic
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: [tm_dpp, tm_attestation, tm_uora_dpp]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version, since]
+              properties:
+                version:
+                  type: number
+                  description: The requester's GASP version.
+                since:
+                  type: integer
+                  minimum: 0
+                  description: The score of the requester's last interaction with this index for the topic; 0 asks for everything.
+                limit:
+                  type: integer
+                  minimum: 1
+                  default: 500
+                  description: Outputs per answer; absent defaults to 500 and any larger value is clamped to 500.
+      responses:
+        '200':
+          description: The outputs, with their scores, at most 500.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [UTXOList, since]
+                properties:
+                  UTXOList:
+                    type: array
+                    items:
+                      type: object
+                      required: [txid, outputIndex, score]
+                      properties:
+                        txid:
+                          type: string
+                          pattern: '^[0-9a-f]{64}$'
+                        outputIndex:
+                          type: integer
+                        score:
+                          type: number
+                  since:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/error'
+        '413':
+          $ref: '#/components/responses/error'
+  /requestForeignGASPNode:
+    post:
+      summary: One transaction of a graph a synchronising peer is assembling, with its proof when held (as upstream)
+      description: >-
+        The second half of GASP, exactly as upstream: graphID is the outpoint
+        at the tip of the graph as txid.outputIndex, txid names the
+        transaction wanted from somewhere in that output's history, and the
+        answer carries the raw transaction and, when this index holds one, the
+        BRC-74 merkle path as proof. A transaction the index cannot find in
+        that graph answers 404; a malformed request answers 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [graphID, txid, outputIndex]
+              properties:
+                graphID:
+                  type: string
+                  pattern: '^[0-9a-f]{64}\\.[0-9]+$'
+                txid:
+                  type: string
+                  pattern: '^[0-9a-f]{64}$'
+                outputIndex:
+                  type: integer
+                  minimum: 0
+                metadata:
+                  type: boolean
+                  description: As upstream; these topics carry no metadata and the flag is ignored.
+      responses:
+        '200':
+          description: The node.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [graphID, rawTx, outputIndex]
+                properties:
+                  graphID:
+                    type: string
+                  rawTx:
+                    type: string
+                    description: The transaction in hex.
+                  outputIndex:
+                    type: integer
+                  proof:
+                    type: string
+                    description: The BRC-74 BUMP in hex, when this index holds a merkle path for the transaction.
+        '400':
+          $ref: '#/components/responses/error'
+        '404':
+          $ref: '#/components/responses/error'
+        '413':
+          $ref: '#/components/responses/error'
 components:
   securitySchemes:
     bearer:
@@ -366,6 +704,29 @@ components:
                 const: error
               description:
                 type: string
+    namedError:
+      description: The request was refused, for a reason the client can branch on.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status, error, description]
+            properties:
+              status:
+                const: error
+              error:
+                type: string
+                description: >-
+                  The refusal as one lower-case hyphenated word: query-invalid,
+                  limit-invalid, cursor-invalid, snapshot-expired,
+                  history-unavailable, export-unavailable, passport-unknown,
+                  output-unknown, retraction-refused,
+                  chain-tracker-unavailable or retraction-unavailable.
+              description:
+                type: string
+              hint:
+                type: string
+                description: What to do instead, when there is something to do; on snapshot-expired, restart without a cursor.
   schemas:
     passportLookup:
       type: object
@@ -388,7 +749,7 @@ components:
             uid:
               type: string
               description: The data-carrier identifier carried in the record's public payload.
-    anchorLookup:
+    legacyAnchorLookup:
       type: object
       required: [service, query]
       description: >-
@@ -428,3 +789,106 @@ components:
               description: The anchoring service's identity key, hex.
             limit:
               type: number
+
+    anchorLookup:
+      type: object
+      additionalProperties: false
+      required: [service, query]
+      properties:
+        service:
+          const: ls_attestation
+        query:
+          type: object
+          additionalProperties: false
+          description: >-
+            Exact signed metadata selectors, with at least one identifying selector.
+            Results sort by txid then outputIndex. Continue with after equal to the
+            final returned outpoint until an empty page. The index is observed live,
+            not as a guaranteed snapshot. String bounds are UTF-8 byte bounds.
+          anyOf:
+            - required: [issuer]
+            - required: [subject]
+            - required: [attestationId]
+            - required: [digest]
+            - required: [anchoredBy]
+          properties:
+            issuer: { type: string, minLength: 1, maxLength: 512 }
+            subject: { type: string, minLength: 1, maxLength: 512 }
+            attestationId: { type: string, minLength: 1, maxLength: 512 }
+            digest: { type: string, minLength: 1, maxLength: 512 }
+            anchoredBy: { type: string, minLength: 1, maxLength: 512 }
+            attestationType: { type: string, minLength: 1, maxLength: 512 }
+            representation: { type: string, minLength: 1, maxLength: 512 }
+            mediaType: { type: string, minLength: 1, maxLength: 512 }
+            limit: { type: integer, minimum: 1, maximum: 500, default: 100 }
+            after:
+              type: object
+              additionalProperties: false
+              required: [txid, outputIndex]
+              properties:
+                txid: { type: string, pattern: '^[0-9a-f]{64}$' }
+                outputIndex: { type: integer, minimum: 0, maximum: 9007199254740991 }
+    evidencePackageEnvelope:
+      type: object
+      required: [manifest, files]
+      description: >-
+        The archive form of this build's dpp-evidence-package@1: the signed
+        manifest beside every inventoried file, keyed by its inventory path.
+        The manifest's inventory names each file's category, media type,
+        length and SHA-256; the map holds nothing the inventory does not list.
+      properties:
+        manifest:
+          $ref: './evidence-package.schema.json'
+        files:
+          type: object
+          additionalProperties:
+            type: string
+            contentEncoding: base64
+          description: Every inventoried file, base64, by its inventory path.
+    retractionRequest:
+      type: object
+      required: [txid, outputIndex, reason]
+      properties:
+        txid:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        outputIndex:
+          type: integer
+          minimum: 0
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: The writer's account of the network's answer, logged and echoed, never interpreted.
+    retraction:
+      type: object
+      required: [status, txid, outputIndex, reason, networkChecked, unrepaired]
+      properties:
+        status:
+          const: retracted
+        txid:
+          type: string
+        outputIndex:
+          type: integer
+        reason:
+          type: string
+        networkChecked:
+          type: boolean
+          description: Whether the header source's operator was asked about the transaction; false under CHAIN_TRACKER=scripts-only.
+        restoredTip:
+          type: object
+          required: [txid, outputIndex]
+          properties:
+            txid:
+              type: string
+            outputIndex:
+              type: integer
+          description: The predecessor made the tip again, when the retracted state had one.
+        unrepaired:
+          type: array
+          items:
+            type: string
+          description: Repairs the engine storage could not make, by name; empty for this package's own storages.
+        note:
+          type: string
+          description: Present when the network was not asked, saying why.
