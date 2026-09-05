@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DPP Token Standard v1 reference implementation: field encode/decode, canonical signature preimage, verifyChain incl. SPV",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

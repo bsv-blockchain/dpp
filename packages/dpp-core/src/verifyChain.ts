@@ -1,6 +1,7 @@
 import { Beef, PublicKey, Transaction, type ChainTracker } from '@bsv/sdk'
 import { tryParseDppOutput } from './codec.js'
 import { verifyServerSignature, verifyUserSignature } from './signatures.js'
+import { publisherKeysAt, type PublisherPolicy } from './publisherPolicy.js'
 import { checkOwnerConsent, normaliseTransferAuthorities } from './owner.js'
 import { checkGenesisState, checkTransition } from './transition.js'
 import type { ChainVerifyResult, DppState, StateCheck } from './types.js'
@@ -49,45 +50,86 @@ export function findDppOutputs(tx: Transaction): DppOutputRef[] {
   return refs
 }
 
+/** The options `inspectChain` takes beyond `verifyChain`'s: several publisher keys, any of which may have countersigned. */
+export interface InspectChainOptions extends VerifyChainOptions {
+  /**
+   * Publisher identity keys, any one of which satisfies the server-signature
+   * check (`spec/verification.md` §4, `publisherSignatures`). `serverIdentityKey`
+   * is the one-key spelling of the same option; both may be given.
+   */
+  publisherKeys?: string[]
+  /**
+   * A publisher key policy chain (`spec/services.md` §1), already verified by
+   * the caller with `verifyPolicyChain`. A state is then checked against the
+   * state-publisher keys active at its own timestamp, so a retired key still
+   * authenticates what it signed while active and a new key authenticates
+   * nothing timestamped before its activation. Combined with `publisherKeys`
+   * when both are given.
+   */
+  publisherPolicy?: PublisherPolicy[]
+}
+
+/** Why one state stopped the inspection, in the vocabulary the report uses. */
+export type ChainFailureKind = 'encoding' | 'userSignature' | 'serverSignature' | 'linkage' | 'consent' | 'inclusion'
+
+/** One inspected state: the verifier's findings plus what a report needs to name it. */
+export interface StateInspection extends StateCheck {
+  index: number
+  outputIndex: number
+  state: DppState
+  linkError: string | null
+  consentError: string | null
+  /** True when the countersignature verifies under a key the policy names, but one not active at this state's timestamp. */
+  publisherOutsideWindow?: boolean
+  /** Why `spv` is 'pending' or 'failed'; absent when 'verified'. */
+  spvReason?: 'no-proof' | 'header-check-disabled' | 'header-source-unavailable' | 'proof-does-not-contain-txid' | 'proof-refuted'
+}
+
 /**
- * Verify a full passport chain, ordered genesis → tip (§6 + §8).
- *
- * What "Authentic ✓" means (§8): (1) the genesis maker signature is valid;
- * (2) every link satisfies invariants 1–5, checked here both structurally
- * (the next state spends the previous DPP output) and on the readable field
- * (previous_txid equality); (3) SPV - each mined transaction's merkle path
- * validates against block headers via the chain tracker. An unmined state
- * passes with SPV 'pending'. Any failure ⇒ valid: false ("Could not verify").
- *
- * Script execution of spends is enforced by the network and is not
- * re-evaluated here; the in-app checks are exactly the three above.
+ * Every finding the token rail's verifier makes, state by state, stopping after
+ * the first state that fails (§8's rule: a chain fails as a whole at the first
+ * failing state, with the reason identified). `verifyChain` reduces this to
+ * the `ChainVerifyResult` it has always returned; `verifyPassportEvidence`
+ * reports it check by check instead of collapsing it to one Boolean.
  */
-export async function verifyChain(
-  txs: Transaction[],
-  options: VerifyChainOptions = {}
-): Promise<ChainVerifyResult> {
-  const states: StateCheck[] = []
+export interface ChainInspection {
+  states: StateInspection[]
+  /**
+   * The first failure, when there was one. An `encoding` failure names a
+   * transaction that yielded no state, so `states` carries nothing for it.
+   */
+  failure?: { index: number; txid: string; kind: ChainFailureKind; message: string }
+  /** True when the inspection reached the last supplied transaction without a failure. */
+  complete: boolean
+  anyPending: boolean
+  spvUnavailable?: string
+}
+
+export async function inspectChain(txs: Transaction[], options: InspectChainOptions = {}): Promise<ChainInspection> {
+  const states: StateInspection[] = []
   let anyPending = false
   let unavailable: string | undefined
-  // 'verified' is a claim that every mined state proved against block headers,
-  // and a failed chain never makes it, whatever its proofs said. It used to:
-  // first because the summary read only `anyPending`, then because it guarded
-  // a flag that only an SPV failure set, so a chain failing on a signature or
-  // on linkage - every proof good - still came back
-  // `{ valid: false, spv: 'verified' }`, and a consumer showing the two
-  // separately printed "inclusion proved" beside "did not check out". The
-  // failure path now says 'pending' outright; the per-state truth, including
-  // 'failed' where a proof was refuted, stays in `states`.
-  const fail = (error: string): ChainVerifyResult => ({
-    valid: false,
-    spv: 'pending',
+  const stop = (index: number, txid: string, kind: ChainFailureKind, message: string): ChainInspection => ({
     states,
-    error,
+    failure: { index, txid, kind, message: `state ${index} (${txid}): ${message}` },
+    complete: false,
+    anyPending,
     ...(unavailable == null ? {} : { spvUnavailable: unavailable }),
   })
 
-  if (txs.length === 0) return fail('empty chain')
-
+  const staticPublisherKeys = [
+    ...(options.serverIdentityKey == null ? [] : [options.serverIdentityKey]),
+    ...(options.publisherKeys ?? []),
+  ]
+  const policy = options.publisherPolicy != null && options.publisherPolicy.length > 0 ? options.publisherPolicy : undefined
+  // Every state-publisher key any version of the policy ever named: a
+  // countersignature that verifies under one of these but not under a key
+  // active at the state's time is a window failure, reported as such rather
+  // than as a stranger's signature.
+  const everPolicyKeys = policy == null ? [] : [...new Set(policy.flatMap((p) => p.publishers.filter((e) => e.role === 'state-publisher').map((e) => e.key)))]
+  const publisherSelected = staticPublisherKeys.length > 0 || policy != null
+  const publisherKeysFor = (state: DppState): string[] =>
+    policy == null ? staticPublisherKeys : [...staticPublisherKeys, ...publisherKeysAt(policy, state.timestamp, 'state-publisher')]
   const consentSelected = options.ownerConsent != null && options.ownerConsent !== false
   const authorities =
     typeof options.ownerConsent === 'object'
@@ -101,15 +143,16 @@ export async function verifyChain(
 
     const refs = findDppOutputs(tx)
     if (refs.length !== 1) {
-      return fail(`state ${i} (${txid}): exactly one DPP output required, found ${refs.length}`)
+      return stop(i, txid, 'encoding', `exactly one DPP output required, found ${refs.length}`)
     }
     const { state, outputIndex } = refs[0]
 
     const userSignatureValid = verifyUserSignature(state)
-    const serverSignatureValid =
-      options.serverIdentityKey == null
-        ? null
-        : verifyServerSignature(state, options.serverIdentityKey)
+    const serverSignatureValid = !publisherSelected
+      ? null
+      : publisherKeysFor(state).some((key) => verifyServerSignature(state, key))
+    const publisherOutsideWindow =
+      serverSignatureValid === false && everPolicyKeys.some((key) => verifyServerSignature(state, key))
 
     let linkError: string | null
     if (prev == null) {
@@ -138,10 +181,16 @@ export async function verifyChain(
     }
 
     let spv: StateCheck['spv']
+    let spvReason: StateInspection['spvReason']
     let spvFailReason = 'merkle path does not validate against block headers'
     const tracker = options.chainTracker
-    if (tx.merklePath == null || tracker == null || tracker === 'scripts only') {
+    if (tx.merklePath == null) {
       spv = 'pending'
+      spvReason = 'no-proof'
+      anyPending = true
+    } else if (tracker == null || tracker === 'scripts only') {
+      spv = 'pending'
+      spvReason = 'header-check-disabled'
       anyPending = true
     } else {
       // Three outcomes, not two. `verify` returns false only when the tracker
@@ -172,6 +221,7 @@ export async function verifyChain(
       }
       if (!coversTxid) {
         spv = 'failed'
+        spvReason = 'proof-does-not-contain-txid'
         spvFailReason = 'merkle path does not contain this transaction'
       } else {
         try {
@@ -182,41 +232,119 @@ export async function verifyChain(
         }
         if (proven == null) {
           spv = 'pending'
+          spvReason = 'header-source-unavailable'
           anyPending = true
+        } else if (proven) {
+          spv = 'verified'
         } else {
-          spv = proven ? 'verified' : 'failed'
+          spv = 'failed'
+          spvReason = 'proof-refuted'
         }
       }
     }
 
     states.push({
+      index: i,
+      outputIndex,
+      state,
       txid,
       op: state.op,
       userSignatureValid,
       serverSignatureValid,
+      ...(publisherOutsideWindow ? { publisherOutsideWindow: true } : {}),
       linkageValid: linkError == null,
       ownerConsentValid,
       spv,
+      linkError,
+      consentError,
+      ...(spvReason == null ? {} : { spvReason }),
     })
 
-    if (!userSignatureValid) return fail(`state ${i} (${txid}): user_signature invalid`)
+    if (!userSignatureValid) return stop(i, txid, 'userSignature', 'user_signature invalid')
     if (serverSignatureValid === false) {
-      return fail(`state ${i} (${txid}): server_signature invalid for configured service key`)
+      return stop(
+        i,
+        txid,
+        'serverSignature',
+        publisherOutsideWindow
+          ? `server_signature verifies under a publisher key that was not active at ${state.timestamp}`
+          : 'server_signature invalid for configured service key'
+      )
     }
-    if (linkError != null) return fail(`state ${i} (${txid}): ${linkError}`)
-    if (consentError != null) return fail(`state ${i} (${txid}): ${consentError}`)
-    if (spv === 'failed') {
-      return fail(`state ${i} (${txid}): ${spvFailReason}`)
-    }
+    if (linkError != null) return stop(i, txid, 'linkage', linkError)
+    if (consentError != null) return stop(i, txid, 'consent', consentError)
+    if (spv === 'failed') return stop(i, txid, 'inclusion', spvFailReason)
 
     prev = { state, txid, outputIndex }
   }
 
   return {
-    valid: true,
-    spv: anyPending ? 'pending' : 'verified',
     states,
+    complete: true,
+    anyPending,
     ...(unavailable == null ? {} : { spvUnavailable: unavailable }),
+  }
+}
+
+/** The `StateCheck` a `ChainVerifyResult` carries, without the inspection's extra findings. */
+function toStateCheck(s: StateInspection): StateCheck {
+  return {
+    txid: s.txid,
+    op: s.op,
+    userSignatureValid: s.userSignatureValid,
+    serverSignatureValid: s.serverSignatureValid,
+    linkageValid: s.linkageValid,
+    ownerConsentValid: s.ownerConsentValid,
+    spv: s.spv,
+  }
+}
+
+/**
+ * Verify a full passport chain, ordered genesis → tip (§6 + §8).
+ *
+ * What "Authentic ✓" means (§8): (1) the genesis maker signature is valid;
+ * (2) every link satisfies invariants 1–5, checked here both structurally
+ * (the next state spends the previous DPP output) and on the readable field
+ * (previous_txid equality); (3) SPV - each mined transaction's merkle path
+ * validates against block headers via the chain tracker. An unmined state
+ * passes with SPV 'pending'. Any failure ⇒ valid: false ("Could not verify").
+ *
+ * Script execution of spends is enforced by the network and is not
+ * re-evaluated here; the in-app checks are exactly the three above.
+ *
+ * This is supplied-history verification and nothing more: it says whether the
+ * states handed to it form a valid chain, not that the last one is the current
+ * tip, that its genesis was authorised, or that the attestation rail was
+ * checked. `verifyPassportEvidence` (evidence.ts) is the report that keeps
+ * those findings apart; this function keeps its one Boolean for the callers
+ * that mean exactly what it says.
+ */
+export async function verifyChain(
+  txs: Transaction[],
+  options: VerifyChainOptions = {}
+): Promise<ChainVerifyResult> {
+  // 'verified' is a claim that every mined state proved against block headers,
+  // and a failed chain never makes it, whatever its proofs said. It used to:
+  // first because the summary read only `anyPending`, then because it guarded
+  // a flag that only an SPV failure set, so a chain failing on a signature or
+  // on linkage - every proof good - still came back
+  // `{ valid: false, spv: 'verified' }`, and a consumer showing the two
+  // separately printed "inclusion proved" beside "did not check out". The
+  // failure path now says 'pending' outright; the per-state truth, including
+  // 'failed' where a proof was refuted, stays in `states`.
+  if (txs.length === 0) return { valid: false, spv: 'pending', states: [], error: 'empty chain' }
+
+  const inspection = await inspectChain(txs, options)
+  const states = inspection.states.map(toStateCheck)
+  const unavailable = inspection.spvUnavailable == null ? {} : { spvUnavailable: inspection.spvUnavailable }
+  if (inspection.failure != null) {
+    return { valid: false, spv: 'pending', states, error: inspection.failure.message, ...unavailable }
+  }
+  return {
+    valid: true,
+    spv: inspection.anyPending ? 'pending' : 'verified',
+    states,
+    ...unavailable,
   }
 }
 

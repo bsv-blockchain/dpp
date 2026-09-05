@@ -1,4 +1,5 @@
 import { Utils } from '@bsv/sdk'
+import { compareCodePoints } from './canonicalJson.js'
 
 /** Thrown when a value cannot be canonicalised, rather than guessed at. */
 export class CanonicalError extends Error {
@@ -17,7 +18,7 @@ export class CanonicalError extends Error {
  * that silently mishandled one would be worse than no JCS at all, because two
  * implementations would agree on every value they had tested and differ on the
  * first one they had not. So this canonicalises what it can, refuses everything
- * else, and the refusal is the feature: keys sorted by code unit, no
+ * else, and the refusal is the feature: keys sorted by code point, no
  * whitespace, string values JSON-escaped, integer values only when they are
  * safe integers. Two honest encoders of one claim produce identical bytes or an
  * error, never a second encoding.
@@ -33,7 +34,7 @@ export class CanonicalError extends Error {
  * for one complete claim, and every implementing party asserts against it.
  */
 export function canonicalBytes(claim: object): number[] {
-  const entries = Object.entries(claim).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+  const entries = Object.entries(claim).sort(([a], [b]) => compareCodePoints(a, b))
   const parts: string[] = []
   for (const [key, value] of entries) {
     if (typeof value === 'string') {

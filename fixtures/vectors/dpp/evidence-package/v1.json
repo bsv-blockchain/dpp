@@ -1,0 +1,770 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.evidencepackage.v1",
+  "name": "DPP evidence package v1: a signed manifest over a content-addressed inventory",
+  "brc": [],
+  "version": "1.0.0",
+  "reference_impl": "dpp-core@0.2.0",
+  "parity_class": "required",
+  "vectors": [
+    {
+      "id": "valid-package",
+      "description": "A public-scope package of two files under a signed manifest; the preimage is the canonical JSON of the manifest without signature.value.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {
+          "expectedPassportId": "urn:example:passport:1",
+          "expectedSigner": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc"
+        }
+      },
+      "expected": {
+        "structure_valid": true,
+        "inventory_verified": true,
+        "signature_valid": true,
+        "failure_reasons": [],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "valid"
+      ]
+    },
+    {
+      "id": "digest-swap",
+      "description": "One byte of one file changed: the signature still verifies, the inventory does not.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6uq",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {}
+      },
+      "expected": {
+        "structure_valid": true,
+        "inventory_verified": false,
+        "signature_valid": true,
+        "failure_reasons": [
+          "digest-mismatch"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    },
+    {
+      "id": "missing-and-unlisted",
+      "description": "A listed file absent and an unlisted file present.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "evidence/extra.bin": "AQID"
+        },
+        "options": {}
+      },
+      "expected": {
+        "structure_valid": true,
+        "inventory_verified": false,
+        "signature_valid": true,
+        "failure_reasons": [
+          "file-missing",
+          "file-unlisted"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    },
+    {
+      "id": "tampered-manifest",
+      "description": "The withheld declaration removed after signing.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {}
+      },
+      "expected": {
+        "structure_valid": true,
+        "inventory_verified": true,
+        "signature_valid": false,
+        "failure_reasons": [
+          "signature-invalid"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b5d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    },
+    {
+      "id": "signer-unexpected",
+      "description": "A valid signature by a signer other than the one the reader expected.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {
+          "expectedSigner": "022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01"
+        }
+      },
+      "expected": {
+        "structure_valid": true,
+        "inventory_verified": true,
+        "signature_valid": true,
+        "failure_reasons": [
+          "signer-unexpected"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    },
+    {
+      "id": "path-abuse",
+      "description": "An inventory entry that traverses upwards and a duplicated path.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            },
+            {
+              "path": "../escape",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {}
+      },
+      "expected": {
+        "structure_valid": false,
+        "inventory_verified": false,
+        "signature_valid": false,
+        "failure_reasons": [
+          "path-invalid",
+          "path-duplicate",
+          "file-missing",
+          "signature-invalid"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d2c7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a222e2e2f657363617065222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    },
+    {
+      "id": "backup-contradiction",
+      "description": "A public-scope package declaring itself a recovery backup.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": true
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {}
+      },
+      "expected": {
+        "structure_valid": false,
+        "inventory_verified": true,
+        "signature_valid": false,
+        "failure_reasons": [
+          "disclosure-contradiction",
+          "signature-invalid"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a747275652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    },
+    {
+      "id": "passport-mismatch",
+      "description": "The reader expected another passport.",
+      "input": {
+        "manifest": {
+          "format": "dpp-evidence-package",
+          "version": "1",
+          "passportId": "urn:example:passport:1",
+          "genesis": {
+            "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "outputIndex": 0
+          },
+          "selectedTip": {
+            "txid": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "outputIndex": 0
+          },
+          "exportedAt": "2026-09-05T12:00:00Z",
+          "exporter": {
+            "id": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "role": "registry"
+          },
+          "profiles": [
+            "battery@2"
+          ],
+          "disclosure": {
+            "scope": "public",
+            "recoveryBackup": false
+          },
+          "completeness": {
+            "snapshots": [
+              {
+                "source": "ls_dpp",
+                "snapshotId": "s1",
+                "completeForSnapshot": true
+              }
+            ],
+            "withheld": [
+              "restricted tiers owner, legitimate, authority"
+            ],
+            "absent": []
+          },
+          "sources": [
+            {
+              "id": "ls_dpp",
+              "kind": "overlay-lookup",
+              "observedAt": "2026-09-05T11:59:00Z",
+              "result": "unspent"
+            }
+          ],
+          "inventory": [
+            {
+              "path": "transactions/aa.hex",
+              "category": "transactions",
+              "mediaType": "application/octet-stream",
+              "byteLength": 45,
+              "sha256": "dcadfde95bf335eb570c08d51aaf01eb67700f655d4e3a0ce1aeb3d584f7eb70",
+              "represents": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            {
+              "path": "reports/report.json",
+              "category": "reports",
+              "mediaType": "application/json",
+              "byteLength": 33,
+              "sha256": "4961061f5a27426623f7d806ddd54cf9ae1a16880ac132f8933fcccbf022fe2d"
+            }
+          ],
+          "signature": {
+            "suite": "bsv-ecdsa-der",
+            "signer": "025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc",
+            "value": "304402202138a7e937485f2c7467e165d80675f8ce608f92937ea9b656e22afef1f48abc02207cc875315f66a8a1075ccfd8d6e62e8c1ffa01cdbd4d3f281805335ac97f9a44"
+          }
+        },
+        "files_base64": {
+          "transactions/aa.hex": "AQAAAAGrq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6urq6ur",
+          "reports/report.json": "eyJyZXBvcnRWZXJzaW9uIjoiMSIsImNoZWNrcyI6W119"
+        },
+        "options": {
+          "expectedPassportId": "urn:example:passport:2"
+        }
+      },
+      "expected": {
+        "structure_valid": false,
+        "inventory_verified": true,
+        "signature_valid": true,
+        "failure_reasons": [
+          "passport-mismatch"
+        ],
+        "preimage_hex": "7b22636f6d706c6574656e657373223a7b22616273656e74223a5b5d2c22736e617073686f7473223a5b7b22636f6d706c657465466f72536e617073686f74223a747275652c22736e617073686f744964223a227331222c22736f75726365223a226c735f647070227d5d2c227769746868656c64223a5b2272657374726963746564207469657273206f776e65722c206c65676974696d6174652c20617574686f72697479225d7d2c22646973636c6f73757265223a7b227265636f766572794261636b7570223a66616c73652c2273636f7065223a227075626c6963227d2c226578706f727465644174223a22323032362d30392d30355431323a30303a30305a222c226578706f72746572223a7b226964223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c22726f6c65223a227265676973747279227d2c22666f726d6174223a226470702d65766964656e63652d7061636b616765222c2267656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161227d2c22696e76656e746f7279223a5b7b22627974654c656e677468223a34352c2263617465676f7279223a227472616e73616374696f6e73222c226d6564696154797065223a226170706c69636174696f6e2f6f637465742d73747265616d222c2270617468223a227472616e73616374696f6e732f61612e686578222c22726570726573656e7473223a2261616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c22736861323536223a2264636164666465393562663333356562353730633038643531616166303165623637373030663635356434653361306365316165623364353834663765623730227d2c7b22627974654c656e677468223a33332c2263617465676f7279223a227265706f727473222c226d6564696154797065223a226170706c69636174696f6e2f6a736f6e222c2270617468223a227265706f7274732f7265706f72742e6a736f6e222c22736861323536223a2234393631303631663561323734323636323366376438303664646435346366396165316131363838306163313332663839333366636363626630323266653264227d5d2c2270617373706f72744964223a2275726e3a6578616d706c653a70617373706f72743a31222c2270726f66696c6573223a5b22626174746572794032225d2c2273656c6563746564546970223a7b226f7574707574496e646578223a302c2274786964223a2262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262227d2c227369676e6174757265223a7b227369676e6572223a22303235636264663036343665356462346561613339386633363566326561376130653364343139623765303333306533396365393262646465646361633466396263222c227375697465223a226273762d65636473612d646572227d2c22736f7572636573223a5b7b226964223a226c735f647070222c226b696e64223a226f7665726c61792d6c6f6f6b7570222c226f627365727665644174223a22323032362d30392d30355431313a35393a30305a222c22726573756c74223a22756e7370656e74227d5d2c2276657273696f6e223a2231227d"
+      },
+      "tags": [
+        "evidence-package",
+        "refusal"
+      ]
+    }
+  ]
+}
