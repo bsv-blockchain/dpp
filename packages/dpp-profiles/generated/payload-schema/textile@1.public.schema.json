@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:textile@1:payload-public",
+  "title": "Textile passport, version 1 (superseded) (textile@1), public payload",
+  "description": "textile@1: the public payload carried on chain in field 10. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "notice": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sample marker a demonstration record carries first; never product data."
+    },
+    "profile": {
+      "const": "textile",
+      "description": "The profile identifier the payload declares."
+    },
+    "profile_version": {
+      "const": 1,
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one."
+    },
+    "object_did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding."
+    },
+    "dataCarrier": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier."
+    },
+    "name": {
+      "title": "Product name",
+      "description": "required; Version 1 recorded no legal basis for this field."
+    },
+    "batch": {
+      "title": "Batch",
+      "description": "required; Version 1 recorded no legal basis for this field."
+    },
+    "fibres": {
+      "title": "Fibre composition",
+      "description": "required; Version 1 recorded no legal basis for this field."
+    },
+    "manufacturer": {
+      "title": "Brand name",
+      "description": "required; Version 1 recorded no legal basis for this field."
+    },
+    "manufacturerContact": {
+      "title": "Brand contact",
+      "description": "required; Version 1 recorded no legal basis for this field."
+    },
+    "recycled": {
+      "title": "Recycled content",
+      "description": "recommended; Version 1 recorded no legal basis for this field."
+    },
+    "origin": {
+      "title": "Country of origin",
+      "description": "recommended; Version 1 recorded no legal basis for this field."
+    },
+    "care": {
+      "title": "Care",
+      "description": "recommended; Version 1 recorded no legal basis for this field."
+    },
+    "substances": {
+      "title": "Substances of concern",
+      "description": "recommended; Version 1 recorded no legal basis for this field."
+    },
+    "endOfLife": {
+      "title": "End of life",
+      "description": "recommended; Version 1 recorded no legal basis for this field."
+    }
+  },
+  "required": [
+    "batch",
+    "fibres",
+    "manufacturer",
+    "manufacturerContact",
+    "name",
+    "profile",
+    "profile_version"
+  ]
+}

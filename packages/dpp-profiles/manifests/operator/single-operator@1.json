@@ -1,0 +1,52 @@
+{
+  "manifestVersion": "1",
+  "id": "single-operator",
+  "version": 1,
+  "profile": "single-operator@1",
+  "kind": "operator",
+  "status": "current",
+  "title": "One operator, one index",
+  "description": "The reference node as deployed today: one administration, one database, discovery and peer synchronisation off, every native rule enforced. A basic deployment that says exactly what it is.",
+  "roles": ["overlay"],
+  "admission": {
+    "topics": ["tm_dpp", "tm_attestation", "tm_uora_dpp"],
+    "nativeRules": "tm_dpp admits a state on the record model's rules, the configured publisher key and the selected custody policy; tm_attestation admits an anchor on its exact script, framed signature and derived key, optionally restricted to named anchoring services; tm_uora_dpp serves the historical format only.",
+    "idempotent": true,
+    "ownerConsent": "deployment-choice"
+  },
+  "publisherPolicy": {
+    "separateFromOperatorIdentity": true,
+    "keySet": "Publisher identity keys are configured explicitly (SERVICE_IDENTITY_KEY, ANCHOR_SERVICE_KEYS), never derived from the operator's own key, and named in the capability document.",
+    "historicalAuthorisation": "A state's publisher signature is verified against a key that was authorised at the state's time; the current allowlist alone is not authority for a historical state.",
+    "handover": "A publisher handover is a signed authorisation record under the selected governance policy with the old key's evidence preserved; it never moves a token spending key, which only the custody mechanism can move."
+  },
+  "discovery": { "mode": "none", "notes": "No SHIP or SLAP advertisement; clients pin the host." },
+  "synchronisation": {
+    "mode": "none",
+    "genesisFirst": true,
+    "deduplication": "Admission of a held outpoint is a no-op; an anchor is deduplicated by outpoint and digest.",
+    "proofUpdates": "Proofs arrive through POST /arc-ingest, are validated against the header source before storage and never replay held outputs.",
+    "checkpoints": "Not applicable without peers.",
+    "bounds": "Request body 8 MiB, lookup 500 outputs, anchor page 100 default and 500 maximum.",
+    "reorganisation": "A proof the header source refutes returns the state to pending until repaired."
+  },
+  "retention": {
+    "spentStates": "Spent passport states are retained as history through coinsToRetain.",
+    "anchorLeaves": "Anchor outputs are retained and indexed; eviction follows the engine's rules.",
+    "bytes": "Every admitted transaction's BEEF is stored once per transaction."
+  },
+  "capabilities": {
+    "document": "contracts/capabilities.schema.json",
+    "mustDeclare": ["roles", "topics", "services", "publisherPolicy", "synchronisation.profile single-operator@1", "limits", "unsupported ship-slap-discovery and gasp-synchronisation"]
+  },
+  "acceptance": [
+    { "id": "single-admission", "exercise": "Admit the pinned chain and anchor fixtures over HTTP and serve them back byte-identical.", "evidence": "packages/overlay-topics/test/http.test.ts, attestationHttp.test.ts", "independence": "local" },
+    { "id": "single-replay", "exercise": "Re-announce every admitted output and observe no duplicate index entry.", "evidence": "packages/overlay-topics/test/engineStorage.test.ts", "independence": "local" },
+    { "id": "single-capabilities", "exercise": "Serve a capability document that validates against the schema and says discovery and synchronisation are off.", "evidence": "proposed: GET /capabilities on the reference node", "independence": "local" }
+  ],
+  "unsupported": [
+    { "id": "independent-replication", "reason": "One administration cannot claim independently replicated evidence." },
+    { "id": "ship-slap", "reason": "Advertising needs a funded wallet the reference node does not hold." },
+    { "id": "gasp", "reason": "Peer synchronisation is off." }
+  ]
+}

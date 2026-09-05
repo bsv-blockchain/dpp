@@ -1,0 +1,3624 @@
+{
+  "ledgerVersion": "1",
+  "updatedAt": "2026-09-05",
+  "sources": [
+    {
+      "id": "spec-record-model",
+      "uri": "spec/record-model.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/record-model.md",
+      "digest": "d1c311e70e7827d747fc22adac5282e83e10475473f5d91c1413a1a913d9e9aa"
+    },
+    {
+      "id": "spec-rules",
+      "uri": "spec/rules.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/rules.md",
+      "digest": "5a781ce71764bde6f439eabe309426e3efdf0a50e26e117074571dcfdb825a85"
+    },
+    {
+      "id": "spec-identity",
+      "uri": "spec/identity.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/identity.md",
+      "digest": "5f47d804dd7da19388e504e7a7f3780882e38e8255664572dfbbd5027700332b"
+    },
+    {
+      "id": "spec-custody",
+      "uri": "spec/custody.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/custody.md",
+      "digest": "7dac500be3203269749a0cdfc339325b0621d4c52d4b462b5efeb54e9120d34a"
+    },
+    {
+      "id": "spec-writing",
+      "uri": "spec/writing.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/writing.md",
+      "digest": "07901e45f004cd6c8f43039d455df30a8ee25db628fa739d4d09b74584842717"
+    },
+    {
+      "id": "spec-services",
+      "uri": "spec/services.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/services.md",
+      "digest": "3a2e157e9668fb57467f43dc7294230dd0329aa19f655a89932f2b841e049417"
+    },
+    {
+      "id": "spec-verification",
+      "uri": "spec/verification.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/verification.md",
+      "digest": "3d99b9517300bba0250aeb529a8196b51af6e6416f694fe3cd2a236a0cc6283e"
+    },
+    {
+      "id": "spec-conformance",
+      "uri": "spec/conformance.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/conformance.md",
+      "digest": "8b4f3db71097f3603405b9050e93212fc2b8b14799377dfa7bb46b42299c0407"
+    },
+    {
+      "id": "spec-vsc-profile",
+      "uri": "spec/vsc-profile.md",
+      "version": "vsc-draft-compat/0.1.0",
+      "kind": "local",
+      "path": "spec/vsc-profile.md",
+      "digest": "e443503d5855e3764ccd2f4db69ae0bbd7e94eba482488f78ade9e6b16a48e3f"
+    },
+    {
+      "id": "spec-legacy-anchor-v3",
+      "uri": "spec/legacy-uora-anchor-v3.md",
+      "version": "historical",
+      "kind": "local",
+      "path": "spec/legacy-uora-anchor-v3.md",
+      "digest": "a64a649dd692d066c87b8206e8b63bd726d40c1a046b25057c82b89f510564fb"
+    },
+    {
+      "id": "contract-overlay",
+      "uri": "contracts/overlay.yaml",
+      "version": "0.4.0-draft",
+      "kind": "local",
+      "path": "contracts/overlay.yaml",
+      "digest": "0514bf725d5bfc05439a82851c8112a73677b422a7b745cb1b1efce117c9d256"
+    },
+    {
+      "id": "contract-registry",
+      "uri": "contracts/registry.yaml",
+      "version": "0.2.0",
+      "kind": "local",
+      "path": "contracts/registry.yaml",
+      "digest": "afb5d69e6ee6233af8c7c5194b8af037b9a98ea081d86be73fd5c547f65ebc16"
+    },
+    {
+      "id": "contract-report-schema",
+      "uri": "contracts/verification-report.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/verification-report.schema.json",
+      "digest": "9a499589b78ea62bffcb15ff898f52287e3c31023f98186eda80fca324b467b8"
+    },
+    {
+      "id": "contract-capabilities-schema",
+      "uri": "contracts/capabilities.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/capabilities.schema.json",
+      "digest": "2b9bcdab73627a146689c1eb73772cf7d7a6ad40d1e71d67046f63d4db9f66d8"
+    },
+    {
+      "id": "baseline-native-1",
+      "uri": "conformance/baseline-native-1.json",
+      "version": "native-baseline@1",
+      "kind": "local",
+      "path": "conformance/baseline-native-1.json",
+      "digest": "a1bca6646c240299f02f0d164d088662c354f2c846e66d396520f33a6b52ee32"
+    },
+    {
+      "id": "spec-profiles",
+      "uri": "spec/profiles.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/profiles.md",
+      "digest": "2a1e29aaa7affa47b81962136d2c9494ed2f9f8df404b6453a011d12bf20c3ad"
+    },
+    {
+      "id": "profiles-manifest-schema",
+      "uri": "packages/dpp-profiles/schemas/profile-manifest.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "packages/dpp-profiles/schemas/profile-manifest.schema.json",
+      "digest": "8ff391733bd0ee49be19b8de6070ccbe796b060afc0cd72f4d369b76c22e5ead"
+    },
+    {
+      "id": "profiles-frozen",
+      "uri": "packages/dpp-profiles/frozen.json",
+      "version": "frozen 2026-09-05",
+      "kind": "local",
+      "path": "packages/dpp-profiles/frozen.json",
+      "digest": "d8576103fcd07b2d56d61d984910b97159e2fa1a35037aa2c75efa6d70d93f87",
+      "notes": "The digests battery@2, textile@2, general@2, textile@1 and general@1 are held to."
+    },
+    {
+      "id": "brc-standards",
+      "uri": "https://github.com/bitcoin-sv/BRCs",
+      "version": "BRC-42, BRC-43, BRC-48, BRC-62, BRC-74, BRC-100 as published at review",
+      "kind": "public",
+      "attribution": "BSV Association BRC repository",
+      "notes": "The derivations, push-drop shape, BEEF and BUMP encodings the native formats build on."
+    },
+    {
+      "id": "bsv-ts-stack",
+      "uri": "https://github.com/bsv-blockchain/ts-stack",
+      "version": "98734b07cf0845bff239e38b2f3a26177ee1ea12",
+      "kind": "public",
+      "attribution": "BSV Association",
+      "notes": "The overlay HTTP contract this profile extends and the cross-language vector format the fixtures also take."
+    },
+    {
+      "id": "w3c-vc-data-model-2",
+      "uri": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "version": "2.0",
+      "kind": "public",
+      "attribution": "W3C",
+      "notes": "Pin the dated Recommendation URL on first normative use; recorded here as the current TR at review."
+    },
+    {
+      "id": "w3c-vc-jose-cose",
+      "uri": "https://www.w3.org/TR/vc-jose-cose/",
+      "version": "current TR at review",
+      "kind": "public",
+      "attribution": "W3C"
+    },
+    {
+      "id": "w3c-bitstring-status-list",
+      "uri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+      "version": "current TR at review",
+      "kind": "public",
+      "attribution": "W3C"
+    },
+    {
+      "id": "w3c-vc-data-integrity",
+      "uri": "https://www.w3.org/TR/vc-data-integrity/",
+      "version": "current TR at review",
+      "kind": "public",
+      "attribution": "W3C"
+    },
+    {
+      "id": "w3c-di-eddsa",
+      "uri": "https://www.w3.org/TR/vc-di-eddsa/",
+      "version": "current TR at review; Ed25519Signature2020 as the maintained legacy suite",
+      "kind": "public",
+      "attribution": "W3C"
+    },
+    {
+      "id": "w3c-di-bbs",
+      "uri": "https://www.w3.org/TR/vc-di-bbs/",
+      "version": "current draft at review; bbs-2023",
+      "kind": "public",
+      "attribution": "W3C"
+    },
+    {
+      "id": "untp-0.7.0",
+      "uri": "https://untp.unece.org/docs/specification/",
+      "version": "0.7.0",
+      "kind": "public",
+      "attribution": "UN/CEFACT",
+      "notes": "The latest published pilot version in the official repository's version configuration at revision df03d8f87e74f676ccfece87ba77cd8f804fe111; the intended 1.0 is not a release."
+    },
+    {
+      "id": "gs1-digital-link",
+      "uri": "https://ref.gs1.org/standards/digital-link/",
+      "version": "current standard at review",
+      "kind": "public",
+      "attribution": "GS1"
+    },
+    {
+      "id": "gs1-general-specifications",
+      "uri": "https://ref.gs1.org/standards/genspecs/",
+      "version": "current standard at review",
+      "kind": "public",
+      "attribution": "GS1",
+      "notes": "GTIN structure, check digit and the demonstration prefix 952."
+    },
+    {
+      "id": "gs1-resolver",
+      "uri": "https://ref.gs1.org/standards/resolver/",
+      "version": "current standard at review",
+      "kind": "public",
+      "attribution": "GS1"
+    },
+    {
+      "id": "eu-decision-2026-1736",
+      "uri": "https://eur-lex.europa.eu/eli/dec_impl/2026/1736/oj/eng",
+      "version": "Commission Implementing Decision (EU) 2026/1736",
+      "kind": "public",
+      "attribution": "European Commission",
+      "notes": "Cites EN 18216, 18219, 18220, 18221, 18222 and 18223:2026. The conformity presumption covers only the requirements those standards cover."
+    },
+    {
+      "id": "cen-dpp-series",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "announcement of 15 July 2026",
+      "kind": "public",
+      "attribution": "CEN-CENELEC",
+      "notes": "Describes an eight-standard series that also includes EN 18239 and EN 18246."
+    },
+    {
+      "id": "en-18216",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18216:2026",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": true,
+      "notes": "Full text not obtained; no clause is recorded."
+    },
+    {
+      "id": "en-18219",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18219:2026",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": true,
+      "notes": "Full text not obtained; no clause is recorded."
+    },
+    {
+      "id": "en-18220",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18220:2026",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": true,
+      "notes": "Full text not obtained; no clause is recorded."
+    },
+    {
+      "id": "en-18221",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18221:2026",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": true,
+      "notes": "Full text not obtained; no clause is recorded."
+    },
+    {
+      "id": "en-18222",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18222:2026",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": true,
+      "notes": "Full text not obtained; no clause is recorded."
+    },
+    {
+      "id": "en-18223",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18223:2026",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": true,
+      "notes": "Full text not obtained; no clause is recorded."
+    },
+    {
+      "id": "en-18239",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18239",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": false,
+      "notes": "Part of the series; not cited by Decision (EU) 2026/1736. Full text not obtained."
+    },
+    {
+      "id": "en-18246",
+      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "version": "EN 18246",
+      "kind": "licensed",
+      "attribution": "CEN-CENELEC",
+      "harmonisedReference": false,
+      "notes": "Part of the series; not cited by Decision (EU) 2026/1736. Full text not obtained."
+    },
+    {
+      "id": "eu-batteries-regulation",
+      "uri": "https://eur-lex.europa.eu/eli/reg/2023/1542/2025-07-31/eng",
+      "version": "Regulation (EU) 2023/1542, consolidated 31 July 2025",
+      "kind": "public",
+      "attribution": "European Union",
+      "notes": "Articles 77 and 78 and Annex XIII for battery passports; applicability of any pilot is reviewed separately."
+    },
+    {
+      "id": "uora-published",
+      "uri": "https://w3c-cg.github.io/uora/",
+      "version": "1.0 Community Group Draft as published on the group site",
+      "kind": "public",
+      "attribution": "UORA Community Group, since merged into the Verifiable Supply Chain Community Group",
+      "notes": "The later authority-first conflict cascade and the physical-object DID method live here."
+    },
+    {
+      "id": "uora-vsc-copy",
+      "uri": "https://github.com/w3c-cg/vsc/tree/c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "version": "the UORA copy inside the VSC repository at c279de3d, labelled 1.0",
+      "kind": "public",
+      "attribution": "Verifiable Supply Chain Community Group",
+      "notes": "Predates the published authority-first revision despite the shared label; not authority to switch orderings."
+    },
+    {
+      "id": "vsc-core",
+      "uri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+      "version": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "kind": "public",
+      "attribution": "Verifiable Supply Chain Community Group (W3C Community Group draft, not a W3C Recommendation)"
+    },
+    {
+      "id": "vsc-requirements",
+      "uri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html",
+      "version": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "kind": "public",
+      "attribution": "Verifiable Supply Chain Community Group"
+    },
+    {
+      "id": "vsc-context-and-suite",
+      "uri": "https://w3c-cg.github.io/vsc/",
+      "version": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "kind": "unavailable",
+      "attribution": "Verifiable Supply Chain Community Group",
+      "notes": "The referenced JSON-LD context returns 404 and the conformance material is a prose matrix, not an executable suite, at the pinned revision."
+    },
+    {
+      "id": "spec-exchange",
+      "uri": "spec/exchange.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/exchange.md",
+      "digest": "3f4b24a729710b928934cfd9a2a2cd6a64c5b29533e90ea52617f91972169096"
+    },
+    {
+      "id": "contract-native-evidence-extension",
+      "uri": "contracts/native-evidence-extension.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/native-evidence-extension.schema.json",
+      "digest": "da3324b0abe3d138dc1bced0d6d32afad82f41e7c30d5557e55acc021a222ff6"
+    },
+    {
+      "id": "profiles-exchange-schema",
+      "uri": "packages/dpp-profiles/schemas/exchange-profile.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "packages/dpp-profiles/schemas/exchange-profile.schema.json",
+      "digest": "51b4fcbd4453b58d7c04ba165a5098364a926c40e81316574a76678ea7b2ffbe"
+    },
+    {
+      "id": "profiles-operator-schema",
+      "uri": "packages/dpp-profiles/schemas/operator-profile.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "packages/dpp-profiles/schemas/operator-profile.schema.json",
+      "digest": "6d819b8dc3940a6dc7cf4a0dd693d991080d9ac85cd0749308289ba1a4565c6f"
+    },
+    {
+      "id": "spec-portable-evidence",
+      "uri": "spec/portable-evidence.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/portable-evidence.md",
+      "digest": "3fbb0a32328d06874c780520ca74945b5ad6b635047217b506bcf6762be78053"
+    },
+    {
+      "id": "contract-evidence-package",
+      "uri": "contracts/evidence-package.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/evidence-package.schema.json",
+      "digest": "43dd96170e428f0a07d4537daadf498f20d36c7f3fd064719e1343ae01e1ef5c"
+    },
+    {
+      "id": "contract-paginated-history",
+      "uri": "contracts/paginated-history.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/paginated-history.schema.json",
+      "digest": "a857fa7e00f4b781b3398c07ed98a906cdf5cc96acc84f46d89d200b5b4e2ca0"
+    },
+    {
+      "id": "profiles-mapping-inventories",
+      "uri": "packages/dpp-profiles/generated/mapping/battery@2.md",
+      "version": "battery@2",
+      "kind": "local",
+      "path": "packages/dpp-profiles/generated/mapping/battery@2.md",
+      "digest": "c6398774469b4d8b289e9f54605e6f43ddf12eb3adabf0720723c1be091825e9"
+    },
+    {
+      "id": "contract-publisher-policy",
+      "uri": "contracts/publisher-policy.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/publisher-policy.schema.json",
+      "digest": "3d39a42c16ffb61e86ac9b79140ea0f01e14948c2d3541acc795897517ad1504"
+    },
+    {
+      "id": "docs-quick-start",
+      "uri": "docs/quick-start.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "docs/quick-start.md",
+      "digest": "c41dd99517acc4e2e1b932c88f0594e4eb8e34eda49c002059a91321e3f361f8"
+    },
+    {
+      "id": "fixture-battery-lifecycle",
+      "uri": "fixtures/battery-lifecycle-v1.json",
+      "version": "1",
+      "kind": "local",
+      "path": "fixtures/battery-lifecycle-v1.json",
+      "digest": "38bf65ce3a094e9e18310c71a9dcb049151622fdee313bda9b5cafd6e62ad9f7"
+    },
+    {
+      "id": "vectors-publisher-policy",
+      "uri": "fixtures/vectors/dpp/publisher-policy/v1.json",
+      "version": "1.0.0",
+      "kind": "local",
+      "path": "fixtures/vectors/dpp/publisher-policy/v1.json",
+      "digest": "a8c6a4ceb0ba13da921a9a621ac81bd68f7bd53df4e2a7569f8319c817a20bba"
+    },
+    {
+      "id": "vectors-evidence-package",
+      "uri": "fixtures/vectors/dpp/evidence-package/v1.json",
+      "version": "1.0.0",
+      "kind": "local",
+      "path": "fixtures/vectors/dpp/evidence-package/v1.json",
+      "digest": "934cb327c054d8de07b3a8940b3f75c026fb03f753a4d32dc4c629b11177fcd0"
+    },
+    {
+      "id": "profiles-combinations",
+      "uri": "packages/dpp-profiles/src/combinations.ts",
+      "version": "0.1.0",
+      "kind": "local",
+      "path": "packages/dpp-profiles/src/combinations.ts",
+      "digest": "a6181e698f2c42e62535eda5a12c92590be966c6dfcaec5e491efcb110f6601c"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "RM-2-script",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A passport state is one output: key, OP_CHECKSIG, fourteen minimal pushes, seven OP_2DROP; exactly one DPP output per transaction.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts",
+        "packages/dpp-core/src/verifyChain.ts#findDppOutputs"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/codec.test.ts",
+        "packages/dpp-core/test/fixture.test.ts",
+        "packages/dpp-core/test/chain-fixture.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v1.json",
+        "fixtures/chain-v1.json#refusals.twoDppOutputs"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-2-minimal-push",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "OP_0 is the empty field and its only encoding; the single byte 0x00 is refused however pushed; non-minimal pushes of non-empty fields are accepted; UTF-8 fields must round-trip.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/codec.test.ts",
+        "packages/dpp-core/test/fixture.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v1.json#nulPassportId",
+        "fixtures/record-v1.json#emptyPushdata",
+        "fixtures/record-v1.json#mangledUtf8"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-3-fields",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The fourteen fields, their encodings, bounds (passport_id 512 bytes, actor_keyID 256 bytes), canonical compressed keys, the strict timestamp grammar and the JSON rules.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#fieldsToState",
+        "packages/dpp-core/src/constants.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/codec.test.ts",
+        "packages/dpp-core/test/fixture.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v1.json#rolledTimestamp",
+        "fixtures/record-v1.json#overlongPassportId",
+        "fixtures/record-v1.json#uncompressedKey"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-3-gs1-allocation",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§3, the paragraph after the field table",
+      "summary": "A writer publishes a GS1 Digital Link passport_id only under a prefix licensed to the brand described, or under prefix 952 for a record describing no real object; the check digit is correct when written.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the passport identifier is a GS1 Digital Link",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/identifiers.ts",
+        "dpp-app packages/dpp-service/src/gs1.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/gs1.test.ts"
+      ],
+      "evidenceRefs": [
+        "docs/identifiers.md"
+      ],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The writer computes check digits and recognises the demonstration prefix; allocation under a licensed prefix is a brand fact the writer cannot verify, so the rule stays a duty stated to the writer. The version-1 fixtures keep the GS1 example number by the fixture policy; the sample brands' move to a 952 number is prepared (demonstrationGtin) and is a product decision."
+    },
+    {
+      "id": "RM-4-operations",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "Seven operations; ACTIVATE at genesis only; payload changes only on ACTIVATE, EDIT, TRANSFER; owner changes only on TRANSFER; event_data empty on ACTIVATE and EDIT.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/transition.ts",
+        "packages/dpp-core/src/constants.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/transition.test.ts",
+        "packages/dpp-core/test/chain-fixture.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v1.json#refusals"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-5-signatures",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "User signature over fields 1 to 12 under [1, 'dpp token v1'] with actor_keyID and counterparty anyone; server signature over fields 1 to 13 with passport_id; both via BRC-100 createSignature.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/signatures.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/signatures.test.ts",
+        "packages/dpp-core/test/fixture.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v1.json#userPreimage",
+        "fixtures/record-v1.json#serverPreimage"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-6-invariants",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "The seven chain invariants, including the three-way spend check.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/verifyChain.ts#inspectChain",
+        "packages/dpp-core/src/transition.ts",
+        "packages/overlay-topics/src/tmDpp.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain.test.ts",
+        "packages/dpp-core/test/chain-fixture.test.ts",
+        "packages/overlay-topics/test/tmDpp.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v1.json#refusals"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-7-owner-tier",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "The owner-tier blob's SHA-256 is field 11; a blob against an empty commitment is a refusal; disclosure is cryptographic.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/blob.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/blob.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v1.json#ownerBlob"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-8-verifier",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§8",
+      "summary": "Verified means signatures, linkage and inclusion; inclusion has three outcomes and an unreachable header source is pending, never failed; a proof that does not contain the transaction fails.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/verifyChain.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/spv.test.ts",
+        "packages/dpp-core/test/chain.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json#cases.header-source-unavailable",
+        "fixtures/evidence-v1.json#cases.proof-refuted"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CUST-2-owner-key",
+      "sourceId": "spec-custody",
+      "sourceUri": "spec/custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "Field 6 should be the owner's BRC-42 child under [1, 'dpp owner v1'] with passport_id and counterparty self.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when a deployment follows the recommended owner-key derivation",
+      "profileId": "core (SHOULD)",
+      "implementationRefs": [
+        "packages/dpp-core/src/owner.ts#ownerKeyFor"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/owner.test.ts",
+        "packages/dpp-core/test/chain-fixture.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v1.json#owner3OwnerKey"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CUST-4-owner-consent",
+      "sourceId": "spec-custody",
+      "sourceUri": "spec/custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "The optional owner-signed transfer: equality, then transfer authorities, then owner_linkage with one accepted spelling.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "overlay"
+      ],
+      "applicability": "when a profile selects the owner-signed transfer",
+      "profileId": "owner-consent@1",
+      "implementationRefs": [
+        "packages/dpp-core/src/owner.ts#checkOwnerConsent",
+        "packages/overlay-topics/src/tmDpp.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/owner.test.ts",
+        "packages/dpp-core/test/chain-fixture.test.ts",
+        "packages/overlay-topics/test/tmDpp.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v1.json#refusals (ownerConsent)",
+        "fixtures/evidence-v1.json#cases.consent-not-proven"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RULES-3-native-claim",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The native claim's exact properties and bounds; signature over the restricted canonical JSON excluding signature under [1, 'dpp attestation v1'] with passportId; a nominated issuerKeyDid never authenticates a resolvable issuer.",
+      "layer": "core",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/attestation.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/attestation.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/attestation-anchor-v1.json#claim"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RULES-4-representation-bytes",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "Two representations with distinct hashed bytes: canonical complete signed native claim, exact UTF-8 VSC credential; duplicate JSON keys refused; a presentation never inherits the anchored digest.",
+      "layer": "core",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/attestation.ts#lifecycleClaimBytes",
+        "packages/dpp-core/src/canonical.ts",
+        "packages/vsc/src/validation.ts#parseStrictJsonBytes"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/attestation.test.ts",
+        "packages/dpp-core/test/canonical.test.ts",
+        "packages/vsc/test/verification.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/attestation-anchor-v1.json#representationHex"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RULES-5-anchor",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "bsv-attestation-anchor-v1: ten fields, nine length-framed signed fields, derived locking key under [1, 'bsv attestation anchor v1'] with attestationId, exactly five OP_2DROP, strict bounds and UTF-8.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/anchor.ts",
+        "packages/overlay-topics/src/tmAttestation.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/attestationAnchor.test.ts",
+        "packages/overlay-topics/test/attestationTopics.test.ts",
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/attestation-anchor-v1.json",
+        "fixtures/vectors/dpp/attestation-anchor/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RULES-6-verification",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "A reader checks exact script, service signature and derivation, then the supplied secured bytes against the digest and every carried metadata field against verified content; unsupported representations remain unsupported.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts",
+        "packages/dpp-core/src/anchor.ts#inspectAttestationAnchor"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json#cases.anchor-and-claim",
+        "fixtures/evidence-v1.json#cases.anchor-tampered-bytes",
+        "fixtures/evidence-v1.json#cases.anchor-unsupported-representation"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RULES-7-compatibility",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "uora-anchor-v3 outputs stay historical under their old digest rule; uora-anchor-v2 stays refused; legacy topics are not aliases for new evidence.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/uoraAnchor.ts",
+        "packages/overlay-topics/src/tmUoraDpp.ts",
+        "packages/dpp-core/src/anchor.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/uoraAnchor.test.ts",
+        "packages/overlay-topics/test/uoraRail.test.ts",
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/anchor-v3.json",
+        "fixtures/vectors/dpp/anchor/v3.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "LEGACY-V3-rules",
+      "sourceId": "spec-legacy-anchor-v3",
+      "sourceUri": "spec/legacy-uora-anchor-v3.md",
+      "sourceVersion": "historical",
+      "clause": "§4 to §6",
+      "summary": "The historical native anchor v3: canonical unsigned claim, seven fields, length-delimited preimage, derived locking key, and its refusals; readable, never reinterpreted.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry",
+        "overlay"
+      ],
+      "applicability": "for records already written under the historical format",
+      "profileId": "historical",
+      "implementationRefs": [
+        "packages/overlay-topics/src/uoraAnchor.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/uoraAnchor.test.ts",
+        "packages/overlay-topics/test/fixture-json.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/anchor-v3.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ID-1-roles-and-accounts",
+      "sourceId": "spec-identity",
+      "sourceUri": "spec/identity.md",
+      "sourceVersion": "working draft",
+      "clause": "§1",
+      "summary": "Subject, issuer, verification method, controller, custodian and operator are distinct; an application account is none of them by definition and confers no authority.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts (authority from policy lists and verifiers only)",
+        "spec/conformance.md#5-identity-vocabulary",
+        "dpp-app packages/dpp-service/src/operator.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts (authority never inferred from evidence)",
+        "dpp-app packages/dpp-service/test/identity-adapters.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json#cases.anchor-and-claim (issuerAuthority unknown without policy)"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The application demonstrates the vocabulary in tests: one account holding two brand identities, one identity used from two accounts, and an automated actor with no account admitted under an operator policy, each asserting which fields a record carries and which it does not."
+    },
+    {
+      "id": "ID-2-did-key",
+      "sourceId": "spec-identity",
+      "sourceUri": "spec/identity.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "did:key for canonical compressed secp256k1 keys; the actor identity key is a BRC-42 parent and the signing child is distinct; other curves refused for native keys.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "attestation-issuer",
+        "passport-reader"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/did.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/did.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/attestation-anchor-v1.json#issuer"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ID-3-vsc-actor",
+      "sourceId": "spec-identity",
+      "sourceUri": "spec/identity.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Under the VSC profile the actor DID equals the issuer and the proof's verification method is authorised for assertion in the issuer's DID document; a did:web document is identity, not accreditation.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/validation.ts",
+        "packages/vsc/src/crypto.ts#issuerPurpose",
+        "packages/vsc/src/did-web.ts"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts",
+        "packages/vsc/test/did-web.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ID-3-physical-object",
+      "sourceId": "uora-published",
+      "sourceUri": "https://w3c-cg.github.io/uora/",
+      "sourceVersion": "1.0 Community Group Draft as published on the group site",
+      "clause": "DID method for physical objects",
+      "summary": "A resolvable physical-object DID with verification material, discovery service and physical-binding metadata is a separate capability; a QR code or actor DID does not implement it.",
+      "layer": "profile",
+      "roles": [
+        "none"
+      ],
+      "applicability": "only when an implementation selects UORA physical-object compatibility",
+      "profileId": "uora-physical-object (unselected)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [
+        "spec/identity.md#3"
+      ],
+      "status": "gap",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed; the specification records the boundary."
+    },
+    {
+      "id": "WR-2-verify-before-send",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A writer runs the verifier's own checks on the unsent candidate against the tip it spends before broadcast or announcement; an anchor writer validates the representation, hashes the complete bytes and decodes its own anchor.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (section 2)"
+      ],
+      "testRefs": [
+        ".github/workflows/ci.yml (write-passport.mjs --dry-run)"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v1.json#states[0]"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The reference example does this; the consuming application's writer is assessed in its own repository."
+    },
+    {
+      "id": "WR-3-announce-before-send",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Where an index is named, build unsent, announce, and send only on admission; an unreachable index is not a refusal.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the deployment names an index (SHOULD)",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (section 3)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Exercised live only; the dry run prints what it would do."
+    },
+    {
+      "id": "WR-4-one-writer",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "Serialise writes per passport; spend a tip again only after the first spend's fate is known; a queued broadcast is not a written state.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (sections 4 and 5, acceptDelayedBroadcast false)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The example writes one state under one wallet; concurrent-writer discipline for a multi-instance service is the consuming application's duty."
+    },
+    {
+      "id": "WR-5-broadcast",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "The wallet broadcasts; a deployment should use ARC-compatible endpoints with proof callbacks, more than one, with fee policy read from the endpoint and the monitor running; the standard names no confirmation depth.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (send)",
+        "docs/deployment.md"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "WR-6-announce-retry",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "A failed announcement never fails a record and is retried, never rebuilt; announce with the predecessor's bytes; backfill in chain order.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (section 6)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "WR-7-proof",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "Obtain the merkle path once mined, attach it, keep it, and offer it to every announced index through its proof-ingestion route.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (proveAndPush)",
+        "packages/overlay-topics/src/index.ts (POST /arc-ingest)"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/http.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "WR-8-retain",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§8",
+      "summary": "Retain the raw transaction, its BEEF and its proof for the passport's life; for attestations also the original secured representation, identifier, digest and verification observations.",
+      "layer": "role",
+      "roles": [
+        "passport-writer",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (basket dpp)",
+        "contracts/registry.yaml#AnchorProof"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-1-discovery-sync",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§1",
+      "summary": "Public overlays should advertise through SHIP/SLAP; discovery, synchronisation and retention are declared and tested before a deployment is called independently replicated; the reference node does not enable peer synchronisation.",
+      "layer": "profile",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when an operator claims federated-operators@1",
+      "profileId": "federated-operators@1 (proposed)",
+      "implementationRefs": [
+        "packages/overlay-topics/src/sync.ts",
+        "packages/overlay-topics/src/index.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/federation.test.ts",
+        "packages/overlay-topics/test/gaspRoutes.test.ts"
+      ],
+      "evidenceRefs": [
+        "packages/overlay-topics/src/index.ts (Engine built without trackers, advertiser or GASP)"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The reference node serves the upstream GASP routes and, with SYNC_PEERS, synchronises tm_dpp and tm_attestation from declared peers on a schedule under the same topic managers as /submit; the two-operator exercise (two in-memory nodes, one federated policy) shows byte-identical answers on both rails, no duplicates on a second round, catch-up after a late start, service after the first operator stops, a stranger's state refused, and a rotated policy honoured by both. Limits: the SDK carries no proof repair (each operator ingests proofs itself) and does not finalise an unproven state on a lineage the peer already holds until it is proven; SHIP and SLAP advertisement is not configured; two processes under one administration prove the mechanism, never independence."
+    },
+    {
+      "id": "SVC-2-passport-admission",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "tm_dpp admits a state on the native rules, the configured publisher key and the selected custody policy, retaining spent tips; ls_dpp answers by passport identifier or data carrier.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmDpp.ts",
+        "packages/overlay-topics/src/lsDpp.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/tmDpp.test.ts",
+        "packages/overlay-topics/test/lsUoraDpp.test.ts",
+        "packages/overlay-topics/test/http.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/overlay.yaml#x-dpp-profile.topics.tm_dpp"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-2-anchor-admission",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "tm_attestation admits an anchor on its exact script, framed signature and derived key, optionally restricted to named anchoring services; it validates no credential absent from the transaction.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmAttestation.ts",
+        "packages/overlay-topics/src/lsAttestation.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/attestationTopics.test.ts",
+        "packages/overlay-topics/test/attestationHttp.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/attestation-anchor-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-2-cursor-lookup",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "Anchor lookup uses exact metadata selectors and an exact outpoint cursor; a truncated answer is never described as complete.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/attestationStorage.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/attestationTopics.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/overlay.yaml#components.schemas.anchorLookup"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Pagination observes the live index; a snapshot export is a separate proposed contract."
+    },
+    {
+      "id": "SVC-2-proof-ingest",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A pushed proof is checked to contain the transaction and validated against the index's header source before storage; unavailable headers defer, never refuse.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/index.ts (POST /arc-ingest)"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/http.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/overlay.yaml#paths./arc-ingest"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-3-registry-bytes",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The registry stores complete original bytes, media type, representation, digest, verified metadata and a scoped report; current representations never fall through to legacy intake; a VSC credential acquires no fabricated token state.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/credentials/secured.ts",
+        "uora-bsv src/routes/secured.ts",
+        "uora-bsv src/store/attestations.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/secured.test.ts",
+        "uora-bsv test/vsc-intake.test.ts",
+        "uora-bsv test/contract.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/registry.yaml",
+        "fixtures/attestation-anchor-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Implemented in the registry repository against the shared fixture; assessed there, recorded here."
+    },
+    {
+      "id": "SVC-3-legacy-intake",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Legacy intake is off by default and, when enabled, carries only its historical assurance.",
+      "layer": "profile",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when an operator enables historical intake",
+      "profileId": "legacy-intake (historical)",
+      "implementationRefs": [
+        "uora-bsv src/routes/index.ts (LEGACY_INTAKE)"
+      ],
+      "testRefs": [
+        "uora-bsv test/contract.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/registry.yaml#info.description"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-6-idempotent-admission",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "Replay of an admitted outpoint is idempotent; eviction and recovery use the same exact evidence rules.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/engineStorage.ts",
+        "packages/overlay-topics/src/attestationStorage.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/engineStorage.test.ts",
+        "packages/overlay-topics/test/http.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/overlay.yaml#x-dpp-profile.must"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VER-2-report",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "The report: version 1, injected checkedAt, expected subject, supplied tip, policy, sixteen checks in order, observations and limits; no aggregate verdict.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts",
+        "contracts/verification-report.schema.json"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "conformance/check.mjs (schema validation of every fixture report)"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VER-3-expected-subject",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The expected subject comes from the request context or an established binding, never from the evidence; two genesis records under one identifier stay candidates.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts (subjectBinding)"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json#cases.subject-substitution",
+        "fixtures/evidence-v1.json#cases.duplicate-genesis",
+        "fixtures/evidence-v1.json#cases.subject-not-independent"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VER-4-checks",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "Sixteen named checks with pass, fail, unknown or not-applicable; a missing input is unknown; a token pass says nothing about the anchor rail; shared reason codes.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts",
+        "contracts/verification-report.schema.json#/$defs/sharedReasonCode"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VER-5-observations",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§5 and §6",
+      "summary": "Latest state observed, superseded, conflicting or unknown from named sources with candidates visible; never a proof; limits stated.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts (observe)"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json#cases.stale-prefix-superseded"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VER-7-surfaces-equivalent",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "An API, an embedded view and a standalone tool produce equal reports for the pinned cases.",
+      "layer": "role",
+      "roles": [
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/verify-passport.mjs --report"
+      ],
+      "testRefs": [
+        ".github/workflows/ci.yml (verify-passport.mjs --fixture --report)",
+        "dpp-app apps/web/test/verify-report-route.test.ts",
+        "uora-bsv test/evidence-report.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The standalone tool (CI), the application route (apps/web/test/verify-report-route.test.ts) and the registry (test/evidence-report.test.ts) each reproduce all twenty-one pinned cases byte for byte, and the embedded view draws the same report object. Independent testing, by a party outside the programme, is still open."
+    },
+    {
+      "id": "CONF-2-reader-quickstart",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "The reader quick start works from the fixtures alone: no account, wallet, network or other role.",
+      "layer": "role",
+      "roles": [
+        "passport-reader"
+      ],
+      "applicability": "always",
+      "profileId": "native-baseline@1",
+      "implementationRefs": [
+        "examples/verify-passport.mjs",
+        "examples/verify-attestation-anchor.mjs"
+      ],
+      "testRefs": [
+        ".github/workflows/ci.yml"
+      ],
+      "evidenceRefs": [
+        "conformance/baseline-native-1.json#quickStarts"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CONF-3-baseline",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "native-baseline@1 names exact wire versions, representations, derivations, refused and historical formats, reason codes, fixtures with digests, role requirements and tested dependency versions.",
+      "layer": "reference",
+      "roles": [
+        "all"
+      ],
+      "applicability": "when a component claims the baseline",
+      "profileId": "native-baseline@1",
+      "implementationRefs": [
+        "conformance/baseline-native-1.json",
+        "conformance/baseline.schema.json"
+      ],
+      "testRefs": [
+        "conformance/check.mjs"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CONF-4-capability-schema",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "A capability document declares roles, protocols, exact profiles with digests, representations, proof suites, anchor formats, limits and explicit unsupported items.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "contracts/capabilities.schema.json",
+        "conformance/examples/capabilities-reference-node.json"
+      ],
+      "testRefs": [
+        "conformance/check.mjs"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CONF-4-overlay-capabilities",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "The reference overlay node serves its capability document.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/capabilities.ts",
+        "packages/overlay-topics/src/index.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/capabilities.test.ts"
+      ],
+      "evidenceRefs": [
+        "conformance/examples/capabilities-reference-node.json (hand-written example of what the node would serve)"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "GET /capabilities builds the document from constants and configuration, validates against contracts/capabilities.schema.json, and under the reference configuration equals conformance/examples/capabilities-reference-node.json exactly; the operator profile, active publisher keys, export and retraction availability and every unsupported item are stated by name."
+    },
+    {
+      "id": "CONF-6-ledger-gate",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "Every row has a layer and role scope; a claim is refused while any required row is unassessed or below the claim's minimum status; a moved source digest invalidates its rows pending review.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "conformance/check.mjs",
+        "conformance/manifest.schema.json"
+      ],
+      "testRefs": [
+        "conformance/check.mjs (self-checking on every run)"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VSC-2-structure",
+      "sourceId": "vsc-core",
+      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "SEAL structure and event vector, as selected in spec/vsc-profile.md §2",
+      "summary": "Contexts, types, stable id, issuer DID equal to actor DID, sealVersion 1.0, eventVector what/when/where/who/how, extensions, chainOfCustody, correctionOf, credentialStatus, proof; strict parsing of exact bytes.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "attestation-issuer",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/validation.ts",
+        "packages/vsc/src/schema.ts",
+        "packages/vsc/artifacts/seal-0.1.0.schema.json"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts",
+        "packages/vsc/test/artifacts.test.ts"
+      ],
+      "evidenceRefs": [
+        "packages/vsc/artifacts/profile-0.1.0.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VSC-3-proofs",
+      "sourceId": "vsc-core",
+      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "proof requirements, as selected in spec/vsc-profile.md §3",
+      "summary": "Genuine Ed25519Signature2020 and bbs-2023 Data Integrity proofs with suite canonicalisation; assertion-purpose check against the issuer's DID document; request-bound BBS derived disclosure with required disclosure fields.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "attestation-issuer",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/crypto.ts"
+      ],
+      "testRefs": [
+        "packages/vsc/test/crypto.test.ts",
+        "packages/vsc/test/verification.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Holder authentication and the HTTPS presentation transport are not implemented and are declared as such."
+    },
+    {
+      "id": "VSC-4-status",
+      "sourceId": "w3c-bitstring-status-list",
+      "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+      "sourceVersion": "current TR at review",
+      "clause": "validate algorithm, as selected in spec/vsc-profile.md §4",
+      "summary": "Verify the list credential's proof, its issuer or an explicitly delegated issuer, identity, purpose, canonical index, temporal validity and freshness before reading the bit; bounded decompression; at least 131072 bits.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/verification.ts#verifyCredentialStatus"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VSC-4-authority",
+      "sourceId": "vsc-requirements",
+      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "trust and authority, as selected in spec/vsc-profile.md §4",
+      "summary": "Signed scoped VscEventAuthorisation grants from configured trust anchors, with proof, validity and status verified; an explicit not-required policy is a recorded warning, not a pass.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/verification.ts#verifyIssuerAuthority"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VSC-5-custody",
+      "sourceId": "vsc-core",
+      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "custody chain, forks, merges, corrections, as selected in spec/vsc-profile.md §5",
+      "summary": "Backward parent traversal with path-local cycle detection and a completed-node cache so diamonds pass; branch-height sequences; preallocated fork children; corrections with exactly their target as parent, a new chain at sequence 1, scoped delegation and conflict on competing termini.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/verification.ts#verifySeal"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts"
+      ],
+      "evidenceRefs": [
+        "packages/vsc/artifacts/profile-0.1.0.json#decisions DAG-01 CORR-01"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VSC-6-epcis",
+      "sourceId": "vsc-core",
+      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "EPCIS mapping, as selected in spec/vsc-profile.md §6",
+      "summary": "The five EPCIS event types mapped with the source event retained in a signed round-trip extension; missing time, place, step, disposition or action is an error, never fabricated.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/epcis.ts"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VSC-context-upstream",
+      "sourceId": "vsc-context-and-suite",
+      "sourceUri": "https://w3c-cg.github.io/vsc/",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "the referenced JSON-LD context",
+      "summary": "A credential's context resolves to the context the upstream draft publishes; this profile serves an owned urn:bsv:vsc:context:0.1.0 instead and claims no exact upstream-context interoperability.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "attestation-issuer",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/context.ts"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [
+        "packages/vsc/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-CONTEXT"
+      ],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Cannot be assessed while the upstream artefact is unavailable; blocks any full-conformance claim by design."
+    },
+    {
+      "id": "VSC-conformance-suite",
+      "sourceId": "vsc-context-and-suite",
+      "sourceUri": "https://w3c-cg.github.io/vsc/",
+      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+      "clause": "conformance test matrix",
+      "summary": "Upstream executable conformance tests pass.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when vsc-draft-compat/0.1.0 is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [
+        "packages/vsc/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-TESTS"
+      ],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "No executable suite exists at the pinned revision; a project test pass is not labelled an upstream pass."
+    },
+    {
+      "id": "UORA-conflict-order",
+      "sourceId": "uora-published",
+      "sourceUri": "https://w3c-cg.github.io/uora/",
+      "sourceVersion": "1.0 Community Group Draft as published on the group site",
+      "clause": "conflict resolution cascade (authority-first)",
+      "summary": "Historical UORA-shaped claims are ranked authority-first, then validFrom within tolerance, then identifier; the earlier VSC-hosted copy's ordering is recorded and not adopted; VSC custody and corrections have their own rules.",
+      "layer": "profile",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "for historical UORA-shaped attestations only",
+      "profileId": "historical",
+      "implementationRefs": [
+        "uora-bsv src/validation/phases.ts (decide)"
+      ],
+      "testRefs": [
+        "uora-bsv test/validation.test.ts"
+      ],
+      "evidenceRefs": [
+        "spec/vsc-profile.md#1"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "A fixture producing different winners under the two orderings is a proposed addition."
+    },
+    {
+      "id": "STATUS-validate-algorithm",
+      "sourceId": "w3c-bitstring-status-list",
+      "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+      "sourceVersion": "current TR at review",
+      "clause": "validate algorithm",
+      "summary": "A status bit is read only from a list credential whose proof, purpose and identity were verified; unauthenticated lists establish neither revoked nor active.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "whenever a credential carries a status entry",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/vsc/src/verification.ts#verifyCredentialStatus",
+        "uora-bsv src/credentials/status.ts (checkRevocation, verifier-gated)"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts",
+        "uora-bsv test/status.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The registry's historical path only verifies when an operator verifier is configured and abstains otherwise."
+    },
+    {
+      "id": "STATUS-purpose-suspension",
+      "sourceId": "w3c-bitstring-status-list",
+      "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+      "sourceVersion": "current TR at review",
+      "clause": "statusPurpose revocation and suspension",
+      "summary": "A purpose-aware status result: revocation and suspension read separately, an unset revocation bit never read as not suspended.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "whenever a credential carries a status entry",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/credentials/status.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/status.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "checkStatus answers purpose revocation or suspension with value set, unset or unknown and the evidence fields; a suspension entry is never read as a revocation and the legacy checkRevocation wrapper refuses suspension as unsupported-status-profile."
+    },
+    {
+      "id": "STATUS-secured-publication",
+      "sourceId": "w3c-bitstring-status-list",
+      "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+      "sourceVersion": "current TR at review",
+      "clause": "BitstringStatusListCredential issuance",
+      "summary": "Status lists are issued as secured credentials by an authorised key with transactional index allocation, monotonic revocation, explicit suspension clearing and atomic publication.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when a registry operates a status service",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/credentials/status-publication.ts",
+        "uora-bsv src/store/status-lists.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/status-publication.test.ts",
+        "uora-bsv test/status.test.ts"
+      ],
+      "evidenceRefs": [
+        "uora-bsv src/credentials/status.ts (unsigned constructor)"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Lists are signed Ed25519 credentials by the configured issuer key; atomic index allocation that never recycles, monotonic revocation, explicit suspension clearing, forward-only publication pointer, cache invalidation; a revoke-then-publish race settles on one version carrying every bit (memory, JSONL and Mongo stores). The unsigned constructor is test-only."
+    },
+    {
+      "id": "STATUS-fetch-bounds",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§3 and §5 (bounded retrieval)",
+      "summary": "Status and identity documents are fetched with a timeout, a response byte cap, a decompression cap, no automatic redirects and address checks.",
+      "layer": "role",
+      "roles": [
+        "registry",
+        "attestation-verifier"
+      ],
+      "applicability": "whenever a verifier fetches remote evidence",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/credentials/status-fetch.ts",
+        "uora-bsv src/credentials/status-hosts.ts"
+      ],
+      "testRefs": [
+        "packages/vsc/test/did-web.test.ts",
+        "uora-bsv test/ssrf.test.ts",
+        "uora-bsv test/status-fetch.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "fetchStatusCredential: 5000 ms budget, 1 MiB declared and streamed caps, 1 MiB decompressed, no redirects except one explicitly permitted destination re-checked against the host policy; the host policy applies before any connection."
+    },
+    {
+      "id": "W3C-VC-DM-2-core",
+      "sourceId": "w3c-vc-data-model-2",
+      "sourceUri": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "sourceVersion": "2.0",
+      "clause": "credential structure: @context, type, issuer, validFrom, validUntil, credentialSubject, credentialStatus, proof",
+      "summary": "VSC credentials carry the version 2 core context first, a DID issuer, validFrom and optional validUntil enforced at evaluation, and a status entry.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "attestation-issuer",
+        "registry"
+      ],
+      "applicability": "when a W3C credential representation is selected",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "implementationRefs": [
+        "packages/vsc/src/validation.ts",
+        "packages/vsc/src/verification.ts#verifyTemporal"
+      ],
+      "testRefs": [
+        "packages/vsc/test/verification.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "W3C-VC-JOSE-ES256K",
+      "sourceId": "w3c-vc-jose-cose",
+      "sourceUri": "https://www.w3.org/TR/vc-jose-cose/",
+      "sourceVersion": "current TR at review",
+      "clause": "securing with JOSE (vc+jwt)",
+      "summary": "An ES256K compact JWS credential carriage emitted with an injected signer and verified independently with a second library; ES256K is a supported suite a consumer must confirm.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when the JOSE exchange profile is selected",
+      "profileId": "untp-0.7.0-jose@1 (proposed)",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/jws.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/jws.test.ts (jose@5.10.0 verify-only)"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Implemented in the application repository; a consumer on jose@6 rejects ES256K, so that interoperability is unsupported rather than a defect."
+    },
+    {
+      "id": "UNTP-0.7.0-dpp",
+      "sourceId": "untp-0.7.0",
+      "sourceUri": "https://untp.unece.org/docs/specification/",
+      "sourceVersion": "0.7.0",
+      "clause": "Digital Product Passport schema and context",
+      "summary": "Import and export of UNTP 0.7.0 product passport credentials against the pinned official schema and context, with originals retained and mapping losses visible.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "registry"
+      ],
+      "applicability": "when untp-0.7.0-jose@1 is selected",
+      "profileId": "untp-0.7.0-jose@1 (proposed)",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/untp.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/untp.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "An envelope-level pilot exists in the application (VC Data Model 2.0 credential of type DigitalProductPassport secured as compact JWS ES256K with the native evidence extension, round trip and refusals tested) but validates nothing against the UNTP schemas or contexts, which have not been retrieved or pinned, and uses no UNTP vocabulary term; the row stays a gap until the artefacts are pinned and the credential validates against them."
+    },
+    {
+      "id": "UNTP-0.7.0-dte",
+      "sourceId": "untp-0.7.0",
+      "sourceUri": "https://untp.unece.org/docs/specification/",
+      "sourceVersion": "0.7.0",
+      "clause": "Digital Traceability Event",
+      "summary": "A repair or transformation exported as a traceability event only with actual event evidence.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when untp-0.7.0-jose@1 is selected",
+      "profileId": "untp-0.7.0-jose@1 (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "GS1-digital-link-syntax",
+      "sourceId": "gs1-digital-link",
+      "sourceUri": "https://ref.gs1.org/standards/digital-link/",
+      "sourceVersion": "current standard at review",
+      "clause": "URI syntax, AI 01 and AI 21, GTIN-14 with leading zeros",
+      "summary": "A GS1 Digital Link passport identifier carries the fourteen-digit GTIN under AI 01 and the serial under AI 21; the host is the writer's choice.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when the passport identifier is a GS1 Digital Link",
+      "profileId": "core (when selected)",
+      "implementationRefs": [
+        "spec/record-model.md#3",
+        "docs/identifiers.md"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [
+        "fixtures/chain-v1.json#states[0].data.passportId"
+      ],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Syntax is documented and used; no reader validation is required by the record model, and none exists in this repository."
+    },
+    {
+      "id": "GS1-check-digit-written",
+      "sourceId": "gs1-general-specifications",
+      "sourceUri": "https://ref.gs1.org/standards/genspecs/",
+      "sourceVersion": "current standard at review",
+      "clause": "GTIN check digit calculation",
+      "summary": "The check digit is correct when a writer mints a GTIN-based identifier; a reader need not verify it, and syntax never proves allocation.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the passport identifier is a GS1 Digital Link",
+      "profileId": "core (when selected)",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/identifiers.ts",
+        "dpp-app packages/dpp-service/src/gs1.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/identifiers.test.ts",
+        "dpp-app packages/dpp-service/test/gs1.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The application writer mints and admits new identifiers through the profiles package's helpers (admitNewIdentifier, mintIdentifier, demonstrationGtin), so a new GTIN-based identifier carries a correct check digit; reading stays tolerant of the identifiers already published with invalid check digits, as documented in object-did.ts."
+    },
+    {
+      "id": "GS1-952-demonstration",
+      "sourceId": "gs1-general-specifications",
+      "sourceUri": "https://ref.gs1.org/standards/genspecs/",
+      "sourceVersion": "current standard at review",
+      "clause": "GS1 prefix 952 for demonstrations and examples",
+      "summary": "A record describing no real object carries a GTIN under prefix 952 or a prefix the writer holds.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the passport identifier is a GS1 Digital Link",
+      "profileId": "core (when selected)",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/identifiers.ts",
+        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/identifiers.test.ts",
+        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/battery-lifecycle-v1.json"
+      ],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The demonstration lifecycle fixture carries 09521000000018 under prefix 952 with a computed check digit, and the helpers recognise the prefix. The pinned version-1 record and chain fixtures still carry GS1's published example number because a pinned fixture's bytes change only with the format version; moving them is a version-2 fixture set. The live demonstration cannot be moved from here."
+    },
+    {
+      "id": "EN-18216",
+      "sourceId": "en-18216",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18216:2026",
+      "clause": "not read: licensed text not obtained",
+      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "EU DPP system requirements; product-category applicability under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Harmonised reference. No clause number is invented from a catalogue summary."
+    },
+    {
+      "id": "EN-18219",
+      "sourceId": "en-18219",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18219:2026",
+      "clause": "not read: licensed text not obtained",
+      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "EU DPP system requirements; product-category applicability under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Harmonised reference."
+    },
+    {
+      "id": "EN-18220",
+      "sourceId": "en-18220",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18220:2026",
+      "clause": "not read: licensed text not obtained",
+      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "EU DPP system requirements; product-category applicability under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Harmonised reference."
+    },
+    {
+      "id": "EN-18221",
+      "sourceId": "en-18221",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18221:2026",
+      "clause": "not read: licensed text not obtained",
+      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "EU DPP system requirements; product-category applicability under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Harmonised reference."
+    },
+    {
+      "id": "EN-18222",
+      "sourceId": "en-18222",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18222:2026",
+      "clause": "not read: licensed text not obtained",
+      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "EU DPP system requirements; product-category applicability under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Harmonised reference."
+    },
+    {
+      "id": "EN-18223",
+      "sourceId": "en-18223",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18223:2026",
+      "clause": "not read: licensed text not obtained",
+      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "EU DPP system requirements; product-category applicability under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Harmonised reference."
+    },
+    {
+      "id": "EN-18239",
+      "sourceId": "en-18239",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18239",
+      "clause": "not read: licensed text not obtained",
+      "summary": "Part of the CEN DPP series; not cited by the Commission decision, so it carries no harmonised-reference marker.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EN-18246",
+      "sourceId": "en-18246",
+      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
+      "sourceVersion": "EN 18246",
+      "clause": "not read: licensed text not obtained",
+      "summary": "Part of the CEN DPP series; not cited by the Commission decision, so it carries no harmonised-reference marker.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "under review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EU-2026-1736-applicability",
+      "sourceId": "eu-decision-2026-1736",
+      "sourceUri": "https://eur-lex.europa.eu/eli/dec_impl/2026/1736/oj/eng",
+      "sourceVersion": "Commission Implementing Decision (EU) 2026/1736",
+      "clause": "the standards cited and the scope of the conformity presumption",
+      "summary": "The presumption of conformity covers only the requirements the six cited standards cover; product-category applicability is reviewed against the legal instrument and its date, never assumed.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "legal review",
+      "profileId": "eu-dpp-system (proposed)",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "A legal conclusion needs the applicable primary sources and authorised licensed texts."
+    },
+    {
+      "id": "BATT-annex-xiii",
+      "sourceId": "eu-batteries-regulation",
+      "sourceUri": "https://eur-lex.europa.eu/eli/reg/2023/1542/2025-07-31/eng",
+      "sourceVersion": "Regulation (EU) 2023/1542, consolidated 31 July 2025",
+      "clause": "Articles 77 and 78, Annex XIII",
+      "summary": "Battery passport information, access tiers and responsible actors mapped field by field with data, evidence and access, not four lifecycle labels.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "registry"
+      ],
+      "applicability": "when the battery industry profile is selected for a covered battery category",
+      "profileId": "battery@2 (existing) and battery@3 (proposed)",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/battery-attributes.ts"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The application's battery@2 field set exists; its legal and applicability mapping is the proposed qualification work."
+    },
+    {
+      "id": "OVL-contract-must",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.4.0-draft",
+      "clause": "x-dpp-profile.must",
+      "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/index.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/http.test.ts",
+        "packages/overlay-topics/test/attestationHttp.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "REG-contract-routes",
+      "sourceId": "contract-registry",
+      "sourceUri": "contracts/registry.yaml",
+      "sourceVersion": "0.2.0",
+      "clause": "paths",
+      "summary": "Every operation the registry contract lists answers in the documented shape, and no served route is absent from the contract.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/router.ts",
+        "uora-bsv src/routes/index.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/openapi-contract.test.ts",
+        "uora-bsv test/contract.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance and GET /showcase. contracts/registry.yaml is the byte-identical mirror."
+    },
+    {
+      "id": "STACK-vector-format",
+      "sourceId": "bsv-ts-stack",
+      "sourceUri": "https://github.com/bsv-blockchain/ts-stack",
+      "sourceVersion": "98734b07cf0845bff239e38b2f3a26177ee1ea12",
+      "clause": "conformance/VECTOR-FORMAT.md and conformance/schema/vector.schema.json",
+      "summary": "The fixtures are also published in the stack's cross-language vector format and validate under its structural runner.",
+      "layer": "reference",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/test/record-v1-vectors.ts",
+        "packages/dpp-core/test/chain-v1-vectors.ts",
+        "packages/overlay-topics/test/anchor-v3-vectors.ts",
+        "packages/overlay-topics/test/attestation-v1-fixture.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/fixture-json.test.ts (expectStackShape)",
+        "packages/overlay-topics/test/fixture-json.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "PROF-2-manifest",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "An industry profile is an immutable manifest validating against the manifest schema: identity, status, regulatory line, applicability with enacted, anticipated or needs-review statements, JSON Schema 2020-12 dialect with recorded digests, contexts, stamps, fields, event mappings, access tiers, sources and the identity model.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "attestation-issuer",
+        "registry",
+        "passport-reader"
+      ],
+      "applicability": "when an industry profile is selected",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/schemas/profile-manifest.schema.json",
+        "packages/dpp-profiles/manifests/"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifests.test.ts"
+      ],
+      "evidenceRefs": [
+        "packages/dpp-profiles/generated/index.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "PROF-3-fields",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Fields carry pointer, semantic URI, value type, unit or code list, resolved constraints, cardinality, granularity, provenance, access tier, obligation separate from legal basis and a machine-evaluable applicability rule; needs-review is neither satisfied nor universally required; constraints are resolved, never implied.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "registry",
+        "passport-reader"
+      ],
+      "applicability": "when an industry profile is selected",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/index.ts#fieldsFor",
+        "packages/dpp-profiles/src/index.ts#missingRequired",
+        "packages/dpp-profiles/scripts/build.mjs#payloadSchema"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifests.test.ts",
+        "packages/dpp-profiles/test/payload-schema.test.ts"
+      ],
+      "evidenceRefs": [
+        "packages/dpp-profiles/generated/payload-schema/"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "PROF-4-freeze",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "battery@2, textile@2, general@2, textile@1 and general@1 are frozen by digest; a frozen manifest changes only by a new version or a reviewed re-freeze; generation is deterministic and drift is a red test.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/frozen.json",
+        "packages/dpp-profiles/scripts/build.mjs"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifests.test.ts"
+      ],
+      "evidenceRefs": [
+        "packages/dpp-profiles/frozen.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "PROF-5-identifiers",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "Model, batch and item granularities with declared parent relations; the enduring passport identifier and genesis are preserved; GS1 check digit, GTIN-14 spelling, demonstration prefix 952 and Digital Link path helpers exist for writers and readers; syntax never proves allocation.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when a GS1 Digital Link identifier or a granularity relation is selected",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/identifiers.ts",
+        "packages/dpp-profiles/schemas/product-identity.schema.json",
+        "packages/dpp-profiles/manifests/ (identity)"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/identifiers.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row."
+    },
+    {
+      "id": "PROF-6-generated-consumers",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "Application field registries, payload validators and the registry's profile endpoint are generated from the manifest and held identical by a test in each consumer.",
+      "layer": "role",
+      "roles": [
+        "registry",
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/scripts/build.mjs#consumerDocument",
+        "packages/dpp-profiles/generated/consumer/"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifests.test.ts",
+        "uora-bsv test/profiles.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check."
+    },
+    {
+      "id": "GOV-independent-implementation",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§6 (independently-tested)",
+      "summary": "An implementation by another implementing party, importing none of this repository's code for the property, passes every fixture including every refusal vector. A second reader written within this programme is engineering evidence and is recorded here without moving any row to independently-tested.",
+      "layer": "reference",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier"
+      ],
+      "applicability": "before version 1.0 and before any independently-tested row",
+      "profileId": "core",
+      "implementationRefs": [
+        "conformance/independent/python/dpp_verify.py (standard-library Python reader: secp256k1, DER, ECDSA, BRC-42, PushDrop, chain invariants, owner consent, native claim, anchor v1)"
+      ],
+      "testRefs": [
+        ".github/workflows/ci.yml (python3 conformance/independent/python/dpp_verify.py)",
+        "npm run conformance:independent"
+      ],
+      "evidenceRefs": [
+        "GOVERNANCE.md (Declaring version 1.0, condition 2)"
+      ],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The Python reader reproduces every pinned preimage, derived key, digest and script and refuses every refusal vector across record-v1, chain-v1, attestation-anchor-v1 and the vector files, without importing reference code. It was written by the same programme, so the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate; rows stay at tested."
+    },
+    {
+      "id": "EXCH-1-representations",
+      "sourceId": "spec-exchange",
+      "sourceUri": "spec/exchange.md",
+      "sourceVersion": "working draft",
+      "clause": "§1 and §2",
+      "summary": "Representations are named and versioned; a reader dispatches on the identifier and reports an unimplemented one as unsupported; each exchange profile is a manifest whose artefacts state their retrieval status and never carry an uncomputed digest.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry",
+        "attestation-issuer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/schemas/exchange-profile.schema.json",
+        "packages/dpp-profiles/manifests/exchange/",
+        "packages/dpp-core/src/evidence.ts (representation-unsupported)"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/catalogue.test.ts",
+        "packages/dpp-core/test/evidence.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EXCH-3-four-artefacts",
+      "sourceId": "spec-exchange",
+      "sourceUri": "spec/exchange.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Native claim, original secured credential (identical bytes with mediaType, byteLength, sha256, credentialId, issuer, receivedAt, schemaRefs and report reference), decoded credential and projection are kept apart; a projection has its own identity and signature and never inherits the original's anchor.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/store/attestations.ts (securedBytes, representation, mediaType, verification)"
+      ],
+      "testRefs": [
+        "uora-bsv test/secured.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "notes": "Original bytes and decoded value are separate today; byteLength, schemaRefs and a projection record are not yet stored.",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EXCH-4-signer",
+      "sourceId": "spec-exchange",
+      "sourceUri": "spec/exchange.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "A signer takes exact bytes, algorithm and key id and never exposes a key; ES256K is a supported suite a consumer must confirm; an optional ES256 suite uses a dedicated, separately authorised P-256 key never derived by the secp256k1 BRC-42 rule.",
+      "layer": "role",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when a JOSE exchange profile is selected",
+      "profileId": "untp-0.7.0-jose@1 (proposed)",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/jws.ts (injected signer, ES256K)",
+        "dpp-app packages/dpp-service/src/untp.ts",
+        "dpp-app packages/dpp-service/src/identities.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/jws.test.ts",
+        "dpp-app packages/dpp-service/test/untp.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "notes": "The application issues and verifies compact JWS ES256K credentials under the brand identity key (alg ES256K, typ vc+jwt, kid the brand did:key with fragment) and refuses ES256 and other suites by name; a consumer confirms ES256K support through the capability document. The optional separately keyed ES256 signer is not implemented.",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EXCH-5-native-evidence-extension",
+      "sourceId": "contract-native-evidence-extension",
+      "sourceUri": "contracts/native-evidence-extension.schema.json",
+      "sourceVersion": "1",
+      "clause": "whole schema",
+      "summary": "An external credential references existing native evidence under urn:bsv:dpp:native-evidence:1: exact passportId, state outpoint, native claim digest, anchor outpoint and format, native profile and mapping version; the native evidence exists first, so no digest is circular.",
+      "layer": "core",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when an exchange profile carries the extension",
+      "profileId": "core",
+      "implementationRefs": [
+        "contracts/native-evidence-extension.schema.json",
+        "dpp-app packages/dpp-service/src/untp.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/catalogue.test.ts",
+        "dpp-app packages/dpp-service/test/untp.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "notes": "The application carries urn:bsv:dpp:native-evidence:1 as a VC evidence entry (passport, genesis, selected state, claim digest, anchor where held, mapping result and losses) and on import checks it against its own records: another passport's genesis or a passport not held is subject-mismatch, a differing claim digest is digest-mismatch.",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EXCH-6-exact-byte-anchoring",
+      "sourceId": "spec-exchange",
+      "sourceUri": "spec/exchange.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "Exact external credential bytes are committed with the generic anchor, representation and media type naming the format, the credential id as attestationId and one signed product identifier as subject; a changed byte fails the digest.",
+      "layer": "core",
+      "roles": [
+        "registry",
+        "attestation-verifier"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/anchor.ts",
+        "uora-bsv src/anchoring/secured.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence.test.ts (anchor-tampered-bytes)",
+        "uora-bsv test/vsc-intake.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json#cases.anchor-tampered-bytes"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "OPR-profiles-named",
+      "sourceId": "profiles-operator-schema",
+      "sourceUri": "packages/dpp-profiles/schemas/operator-profile.schema.json",
+      "sourceVersion": "1",
+      "clause": "whole schema",
+      "summary": "single-operator@1 and federated-operators@1 are named operator profiles with admission, publisher policy, discovery, synchronisation, retention, capability and acceptance requirements, and the independently administered exercise is a distinct acceptance item.",
+      "layer": "profile",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when an operator claims a profile",
+      "profileId": "single-operator@1, federated-operators@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/manifests/operator/"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/catalogue.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "notes": "The manifests are tested; the reference node's federated behaviour is the SVC-1-discovery-sync row.",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EXPORT-1-pages",
+      "sourceId": "spec-portable-evidence",
+      "sourceUri": "spec/portable-evidence.md",
+      "sourceVersion": "working draft",
+      "clause": "§1",
+      "summary": "An export answers in pages over a stable snapshot with items, nextCursor, snapshotId, scope, truncated and completeForSnapshot, ordered by source sequence then outpoint, with opaque tamper-checked cursors and a named restart on expiry; default 100, maximum 500, no hidden total cap.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "registry"
+      ],
+      "applicability": "when a service offers history export",
+      "profileId": "core",
+      "implementationRefs": [
+        "contracts/paginated-history.schema.json",
+        "uora-bsv src/routes/pagination.ts",
+        "packages/overlay-topics/src/history.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/pagination.test.ts",
+        "packages/overlay-topics/test/history.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Overlay GET /history and registry GET /attestations, /history and /chain answer pages over a snapshot fixed at the source's high-water sequence with HMAC-tagged per-process cursors: 400 cursor-invalid, 410 snapshot-expired after ten minutes, default 100 and maximum 500, sequenceRange tiling so a reader detects a repeated or missing page, completeForSnapshot only on the last page; 1201-record, concurrent-insert, tampered, foreign and expired cursor tests on both. Cursors do not survive a restart; the Mongo stores have a one-write window between sequence allocation and row write, commented in code."
+    },
+    {
+      "id": "EXPORT-2-evidence-package",
+      "sourceId": "spec-portable-evidence",
+      "sourceUri": "spec/portable-evidence.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "dpp-evidence-package@1 is a signed manifest over a content-addressed inventory in nine categories, binding passport, genesis and selected tip, declaring disclosure scope and completeness; the signature authenticates the exporter and inventory only, and a reader verifies every digest, transaction, proof and claim independently.",
+      "layer": "role",
+      "roles": [
+        "registry",
+        "overlay",
+        "passport-reader"
+      ],
+      "applicability": "when evidence leaves an operator",
+      "profileId": "core",
+      "implementationRefs": [
+        "contracts/evidence-package.schema.json",
+        "packages/dpp-core/src/evidencePackage.ts",
+        "uora-bsv src/credentials/evidence-package.ts",
+        "packages/overlay-topics/src/evidenceExport.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidencePackage.test.ts",
+        "uora-bsv test/evidence-package.test.ts",
+        "packages/overlay-topics/test/evidenceExport.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The core signs and inspects a package. The overlay exports GET /evidence-package (transactions, proofs, publisher policy, spend observations, verification report; signed with EXPORT_SIGNING_KEY; 503 export-unavailable without it) and the registry exports GET /passports/{passportId}/evidence-package; each is inspected on structure, inventory and signature separately, a flipped byte fails only the inventory, and a fresh operator or registry re-imports the package through its normal intake and serves the same history or reports. The archive form of both builds is a JSON envelope, which the standard leaves to the build."
+    },
+    {
+      "id": "EXPORT-3-durable-publication",
+      "sourceId": "spec-portable-evidence",
+      "sourceUri": "spec/portable-evidence.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "An operator claiming durable publication keeps an independently administered replica, states RPO and RTO as service objectives not regulatory periods, distinguishes blockchain acceptance from completed durable publication while replication is pending, and encrypts restricted evidence in every copy.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "registry"
+      ],
+      "applicability": "when an operator claims durable publication",
+      "profileId": "core",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The local restore exercise (operator A exports, is discarded, operator B serves and re-exports) demonstrates the mechanics on one machine. An independently administered replica with stated RPO and RTO, and the separation of blockchain acceptance from durable publication in a deployment, are not demonstrated and need infrastructure outside this work."
+    },
+    {
+      "id": "LIFE-1-relations",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Registry relations supersedes, revokes, suspends, expires and disputes are independent of token spending; historical authority precedence applies only within one comparable named trust framework, otherwise the conflict is returned unresolved; antecedents resolve by expected identifier and verified content under bounded traversal.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when a registry stores more than one claim about a subject",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/store/relations.ts",
+        "uora-bsv src/credentials/relations.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/claim-relations.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Relations supersedes, revokes, suspends and expires (derived at evaluation time) are recorded and served with their source and reason; disputes has no producing path and is listed as not produced; conflicts under different frameworks or anchors are returned unresolved with every candidate named; independent assessments do not compete; the competing-claim fixture shows authority-first and timestamp-first choosing different claims."
+    },
+    {
+      "id": "LIFE-2-mapping-results",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A native-to-external lifecycle mapping is conditional on evidence; its result is exactly one of lossless, transformed, unsupported or insufficient-data, and any result other than lossless lists what was lost or missing.",
+      "layer": "role",
+      "roles": [
+        "registry",
+        "passport-writer"
+      ],
+      "applicability": "when a native operation is mapped to an external lifecycle semantics",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/mapping.ts",
+        "uora-bsv src/credentials/lifecycle-mapping.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/mapping.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "`mapNativeOperation` in @bsv/dpp-profiles evaluates a profile's eventMappings against structured evidence facets and returns one of the four outcomes with a loss list; a property test holds that no non-lossless result comes without one. The registry returns lifecycleMapping beside a native claim on its report, history and validate routes, reading facets under the eleven names; a native claim carrying no facets maps TRANSFER to insufficient-data with custodyRecord missing."
+    },
+    {
+      "id": "MAP-1-row-level-inventory",
+      "sourceId": "profiles-mapping-inventories",
+      "sourceUri": "packages/dpp-profiles/generated/mapping/battery@2.md",
+      "sourceVersion": "battery@2",
+      "clause": "whole document",
+      "summary": "Every field of a current profile has a generated inventory row: external semantic field or not mapped, type and unit or code list, granularity, obligation, legal basis, applicability, access tier, capturing party and required evidence, with needs-review where no generator can decide and no legal conclusion drawn.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer",
+        "registry"
+      ],
+      "applicability": "for every current industry profile",
+      "profileId": "battery@2, textile@2, general@2",
+      "implementationRefs": [
+        "packages/dpp-profiles/scripts/build.mjs"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifests.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "battery@2, textile@2 and general@2 inventories are generated from the manifests and frozen. External exchange vocabularies are not mapped until their artefacts are pinned; the legal columns are the manifests' recorded bases, not assessments."
+    },
+    {
+      "id": "PUB-1-publisher-policy",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§1",
+      "summary": "Publisher keys are a bounded, versioned set declared in dpp-publisher-policy@1 with roles, activation and retirement times, a superseded-version digest and an authorisation the previous version accepts; a state is checked against the key active at its time, a retired key still authenticates what it signed while active, and handover never moves the spending key by editing a list.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-reader",
+        "attestation-verifier"
+      ],
+      "applicability": "when an operator countersigns admitted states or anchors",
+      "profileId": "core",
+      "implementationRefs": [
+        "contracts/publisher-policy.schema.json",
+        "packages/dpp-core/src/publisherPolicy.ts",
+        "packages/dpp-core/src/verifyChain.ts",
+        "packages/overlay-topics/src/policyConfig.ts",
+        "packages/overlay-topics/src/tmDpp.ts",
+        "packages/overlay-topics/src/tmAttestation.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/publisherPolicy.test.ts",
+        "packages/overlay-topics/test/publisherPolicy.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The core verifies the chain and reports per-state windows (11 tests); the reference node loads PUBLISHER_POLICY_FILE with OPERATOR_IDENTITY_KEYS, refuses to start on a chain that does not hold, admits a state only under a state-publisher key active at the state's own timestamp and an anchor only under an anchor-publisher key active at admission time (13 tests); the capability document names the active keys. Without a policy file the single identity key is the implicit policy, as before."
+    },
+    {
+      "id": "PROV-1-value-kinds",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "Every profile field declares whether its value is a fact, a declaration, a calculation or a third-party assessment, and a consumer never upgrades a declaration to a fact or an assessment to an accreditation on the strength of a signature; accreditation is a separately named authority confirmed under issuerAuthority.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer",
+        "registry",
+        "attestation-verifier"
+      ],
+      "applicability": "for every profile field",
+      "profileId": "battery@2, textile@2, general@2",
+      "implementationRefs": [
+        "packages/dpp-profiles/schemas/profile-manifest.schema.json"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifests.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies."
+    },
+    {
+      "id": "DOC-1-role-quick-starts",
+      "sourceId": "docs-quick-start",
+      "sourceUri": "docs/quick-start.md",
+      "sourceVersion": "working draft",
+      "clause": "whole document",
+      "summary": "Each role has a complete quick start that needs nothing from another role unless stated, using only commands CI runs: reader and verifier from fixtures without account, wallet or service; writer dry run; profile author freeze and drift check; operator capability document; the named-result rule on capability mismatch, unknown extension and version downgrade; custody and account vocabulary pointers; the conformance commands in one place.",
+      "layer": "reference",
+      "roles": [
+        "all"
+      ],
+      "applicability": "for an adopter of any role",
+      "profileId": "core",
+      "implementationRefs": [
+        "docs/quick-start.md",
+        "examples/",
+        "conformance/"
+      ],
+      "testRefs": [
+        ".github/workflows/ci.yml"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands, and the operator start describes the capability document without a served /capabilities route, which is Batch 3 (P07)."
+    },
+    {
+      "id": "REG-1-insert-first-intake",
+      "sourceId": "contract-registry",
+      "sourceUri": "contracts/registry.yaml",
+      "sourceVersion": "0.2.0",
+      "clause": "POST /attestations",
+      "summary": "Two identical concurrent submissions store one record and anchor once: intake inserts the claim identifier first, then anchors, then replaces, on every store backend.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when a registry accepts submissions",
+      "profileId": "core",
+      "implementationRefs": [
+        "uora-bsv src/routes/secured.ts",
+        "uora-bsv src/store/mongo.ts",
+        "uora-bsv src/store/file.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/evidence-report.test.ts",
+        "uora-bsv test/mongo.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process."
+    },
+    {
+      "id": "BATT-1-demonstration-lifecycle",
+      "sourceId": "fixture-battery-lifecycle",
+      "sourceUri": "fixtures/battery-lifecycle-v1.json",
+      "sourceVersion": "1",
+      "clause": "whole fixture",
+      "summary": "A marked industrial-battery demonstration lifecycle under the GS1 demonstration prefix: manufacture, sale with movement evidence, a token transfer with no custody evidence, repair, reassessment and recycling into new identities, each state with its signed native claim, evidence facets and mapping result, under one verification report; a token transfer maps to insufficient-data.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer",
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "for battery@2 qualification",
+      "profileId": "battery@2",
+      "implementationRefs": [
+        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/battery-lifecycle-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Synthetic values validated against the frozen battery@2 public schema; no supplier or third-party assessment evidence is included because none exists for an invented product, and no legal conclusion is drawn."
+    },
+    {
+      "id": "VEC-1-publisher-policy-vectors",
+      "sourceId": "vectors-publisher-policy",
+      "sourceUri": "fixtures/vectors/dpp/publisher-policy/v1.json",
+      "sourceVersion": "1.0.0",
+      "clause": "whole file",
+      "summary": "Portable vectors for the publisher key policy: a valid three-version chain with its preimages, digests and the keys active at five instants, a countersigned federation rotation, and eleven refusals by name; a second implementation reproduces every preimage and digest, verifies every authorisation and reaches the same verdict.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-reader",
+        "attestation-verifier"
+      ],
+      "applicability": "for an implementation of the publisher key policy",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/test/publisher-policy-vectors.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/publisher-policy/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Reproduced by the standard-library Python reader (preimages, digests, signatures, key windows, and the six refusal conditions it re-implements; the five policy-rule refusals are named, not re-derived). Written within the programme, so engineering evidence rather than independent testing."
+    },
+    {
+      "id": "VEC-2-evidence-package-vectors",
+      "sourceId": "vectors-evidence-package",
+      "sourceUri": "fixtures/vectors/dpp/evidence-package/v1.json",
+      "sourceVersion": "1.0.0",
+      "clause": "whole file",
+      "summary": "Portable vectors for the evidence package manifest: a valid package with its signing preimage and seven refusals (digest swap, missing and unlisted files, tampered manifest, unexpected signer, path abuse, backup contradiction, passport mismatch), each with the three separate verdicts.",
+      "layer": "role",
+      "roles": [
+        "registry",
+        "overlay",
+        "passport-reader"
+      ],
+      "applicability": "for an implementation of the evidence package",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/test/evidence-package-vectors.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/evidence-package/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Reproduced by the Python reader: preimage, signature verdict and inventory verdict (digests, lengths, unlisted files, path rules) for every vector; the structure verdict is the reference's. Engineering evidence, not independent testing."
+    },
+    {
+      "id": "PROF-7-combinations",
+      "sourceId": "profiles-combinations",
+      "sourceUri": "packages/dpp-profiles/src/combinations.ts",
+      "sourceVersion": "0.1.0",
+      "clause": "whole module",
+      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a write or claim under a superseded industry version, a claim on a proposed exchange or operator profile or on unpinned artefacts, a single operator declaring peers, GASP or advertisement, a federation of one or without discovery, and unknown identifiers.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "whenever profiles are selected for a deployment, a write or a claim",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/combinations.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/combinations.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "A current exchange profile with unretrieved upstream artefacts supports the implemented-subset claim with a note; the ledger's claim gate keeps the full claim blocked."
+    },
+    {
+      "id": "OVL-1-refused-spend-eviction",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A spend of a tip that the topic manager refuses must not erase the retained history: the refused transaction is not admitted, and the tip and its lineage stay served as spent history or as the unspent tip, never evicted.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when a refused transaction spends an admitted tip",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmDpp.ts",
+        "packages/overlay-topics/src/lsDpp.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/refusedSpend.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Guarded in the topic manager: every refusal returns the offered coins as coinsToRetain, and ls_dpp records a spend only once the spending transaction is admitted, so a refused spend leaves /lookup, /history and the record store unchanged, the tip unspent, and a valid successor admitted. What the Engine still does: it marks the tip spent in its own storage until a valid successor arrives and records the refused transaction as applied, so the same bytes announced again are a duplicate no-op; both need an upstream distinction between a refused and an unretained spend."
+    },
+    {
+      "id": "OVL-2-retraction",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.4.0-draft",
+      "clause": "POST /retract",
+      "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-writer"
+      ],
+      "applicability": "when a state was announced before its transaction was sent and the network then refused it",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/retraction.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/retract.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so."
+    }
+  ],
+  "claims": [
+    {
+      "id": "passport-reader-native-baseline-1",
+      "description": "A passport reader conforming to native-baseline@1: supplied-history verification and the verification report, from fixtures alone.",
+      "role": "passport-reader",
+      "profileId": "native-baseline@1",
+      "requires": [
+        "CONF-2-reader-quickstart",
+        "RM-2-minimal-push",
+        "RM-2-script",
+        "RM-3-fields",
+        "RM-4-operations",
+        "RM-5-signatures",
+        "RM-6-invariants",
+        "RM-7-owner-tier",
+        "RM-8-verifier",
+        "VER-2-report",
+        "VER-3-expected-subject",
+        "VER-4-checks",
+        "VER-5-observations"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "attestation-verifier-native-baseline-1",
+      "description": "An attestation verifier conforming to native-baseline@1: native claims, generic anchors, binding and the report.",
+      "role": "attestation-verifier",
+      "profileId": "native-baseline@1",
+      "requires": [
+        "RULES-3-native-claim",
+        "RULES-4-representation-bytes",
+        "RULES-5-anchor",
+        "RULES-6-verification",
+        "RULES-7-compatibility",
+        "VER-2-report",
+        "VER-4-checks",
+        "ID-2-did-key"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "passport-writer-reference-example",
+      "description": "The reference writer example discharges the writing duties; live duties are self-reported and the consuming application is assessed separately.",
+      "role": "passport-writer",
+      "profileId": "native-baseline@1",
+      "requires": [
+        "WR-2-verify-before-send",
+        "WR-4-one-writer",
+        "WR-5-broadcast",
+        "WR-6-announce-retry",
+        "WR-7-proof",
+        "WR-8-retain"
+      ],
+      "minimumStatus": "implemented"
+    },
+    {
+      "id": "overlay-single-operator-1",
+      "description": "The reference overlay node as a single operator: admission, lookup, cursor pagination, proof ingestion and idempotent replay under the overlay contract.",
+      "role": "overlay",
+      "profileId": "single-operator@1",
+      "requires": [
+        "EXPORT-1-pages",
+        "OVL-1-refused-spend-eviction",
+        "OVL-2-retraction",
+        "OVL-contract-must",
+        "PUB-1-publisher-policy",
+        "RM-6-invariants",
+        "RULES-5-anchor",
+        "SVC-2-anchor-admission",
+        "SVC-2-cursor-lookup",
+        "SVC-2-passport-admission",
+        "SVC-2-proof-ingest",
+        "SVC-6-idempotent-admission"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "overlay-federated-operators-1",
+      "description": "Two independently administered operators serving the same evidence with declared discovery and synchronisation.",
+      "role": "overlay",
+      "profileId": "federated-operators@1",
+      "requires": [
+        "CONF-4-overlay-capabilities",
+        "EXPORT-1-pages",
+        "EXPORT-3-durable-publication",
+        "OVL-1-refused-spend-eviction",
+        "OVL-2-retraction",
+        "PUB-1-publisher-policy",
+        "SVC-1-discovery-sync",
+        "SVC-6-idempotent-admission"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "registry-current-intake",
+      "description": "The registry's current intake: exact secured bytes, verified native claims, generic anchors and a scoped report.",
+      "role": "registry",
+      "profileId": "native-baseline@1",
+      "requires": [
+        "LIFE-1-relations",
+        "LIFE-2-mapping-results",
+        "REG-1-insert-first-intake",
+        "REG-contract-routes",
+        "RULES-4-representation-bytes",
+        "RULES-5-anchor",
+        "RULES-6-verification",
+        "STATUS-validate-algorithm",
+        "SVC-3-registry-bytes"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "authenticated-status-service",
+      "description": "A purpose-aware, authenticated, bounded status service with secured publication.",
+      "role": "registry",
+      "requires": [
+        "STATUS-validate-algorithm",
+        "STATUS-purpose-suspension",
+        "STATUS-secured-publication",
+        "STATUS-fetch-bounds"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "vsc-draft-compat-0.1.0-full",
+      "description": "Complete conformance to the pinned VSC draft, including its published context and executable suite.",
+      "role": "attestation-verifier",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "requires": [
+        "VSC-2-structure",
+        "VSC-3-proofs",
+        "VSC-4-status",
+        "VSC-4-authority",
+        "VSC-5-custody",
+        "VSC-6-epcis",
+        "ID-3-vsc-actor",
+        "W3C-VC-DM-2-core",
+        "VSC-context-upstream",
+        "VSC-conformance-suite"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "vsc-draft-compat-0.1.0-implemented-subset",
+      "description": "The locally implemented VSC subset with its owned context, as spec/vsc-profile.md declares it.",
+      "role": "attestation-verifier",
+      "profileId": "vsc-draft-compat/0.1.0",
+      "requires": [
+        "VSC-2-structure",
+        "VSC-3-proofs",
+        "VSC-4-status",
+        "VSC-4-authority",
+        "VSC-5-custody",
+        "VSC-6-epcis",
+        "ID-3-vsc-actor",
+        "W3C-VC-DM-2-core"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "untp-0.7.0-pilot",
+      "description": "UNTP 0.7.0 import and export under the proposed JOSE exchange profile.",
+      "role": "attestation-issuer",
+      "profileId": "untp-0.7.0-jose@1",
+      "requires": [
+        "EXCH-1-representations",
+        "EXCH-4-signer",
+        "EXCH-5-native-evidence-extension",
+        "EXCH-6-exact-byte-anchoring",
+        "W3C-VC-JOSE-ES256K",
+        "UNTP-0.7.0-dpp",
+        "UNTP-0.7.0-dte"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "profile-governance",
+      "description": "Industry profiles are published as frozen manifests with generated schemas, and every consumer is generated from them.",
+      "requires": [
+        "PROF-2-manifest",
+        "PROF-3-fields",
+        "PROF-4-freeze",
+        "PROF-5-identifiers",
+        "PROF-6-generated-consumers",
+        "PROF-7-combinations"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "gs1-identifier-discipline",
+      "description": "A writer that mints GS1 Digital Link identifiers correctly: syntax, check digit and demonstration prefix.",
+      "role": "passport-writer",
+      "requires": [
+        "GS1-digital-link-syntax",
+        "GS1-check-digit-written",
+        "GS1-952-demonstration",
+        "RM-3-gs1-allocation"
+      ],
+      "minimumStatus": "implemented"
+    },
+    {
+      "id": "eu-dpp-system-conformance",
+      "description": "Conformance to the EU DPP system standards cited by Decision (EU) 2026/1736.",
+      "profileId": "eu-dpp-system",
+      "requires": [
+        "EN-18216",
+        "EN-18219",
+        "EN-18220",
+        "EN-18221",
+        "EN-18222",
+        "EN-18223",
+        "EU-2026-1736-applicability"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "battery-passport-qualification",
+      "description": "Battery passport applicability, fields, access and actors mapped to the Batteries Regulation.",
+      "profileId": "battery@3",
+      "requires": [
+        "BATT-1-demonstration-lifecycle",
+        "BATT-annex-xiii",
+        "EU-2026-1736-applicability",
+        "MAP-1-row-level-inventory",
+        "PROV-1-value-kinds"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "version-1-0-readiness",
+      "description": "The governance conditions for declaring version 1.0 that a ledger can check: an independent implementation passing every fixture.",
+      "requires": [
+        "DOC-1-role-quick-starts",
+        "GOV-independent-implementation",
+        "VEC-1-publisher-policy-vectors",
+        "VEC-2-evidence-package-vectors",
+        "VER-7-surfaces-equivalent"
+      ],
+      "minimumStatus": "independently-tested"
+    },
+    {
+      "id": "exchange-profiles-groundwork",
+      "description": "The representation registry, exchange profile manifests, native evidence extension and exact-byte anchoring rule are specified and tested; issuance adapters are separate claims.",
+      "requires": [
+        "EXCH-1-representations",
+        "EXCH-6-exact-byte-anchoring",
+        "OPR-profiles-named"
+      ],
+      "minimumStatus": "tested"
+    }
+  ]
+}

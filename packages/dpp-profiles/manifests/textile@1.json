@@ -1,0 +1,383 @@
+{
+  "manifestVersion": "1",
+  "kind": "industry",
+  "baseline": "native-baseline@1",
+  "roles": [
+    "passport-writer",
+    "attestation-issuer",
+    "registry",
+    "passport-reader"
+  ],
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "accessPolicyRef": "spec/record-model.md#7-the-owner-tier-binding",
+  "accessTiers": [
+    {
+      "id": "public",
+      "description": "Anyone with the identifier.",
+      "storage": "on-chain public payload"
+    },
+    {
+      "id": "owner",
+      "description": "The current holder, travelling with possession rather than with an authorisation.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "legitimate",
+      "description": "Persons with a legitimate interest, the Batteries Regulation Article 77(2) group generalised.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "authority",
+      "description": "Notified bodies, market surveillance and other authorities.",
+      "storage": "off-chain encrypted"
+    }
+  ],
+  "extends": null,
+  "id": "textile",
+  "version": 1,
+  "profile": "textile@1",
+  "status": "superseded",
+  "supersededBy": "textile@2",
+  "title": "Textile passport, version 1 (superseded)",
+  "description": "Version 1 declared field names, labels, obligations and tiers only: no types, units, constraints or provenance. It is served for as long as any state declares it and describes those states plainly, not as better structured than they were.",
+  "regulatoryLine": "Aligned with the JRC draft data requirements and binding EU textile labelling law (Reg. (EU) 1007/2011), ready to absorb the ESPR delegated act when adopted.",
+  "applicability": {
+    "categories": [],
+    "jurisdictions": [],
+    "statements": [
+      {
+        "text": "Version 1 recorded no legal basis per field; its regulatory line was the whole of its claim.",
+        "status": "needs-review"
+      }
+    ]
+  },
+  "schemaUri": "generated/payload-schema/textile@1.public.schema.json",
+  "schemaDigest": "6017bf5df2259def03169dfd9e538e05dd7fdb77095e0fc45eac997426d6bc4d",
+  "restrictedSchemaUri": "generated/payload-schema/textile@1.restricted.schema.json",
+  "restrictedSchemaDigest": "45e2b89c1289aee98fec03800b623c9ea9d4158ac178e9d84164018399812fc2",
+  "contextRefs": [],
+  "stamps": [
+    {
+      "key": "notice",
+      "description": "The sample marker a demonstration record carries first; never product data.",
+      "valueType": "text"
+    },
+    {
+      "key": "profile",
+      "description": "The profile identifier the payload declares.",
+      "valueType": "id",
+      "const": "textile"
+    },
+    {
+      "key": "profile_version",
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one.",
+      "valueType": "integer",
+      "const": 1
+    },
+    {
+      "key": "object_did",
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding.",
+      "valueType": "id"
+    },
+    {
+      "key": "dataCarrier",
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier.",
+      "valueType": "id"
+    }
+  ],
+  "fields": [
+    {
+      "key": "name",
+      "pointer": "/name",
+      "label": "Product name",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "batch",
+      "pointer": "/batch",
+      "label": "Batch",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "fibres",
+      "pointer": "/fibres",
+      "label": "Fibre composition",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "manufacturer",
+      "pointer": "/manufacturer",
+      "label": "Brand name",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "brand"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "manufacturerContact",
+      "pointer": "/manufacturerContact",
+      "label": "Brand contact",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "brand"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "recycled",
+      "pointer": "/recycled",
+      "label": "Recycled content",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "origin",
+      "pointer": "/origin",
+      "label": "Country of origin",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "care",
+      "pointer": "/care",
+      "label": "Care",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "substances",
+      "pointer": "/substances",
+      "label": "Substances of concern",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "endOfLife",
+      "pointer": "/endOfLife",
+      "label": "End of life",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "provenance",
+      "pointer": "/provenance",
+      "label": "Provenance",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "warranty",
+      "pointer": "/warranty",
+      "label": "Warranty",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    },
+    {
+      "key": "personalisation",
+      "pointer": "/personalisation",
+      "label": "Personalisation",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Version 1 recorded no legal basis for this field.",
+      "applicability": {
+        "rule": "always"
+      },
+      "note": "Declared without a type in version 1; granularity item is recorded because version 1 stated none."
+    }
+  ],
+  "eventMappings": [
+    {
+      "nativeOperation": "ACTIVATE",
+      "eventType": "Origin",
+      "externalEvent": "manufacture or commissioning",
+      "requires": "manufacturing or commissioning evidence naming the facility, time and responsible party; the native ACTIVATE alone records only that a passport was opened",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "SOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence; a change of token control is not a shipment",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "RESOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "TRANSFER",
+      "eventType": "Transfer",
+      "externalEvent": "change of custody",
+      "requires": "custody evidence beyond the token transfer; the transfer of token control alone establishes neither physical movement nor legal title",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "REPAIRED",
+      "eventType": "Transformation",
+      "externalEvent": "modification (repair)",
+      "requires": "repair evidence naming what was done, by whom and when",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "EDIT",
+      "eventType": "Transformation",
+      "externalEvent": "metadata revision",
+      "requires": "nothing physical: an EDIT is a native metadata operation and maps to a record revision, not a physical transformation",
+      "withoutEvidence": "transformed"
+    },
+    {
+      "nativeOperation": "RECYCLED",
+      "eventType": "Disposition",
+      "externalEvent": "disposition, or a process creating new products or materials",
+      "requires": "recycling evidence distinguishing disposition of this item from a process whose outputs carry new identities",
+      "withoutEvidence": "insufficient-data"
+    }
+  ],
+  "sourceRefs": [],
+  "identity": {
+    "passportIdentifier": "A GS1 Digital Link URI (spec/record-model.md section 3).",
+    "granularities": [
+      "item"
+    ],
+    "parentRelations": []
+  }
+}

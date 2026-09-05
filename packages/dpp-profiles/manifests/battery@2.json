@@ -1,0 +1,4047 @@
+{
+  "manifestVersion": "1",
+  "kind": "industry",
+  "baseline": "native-baseline@1",
+  "roles": [
+    "passport-writer",
+    "attestation-issuer",
+    "registry",
+    "passport-reader"
+  ],
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "accessPolicyRef": "spec/record-model.md#7-the-owner-tier-binding",
+  "accessTiers": [
+    {
+      "id": "public",
+      "description": "Anyone with the identifier.",
+      "storage": "on-chain public payload"
+    },
+    {
+      "id": "owner",
+      "description": "The current holder, travelling with possession rather than with an authorisation.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "legitimate",
+      "description": "Persons with a legitimate interest, the Batteries Regulation Article 77(2) group generalised.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "authority",
+      "description": "Notified bodies, market surveillance and other authorities.",
+      "storage": "off-chain encrypted"
+    }
+  ],
+  "extends": null,
+  "id": "battery",
+  "version": 2,
+  "profile": "battery@2",
+  "status": "current",
+  "title": "Battery passport",
+  "regulatoryLine": "Mapped to Regulation (EU) 2023/1542 Annex XIII and the Battery Pass content guidance, ready ahead of the 18 February 2027 battery passport mandate.",
+  "applicability": {
+    "categories": [
+      {
+        "value": "lmt",
+        "label": "Light transport"
+      },
+      {
+        "value": "ev",
+        "label": "Vehicle"
+      },
+      {
+        "value": "industrial",
+        "label": "Industrial"
+      },
+      {
+        "value": "stationary",
+        "label": "Stationary storage"
+      }
+    ],
+    "categoryKey": "category",
+    "jurisdictions": [
+      "EU"
+    ],
+    "statements": [
+      {
+        "text": "Regulation (EU) 2023/1542 is in force; its battery passport obligations apply from 18 February 2027 to the battery categories it covers.",
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "effectiveDate": "2027-02-18"
+      },
+      {
+        "text": "This profile's field-level mapping to Annex XIII, its category applicability and its clause citations are under review against the primary text and the licensed specification.",
+        "status": "needs-review",
+        "source": "eu-batteries-regulation"
+      }
+    ]
+  },
+  "schemaUri": "generated/payload-schema/battery@2.public.schema.json",
+  "schemaDigest": "4821b02554856db8bb3be9c8cc77c4e6222314ea623d0aec25898c4aba3a9e77",
+  "restrictedSchemaUri": "generated/payload-schema/battery@2.restricted.schema.json",
+  "restrictedSchemaDigest": "cc47f831e4b71f686c0623d961bb6a868b6e4dd117204983792d7af8dfb91ac8",
+  "contextRefs": [
+    {
+      "id": "bpdm-1.2.0",
+      "name": "Battery Pass Data Model 1.2.0",
+      "version": "1.2.0",
+      "repository": "https://github.com/batterypass/BatteryPassDataModel",
+      "licence": "CC-BY-4.0, declared in the repository README; no LICENCE file present",
+      "retrieved": "2026-07-25",
+      "urnPattern": "urn:samm:io.BatteryPass.{subModel}:{version}#{property}",
+      "use": "Vocabulary alignment only. No file from that repository is redistributed here, and its generated JSON Schema is deliberately not used for validation: every property is required by SAMM generation, so no tiered payload can validate."
+    }
+  ],
+  "stamps": [
+    {
+      "key": "notice",
+      "description": "The sample marker a demonstration record carries first; never product data.",
+      "valueType": "text"
+    },
+    {
+      "key": "profile",
+      "description": "The profile identifier the payload declares.",
+      "valueType": "id",
+      "const": "battery"
+    },
+    {
+      "key": "profile_version",
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one.",
+      "valueType": "integer",
+      "const": 2
+    },
+    {
+      "key": "object_did",
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding.",
+      "valueType": "id"
+    },
+    {
+      "key": "dataCarrier",
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier.",
+      "valueType": "id"
+    }
+  ],
+  "fields": [
+    {
+      "key": "passportId",
+      "pointer": "/passportId",
+      "label": "Passport reference",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryPassportIdentifier",
+      "valueType": "id",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "platform"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "none (spec recommendation)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.2.1",
+          "name": "Battery passport identifier"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryPassportIdentifier"
+        }
+      ],
+      "note": "Distinct from the battery identifier: 6.1.2.1(a) expects several passports over one physical battery, because 5.2.1(d) requires a new passport on remanufacture, repurpose or preparation for re-use."
+    },
+    {
+      "key": "serial",
+      "pointer": "/serial",
+      "label": "Serial number",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#productIdentifier",
+      "valueType": "id",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1a); Art. 38(6); Art. 77(3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.2.2",
+          "name": "Battery identifier"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "productIdentifier"
+        }
+      ],
+      "supersedes": "serial",
+      "note": "Must comply with ISO/IEC 15459 or equivalent, and should be serialised. The spec deviates from BattReg here deliberately: the regulation attaches the identifier to the model, 6.1.2.2(e) attaches it to the item."
+    },
+    {
+      "key": "modelName",
+      "pointer": "/modelName",
+      "label": "Model name",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 200
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true,
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(2)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.2.2",
+          "name": "Model identification"
+        }
+      ],
+      "supersedes": "name",
+      "note": "Prose by nature: it is whatever the maker calls the model. Length is capped so it fits a label and a passport heading."
+    },
+    {
+      "key": "operator",
+      "pointer": "/operator",
+      "label": "Responsible operator",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#operatorInformation",
+      "valueType": "id",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "brand"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex III(h)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.2.3",
+          "name": "Operator identifier and information"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "operatorInformation"
+        }
+      ],
+      "note": "The operator answering for the passport, which need not be the manufacturer and can change over life."
+    },
+    {
+      "key": "manufacturer",
+      "pointer": "/manufacturer",
+      "label": "Brand name",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturerInformation",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(1); Art. 38(7)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.2.4",
+          "name": "Manufacturer identifier and information"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "manufacturerInformation"
+        }
+      ],
+      "supersedes": "manufacturer"
+    },
+    {
+      "key": "manufacturerContact",
+      "pointer": "/manufacturerContact",
+      "label": "Brand contact",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturerInformation",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.2.4",
+          "name": "Manufacturer information (contact point)"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "manufacturerInformation.emailAddress"
+        }
+      ],
+      "supersedes": "manufacturerContact",
+      "note": "6.1.2.4(c) wants five parts: name, registered trade name or trademark, postal address with a single contact point, web address, e-mail. Our brand record holds one contact string."
+    },
+    {
+      "key": "manufacturingPlace",
+      "pointer": "/manufacturingPlace",
+      "label": "Place of manufacture",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturingPlace",
+      "valueType": "record",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.1",
+          "name": "Manufacturing place"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "manufacturingPlace"
+        }
+      ],
+      "supersedes": "made",
+      "parts": [
+        {
+          "key": "site",
+          "label": "Plant or city",
+          "valueType": "text"
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "A two-letter country code"
+          },
+          "required": true
+        }
+      ],
+      "note": "Model level, not unit: it is the plant. A record rather than a sentence, so the country is a code a consumer can group and compare on while the plant stays human-readable. `battery@1` put it on the unit and joined it to the date in one free-text string."
+    },
+    {
+      "key": "manufacturingDate",
+      "pointer": "/manufacturingDate",
+      "label": "Made",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturingDate",
+      "valueType": "date",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(4)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.2",
+          "name": "Manufacturing date"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "manufacturingDate"
+        }
+      ],
+      "supersedes": "made",
+      "note": "The spec caps this at month; the product owner asked for the day (2026-07-27). Day precision truncates to month, so a reader expecting 6.1.3.2 loses nothing. Item level, unlike the place."
+    },
+    {
+      "key": "serviceDate",
+      "pointer": "/serviceDate",
+      "label": "Put into service",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#puttingIntoService",
+      "valueType": "date",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "needsBms": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.3",
+          "name": "Date of putting the battery into service"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "puttingIntoService"
+        }
+      ],
+      "note": "Restricted, not public, which is counter-intuitive."
+    },
+    {
+      "key": "warrantyUntil",
+      "pointer": "/warrantyUntil",
+      "label": "Guarantee until",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#warrentyPeriod",
+      "valueType": "date",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1m)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.4",
+          "name": "Warranty period of the battery"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "warrentyPeriod"
+        }
+      ],
+      "note": "Legal warranty period, or the manufacturer guarantee where longer, from the purchase date. Absent from battery@1."
+    },
+    {
+      "key": "category",
+      "pointer": "/category",
+      "label": "Category",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryCategory",
+      "valueType": "enum",
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "lmt",
+            "label": "Light transport"
+          },
+          {
+            "value": "ev",
+            "label": "Vehicle"
+          },
+          {
+            "value": "industrial",
+            "label": "Industrial"
+          },
+          {
+            "value": "stationary",
+            "label": "Stationary storage"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(2); Art. 3",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.5",
+          "name": "Battery category"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryCategory"
+        }
+      ],
+      "supersedes": "kind",
+      "note": "May change when a new passport is issued, for instance an EV battery repurposed into stationary storage. Consumer wording (\"e-bike\") stays in the UI; the payload carries the category."
+    },
+    {
+      "key": "massKg",
+      "pointer": "/massKg",
+      "label": "Mass",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryMass",
+      "valueType": "decimal",
+      "unit": "kg",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(5)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.6",
+          "name": "Battery mass"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryMass"
+        }
+      ],
+      "supersedes": "weight",
+      "note": "The spec says mass, not weight: BattReg says weight, the physically correct quantity is mass (footnote 5, DIN EN ISO 80000-4). Module and cell mass should also be given, for recycling efficiency."
+    },
+    {
+      "key": "status",
+      "pointer": "/status",
+      "label": "Status",
+      "semanticUri": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryStatus",
+      "valueType": "enum",
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "Original",
+            "label": "As made"
+          },
+          {
+            "value": "Reused",
+            "label": "Re-used"
+          },
+          {
+            "value": "Repurposed",
+            "label": "Repurposed"
+          },
+          {
+            "value": "Remanufactured",
+            "label": "Remanufactured"
+          },
+          {
+            "value": "Waste",
+            "label": "Waste"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII 4(c); Art. 77(7)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.1.3.7",
+          "name": "Battery status"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryStatus"
+        }
+      ],
+      "note": "Our lifecycle already produces this. The spec warns the five words are undefined at source and must travel with a description of the treatments applied."
+    },
+    {
+      "key": "separateCollectionSymbol",
+      "pointer": "/separateCollectionSymbol",
+      "label": "Separate collection symbol",
+      "semanticUri": "urn:samm:io.BatteryPass.Labels:1.2.0#labels",
+      "valueType": "graphic",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "platform",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 13(4); Annex VI Part B; Annex XIII (1q)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.2",
+          "name": "Separate collection symbol"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "labels"
+        }
+      ],
+      "note": "Mandatory on every battery since 18 August 2025. We draw it, nobody types it."
+    },
+    {
+      "key": "elementSymbols",
+      "pointer": "/elementSymbols",
+      "label": "Element symbols",
+      "semanticUri": "urn:samm:io.BatteryPass.Labels:1.2.0#labels",
+      "valueType": "graphic",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "derived",
+        "onLabel": true,
+        "kind": "calculation"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 13(5); Art. 74(1e); Annex XIII (1s)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.3",
+          "name": "Symbols for cadmium and lead"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "labels"
+        }
+      ],
+      "note": "Required above 0.002% cadmium or 0.004% lead, so derived from the substance figures."
+    },
+    {
+      "key": "carbonFootprintLabel",
+      "pointer": "/carbonFootprintLabel",
+      "label": "Carbon footprint label",
+      "semanticUri": "urn:samm:io.BatteryPass.Labels:1.2.0#labels",
+      "valueType": "graphic",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "derived",
+        "onLabel": true,
+        "kind": "calculation"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(2); Annex XIII (1c)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.4",
+          "name": "Carbon footprint label"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "labels"
+        }
+      ]
+    },
+    {
+      "key": "extinguishingAgent",
+      "pointer": "/extinguishingAgent",
+      "label": "Usable extinguishing agent",
+      "valueType": "multi",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "water",
+            "label": "Water"
+          },
+          {
+            "value": "water-mist",
+            "label": "Water mist"
+          },
+          {
+            "value": "foam",
+            "label": "Foam"
+          },
+          {
+            "value": "co2",
+            "label": "Carbon dioxide"
+          },
+          {
+            "value": "dry-powder-abc",
+            "label": "Dry powder, ABC"
+          },
+          {
+            "value": "dry-powder-bc",
+            "label": "Dry powder, BC"
+          },
+          {
+            "value": "metal-fire-powder",
+            "label": "Class D metal-fire powder"
+          },
+          {
+            "value": "sand",
+            "label": "Dry sand"
+          },
+          {
+            "value": "vermiculite",
+            "label": "Vermiculite"
+          },
+          {
+            "value": "encapsulator",
+            "label": "Encapsulating agent"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex VI Part A(9)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.5",
+          "name": "Extinguishing agent"
+        }
+      ],
+      "note": "Several agents may be usable, so this takes more than one. Open: the Annex requires the agent to be stated but names no vocabulary, and proprietary agents appear faster than a list is revised."
+    },
+    {
+      "key": "labelMeaning",
+      "pointer": "/labelMeaning",
+      "label": "What the symbols mean",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "platform",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 74(1e); Annex XIII (1s)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.6",
+          "name": "Meaning of labels and symbols"
+        }
+      ],
+      "note": "Standard explanatory copy, the same for every brand. Ours to write once."
+    },
+    {
+      "key": "declarationOfConformity",
+      "pointer": "/declarationOfConformity",
+      "label": "Declaration of conformity",
+      "semanticUri": "urn:samm:io.BatteryPass.Labels:1.2.0#declarationOfConformity",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "deferred",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 18; Annex XIII (1r)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.7",
+          "name": "EU declaration of conformity"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "declarationOfConformity"
+        }
+      ],
+      "note": "Public document. Needs the attachment seam we do not have yet."
+    },
+    {
+      "key": "testReports",
+      "pointer": "/testReports",
+      "label": "Test reports",
+      "semanticUri": "urn:samm:io.BatteryPass.Labels:1.2.0#resultOfTestReport",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "deferred"
+      },
+      "accessTier": "authority",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.2.8",
+          "name": "Results of test reports proving compliance"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "resultOfTestReport"
+        }
+      ],
+      "note": "The whole reason the authority tier exists: notified bodies, market surveillance authorities and the Commission, nobody else."
+    },
+    {
+      "key": "carbonFootprint",
+      "pointer": "/carbonFootprint",
+      "label": "Declared footprint",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#batteryCarbonFootprint",
+      "valueType": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1); Annex XIII",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.2",
+          "name": "Battery carbon footprint per functional unit"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryCarbonFootprint"
+        }
+      ],
+      "supersedes": "carbonDeclared"
+    },
+    {
+      "key": "carbonRawMaterials",
+      "pointer": "/carbonRawMaterials",
+      "label": "Footprint: raw materials",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "valueType": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.3",
+          "name": "Contribution of raw material acquisition and pre-processing lifecycle stage"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "carbonFootprintPerLifecycleStage"
+        }
+      ]
+    },
+    {
+      "key": "carbonProduction",
+      "pointer": "/carbonProduction",
+      "label": "Footprint: production",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "valueType": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.4",
+          "name": "Contribution of main product production/manufacturing lifecycle stage"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "carbonFootprintPerLifecycleStage"
+        }
+      ]
+    },
+    {
+      "key": "carbonDistribution",
+      "pointer": "/carbonDistribution",
+      "label": "Footprint: distribution",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "valueType": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.5",
+          "name": "Contribution of distribution lifecycle stage"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "carbonFootprintPerLifecycleStage"
+        }
+      ]
+    },
+    {
+      "key": "carbonEndOfLife",
+      "pointer": "/carbonEndOfLife",
+      "label": "Footprint: end of life",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "valueType": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.6",
+          "name": "Contribution of end of life and recycling lifecycle stage"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "carbonFootprintPerLifecycleStage"
+        }
+      ]
+    },
+    {
+      "key": "carbonClass",
+      "pointer": "/carbonClass",
+      "label": "Carbon class",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerformanceClass",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 32
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(2); Annex XIII (1c)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.7",
+          "name": "Carbon footprint performance class"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "carbonFootprintPerformanceClass"
+        }
+      ],
+      "awaitingAct": "Art. 7(2) delegated and implementing acts, not yet adopted",
+      "supersedes": "carbonClass",
+      "note": "The one field that cannot be constrained yet, and the reason is stated rather than worked around: both the class set and the declaration format come from acts under Art. 7(2) that have not been adopted. Offering a guessed A-to-G list would publish our invention as the class scheme. The surface says the format is pending instead of presenting an open box as a free choice. Becomes a closed enum the day the act lands."
+    },
+    {
+      "key": "carbonStudyUrl",
+      "pointer": "/carbonStudyUrl",
+      "label": "Footprint study",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintStudy",
+      "valueType": "url",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.8",
+          "name": "Web link to public carbon footprint study"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "carbonFootprintStudy"
+        }
+      ],
+      "note": "The declaration alone does not discharge the duty; the study has to be reachable."
+    },
+    {
+      "key": "carbonGeneralInfo",
+      "pointer": "/carbonGeneralInfo",
+      "label": "Battery and brand information",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "derived",
+        "kind": "calculation"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 7(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.9",
+          "name": "General battery and manufacturer information"
+        }
+      ],
+      "note": "The spec points back at 6.1 and 6.2 rather than adding fields."
+    },
+    {
+      "key": "carbonAbsolute",
+      "pointer": "/carbonAbsolute",
+      "label": "Total footprint",
+      "semanticUri": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#absoluteCarbonFootprint",
+      "valueType": "decimal",
+      "unit": "t CO₂e",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "none (spec recommendation)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.3.10",
+          "name": "Absolute battery carbon footprint"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "absoluteCarbonFootprint"
+        }
+      ]
+    },
+    {
+      "key": "dueDiligenceReport",
+      "pointer": "/dueDiligenceReport",
+      "label": "Due diligence report",
+      "semanticUri": "urn:samm:io.BatteryPass.SupplyChainDueDiligence:1.2.0#supplyChainDueDiligenceReport",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1d); Art. 52(3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.4.2",
+          "name": "Information of due diligence report in the battery passport"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "supplyChainDueDiligenceReport"
+        }
+      ],
+      "supersedes": "dueDiligence",
+      "note": "battery@1 takes a reference string. The duty is a published report, so a link is the honest minimum."
+    },
+    {
+      "key": "dueDiligenceAssurances",
+      "pointer": "/dueDiligenceAssurances",
+      "label": "Third-party assurance",
+      "semanticUri": "urn:samm:io.BatteryPass.SupplyChainDueDiligence:1.2.0#thirdPartyAussurances",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Art. 53",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.4.3",
+          "name": "Third-party assurances of recognised schemes"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "thirdPartyAussurances"
+        }
+      ],
+      "parts": [
+        {
+          "key": "scheme",
+          "label": "Scheme",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "assurer",
+          "label": "Who verified it",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "reference",
+          "label": "Certificate reference",
+          "valueType": "text"
+        }
+      ],
+      "note": "A record, because an assurance is only worth what the verifier is worth: naming the scheme without the body that certified against it is unfalsifiable. The scheme name stays open text rather than a list, since recognition itself arrives by implementing and delegated acts under Art. 53."
+    },
+    {
+      "key": "supplyChainIndices",
+      "pointer": "/supplyChainIndices",
+      "label": "Supply chain indices",
+      "semanticUri": "urn:samm:io.BatteryPass.SupplyChainDueDiligence:1.2.0#supplyChainIndicies",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "deferred"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "none (spec recommendation)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.4.4",
+          "name": "Supply chain indices"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "supplyChainIndicies"
+        }
+      ]
+    },
+    {
+      "key": "chemistry",
+      "pointer": "/chemistry",
+      "label": "Chemistry",
+      "semanticUri": "urn:samm:io.BatteryPass.MaterialComposition:1.2.0#batteryChemistry",
+      "valueType": "enum",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "LFP",
+            "label": "LFP, lithium iron phosphate"
+          },
+          {
+            "value": "LMFP",
+            "label": "LMFP, lithium manganese iron phosphate"
+          },
+          {
+            "value": "NMC",
+            "label": "NMC, nickel manganese cobalt"
+          },
+          {
+            "value": "NCA",
+            "label": "NCA, nickel cobalt aluminium"
+          },
+          {
+            "value": "LCO",
+            "label": "LCO, lithium cobalt oxide"
+          },
+          {
+            "value": "LMO",
+            "label": "LMO, lithium manganese oxide"
+          },
+          {
+            "value": "LTO",
+            "label": "LTO, lithium titanate"
+          },
+          {
+            "value": "NA-ION",
+            "label": "Sodium-ion"
+          },
+          {
+            "value": "LI-METAL",
+            "label": "Lithium metal"
+          },
+          {
+            "value": "SOLID-STATE",
+            "label": "Solid state"
+          },
+          {
+            "value": "PB-ACID",
+            "label": "Lead-acid"
+          },
+          {
+            "value": "NIMH",
+            "label": "Nickel metal hydride"
+          },
+          {
+            "value": "NICD",
+            "label": "Nickel cadmium"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1b)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.5.2",
+          "name": "Battery chemistry"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryChemistry"
+        }
+      ],
+      "supersedes": "chemistry",
+      "note": "An open list, not a closed one: 6.5.2 NOTE records that no unambiguous nomenclature exists yet, so the familiar abbreviations are offered and a value outside them stays valid. The fuller cathode, anode and electrolyte description belongs to electrodeMaterials."
+    },
+    {
+      "key": "criticalRawMaterials",
+      "pointer": "/criticalRawMaterials",
+      "label": "Critical raw materials",
+      "valueType": "multi",
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "aluminium",
+            "label": "Aluminium / bauxite / alumina"
+          },
+          {
+            "value": "antimony",
+            "label": "Antimony"
+          },
+          {
+            "value": "arsenic",
+            "label": "Arsenic"
+          },
+          {
+            "value": "baryte",
+            "label": "Baryte"
+          },
+          {
+            "value": "beryllium",
+            "label": "Beryllium"
+          },
+          {
+            "value": "bismuth",
+            "label": "Bismuth"
+          },
+          {
+            "value": "boron",
+            "label": "Boron"
+          },
+          {
+            "value": "cobalt",
+            "label": "Cobalt"
+          },
+          {
+            "value": "coking-coal",
+            "label": "Coking coal"
+          },
+          {
+            "value": "copper",
+            "label": "Copper"
+          },
+          {
+            "value": "feldspar",
+            "label": "Feldspar"
+          },
+          {
+            "value": "fluorspar",
+            "label": "Fluorspar"
+          },
+          {
+            "value": "gallium",
+            "label": "Gallium"
+          },
+          {
+            "value": "germanium",
+            "label": "Germanium"
+          },
+          {
+            "value": "hafnium",
+            "label": "Hafnium"
+          },
+          {
+            "value": "helium",
+            "label": "Helium"
+          },
+          {
+            "value": "heavy-ree",
+            "label": "Rare earths, heavy"
+          },
+          {
+            "value": "light-ree",
+            "label": "Rare earths, light"
+          },
+          {
+            "value": "lithium",
+            "label": "Lithium"
+          },
+          {
+            "value": "magnesium",
+            "label": "Magnesium"
+          },
+          {
+            "value": "manganese",
+            "label": "Manganese"
+          },
+          {
+            "value": "natural-graphite",
+            "label": "Graphite, natural"
+          },
+          {
+            "value": "nickel",
+            "label": "Nickel, battery grade"
+          },
+          {
+            "value": "niobium",
+            "label": "Niobium"
+          },
+          {
+            "value": "pgm",
+            "label": "Platinum group metals"
+          },
+          {
+            "value": "phosphate-rock",
+            "label": "Phosphate rock"
+          },
+          {
+            "value": "phosphorus",
+            "label": "Phosphorus"
+          },
+          {
+            "value": "scandium",
+            "label": "Scandium"
+          },
+          {
+            "value": "silicon-metal",
+            "label": "Silicon metal"
+          },
+          {
+            "value": "strontium",
+            "label": "Strontium"
+          },
+          {
+            "value": "tantalum",
+            "label": "Tantalum"
+          },
+          {
+            "value": "titanium-metal",
+            "label": "Titanium metal"
+          },
+          {
+            "value": "tungsten",
+            "label": "Tungsten"
+          },
+          {
+            "value": "vanadium",
+            "label": "Vanadium"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1b); Annex VI Part A(10)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.5.3",
+          "name": "Critical raw materials"
+        }
+      ],
+      "note": "Those present above 0.1% by weight, selected from Reg. (EU) 2024/1252 Annex II. Closed, because that register is exhaustive by law; it is revised at least every three years, so the mirrored list carries that review duty with it."
+    },
+    {
+      "key": "electrodeMaterials",
+      "pointer": "/electrodeMaterials",
+      "label": "Cathode, anode and electrolyte materials",
+      "semanticUri": "urn:samm:io.BatteryPass.MaterialComposition:1.2.0#batteryMaterials",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2a)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.5.4",
+          "name": "Materials used in cathode, anode and electrolyte"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "batteryMaterials"
+        }
+      ],
+      "parts": [
+        {
+          "key": "component",
+          "label": "Component",
+          "valueType": "enum",
+          "codeList": {
+            "closed": true,
+            "options": [
+              {
+                "value": "cathode",
+                "label": "Cathode"
+              },
+              {
+                "value": "anode",
+                "label": "Anode"
+              },
+              {
+                "value": "electrolyte",
+                "label": "Electrolyte"
+              },
+              {
+                "value": "separator",
+                "label": "Separator"
+              },
+              {
+                "value": "casing",
+                "label": "Casing"
+              }
+            ]
+          },
+          "required": true
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "share",
+          "label": "Share by weight",
+          "valueType": "percent",
+          "unit": "%",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      ],
+      "note": "The spec names three components, so the component is a closed list while the material stays open: chemistry nomenclature is unsettled (6.5.2 NOTE) but which part of a cell you are describing is not. Separator and casing are included because a dismantler needs them and the Annex says \"used in\", not \"used in only these three\"."
+    },
+    {
+      "key": "hazardousSubstances",
+      "pointer": "/hazardousSubstances",
+      "label": "Hazardous substances",
+      "semanticUri": "urn:samm:io.BatteryPass.MaterialComposition:1.2.0#hazardousSubstances",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1b); Annex VI Part A(8)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.5.5",
+          "name": "Hazardous substances"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "hazardousSubstances"
+        }
+      ],
+      "parts": [
+        {
+          "key": "name",
+          "label": "Substance",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "cas",
+          "label": "CAS number",
+          "valueType": "text",
+          "constraints": {
+            "pattern": "^\\d{2,7}-\\d{2}-\\d$",
+            "patternHint": "Two to seven digits, two digits, then a check digit, as in 7439-92-1"
+          },
+          "required": true
+        },
+        {
+          "key": "concentration",
+          "label": "Concentration",
+          "valueType": "percent",
+          "unit": "%",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      ],
+      "note": "Those other than mercury, cadmium and lead. A repeated record rather than a sentence, because each substance needs its own name and CAS number to be machine-checkable. The CAS check digit is computable, so a consumer can verify the number as well as its shape. No closed substance list: the ECHA candidate list runs to hundreds of entries and is revised twice a year, so mirroring it here would go stale between releases."
+    },
+    {
+      "key": "substanceImpact",
+      "pointer": "/substanceImpact",
+      "label": "Effects of those substances",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 2000
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Art. 74(1f)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.5.6",
+          "name": "Impact of substances on environment, human health, safety, persons"
+        }
+      ],
+      "note": "Prose by nature, and by duty: Art. 74(1f) requires an explanation of impacts on the environment, human health and safety written for a person to act on. A code list would defeat the purpose of the article."
+    },
+    {
+      "key": "dismantlingManual",
+      "pointer": "/dismantlingManual",
+      "label": "Dismantling manual",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#dismantlingAndRemovalInformation",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2c)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.1.2",
+          "name": "Dismantling information: manuals for the removal and the disassembly of the battery pack"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "dismantlingAndRemovalInformation"
+        }
+      ],
+      "supersedes": "dismantling",
+      "note": "The duty is the manual, not a reference to one. battery@1 stores a document number."
+    },
+    {
+      "key": "partNumbersUrl",
+      "pointer": "/partNumbersUrl",
+      "label": "Part numbers",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "valueType": "url",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2b)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.1.3",
+          "name": "Part numbers for components"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "sparePartSources.components.partNumber"
+        }
+      ]
+    },
+    {
+      "key": "sparePartsAddress",
+      "pointer": "/sparePartsAddress",
+      "label": "Spare parts: postal address",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "valueType": "record",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2b)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.1.4",
+          "name": "Postal address of sources of spare parts"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "sparePartSources.addressOfSupplier"
+        }
+      ],
+      "parts": [
+        {
+          "key": "street",
+          "label": "Street",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "locality",
+          "label": "Town or city",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "postcode",
+          "label": "Postcode",
+          "valueType": "text"
+        },
+        {
+          "key": "region",
+          "label": "State or region",
+          "valueType": "text"
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "A two-letter country code"
+          },
+          "required": true
+        }
+      ],
+      "note": "A record rather than one box, so the country is a code and the rest stays as postal services expect. Postcode is optional because several countries have none."
+    },
+    {
+      "key": "sparePartsEmail",
+      "pointer": "/sparePartsEmail",
+      "label": "Spare parts: e-mail",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "valueType": "text",
+      "constraints": {
+        "pattern": "^[^@\\s]+@[^@\\s.]+(\\.[^@\\s.]+)+$",
+        "patternHint": "An e-mail address",
+        "maxLength": 254
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2b)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.1.4",
+          "name": "E-mail address of sources of spare parts"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "sparePartSources.emailAddressOfSupplier"
+        }
+      ],
+      "note": "Deliberately a permissive shape check, not RFC 5322: the aim is to catch a typo before publication, and a pattern strict enough to be correct rejects addresses that work. 254 is the practical maximum length."
+    },
+    {
+      "key": "sparePartsUrl",
+      "pointer": "/sparePartsUrl",
+      "label": "Spare parts: web address",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "valueType": "url",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2b)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.1.4",
+          "name": "Web address of sources of spare parts"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "sparePartSources.supplierWebAddress"
+        }
+      ]
+    },
+    {
+      "key": "safetyMeasures",
+      "pointer": "/safetyMeasures",
+      "label": "Safety measures",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#safetyMeasures",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (2d)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.1.5",
+          "name": "Safety measures"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "safetyMeasures"
+        }
+      ],
+      "note": "Restricted and detailed. Distinct from the public consumer safety line battery@1 carries as `safety`."
+    },
+    {
+      "key": "recycledShareTotal",
+      "pointer": "/recycledShareTotal",
+      "label": "Recycled content",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "derived",
+        "kind": "calculation"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.2",
+          "name": "Pre-consumer and post-consumer recycled cobalt, lithium, nickel and lead share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent"
+        }
+      ],
+      "supersedes": "recycledContent",
+      "note": "The umbrella figure over the eight splits below. Scoped per model per year per manufacturing plant, which is finer than model level alone. Annex C carries the mandatory targets."
+    },
+    {
+      "key": "recycledNickelPre",
+      "pointer": "/recycledNickelPre",
+      "label": "Nickel, pre-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.3",
+          "name": "Pre-consumer recycled nickel share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.preConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledCobaltPre",
+      "pointer": "/recycledCobaltPre",
+      "label": "Cobalt, pre-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.4",
+          "name": "Pre-consumer recycled cobalt share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.preConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledLithiumPre",
+      "pointer": "/recycledLithiumPre",
+      "label": "Lithium, pre-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.5",
+          "name": "Pre-consumer recycled lithium share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.preConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledLeadPre",
+      "pointer": "/recycledLeadPre",
+      "label": "Lead, pre-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.6",
+          "name": "Pre-consumer recycled lead share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.preConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledNickelPost",
+      "pointer": "/recycledNickelPost",
+      "label": "Nickel, post-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.7",
+          "name": "Post-consumer recycled nickel share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.postConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledCobaltPost",
+      "pointer": "/recycledCobaltPost",
+      "label": "Cobalt, post-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.8",
+          "name": "Post-consumer recycled cobalt share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.postConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledLithiumPost",
+      "pointer": "/recycledLithiumPost",
+      "label": "Lithium, post-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.9",
+          "name": "Post-consumer recycled lithium share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.postConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "recycledLeadPost",
+      "pointer": "/recycledLeadPost",
+      "label": "Lead, post-consumer",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1e); Art. 8(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.10",
+          "name": "Post-consumer recycled lead share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "recycledContent.postConsumerShare"
+        }
+      ]
+    },
+    {
+      "key": "renewableShare",
+      "pointer": "/renewableShare",
+      "label": "Renewable content",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#renewableContent",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1f)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.2.11",
+          "name": "Renewable content share"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "renewableContent"
+        }
+      ]
+    },
+    {
+      "key": "endUserWastePrevention",
+      "pointer": "/endUserWastePrevention",
+      "label": "Making it last",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#endOfLifeInformation",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 500
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1s); Art. 74(1a)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.3.2",
+          "name": "Information on the role of end-users in contributing to waste prevention"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "endOfLifeInformation"
+        }
+      ],
+      "note": "Information, not a document. The clause asks what the end user should do; a sentence on the passport answers that where a linked PDF defers it. Typed as a document until 2026-07-28, which is why the consumer page carried three labels with nothing behind them: the attachment seam is G16, so a document can only be a link, and a sample can only ever declare a reserved host. A brand holding a real document declares its URL here and the surface links it, because the care block sorts on the value rather than the type."
+    },
+    {
+      "key": "endUserCollection",
+      "pointer": "/endUserCollection",
+      "label": "Where to return it",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#endOfLifeInformation",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 500
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1s); Art. 74",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.3.3",
+          "name": "Information on the role of end-users in contributing to the separate collection of waste batteries"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "endOfLifeInformation"
+        }
+      ],
+      "supersedes": "collection",
+      "note": "battery@1 carried this as a sentence, which reads better on a consumer page than a linked PDF. Retyped from document to text on 2026-07-28 to do what that note asked for, matching the textile registry, which answers the same question in prose and reads the better for it."
+    },
+    {
+      "key": "endOfLifeTreatment",
+      "pointer": "/endOfLifeTreatment",
+      "label": "End of life",
+      "semanticUri": "urn:samm:io.BatteryPass.Circularity:1.2.0#endOfLifeInformation",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 500
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1s); Art. 74",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.6.3.4",
+          "name": "Information on battery collection, preparation for second life and on treatment at end of life"
+        },
+        {
+          "source": "bpdm-1.2.0",
+          "property": "endOfLifeInformation"
+        }
+      ],
+      "note": "Retyped with the other two end-user clauses on 2026-07-28. What actually happens to the battery is a thing a reader can be told in three sentences, and a document reference tells them nothing at all until they open it."
+    },
+    {
+      "key": "ratedCapacityAh",
+      "pointer": "/ratedCapacityAh",
+      "label": "Rated capacity",
+      "valueType": "decimal",
+      "unit": "Ah",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex IV Part A(1); Annex VI Part A(6)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.2",
+          "name": "Rated capacity"
+        }
+      ],
+      "supersedes": "ratedCapacity",
+      "note": "Ampere-hours. battery@1 held a free string and the sample filled it with 630 Wh, which is energy: a different attribute (6.7.2.5)."
+    },
+    {
+      "key": "remainingCapacityAh",
+      "pointer": "/remainingCapacityAh",
+      "label": "Remaining capacity",
+      "valueType": "decimal",
+      "unit": "Ah",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true,
+        "needsBms": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part A(1)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.3",
+          "name": "Remaining capacity"
+        }
+      ]
+    },
+    {
+      "key": "capacityFade",
+      "pointer": "/capacityFade",
+      "label": "Capacity fade",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex IV Part A(1)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.4",
+          "name": "Capacity fade"
+        }
+      ],
+      "supersedes": "capacityFade",
+      "note": "Model level and static in the spec: the declared fade characteristic, not this unit’s measured loss."
+    },
+    {
+      "key": "certifiedEnergyKwh",
+      "pointer": "/certifiedEnergyKwh",
+      "label": "Usable energy",
+      "valueType": "decimal",
+      "unit": "kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "added by the consortium, based on UN GTR No 22",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "ev"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.5",
+          "name": "Certified usable battery energy"
+        }
+      ]
+    },
+    {
+      "key": "remainingEnergyKwh",
+      "pointer": "/remainingEnergyKwh",
+      "label": "Remaining usable energy",
+      "valueType": "decimal",
+      "unit": "kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "added by the consortium, based on UN GTR No 22",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "ev"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.6",
+          "name": "Remaining usable battery energy"
+        }
+      ]
+    },
+    {
+      "key": "soce",
+      "pointer": "/soce",
+      "label": "State of certified energy",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true,
+        "needsBms": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "UN GTR No 22",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "ev"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.7",
+          "name": "State of certified energy (SOCE)"
+        }
+      ]
+    },
+    {
+      "key": "stateOfCharge",
+      "pointer": "/stateOfCharge",
+      "label": "State of charge",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII 4(d)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.8",
+          "name": "State of charge (SoC)"
+        }
+      ]
+    },
+    {
+      "key": "voltageMin",
+      "pointer": "/voltageMin",
+      "label": "Minimum voltage",
+      "valueType": "decimal",
+      "unit": "V",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1h)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.9",
+          "name": "Minimum voltage"
+        }
+      ]
+    },
+    {
+      "key": "voltageMax",
+      "pointer": "/voltageMax",
+      "label": "Maximum voltage",
+      "valueType": "decimal",
+      "unit": "V",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1h)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.10",
+          "name": "Maximum voltage"
+        }
+      ]
+    },
+    {
+      "key": "voltageNominal",
+      "pointer": "/voltageNominal",
+      "label": "Nominal voltage",
+      "valueType": "decimal",
+      "unit": "V",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1h)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.2.11",
+          "name": "Nominal voltage"
+        }
+      ]
+    },
+    {
+      "key": "powerOriginal",
+      "pointer": "/powerOriginal",
+      "label": "Original power",
+      "valueType": "integer",
+      "unit": "W",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1i)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.3.2",
+          "name": "Original power capability"
+        }
+      ]
+    },
+    {
+      "key": "powerRemaining",
+      "pointer": "/powerRemaining",
+      "label": "Remaining power",
+      "valueType": "integer",
+      "unit": "W",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part A(2); Annex IV",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.3.3",
+          "name": "Remaining power capability"
+        }
+      ]
+    },
+    {
+      "key": "powerFade",
+      "pointer": "/powerFade",
+      "label": "Power fade",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex IV Part A(2)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.3.4",
+          "name": "Power fade"
+        }
+      ]
+    },
+    {
+      "key": "powerMax",
+      "pointer": "/powerMax",
+      "label": "Maximum permitted power",
+      "valueType": "integer",
+      "unit": "W",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1i)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.3.5",
+          "name": "Maximum permitted battery power"
+        }
+      ]
+    },
+    {
+      "key": "powerToEnergy",
+      "pointer": "/powerToEnergy",
+      "label": "Power to energy ratio",
+      "valueType": "decimal",
+      "unit": "W/Wh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Annex IV Part B(2)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.3.6",
+          "name": "Ratio between nominal battery power and battery energy"
+        }
+      ]
+    },
+    {
+      "key": "roundTripInitial",
+      "pointer": "/roundTripInitial",
+      "label": "Round trip efficiency, initial",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1n)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.2",
+          "name": "Initial round trip energy efficiency"
+        }
+      ]
+    },
+    {
+      "key": "roundTripAtHalfLife",
+      "pointer": "/roundTripAtHalfLife",
+      "label": "Round trip efficiency at half life",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1n)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.3",
+          "name": "Round trip energy efficiency at 50% of cycle-life"
+        }
+      ]
+    },
+    {
+      "key": "roundTripRemaining",
+      "pointer": "/roundTripRemaining",
+      "label": "Round trip efficiency, remaining",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part A(3)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.4",
+          "name": "Remaining round trip energy efficiency"
+        }
+      ]
+    },
+    {
+      "key": "roundTripFade",
+      "pointer": "/roundTripFade",
+      "label": "Round trip efficiency fade",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex IV Part A(4)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.5",
+          "name": "Energy round trip efficiency fade"
+        }
+      ]
+    },
+    {
+      "key": "selfDischargeInitial",
+      "pointer": "/selfDischargeInitial",
+      "label": "Self-discharge, initial",
+      "valueType": "decimal",
+      "unit": "%/month",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Annex VII Part A(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.6",
+          "name": "Initial self-discharge rate"
+        }
+      ]
+    },
+    {
+      "key": "selfDischargeCurrent",
+      "pointer": "/selfDischargeCurrent",
+      "label": "Self-discharge, current",
+      "valueType": "decimal",
+      "unit": "%/month",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Annex VII Part A(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.7",
+          "name": "Current self-discharge rate"
+        }
+      ]
+    },
+    {
+      "key": "selfDischargeEvolution",
+      "pointer": "/selfDischargeEvolution",
+      "label": "Self-discharge over time",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part A(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.4.8",
+          "name": "Evolution of self-discharge rates"
+        }
+      ]
+    },
+    {
+      "key": "resistancePack",
+      "pointer": "/resistancePack",
+      "label": "Internal resistance, pack",
+      "valueType": "decimal",
+      "unit": "Ω",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1o)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.5.2",
+          "name": "Initial internal resistance of battery pack"
+        }
+      ],
+      "note": "Decimal, not an integer: an internal resistance is tens of milliohms, so whole ohms would round every honest value to nought. The unit stays as the spec declares it and the type stops discarding the quantity."
+    },
+    {
+      "key": "resistanceCell",
+      "pointer": "/resistanceCell",
+      "label": "Internal resistance, cell",
+      "valueType": "decimal",
+      "unit": "Ω",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1o)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.5.2",
+          "name": "Initial internal resistance of battery cell"
+        }
+      ],
+      "note": "Decimal, not an integer: an internal resistance is tens of milliohms, so whole ohms would round every honest value to nought. The unit stays as the spec declares it and the type stops discarding the quantity."
+    },
+    {
+      "key": "resistanceModule",
+      "pointer": "/resistanceModule",
+      "label": "Internal resistance, module",
+      "valueType": "decimal",
+      "unit": "Ω",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Annex XIII (1o)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.5.2",
+          "name": "Initial internal resistance of battery module"
+        }
+      ],
+      "note": "Decimal, not an integer: an internal resistance is tens of milliohms, so whole ohms would round every honest value to nought. The unit stays as the spec declares it and the type stops discarding the quantity."
+    },
+    {
+      "key": "resistanceIncreasePack",
+      "pointer": "/resistanceIncreasePack",
+      "label": "Resistance increase, pack",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex IV Part A(3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.5.3",
+          "name": "Internal resistance increase of battery pack"
+        }
+      ]
+    },
+    {
+      "key": "resistanceIncreaseCell",
+      "pointer": "/resistanceIncreaseCell",
+      "label": "Resistance increase, cell",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Annex IV Part A(3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.5.3",
+          "name": "Internal resistance increase of battery cell"
+        }
+      ]
+    },
+    {
+      "key": "resistanceIncreaseModule",
+      "pointer": "/resistanceIncreaseModule",
+      "label": "Resistance increase, module",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Annex IV Part A(3)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.5.3",
+          "name": "Internal resistance increase of battery module"
+        }
+      ]
+    },
+    {
+      "key": "expectedYears",
+      "pointer": "/expectedYears",
+      "label": "Expected life in years",
+      "valueType": "decimal",
+      "unit": "years",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex IV Part A(5)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.2",
+          "name": "Expected lifetime in calendar years"
+        }
+      ],
+      "note": "Restricted, while the cycle count below is public."
+    },
+    {
+      "key": "expectedCycles",
+      "pointer": "/expectedCycles",
+      "label": "Expected life in cycles",
+      "valueType": "integer",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1j)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.3",
+          "name": "Expected lifetime: number of charge-discharge cycles"
+        }
+      ],
+      "supersedes": "expectedLife"
+    },
+    {
+      "key": "cyclesUsed",
+      "pointer": "/cyclesUsed",
+      "label": "Cycles so far",
+      "valueType": "integer",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (4d)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.4",
+          "name": "Number of full charging and discharging cycles"
+        }
+      ],
+      "supersedes": "chargeCycles"
+    },
+    {
+      "key": "cycleLifeTest",
+      "pointer": "/cycleLifeTest",
+      "label": "Cycle life test used",
+      "valueType": "enum",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "IEC-61960-3",
+            "label": "IEC 61960-3"
+          },
+          {
+            "value": "IEC-62660-1",
+            "label": "IEC 62660-1"
+          },
+          {
+            "value": "IEC-62620",
+            "label": "IEC 62620"
+          },
+          {
+            "value": "IEC-63330",
+            "label": "IEC 63330"
+          },
+          {
+            "value": "EN-50604-1",
+            "label": "EN 50604-1"
+          },
+          {
+            "value": "UN-GTR-22",
+            "label": "UN GTR No. 22"
+          },
+          {
+            "value": "MANUFACTURER",
+            "label": "The maker's own protocol"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1j)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.5",
+          "name": "Cycle-life reference test"
+        }
+      ],
+      "note": "Without the test, the cycle figure is not comparable between brands. Open: the applicable standard differs by category and JTC 24 and IEC are still issuing them."
+    },
+    {
+      "key": "cRate",
+      "pointer": "/cRate",
+      "label": "C-rate of that test",
+      "valueType": "decimal",
+      "unit": "A/Ah",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1p)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.6",
+          "name": "C-rate of relevant cycle-life test"
+        }
+      ]
+    },
+    {
+      "key": "energyThroughput",
+      "pointer": "/energyThroughput",
+      "label": "Energy through the battery",
+      "valueType": "decimal",
+      "unit": "kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part B(2)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.7",
+          "name": "Energy throughput"
+        }
+      ]
+    },
+    {
+      "key": "capacityThroughput",
+      "pointer": "/capacityThroughput",
+      "label": "Capacity through the battery",
+      "valueType": "decimal",
+      "unit": "Ah",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part B(3)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.8",
+          "name": "Capacity throughput"
+        }
+      ]
+    },
+    {
+      "key": "exhaustionThreshold",
+      "pointer": "/exhaustionThreshold",
+      "label": "Exhaustion threshold",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1k)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "ev"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.6.9",
+          "name": "Capacity threshold for exhaustion"
+        }
+      ]
+    },
+    {
+      "key": "temperatureRecord",
+      "pointer": "/temperatureRecord",
+      "label": "Temperature record",
+      "valueType": "decimal",
+      "unit": "°C",
+      "constraints": {
+        "minimum": -60,
+        "maximum": 150
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (4d)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.2",
+          "name": "Temperature information"
+        }
+      ]
+    },
+    {
+      "key": "idleTempLower",
+      "pointer": "/idleTempLower",
+      "label": "Idle temperature, lowest",
+      "valueType": "integer",
+      "unit": "°C",
+      "constraints": {
+        "minimum": -60,
+        "maximum": 150,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1l)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.3",
+          "name": "Temperature range idle state, lower boundary"
+        }
+      ]
+    },
+    {
+      "key": "idleTempUpper",
+      "pointer": "/idleTempUpper",
+      "label": "Idle temperature, highest",
+      "valueType": "integer",
+      "unit": "°C",
+      "constraints": {
+        "minimum": -60,
+        "maximum": 150,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (1l)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.4",
+          "name": "Temperature range idle state, upper boundary"
+        }
+      ]
+    },
+    {
+      "key": "timeAboveRange",
+      "pointer": "/timeAboveRange",
+      "label": "Time above range",
+      "valueType": "decimal",
+      "unit": "min",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part B(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.5",
+          "name": "Time spent in extreme temperatures above boundary"
+        }
+      ]
+    },
+    {
+      "key": "timeBelowRange",
+      "pointer": "/timeBelowRange",
+      "label": "Time below range",
+      "valueType": "decimal",
+      "unit": "min",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part B(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.6",
+          "name": "Time spent in extreme temperatures below boundary"
+        }
+      ]
+    },
+    {
+      "key": "chargingAboveRange",
+      "pointer": "/chargingAboveRange",
+      "label": "Charging above range",
+      "valueType": "decimal",
+      "unit": "min",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part B(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.7",
+          "name": "Time spent charging during extreme temperatures above boundary"
+        }
+      ]
+    },
+    {
+      "key": "chargingBelowRange",
+      "pointer": "/chargingBelowRange",
+      "label": "Charging below range",
+      "valueType": "decimal",
+      "unit": "min",
+      "constraints": {
+        "minimum": 0
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII Part B(4)",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "stationary",
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.7.8",
+          "name": "Time spent charging during extreme temperatures below boundary"
+        }
+      ]
+    },
+    {
+      "key": "deepDischargeEvents",
+      "pointer": "/deepDischargeEvents",
+      "label": "Deep discharges",
+      "valueType": "integer",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex VII",
+      "applicability": {
+        "rule": "category-in",
+        "categories": [
+          "lmt"
+        ]
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.8.2",
+          "name": "Number of deep discharge events"
+        }
+      ]
+    },
+    {
+      "key": "overchargeEvents",
+      "pointer": "/overchargeEvents",
+      "label": "Overcharges",
+      "valueType": "integer",
+      "constraints": {
+        "minimum": 0,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "added by the consortium",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.8.3",
+          "name": "Number of overcharge events"
+        }
+      ]
+    },
+    {
+      "key": "accidents",
+      "pointer": "/accidents",
+      "label": "Accidents",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Annex XIII (4d)",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "6.7.8.4",
+          "name": "Information on accidents"
+        }
+      ]
+    },
+    {
+      "key": "safety",
+      "pointer": "/safety",
+      "label": "Safety",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 500
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "app addition; the spec puts safety measures at 6.6.1.5, restricted",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "app",
+          "name": "not in the spec: plain-language safety line"
+        }
+      ],
+      "supersedes": "safety",
+      "note": "Prose by nature: a plain-language line a consumer reads on the passport. The spec's own safety measures at 6.6.1.5 sit in the restricted tier, so this is the public summary of them, not a substitute."
+    },
+    {
+      "key": "stateOfHealth",
+      "pointer": "/stateOfHealth",
+      "label": "State of health",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "app addition; the spec decomposes SoH into Annex VII Part A parameters",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "app",
+          "name": "not in the spec: state of health as a single figure"
+        }
+      ],
+      "supersedes": "stateOfHealth",
+      "note": "Annex VII has no single SoH figure: it lists remaining capacity, remaining power, remaining round trip efficiency, self-discharge evolution and resistance. Our one number is a summary, and should be presented as one."
+    },
+    {
+      "key": "measured",
+      "pointer": "/measured",
+      "label": "Measured by",
+      "valueType": "enum",
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "manufacturer",
+            "label": "The maker"
+          },
+          {
+            "value": "authorised-service",
+            "label": "An authorised service partner"
+          },
+          {
+            "value": "independent-lab",
+            "label": "An independent laboratory"
+          },
+          {
+            "value": "operator",
+            "label": "The operator or fleet"
+          },
+          {
+            "value": "repurposer",
+            "label": "A repurposer"
+          },
+          {
+            "value": "recycler",
+            "label": "A recycler"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "app addition",
+      "applicability": {
+        "rule": "always"
+      },
+      "sourceRefs": [
+        {
+          "source": "din-dke-spec-99100",
+          "clause": "app",
+          "name": "not in the spec: who measured, and when"
+        }
+      ],
+      "supersedes": "measured",
+      "note": "Closed, and closable because the attribute is ours rather than the spec's: no consumer outside the app depends on this vocabulary, so fixing it costs no interop. Who measured decides how much a reading is worth."
+    }
+  ],
+  "eventMappings": [
+    {
+      "nativeOperation": "ACTIVATE",
+      "eventType": "Origin",
+      "externalEvent": "manufacture or commissioning",
+      "requires": "manufacturing or commissioning evidence naming the facility, time and responsible party; the native ACTIVATE alone records only that a passport was opened",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "SOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence; a change of token control is not a shipment",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "RESOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "TRANSFER",
+      "eventType": "Transfer",
+      "externalEvent": "change of custody",
+      "requires": "custody evidence beyond the token transfer; the transfer of token control alone establishes neither physical movement nor legal title",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "REPAIRED",
+      "eventType": "Transformation",
+      "externalEvent": "modification (repair)",
+      "requires": "repair evidence naming what was done, by whom and when",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "EDIT",
+      "eventType": "Transformation",
+      "externalEvent": "metadata revision",
+      "requires": "nothing physical: an EDIT is a native metadata operation and maps to a record revision, not a physical transformation",
+      "withoutEvidence": "transformed"
+    },
+    {
+      "nativeOperation": "RECYCLED",
+      "eventType": "Disposition",
+      "externalEvent": "disposition, or a process creating new products or materials",
+      "requires": "recycling evidence distinguishing disposition of this item from a process whose outputs carry new identities",
+      "withoutEvidence": "insufficient-data"
+    }
+  ],
+  "sourceRefs": [
+    {
+      "id": "eu-batteries-regulation",
+      "name": "Regulation (EU) 2023/1542, Article 77 and Annex XIII (normative)",
+      "reference": "https://eur-lex.europa.eu/eli/reg/2023/1542/2025-07-31/eng",
+      "use": "The legal basis every regulated field cites."
+    },
+    {
+      "id": "din-dke-spec-99100",
+      "name": "DIN DKE SPEC 99100:2025-02, cited by clause; a licensed standard, not reproduced",
+      "version": "2025-02",
+      "licensedText": true,
+      "use": "Clause numbers and field names only; no table or text is reproduced."
+    },
+    {
+      "id": "bpdm-1.2.0",
+      "name": "Battery Pass Data Model 1.2.0, CC-BY-4.0, vocabulary only (the \"bpdm\" key)",
+      "version": "1.2.0",
+      "licence": "CC-BY-4.0",
+      "use": "Semantic URIs for alignment."
+    },
+    {
+      "id": "crma-annex-ii",
+      "name": "Regulation (EU) 2024/1252 Annex II, the critical raw materials register",
+      "use": "The legal instrument behind the critical raw materials list."
+    },
+    {
+      "id": "iso3166-alpha-2",
+      "name": "ISO 3166-1 alpha-2, for every value typed country",
+      "use": "The country code register."
+    },
+    {
+      "id": "crma",
+      "name": "Critical Raw Materials Act, Annex II Section 1",
+      "reference": "Regulation (EU) 2024/1252",
+      "use": "The closed option list for criticalRawMaterials. Revised at least every three years, so a consumer should check the list date rather than assume permanence.",
+      "fields": [
+        "criticalRawMaterials"
+      ]
+    },
+    {
+      "id": "iso3166",
+      "name": "ISO 3166-1 alpha-2",
+      "reference": "ISO 3166-1",
+      "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+      "fields": [
+        "manufacturingPlace.country",
+        "sparePartsAddress.country"
+      ]
+    },
+    {
+      "id": "cas",
+      "name": "CAS Registry Number",
+      "reference": "Chemical Abstracts Service",
+      "use": "The pattern on hazardousSubstances.cas. The final digit is a check digit, so a consumer can verify the number arithmetically and not only its shape.",
+      "fields": [
+        "hazardousSubstances.cas"
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "6.1",
+      "title": "Identification"
+    },
+    {
+      "id": "6.2",
+      "title": "Conformity and symbols"
+    },
+    {
+      "id": "6.3",
+      "title": "Carbon footprint"
+    },
+    {
+      "id": "6.4",
+      "title": "Supply chain"
+    },
+    {
+      "id": "6.5",
+      "title": "Materials"
+    },
+    {
+      "id": "6.6",
+      "title": "Circularity"
+    },
+    {
+      "id": "6.7",
+      "title": "Performance and durability"
+    },
+    {
+      "id": "app",
+      "title": "Beyond the standard"
+    }
+  ],
+  "identity": {
+    "passportIdentifier": "A GS1 Digital Link URI carrying the GTIN under application identifier 01 and the serial under 21 (spec/record-model.md section 3); the enduring identifier never changes across the chain.",
+    "granularities": [
+      "item",
+      "model"
+    ],
+    "itemIdentifier": "serial",
+    "modelIdentifier": "modelName",
+    "parentRelations": [
+      {
+        "child": "item",
+        "parent": "model"
+      }
+    ]
+  }
+}

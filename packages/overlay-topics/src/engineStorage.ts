@@ -21,7 +21,27 @@ import type { Collection, Db } from 'mongodb'
  * - BEEF is stored once per txid, not per output.
  * - `deleteOutput` ignores the topic argument when deleting, and drops the
  *   BEEF only when the txid has no outputs left.
+ *
+ * Both also implement `RetractableStorage`: two operations the upstream
+ * interface lacks and `POST /retract` needs, undoing a spend mark and
+ * forgetting an applied transaction, so a retracted phantom state leaves the
+ * real tip a tip and can be announced again if the network later takes it.
  */
+
+/**
+ * The engine storage plus what a retraction needs. The upstream `Storage`
+ * only ever marks an output spent and only ever records a transaction as
+ * applied, because the Engine's own eviction prunes a consumed lineage whole
+ * and never restores one. Retraction restores one, so it needs the inverses.
+ * Both are optional so a foreign `Storage` still fits; without them the
+ * retraction route says which repair it could not make.
+ */
+export interface RetractableStorage extends Storage {
+  /** Clear the spent flag on an output whose spender was retracted. */
+  markUTXOAsUnspent?: (txid: string, outputIndex: number, topic: string) => Promise<void>
+  /** Forget that a transaction was applied to a topic, so a re-announcement is admitted rather than skipped as a duplicate. */
+  deleteAppliedTransaction?: (tx: AppliedTransaction) => Promise<void>
+}
 
 /** One stored engine output. BEEF lives in the transactions map, keyed by txid. */
 interface StoredOutput {
@@ -92,7 +112,7 @@ const outpointKey = (txid: string, outputIndex: number, topic: string): string =
   `${txid}.${outputIndex}.${topic}`
 
 /** Engine storage in memory: for tests, local runs and the offline rehearsal. */
-export class InMemoryOverlayStorage implements Storage {
+export class InMemoryOverlayStorage implements RetractableStorage {
   private readonly outputs = new Map<string, StoredOutput>()
   private readonly transactions = new Map<string, string>()
   private readonly applied = new Set<string>()
@@ -172,6 +192,11 @@ export class InMemoryOverlayStorage implements Storage {
     if (stored != null) stored.spent = true
   }
 
+  async markUTXOAsUnspent(txid: string, outputIndex: number, topic: string): Promise<void> {
+    const stored = this.outputs.get(outpointKey(txid, outputIndex, topic))
+    if (stored != null) stored.spent = false
+  }
+
   async updateConsumedBy(
     txid: string,
     outputIndex: number,
@@ -204,6 +229,10 @@ export class InMemoryOverlayStorage implements Storage {
     return this.applied.has(`${tx.txid}.${tx.topic}`)
   }
 
+  async deleteAppliedTransaction(tx: AppliedTransaction): Promise<void> {
+    this.applied.delete(`${tx.txid}.${tx.topic}`)
+  }
+
   async updateLastInteraction(host: string, topic: string, since: number): Promise<void> {
     this.interactions.set(`${host}.${topic}`, since)
   }
@@ -214,7 +243,7 @@ export class InMemoryOverlayStorage implements Storage {
 }
 
 /** Engine storage on MongoDB: the hosted deployment's persistence. */
-export class MongoOverlayStorage implements Storage {
+export class MongoOverlayStorage implements RetractableStorage {
   private readonly outputs: Collection<StoredOutput>
   private readonly transactions: Collection<StoredTransaction>
   private readonly applied: Collection<StoredApplied>
@@ -328,6 +357,10 @@ export class MongoOverlayStorage implements Storage {
     await this.outputs.updateOne({ txid, outputIndex, topic }, { $set: { spent: true } })
   }
 
+  async markUTXOAsUnspent(txid: string, outputIndex: number, topic: string): Promise<void> {
+    await this.outputs.updateOne({ txid, outputIndex, topic }, { $set: { spent: false } })
+  }
+
   async updateConsumedBy(
     txid: string,
     outputIndex: number,
@@ -367,6 +400,10 @@ export class MongoOverlayStorage implements Storage {
       { txid: tx.txid, topic: tx.topic },
       { limit: 1 }
     )) > 0
+  }
+
+  async deleteAppliedTransaction(tx: AppliedTransaction): Promise<void> {
+    await this.applied.deleteOne({ txid: tx.txid, topic: tx.topic })
   }
 
   async updateLastInteraction(host: string, topic: string, since: number): Promise<void> {

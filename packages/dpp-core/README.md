@@ -20,7 +20,10 @@ specifier anything needs:
 | `codec.ts` | The 14-field layout: encode and decode, field encodings per `spec/record-model.md` §3 |
 | `signatures.ts` | The canonical signature preimage (§5) |
 | `transition.ts` | Which operation may change what, state by state |
-| `verifyChain.ts` | Chain verification from genesis, including SPV inclusion |
+| `verifyChain.ts` | Chain verification from genesis, including SPV inclusion; `inspectChain` is the same loop reported finding by finding |
+| `evidence.ts` | `verifyPassportEvidence`, the one verification contract of `spec/verification.md`: sixteen named checks, four answers each, an expected subject and a latest-state observation, across the token, attestation, anchor and credential rails |
+| `anchor.ts` | The generic complete-representation anchor `bsv-attestation-anchor-v1` (`spec/rules.md` §5): build, strict decode and check-by-check inspection |
+| `attestation.ts` | Native lifecycle claims `dpp-lifecycle-v1` (`spec/rules.md` §3): validate, sign, verify and digest |
 | `blob.ts` | Owner-tier blob hash binding (§7) |
 | `canonical.ts` | The canonical bytes an attestation is signed and hashed over: a refusing subset of JCS (`spec/rules.md` §4) |
 | `constants.ts`, `types.ts` | The shared vocabulary both of the above are written against |

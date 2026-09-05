@@ -1,0 +1,100 @@
+{
+  "profileId": "vsc-draft-compat/0.1.0",
+  "version": "0.1.0",
+  "sealVersion": "1.0",
+  "upstreamRevision": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+  "upstream": {
+    "core": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+    "requirements": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html"
+  },
+  "conformanceClaim": "Local implementation profile with explicit upstream gaps; no W3C certification",
+  "context": "urn:bsv:vsc:context:0.1.0",
+  "schema": "urn:bsv:vsc:schema:0.1.0",
+  "implemented": [
+    "secured-seal-structure",
+    "Ed25519Signature2020",
+    "bbs-2023-base-and-derived",
+    "assertion-purpose-and-issuer-binding",
+    "did:web-with-explicit-origin-policy",
+    "authenticated-bitstring-status",
+    "scoped-signed-issuer-authority",
+    "custody-state-machine",
+    "parent-DAG-with-diamond-support",
+    "immutable-correction-projection",
+    "signed-correction-delegation",
+    "five-EPCIS-event-round-trips",
+    "strict-UTF8-and-duplicate-key-parsing"
+  ],
+  "decisions": [
+    {
+      "id": "CTX-01",
+      "rule": "Owned pinned context; unknown domain extension payloads are signed JSON literals; no replacement under a W3C URL."
+    },
+    {
+      "id": "TIME-01",
+      "rule": "validFrom and authenticated credentialStatus required despite omission in Core examples; validUntil enforced when present."
+    },
+    {
+      "id": "DAG-01",
+      "rule": "Parent-only traversal; branch-height sequence; fork child identifiers preallocated; no mutation of signed references."
+    },
+    {
+      "id": "CORR-01",
+      "rule": "Correction topology accepted; new correction chain starts at 1 and has exactly its target parent; signed scoped delegation required for another issuer; competing branches remain indeterminate."
+    },
+    {
+      "id": "SD-01",
+      "rule": "Credential subject and mirrored predecessor references always disclosed in this local profile. Null original-record correction marker restored after RDF derivation."
+    },
+    {
+      "id": "ASSURANCE-01",
+      "rule": "Verification concerns provided evidence; authority not-required is an explicit verifier policy warning; no global freshness or physical truth claim."
+    },
+    {
+      "id": "EPCIS-01",
+      "rule": "Full input event retained in a signed round-trip vocabulary; insufficient values and unsupported dispositions are rejected."
+    }
+  ],
+  "upstreamGates": [
+    {
+      "id": "UPSTREAM-CONTEXT",
+      "status": "unavailable",
+      "detail": "Referenced VSC JSON-LD context returns 404; this package uses its own versioned context."
+    },
+    {
+      "id": "UPSTREAM-TESTS",
+      "status": "unavailable",
+      "detail": "Pinned upstream supplies a prose test matrix, not an executable suite."
+    },
+    {
+      "id": "CROSS-IMPLEMENTATION",
+      "status": "not-claimed",
+      "detail": "Tests use independent calls to maintained suites, not separately implemented full VSC stacks."
+    },
+    {
+      "id": "PRESENTATION-HTTP",
+      "status": "not-implemented",
+      "detail": "Request-bound BBS primitives provided; no complete HTTPS request-response transport implementation."
+    },
+    {
+      "id": "INDUSTRY-PROFILES",
+      "status": "not-implemented",
+      "detail": "No pharmaceutical, food or regulatory compliance claim."
+    },
+    {
+      "id": "PHYSICAL-BINDING",
+      "status": "separate-capability",
+      "detail": "Object DIDs may be carried independently; tag authentication and physical binding are not implemented here."
+    },
+    {
+      "id": "GLOBAL-HISTORY",
+      "status": "not-claimed",
+      "detail": "No global completeness or latest-state assertion; results identify provided-evidence scope."
+    }
+  ],
+  "artifactDigests": {
+    "context-0.1.0.jsonld": "3c74b79c50ebb151086c8bbe05222d0177a9d20c6f7b725b4e3a60645274cccc",
+    "seal-0.1.0.schema.json": "839123ea6a2ca459c62143a9a38ece281a7b91e719dca057b28baf4d53106d15",
+    "disclosure-0.1.0.schema.json": "94afb330c77d28454f98fa4ceb52e4dddc9c6abc8f34877c2917b47dc024c67d"
+  }
+}

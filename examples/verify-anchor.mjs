@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Check an anchor the way rules.md §6 says a stranger can: from the output's
+ * Check a historical UORA v3 anchor the way legacy-uora-anchor-v3.md §6 says a stranger can: from the output's
  * own bytes plus the attestation it commits to, with no call to the service
  * that wrote it.
  *

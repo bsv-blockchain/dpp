@@ -5,6 +5,8 @@ import { LockingScript, PushDrop } from '@bsv/sdk'
 import { tryParseUoraAnchor } from '../src/uoraAnchor.js'
 import { ANCHOR_V3_FIXTURE } from './anchor-v3-fixture.js'
 import { anchorV3Vectors } from './anchor-v3-vectors.js'
+import { attestationV1Fixture, attestationV1Vectors } from './attestation-v1-fixture.js'
+import { decodeAttestationAnchor } from '../src/attestationAnchor.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
@@ -41,7 +43,7 @@ function expectStackShape(file: VectorFile): void {
   for (const key of ['id', 'name', 'version', 'reference_impl', 'parity_class', 'vectors']) {
     expect(file).toHaveProperty(key)
   }
-  expect(file.id).toMatch(/^[a-z0-9]+(\.[a-z0-9]+)+$/)
+  expect(file.id).toMatch(/^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)*$/)
   const ids = file.vectors.map((v) => v.id)
   expect(new Set(ids).size).toBe(ids.length)
   const hexOnly = (value: unknown, path: string): void => {
@@ -65,6 +67,19 @@ function expectStackShape(file: VectorFile): void {
 }
 
 describe('the published fixture files', () => {
+  it('reproduces the portable complete-representation fixture and stack vectors', async () => {
+    const fixture = await attestationV1Fixture()
+    expectPublished('attestation-anchor-v1.json', fixture)
+    const generated = attestationV1Vectors(fixture)
+    expectPublished('vectors/dpp/attestation-anchor/v1.json', generated)
+    expectStackShape(generated)
+    for (const vector of generated.vectors) {
+      if (!('locking_script_hex' in vector.input)) continue
+      const decoded = decodeAttestationAnchor(LockingScript.fromHex(vector.input.locking_script_hex!))
+      expect(decoded !== null, vector.id).toBe(vector.expected.accepted)
+    }
+  })
+
   it('anchor-v3.json is anchor-v3-fixture.ts, verbatim', () => {
     expectPublished('anchor-v3.json', ANCHOR_V3_FIXTURE)
   })

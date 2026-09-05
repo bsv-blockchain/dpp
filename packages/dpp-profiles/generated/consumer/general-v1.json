@@ -1,0 +1,9 @@
+{
+  "id": "general",
+  "version": 1,
+  "profile": "general@1",
+  "status": "superseded by general@2, and still served: passports published under it declare this version and are never rewritten",
+  "regulatoryLine": "A freeform product record; no regulatory mapping is claimed.",
+  "supersededBy": "general@2",
+  "fields": []
+}

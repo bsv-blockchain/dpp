@@ -18,6 +18,8 @@ WORKDIR /repo
 COPY package.json package-lock.json ./
 COPY packages/dpp-core/package.json packages/dpp-core/
 COPY packages/overlay-topics/package.json packages/overlay-topics/
+COPY packages/vsc/package.json packages/vsc/
+COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 RUN npm ci --ignore-scripts \
       -w @bsv/dpp-overlay-topics -w @bsv/dpp-core --include-workspace-root
 
@@ -32,6 +34,8 @@ ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 COPY packages/dpp-core/package.json packages/dpp-core/
 COPY packages/overlay-topics/package.json packages/overlay-topics/
+COPY packages/vsc/package.json packages/vsc/
+COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 RUN npm ci --omit=dev --ignore-scripts \
       -w @bsv/dpp-overlay-topics -w @bsv/dpp-core --include-workspace-root \
     && npm cache clean --force

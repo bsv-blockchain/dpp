@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/conformance/baseline.schema.json",
+  "title": "DPP recommended baseline manifest, version 1",
+  "description": "One complete recommended selection of the current native formats (spec/conformance.md section 3): exact wire versions, representations, derivations, refused and historical formats, the reason-code vocabulary, fixtures with digests, each role's mandatory requirements and the dependency versions the reference implementation was tested against. A documentation and conformance selection, never a new on-chain format.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["baselineId", "version", "status", "wire", "derivations", "representations", "refused", "historical", "reasonCodes", "roles", "fixtures", "dependencies", "quickStarts"],
+  "properties": {
+    "baselineId": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[0-9]+$" },
+    "version": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["proposed", "recommended", "superseded"] },
+    "description": { "type": "string" },
+    "wire": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record", "nativeClaim", "anchor", "verificationReport"],
+      "properties": {
+        "record": {
+          "type": "object", "additionalProperties": false, "required": ["protocolMarker", "version", "fieldCount", "specification"],
+          "properties": { "protocolMarker": { "type": "string" }, "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "specification": { "type": "string" } }
+        },
+        "nativeClaim": {
+          "type": "object", "additionalProperties": false, "required": ["claimFormat", "specification"],
+          "properties": { "claimFormat": { "type": "string" }, "specification": { "type": "string" } }
+        },
+        "anchor": {
+          "type": "object", "additionalProperties": false, "required": ["prefix", "signedFieldCount", "dropCount", "specification"],
+          "properties": { "prefix": { "type": "string" }, "signedFieldCount": { "type": "integer" }, "dropCount": { "type": "integer" }, "specification": { "type": "string" } }
+        },
+        "verificationReport": {
+          "type": "object", "additionalProperties": false, "required": ["reportVersion", "schema", "checkNames"],
+          "properties": { "reportVersion": { "type": "string" }, "schema": { "type": "string" }, "checkNames": { "type": "array", "items": { "type": "string" }, "minItems": 16, "maxItems": 16 } }
+        }
+      }
+    },
+    "derivations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["protocolId", "keyId", "counterparty"],
+        "properties": {
+          "protocolId": { "type": "array", "prefixItems": [{ "type": "integer" }, { "type": "string" }], "minItems": 2, "maxItems": 2 },
+          "keyId": { "type": "string" },
+          "counterparty": { "enum": ["anyone", "self"] }
+        }
+      }
+    },
+    "representations": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "mediaType", "bytesHashed", "specification"],
+        "properties": { "id": { "type": "string" }, "mediaType": { "type": "string" }, "bytesHashed": { "type": "string" }, "specification": { "type": "string" } }
+      }
+    },
+    "refused": { "type": "array", "items": { "type": "string" } },
+    "historical": { "type": "array", "items": { "type": "string" } },
+    "reasonCodes": { "type": "string", "description": "Where the shared reason-code vocabulary lives." },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passport-reader", "attestation-verifier", "passport-writer", "attestation-issuer", "registry", "overlay"],
+      "additionalProperties#comment": "exactly the six roles",
+      "properties": {
+        "passport-reader": { "$ref": "#/$defs/role" },
+        "attestation-verifier": { "$ref": "#/$defs/role" },
+        "passport-writer": { "$ref": "#/$defs/role" },
+        "attestation-issuer": { "$ref": "#/$defs/role" },
+        "registry": { "$ref": "#/$defs/role" },
+        "overlay": { "$ref": "#/$defs/role" }
+      }
+    },
+    "fixtures": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["path", "sha256", "pins"],
+        "properties": { "path": { "type": "string" }, "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }, "pins": { "type": "string" } }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "version", "usedBy"],
+        "properties": { "name": { "type": "string" }, "version": { "type": "string" }, "usedBy": { "type": "array", "items": { "type": "string" } } }
+      }
+    },
+    "quickStarts": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["role", "command", "needs"],
+        "properties": { "role": { "type": "string" }, "command": { "type": "string" }, "needs": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["responsibility", "requires", "testTargets"],
+      "properties": {
+        "responsibility": { "type": "string" },
+        "requires": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Requirement ids in conformance/manifest.json this role must satisfy under the baseline." },
+        "optional": { "type": "array", "items": { "type": "string" } },
+        "testTargets": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

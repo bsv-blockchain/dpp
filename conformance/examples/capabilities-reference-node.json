@@ -1,0 +1,134 @@
+{
+  "capabilitiesVersion": "1",
+  "implementation": {
+    "name": "@bsv/dpp-overlay-topics",
+    "version": "0.2.0",
+    "baselineId": "native-baseline@1"
+  },
+  "roles": [
+    "overlay"
+  ],
+  "protocols": [
+    {
+      "id": "dpp-record",
+      "version": "1"
+    },
+    {
+      "id": "bsv-attestation-anchor",
+      "version": "1"
+    },
+    {
+      "id": "overlay-http",
+      "version": "0.5.0-draft"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "single-operator",
+      "version": "1",
+      "kind": "operator",
+      "options": {
+        "discovery": "none",
+        "gasp": false
+      }
+    }
+  ],
+  "representations": [
+    {
+      "id": "dpp-lifecycle-json-v1",
+      "mediaType": "application/json",
+      "verification": "commitment-only"
+    },
+    {
+      "id": "vsc-seal-json-v1",
+      "mediaType": "application/vc+ld+json",
+      "verification": "commitment-only"
+    }
+  ],
+  "proofSuites": [],
+  "anchorFormats": [
+    {
+      "prefix": "bsv-attestation-anchor-v1",
+      "status": "current"
+    },
+    {
+      "prefix": "uora-anchor-v3",
+      "status": "historical"
+    },
+    {
+      "prefix": "uora-anchor-v1",
+      "status": "historical"
+    },
+    {
+      "prefix": "uora-anchor-v2",
+      "status": "refused"
+    }
+  ],
+  "topics": [
+    "tm_dpp",
+    "tm_attestation",
+    "tm_uora_dpp"
+  ],
+  "services": [
+    "ls_dpp",
+    "ls_attestation",
+    "ls_uora_dpp"
+  ],
+  "publisherPolicy": {
+    "policyVersion": "reference-node-environment",
+    "publisherKeys": [
+      "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+    ],
+    "anchoringServices": [],
+    "ownerConsent": "not-selected",
+    "transferAuthorities": []
+  },
+  "synchronisation": {
+    "profile": "single-operator@1",
+    "discovery": "none",
+    "gasp": false,
+    "peers": []
+  },
+  "limits": {
+    "maxLookupResults": 500,
+    "defaultAnchorPageSize": 100,
+    "maxAnchorPageSize": 500,
+    "maxBodyBytes": 8388608,
+    "defaultHistoryPageSize": 100,
+    "maxHistoryPageSize": 500,
+    "historySnapshotTtlSeconds": 600,
+    "evidencePackageExport": "unavailable",
+    "maxEvidencePackageStates": 500,
+    "maxSyncPageSize": 500
+  },
+  "unsupported": [
+    {
+      "id": "ship-slap-discovery",
+      "reason": "This node advertises nothing; a public deployment declares its discovery profile separately."
+    },
+    {
+      "id": "gasp-synchronisation",
+      "reason": "Peer synchronisation is off in this host; federated-operators@1 is a separate operator profile, and naming it does not start a synchronisation."
+    },
+    {
+      "id": "credential-content-verification",
+      "reason": "An overlay indexes commitments and authenticates anchoring-service metadata; credential proof, status and authority are verified by a registry or reader."
+    },
+    {
+      "id": "anchoring-service-restriction",
+      "reason": "No publisher policy covers tm_attestation and ANCHOR_SERVICE_KEYS is unset, so every well-formed anchor is admitted whoever wrote it; publisherPolicy.anchoringServices is empty because nothing restricts, not because nothing is admitted."
+    },
+    {
+      "id": "publisher-key-rotation",
+      "reason": "No PUBLISHER_POLICY_FILE is configured: the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp."
+    },
+    {
+      "id": "evidence-package-export",
+      "reason": "EXPORT_SIGNING_KEY is unset, so GET /evidence-package answers 503 export-unavailable; the bounded lookup and GET /history remain."
+    },
+    {
+      "id": "retraction-network-check",
+      "reason": "No header source is configured (CHAIN_TRACKER=scripts-only), so POST /retract cannot ask the network whether it knows a transaction and relies on the local merkle-path check alone, which its answer states."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:general@1:payload-restricted",
+  "title": "General passport, version 1 (superseded) (general@1), restricted payload",
+  "description": "general@1: the restricted tiers held off chain, encrypted, and committed by field 11. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}

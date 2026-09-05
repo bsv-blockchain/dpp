@@ -63,6 +63,8 @@ function stubEngine(
     listLookupServiceProviders: async () => ({
       ls_dpp: { name: 'ls_dpp', shortDescription: 'DPP lookup' },
     }),
+    getDocumentationForTopicManager: async name => `Rules for ${name}`,
+    getDocumentationForLookupServiceProvider: async name => `Queries for ${name}`,
     handleNewMerkleProof: async () => {},
     ...overrides,
   } as OverlayEngine
@@ -757,5 +759,25 @@ describe('a proof, over HTTP', () => {
     // The submit token is a different secret and does not open this route.
     const other = await serve(realEngine(), { submitToken: 'submit-secret', proofToken: 'proof-secret' })
     expect((await pushProof(other, body, { Authorization: 'Bearer submit-secret' })).status).toBe(401)
+  })
+})
+
+
+describe('published overlay documentation contract', () => {
+  it('serves Markdown for advertised names and rejects absent, unknown or duplicate selectors', async () => {
+    const { engine } = stubEngine()
+    const base = await serve(engine)
+    for (const [route, body] of [
+      ['/getDocumentationForTopicManager?manager=tm_dpp', 'Rules for tm_dpp'],
+      ['/getDocumentationForLookupServiceProvider?lookupService=ls_dpp', 'Queries for ls_dpp'],
+    ]) {
+      const response = await fetch(base + route)
+      expect(response.status).toBe(200)
+      expect(response.headers.get('content-type')).toContain('text/markdown')
+      expect(await response.text()).toBe(body)
+    }
+    for (const suffix of ['', '?manager=unknown', '?manager=tm_dpp&manager=tm_dpp', '?manager=__proto__']) {
+      expect((await fetch(base + '/getDocumentationForTopicManager' + suffix)).status).toBe(400)
+    }
   })
 })

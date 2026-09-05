@@ -27,12 +27,21 @@ The standard defines two separate kinds of blockchain record:
 
 Each new passport state spends the previous state's output. This links the history through blockchain transactions and makes conflicting updates detectable. Attestation anchors use separate outputs; the claims themselves remain off chain. Neither kind of record needs the other to verify its own checks.
 
+Four packages provide independently testable implementation roles:
+
+- **`@bsv/dpp-core`** (`packages/dpp-core`) is the record model and what both rails share: the 14-field codec, the canonical signature preimages, chain verification including SPV and the optional owner-consent check, the native lifecycle claim, the generic anchor's build and strict decode, the canonical bytes an attestation is signed and hashed over, `verifyPassportEvidence`, the one verification report of `spec/verification.md`, the publisher key policy chain a state is checked against at its own time, and the evidence package manifest that carries a passport's evidence between operators. Reference consumers reuse these functions. Independent implementations reproduce the specified rules and portable fixtures.
+- **`@bsv/dpp-overlay-topics`** (`packages/overlay-topics`) is the index: the `tm_dpp` and `tm_attestation` topic managers and the `ls_dpp` and `ls_attestation` lookup services, with separately named historical UORA interfaces, usable as a library or as an HTTP service speaking exactly the wire `contracts/overlay.yaml` pins, including the capability document, publisher key policy enforcement, history pages over a snapshot, the signed evidence package export and the guarded retraction. Its Dockerfile builds the deployable index node from this repository alone, so an adopter can run their own index:
+
+- **`@bsv/dpp-profiles`** (`packages/dpp-profiles`) is the canonical home of the industry data profiles: `battery@2`, `textile@2` and `general@2` and their superseded predecessors as immutable, digest-frozen manifests, the payload schemas and consumer documents generated from them, the conditional lifecycle mapping with its four-valued result, and the GS1 identifier helpers a writer uses. Applications and registries consume it; nothing edits it. See [the profiles specification](spec/profiles.md).
+
+- **`@bsv/vsc`** (`packages/vsc`) implements the pinned VSC draft compatibility profile with owned context/schema artefacts, genuine Ed25519 and BBS credential proofs, scoped verification and EPCIS mappings. It verifies credentials independently of the additional BSV anchor. This is documented draft compatibility, not W3C certification. See [the profile](spec/vsc-profile.md).
 The writer assembles and checks a state, has a wallet sign and submit it, obtains its mining proof and retains the evidence. The index makes records findable and serves their transaction bytes and available proofs. The verifier checks that evidence against the record rules and a configurable block header source. The [writing specification](spec/writing.md) and [service specification](spec/services.md) define these responsibilities.
 
 Verification establishes who signed particular bytes and whether the supplied history and proofs check out. The physical product, the truth of a claim and the authority of its issuer require supporting evidence. A valid supplied history also does not establish that a provider returned the latest state or every claim.
 
 Retaining transactions, proofs and off-chain content is part of operating a passport. Existing records can remain verifiable after a provider disappears when that evidence is available. Continuing to update a passport also requires access to its spending key; the [custody model](spec/custody.md) explains owner-held, split and operator-held arrangements.
 
+The files in `fixtures/` are regenerated verbatim from modules inside these packages' test suites, and the suites hold the two identical: editing either side alone goes red in CI. CI runs the build, the type checks, all workspace suites and the container image on every change.
 ## Industry profiles
 
 Industry profiles are a separate workstream built on the common DPP standard. They define product data and its meaning while preserving the core record, signature, history and anchoring rules. [Governance](GOVERNANCE.md#versioning) provides for profiles to version independently of the core.

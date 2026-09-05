@@ -7,6 +7,9 @@ import { RECORD_V1_FIXTURE } from './record-v1-fixture.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
 import { recordV1Vectors } from './record-v1-vectors.js'
 import { chainV1Vectors } from './chain-v1-vectors.js'
+import { evidenceV1Fixture } from './evidence-v1-fixture.js'
+import { publisherPolicyVectors } from './publisher-policy-vectors.js'
+import { evidencePackageVectors } from './evidence-package-vectors.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
@@ -83,6 +86,25 @@ describe('the published fixture files', () => {
     const generated = chainV1Vectors()
     expectPublished('vectors/dpp/chain/v1.json', generated)
     expectStackShape(generated)
+  })
+
+  it('evidence-v1.json is evidenceV1Fixture(), verbatim: the report every surface produces for each case', async () => {
+    const generated = await evidenceV1Fixture()
+    expect(generated.cases.map((c) => c.id)).toEqual([...new Set(generated.cases.map((c) => c.id))])
+    for (const c of generated.cases) expect(c.report.checkedAt).toBe(generated.checkedAt)
+    expectPublished('evidence-v1.json', generated)
+  })
+
+  it('vectors/dpp/publisher-policy/v1.json is publisherPolicyVectors(), verbatim, and shaped as the stack expects', () => {
+    const generated = publisherPolicyVectors()
+    expectPublished('vectors/dpp/publisher-policy/v1.json', generated)
+    expectStackShape(generated as never)
+  })
+
+  it('vectors/dpp/evidence-package/v1.json is evidencePackageVectors(), verbatim, and shaped as the stack expects', async () => {
+    const generated = await evidencePackageVectors()
+    expectPublished('vectors/dpp/evidence-package/v1.json', generated)
+    expectStackShape(generated as never)
   })
 
   it('anchor-v3.json canonical bytes and digest are what this package computes', () => {

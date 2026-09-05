@@ -1,0 +1,53 @@
+{
+  "name": "@bsv/vsc",
+  "version": "0.1.0",
+  "description": "Versioned VSC draft compatibility profile, credential proofs and verification",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./artifacts/*": "./artifacts/*"
+  },
+  "files": [
+    "dist",
+    "artifacts",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@digitalbazaar/bbs-2023-cryptosuite": "2.0.1",
+    "@digitalbazaar/bls12-381-multikey": "2.2.0",
+    "@digitalbazaar/credentials-context": "3.2.0",
+    "@digitalbazaar/data-integrity": "2.5.0",
+    "@digitalbazaar/data-integrity-context": "2.0.1",
+    "@digitalbazaar/ed25519-signature-2020": "5.4.0",
+    "@digitalbazaar/ed25519-verification-key-2020": "4.2.0",
+    "@digitalbazaar/multikey-context": "2.0.1",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "did-context": "3.1.1",
+    "jsonld-signatures": "11.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsv-blockchain/dpp.git",
+    "directory": "packages/vsc"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/profiles/schemas/product-identity.schema.json",
+  "title": "DPP product identity, version 1",
+  "description": "The three granularities a passport may relate (spec/profiles.md section 5): the model a manufacturer designs, the batch a production run produces and the item one physical unit is, with the enduring passport identifier that never changes and the resolver location that may.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["passportId", "item"],
+  "properties": {
+    "passportId": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The enduring passport identifier, exactly as field 3 of the record carries it." },
+    "genesisOutpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["txid", "outputIndex"],
+      "properties": { "txid": { "type": "string", "pattern": "^[0-9a-f]{64}$" }, "outputIndex": { "type": "integer", "minimum": 0 } }
+    },
+    "item": { "$ref": "#/$defs/identifier" },
+    "batch": { "$ref": "#/$defs/identifier" },
+    "model": { "$ref": "#/$defs/identifier" },
+    "resolver": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Mutable service metadata: where the identifier is answered today. A change here changes nothing about the identity or the history.",
+      "properties": {
+        "host": { "type": "string", "format": "hostname" },
+        "linkSet": { "type": "string", "format": "uri" },
+        "recordedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scheme", "value"],
+      "properties": {
+        "scheme": { "type": "string", "minLength": 1, "description": "For example gs1-gtin, gs1-sgtin, gs1-digital-link, iso-15459, vendor." },
+        "value": { "type": "string", "minLength": 1 },
+        "authority": { "type": "string", "description": "Who allocated the identifier, when known independently. Syntax never proves allocation." },
+        "checkDigitValid": { "type": "boolean", "description": "For GS1 keys: whether the check digit holds. A writer keeps it true; a reader records what it found." },
+        "demonstration": { "type": "boolean", "description": "True when the GS1 prefix is 952, the prefix reserved for demonstrations and examples, so nothing real stands behind the record." }
+      }
+    }
+  }
+}

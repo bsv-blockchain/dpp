@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/conformance/manifest.schema.json",
+  "title": "DPP conformance ledger, version 1",
+  "description": "The requirement ledger of spec/conformance.md section 6: pinned sources, requirement rows with their layer, roles, status and evidence, and the claims that select rows.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ledgerVersion", "updatedAt", "sources", "requirements", "claims"],
+  "properties": {
+    "ledgerVersion": { "const": "1" },
+    "updatedAt": { "type": "string", "format": "date" },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/source" }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/requirement" }
+    },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/claim" }
+    }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@-]*$" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "uri", "version", "kind"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "uri": { "type": "string", "format": "uri-reference" },
+        "version": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["local", "public", "licensed", "unavailable"] },
+        "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the artefact at path or uri when one exists; the checker recomputes it for local sources." },
+        "path": { "type": "string", "description": "Repository-relative path of a local artefact the digest covers." },
+        "retrievedAt": { "type": "string", "format": "date" },
+        "licence": { "type": "string" },
+        "harmonisedReference": { "type": "boolean", "description": "True only for a standard the cited Commission decision actually lists." },
+        "attribution": { "type": "string", "description": "The publishing body or group, recorded separately from protocol identity." },
+        "notes": { "type": "string" }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sourceId", "sourceUri", "sourceVersion", "clause", "summary", "layer", "roles", "applicability", "profileId", "implementationRefs", "testRefs", "evidenceRefs", "status", "reviewedAt", "reviewOwner"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "sourceId": { "$ref": "#/$defs/identifier" },
+        "sourceUri": { "type": "string", "format": "uri-reference" },
+        "sourceVersion": { "type": "string", "minLength": 1 },
+        "sourceDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "clause": { "type": "string", "minLength": 1, "description": "The clause as the source numbers it, or the reason none could be read." },
+        "summary": { "type": "string", "minLength": 1 },
+        "layer": { "enum": ["core", "role", "profile", "reference"] },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "enum": ["passport-reader", "attestation-verifier", "passport-writer", "attestation-issuer", "registry", "overlay", "all", "none"] }
+        },
+        "applicability": { "type": "string", "minLength": 1, "description": "When the requirement applies: always, a profile, a selected option, or a legal scope still under review." },
+        "profileId": { "type": "string", "minLength": 1, "description": "The profile that selects the requirement, or core for every conforming implementation." },
+        "implementationRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "testRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "evidenceRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "status": { "enum": ["unassessed", "not-applicable", "gap", "implemented", "tested", "independently-tested"] },
+        "reviewedAt": { "type": "string", "format": "date" },
+        "reviewOwner": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "enum": ["tested", "independently-tested"] } } },
+          "then": { "properties": { "testRefs": { "minItems": 1 } } }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["implemented", "tested", "independently-tested"] } } },
+          "then": { "properties": { "implementationRefs": { "minItems": 1 } } }
+        }
+      ]
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "requires"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "description": { "type": "string", "minLength": 1 },
+        "role": { "enum": ["passport-reader", "attestation-verifier", "passport-writer", "attestation-issuer", "registry", "overlay"] },
+        "profileId": { "type": "string" },
+        "requires": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/identifier" } },
+        "minimumStatus": { "enum": ["implemented", "tested", "independently-tested"], "default": "tested", "description": "The status every required row must reach for the claim to be made; unassessed always blocks." }
+      }
+    }
+  }
+}
