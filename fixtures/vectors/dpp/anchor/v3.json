@@ -8,7 +8,7 @@
     "BRC-48"
   ],
   "version": "1.0.0",
-  "reference_impl": "@dpp/overlay-topics@0.1.0",
+  "reference_impl": "dpp-overlay-topics@0.1.0",
   "parity_class": "required",
   "vectors": [
     {
