@@ -1,0 +1,609 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:battery@2:payload-public",
+  "title": "Battery passport (battery@2), public payload",
+  "description": "battery@2: the public payload carried on chain in field 10. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "notice": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sample marker a demonstration record carries first; never product data."
+    },
+    "profile": {
+      "const": "battery",
+      "description": "The profile identifier the payload declares."
+    },
+    "profile_version": {
+      "const": 2,
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one."
+    },
+    "object_did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding."
+    },
+    "dataCarrier": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier."
+    },
+    "passportId": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Passport reference",
+      "description": "recommended; none (spec recommendation)"
+    },
+    "serial": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Serial number",
+      "description": "required; Annex XIII (1a); Art. 38(6); Art. 77(3)"
+    },
+    "modelName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "title": "Model name",
+      "description": "required; Annex VI Part A(2)"
+    },
+    "operator": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Responsible operator",
+      "description": "recommended; ESPR Annex III(h)"
+    },
+    "manufacturer": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Brand name",
+      "description": "required; Annex VI Part A(1); Art. 38(7)"
+    },
+    "manufacturerContact": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Brand contact",
+      "description": "required; Annex VI Part A(1)"
+    },
+    "manufacturingPlace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "site": {
+          "type": "string",
+          "minLength": 1
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        }
+      },
+      "required": [
+        "country"
+      ],
+      "title": "Place of manufacture",
+      "description": "required; Annex VI Part A(3)"
+    },
+    "manufacturingDate": {
+      "type": "string",
+      "format": "date",
+      "title": "Made",
+      "description": "required; Annex VI Part A(4)"
+    },
+    "warrantyUntil": {
+      "type": "string",
+      "format": "date",
+      "title": "Guarantee until",
+      "description": "required; Annex XIII (1m)"
+    },
+    "category": {
+      "enum": [
+        "lmt",
+        "ev",
+        "industrial",
+        "stationary"
+      ],
+      "title": "Category",
+      "description": "required; Annex VI Part A(2); Art. 3"
+    },
+    "massKg": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Mass",
+      "description": "required; Annex VI Part A(5)"
+    },
+    "separateCollectionSymbol": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Separate collection symbol",
+      "description": "required; Art. 13(4); Annex VI Part B; Annex XIII (1q)"
+    },
+    "elementSymbols": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Element symbols",
+      "description": "required; Art. 13(5); Art. 74(1e); Annex XIII (1s)"
+    },
+    "carbonFootprintLabel": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Carbon footprint label",
+      "description": "required; Art. 7(2); Annex XIII (1c)"
+    },
+    "extinguishingAgent": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "title": "Usable extinguishing agent",
+      "description": "required; Annex VI Part A(9)"
+    },
+    "labelMeaning": {
+      "type": "string",
+      "minLength": 1,
+      "title": "What the symbols mean",
+      "description": "required; Art. 74(1e); Annex XIII (1s)"
+    },
+    "declarationOfConformity": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Declaration of conformity",
+      "description": "required; Art. 18; Annex XIII (1r)"
+    },
+    "carbonFootprint": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Declared footprint",
+      "description": "required; Art. 7(1); Annex XIII"
+    },
+    "carbonRawMaterials": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Footprint: raw materials",
+      "description": "required; Art. 7(1)"
+    },
+    "carbonProduction": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Footprint: production",
+      "description": "required; Art. 7(1)"
+    },
+    "carbonDistribution": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Footprint: distribution",
+      "description": "required; Art. 7(1)"
+    },
+    "carbonEndOfLife": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Footprint: end of life",
+      "description": "required; Art. 7(1)"
+    },
+    "carbonClass": {
+      "type": "string",
+      "title": "Carbon class",
+      "description": "required; Art. 7(2); Annex XIII (1c)"
+    },
+    "carbonStudyUrl": {
+      "type": "string",
+      "format": "uri",
+      "title": "Footprint study",
+      "description": "required; Art. 7(1)"
+    },
+    "carbonGeneralInfo": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Battery and brand information",
+      "description": "required; Art. 7(1)"
+    },
+    "carbonAbsolute": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Total footprint",
+      "description": "recommended; none (spec recommendation)"
+    },
+    "dueDiligenceReport": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Due diligence report",
+      "description": "required; Annex XIII (1d); Art. 52(3)"
+    },
+    "dueDiligenceAssurances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "minLength": 1
+          },
+          "assurer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "scheme",
+          "assurer"
+        ]
+      },
+      "title": "Third-party assurance",
+      "description": "recommended; Art. 53"
+    },
+    "supplyChainIndices": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Supply chain indices",
+      "description": "recommended; none (spec recommendation)"
+    },
+    "chemistry": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Chemistry",
+      "description": "required; Annex XIII (1b)"
+    },
+    "criticalRawMaterials": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "aluminium",
+          "antimony",
+          "arsenic",
+          "baryte",
+          "beryllium",
+          "bismuth",
+          "boron",
+          "cobalt",
+          "coking-coal",
+          "copper",
+          "feldspar",
+          "fluorspar",
+          "gallium",
+          "germanium",
+          "hafnium",
+          "helium",
+          "heavy-ree",
+          "light-ree",
+          "lithium",
+          "magnesium",
+          "manganese",
+          "natural-graphite",
+          "nickel",
+          "niobium",
+          "pgm",
+          "phosphate-rock",
+          "phosphorus",
+          "scandium",
+          "silicon-metal",
+          "strontium",
+          "tantalum",
+          "titanium-metal",
+          "tungsten",
+          "vanadium"
+        ]
+      },
+      "title": "Critical raw materials",
+      "description": "required; Annex XIII (1b); Annex VI Part A(10)"
+    },
+    "hazardousSubstances": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cas": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\d{2,7}-\\d{2}-\\d$"
+          },
+          "concentration": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "name",
+          "cas"
+        ]
+      },
+      "title": "Hazardous substances",
+      "description": "required; Annex XIII (1b); Annex VI Part A(8)"
+    },
+    "substanceImpact": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "title": "Effects of those substances",
+      "description": "required; Art. 74(1f)"
+    },
+    "recycledShareTotal": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Recycled content",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledNickelPre": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Nickel, pre-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledCobaltPre": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Cobalt, pre-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledLithiumPre": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Lithium, pre-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledLeadPre": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Lead, pre-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledNickelPost": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Nickel, post-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledCobaltPost": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Cobalt, post-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledLithiumPost": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Lithium, post-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "recycledLeadPost": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Lead, post-consumer",
+      "description": "required; Annex XIII (1e); Art. 8(1)"
+    },
+    "renewableShare": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Renewable content",
+      "description": "required; Annex XIII (1f)"
+    },
+    "endUserWastePrevention": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "title": "Making it last",
+      "description": "required; Annex XIII (1s); Art. 74(1a)"
+    },
+    "endUserCollection": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "title": "Where to return it",
+      "description": "required; Annex XIII (1s); Art. 74"
+    },
+    "endOfLifeTreatment": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "title": "End of life",
+      "description": "required; Annex XIII (1s); Art. 74"
+    },
+    "ratedCapacityAh": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Rated capacity",
+      "description": "required; Annex IV Part A(1); Annex VI Part A(6)"
+    },
+    "voltageMin": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Minimum voltage",
+      "description": "required; Annex XIII (1h)"
+    },
+    "voltageMax": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Maximum voltage",
+      "description": "required; Annex XIII (1h)"
+    },
+    "voltageNominal": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Nominal voltage",
+      "description": "required; Annex XIII (1h)"
+    },
+    "powerOriginal": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Original power",
+      "description": "required; Annex XIII (1i)"
+    },
+    "powerMax": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Maximum permitted power",
+      "description": "required; Annex XIII (1i)"
+    },
+    "roundTripInitial": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Round trip efficiency, initial",
+      "description": "required; Annex XIII (1n)"
+    },
+    "roundTripAtHalfLife": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Round trip efficiency at half life",
+      "description": "required; Annex XIII (1n)"
+    },
+    "resistancePack": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Internal resistance, pack",
+      "description": "required; Annex XIII (1o)"
+    },
+    "resistanceCell": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Internal resistance, cell",
+      "description": "required; Annex XIII (1o)"
+    },
+    "resistanceModule": {
+      "type": "number",
+      "minimum": 0,
+      "title": "Internal resistance, module",
+      "description": "recommended; Annex XIII (1o)"
+    },
+    "expectedCycles": {
+      "type": "integer",
+      "minimum": 0,
+      "title": "Expected life in cycles",
+      "description": "required; Annex XIII (1j)"
+    },
+    "cycleLifeTest": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Cycle life test used",
+      "description": "required; Annex XIII (1j)"
+    },
+    "cRate": {
+      "type": "number",
+      "minimum": 0,
+      "title": "C-rate of that test",
+      "description": "required; Annex XIII (1p)"
+    },
+    "exhaustionThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Exhaustion threshold",
+      "description": "required; Annex XIII (1k); applicability category-in"
+    },
+    "idleTempLower": {
+      "type": "integer",
+      "minimum": -60,
+      "maximum": 150,
+      "title": "Idle temperature, lowest",
+      "description": "required; Annex XIII (1l)"
+    },
+    "idleTempUpper": {
+      "type": "integer",
+      "minimum": -60,
+      "maximum": 150,
+      "title": "Idle temperature, highest",
+      "description": "required; Annex XIII (1l)"
+    },
+    "safety": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "title": "Safety",
+      "description": "recommended; app addition; the spec puts safety measures at 6.6.1.5, restricted"
+    }
+  },
+  "required": [
+    "cRate",
+    "carbonClass",
+    "carbonDistribution",
+    "carbonEndOfLife",
+    "carbonFootprint",
+    "carbonProduction",
+    "carbonRawMaterials",
+    "carbonStudyUrl",
+    "category",
+    "chemistry",
+    "criticalRawMaterials",
+    "cycleLifeTest",
+    "dueDiligenceReport",
+    "endOfLifeTreatment",
+    "endUserCollection",
+    "endUserWastePrevention",
+    "expectedCycles",
+    "extinguishingAgent",
+    "hazardousSubstances",
+    "idleTempLower",
+    "idleTempUpper",
+    "labelMeaning",
+    "manufacturer",
+    "manufacturerContact",
+    "manufacturingDate",
+    "manufacturingPlace",
+    "massKg",
+    "modelName",
+    "powerMax",
+    "powerOriginal",
+    "profile",
+    "profile_version",
+    "ratedCapacityAh",
+    "recycledCobaltPost",
+    "recycledCobaltPre",
+    "recycledLeadPost",
+    "recycledLeadPre",
+    "recycledLithiumPost",
+    "recycledLithiumPre",
+    "recycledNickelPost",
+    "recycledNickelPre",
+    "renewableShare",
+    "resistanceCell",
+    "resistancePack",
+    "roundTripAtHalfLife",
+    "roundTripInitial",
+    "separateCollectionSymbol",
+    "serial",
+    "substanceImpact",
+    "voltageMax",
+    "voltageMin",
+    "voltageNominal",
+    "warrantyUntil"
+  ]
+}

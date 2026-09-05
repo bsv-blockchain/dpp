@@ -1,0 +1,1266 @@
+{
+  "manifestVersion": "1",
+  "kind": "industry",
+  "baseline": "native-baseline@1",
+  "roles": [
+    "passport-writer",
+    "attestation-issuer",
+    "registry",
+    "passport-reader"
+  ],
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "accessPolicyRef": "spec/record-model.md#7-the-owner-tier-binding",
+  "accessTiers": [
+    {
+      "id": "public",
+      "description": "Anyone with the identifier.",
+      "storage": "on-chain public payload"
+    },
+    {
+      "id": "owner",
+      "description": "The current holder, travelling with possession rather than with an authorisation.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "legitimate",
+      "description": "Persons with a legitimate interest, the Batteries Regulation Article 77(2) group generalised.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "authority",
+      "description": "Notified bodies, market surveillance and other authorities.",
+      "storage": "off-chain encrypted"
+    }
+  ],
+  "extends": null,
+  "id": "general",
+  "version": 2,
+  "profile": "general@2",
+  "status": "current",
+  "title": "General product passport",
+  "description": "A voluntary profile. An obligation of \"must\" here means the record would not be a passport without the value, not that any law asks for it.",
+  "regulatoryLine": "No rule covers these products, and none is claimed. The record follows the same shape as the regulated profiles so a maker who later falls in scope is already close to it.",
+  "applicability": {
+    "categories": [
+      {
+        "value": "bicycle",
+        "label": "Bicycle"
+      },
+      {
+        "value": "watch",
+        "label": "Watch or clock"
+      },
+      {
+        "value": "instrument",
+        "label": "Musical instrument"
+      },
+      {
+        "value": "furniture",
+        "label": "Furniture"
+      },
+      {
+        "value": "luggage",
+        "label": "Luggage or leather goods"
+      },
+      {
+        "value": "jewellery",
+        "label": "Jewellery"
+      },
+      {
+        "value": "appliance",
+        "label": "Appliance or tool"
+      },
+      {
+        "value": "sportsEquipment",
+        "label": "Sports equipment"
+      },
+      {
+        "value": "artwork",
+        "label": "Artwork or object"
+      }
+    ],
+    "categoryKey": "category",
+    "jurisdictions": [],
+    "statements": [
+      {
+        "text": "No instrument requires a passport for these products, and none is cited as if one did; every field states that in its legal basis.",
+        "status": "needs-review"
+      }
+    ]
+  },
+  "schemaUri": "generated/payload-schema/general@2.public.schema.json",
+  "schemaDigest": "fa82ad26b73ddfb99b7fea20b464b20c6f2e4c58ef750f567c880f83f5fa8a6c",
+  "restrictedSchemaUri": "generated/payload-schema/general@2.restricted.schema.json",
+  "restrictedSchemaDigest": "4960025fb10a0fd274f9527ca1d0184adf22621d950a0a72dad6c339639c6c1f",
+  "contextRefs": [],
+  "stamps": [
+    {
+      "key": "notice",
+      "description": "The sample marker a demonstration record carries first; never product data.",
+      "valueType": "text"
+    },
+    {
+      "key": "profile",
+      "description": "The profile identifier the payload declares.",
+      "valueType": "id",
+      "const": "general"
+    },
+    {
+      "key": "profile_version",
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one.",
+      "valueType": "integer",
+      "const": 2
+    },
+    {
+      "key": "object_did",
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding.",
+      "valueType": "id"
+    },
+    {
+      "key": "dataCarrier",
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier.",
+      "valueType": "id"
+    }
+  ],
+  "fields": [
+    {
+      "key": "name",
+      "pointer": "/name",
+      "label": "Product name",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Nothing requires this. A record with no name is not a passport.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "name",
+      "group": "identification",
+      "note": "What the maker calls it. Nothing else identifies an object to the person holding it."
+    },
+    {
+      "key": "category",
+      "pointer": "/category",
+      "label": "Kind of object",
+      "valueType": "enum",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "bicycle",
+            "label": "Bicycle"
+          },
+          {
+            "value": "watch",
+            "label": "Watch or clock"
+          },
+          {
+            "value": "instrument",
+            "label": "Musical instrument"
+          },
+          {
+            "value": "furniture",
+            "label": "Furniture"
+          },
+          {
+            "value": "luggage",
+            "label": "Luggage or leather goods"
+          },
+          {
+            "value": "jewellery",
+            "label": "Jewellery"
+          },
+          {
+            "value": "appliance",
+            "label": "Appliance or tool"
+          },
+          {
+            "value": "sportsEquipment",
+            "label": "Sports equipment"
+          },
+          {
+            "value": "artwork",
+            "label": "Artwork or object"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Nothing requires this. It decides which of the fields below make sense.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "note": "Open by definition: the whole point of this profile is that the list is not knowable."
+    },
+    {
+      "key": "manufacturer",
+      "pointer": "/manufacturer",
+      "label": "Maker",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Nothing requires this. On a handbuilt object the maker is the claim.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "manufacturer",
+      "group": "identification",
+      "note": "A workshop, a studio or a company; a name and nothing to constrain it to."
+    },
+    {
+      "key": "manufacturerContact",
+      "pointer": "/manufacturerContact",
+      "label": "How to reach the maker",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Nothing requires this. A guarantee nobody can claim against is decoration.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "note": "An email, an address or a page. Constraining it to one shape would exclude the others."
+    },
+    {
+      "key": "modelIdentifier",
+      "pointer": "/modelIdentifier",
+      "label": "Model or reference",
+      "valueType": "id",
+      "constraints": {
+        "maxLength": 64
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is how a maker finds the drawings again.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "serialNumber",
+      "pointer": "/serialNumber",
+      "label": "Serial number",
+      "valueType": "id",
+      "constraints": {
+        "maxLength": 64
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is the commonest way an object proves it is the one.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "manufacturingPlace",
+      "pointer": "/manufacturingPlace",
+      "label": "Where it was made",
+      "valueType": "record",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. Place is half of provenance.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "parts": [
+        {
+          "key": "city",
+          "label": "Town or city",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "a two-letter country code"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "key": "made",
+      "pointer": "/made",
+      "label": "Made",
+      "valueType": "monthYear",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. Age is what a durable object is judged on.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "dimensions",
+      "pointer": "/dimensions",
+      "label": "Dimensions",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 120
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is what a second buyer asks first.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "note": "A frame size, a case diameter, a seat height. No two categories measure alike."
+    },
+    {
+      "key": "weight",
+      "pointer": "/weight",
+      "label": "Weight",
+      "valueType": "decimal",
+      "unit": "g",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 50000,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "edition",
+      "pointer": "/edition",
+      "label": "Edition",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 80
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. On a limited run it is most of the value.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "provenance",
+      "note": "Numbered, limited, one of one, or a named run. Every workshop counts differently."
+    },
+    {
+      "key": "makerName",
+      "pointer": "/makerName",
+      "label": "Made by",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 120
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is the difference between made and manufactured.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "provenance",
+      "note": "The person, where a person can be named. A workshop is a company; a maker is not."
+    },
+    {
+      "key": "authentication",
+      "pointer": "/authentication",
+      "label": "How to tell it is the real one",
+      "valueType": "multi",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "serial",
+            "label": "Serial number"
+          },
+          {
+            "value": "makersMark",
+            "label": "Maker's mark"
+          },
+          {
+            "value": "signature",
+            "label": "Signature"
+          },
+          {
+            "value": "certificate",
+            "label": "Certificate of authenticity"
+          },
+          {
+            "value": "tag",
+            "label": "Tag on the product"
+          },
+          {
+            "value": "hallmark",
+            "label": "Hallmark"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is the question a passport exists to answer.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "provenance",
+      "note": "Open: trades authenticate in ways this list will not have thought of."
+    },
+    {
+      "key": "certificate",
+      "pointer": "/certificate",
+      "label": "Certificate",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. The paper certificate, kept where it cannot be lost.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "provenance"
+    },
+    {
+      "key": "commission",
+      "pointer": "/commission",
+      "label": "Made for",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 200
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. Published only where the first owner wanted it published.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "provenance",
+      "note": "Who it was built for, where the first owner is part of the story."
+    },
+    {
+      "key": "materials",
+      "pointer": "/materials",
+      "label": "Materials",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Nothing requires this. It is the first thing a repairer needs and the last thing a recycler needs.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "making",
+      "parts": [
+        {
+          "key": "part",
+          "label": "Part",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "origin",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "a two-letter country code"
+          }
+        }
+      ]
+    },
+    {
+      "key": "method",
+      "pointer": "/method",
+      "label": "How it was made",
+      "valueType": "enum",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "handmade",
+            "label": "Handmade"
+          },
+          {
+            "value": "handFinished",
+            "label": "Hand-finished"
+          },
+          {
+            "value": "madeToOrder",
+            "label": "Made to order"
+          },
+          {
+            "value": "smallSeries",
+            "label": "Small series"
+          },
+          {
+            "value": "series",
+            "label": "Series production"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is most of what a buyer is paying for.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "making",
+      "note": "Open: crafts describe their own methods, and a closed list would flatten them."
+    },
+    {
+      "key": "finish",
+      "pointer": "/finish",
+      "label": "Finish",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 200
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "making",
+      "note": "Lacquer, patina, plating, oil. The thing a restorer must not strip by mistake."
+    },
+    {
+      "key": "notes",
+      "pointer": "/notes",
+      "label": "Anything else worth recording",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 1200
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. It is what keeps a declared profile usable for objects nobody has thought of.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "making",
+      "note": "The declared fields cannot anticipate every craft, so one field stays open. It is a named field with a place in the record, not a freeform profile."
+    },
+    {
+      "key": "recycledContent",
+      "pointer": "/recycledContent",
+      "label": "Recycled content",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. Declared where a maker can substantiate it.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "making"
+    },
+    {
+      "key": "substanceStatement",
+      "pointer": "/substanceStatement",
+      "label": "Substances to handle with care",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this here, though REACH Art. 33 may require it of the article itself.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "making",
+      "note": "Lead solder, shellac, cadmium in old plating. Prose, because the reader is a person."
+    },
+    {
+      "key": "careNote",
+      "pointer": "/careNote",
+      "label": "How to look after it",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 600
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Nothing requires this. It is the single field most likely to extend the object’s life.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "care",
+      "group": "durability",
+      "note": "The advice a maker gives when they hand it over, which no symbol set carries."
+    },
+    {
+      "key": "serviceInterval",
+      "pointer": "/serviceInterval",
+      "label": "Service interval",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 120
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability",
+      "note": "Every five years, every 5,000 km, after every season. No one unit fits."
+    },
+    {
+      "key": "expectedLifetime",
+      "pointer": "/expectedLifetime",
+      "label": "Expected lifetime",
+      "valueType": "integer",
+      "unit": "years",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 500,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. A claim made here is one the maker can be held to.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "guarantee",
+      "pointer": "/guarantee",
+      "label": "Guarantee",
+      "valueType": "integer",
+      "unit": "months",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 1200,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires the figure, though a stated commercial guarantee binds the maker.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "guaranteeTerms",
+      "pointer": "/guaranteeTerms",
+      "label": "Guarantee terms",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. A term with no conditions attached is not a guarantee.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "repairability",
+      "pointer": "/repairability",
+      "label": "What can be repaired",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair",
+      "note": "Which parts come off, and what needs the workshop. A score would say less."
+    },
+    {
+      "key": "spareParts",
+      "pointer": "/spareParts",
+      "label": "Spare parts",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is what decides whether the object outlives its owner.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair",
+      "note": "Which parts, and for how long. A yes/no would hide the part that matters."
+    },
+    {
+      "key": "repairInstructions",
+      "pointer": "/repairInstructions",
+      "label": "Repair notes",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair"
+    },
+    {
+      "key": "repairServices",
+      "pointer": "/repairServices",
+      "label": "Where to get it repaired",
+      "valueType": "url",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair"
+    },
+    {
+      "key": "serviceNotes",
+      "pointer": "/serviceNotes",
+      "label": "Workshop notes",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 600
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. Restricted because it is useless to a consumer and valuable to a repairer.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair",
+      "note": "Torque figures, thread sizes, the fixture that releases the part. Written for a trade, not a buyer."
+    },
+    {
+      "key": "collection",
+      "pointer": "/collection",
+      "label": "Where to return it",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. A maker who takes it back says so here.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "endOfLife",
+      "note": "A place and a method, in the words the person returning it will use."
+    },
+    {
+      "key": "recyclability",
+      "pointer": "/recyclability",
+      "label": "What can be recovered",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "endOfLife",
+      "note": "What a recycler can actually do with it, which no percentage conveys."
+    },
+    {
+      "key": "separability",
+      "pointer": "/separability",
+      "label": "What comes apart",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "endOfLife",
+      "note": "Which components separate, and how. The sentence a dismantler needs."
+    },
+    {
+      "key": "supplyChain",
+      "pointer": "/supplyChain",
+      "label": "Supply chain",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. Declared by makers who treat their suppliers as a credential.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "supply",
+      "parts": [
+        {
+          "key": "stage",
+          "label": "Stage",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "a two-letter country code"
+          },
+          "required": true
+        },
+        {
+          "key": "facility",
+          "label": "Workshop or supplier",
+          "valueType": "text"
+        }
+      ]
+    },
+    {
+      "key": "certifications",
+      "pointer": "/certifications",
+      "label": "Independent certification",
+      "valueType": "multi",
+      "codeList": {
+        "closed": false,
+        "options": []
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "supply",
+      "note": "Open, and with no list at all: the schemes that matter differ completely between a violin and a bicycle, so nothing here could be exhaustive."
+    },
+    {
+      "key": "provenance",
+      "pointer": "/provenance",
+      "label": "Provenance",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 600
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. It is the owner tier the selective-disclosure demo turns on.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "provenance",
+      "group": "owner",
+      "note": "The story of this particular object, which is prose by definition."
+    },
+    {
+      "key": "purchase",
+      "pointer": "/purchase",
+      "label": "Purchased",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 200
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. It is what makes the record theirs.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "owner",
+      "note": "Where and when, as the owner would write it."
+    },
+    {
+      "key": "personalisation",
+      "pointer": "/personalisation",
+      "label": "Fitting and setup",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. A fitted object is a different object to its owner.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "personalisation",
+      "group": "owner",
+      "note": "Saddle height, string gauge, engraving. Written by whoever set it up."
+    },
+    {
+      "key": "valuation",
+      "pointer": "/valuation",
+      "label": "Valuation reference",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 160
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. Owner tier only, and no figure ever reaches the public payload.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "owner",
+      "note": "An insurer’s reference or an appraisal note. Never a price on the public record."
+    }
+  ],
+  "eventMappings": [
+    {
+      "nativeOperation": "ACTIVATE",
+      "eventType": "Origin",
+      "externalEvent": "manufacture or commissioning",
+      "requires": "manufacturing or commissioning evidence naming the facility, time and responsible party; the native ACTIVATE alone records only that a passport was opened",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "SOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence; a change of token control is not a shipment",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "RESOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "TRANSFER",
+      "eventType": "Transfer",
+      "externalEvent": "change of custody",
+      "requires": "custody evidence beyond the token transfer; the transfer of token control alone establishes neither physical movement nor legal title",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "REPAIRED",
+      "eventType": "Transformation",
+      "externalEvent": "modification (repair)",
+      "requires": "repair evidence naming what was done, by whom and when",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "EDIT",
+      "eventType": "Transformation",
+      "externalEvent": "metadata revision",
+      "requires": "nothing physical: an EDIT is a native metadata operation and maps to a record revision, not a physical transformation",
+      "withoutEvidence": "transformed"
+    },
+    {
+      "nativeOperation": "RECYCLED",
+      "eventType": "Disposition",
+      "externalEvent": "disposition, or a process creating new products or materials",
+      "requires": "recycling evidence distinguishing disposition of this item from a process whose outputs carry new identities",
+      "withoutEvidence": "insufficient-data"
+    }
+  ],
+  "sourceRefs": [
+    {
+      "id": "none",
+      "name": "Nothing. No instrument requires a passport for these products, and none is cited as if one did; every field states that in its legalRef.",
+      "use": "The honest statement of legal basis."
+    },
+    {
+      "id": "shape",
+      "name": "The shape follows the regulated profiles so a maker who later falls in scope is already close to it.",
+      "use": "Design intent."
+    },
+    {
+      "id": "iso3166",
+      "name": "ISO 3166-1 alpha-2",
+      "reference": "ISO 3166-1",
+      "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+      "fields": [
+        "manufacturingPlace.country",
+        "materials.origin",
+        "supplyChain.country"
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "identification",
+      "title": "Identification"
+    },
+    {
+      "id": "provenance",
+      "title": "Provenance and authenticity"
+    },
+    {
+      "id": "making",
+      "title": "What it is made of"
+    },
+    {
+      "id": "durability",
+      "title": "Care and guarantee"
+    },
+    {
+      "id": "repair",
+      "title": "Repair and parts"
+    },
+    {
+      "id": "endOfLife",
+      "title": "End of life"
+    },
+    {
+      "id": "supply",
+      "title": "Supply chain"
+    },
+    {
+      "id": "owner",
+      "title": "Private to you"
+    }
+  ],
+  "identity": {
+    "passportIdentifier": "A GS1 Digital Link URI carrying the GTIN under application identifier 01 and the serial under 21 (spec/record-model.md section 3); the enduring identifier never changes across the chain.",
+    "granularities": [
+      "item",
+      "model"
+    ],
+    "modelIdentifier": "name",
+    "parentRelations": []
+  }
+}

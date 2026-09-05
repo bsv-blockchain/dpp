@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/profiles/schemas/operator-profile.schema.json",
+  "title": "DPP operator profile manifest, version 1",
+  "description": "One named operator configuration (spec/services.md, spec/conformance.md section 4): how an overlay or registry admits, discovers, synchronises and retains evidence and authorises publishers, and the exercises a deployment passes before it may claim the profile.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifestVersion", "id", "version", "profile", "kind", "status", "title", "roles", "admission", "publisherPolicy", "discovery", "synchronisation", "retention", "capabilities", "acceptance", "unsupported"],
+  "properties": {
+    "manifestVersion": { "const": "1" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "profile": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[0-9]+$" },
+    "kind": { "const": "operator" },
+    "status": { "enum": ["proposed", "current", "superseded"] },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "roles": { "type": "array", "minItems": 1, "items": { "enum": ["overlay", "registry"] } },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topics", "nativeRules", "idempotent"],
+      "properties": {
+        "topics": { "type": "array", "items": { "type": "string" } },
+        "nativeRules": { "type": "string" },
+        "idempotent": { "const": true },
+        "ownerConsent": { "enum": ["not-selected", "required", "deployment-choice"] }
+      }
+    },
+    "publisherPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["separateFromOperatorIdentity", "keySet", "historicalAuthorisation", "handover"],
+      "properties": {
+        "separateFromOperatorIdentity": { "const": true },
+        "keySet": { "type": "string", "description": "How the accepted publisher keys are configured, versioned, activated and retired." },
+        "historicalAuthorisation": { "type": "string", "description": "How a state's publisher signature is checked against the key that was authorised at its time, never against the current allowlist alone." },
+        "handover": { "type": "string", "description": "What a publisher handover requires, and what it can never do to the spending key." }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["none", "ship-slap", "static-peers"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "synchronisation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "genesisFirst", "deduplication", "proofUpdates", "checkpoints", "bounds"],
+      "properties": {
+        "mode": { "enum": ["none", "gasp", "static-peer-backfill"] },
+        "genesisFirst": { "const": true },
+        "deduplication": { "type": "string" },
+        "proofUpdates": { "type": "string" },
+        "checkpoints": { "type": "string" },
+        "bounds": { "type": "string" },
+        "reorganisation": { "type": "string" }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spentStates", "anchorLeaves", "bytes"],
+      "properties": {
+        "spentStates": { "type": "string" },
+        "anchorLeaves": { "type": "string" },
+        "bytes": { "type": "string" }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["document", "mustDeclare"],
+      "properties": {
+        "document": { "type": "string", "description": "The capability document schema the deployment serves." },
+        "mustDeclare": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "exercise", "evidence", "independence"],
+        "properties": {
+          "id": { "type": "string" },
+          "exercise": { "type": "string" },
+          "evidence": { "type": "string" },
+          "independence": { "enum": ["local", "independently-administered"], "description": "local: two processes under one administration prove the mechanism. independently-administered: separate organisations, credentials and databases, which no local run can substitute for." }
+        }
+      }
+    },
+    "unsupported": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reason"],
+        "properties": { "id": { "type": "string" }, "reason": { "type": "string" } }
+      }
+    }
+  }
+}

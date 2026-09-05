@@ -1,0 +1,101 @@
+{
+  "id": "textile",
+  "version": 1,
+  "profile": "textile@1",
+  "status": "superseded by textile@2, and still served: passports published under it declare this version and are never rewritten",
+  "regulatoryLine": "Aligned with the JRC draft data requirements and binding EU textile labelling law (Reg. (EU) 1007/2011), ready to absorb the ESPR delegated act when adopted.",
+  "supersededBy": "textile@2",
+  "fields": [
+    {
+      "key": "name",
+      "label": "Product name",
+      "obligation": "must",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "batch",
+      "label": "Batch",
+      "obligation": "must",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "fibres",
+      "label": "Fibre composition",
+      "obligation": "must",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "manufacturer",
+      "label": "Brand name",
+      "obligation": "must",
+      "access": "public",
+      "source": "brand"
+    },
+    {
+      "key": "manufacturerContact",
+      "label": "Brand contact",
+      "obligation": "must",
+      "access": "public",
+      "source": "brand"
+    },
+    {
+      "key": "recycled",
+      "label": "Recycled content",
+      "obligation": "should",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "origin",
+      "label": "Country of origin",
+      "obligation": "should",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "care",
+      "label": "Care",
+      "obligation": "should",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "substances",
+      "label": "Substances of concern",
+      "obligation": "should",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "endOfLife",
+      "label": "End of life",
+      "obligation": "should",
+      "access": "public",
+      "source": "product"
+    },
+    {
+      "key": "provenance",
+      "label": "Provenance",
+      "obligation": "nice",
+      "access": "owner",
+      "source": "product"
+    },
+    {
+      "key": "warranty",
+      "label": "Warranty",
+      "obligation": "nice",
+      "access": "owner",
+      "source": "product"
+    },
+    {
+      "key": "personalisation",
+      "label": "Personalisation",
+      "obligation": "nice",
+      "access": "owner",
+      "source": "product"
+    }
+  ]
+}

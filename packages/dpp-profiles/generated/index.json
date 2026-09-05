@@ -1,0 +1,62 @@
+[
+  {
+    "profile": "battery@2",
+    "status": "current",
+    "manifest": "manifests/battery@2.json",
+    "manifestSha256": "a697852aba912b2f54193aaa0eac3990f49dd69364b555f5485bb30289b32aaf",
+    "publicSchema": "generated/payload-schema/battery@2.public.schema.json",
+    "publicSchemaSha256": "4821b02554856db8bb3be9c8cc77c4e6222314ea623d0aec25898c4aba3a9e77",
+    "restrictedSchema": "generated/payload-schema/battery@2.restricted.schema.json",
+    "restrictedSchemaSha256": "cc47f831e4b71f686c0623d961bb6a868b6e4dd117204983792d7af8dfb91ac8",
+    "consumer": "generated/consumer/battery-v2.json",
+    "consumerSha256": "244ac5038d0c3bfd60e541621d4fae5e9839addb756959253f71e29d89da3dda"
+  },
+  {
+    "profile": "general@1",
+    "status": "superseded",
+    "manifest": "manifests/general@1.json",
+    "manifestSha256": "ef895946e243a9fdb7b0f303e7624038d0eb41e00da0ec8c894538f92effe37e",
+    "publicSchema": "generated/payload-schema/general@1.public.schema.json",
+    "publicSchemaSha256": "57ea63b53d5d52371cbea3f93c1771aace73cf88cd07263fb70480efeb6802a9",
+    "restrictedSchema": "generated/payload-schema/general@1.restricted.schema.json",
+    "restrictedSchemaSha256": "d7411945df53d498ac188dd74c9b77bddac14e1a9cbe9fb6f0cc441acbb2deb2",
+    "consumer": "generated/consumer/general-v1.json",
+    "consumerSha256": "e843346122ed595e75850c2063b81791fd113252e07fd746840b86026253b567"
+  },
+  {
+    "profile": "general@2",
+    "status": "current",
+    "manifest": "manifests/general@2.json",
+    "manifestSha256": "70bbcaa8d145dd8928dcc61fc5e44343784c97d71783695e2b46cf91531b1c7d",
+    "publicSchema": "generated/payload-schema/general@2.public.schema.json",
+    "publicSchemaSha256": "fa82ad26b73ddfb99b7fea20b464b20c6f2e4c58ef750f567c880f83f5fa8a6c",
+    "restrictedSchema": "generated/payload-schema/general@2.restricted.schema.json",
+    "restrictedSchemaSha256": "4960025fb10a0fd274f9527ca1d0184adf22621d950a0a72dad6c339639c6c1f",
+    "consumer": "generated/consumer/general-v2.json",
+    "consumerSha256": "769a433f1d53344c7e7ea36cd2bc79fd449a6ca04ebeb0f3881f029d6ed12696"
+  },
+  {
+    "profile": "textile@1",
+    "status": "superseded",
+    "manifest": "manifests/textile@1.json",
+    "manifestSha256": "6fae1897b61de2269eb9507a2437f93b0f9cfc0a13239b83359a04299a0271df",
+    "publicSchema": "generated/payload-schema/textile@1.public.schema.json",
+    "publicSchemaSha256": "6017bf5df2259def03169dfd9e538e05dd7fdb77095e0fc45eac997426d6bc4d",
+    "restrictedSchema": "generated/payload-schema/textile@1.restricted.schema.json",
+    "restrictedSchemaSha256": "45e2b89c1289aee98fec03800b623c9ea9d4158ac178e9d84164018399812fc2",
+    "consumer": "generated/consumer/textile-v1.json",
+    "consumerSha256": "0f446466586421588093798b0d803a2af031553cc61004033b252da4546af885"
+  },
+  {
+    "profile": "textile@2",
+    "status": "current",
+    "manifest": "manifests/textile@2.json",
+    "manifestSha256": "9aacfd62d465a82a8f4ae2a41c5ee4257c2b4943faf006e7f85a1e3ca2e8630e",
+    "publicSchema": "generated/payload-schema/textile@2.public.schema.json",
+    "publicSchemaSha256": "521e102aff8dd621d98e5f0b5b6cafe075b3c445db05903d207e6f3d32005905",
+    "restrictedSchema": "generated/payload-schema/textile@2.restricted.schema.json",
+    "restrictedSchemaSha256": "07ad1f72900cda3ff4e03adbad956402ab3eb60d0df444d7034abc28aa0e4819",
+    "consumer": "generated/consumer/textile-v2.json",
+    "consumerSha256": "c63cd9a7be8e66d8f75f00432e65c6901156cda71f47d3de542b5093d1d41ebe"
+  }
+]

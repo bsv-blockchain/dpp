@@ -1,0 +1,54 @@
+{
+  "name": "@bsv/dpp-profiles",
+  "version": "0.1.0",
+  "description": "Canonical industry data profiles for DPP passports: immutable manifests, generated payload schemas and consumer documents, and the GS1 identifier helpers a writer needs",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./manifests/*": "./manifests/*",
+    "./schemas/*": "./schemas/*",
+    "./generated/*": "./generated/*",
+    "./frozen.json": "./frozen.json"
+  },
+  "files": [
+    "dist",
+    "manifests",
+    "schemas",
+    "generated",
+    "frozen.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/build.mjs",
+    "generate": "node scripts/build.mjs",
+    "refreeze": "node scripts/build.mjs --refreeze",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@bsv/dpp-core": "0.2.0",
+    "@bsv/sdk": "2.1.4",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsv-blockchain/dpp.git",
+    "directory": "packages/dpp-profiles"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "manifestVersion": "1",
+  "id": "vsc-draft-compat",
+  "version": "0.1.0",
+  "profile": "vsc-draft-compat@0.1.0",
+  "kind": "exchange",
+  "status": "current",
+  "title": "VSC draft compatibility, as implemented by @bsv/vsc",
+  "description": "The catalogue entry for the exchange profile spec/vsc-profile.md defines and packages/vsc implements: a documented subset of the Verifiable Supply Chain Community Group drafts at a pinned revision, with an owned context, genuine Ed25519Signature2020 and bbs-2023 proofs, authenticated status, scoped authority and custody graph validation. Not W3C certification and not full upstream conformance.",
+  "representation": "vsc-seal-json-v1",
+  "mediaType": "application/vc+ld+json",
+  "dataModel": "W3C Verifiable Credentials Data Model 2.0 with the VSC SEAL vocabulary under the owned context urn:bsv:vsc:context:0.1.0",
+  "specification": "spec/vsc-profile.md",
+  "artefacts": [
+    { "id": "vsc-core", "kind": "specification", "uri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "retrieval": "not-retrieved", "notes": "Pinned by revision; the ledger records it as a public source." },
+    { "id": "vsc-requirements", "kind": "specification", "uri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "retrieval": "not-retrieved" },
+    { "id": "vsc-upstream-context", "kind": "jsonld-context", "uri": "https://w3c-cg.github.io/vsc/", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "retrieval": "unavailable", "notes": "The referenced context returns 404 at the pinned revision; the owned context below is served instead and no bytes are invented under a W3C URL." },
+    { "id": "owned-context", "kind": "jsonld-context", "uri": "urn:bsv:vsc:context:0.1.0", "version": "0.1.0", "digest": "3c74b79c50ebb151086c8bbe05222d0177a9d20c6f7b725b4e3a60645274cccc", "retrieval": "owned", "notes": "packages/vsc/artifacts/context-0.1.0.jsonld" },
+    { "id": "owned-seal-schema", "kind": "json-schema", "uri": "urn:bsv:vsc:schema:0.1.0", "version": "0.1.0", "digest": "839123ea6a2ca459c62143a9a38ece281a7b91e719dca057b28baf4d53106d15", "retrieval": "owned", "notes": "packages/vsc/artifacts/seal-0.1.0.schema.json" },
+    { "id": "owned-disclosure-schema", "kind": "json-schema", "uri": "urn:bsv:vsc:schema:0.1.0:disclosure", "version": "0.1.0", "digest": "94afb330c77d28454f98fa4ceb52e4dddc9c6abc8f34877c2917b47dc024c67d", "retrieval": "owned", "notes": "packages/vsc/artifacts/disclosure-0.1.0.schema.json" }
+  ],
+  "proofSuites": [
+    { "id": "Ed25519Signature2020", "support": "issue-and-verify", "keyRule": "An Ed25519 verification method authorised for assertion in the issuer's DID document; never the native BRC wallet or curve.", "consumerMustConfirm": false },
+    { "id": "bbs-2023", "support": "issue-and-verify", "keyRule": "A BLS12-381 multikey authorised for assertion; base and request-bound derived proofs.", "consumerMustConfirm": false, "notes": "The derivation API is a primitive; the caller authorises each optional disclosure pointer, and holder authentication is separate." }
+  ],
+  "anchoring": {
+    "format": "bsv-attestation-anchor-v1",
+    "bytesCommitted": "the exact UTF-8 bytes of the complete issued credential including its Data Integrity proof",
+    "attestationIdRule": "the credential id",
+    "subjectRule": "one signed product identifier; the attestation id is not a product id",
+    "attestationType": "VSC-SEAL"
+  },
+  "nativeEvidenceExtension": {
+    "schema": "contracts/native-evidence-extension.schema.json",
+    "version": "1",
+    "carried": "optional",
+    "notes": "An application token reference is signed within the urn:bsv:dpp:vocab:passport-binding:1 extension the registry already reads; the native evidence extension is the general form."
+  },
+  "mappings": [
+    { "nativeOperation": "ACTIVATE", "externalEvent": "no automatic SEAL; a SEAL needs the actual event vector, status, authority and custody inputs", "requires": "real event evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "SOLD", "externalEvent": "no automatic SEAL", "requires": "real movement or custody evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "RESOLD", "externalEvent": "no automatic SEAL", "requires": "real movement or custody evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "TRANSFER", "externalEvent": "no automatic SEAL; a control transfer may have no lossless physical mapping", "requires": "custody evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "REPAIRED", "externalEvent": "no automatic SEAL", "requires": "repair evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "EDIT", "externalEvent": "no physical event", "requires": "nothing physical", "withoutEvidence": "unsupported" },
+    { "nativeOperation": "RECYCLED", "externalEvent": "no automatic SEAL", "requires": "recycling evidence", "withoutEvidence": "insufficient-data" }
+  ],
+  "storage": {
+    "nativeClaim": "the signed dpp-lifecycle-v1 object, when the event has one",
+    "originalSecured": "the exact credential string as issued",
+    "decoded": "the parsed SEAL",
+    "projection": "a derived disclosure, verified with its own suite and request binding, never compared to the anchored full bytes"
+  },
+  "unsupported": [
+    { "id": "upstream-context-interoperability", "reason": "The upstream context is unavailable at the pinned revision; the owned context is explicit." },
+    { "id": "upstream-conformance-suite", "reason": "No executable suite exists at the pinned revision." },
+    { "id": "presentation-transport", "reason": "The HTTPS presentation protocol and holder authentication are not implemented." },
+    { "id": "physical-object-binding", "reason": "Object DIDs may be carried; tag authentication and physical binding are separate capabilities." }
+  ],
+  "sourceRefs": [
+    { "id": "vsc-core", "name": "VSC Core draft", "reference": "https://w3c-cg.github.io/vsc/specs/vsc-core.html", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "attribution": "Verifiable Supply Chain Community Group", "use": "The SEAL, custody and correction rules selected." },
+    { "id": "vsc-requirements", "name": "VSC Requirements draft", "reference": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "attribution": "Verifiable Supply Chain Community Group", "use": "Takes precedence where Core defers to it." }
+  ]
+}

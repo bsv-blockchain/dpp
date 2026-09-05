@@ -1,0 +1,714 @@
+{
+  "id": "general",
+  "version": 2,
+  "profile": "general@2",
+  "status": "in use",
+  "regulatoryLine": "No rule covers these products, and none is claimed. The record follows the same shape as the regulated profiles so a maker who later falls in scope is already close to it.",
+  "note": "A voluntary profile. An obligation of \"must\" here means the record would not be a passport without the value, not that any law asks for it.",
+  "sources": [
+    "Nothing. No instrument requires a passport for these products, and none is cited as if one did; every field states that in its legalRef.",
+    "The shape follows the regulated profiles so a maker who later falls in scope is already close to it."
+  ],
+  "registers": [
+    {
+      "prefix": "iso3166",
+      "name": "ISO 3166-1 alpha-2",
+      "reference": "ISO 3166-1",
+      "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+      "fields": [
+        "manufacturingPlace.country",
+        "materials.origin",
+        "supplyChain.country"
+      ]
+    }
+  ],
+  "conventions": {
+    "resolved": "Constraints are resolved, not implied: a percent field carries minimum 0 and maximum 100 explicitly, and a country field carries its pattern. No type-specific defaults need reapplying.",
+    "closed": "closed:true means options are exhaustive and a value outside them is invalid. closed:false means the list is what is known in practice and a value outside it is valid, because the source names no exhaustive vocabulary. A field with options and no closed key is closed.",
+    "awaitingAct": "awaitingAct names a delegated or implementing act that will fix this value's permitted form. Until it is adopted no list or pattern is stated, because stating one would publish a guess as a standard. Do not reject values on this field.",
+    "prose": "prose:true marks a value that is meant to be written for a person to read. It is a deliberate per-field decision, not an absent constraint.",
+    "record": "type:record carries fields describing its parts. With repeat:true the value is an array of such records; without, a single one."
+  },
+  "fields": [
+    {
+      "key": "name",
+      "label": "Product name",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "prose": true,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. A record with no name is not a passport.",
+      "supersedes": "name",
+      "note": "What the maker calls it. Nothing else identifies an object to the person holding it."
+    },
+    {
+      "key": "category",
+      "label": "Kind of object",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "enum",
+      "options": [
+        {
+          "value": "bicycle",
+          "label": "Bicycle"
+        },
+        {
+          "value": "watch",
+          "label": "Watch or clock"
+        },
+        {
+          "value": "instrument",
+          "label": "Musical instrument"
+        },
+        {
+          "value": "furniture",
+          "label": "Furniture"
+        },
+        {
+          "value": "luggage",
+          "label": "Luggage or leather goods"
+        },
+        {
+          "value": "jewellery",
+          "label": "Jewellery"
+        },
+        {
+          "value": "appliance",
+          "label": "Appliance or tool"
+        },
+        {
+          "value": "sportsEquipment",
+          "label": "Sports equipment"
+        },
+        {
+          "value": "artwork",
+          "label": "Artwork or object"
+        }
+      ],
+      "closed": false,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. It decides which of the fields below make sense.",
+      "note": "Open by definition: the whole point of this profile is that the list is not knowable."
+    },
+    {
+      "key": "manufacturer",
+      "label": "Maker",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "prose": true,
+      "group": "identification",
+      "source": "brand",
+      "legalRef": "Nothing requires this. On a handbuilt object the maker is the claim.",
+      "supersedes": "manufacturer",
+      "note": "A workshop, a studio or a company; a name and nothing to constrain it to."
+    },
+    {
+      "key": "manufacturerContact",
+      "label": "How to reach the maker",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "prose": true,
+      "group": "identification",
+      "source": "brand",
+      "legalRef": "Nothing requires this. A guarantee nobody can claim against is decoration.",
+      "note": "An email, an address or a page. Constraining it to one shape would exclude the others."
+    },
+    {
+      "key": "modelIdentifier",
+      "label": "Model or reference",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "id",
+      "maxLength": 64,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is how a maker finds the drawings again."
+    },
+    {
+      "key": "serialNumber",
+      "label": "Serial number",
+      "obligation": "should",
+      "access": "public",
+      "level": "item",
+      "type": "id",
+      "maxLength": 64,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the commonest way an object proves it is the one."
+    },
+    {
+      "key": "manufacturingPlace",
+      "label": "Where it was made",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "city",
+          "label": "Town or city",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code",
+          "required": true
+        }
+      ],
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. Place is half of provenance."
+    },
+    {
+      "key": "made",
+      "label": "Made",
+      "obligation": "should",
+      "access": "public",
+      "level": "item",
+      "type": "monthYear",
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. Age is what a durable object is judged on."
+    },
+    {
+      "key": "dimensions",
+      "label": "Dimensions",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 120,
+      "prose": true,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is what a second buyer asks first.",
+      "note": "A frame size, a case diameter, a seat height. No two categories measure alike."
+    },
+    {
+      "key": "weight",
+      "label": "Weight",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "g",
+      "minimum": 1,
+      "maximum": 50000,
+      "step": 1,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this."
+    },
+    {
+      "key": "edition",
+      "label": "Edition",
+      "obligation": "should",
+      "access": "public",
+      "level": "item",
+      "type": "text",
+      "maxLength": 80,
+      "prose": true,
+      "group": "provenance",
+      "source": "form",
+      "legalRef": "Nothing requires this. On a limited run it is most of the value.",
+      "note": "Numbered, limited, one of one, or a named run. Every workshop counts differently."
+    },
+    {
+      "key": "makerName",
+      "label": "Made by",
+      "obligation": "should",
+      "access": "public",
+      "level": "item",
+      "type": "text",
+      "maxLength": 120,
+      "prose": true,
+      "group": "provenance",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the difference between made and manufactured.",
+      "note": "The person, where a person can be named. A workshop is a company; a maker is not."
+    },
+    {
+      "key": "authentication",
+      "label": "How to tell it is the real one",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "multi",
+      "options": [
+        {
+          "value": "serial",
+          "label": "Serial number"
+        },
+        {
+          "value": "makersMark",
+          "label": "Maker's mark"
+        },
+        {
+          "value": "signature",
+          "label": "Signature"
+        },
+        {
+          "value": "certificate",
+          "label": "Certificate of authenticity"
+        },
+        {
+          "value": "tag",
+          "label": "Tag on the product"
+        },
+        {
+          "value": "hallmark",
+          "label": "Hallmark"
+        }
+      ],
+      "closed": false,
+      "group": "provenance",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the question a passport exists to answer.",
+      "note": "Open: trades authenticate in ways this list will not have thought of."
+    },
+    {
+      "key": "certificate",
+      "label": "Certificate",
+      "obligation": "should",
+      "access": "public",
+      "level": "item",
+      "type": "document",
+      "group": "provenance",
+      "source": "form",
+      "legalRef": "Nothing requires this. The paper certificate, kept where it cannot be lost."
+    },
+    {
+      "key": "commission",
+      "label": "Made for",
+      "obligation": "nice",
+      "access": "public",
+      "level": "item",
+      "type": "text",
+      "maxLength": 200,
+      "prose": true,
+      "group": "provenance",
+      "source": "form",
+      "legalRef": "Nothing requires this. Published only where the first owner wanted it published.",
+      "note": "Who it was built for, where the first owner is part of the story."
+    },
+    {
+      "key": "materials",
+      "label": "Materials",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "part",
+          "label": "Part",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "origin",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code"
+        }
+      ],
+      "repeat": true,
+      "group": "making",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the first thing a repairer needs and the last thing a recycler needs."
+    },
+    {
+      "key": "method",
+      "label": "How it was made",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "enum",
+      "options": [
+        {
+          "value": "handmade",
+          "label": "Handmade"
+        },
+        {
+          "value": "handFinished",
+          "label": "Hand-finished"
+        },
+        {
+          "value": "madeToOrder",
+          "label": "Made to order"
+        },
+        {
+          "value": "smallSeries",
+          "label": "Small series"
+        },
+        {
+          "value": "series",
+          "label": "Series production"
+        }
+      ],
+      "closed": false,
+      "group": "making",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is most of what a buyer is paying for.",
+      "note": "Open: crafts describe their own methods, and a closed list would flatten them."
+    },
+    {
+      "key": "finish",
+      "label": "Finish",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 200,
+      "prose": true,
+      "group": "making",
+      "source": "form",
+      "legalRef": "Nothing requires this.",
+      "note": "Lacquer, patina, plating, oil. The thing a restorer must not strip by mistake."
+    },
+    {
+      "key": "notes",
+      "label": "Anything else worth recording",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 1200,
+      "prose": true,
+      "group": "making",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is what keeps a declared profile usable for objects nobody has thought of.",
+      "note": "The declared fields cannot anticipate every craft, so one field stays open. It is a named field with a place in the record, not a freeform profile."
+    },
+    {
+      "key": "recycledContent",
+      "label": "Recycled content",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "group": "making",
+      "source": "form",
+      "legalRef": "Nothing requires this. Declared where a maker can substantiate it."
+    },
+    {
+      "key": "substanceStatement",
+      "label": "Substances to handle with care",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "making",
+      "source": "form",
+      "legalRef": "Nothing requires this here, though REACH Art. 33 may require it of the article itself.",
+      "note": "Lead solder, shellac, cadmium in old plating. Prose, because the reader is a person."
+    },
+    {
+      "key": "careNote",
+      "label": "How to look after it",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 600,
+      "prose": true,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the single field most likely to extend the object’s life.",
+      "supersedes": "care",
+      "note": "The advice a maker gives when they hand it over, which no symbol set carries."
+    },
+    {
+      "key": "serviceInterval",
+      "label": "Service interval",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 120,
+      "prose": true,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Nothing requires this.",
+      "note": "Every five years, every 5,000 km, after every season. No one unit fits."
+    },
+    {
+      "key": "expectedLifetime",
+      "label": "Expected lifetime",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "years",
+      "minimum": 1,
+      "maximum": 500,
+      "step": 1,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Nothing requires this. A claim made here is one the maker can be held to."
+    },
+    {
+      "key": "guarantee",
+      "label": "Guarantee",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "months",
+      "minimum": 0,
+      "maximum": 1200,
+      "step": 1,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Nothing requires the figure, though a stated commercial guarantee binds the maker."
+    },
+    {
+      "key": "guaranteeTerms",
+      "label": "Guarantee terms",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Nothing requires this. A term with no conditions attached is not a guarantee."
+    },
+    {
+      "key": "repairability",
+      "label": "What can be repaired",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "repair",
+      "source": "form",
+      "legalRef": "Nothing requires this.",
+      "note": "Which parts come off, and what needs the workshop. A score would say less."
+    },
+    {
+      "key": "spareParts",
+      "label": "Spare parts",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 300,
+      "prose": true,
+      "group": "repair",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is what decides whether the object outlives its owner.",
+      "note": "Which parts, and for how long. A yes/no would hide the part that matters."
+    },
+    {
+      "key": "repairInstructions",
+      "label": "Repair notes",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "group": "repair",
+      "source": "form",
+      "legalRef": "Nothing requires this."
+    },
+    {
+      "key": "repairServices",
+      "label": "Where to get it repaired",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "url",
+      "group": "repair",
+      "source": "form",
+      "legalRef": "Nothing requires this."
+    },
+    {
+      "key": "serviceNotes",
+      "label": "Workshop notes",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "text",
+      "maxLength": 600,
+      "prose": true,
+      "group": "repair",
+      "source": "form",
+      "legalRef": "Nothing requires this. Restricted because it is useless to a consumer and valuable to a repairer.",
+      "note": "Torque figures, thread sizes, the fixture that releases the part. Written for a trade, not a buyer."
+    },
+    {
+      "key": "collection",
+      "label": "Where to return it",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "endOfLife",
+      "source": "form",
+      "legalRef": "Nothing requires this. A maker who takes it back says so here.",
+      "note": "A place and a method, in the words the person returning it will use."
+    },
+    {
+      "key": "recyclability",
+      "label": "What can be recovered",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "endOfLife",
+      "source": "form",
+      "legalRef": "Nothing requires this.",
+      "note": "What a recycler can actually do with it, which no percentage conveys."
+    },
+    {
+      "key": "separability",
+      "label": "What comes apart",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "text",
+      "maxLength": 300,
+      "prose": true,
+      "group": "endOfLife",
+      "source": "form",
+      "legalRef": "Nothing requires this.",
+      "note": "Which components separate, and how. The sentence a dismantler needs."
+    },
+    {
+      "key": "supplyChain",
+      "label": "Supply chain",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "stage",
+          "label": "Stage",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code",
+          "required": true
+        },
+        {
+          "key": "facility",
+          "label": "Workshop or supplier",
+          "type": "text"
+        }
+      ],
+      "repeat": true,
+      "group": "supply",
+      "source": "form",
+      "legalRef": "Nothing requires this. Declared by makers who treat their suppliers as a credential."
+    },
+    {
+      "key": "certifications",
+      "label": "Independent certification",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "multi",
+      "options": [],
+      "closed": false,
+      "group": "supply",
+      "source": "form",
+      "legalRef": "Nothing requires this.",
+      "note": "Open, and with no list at all: the schemes that matter differ completely between a violin and a bicycle, so nothing here could be exhaustive."
+    },
+    {
+      "key": "provenance",
+      "label": "Provenance",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 600,
+      "prose": true,
+      "group": "owner",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the owner tier the selective-disclosure demo turns on.",
+      "supersedes": "provenance",
+      "note": "The story of this particular object, which is prose by definition."
+    },
+    {
+      "key": "purchase",
+      "label": "Purchased",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 200,
+      "prose": true,
+      "group": "owner",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is what makes the record theirs.",
+      "note": "Where and when, as the owner would write it."
+    },
+    {
+      "key": "personalisation",
+      "label": "Fitting and setup",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 300,
+      "prose": true,
+      "group": "owner",
+      "source": "form",
+      "legalRef": "Nothing requires this. A fitted object is a different object to its owner.",
+      "supersedes": "personalisation",
+      "note": "Saddle height, string gauge, engraving. Written by whoever set it up."
+    },
+    {
+      "key": "valuation",
+      "label": "Valuation reference",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 160,
+      "prose": true,
+      "group": "owner",
+      "source": "form",
+      "legalRef": "Nothing requires this. Owner tier only, and no figure ever reaches the public payload.",
+      "note": "An insurer’s reference or an appraisal note. Never a price on the public record."
+    }
+  ]
+}

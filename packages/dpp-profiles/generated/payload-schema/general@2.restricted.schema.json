@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:general@2:payload-restricted",
+  "title": "General product passport (general@2), restricted payload",
+  "description": "general@2: the restricted tiers held off chain, encrypted, and committed by field 11. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "serviceNotes": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "title": "Workshop notes",
+      "description": "recommended; Nothing requires this. Restricted because it is useless to a consumer and valuable to a repairer."
+    },
+    "separability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "title": "What comes apart",
+      "description": "recommended; Nothing requires this."
+    },
+    "provenance": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "title": "Provenance",
+      "description": "optional; Nothing requires this. It is the owner tier the selective-disclosure demo turns on."
+    },
+    "purchase": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "title": "Purchased",
+      "description": "optional; Nothing requires this. It is what makes the record theirs."
+    },
+    "personalisation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "title": "Fitting and setup",
+      "description": "optional; Nothing requires this. A fitted object is a different object to its owner."
+    },
+    "valuation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "title": "Valuation reference",
+      "description": "optional; Nothing requires this. Owner tier only, and no figure ever reaches the public payload."
+    }
+  }
+}

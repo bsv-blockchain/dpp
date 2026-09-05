@@ -1,0 +1,352 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:general@2:payload-public",
+  "title": "General product passport (general@2), public payload",
+  "description": "general@2: the public payload carried on chain in field 10. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "notice": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sample marker a demonstration record carries first; never product data."
+    },
+    "profile": {
+      "const": "general",
+      "description": "The profile identifier the payload declares."
+    },
+    "profile_version": {
+      "const": 2,
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one."
+    },
+    "object_did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding."
+    },
+    "dataCarrier": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Product name",
+      "description": "required; Nothing requires this. A record with no name is not a passport."
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Kind of object",
+      "description": "required; Nothing requires this. It decides which of the fields below make sense."
+    },
+    "manufacturer": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Maker",
+      "description": "required; Nothing requires this. On a handbuilt object the maker is the claim."
+    },
+    "manufacturerContact": {
+      "type": "string",
+      "minLength": 1,
+      "title": "How to reach the maker",
+      "description": "required; Nothing requires this. A guarantee nobody can claim against is decoration."
+    },
+    "modelIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "title": "Model or reference",
+      "description": "recommended; Nothing requires this. It is how a maker finds the drawings again."
+    },
+    "serialNumber": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "title": "Serial number",
+      "description": "recommended; Nothing requires this. It is the commonest way an object proves it is the one."
+    },
+    "manufacturingPlace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "city": {
+          "type": "string",
+          "minLength": 1
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        }
+      },
+      "required": [
+        "city",
+        "country"
+      ],
+      "title": "Where it was made",
+      "description": "recommended; Nothing requires this. Place is half of provenance."
+    },
+    "made": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+      "title": "Made",
+      "description": "recommended; Nothing requires this. Age is what a durable object is judged on."
+    },
+    "dimensions": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "title": "Dimensions",
+      "description": "recommended; Nothing requires this. It is what a second buyer asks first."
+    },
+    "weight": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 50000,
+      "multipleOf": 1,
+      "title": "Weight",
+      "description": "recommended; Nothing requires this."
+    },
+    "edition": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "title": "Edition",
+      "description": "recommended; Nothing requires this. On a limited run it is most of the value."
+    },
+    "makerName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "title": "Made by",
+      "description": "recommended; Nothing requires this. It is the difference between made and manufactured."
+    },
+    "authentication": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "title": "How to tell it is the real one",
+      "description": "recommended; Nothing requires this. It is the question a passport exists to answer."
+    },
+    "certificate": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Certificate",
+      "description": "recommended; Nothing requires this. The paper certificate, kept where it cannot be lost."
+    },
+    "commission": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "title": "Made for",
+      "description": "optional; Nothing requires this. Published only where the first owner wanted it published."
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "part": {
+            "type": "string",
+            "minLength": 1
+          },
+          "material": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          }
+        },
+        "required": [
+          "part",
+          "material"
+        ]
+      },
+      "title": "Materials",
+      "description": "required; Nothing requires this. It is the first thing a repairer needs and the last thing a recycler needs."
+    },
+    "method": {
+      "type": "string",
+      "minLength": 1,
+      "title": "How it was made",
+      "description": "recommended; Nothing requires this. It is most of what a buyer is paying for."
+    },
+    "finish": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "title": "Finish",
+      "description": "recommended; Nothing requires this."
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200,
+      "title": "Anything else worth recording",
+      "description": "optional; Nothing requires this. It is what keeps a declared profile usable for objects nobody has thought of."
+    },
+    "recycledContent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Recycled content",
+      "description": "optional; Nothing requires this. Declared where a maker can substantiate it."
+    },
+    "substanceStatement": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "Substances to handle with care",
+      "description": "recommended; Nothing requires this here, though REACH Art. 33 may require it of the article itself."
+    },
+    "careNote": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "title": "How to look after it",
+      "description": "required; Nothing requires this. It is the single field most likely to extend the object’s life."
+    },
+    "serviceInterval": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "title": "Service interval",
+      "description": "recommended; Nothing requires this."
+    },
+    "expectedLifetime": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "title": "Expected lifetime",
+      "description": "recommended; Nothing requires this. A claim made here is one the maker can be held to."
+    },
+    "guarantee": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1200,
+      "title": "Guarantee",
+      "description": "recommended; Nothing requires the figure, though a stated commercial guarantee binds the maker."
+    },
+    "guaranteeTerms": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Guarantee terms",
+      "description": "recommended; Nothing requires this. A term with no conditions attached is not a guarantee."
+    },
+    "repairability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "What can be repaired",
+      "description": "recommended; Nothing requires this."
+    },
+    "spareParts": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "title": "Spare parts",
+      "description": "recommended; Nothing requires this. It is what decides whether the object outlives its owner."
+    },
+    "repairInstructions": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Repair notes",
+      "description": "recommended; Nothing requires this."
+    },
+    "repairServices": {
+      "type": "string",
+      "format": "uri",
+      "title": "Where to get it repaired",
+      "description": "recommended; Nothing requires this."
+    },
+    "collection": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "Where to return it",
+      "description": "recommended; Nothing requires this. A maker who takes it back says so here."
+    },
+    "recyclability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "What can be recovered",
+      "description": "recommended; Nothing requires this."
+    },
+    "supplyChain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "facility": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "stage",
+          "country"
+        ]
+      },
+      "title": "Supply chain",
+      "description": "optional; Nothing requires this. Declared by makers who treat their suppliers as a credential."
+    },
+    "certifications": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "title": "Independent certification",
+      "description": "optional; Nothing requires this."
+    }
+  },
+  "required": [
+    "careNote",
+    "category",
+    "manufacturer",
+    "manufacturerContact",
+    "materials",
+    "name",
+    "profile",
+    "profile_version"
+  ]
+}

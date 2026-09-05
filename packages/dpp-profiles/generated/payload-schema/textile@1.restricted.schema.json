@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:textile@1:payload-restricted",
+  "title": "Textile passport, version 1 (superseded) (textile@1), restricted payload",
+  "description": "textile@1: the restricted tiers held off chain, encrypted, and committed by field 11. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "provenance": {
+      "title": "Provenance",
+      "description": "optional; Version 1 recorded no legal basis for this field."
+    },
+    "warranty": {
+      "title": "Warranty",
+      "description": "optional; Version 1 recorded no legal basis for this field."
+    },
+    "personalisation": {
+      "title": "Personalisation",
+      "description": "optional; Version 1 recorded no legal basis for this field."
+    }
+  }
+}

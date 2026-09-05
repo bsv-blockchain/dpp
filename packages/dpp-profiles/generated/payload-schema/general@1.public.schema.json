@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:general@1:payload-public",
+  "title": "General passport, version 1 (superseded) (general@1), public payload",
+  "description": "general@1: the public payload carried on chain in field 10. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "notice": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sample marker a demonstration record carries first; never product data."
+    },
+    "profile": {
+      "const": "general",
+      "description": "The profile identifier the payload declares."
+    },
+    "profile_version": {
+      "const": 1,
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one."
+    },
+    "object_did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding."
+    },
+    "dataCarrier": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier."
+    }
+  },
+  "required": [
+    "profile",
+    "profile_version"
+  ]
+}

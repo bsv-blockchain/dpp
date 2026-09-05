@@ -1,0 +1,1682 @@
+{
+  "manifestVersion": "1",
+  "kind": "industry",
+  "baseline": "native-baseline@1",
+  "roles": [
+    "passport-writer",
+    "attestation-issuer",
+    "registry",
+    "passport-reader"
+  ],
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "accessPolicyRef": "spec/record-model.md#7-the-owner-tier-binding",
+  "accessTiers": [
+    {
+      "id": "public",
+      "description": "Anyone with the identifier.",
+      "storage": "on-chain public payload"
+    },
+    {
+      "id": "owner",
+      "description": "The current holder, travelling with possession rather than with an authorisation.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "legitimate",
+      "description": "Persons with a legitimate interest, the Batteries Regulation Article 77(2) group generalised.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "authority",
+      "description": "Notified bodies, market surveillance and other authorities.",
+      "storage": "off-chain encrypted"
+    }
+  ],
+  "extends": null,
+  "id": "textile",
+  "version": 2,
+  "profile": "textile@2",
+  "status": "current",
+  "title": "Textile passport",
+  "description": "No delegated act exists for textiles, so no field here is presented as settled by one. Every field names the instrument it comes from in legalRef, and any field whose permitted form waits on the act carries awaitingAct instead of an invented list. Posture: aligned with, never compliant.",
+  "regulatoryLine": "Mapped to the ESPR passport requirements (Reg. (EU) 2024/1781 Art. 9 and Annex III) and binding EU textile labelling law (Reg. (EU) 1007/2011), ready to absorb the textile delegated act when adopted.",
+  "applicability": {
+    "categories": [
+      {
+        "value": "apparel",
+        "label": "Clothing"
+      },
+      {
+        "value": "footwear",
+        "label": "Footwear"
+      },
+      {
+        "value": "home",
+        "label": "Home textile"
+      },
+      {
+        "value": "accessory",
+        "label": "Accessory"
+      }
+    ],
+    "categoryKey": "category",
+    "jurisdictions": [
+      "EU"
+    ],
+    "statements": [
+      {
+        "text": "Regulation (EU) 1007/2011 on textile fibre names and labelling is in force and is the source of the fibre composition and animal-origin declarations.",
+        "status": "enacted",
+        "source": "eu-1007-2011"
+      },
+      {
+        "text": "The ESPR delegated act for textiles has not been adopted; fields whose permitted form waits on it say so and state no list or pattern.",
+        "status": "anticipated",
+        "source": "eu-espr"
+      },
+      {
+        "text": "This profile's alignment with the draft data requirements is under review.",
+        "status": "needs-review"
+      }
+    ]
+  },
+  "schemaUri": "generated/payload-schema/textile@2.public.schema.json",
+  "schemaDigest": "521e102aff8dd621d98e5f0b5b6cafe075b3c445db05903d207e6f3d32005905",
+  "restrictedSchemaUri": "generated/payload-schema/textile@2.restricted.schema.json",
+  "restrictedSchemaDigest": "07ad1f72900cda3ff4e03adbad956402ab3eb60d0df444d7034abc28aa0e4819",
+  "contextRefs": [],
+  "stamps": [
+    {
+      "key": "notice",
+      "description": "The sample marker a demonstration record carries first; never product data.",
+      "valueType": "text"
+    },
+    {
+      "key": "profile",
+      "description": "The profile identifier the payload declares.",
+      "valueType": "id",
+      "const": "textile"
+    },
+    {
+      "key": "profile_version",
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one.",
+      "valueType": "integer",
+      "const": 2
+    },
+    {
+      "key": "object_did",
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding.",
+      "valueType": "id"
+    },
+    {
+      "key": "dataCarrier",
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier.",
+      "valueType": "id"
+    }
+  ],
+  "fields": [
+    {
+      "key": "name",
+      "pointer": "/name",
+      "label": "Product name",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true,
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Annex III(a); the passport has to say what the product is",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "name",
+      "group": "identification",
+      "note": "The name the brand sells it under, written by a person for a person."
+    },
+    {
+      "key": "category",
+      "pointer": "/category",
+      "label": "Kind of product",
+      "valueType": "enum",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "apparel",
+            "label": "Clothing"
+          },
+          {
+            "value": "footwear",
+            "label": "Footwear"
+          },
+          {
+            "value": "home",
+            "label": "Home textile"
+          },
+          {
+            "value": "accessory",
+            "label": "Accessory"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Art. 4; the parameters that apply depend on what the product is",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "note": "Open: ESPR scope for textiles is set by the delegated act, so a closed list would be our guess wearing the regulation’s clothes."
+    },
+    {
+      "key": "modelIdentifier",
+      "pointer": "/modelIdentifier",
+      "label": "Model or style reference",
+      "valueType": "id",
+      "constraints": {
+        "maxLength": 64
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Annex III(b): the unique product identifier is model-level",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "batch",
+      "pointer": "/batch",
+      "label": "Batch",
+      "valueType": "id",
+      "constraints": {
+        "maxLength": 64
+      },
+      "cardinality": "one",
+      "granularity": "batch",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Annex III(b); Reg. 1007/2011 traceability of a labelled lot",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "batch",
+      "group": "identification"
+    },
+    {
+      "key": "gtin",
+      "pointer": "/gtin",
+      "label": "Article number (GTIN)",
+      "valueType": "id",
+      "constraints": {
+        "pattern": "^\\d{8}$|^\\d{12,14}$",
+        "patternHint": "8, 12, 13 or 14 digits"
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex III(c): commodity and trade item codes where they exist",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "manufacturer",
+      "pointer": "/manufacturer",
+      "label": "Brand name",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand",
+        "prose": true,
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Annex III(e); Reg. 1007/2011 Art. 15 identifies the responsible operator",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "manufacturer",
+      "group": "identification",
+      "note": "A company name; nothing to constrain it to but itself."
+    },
+    {
+      "key": "manufacturerContact",
+      "pointer": "/manufacturerContact",
+      "label": "Brand contact",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Annex III(e): the operator has to be reachable, not merely named",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "manufacturerContact",
+      "group": "identification",
+      "note": "An email, a postal address or a page. Constraining it to one shape would exclude the others."
+    },
+    {
+      "key": "operatorId",
+      "pointer": "/operatorId",
+      "label": "EU operator identifier",
+      "valueType": "id",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "deferred"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex III(e)",
+      "applicability": {
+        "rule": "always"
+      },
+      "awaitingAct": "the ESPR implementing act on unique operator identifiers",
+      "group": "identification",
+      "note": "Declared and not captured: the identifier scheme does not exist yet, so an empty box would invite a made-up value."
+    },
+    {
+      "key": "manufacturingPlace",
+      "pointer": "/manufacturingPlace",
+      "label": "Where it was made",
+      "valueType": "record",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Reg. 1007/2011 Art. 16 read with the Union Customs Code origin rules",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "origin",
+      "group": "identification",
+      "parts": [
+        {
+          "key": "city",
+          "label": "Town or city",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "a two-letter country code"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "key": "made",
+      "pointer": "/made",
+      "label": "Made",
+      "valueType": "monthYear",
+      "cardinality": "one",
+      "granularity": "batch",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(a): a durability claim is meaningless without a start date",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "colour",
+      "pointer": "/colour",
+      "label": "Colour",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 60
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It identifies the item to the person holding it.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "note": "Brands name colours, and the name is part of the product."
+    },
+    {
+      "key": "size",
+      "pointer": "/size",
+      "label": "Size",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 32
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this. It is what makes a passport match the garment in hand.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification",
+      "note": "Size systems differ by market and by brand; a closed list would be wrong somewhere."
+    },
+    {
+      "key": "weight",
+      "pointer": "/weight",
+      "label": "Weight",
+      "valueType": "decimal",
+      "unit": "g",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 50000,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(l): resource use, and the basis of every per-mass figure below",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "fibres",
+      "pointer": "/fibres",
+      "label": "Fibre composition",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Reg. (EU) 1007/2011 Art. 5, 9 and 14: binding today, by weight, in descending order",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "fibres",
+      "group": "composition",
+      "parts": [
+        {
+          "key": "fibre",
+          "label": "Fibre",
+          "valueType": "enum",
+          "codeList": {
+            "closed": false,
+            "options": [
+              {
+                "value": "wool",
+                "label": "Wool"
+              },
+              {
+                "value": "cotton",
+                "label": "Cotton"
+              },
+              {
+                "value": "linen",
+                "label": "Linen (flax)"
+              },
+              {
+                "value": "silk",
+                "label": "Silk"
+              },
+              {
+                "value": "hemp",
+                "label": "Hemp"
+              },
+              {
+                "value": "cashmere",
+                "label": "Cashmere"
+              },
+              {
+                "value": "mohair",
+                "label": "Mohair"
+              },
+              {
+                "value": "alpaca",
+                "label": "Alpaca"
+              },
+              {
+                "value": "viscose",
+                "label": "Viscose"
+              },
+              {
+                "value": "lyocell",
+                "label": "Lyocell"
+              },
+              {
+                "value": "modal",
+                "label": "Modal"
+              },
+              {
+                "value": "cupro",
+                "label": "Cupro"
+              },
+              {
+                "value": "acetate",
+                "label": "Acetate"
+              },
+              {
+                "value": "polyester",
+                "label": "Polyester"
+              },
+              {
+                "value": "polyamide",
+                "label": "Polyamide (nylon)"
+              },
+              {
+                "value": "elastane",
+                "label": "Elastane"
+              },
+              {
+                "value": "acrylic",
+                "label": "Acrylic"
+              },
+              {
+                "value": "polypropylene",
+                "label": "Polypropylene"
+              }
+            ]
+          },
+          "required": true
+        },
+        {
+          "key": "percent",
+          "label": "Share by weight",
+          "valueType": "percent",
+          "unit": "%",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 100
+          },
+          "required": true
+        },
+        {
+          "key": "source",
+          "label": "Source",
+          "valueType": "enum",
+          "codeList": {
+            "closed": true,
+            "options": [
+              {
+                "value": "preConsumer",
+                "label": "Pre-consumer recycled"
+              },
+              {
+                "value": "postConsumer",
+                "label": "Post-consumer recycled"
+              },
+              {
+                "value": "virgin",
+                "label": "Virgin"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "nonTextileParts",
+      "pointer": "/nonTextileParts",
+      "label": "Non-textile parts of animal origin",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 200
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true,
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Reg. (EU) 1007/2011 Art. 12: mandatory where such parts are present",
+      "applicability": {
+        "rule": "needs-review",
+        "condition": "the product contains non-textile parts of animal origin"
+      },
+      "group": "composition",
+      "note": "The regulation asks for a phrase, not a code: \"contains non-textile parts of animal origin\"."
+    },
+    {
+      "key": "recycledContent",
+      "pointer": "/recycledContent",
+      "label": "Recycled content",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(g): recycled content is a named parameter; the threshold waits on the act",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "recycled",
+      "group": "composition"
+    },
+    {
+      "key": "biobasedContent",
+      "pointer": "/biobasedContent",
+      "label": "Bio-based content",
+      "valueType": "percent",
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. Declared where a brand can substantiate it.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "composition"
+    },
+    {
+      "key": "trims",
+      "pointer": "/trims",
+      "label": "Trims and hardware",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(d) and (n): what separates for repair, and what separates for recycling",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "composition",
+      "parts": [
+        {
+          "key": "part",
+          "label": "Part",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "origin",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "a two-letter country code"
+          }
+        }
+      ]
+    },
+    {
+      "key": "substancesOfConcern",
+      "pointer": "/substancesOfConcern",
+      "label": "Substances of concern",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ESPR Art. 7(5): substances of concern must be traceable through the passport",
+      "applicability": {
+        "rule": "needs-review",
+        "condition": "a substance of concern is present above the threshold the act will set"
+      },
+      "supersedes": "substances",
+      "group": "substances",
+      "parts": [
+        {
+          "key": "substance",
+          "label": "Substance",
+          "valueType": "text",
+          "required": true
+        },
+        {
+          "key": "casNumber",
+          "label": "CAS number",
+          "valueType": "text",
+          "constraints": {
+            "pattern": "^\\d{2,7}-\\d{2}-\\d$",
+            "patternHint": "a CAS registry number, e.g. 7440-48-4"
+          }
+        },
+        {
+          "key": "concentration",
+          "label": "Concentration",
+          "valueType": "percent",
+          "unit": "%",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        {
+          "key": "location",
+          "label": "Where in the product",
+          "valueType": "text"
+        }
+      ]
+    },
+    {
+      "key": "substanceStatement",
+      "pointer": "/substanceStatement",
+      "label": "What that means for you",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Art. 9(2)(b): passport information shall be complete and comprehensible",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "substances",
+      "note": "A list of CAS numbers tells a consumer nothing. This is the sentence that does."
+    },
+    {
+      "key": "chemicalCompliance",
+      "pointer": "/chemicalCompliance",
+      "label": "Chemical compliance evidence",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "REACH Art. 33 read with ESPR Annex III(d): compliance documentation",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "substances"
+    },
+    {
+      "key": "microplasticRelease",
+      "pointer": "/microplasticRelease",
+      "label": "Microplastic release",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "ESPR Annex I(k); the method is not yet fixed",
+      "applicability": {
+        "rule": "always"
+      },
+      "awaitingAct": "the harmonised test method for microfibre release",
+      "group": "substances",
+      "note": "No measurement method is harmonised, so a number here would be incomparable with anyone else’s."
+    },
+    {
+      "key": "care",
+      "pointer": "/care",
+      "label": "Care",
+      "valueType": "multi",
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "wash30",
+            "label": "Machine wash at 30 °C"
+          },
+          {
+            "value": "wash40",
+            "label": "Machine wash at 40 °C"
+          },
+          {
+            "value": "wash60",
+            "label": "Machine wash at 60 °C"
+          },
+          {
+            "value": "handWash",
+            "label": "Hand wash only"
+          },
+          {
+            "value": "noWash",
+            "label": "Do not wash"
+          },
+          {
+            "value": "noBleach",
+            "label": "Do not bleach"
+          },
+          {
+            "value": "tumbleLow",
+            "label": "Tumble dry low"
+          },
+          {
+            "value": "noTumble",
+            "label": "Do not tumble dry"
+          },
+          {
+            "value": "ironLow",
+            "label": "Iron low"
+          },
+          {
+            "value": "ironMedium",
+            "label": "Iron medium"
+          },
+          {
+            "value": "noIron",
+            "label": "Do not iron"
+          },
+          {
+            "value": "dryClean",
+            "label": "Professional dry clean"
+          },
+          {
+            "value": "noDryClean",
+            "label": "Do not dry clean"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "onLabel": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "ISO 3758 care symbols; Dir. (EU) 2024/825 Art. 2 on durability information",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "care",
+      "group": "durability"
+    },
+    {
+      "key": "careNote",
+      "pointer": "/careNote",
+      "label": "How to make it last",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(a): extending lifetime is the parameter; this is how",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability",
+      "note": "The advice a maker would give in person, which no symbol carries."
+    },
+    {
+      "key": "expectedLifetime",
+      "pointer": "/expectedLifetime",
+      "label": "Expected lifetime",
+      "valueType": "integer",
+      "unit": "years",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 100,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(a) and Dir. (EU) 2024/825: a durability claim must be substantiated",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "washCycles",
+      "pointer": "/washCycles",
+      "label": "Tested to",
+      "valueType": "integer",
+      "unit": "wash cycles",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 1000,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(b) reliability, tested per ISO 6330 domestic washing procedures",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "colourFastness",
+      "pointer": "/colourFastness",
+      "label": "Colour fastness",
+      "valueType": "decimal",
+      "unit": "grade",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 5,
+        "step": 0.5
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(b), graded 1-5 per the ISO 105 series",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "dimensionalStability",
+      "pointer": "/dimensionalStability",
+      "label": "Dimensional change after washing",
+      "valueType": "decimal",
+      "unit": "%",
+      "constraints": {
+        "minimum": -20,
+        "maximum": 20,
+        "step": 0.5
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(b), measured per ISO 5077",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "pillingResistance",
+      "pointer": "/pillingResistance",
+      "label": "Pilling resistance",
+      "valueType": "decimal",
+      "unit": "grade",
+      "constraints": {
+        "minimum": 1,
+        "maximum": 5,
+        "step": 0.5
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(b), graded 1-5 per ISO 12945",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "durability"
+    },
+    {
+      "key": "guarantee",
+      "pointer": "/guarantee",
+      "label": "Guarantee",
+      "valueType": "integer",
+      "unit": "months",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 600,
+        "step": 1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Dir. (EU) 2024/825: a commercial guarantee of durability must state its term",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "warranty",
+      "group": "durability"
+    },
+    {
+      "key": "repairability",
+      "pointer": "/repairability",
+      "label": "Repairability",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(c) and Art. 7(2)(b)(iii)",
+      "applicability": {
+        "rule": "always"
+      },
+      "awaitingAct": "the ESPR delegated act on repairability scoring for textiles",
+      "group": "repair",
+      "note": "The scoring class is not fixed, so a letter or a number here would be invented."
+    },
+    {
+      "key": "spareParts",
+      "pointer": "/spareParts",
+      "label": "Spare parts",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(d): availability of spare parts is a named parameter",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair",
+      "note": "Which parts, and for how long. A yes/no would hide the part that matters."
+    },
+    {
+      "key": "repairInstructions",
+      "pointer": "/repairInstructions",
+      "label": "Repair instructions",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(e): access to repair information",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair"
+    },
+    {
+      "key": "repairServices",
+      "pointer": "/repairServices",
+      "label": "Where to get it repaired",
+      "valueType": "url",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Dir. (EU) 2024/825 recital 22: repair should be the visible option",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "repair"
+    },
+    {
+      "key": "carbonFootprint",
+      "pointer": "/carbonFootprint",
+      "label": "Carbon footprint",
+      "valueType": "decimal",
+      "unit": "kg CO₂e",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 10000,
+        "step": 0.01
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(m), computed per the Apparel and Footwear PEFCR",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "footprint"
+    },
+    {
+      "key": "carbonFootprintStudy",
+      "pointer": "/carbonFootprintStudy",
+      "label": "The study behind the figure",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Art. 9(2)(b): a figure a reader cannot check is not information",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "footprint"
+    },
+    {
+      "key": "footprintClass",
+      "pointer": "/footprintClass",
+      "label": "Environmental footprint class",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 80
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "deferred",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Art. 7(4)",
+      "applicability": {
+        "rule": "always"
+      },
+      "awaitingAct": "the ESPR delegated act setting performance classes for textiles",
+      "group": "footprint",
+      "note": "The class format is not set. Naming one would publish our guess as a grade."
+    },
+    {
+      "key": "waterUse",
+      "pointer": "/waterUse",
+      "label": "Water use",
+      "valueType": "decimal",
+      "unit": "m³",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100000,
+        "step": 0.1
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "ESPR Annex I(l): resource use. Declared where a brand has measured it.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "footprint"
+    },
+    {
+      "key": "collection",
+      "pointer": "/collection",
+      "label": "Where to return it",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Waste Framework Directive: separate collection of textiles since 1 January 2025",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "endOfLife",
+      "group": "endOfLife",
+      "note": "A place and a method, in the words the person returning it will use."
+    },
+    {
+      "key": "recyclability",
+      "pointer": "/recyclability",
+      "label": "How it can be recycled",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 400
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(n): expected generation of waste materials",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "endOfLife",
+      "note": "What a recycler can actually do with it, which no percentage conveys."
+    },
+    {
+      "key": "separability",
+      "pointer": "/separability",
+      "label": "What comes apart",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex I(h) and (i): ease of disassembly, for reuse and recycling",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "endOfLife",
+      "note": "Which components separate, and how. The sentence a dismantler needs."
+    },
+    {
+      "key": "eprRegistration",
+      "pointer": "/eprRegistration",
+      "label": "Producer responsibility registration",
+      "valueType": "id",
+      "constraints": {
+        "maxLength": 64
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "brand"
+      },
+      "accessTier": "authority",
+      "obligation": "recommended",
+      "legalBasis": "Waste Framework Directive textile EPR: the producer register number",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "endOfLife"
+    },
+    {
+      "key": "supplyChain",
+      "pointer": "/supplyChain",
+      "label": "Supply chain",
+      "valueType": "record",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "ESPR Annex III(f): unique facility identifiers, at the stages that have them",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "supply",
+      "parts": [
+        {
+          "key": "stage",
+          "label": "Stage",
+          "valueType": "enum",
+          "codeList": {
+            "closed": true,
+            "options": [
+              {
+                "value": "fibre",
+                "label": "Fibre production"
+              },
+              {
+                "value": "spinning",
+                "label": "Spinning"
+              },
+              {
+                "value": "weaving",
+                "label": "Weaving or knitting"
+              },
+              {
+                "value": "dyeing",
+                "label": "Dyeing and finishing"
+              },
+              {
+                "value": "assembly",
+                "label": "Cutting and assembly"
+              }
+            ]
+          },
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "valueType": "country",
+          "constraints": {
+            "pattern": "^[A-Z]{2}$",
+            "patternHint": "a two-letter country code"
+          },
+          "required": true
+        },
+        {
+          "key": "facility",
+          "label": "Facility",
+          "valueType": "text"
+        }
+      ]
+    },
+    {
+      "key": "certifications",
+      "pointer": "/certifications",
+      "label": "Independent certification",
+      "valueType": "multi",
+      "codeList": {
+        "closed": false,
+        "options": [
+          {
+            "value": "gots",
+            "label": "GOTS"
+          },
+          {
+            "value": "oekoTex100",
+            "label": "OEKO-TEX Standard 100"
+          },
+          {
+            "value": "grs",
+            "label": "Global Recycled Standard"
+          },
+          {
+            "value": "rws",
+            "label": "Responsible Wool Standard"
+          },
+          {
+            "value": "euEcolabel",
+            "label": "EU Ecolabel"
+          },
+          {
+            "value": "cradleToCradle",
+            "label": "Cradle to Cradle"
+          },
+          {
+            "value": "bluesign",
+            "label": "bluesign"
+          }
+        ]
+      },
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Dir. (EU) 2024/825 Art. 2: a sustainability label needs a certification behind it",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "supply",
+      "note": "Open: a closed list of schemes would read as an endorsement of exactly those."
+    },
+    {
+      "key": "dueDiligence",
+      "pointer": "/dueDiligence",
+      "label": "Due diligence report",
+      "valueType": "document",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Dir. (EU) 2024/1760 corporate sustainability due diligence, where in scope",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "supply"
+    },
+    {
+      "key": "provenance",
+      "pointer": "/provenance",
+      "label": "Provenance",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 600
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form",
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. It is the owner tier the selective-disclosure demo turns on.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "provenance",
+      "group": "owner",
+      "note": "The story of this particular item, which is prose by definition."
+    },
+    {
+      "key": "purchase",
+      "pointer": "/purchase",
+      "label": "Purchased",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 200
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true,
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. It is what makes the record theirs.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "owner",
+      "note": "Where and when, as the owner would write it."
+    },
+    {
+      "key": "personalisation",
+      "pointer": "/personalisation",
+      "label": "Alterations and fit",
+      "valueType": "text",
+      "constraints": {
+        "maxLength": 300
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true,
+        "prose": true
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. An altered garment is a different garment to its owner.",
+      "applicability": {
+        "rule": "always"
+      },
+      "supersedes": "personalisation",
+      "group": "owner",
+      "note": "Sleeve lengths and hems, in the tailor’s words."
+    },
+    {
+      "key": "warrantyRegistration",
+      "pointer": "/warrantyRegistration",
+      "label": "Guarantee registration",
+      "valueType": "id",
+      "constraints": {
+        "maxLength": 64
+      },
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this. It saves the owner keeping a receipt.",
+      "applicability": {
+        "rule": "always"
+      },
+      "group": "owner"
+    }
+  ],
+  "eventMappings": [
+    {
+      "nativeOperation": "ACTIVATE",
+      "eventType": "Origin",
+      "externalEvent": "manufacture or commissioning",
+      "requires": "manufacturing or commissioning evidence naming the facility, time and responsible party; the native ACTIVATE alone records only that a passport was opened",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "SOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence; a change of token control is not a shipment",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "RESOLD",
+      "eventType": "Transfer",
+      "externalEvent": "physical move or change of custody",
+      "requires": "actual source and destination movement or custody evidence",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "TRANSFER",
+      "eventType": "Transfer",
+      "externalEvent": "change of custody",
+      "requires": "custody evidence beyond the token transfer; the transfer of token control alone establishes neither physical movement nor legal title",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "REPAIRED",
+      "eventType": "Transformation",
+      "externalEvent": "modification (repair)",
+      "requires": "repair evidence naming what was done, by whom and when",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "EDIT",
+      "eventType": "Transformation",
+      "externalEvent": "metadata revision",
+      "requires": "nothing physical: an EDIT is a native metadata operation and maps to a record revision, not a physical transformation",
+      "withoutEvidence": "transformed"
+    },
+    {
+      "nativeOperation": "RECYCLED",
+      "eventType": "Disposition",
+      "externalEvent": "disposition, or a process creating new products or materials",
+      "requires": "recycling evidence distinguishing disposition of this item from a process whose outputs carry new identities",
+      "withoutEvidence": "insufficient-data"
+    }
+  ],
+  "sourceRefs": [
+    {
+      "id": "eu-espr",
+      "name": "Regulation (EU) 2024/1781 (ESPR): Art. 4 and Annex I for the product parameters, Art. 9 and Annex III for passport contents, Art. 7(5) for substances of concern",
+      "use": "The framework regulation the profile is aligned with."
+    },
+    {
+      "id": "eu-1007-2011",
+      "name": "Regulation (EU) 1007/2011 on textile fibre names and labelling: binding today, and the source of the fibre composition and animal-origin declarations",
+      "use": "Binding labelling law."
+    },
+    {
+      "id": "eu-2024-825",
+      "name": "Directive (EU) 2024/825 on empowering consumers: durability and reparability claims",
+      "use": "Durability and reparability claims."
+    },
+    {
+      "id": "eu-2008-98",
+      "name": "Directive 2008/98/EC as amended: textile extended producer responsibility and separate collection",
+      "use": "End of life."
+    },
+    {
+      "id": "iso-test-methods",
+      "name": "ISO 3758, ISO 5077, ISO 6330, ISO 12945 and the ISO 105 series, for the test methods the performance values are measured by",
+      "licensedText": true,
+      "use": "Cited by number; no table reproduced."
+    },
+    {
+      "id": "iso3166",
+      "name": "ISO 3166-1 alpha-2",
+      "reference": "ISO 3166-1",
+      "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+      "fields": [
+        "manufacturingPlace.country",
+        "supplyChain.country",
+        "trims.origin"
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "identification",
+      "title": "Identification"
+    },
+    {
+      "id": "composition",
+      "title": "What it is made of"
+    },
+    {
+      "id": "substances",
+      "title": "Substances of concern"
+    },
+    {
+      "id": "durability",
+      "title": "Durability and care"
+    },
+    {
+      "id": "repair",
+      "title": "Repair and reuse"
+    },
+    {
+      "id": "footprint",
+      "title": "Environmental footprint"
+    },
+    {
+      "id": "endOfLife",
+      "title": "End of life"
+    },
+    {
+      "id": "supply",
+      "title": "Supply chain"
+    },
+    {
+      "id": "owner",
+      "title": "Private to you"
+    }
+  ],
+  "identity": {
+    "passportIdentifier": "A GS1 Digital Link URI carrying the GTIN under application identifier 01 and the serial under 21 (spec/record-model.md section 3); the enduring identifier never changes across the chain.",
+    "granularities": [
+      "batch",
+      "item",
+      "model"
+    ],
+    "modelIdentifier": "name",
+    "batchIdentifier": "batch",
+    "parentRelations": [
+      {
+        "child": "batch",
+        "parent": "model"
+      }
+    ]
+  }
+}

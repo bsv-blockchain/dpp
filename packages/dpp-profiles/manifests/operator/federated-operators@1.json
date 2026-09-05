@@ -1,0 +1,54 @@
+{
+  "manifestVersion": "1",
+  "id": "federated-operators",
+  "version": 1,
+  "profile": "federated-operators@1",
+  "kind": "operator",
+  "status": "proposed",
+  "title": "Independently administered operators serving the same evidence",
+  "description": "Two or more operators with separate administrations, credentials, databases and processes, synchronising both rails under one published admission policy. Two URLs over one database do not qualify, and two processes under one administration prove only the mechanism.",
+  "roles": ["overlay"],
+  "admission": {
+    "topics": ["tm_dpp", "tm_attestation"],
+    "nativeRules": "As single-operator@1; every operator enforces the same native rules and the shared, documented admission policy.",
+    "idempotent": true,
+    "ownerConsent": "deployment-choice"
+  },
+  "publisherPolicy": {
+    "separateFromOperatorIdentity": true,
+    "keySet": "A bounded set of authorised publisher keys with a policy version, activation and retirement times, shared by every operator and preserved as historical authorisation evidence.",
+    "historicalAuthorisation": "A state's publisher signature is checked against the key authorised at its time; a retired key still authenticates the states it signed while active.",
+    "handover": "A signed authorisation record under the selected governance and custody policy, with the old key's evidence preserved; the token spending key, if it must move, moves only through the authorised custody or transfer mechanism, never by editing an allowlist."
+  },
+  "discovery": { "mode": "ship-slap", "notes": "Or a declared static-peer profile when SHIP and SLAP are not used; either way discovery says where evidence may be found and never authorises a publisher or trusts a returned history." },
+  "synchronisation": {
+    "mode": "gasp",
+    "genesisFirst": true,
+    "deduplication": "By transaction and output identity for states, by outpoint and claim digest for anchors; replay creates no duplicate.",
+    "proofUpdates": "Proof updates are ingested and validated separately from replaying held outputs; a refuted proof returns to pending.",
+    "checkpoints": "Persist synchronisation checkpoints with the peer, source and accepted-chain context.",
+    "bounds": "Bound peers, requests and backfill work explicitly.",
+    "reorganisation": "An accepted-chain reorganisation evicts and recovers under the same exact evidence rules on every operator."
+  },
+  "retention": {
+    "spentStates": "Every operator retains spent passport states.",
+    "anchorLeaves": "Every operator retains independent anchor leaves.",
+    "bytes": "Every operator holds the bytes it admitted; stopping one leaves the others able to serve complete, verifiable retained evidence."
+  },
+  "capabilities": {
+    "document": "contracts/capabilities.schema.json",
+    "mustDeclare": ["roles", "topics", "services", "publisherPolicy with policyVersion", "synchronisation.profile federated-operators@1 with discovery, gasp and peers", "limits"]
+  },
+  "acceptance": [
+    { "id": "two-operators-sync", "exercise": "Operator A issues on both rails; operator B, with its own keys, database and process, synchronises both and serves byte-identical evidence.", "evidence": "proposed local exercise with two processes and two databases", "independence": "local" },
+    { "id": "partition-recovery", "exercise": "B recovers after a partition and converges without duplicates.", "evidence": "proposed local exercise", "independence": "local" },
+    { "id": "proof-repair", "exercise": "A refuted proof on one operator is repaired and converges on the other.", "evidence": "proposed local exercise", "independence": "local" },
+    { "id": "operator-loss", "exercise": "A stops; B serves complete retained evidence that a reader verifies from bytes and headers.", "evidence": "proposed local exercise", "independence": "local" },
+    { "id": "publisher-rotation", "exercise": "A publisher key is rotated and handed over under a signed authorisation; historical states still verify under the retired key; an unauthorised third publisher is refused.", "evidence": "proposed local exercise", "independence": "local" },
+    { "id": "malicious-peer", "exercise": "A stale or malicious peer's history is detected by local verification, not by counting peers.", "evidence": "proposed local exercise", "independence": "local" },
+    { "id": "independently-administered", "exercise": "Two organisations, separate credentials and databases, run the exercises above and observe the same results.", "evidence": "not yet run; a local federation is not this", "independence": "independently-administered" }
+  ],
+  "unsupported": [
+    { "id": "claim-before-observation", "reason": "This profile cannot be claimed by a deployment until the independently administered exercise has been observed." }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "VSC-SEAL": "urn:bsv:vsc:term:SEAL",
+    "VscEventAuthorisation": "urn:bsv:vsc:term:EventAuthorisation",
+    "VscCorrectionAuthorisation": "urn:bsv:vsc:term:CorrectionAuthorisation",
+    "issuanceDate": {
+      "@id": "https://www.w3.org/2018/credentials#issuanceDate",
+      "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+    },
+    "sealVersion": "urn:bsv:vsc:term:sealVersion",
+    "sealTimestamp": "urn:bsv:vsc:term:sealTimestamp",
+    "eventVector": "urn:bsv:vsc:term:eventVector",
+    "what": "urn:bsv:vsc:term:what",
+    "when": "urn:bsv:vsc:term:when",
+    "where": "urn:bsv:vsc:term:where",
+    "who": "urn:bsv:vsc:term:who",
+    "how": "urn:bsv:vsc:term:how",
+    "scheme": "urn:bsv:vsc:term:scheme",
+    "value": "urn:bsv:vsc:term:value",
+    "schemeAuthority": "urn:bsv:vsc:term:schemeAuthority",
+    "serialNumber": "urn:bsv:vsc:term:serialNumber",
+    "batchOrLot": "urn:bsv:vsc:term:batchOrLot",
+    "expiryDate": "urn:bsv:vsc:term:expiryDate",
+    "quantity": "urn:bsv:vsc:term:quantity",
+    "quantityUnit": "urn:bsv:vsc:term:quantityUnit",
+    "eventTime": "urn:bsv:vsc:term:eventTime",
+    "recordedAt": "urn:bsv:vsc:term:recordedAt",
+    "timezone": "urn:bsv:vsc:term:timezone",
+    "timePrecision": "urn:bsv:vsc:term:timePrecision",
+    "jurisdiction": "urn:bsv:vsc:term:jurisdiction",
+    "actorRole": "urn:bsv:vsc:term:actorRole",
+    "eventType": "urn:bsv:vsc:term:eventType",
+    "eventTypeVocab": "urn:bsv:vsc:term:eventTypeVocab",
+    "businessStep": "urn:bsv:vsc:term:businessStep",
+    "disposition": "urn:bsv:vsc:term:disposition",
+    "action": "urn:bsv:vsc:term:action",
+    "chainOfCustody": "urn:bsv:vsc:term:chainOfCustody",
+    "sequenceNumber": "urn:bsv:vsc:term:sequenceNumber",
+    "topology": "urn:bsv:vsc:term:topology",
+    "topologyNote": "urn:bsv:vsc:term:topologyNote",
+    "actorDid": {
+      "@id": "urn:bsv:vsc:term:actorDid",
+      "@type": "@id"
+    },
+    "assertionMethod": {
+      "@id": "urn:bsv:vsc:term:assertionMethod",
+      "@type": "@id"
+    },
+    "chainId": {
+      "@id": "urn:bsv:vsc:term:chainId",
+      "@type": "@id"
+    },
+    "correctionOf": {
+      "@id": "urn:bsv:vsc:term:correctionOf",
+      "@type": "@id"
+    },
+    "originalIssuer": {
+      "@id": "urn:bsv:vsc:term:originalIssuer",
+      "@type": "@id"
+    },
+    "productIdentifiers": {
+      "@id": "urn:bsv:vsc:term:productIdentifiers",
+      "@container": "@set"
+    },
+    "parentSeals": {
+      "@id": "urn:bsv:vsc:term:parentSeals",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "childSeals": {
+      "@id": "urn:bsv:vsc:term:childSeals",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "predecessorCredentials": {
+      "@id": "urn:bsv:vsc:term:predecessorCredentials",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "extensions": {
+      "@id": "urn:bsv:vsc:term:extensions",
+      "@type": "@json"
+    },
+    "classifications": {
+      "@id": "urn:bsv:vsc:term:classifications",
+      "@type": "@json"
+    },
+    "readPoint": {
+      "@id": "urn:bsv:vsc:term:readPoint",
+      "@type": "@json"
+    },
+    "businessLocation": {
+      "@id": "urn:bsv:vsc:term:businessLocation",
+      "@type": "@json"
+    },
+    "geoCoordinates": {
+      "@id": "urn:bsv:vsc:term:geoCoordinates",
+      "@type": "@json"
+    },
+    "actorLicense": {
+      "@id": "urn:bsv:vsc:term:actorLicense",
+      "@type": "@json"
+    },
+    "permittedEventTypes": {
+      "@id": "urn:bsv:vsc:term:permittedEventTypes",
+      "@type": "@json"
+    },
+    "permittedProductSchemes": {
+      "@id": "urn:bsv:vsc:term:permittedProductSchemes",
+      "@type": "@json"
+    },
+    "permittedJurisdictions": {
+      "@id": "urn:bsv:vsc:term:permittedJurisdictions",
+      "@type": "@json"
+    },
+    "permittedRecordIds": {
+      "@id": "urn:bsv:vsc:term:permittedRecordIds",
+      "@type": "@json"
+    },
+    "permittedActions": {
+      "@id": "urn:bsv:vsc:term:permittedActions",
+      "@type": "@json"
+    }
+  }
+}
