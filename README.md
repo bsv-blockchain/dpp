@@ -20,7 +20,7 @@ The property the standard protects: a stranger can check a record with the trans
 | `packages/` | The reference implementation | Landed |
 | `GOVERNANCE.md` | How changes are proposed and agreed | Second draft: roles, thresholds, the conditions for 1.0 |
 | `CHANGELOG.md` | What changed, and which pull request changed it | Kept from the first commit |
-| `docs/` | Informative material: the map from the standard to the ecosystem stack, the deployment that follows the standard's defaults, and the follow-ups it leaves in other repositories. Never normative | First draft |
+| `docs/` | Informative material: the map from the standard to the ecosystem stack, the deployment that follows the standard's defaults, the identifier a record carries and how a brand obtains the number inside it, and the follow-ups it leaves in other repositories. Never normative | First draft |
 
 ## The reference implementation
 

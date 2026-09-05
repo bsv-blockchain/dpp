@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### 2026-09-05
+
+- `spec/record-model.md` §3: the trade item number inside a GS1 Digital Link `passport_id` is allocated, never chosen. A writer publishes only under a GS1 Company Prefix licensed to the brand the record describes; a record that describes no real object carries a GTIN under GS1 prefix 952, the prefix GS1 reserves for demonstrations and never licenses; the check digit is correct when written and not a reader's to verify; the host is the writer's choice and should be one that answers for the identifier. `spec/design-rationale.md` records why, with the demonstration's live example number as the evidence. `docs/identifiers.md`, informative, is the account of how a brand obtains a prefix, what each host answers, what GS1 Switzerland charges, and how an implementation holds the number so a licensed GTIN replaces a demonstration one by changing a setting. The fixtures still carry `09506000134352` and move to a 952 number in a follow-up, which regenerates every published file (#34).
+
 ### 2026-08-30
 
 - `spec/writing.md`, the seventh normative document (#33): what a writer owes the record, as outcomes. The verifier's own check before anything is sent; announce before sending; one writer per passport and no state reported as written before the network answers; broadcast through the wallet and through more than one door; a failed announcement never fails a record and is retried rather than rebuilt; the merkle path obtained, kept and offered to the index; the bytes retained for the passport's life. A personal wallet discharges the broadcast, proof and retention duties itself. `services.md` gains the index's duty to serve mined states with their proofs and the ways it can learn of mining (re-announcing is not one, because admission of a held output is a no-op); `record-model.md` §8 makes the header source a configuration and says the proof is obtained once and travels with the record; the rationale and governance (writer conformance is self-reported, one sentence per rule) cross-reference the new document.
