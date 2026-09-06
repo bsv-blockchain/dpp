@@ -36,7 +36,7 @@ import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
 export const OVERLAY_HTTP_CONTRACT_VERSION = '0.6.0-draft'
 
 /** The recommended baseline this node claims (`conformance/baseline-native-1.json`). */
-export const BASELINE_ID = 'native-baseline@1'
+export const BASELINE_ID = 'native-baseline@2'
 
 /**
  * The policy version reported when no policy chain is configured: the keys
