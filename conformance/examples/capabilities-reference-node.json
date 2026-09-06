@@ -3,7 +3,7 @@
   "implementation": {
     "name": "@bsv/dpp-overlay-topics",
     "version": "0.3.0",
-    "baselineId": "native-baseline@1"
+    "baselineId": "native-baseline@2"
   },
   "roles": [
     "overlay"
