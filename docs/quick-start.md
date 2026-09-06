@@ -90,8 +90,9 @@ A reader compares a service's capability document with the baseline and profiles
 npm ci
 npm run build
 npm test                         # every workspace, then the ledger checker
-npm run conformance:check        # the ledger, the baseline, the pinned reports and the capability example
+npm run conformance:check        # the ledger, the baseline, the pinned reports, the capability example and every selection
 npm run conformance:independent  # the Python reader over every fixture and vector
+npm run conformance:qualify -- conformance/selections/dpp-release-2026-09-3.json   # the selected-claim gate of one release; exits 1 while a required claim cannot be made
 node examples/verify-passport.mjs --fixture --report
 REGENERATE_FIXTURES=1 npm test   # rewrite every published fixture from its generator, then hold it identical
 ```

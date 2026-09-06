@@ -1,0 +1,38 @@
+{
+  "selectionVersion": "1",
+  "selectionId": "eu-dpp-system-2026-09",
+  "purpose": "The gate for a release that states conformance to the European DPP system standards cited by Decision (EU) 2026/1736: the whole-system claim and the component claims it rests on are required; the draft security and integrity texts, the battery product qualification, the federated operation and version 1.0 readiness are named and withheld, each for its own reason. This selection is expected to be refused until the six EN texts are read and mapped; the refusal is the point.",
+  "claims": [
+    { "id": "eu-dpp-system-conformance", "kind": "system", "disposition": "required" },
+    { "id": "passport-reader-native-baseline-2", "kind": "component", "disposition": "required" },
+    { "id": "attestation-verifier-native-baseline-1", "kind": "component", "disposition": "required" },
+    { "id": "overlay-single-operator-1", "kind": "component", "disposition": "required" },
+    { "id": "registry-current-intake", "kind": "component", "disposition": "required" },
+    { "id": "authenticated-status-service", "kind": "component", "disposition": "required" },
+    { "id": "gs1-discovery-1", "kind": "component", "disposition": "required" },
+    { "id": "epcis-source-exchange-1", "kind": "component", "disposition": "required" },
+    { "id": "external-credential-ecdsa-1", "kind": "component", "disposition": "required" },
+    { "id": "passport-projection-1", "kind": "component", "disposition": "required" },
+    { "id": "profile-governance", "kind": "component", "disposition": "required" },
+    { "id": "managed-custody-1", "kind": "component", "disposition": "required" },
+    { "id": "eu-dpp-draft-security-integrity-compatibility", "kind": "draft-compatibility", "disposition": "withheld", "rationale": "prEN 18239:2025 and prEN 18246:2025 are drafts not cited by the decision; compatibility with them is tracked under its own profile and is never part of the harmonised system claim." },
+    { "id": "battery-passport-qualification", "kind": "product", "disposition": "withheld", "rationale": "Product-data compliance for a battery category is a separate qualification against Regulation (EU) 2023/1542; the system standards do not establish it." },
+    { "id": "overlay-federated-operators-1", "kind": "operation", "disposition": "withheld", "rationale": "Independently administered replication and recovery are operational evidence a deployment produces; the system claim covers the software and its contracts." },
+    { "id": "version-1-0-readiness", "kind": "governance", "disposition": "withheld", "rationale": "Version 1.0 is a governance declaration with its own conditions; it is not implied by any standards mapping." },
+    { "id": "vsc-draft-compat-0.1.0-full", "kind": "draft-compatibility", "disposition": "withheld", "rationale": "A draft credential profile's full conformance is unrelated to the European system claim and blocked on upstream artefacts." },
+    { "id": "untp-0.7.0-pilot", "kind": "component", "disposition": "withheld", "rationale": "A proposed exchange profile the application pilots; not required by the system claim." }
+  ],
+  "exclusions": [
+    {
+      "claimId": "eu-dpp-system-conformance",
+      "requirementId": "READY-2-eu-registry",
+      "scope": "outside-claim-scope",
+      "rationale": "The Union registry is Commission Implementing Regulation (EU) 2026/1778, not one of the six harmonised standards the decision cites, and its API, hash definition, proof format and status vocabulary are deferred to implementing acts; readiness for it is its own row and its own claim. Should EN 18222 or EN 18216 turn out to require registry interaction, the mapping adds rows citing those standards and this exclusion is reviewed.",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    }
+  ],
+  "reviewedAt": "2026-09-06",
+  "reviewOwner": "dpp maintainers",
+  "notes": "A qualified answer to this selection would mean the ledger's evidence supports the named claims for the named editions and roles. It would not be a conformity certificate, a legal declaration, proof of product compliance, evidence of deployed operation or a third party's test result; each of those is a separate statement with separate evidence."
+}
