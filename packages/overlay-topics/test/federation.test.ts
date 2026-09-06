@@ -106,9 +106,14 @@ async function lookup(operator: Operator, service: string, query: object): Promi
 }
 
 /** Outputs by txid with their bytes, so two indexes are compared byte for byte and not by count. */
+// A synchronised copy arrives from the peer as the atomic BEEF the overlay
+// SDK hands GASP (`@bsv/overlay` 2.3.1), while a state announced to the node
+// directly is stored as the BEEF it was announced in; the bytes therefore
+// differ by the atomic frame and nothing else, so the comparison is over the
+// BEEF re-serialised without it.
 const normalise = (outputs: Array<{ beef: number[]; outputIndex: number }>) =>
   outputs
-    .map((o) => ({ txid: Transaction.fromBEEF(o.beef).id('hex'), outputIndex: o.outputIndex, beef: Utils.toBase64(o.beef) }))
+    .map((o) => ({ txid: Transaction.fromBEEF(o.beef).id('hex'), outputIndex: o.outputIndex, beef: Utils.toBase64(Beef.fromBinary(o.beef).toBinary()) }))
     .sort((x, y) => x.txid.localeCompare(y.txid))
 
 const historyOf = async (operator: Operator, passportId = PASSPORT_ID): Promise<Record<string, any>> =>

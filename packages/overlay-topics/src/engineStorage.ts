@@ -30,17 +30,19 @@ import type { Collection, Db } from 'mongodb'
 
 /**
  * The engine storage plus what a retraction needs. The upstream `Storage`
- * only ever marks an output spent and only ever records a transaction as
- * applied, because the Engine's own eviction prunes a consumed lineage whole
- * and never restores one. Retraction restores one, so it needs the inverses.
- * Both are optional so a foreign `Storage` still fits; without them the
- * retraction route says which repair it could not make.
+ * only ever marks an output spent, because the Engine's own eviction prunes a
+ * consumed lineage whole and never restores one. Retraction restores one, so
+ * it needs the inverse. Since `@bsv/overlay` 2.3.1 the interface itself
+ * declares the optional `deleteAppliedTransaction(txid, topic)`, which the
+ * Engine uses to evict unproven admissions it has stopped waiting for, and
+ * the same member serves retraction here; both implementations below provide
+ * it. `markUTXOAsUnspent` stays this package's own. Both are optional so a
+ * foreign `Storage` still fits; without them the retraction route says which
+ * repair it could not make.
  */
 export interface RetractableStorage extends Storage {
   /** Clear the spent flag on an output whose spender was retracted. */
   markUTXOAsUnspent?: (txid: string, outputIndex: number, topic: string) => Promise<void>
-  /** Forget that a transaction was applied to a topic, so a re-announcement is admitted rather than skipped as a duplicate. */
-  deleteAppliedTransaction?: (tx: AppliedTransaction) => Promise<void>
 }
 
 /** One stored engine output. BEEF lives in the transactions map, keyed by txid. */
@@ -229,8 +231,8 @@ export class InMemoryOverlayStorage implements RetractableStorage {
     return this.applied.has(`${tx.txid}.${tx.topic}`)
   }
 
-  async deleteAppliedTransaction(tx: AppliedTransaction): Promise<void> {
-    this.applied.delete(`${tx.txid}.${tx.topic}`)
+  async deleteAppliedTransaction(txid: string, topic: string): Promise<void> {
+    this.applied.delete(`${txid}.${topic}`)
   }
 
   async updateLastInteraction(host: string, topic: string, since: number): Promise<void> {
@@ -402,8 +404,8 @@ export class MongoOverlayStorage implements RetractableStorage {
     )) > 0
   }
 
-  async deleteAppliedTransaction(tx: AppliedTransaction): Promise<void> {
-    await this.applied.deleteOne({ txid: tx.txid, topic: tx.topic })
+  async deleteAppliedTransaction(txid: string, topic: string): Promise<void> {
+    await this.applied.deleteOne({ txid, topic })
   }
 
   async updateLastInteraction(host: string, topic: string, since: number): Promise<void> {

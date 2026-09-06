@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics -w @bsv/vsc -w @bsv/dpp-profiles",
@@ -19,7 +19,7 @@
   },
   "overrides": {
     "@bsv/overlay": {
-      "@bsv/sdk": "2.1.4"
+      "@bsv/sdk": "2.4.2"
     }
   },
   "devDependencies": {

@@ -20,6 +20,7 @@ import {
   type DppState,
   type DppStateData,
 } from '@bsv/dpp-core'
+import { atomicOver } from './helpers.js'
 import { DppTopicManager } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { InMemoryDppStorage } from '../src/storage.js'
@@ -144,7 +145,7 @@ describe('tm_dpp admission', () => {
     stored.mergeTransaction(g)
     stored.mergeTransaction(tx)
     const result = await tm.identifyAdmissibleOutputs(
-      stored.toBinaryAtomic(tx.id('hex')),
+      atomicOver(stored, tx.id('hex')),
       [0]
     )
     expect(result).toEqual({ outputsToAdmit: [0], coinsToRetain: [0] })

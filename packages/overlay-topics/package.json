@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-overlay-topics",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "DPP overlay topic components: tm_dpp topic manager (dpp-core invariants + admission policy) and ls_dpp lookup service, as a library",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -22,9 +22,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@bsv/dpp-core": "^0.2.0",
-    "@bsv/overlay": "2.0.3",
-    "@bsv/sdk": "2.1.4",
+    "@bsv/dpp-core": "^0.3.0",
+    "@bsv/overlay": "2.3.1",
+    "@bsv/sdk": "2.4.2",
     "mongodb": "^7.0.0"
   },
   "devDependencies": {
