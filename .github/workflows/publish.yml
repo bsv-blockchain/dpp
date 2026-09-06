@@ -1,0 +1,85 @@
+# Publication of one release set, by hand and never on a merge: the packages
+# to npm and the index image to the container registry, only after the same
+# candidates have passed the clean consumer check on the runner. The trigger
+# is workflow_dispatch with the release set named, so the approval of an exact
+# content precedes every run (GOVERNANCE.md), and dry-run is the default.
+name: Publish release set
+on:
+  workflow_dispatch:
+    inputs:
+      releaseSet:
+        description: The release set file under release/, for example dpp-release-2026-09.json
+        required: true
+        default: dpp-release-2026-09.json
+      dryRun:
+        description: "true packs, checks and prints what would be published; false publishes"
+        required: true
+        default: "true"
+      imageTag:
+        description: The image tag to push, for example 0.3.0
+        required: true
+        default: "0.3.0"
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  candidates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: node scripts/release-candidates.mjs release/${{ inputs.releaseSet }}
+      - run: node scripts/consumer-check.mjs
+      - run: node conformance/check.mjs
+      - name: Publish the packages
+        if: ${{ inputs.dryRun == 'false' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          for tarball in release/candidates/*.tgz; do
+            npm publish "$tarball" --access public --provenance
+          done
+      - name: What would be published
+        if: ${{ inputs.dryRun != 'false' }}
+        run: |
+          cat release/candidates.json
+          for tarball in release/candidates/*.tgz; do npm publish "$tarball" --access public --dry-run; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidates
+          path: |
+            release/candidates/
+            release/candidates.json
+
+  image:
+    runs-on: ubuntu-latest
+    needs: candidates
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f packages/overlay-topics/Dockerfile -t ghcr.io/${{ github.repository }}/dpp-overlay:${{ inputs.imageTag }} .
+      - name: Smoke the image
+        run: |
+          set -euo pipefail
+          docker run -d --name smoke -p 18080:8080 \
+            -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
+            -e SUBMIT_TOKEN=smoke -e ARC_CALLBACK_TOKEN=smoke -e CHAIN_TRACKER=scripts-only \
+            ghcr.io/${{ github.repository }}/dpp-overlay:${{ inputs.imageTag }}
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:18080/health && break; sleep 2; done
+          curl -fsS http://127.0.0.1:18080/capabilities | head -c 600
+          docker rm -f smoke
+      - name: Push the image
+        if: ${{ inputs.dryRun == 'false' }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.repository }}/dpp-overlay:${{ inputs.imageTag }}

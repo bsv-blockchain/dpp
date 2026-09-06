@@ -29,7 +29,7 @@ Each new passport state spends the previous state's output. This links the histo
 
 Four packages provide independently testable implementation roles:
 
-- **`@bsv/dpp-core`** (`packages/dpp-core`) is the record model and what both rails share: the 14-field codec, the canonical signature preimages, chain verification including SPV and the optional owner-consent check, the native lifecycle claim, the generic anchor's build and strict decode, the canonical bytes an attestation is signed and hashed over, `verifyPassportEvidence`, the one verification report of `spec/verification.md`, the publisher key policy chain a state is checked against at its own time, and the evidence package manifest that carries a passport's evidence between operators. Reference consumers reuse these functions. Independent implementations reproduce the specified rules and portable fixtures.
+- **`@bsv/dpp-core`** (`packages/dpp-core`) is the record model and what both rails share: the 14-field version 1 codec and the 17-field version 2 codec, the canonical signature preimages of both versions, chain verification including SPV, the optional owner-consent check of version 1 and the control proof, retirement and upgrade rules of version 2, the managed acceptance record a version 2 transfer commits to, the native lifecycle claim, the generic anchor's build and strict decode, the canonical bytes an attestation is signed and hashed over, `verifyPassportEvidence`, the one verification report of `spec/verification.md`, the publisher key policy chain a state is checked against at its own time, and the evidence package manifest that carries a passport's evidence between operators. Reference consumers reuse these functions. Independent implementations reproduce the specified rules and portable fixtures.
 - **`@bsv/dpp-overlay-topics`** (`packages/overlay-topics`) is the index: the `tm_dpp` and `tm_attestation` topic managers and the `ls_dpp` and `ls_attestation` lookup services, with separately named historical UORA interfaces, usable as a library or as an HTTP service speaking exactly the wire `contracts/overlay.yaml` pins, including the capability document, publisher key policy enforcement, history pages over a snapshot, the signed evidence package export and the guarded retraction. Its Dockerfile builds the deployable index node from this repository alone, so an adopter can run their own index:
 
 - **`@bsv/dpp-profiles`** (`packages/dpp-profiles`) is the canonical home of the industry data profiles: `battery@2`, `textile@2` and `general@2` and their superseded predecessors as immutable, digest-frozen manifests, the payload schemas and consumer documents generated from them, the conditional lifecycle mapping with its four-valued result, and the GS1 identifier helpers a writer uses. Applications and registries consume it; nothing edits it. See [the profiles specification](spec/profiles.md).
@@ -58,14 +58,14 @@ The attestation format already carries `profile` and `profile_version`. Dedicate
 
 | Component | Where to start | Current scope |
 |---|---|---|
-| Record, identity and custody rules | [Record model](spec/record-model.md), [identity](spec/identity.md), [custody](spec/custody.md) | Draft rules for passport states, keys, signatures, transitions and verification |
+| Record, identity and custody rules | [Record model](spec/record-model.md), [record model version 2](spec/record-model-v2.md), [identity](spec/identity.md), [custody](spec/custody.md), [managed custody](spec/managed-custody.md) | Draft rules for passport states of both record versions, keys, signatures, transitions, the custodian-attested acceptance and verification |
 | Attestations and anchors | [Attestation rules](spec/rules.md) | Claim shape, canonical bytes and the `uora-anchor-v3` format |
 | Writer and service behaviour | [Writing](spec/writing.md), [services](spec/services.md), [overlay API contract](contracts/overlay.yaml) | Writer duties and index interfaces; the registry query contract is pending agreement between implementing parties |
 | Reference protocol library | [`@bsv/dpp-core`](packages/dpp-core/README.md) | Record codec, signature preimages and checks, chain verification including SPV, owner consent, identity encoding, blob hash binding and attestation canonicalisation |
 | Reference index and anchor components | [`@bsv/dpp-overlay-topics`](packages/overlay-topics/README.md) | Passport and anchor admission, lookup, anchor encoding and validation, storage adapters and a deployable HTTP service |
 | Conformance material | [Fixtures](fixtures/README.md) | Record, chain and anchor fixtures, including refusal cases, in bespoke JSON and cross-language vector formats |
 | Runnable examples | [`examples/`](examples/) | Passport verification, anchor checks and a wallet-based passport writer |
-| Adoption guidance | [Deployment](docs/deployment.md), [stack map](docs/stack.md), [identifiers](docs/identifiers.md) | Infrastructure choices, ecosystem dependencies and product identifier guidance |
+| Adoption guidance | [Deployment](docs/deployment.md), [migration](docs/migration.md), [stack map](docs/stack.md), [identifiers](docs/identifiers.md) | Infrastructure choices, the move to record version 2, ecosystem dependencies and product identifier guidance |
 | Decisions and change process | [Design rationale](spec/design-rationale.md), [governance](GOVERNANCE.md), [changelog](CHANGELOG.md) | Reasons for design choices, contribution rules and version history |
 
 Within the reference implementation, consumers reuse the core package's DPP rules. An independent implementation reproduces those rules from the specification and fixtures without importing the reference DPP logic. General blockchain, cryptography and wallet libraries can still be shared.
@@ -74,7 +74,7 @@ The consuming application, attestation registry, wallet infrastructure and off-c
 
 ## Try the reference implementation
 
-From the repository root, using Node.js 20 or later and npm:
+From the repository root, using Node.js 22 or later and npm:
 
 ```sh
 npm ci
@@ -88,11 +88,13 @@ Run the examples without a wallet or a live blockchain write:
 ```sh
 node examples/verify-passport.mjs --fixture
 node examples/verify-passport.mjs --fixture --owner-consent
+node examples/verify-passport.mjs --fixture --version=2 --report
+node examples/lifecycle-v2.mjs
 node examples/verify-anchor.mjs
 node examples/write-passport.mjs --dry-run
 ```
 
-The passport fixture checks signatures and history links. Its blockchain inclusion remains `pending` because the transactions are synthetic. The owner-consent option also exercises refused transfers. The anchor example checks the pinned anchor and refusal cases. The writer dry run reconstructs a fixture state and rejects an invalid update before anything is sent.
+The passport fixture checks signatures and history links. Its blockchain inclusion remains `pending` because the transactions are synthetic. The owner-consent option also exercises refused transfers. The version 2 form replays the seventeen-field lineage fixture with its control proofs, refusals and the upgrade from version 1, and the lifecycle example builds a version 2 passport through a managed-custody transfer from fresh keys. The anchor example checks the pinned anchor and refusal cases. The writer dry run reconstructs a fixture state and rejects an invalid update before anything is sent.
 
 To verify an existing passport, set `PASSPORT_ID` to its exact identifier and `INDEX_URL` to the index serving it, then run:
 
@@ -120,7 +122,7 @@ Build the container from the repository root:
 docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
 ```
 
-Configure the publisher's public identity key, persistent MongoDB storage, network, submission and proof-ingestion tokens, and any owner-consent policy using the [index configuration reference](packages/overlay-topics/README.md#configuration). The [deployment guide](docs/deployment.md) describes how the wallet, broadcaster, header source and index work together.
+Configure the publisher's public identity key, persistent MongoDB storage, network, submission and proof-ingestion tokens, and any custody policy using the [index configuration reference](packages/overlay-topics/README.md#configuration). [`deploy/`](deploy/README.md) is the supported preset on Docker Compose, with a second-operator overlay; the [deployment guide](docs/deployment.md) describes how the wallet, broadcaster, header source and index work together.
 
 The current host receives announcements and proofs; its wallet clients handle broadcasting. Automatic peer discovery, advertising and peer synchronisation are not enabled in this host. Passport admission uses a configured publisher key, so support for provider migration and changing publisher identities needs explicit interoperability testing. These boundaries are part of the readiness review for independent operation.
 
