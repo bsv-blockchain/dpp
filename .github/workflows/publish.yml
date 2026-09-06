@@ -1,24 +1,26 @@
 # Publication of one release set, by hand and never on a merge: the packages
-# to npm and the index image to the container registry, only after the same
-# candidates have passed the clean consumer check on the runner. The trigger
-# is workflow_dispatch with the release set named, so the approval of an exact
-# content precedes every run (GOVERNANCE.md), and dry-run is the default.
+# to npm and the index image to the container registry. One job, in one
+# order: everything is built, tested, packed, checked, qualified and smoked
+# before the first external write, so a failure anywhere leaves both
+# registries untouched. The trigger is workflow_dispatch; the release set
+# defaults to the current candidate (the newest set under release/ whose
+# status is not superseded), the image tag is read from that set, and dry-run
+# is the default. The approval that precedes a run is of the exact content
+# (GOVERNANCE.md): the set file, the candidate digests, the qualification
+# result and the changelog entry. release/README.md documents recovery from
+# a run that wrote to one registry and not the other.
 name: Publish release set
 on:
   workflow_dispatch:
     inputs:
       releaseSet:
-        description: The release set file under release/, for example dpp-release-2026-09.json
-        required: true
-        default: dpp-release-2026-09.json
+        description: The release set file under release/ to publish; empty selects the current candidate
+        required: false
+        default: ""
       dryRun:
-        description: "true packs, checks and prints what would be published; false publishes"
+        description: "true packs, checks, qualifies, smokes and prints what would be published; false publishes"
         required: true
         default: "true"
-      imageTag:
-        description: The image tag to push, for example 0.3.0
-        required: true
-        default: "0.3.0"
 
 permissions:
   contents: read
@@ -26,7 +28,7 @@ permissions:
   id-token: write
 
 jobs:
-  candidates:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,10 +39,58 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run build
+      - run: npm run typecheck
       - run: npm test
-      - run: node scripts/release-candidates.mjs release/${{ inputs.releaseSet }}
+      - run: node scripts/docs-check.mjs
+      - name: Select the release set
+        id: set
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.releaseSet }}" ]; then SET="release/${{ inputs.releaseSet }}"; else SET="$(node -e 'import("./scripts/lib/candidates.mjs").then(m => console.log(m.currentReleaseSet(process.cwd()).path))')"; fi
+          echo "path=$SET" >> "$GITHUB_OUTPUT"
+          echo "selection=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SET','utf8')).selection)")" >> "$GITHUB_OUTPUT"
+          echo "imageTag=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SET','utf8')).image.tag.split(':').pop())")" >> "$GITHUB_OUTPUT"
+          echo "selected $SET"
+      - run: node scripts/release-candidates.mjs ${{ steps.set.outputs.path }}
       - run: node scripts/consumer-check.mjs
+      - run: node scripts/implementer-bundle.mjs
       - run: node conformance/check.mjs
+      - name: Qualify the selected claims
+        run: node conformance/qualify.mjs ${{ steps.set.outputs.selection }}
+      - name: Build the image the set names
+        run: docker build -f packages/overlay-topics/Dockerfile -t ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }} .
+      - name: Smoke the image
+        run: |
+          set -euo pipefail
+          docker run -d --name smoke -p 18080:8080 \
+            -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
+            -e SUBMIT_TOKEN=smoke -e ARC_CALLBACK_TOKEN=smoke -e CHAIN_TRACKER=scripts-only \
+            ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }}
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:18080/health && break; sleep 2; done
+          curl -fsS http://127.0.0.1:18080/capabilities | head -c 600
+          docker rm -f smoke
+      - name: Bind the record to this run
+        run: |
+          set -euo pipefail
+          node -e "
+            const r = JSON.parse(require('fs').readFileSync('release/candidates.json', 'utf8'));
+            if (r.sourceState !== 'committed') { console.error('the candidates were packed from a dirty tree'); process.exit(1) }
+            if (r.sourceRevision !== '${{ github.sha }}') { console.error('the candidates were packed from ' + r.sourceRevision + ', not ' + '${{ github.sha }}'); process.exit(1) }
+            console.log('candidates of ' + r.releaseSet + ' packed from ' + r.sourceRevision + ' with set digest ' + r.releaseSetSha256 + ', image tag ' + r.imageTag)
+          "
+      - name: What would be published
+        if: ${{ inputs.dryRun != 'false' }}
+        run: |
+          cat release/candidates.json
+          for tarball in release/candidates/*.tgz; do npm publish "$tarball" --access public --dry-run; done
+          echo "image ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }} would be pushed"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidates
+          path: |
+            release/candidates/
+            release/candidates.json
+            release/dpp-implementer-bundle-*.tgz
       - name: Publish the packages
         if: ${{ inputs.dryRun == 'false' }}
         env:
@@ -50,36 +100,8 @@ jobs:
           for tarball in release/candidates/*.tgz; do
             npm publish "$tarball" --access public --provenance
           done
-      - name: What would be published
-        if: ${{ inputs.dryRun != 'false' }}
-        run: |
-          cat release/candidates.json
-          for tarball in release/candidates/*.tgz; do npm publish "$tarball" --access public --dry-run; done
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release-candidates
-          path: |
-            release/candidates/
-            release/candidates.json
-
-  image:
-    runs-on: ubuntu-latest
-    needs: candidates
-    steps:
-      - uses: actions/checkout@v4
-      - run: docker build -f packages/overlay-topics/Dockerfile -t ghcr.io/${{ github.repository }}/dpp-overlay:${{ inputs.imageTag }} .
-      - name: Smoke the image
-        run: |
-          set -euo pipefail
-          docker run -d --name smoke -p 18080:8080 \
-            -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
-            -e SUBMIT_TOKEN=smoke -e ARC_CALLBACK_TOKEN=smoke -e CHAIN_TRACKER=scripts-only \
-            ghcr.io/${{ github.repository }}/dpp-overlay:${{ inputs.imageTag }}
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:18080/health && break; sleep 2; done
-          curl -fsS http://127.0.0.1:18080/capabilities | head -c 600
-          docker rm -f smoke
       - name: Push the image
         if: ${{ inputs.dryRun == 'false' }}
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}/dpp-overlay:${{ inputs.imageTag }}
+          docker push ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }}
