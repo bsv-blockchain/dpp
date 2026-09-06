@@ -2,7 +2,7 @@
   "capabilitiesVersion": "1",
   "implementation": {
     "name": "@bsv/dpp-overlay-topics",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "baselineId": "native-baseline@2"
   },
   "roles": [
@@ -23,7 +23,7 @@
     },
     {
       "id": "overlay-http",
-      "version": "0.6.0-draft"
+      "version": "0.7.0-draft"
     }
   ],
   "profiles": [
@@ -112,6 +112,9 @@
     "historySnapshotTtlSeconds": 600,
     "evidencePackageExport": "unavailable",
     "maxEvidencePackageStates": 500,
+    "evidenceExport": "unavailable",
+    "maxEvidenceExportPartStates": 500,
+    "maxEvidenceExportPartBytes": 16777216,
     "maxSyncPageSize": 500
   },
   "unsupported": [
@@ -137,7 +140,7 @@
     },
     {
       "id": "evidence-package-export",
-      "reason": "EXPORT_SIGNING_KEY is unset, so GET /evidence-package answers 503 export-unavailable; the bounded lookup and GET /history remain."
+      "reason": "EXPORT_SIGNING_KEY is unset, so GET /evidence-package and GET /evidence-export answer 503 export-unavailable; the bounded lookup and GET /history remain."
     },
     {
       "id": "retraction-network-check",

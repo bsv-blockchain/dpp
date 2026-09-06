@@ -24,7 +24,7 @@ import { ATTESTATION_SERVICE } from './lsAttestation.js'
 import { DEFAULT_ATTESTATION_RESULTS, MAX_ATTESTATION_RESULTS } from './attestationStorage.js'
 import { UORA_SERVICE, UORA_TOPIC } from './lsUoraDpp.js'
 import { UORA_ANCHOR_PREFIX, UORA_ANCHOR_PREFIX_V1, UORA_ANCHOR_PREFIX_V2 } from './uoraAnchor.js'
-import { DEFAULT_PAGE_SIZE, MAX_BODY_BYTES, MAX_EXPORT_STATES, MAX_PAGE_SIZE, SNAPSHOT_TTL_MS } from './limits.js'
+import { DEFAULT_PAGE_SIZE, MAX_BODY_BYTES, MAX_EXPORT_PART_BYTES, MAX_EXPORT_STATES, MAX_PAGE_SIZE, SNAPSHOT_TTL_MS } from './limits.js'
 import { newestPolicy, policyKeysFor, type PublisherPolicyConfig } from './policyConfig.js'
 import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
 
@@ -33,7 +33,7 @@ import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
  * test holds the two equal, so the document cannot claim a contract version
  * the file does not carry.
  */
-export const OVERLAY_HTTP_CONTRACT_VERSION = '0.6.0-draft'
+export const OVERLAY_HTTP_CONTRACT_VERSION = '0.7.0-draft'
 
 /** The recommended baseline this node claims (`conformance/baseline-native-1.json`). */
 export const BASELINE_ID = 'native-baseline@2'
@@ -112,6 +112,8 @@ export interface CapabilityInput {
   managedAcceptance?: boolean
   /** Whether EXPORT_SIGNING_KEY is set. */
   exportAvailable: boolean
+  /** Whether EXPORT_TOKEN is set, so GET /evidence-export needs a bearer. */
+  completeExportBearer?: boolean
   /** Whether POST /retract can ask the network about a transaction (false under CHAIN_TRACKER=scripts-only). */
   networkOracleConfigured: boolean
   /** The instant the active keys are read at. */
@@ -191,7 +193,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   if (!input.exportAvailable) {
     unsupported.push({
       id: 'evidence-package-export',
-      reason: 'EXPORT_SIGNING_KEY is unset, so GET /evidence-package answers 503 export-unavailable; the bounded lookup and GET /history remain.',
+      reason: 'EXPORT_SIGNING_KEY is unset, so GET /evidence-package and GET /evidence-export answer 503 export-unavailable; the bounded lookup and GET /history remain.',
     })
   }
   if (!input.networkOracleConfigured) {
@@ -272,6 +274,11 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       historySnapshotTtlSeconds: SNAPSHOT_TTL_MS / 1000,
       evidencePackageExport: input.exportAvailable ? 'available' : 'unavailable',
       maxEvidencePackageStates: MAX_EXPORT_STATES,
+      // The complete export: open like GET /history, or behind the bearer
+      // EXPORT_TOKEN names; each part bounded by both numbers below.
+      evidenceExport: input.exportAvailable ? (input.completeExportBearer === true ? 'bearer' : 'open') : 'unavailable',
+      maxEvidenceExportPartStates: MAX_EXPORT_STATES,
+      maxEvidenceExportPartBytes: MAX_EXPORT_PART_BYTES,
       maxSyncPageSize: MAX_PAGE_SIZE,
       ...(synchronising ? { syncIntervalMs: input.syncIntervalMs ?? DEFAULT_SYNC_INTERVAL_MS } : {}),
     },

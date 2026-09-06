@@ -31,7 +31,7 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {

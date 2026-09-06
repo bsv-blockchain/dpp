@@ -50,6 +50,7 @@ services:
       PUBLISHER_POLICY_FILE: ${PUBLISHER_POLICY_FILE:-}
       OPERATOR_IDENTITY_KEYS: ${OPERATOR_IDENTITY_KEYS:-}
       EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
+      EXPORT_TOKEN: ${EXPORT_TOKEN:-}
       # The first operator's base URL as this container reaches it; on one
       # host with the default compose network names, http://host.docker.internal:8080.
       SYNC_PEERS: ${SYNC_PEERS:?set SYNC_PEERS to the first operator's base URL}

@@ -79,12 +79,30 @@ export interface Snapshot {
   takenAt: number
 }
 
+/**
+ * What a cursor resumes: a page of the history or a part of the complete
+ * export (`spec/portable-evidence.md` section 2). The kind is inside the
+ * signed payload, so a history cursor presented to the export, or the
+ * reverse, is refused by name rather than read as a position.
+ */
+export type CursorKind = 'history' | 'export'
+
 interface CursorPayload {
   v: 1
+  kind: CursorKind
   snapshot: Snapshot
   query: { passportId: string } | { uid: string }
-  /** The sequence of the last item served; the next page starts after it. */
+  /** The sequence of the last item served; the next page or part starts after it. */
   after: number
+  /** The index of the next part, for an export cursor. */
+  part?: number
+}
+
+/** Where an export resumes: the snapshot, the position and the index of the part to build. */
+export interface ExportResumption {
+  snapshot: Snapshot
+  after: number
+  part: number
 }
 
 export interface HistoryRequest {
@@ -118,6 +136,11 @@ export class HistoryPaginator {
     return { id: `${sequence}.${takenAt.toString(36)}`, sequence, takenAt }
   }
 
+  /** At most `limit` records of the selector within the snapshot after `after`, in sequence order: one part's candidates. */
+  async readFrom(selector: RecordSelector, snapshot: Snapshot, after: number, limit: number): Promise<DppRecord[]> {
+    return await this.records.findPage(selector, { after, upTo: snapshot.sequence }, limit)
+  }
+
   /** Every record of the selector within the snapshot, in sequence order, read page by page. */
   async readAll(selector: RecordSelector, snapshot: Snapshot): Promise<DppRecord[]> {
     const all: DppRecord[] = []
@@ -145,20 +168,7 @@ export class HistoryPaginator {
       snapshot = await this.takeSnapshot()
       after = 0
     } else {
-      const payload = this.openCursor(request.cursor)
-      if (!sameQuery(payload.query, query)) {
-        throw new HistoryError(400, 'cursor-invalid', 'the cursor was issued for a different query')
-      }
-      if (this.now().getTime() - payload.snapshot.takenAt > SNAPSHOT_TTL_MS) {
-        throw new HistoryError(
-          410,
-          'snapshot-expired',
-          `snapshot ${payload.snapshot.id} is older than ${SNAPSHOT_TTL_MS / 1000} seconds`,
-          'restart the export without a cursor to read a fresh snapshot from its first page'
-        )
-      }
-      snapshot = payload.snapshot
-      after = payload.after
+      ;({ snapshot, after } = this.resume(request.cursor, query, 'history'))
     }
 
     // One row beyond the page tells whether the snapshot continues, without a
@@ -169,7 +179,7 @@ export class HistoryPaginator {
     const last = items[items.length - 1]
     const to = more && last != null ? last.sequence : snapshot.sequence
     const nextCursor = more && last != null
-      ? this.mintCursor({ v: 1, snapshot, query, after: last.sequence })
+      ? this.mintCursor({ v: 1, kind: 'history', snapshot, query, after: last.sequence })
       : null
     return {
       pageVersion: PAGE_VERSION,
@@ -187,6 +197,48 @@ export class HistoryPaginator {
       completeForSnapshot: !more,
       pageSize: limit,
     }
+  }
+
+  /**
+   * The cursor that resumes the complete export after `after`, at part
+   * `part`, over the snapshot the first part pinned: the same tag, TTL and
+   * query binding as a history cursor, under the export kind.
+   */
+  mintExportCursor(snapshot: Snapshot, query: { passportId: string }, after: number, part: number): string {
+    return this.mintCursor({ v: 1, kind: 'export', snapshot, query, after, part })
+  }
+
+  /** Where an export cursor resumes, or the named refusal a history cursor or a stale one earns. */
+  openExportCursor(cursor: string, query: { passportId: string }): ExportResumption {
+    const { snapshot, after, part } = this.resume(cursor, query, 'export')
+    if (!Number.isSafeInteger(part) || (part as number) < 2) {
+      throw new HistoryError(400, 'cursor-invalid', 'the cursor is not one this node issued: no part index')
+    }
+    return { snapshot, after, part: part as number }
+  }
+
+  /**
+   * Open a cursor for the given query and kind, refusing by name a cursor
+   * of the other kind, one issued for another query, and one whose snapshot
+   * is older than the TTL.
+   */
+  private resume(cursor: string, query: CursorPayload['query'], kind: CursorKind): { snapshot: Snapshot; after: number; part?: number } {
+    const payload = this.openCursor(cursor)
+    if (payload.kind !== kind) {
+      throw new HistoryError(400, 'cursor-invalid', `the cursor was issued for the ${payload.kind}, not the ${kind}`)
+    }
+    if (!sameQuery(payload.query, query)) {
+      throw new HistoryError(400, 'cursor-invalid', 'the cursor was issued for a different query')
+    }
+    if (this.now().getTime() - payload.snapshot.takenAt > SNAPSHOT_TTL_MS) {
+      throw new HistoryError(
+        410,
+        'snapshot-expired',
+        `snapshot ${payload.snapshot.id} is older than ${SNAPSHOT_TTL_MS / 1000} seconds`,
+        `restart the ${kind === 'history' ? 'export' : 'complete export'} without a cursor to read a fresh snapshot from its first ${kind === 'history' ? 'page' : 'part'}`
+      )
+    }
+    return { snapshot: payload.snapshot, after: payload.after, part: payload.part }
   }
 
   private mintCursor(payload: CursorPayload): string {
@@ -215,6 +267,7 @@ export class HistoryPaginator {
     }
     if (
       payload?.v !== 1 ||
+      (payload.kind !== 'history' && payload.kind !== 'export') ||
       typeof payload.snapshot?.id !== 'string' ||
       !Number.isSafeInteger(payload.snapshot.sequence) ||
       !Number.isSafeInteger(payload.snapshot.takenAt) ||

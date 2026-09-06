@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/evidence-export.schema.json",
+  "title": "DPP evidence export part, version 1",
+  "description": "One part of a complete export (spec/portable-evidence.md section 2): a dpp-evidence-package@1 over the states of one passport whose source sequence lies in the part's range within one snapshot, beside the coverage record a reader needs to join the parts. The coverage record (exportVersion, passportId, snapshot, part, final, manifestSha256 and the signature's suite and signer) is signed by the exporter with the same key as the package manifest and bound to that manifest by its digest, so no unsigned field establishes coverage or finality; the cursor and the package bytes stay outside it. The parts of one snapshot tile its sequence range from 1 to the snapshot's sequence with no gap and no overlap; a part is complete for its own range and never for the snapshot, unless it is the only part. The package inside is inspected exactly as any other; the record is what says how the packages compose, and a signature over it attributes the assertion to the exporter without proving the exporter held everything that exists elsewhere.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exportVersion", "passportId", "snapshot", "part", "nextCursor", "final", "manifestSha256", "signature", "package"],
+  "properties": {
+    "exportVersion": { "const": "1" },
+    "passportId": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "id", "sequence"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1, "description": "The service the snapshot was taken of." },
+        "id": { "type": "string", "minLength": 1, "description": "The snapshot identifier every part of this export and its package manifest name." },
+        "sequence": { "type": "integer", "minimum": 0, "description": "The source's highest sequence within the snapshot; the last part's range ends here." }
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "sequenceRange", "states"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 1, "description": "1 for the first part; consecutive." },
+        "sequenceRange": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from", "to"],
+          "properties": {
+            "from": { "type": "integer", "minimum": 0 },
+            "to": { "type": "integer", "minimum": 0 }
+          },
+          "description": "The sequences this part covers: from the position after the previous part to the last state here, or to the snapshot's sequence on the final part. Consecutive parts tile the snapshot."
+        },
+        "states": { "type": "integer", "minimum": 0, "description": "How many states of the passport lie in the range; each is in the package or declared absent by outpoint." }
+      }
+    },
+    "nextCursor": { "type": ["string", "null"], "description": "Opaque, bound to the passport and the snapshot; null on the final part. Outside the signed coverage record: a resumption token, never a statement about coverage." },
+    "final": { "type": "boolean", "description": "Signed. True exactly when the part ends at the snapshot's sequence; nextCursor is then null." },
+    "manifestSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Signed. SHA-256 of the canonical JSON of package.manifest exactly as signed, signature value included, binding the record to that package and no other." },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["suite", "signer", "value"],
+      "properties": {
+        "suite": { "const": "bsv-ecdsa-der", "description": "bsv-ecdsa-der: ECDSA over SHA-256 of the canonical JSON of the coverage record (exportVersion, passportId, snapshot, part, final, manifestSha256 and signature without value; object keys sorted recursively, no whitespace), DER encoded." },
+        "signer": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$", "description": "The exporter's compressed key; the same key that signed package.manifest." },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    },
+    "package": {
+      "type": "object",
+      "required": ["manifest", "files"],
+      "description": "The part's dpp-evidence-package@1 in the JSON envelope form: the signed manifest beside every inventoried file, base64 by path.",
+      "properties": {
+        "manifest": { "$ref": "./evidence-package.schema.json" },
+        "files": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "contentEncoding": "base64" }
+        }
+      }
+    }
+  }
+}
