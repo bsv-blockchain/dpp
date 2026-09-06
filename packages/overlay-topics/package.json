@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-overlay-topics",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "DPP overlay topic components: tm_dpp topic manager (dpp-core invariants + admission policy) and ls_dpp lookup service, as a library",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

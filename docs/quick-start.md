@@ -61,7 +61,7 @@ The generator regenerates every payload schema, consumer document and mapping in
 
 ## Operator: run the index and say what it supports
 
-The reference index node builds from `packages/overlay-topics/Dockerfile` and follows the defaults `docs/deployment.md` describes; `GET /health` lists the topics and services it serves and `GET /capabilities` serves its capability document in the shape of `contracts/capabilities.schema.json`. Under the reference configuration that document equals `conformance/examples/capabilities-reference-node.json`, which states `single-operator@1` with discovery off and no peers, so the node does not claim to be independently replicated. Publisher keys come from `PUBLISHER_POLICY_FILE` under `contracts/publisher-policy.schema.json`, separate from the operator's own identity; without one the single identity key is the implicit policy. `GET /history` pages a passport's history over a fixed snapshot, `GET /evidence-package` exports it as a signed package once `EXPORT_SIGNING_KEY` is set, and `POST /retract` withdraws an admitted output the network refused, behind the submit bearer.
+The reference index node builds from `packages/overlay-topics/Dockerfile` and follows the defaults `docs/deployment.md` describes; `GET /health` lists the topics and services it serves and `GET /capabilities` serves its capability document in the shape of `contracts/capabilities.schema.json`. Under the reference configuration that document equals `conformance/examples/capabilities-reference-node.json`, which states `single-operator@1` with discovery off and no peers, so the node does not claim to be independently replicated. Publisher keys come from `PUBLISHER_POLICY_FILE` under `contracts/publisher-policy.schema.json`, separate from the operator's own identity; without one the single identity key is the implicit policy. `GET /history` pages a passport's history over a fixed snapshot, `GET /evidence-package` exports its newest 500 states as a signed package once `EXPORT_SIGNING_KEY` is set, `GET /evidence-export` serves the complete export as bounded parts over one snapshot that a reader joins (behind `EXPORT_TOKEN` when set), and `POST /retract` withdraws an admitted output the network refused, behind the submit bearer.
 
 ## Interoperability: discover, import, verify and project
 
@@ -90,8 +90,9 @@ A reader compares a service's capability document with the baseline and profiles
 npm ci
 npm run build
 npm test                         # every workspace, then the ledger checker
-npm run conformance:check        # the ledger, the baseline, the pinned reports and the capability example
+npm run conformance:check        # the ledger, the baseline, the pinned reports, the capability example and every selection
 npm run conformance:independent  # the Python reader over every fixture and vector
+npm run conformance:qualify -- conformance/selections/dpp-release-2026-09-3.json   # the selected-claim gate of one release; exits 1 while a required claim cannot be made
 node examples/verify-passport.mjs --fixture --report
 REGENERATE_FIXTURES=1 npm test   # rewrite every published fixture from its generator, then hold it identical
 ```

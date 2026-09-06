@@ -32,6 +32,18 @@ export const SNAPSHOT_TTL_MS = 10 * 60 * 1000
  * sequence, as the bounded lookup keeps the newest. The remainder is declared
  * absent by outpoint, so a package never implies a history it does not hold
  * and an unauthenticated GET never parses and signs an unbounded number of
- * transactions.
+ * transactions. The same number bounds one part of the complete export
+ * (`spec/portable-evidence.md` section 2), which reaches the remainder in
+ * further parts over the same snapshot instead of declaring it absent.
  */
 export const MAX_EXPORT_STATES = 500
+
+/**
+ * The most transaction and proof bytes one part of the complete export
+ * carries before the part closes: a part holds at most MAX_EXPORT_STATES
+ * states and closes early once their raw transactions and BEEFs exceed this
+ * many bytes, always with at least one state, so the work of one request is
+ * bounded by both counts whatever a lineage's transactions weigh. Base64 in
+ * the envelope adds a third to what the wire carries.
+ */
+export const MAX_EXPORT_PART_BYTES = 16 * 1024 * 1024

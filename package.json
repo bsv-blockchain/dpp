@@ -11,9 +11,11 @@
   },
   "scripts": {
     "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics -w @bsv/vsc -w @bsv/dpp-profiles",
-    "test": "npm run test --workspaces --if-present && npm run conformance:check",
+    "test": "npm run test --workspaces --if-present && npm run conformance:test && npm run conformance:check",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "conformance:check": "node conformance/check.mjs",
+    "conformance:test": "node --test conformance/test/*.test.mjs",
+    "conformance:qualify": "node conformance/qualify.mjs",
     "conformance:pin": "node conformance/pin-sources.mjs",
     "conformance:independent": "python3 conformance/independent/python/dpp_verify.py"
   },

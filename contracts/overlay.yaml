@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.6.0-draft
+  version: 0.7.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -120,7 +120,14 @@ x-dpp-profile:
     - >-
       GET /evidence-package, the dpp-evidence-package@1 for one passport
       (contracts/evidence-package.schema.json), signed by the deployment's
-      export key and served as a JSON envelope.
+      export key and served as a JSON envelope, bounded to the newest 500
+      states with the rest declared absent.
+    - >-
+      GET /evidence-export, the complete export of one passport as parts over
+      one snapshot (contracts/evidence-export.schema.json): each part a
+      dpp-evidence-package@1 over a contiguous sequence range, oldest first,
+      bounded by states and bytes, resumed by cursor, behind a bearer when
+      the deployment sets one.
     - >-
       POST /retract, the withdrawal of a state the network refused after it
       was announced, behind the /submit bearer.
@@ -517,6 +524,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/responses/namedError/content/application~1json/schema'
+  /evidence-export:
+    get:
+      summary: One part of a passport's complete export over a stable snapshot (an extension; spec/portable-evidence.md section 2)
+      description: >-
+        The complete export beside the bounded package, which stays exactly
+        what it is. The first request pins a snapshot, the highest record
+        sequence the index had assigned at that moment, and answers the first
+        part: a dpp-evidence-package@1 over the oldest states of the passport
+        within the snapshot, in the index's own sequence order, holding at
+        most maxEvidenceExportPartStates states and closing earlier once their
+        raw transactions and BEEFs exceed maxEvidenceExportPartBytes, always
+        with at least one state. Every later part reads only records at or
+        below the snapshot's sequence, so a state admitted while a reader
+        walks the parts appears in none of them and shifts no boundary. Each
+        part's package carries the transactions and proofs of its states, the
+        publisher policy chain when one is configured, and that part's spend
+        observations under status/; a part carries no verification report,
+        because the report is the reader's to produce over the joined
+        history. The part carries a coverage record naming the passport, the
+        snapshot, the part's index, the sequence range it covers, its number
+        of states, whether it is final and the SHA-256 of its package
+        manifest as signed, signed by the export key under the manifest's own
+        preimage rule; the cursor is outside the record. Consecutive parts
+        tile the snapshot from 1 to its sequence with no gap and no overlap,
+        the final part ends at the snapshot's sequence and carries a null
+        cursor, and a reader establishes coverage only from records whose
+        signature verifies and whose digest binds the package it received
+        (joinEvidenceExport in the reference package), so a genuine part
+        cannot be dressed as a whole export by editing unsigned fields. A
+        part's manifest is complete for its own range and never for the
+        snapshot, unless it is the only part, and its scope declaration
+        matches the record. The cursor is opaque, bound to the
+        passport and the snapshot, carries its kind, and is signed under a
+        secret this process drew at startup: a cursor edited in transit,
+        issued by another process, issued for another passport, or issued for
+        GET /history answers 400 cursor-invalid, and a snapshot older than ten
+        minutes answers 410 snapshot-expired with the instruction to restart
+        without a cursor. When the deployment sets an export token the route
+        requires it as a bearer and answers 401 export-unauthorised without
+        it; the bounded GET /evidence-package and GET /history stay open. The
+        capability document states the bounds and whether the route is open,
+        behind a bearer, or unavailable.
+      parameters:
+        - name: passportId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The nextCursor of the previous part; absent on the first.
+      security:
+        - {}
+        - bearer: []
+      responses:
+        '200':
+          description: One part of the export.
+          content:
+            application/json:
+              schema:
+                $ref: './evidence-export.schema.json'
+        '400':
+          $ref: '#/components/responses/namedError'
+        '401':
+          $ref: '#/components/responses/namedError'
+        '404':
+          $ref: '#/components/responses/namedError'
+        '410':
+          $ref: '#/components/responses/namedError'
+        '503':
+          $ref: '#/components/responses/namedError'
   /retract:
     post:
       summary: Withdraw a state the network refused after it was announced (an extension)
@@ -697,8 +778,9 @@ components:
       type: http
       scheme: bearer
       description: >-
-        Required on /submit and /arc-ingest only when the deployment configures
-        a token for each; the two are different secrets.
+        Required on /submit, /arc-ingest and /evidence-export only when the
+        deployment configures a token for each; the three are different
+        secrets.
     callbackToken:
       type: apiKey
       in: header
@@ -732,8 +814,8 @@ components:
                 description: >-
                   The refusal as one lower-case hyphenated word: query-invalid,
                   limit-invalid, cursor-invalid, snapshot-expired,
-                  history-unavailable, export-unavailable, passport-unknown,
-                  output-unknown, retraction-refused,
+                  history-unavailable, export-unavailable, export-unauthorised,
+                  passport-unknown, output-unknown, retraction-refused,
                   chain-tracker-unavailable or retraction-unavailable.
               description:
                 type: string

@@ -59,6 +59,10 @@ services:
       PUBLISHER_POLICY_FILE: ${PUBLISHER_POLICY_FILE:-}
       OPERATOR_IDENTITY_KEYS: ${OPERATOR_IDENTITY_KEYS:-}
       EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
+      # The bearer for GET /evidence-export, the complete export; the bounded
+      # GET /evidence-package and GET /history stay open. Forwarded here
+      # because an env-file value reaches the container only through this list.
+      EXPORT_TOKEN: ${EXPORT_TOKEN:-}
       SYNC_PEERS: ${SYNC_PEERS:-}
       SYNC_INTERVAL_MS: ${SYNC_INTERVAL_MS:-}
       SYNC_LEGACY: ${SYNC_LEGACY:-}

@@ -20,7 +20,13 @@
  * conformance surface: no score, no aggregate verdict. A blocked claim is a
  * finding and not a failure, because the ledger exists to say so. The exit
  * code is 1 only for a defect in the ledger itself: a schema violation, a
- * dangling reference, a moved source or a licence that changed.
+ * dangling reference, a moved source, a defective selection or a licence
+ * that changed.
+ *
+ * The assessment of sources, rows and claims lives in assess.mjs and is the
+ * same one conformance/qualify.mjs applies to a selection: this command
+ * reports a selection's blocked required claims as findings, and that one
+ * refuses them, so a release names its gate without the two ever disagreeing.
  */
 import { createHash } from 'node:crypto'
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
@@ -28,6 +34,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import { assessClaims, assessSelection, readRows, readSources } from './assess.mjs'
 import {
   ATTESTATION_ANCHOR_FIELD_COUNT,
   ATTESTATION_ANCHOR_PREFIX,
@@ -70,31 +77,12 @@ const validateWith = (schemaPath, value, name) => {
 const ledger = read('conformance/manifest.json')
 validateWith('conformance/manifest.schema.json', ledger, 'conformance/manifest.json')
 
-const sources = new Map(ledger.sources.map((s) => [s.id, s]))
-if (sources.size !== ledger.sources.length) defect('two ledger sources share an identifier.')
-const moved = new Set()
-for (const s of ledger.sources) {
-  if (s.kind === 'local') {
-    if (s.path == null || s.digest == null) { defect(`local source ${s.id} records no path or no digest.`); continue }
-    if (!existsSync(join(root, s.path))) { defect(`local source ${s.id} names ${s.path}, which does not exist.`); moved.add(s.id); continue }
-    const actual = sha256(s.path)
-    if (actual !== s.digest) { moved.add(s.id); defect(`source ${s.id} (${s.path}) has digest ${actual.slice(0, 12)}…, not the recorded ${s.digest.slice(0, 12)}…; every row citing it is invalidated until reviewed (run conformance/pin-sources.mjs after review).`) }
-  }
-}
+const { sources, moved, defects: sourceDefects } = readSources(ledger, root)
+for (const sentence of sourceDefects) defect(sentence)
 note(`${ledger.sources.length} sources, ${[...sources.values()].filter((s) => s.kind === 'local').length} local, ${[...sources.values()].filter((s) => s.harmonisedReference).length} carrying the harmonised-reference marker.`)
 
-const rows = new Map()
-for (const r of ledger.requirements) {
-  if (rows.has(r.id)) defect(`requirement ${r.id} appears twice.`)
-  rows.set(r.id, r)
-  const s = sources.get(r.sourceId)
-  if (s == null) { defect(`requirement ${r.id} cites source ${r.sourceId}, which the ledger does not pin.`); continue }
-  if (r.sourceUri !== s.uri) defect(`requirement ${r.id} records sourceUri ${r.sourceUri} but source ${s.id} is ${s.uri}.`)
-  if (r.sourceVersion !== s.version) defect(`requirement ${r.id} records sourceVersion "${r.sourceVersion}" but source ${s.id} is "${s.version}".`)
-  if (s.digest != null && r.sourceDigest != null && r.sourceDigest !== s.digest) defect(`requirement ${r.id} records a sourceDigest that differs from source ${s.id}.`)
-  if (r.roles.includes('all') && r.roles.length > 1) defect(`requirement ${r.id} lists "all" beside other roles.`)
-  if (r.roles.includes('none') && r.roles.length > 1) defect(`requirement ${r.id} lists "none" beside other roles.`)
-}
+const { rows, defects: rowDefects } = readRows(ledger, sources)
+for (const sentence of rowDefects) defect(sentence)
 const byStatus = {}
 for (const r of ledger.requirements) byStatus[r.status] = (byStatus[r.status] ?? 0) + 1
 note(`${ledger.requirements.length} requirements: ${Object.entries(byStatus).map(([k, v]) => `${v} ${k}`).join(', ')}.`)
@@ -102,21 +90,28 @@ for (const r of ledger.requirements) {
   if (r.status === 'unassessed') console.log(`unassessed: ${r.id} (${r.clause}): ${r.notes ?? r.summary}`)
 }
 
-// 2. The claims.
+// 2. The claims, each on the shared assessment.
 const rank = { unassessed: -1, gap: 0, 'not-applicable': 1, implemented: 2, tested: 3, 'independently-tested': 4 }
-for (const claim of ledger.claims) {
-  const minimum = claim.minimumStatus ?? 'tested'
-  const problems = []
-  for (const id of claim.requires) {
-    const r = rows.get(id)
-    if (r == null) { defect(`claim ${claim.id} requires ${id}, which the ledger does not carry.`); continue }
-    if (moved.has(r.sourceId)) problems.push(`${id} cites a source whose artefact changed`)
-    else if (r.status === 'unassessed') problems.push(`${id} is unassessed`)
-    else if (r.status === 'not-applicable') continue
-    else if (rank[r.status] < rank[minimum]) problems.push(`${id} is ${r.status}, below ${minimum}`)
-  }
-  if (problems.length === 0) note(`claim ${claim.id} can be made: every required row is ${minimum} or better.`)
-  else blocked(`claim ${claim.id} cannot be made: ${problems.join('; ')}.`)
+const verdicts = assessClaims(ledger, rows, moved)
+for (const verdict of verdicts.values()) {
+  for (const id of verdict.unknownRows) defect(`claim ${verdict.id} requires ${id}, which the ledger does not carry.`)
+  if (verdict.canBeMade) note(`claim ${verdict.id} can be made: every required row is ${verdict.minimum} or better.`)
+  else if (verdict.problems.length > 0) blocked(`claim ${verdict.id} cannot be made: ${verdict.problems.join('; ')}.`)
+}
+
+// 2b. The selections: each validates against its schema and reads against
+// the same verdicts. A defective selection is a defect here; a blocked
+// required claim is a finding here and a refusal in qualify.mjs.
+const selectionsDir = join(root, 'conformance', 'selections')
+for (const name of existsSync(selectionsDir) ? readdirSync(selectionsDir).filter((f) => f.endsWith('.json')).sort() : []) {
+  const path = `conformance/selections/${name}`
+  const selection = read(path)
+  if (!validateWith('conformance/selection.schema.json', selection, path)) continue
+  const result = assessSelection(selection, { ledger, rows, sources, verdicts, root })
+  for (const sentence of result.invalid) defect(sentence)
+  for (const sentence of result.refusals) blocked(`${selection.selectionId}: ${sentence}`)
+  if (result.invalid.length === 0 && result.refusals.length === 0) note(`selection ${selection.selectionId}: every required claim can be made; node conformance/qualify.mjs ${path} qualifies it.`)
+  else if (result.invalid.length === 0) blocked(`selection ${selection.selectionId} would be refused by node conformance/qualify.mjs ${path}.`)
 }
 
 // 3. The baselines: native-baseline@1 reads version 1, native-baseline@2 reads both.

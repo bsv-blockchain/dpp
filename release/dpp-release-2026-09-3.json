@@ -1,7 +1,7 @@
 {
-  "releaseSet": "dpp-release-2026-09-2",
-  "status": "superseded",
-  "description": "The second candidate set of September 2026: the packages of dpp-release-2026-09 with the interoperability additions of the GS1 discovery, EPCIS source exchange, external ecdsa-rdfc-2019 credential and passport projection profiles, and the draft battery@3 and textile@3 successors carried as opt-in versions beside the unchanged battery@2 and textile@2. @bsv/dpp-profiles moves to 0.3.0 (new helpers, manifests, schemas and its first runtime dependency, the RFC 8785 canonicaliser, recorded with the maintained P-256 suite in conformance/licences.json rather than as part of the shared stack baseline) and @bsv/vsc to 0.2.0 (the epcis-source and exchange entry points with the maintained P-256 Data Integrity suite); @bsv/dpp-core and @bsv/dpp-overlay-topics are unchanged at 0.3.0. Wire contracts, the custody profile and the runtime baseline are those of the first set. Superseded by dpp-release-2026-09-3 before publication: the index gained the complete export (GET /evidence-export, contracts/overlay.yaml 0.7.0-draft) and @bsv/dpp-overlay-topics moved to 0.4.0; this record is kept as the history of the second set.",
+  "releaseSet": "dpp-release-2026-09-3",
+  "status": "candidate",
+  "description": "The third candidate set of September 2026: the packages of dpp-release-2026-09-2 with the complete export of the index (GET /evidence-export, parts over one snapshot bounded by states and bytes, resumed by cursor, joined by the reader; contracts/evidence-export.schema.json and contracts/overlay.yaml 0.7.0-draft) and the selected-claim qualification of the ledger (conformance/qualify.mjs). @bsv/dpp-overlay-topics moves to 0.4.0; @bsv/dpp-core 0.3.0, @bsv/dpp-profiles 0.3.0 and @bsv/vsc 0.2.0 are unchanged. Wire formats, the custody profile and the runtime baseline are those of the first set. Candidate until the packages are published under the versions named here.",
   "baseline": "native-baseline@2",
   "runtime": {
     "node": ">=22",
@@ -42,9 +42,9 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "directory": "packages/overlay-topics",
-      "role": "the topic managers, lookup services, storage adapters, capabilities, history, export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
+      "role": "the topic managers, lookup services, storage adapters, capabilities, history, bounded export, complete export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
       "entryPoints": [
         "."
       ],
@@ -115,7 +115,7 @@
     "anchor": "bsv-attestation-anchor-v1",
     "acceptanceRecord": "dpp-managed-acceptance@1",
     "verificationReport": "1",
-    "overlayContract": "0.6.0-draft"
+    "overlayContract": "0.7.0-draft"
   },
   "custody": {
     "selected": "managed-custody@1",
@@ -159,7 +159,7 @@
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "c01ca3b54de2fba7ca2894a7e359e99856780cbe2e3c68dc7d2e058dad5dd0bb",
+      "sha256": "248e17324226e2e9e435ee7b2ec7597ed6125852fe95b14e69aa067024698bbc",
       "pins": "the index's HTTP contract"
     },
     {
@@ -211,6 +211,11 @@
       "path": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
       "sha256": "983284a926c7d3cfa814ca0b5179f42db85951230eb44afb7b79595c013a3a44",
       "pins": "the successor industry manifest contract"
+    },
+    {
+      "path": "contracts/evidence-export.schema.json",
+      "sha256": "f2d5d78bb6e73cccc72a61bb6f1cb3326bbfb7f99070ed6491ba91caf945edb8",
+      "pins": "the complete export part, dpp-evidence-export@1"
     }
   ],
   "consumers": [
@@ -227,6 +232,6 @@
   "image": {
     "dockerfile": "packages/overlay-topics/Dockerfile",
     "preset": "deploy/compose.yml",
-    "tag": "dpp-overlay:0.3.0"
+    "tag": "dpp-overlay:0.4.0"
   }
 }

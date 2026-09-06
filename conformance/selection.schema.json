@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/conformance/selection.schema.json",
+  "title": "DPP claim selection, version 1",
+  "description": "The claims one release or one declaration requires of the ledger (spec/conformance.md section 6): each claim named required or withheld with its kind, and every row that carries a required system or product claim's profile but is not required by the claim excluded with a scope and a rationale. conformance/qualify.mjs reads a selection with the checker's own assessment and refuses it while any required claim cannot be made.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["selectionVersion", "selectionId", "purpose", "claims", "exclusions", "reviewedAt", "reviewOwner"],
+  "properties": {
+    "selectionVersion": { "const": "1" },
+    "selectionId": { "$ref": "#/$defs/identifier" },
+    "purpose": { "type": "string", "minLength": 1, "description": "What the qualification is for: a release set, a declaration, a pilot." },
+    "releaseSet": { "type": "string", "pattern": "^dpp-release-[A-Za-z0-9.-]+$", "description": "The release set this selection qualifies, when there is one; it must exist under release/ and not be superseded." },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "disposition"],
+        "properties": {
+          "id": { "$ref": "#/$defs/identifier", "description": "A claim identifier the ledger carries." },
+          "kind": {
+            "enum": ["component", "system", "draft-compatibility", "operation", "product", "governance"],
+            "description": "component: one role or profile of this implementation. system: a whole-system scope, held to every row carrying its profile. draft-compatibility: alignment with a draft text, never conformity. operation: a deployed service's behaviour, needing operational evidence. product: a product category's data or legal qualification. governance: a process condition, such as version 1.0 readiness."
+          },
+          "disposition": { "enum": ["required", "withheld"], "description": "required: the qualification fails unless the claim can be made. withheld: named so it does not disappear, with the reason it is not required." },
+          "rationale": { "type": "string", "minLength": 1 }
+        },
+        "allOf": [
+          { "if": { "properties": { "disposition": { "const": "withheld" } } }, "then": { "required": ["rationale"] } }
+        ]
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claimId", "requirementId", "scope", "rationale", "reviewedAt", "reviewOwner"],
+        "properties": {
+          "claimId": { "$ref": "#/$defs/identifier" },
+          "requirementId": { "$ref": "#/$defs/identifier" },
+          "scope": {
+            "enum": ["outside-claim-scope", "separately-claimed", "deferred"],
+            "description": "outside-claim-scope: the row belongs to another instrument or scope. separately-claimed: the claim named in coveredBy requires it. deferred: left for later, which a component claim may say and a system or product claim may not."
+          },
+          "coveredBy": { "$ref": "#/$defs/identifier", "description": "The ledger claim that requires the row, for separately-claimed." },
+          "rationale": { "type": "string", "minLength": 1 },
+          "reviewedAt": { "type": "string", "format": "date" },
+          "reviewOwner": { "type": "string", "minLength": 1 }
+        },
+        "allOf": [
+          { "if": { "properties": { "scope": { "const": "separately-claimed" } } }, "then": { "required": ["coveredBy"] } }
+        ]
+      }
+    },
+    "reviewedAt": { "type": "string", "format": "date" },
+    "reviewOwner": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "identifier": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@-]*$" }
+  }
+}

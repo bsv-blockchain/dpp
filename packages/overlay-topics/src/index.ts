@@ -35,7 +35,13 @@
  *                  export beside the bounded lookup
  *   GET  /evidence-package?passportId=             -> dpp-evidence-package@1
  *                  as {manifest, files} (contracts/evidence-package.schema.json),
- *                  signed with EXPORT_SIGNING_KEY; 503 when it is unset
+ *                  signed with EXPORT_SIGNING_KEY; 503 when it is unset;
+ *                  bounded to the newest 500 states, the rest declared absent
+ *   GET  /evidence-export?passportId=&cursor=      -> one part of the complete
+ *                  export (contracts/evidence-export.schema.json): a package
+ *                  over a contiguous sequence range of one snapshot, oldest
+ *                  first, bounded by states and bytes, resumed by cursor;
+ *                  Authorization: Bearer <token> when EXPORT_TOKEN is set
  *   POST /retract  {"txid","outputIndex","reason"} -> removes a state the
  *                  network refused, behind the /submit bearer; 409 when the
  *                  state is proven, spent or known to the chain tracker
@@ -100,7 +106,7 @@ import {
 import { MAX_BODY_BYTES, MAX_PAGE_SIZE } from './limits.js'
 import { buildCapabilities, implementationIdentity } from './capabilities.js'
 import { HistoryError, HistoryPaginator } from './history.js'
-import { buildEvidencePackage } from './evidenceExport.js'
+import { buildEvidenceExportPart, buildEvidencePackage } from './evidenceExport.js'
 import { RetractionRefused, retractOutput } from './retraction.js'
 import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
 import { startPeerSynchronisation, syncConfigurationFor, syncSettingsFromEnvironment, type SyncSettings } from './sync.js'
@@ -204,6 +210,14 @@ export interface OverlayHttpOptions {
    * handler refuses to be built, which is the boot.
    */
   exportSigningKey?: string
+  /**
+   * EXPORT_TOKEN: shared secret required as `Authorization: Bearer` on GET
+   * /evidence-export, the complete export, whose parts are each bounded but
+   * whose number is not. Unset leaves it open, as GET /history is; the bounded
+   * GET /evidence-package stays open either way, and the capability document
+   * says which.
+   */
+  exportToken?: string
   /**
    * Whether the network knows a transaction, for POST /retract: asked of the
    * header source's operator before an output is removed. Unset when there is
@@ -535,6 +549,8 @@ export function createRequestHandler(
     options.exportSigningKey != null && options.exportSigningKey !== ''
       ? PrivateKey.fromHex(options.exportSigningKey)
       : undefined
+  const exportToken =
+    options.exportToken != null && options.exportToken !== '' ? options.exportToken : undefined
   const identity = implementationIdentity()
 
   const resolved: HandlerOptions = {
@@ -547,6 +563,7 @@ export function createRequestHandler(
     components,
     paginator,
     exportSigner,
+    exportToken,
     knownOnChain: options.knownOnChain,
     software: `${identity.name}@${identity.version}`,
   }
@@ -565,6 +582,7 @@ interface HandlerOptions {
   components?: NodeComponents
   paginator?: HistoryPaginator
   exportSigner?: PrivateKey
+  exportToken?: string
   knownOnChain?: (txid: string) => Promise<boolean>
   software: string
 }
@@ -618,6 +636,7 @@ async function handle(
         controlAuthorities: components?.controlAuthorities,
         managedAcceptance: components?.managedAcceptance,
         exportAvailable: options.exportSigner != null,
+        completeExportBearer: options.exportToken != null,
         networkOracleConfigured: options.knownOnChain != null,
         at: options.now(),
         syncPeers: components?.sync?.peers,
@@ -890,6 +909,42 @@ async function handle(
         throw new NamedError(404, 'passport-unknown', `this index holds no state of ${passportId}`)
       }
       json(response, 200, envelope)
+      return
+    }
+
+    if (route === 'GET /evidence-export') {
+      // The complete export (spec/portable-evidence.md section 2): parts over
+      // one snapshot, oldest first, each bounded, resumed by cursor. The same
+      // signer switch as the bounded package, plus the bearer when the
+      // deployment sets one, checked before any store is read.
+      if (options.exportToken != null && !bearerAccepted(request, options.exportToken)) {
+        throw new NamedError(401, 'export-unauthorised', 'GET /evidence-export requires the EXPORT_TOKEN bearer; the bounded GET /evidence-package and GET /history remain open')
+      }
+      if (options.exportSigner == null) {
+        throw new NamedError(503, 'export-unavailable', 'EXPORT_SIGNING_KEY is unset, so this node signs no evidence package; GET /history and POST /lookup remain')
+      }
+      if (options.components == null || options.paginator == null) {
+        throw new NamedError(503, 'export-unavailable', 'this node was started without its stores; GET /evidence-export is not served')
+      }
+      const passportId = url.searchParams.get('passportId')
+      if (passportId == null || passportId === '') {
+        throw new NamedError(400, 'query-invalid', 'passportId is required')
+      }
+      const part = await buildEvidenceExportPart({
+        passportId,
+        cursor: url.searchParams.get('cursor'),
+        paginator: options.paginator,
+        engineStorage: options.components.engineStorage,
+        signingKey: options.exportSigner,
+        publisherPolicy: options.components.publisherPolicy,
+        serviceIdentityKey: options.components.serviceIdentityKey,
+        now: options.now(),
+        software: options.software,
+      })
+      if (part == null) {
+        throw new NamedError(404, 'passport-unknown', `this index holds no state of ${passportId}`)
+      }
+      json(response, 200, part)
       return
     }
 
@@ -1328,6 +1383,13 @@ async function main(): Promise<void> {
     console.warn('CHAIN_TRACKER=scripts-only: POST /retract cannot ask the network about a transaction; its answers say so')
   }
   const signingKey = exportSigningKey()
+  const exportToken = process.env.EXPORT_TOKEN
+  if (signingKey != null && (exportToken == null || exportToken === '')) {
+    console.warn(
+      'EXPORT_TOKEN is unset: GET /evidence-export serves the complete export to anyone, one bounded part per request. ' +
+        'Set it on any deployment a stranger can reach; the bounded GET /evidence-package stays open either way.'
+    )
+  }
   const { engine, components, close } = await engineFromEnvironment(network, tracker)
   const service = await startOverlayService(engine, {
     port,
@@ -1337,6 +1399,7 @@ async function main(): Promise<void> {
     network,
     components,
     exportSigningKey: signingKey,
+    exportToken,
     knownOnChain,
   })
 
