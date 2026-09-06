@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-profiles",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canonical industry data profiles for DPP passports: immutable manifests, generated payload schemas and consumer documents, and the GS1 identifier helpers a writer needs",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -31,6 +31,9 @@
     "refreeze": "node scripts/build.mjs --refreeze",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "canonicalize": "4.0.0"
   },
   "devDependencies": {
     "@bsv/dpp-core": "0.3.0",

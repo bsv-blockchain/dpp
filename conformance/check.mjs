@@ -187,6 +187,10 @@ for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json']) {
 for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f))) {
   const set = read(`release/${name}`)
   if (!validateWith('release/release-set.schema.json', set, `release/${name}`)) continue
+  // A superseded set is the record of what a set once named. Its package
+  // versions and artefact digests describe that moment and are not held to
+  // the tree, which has moved on; the successor set is what the tree answers to.
+  if (set.status === 'superseded') { note(`${set.releaseSet} is superseded and is kept as history; its versions and digests are not checked against the tree.`); continue }
   for (const pkg of set.packages) {
     const manifest = read(`${pkg.directory}/package.json`)
     if (manifest.name === pkg.name && manifest.version === pkg.version) note(`${set.releaseSet} names ${pkg.name}@${pkg.version}, which ${pkg.directory}/package.json carries.`)

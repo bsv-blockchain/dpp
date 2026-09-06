@@ -15,13 +15,31 @@ externalDocs:
   url: https://github.com/w3c-cg/vsc/tree/c279de3debcd6eab94a77034584d1750f5d65e6a
 servers:
   - url: https://dpp-resolver.bsvb.net
-    description: The hosted demonstration deployment
+    description: The hosted demonstration deployment (the API origin)
   - url: http://localhost:4000
     description: Local development (npm run dev)
+  - url: https://id.example.org
+    description: |
+      The GS1 resolver origin, `RESOLVER_ORIGIN`: the same process answers a
+      second origin with the GS1-Conformant Resolver contract of the standard's
+      `spec/gs1-discovery.md` (profile `gs1-digital-link@1`). Path items
+      marked `x-dpp-origin: resolver` are served on this origin only; every
+      other path item is served on the API origin only. The two never share a
+      handler, so `/01/{gtin}/21/{serial}` is the legacy evidence JSON on the
+      API origin and the resolver's negotiated answer here.
+    x-dpp-origin: resolver
 
 tags:
   - name: resolution
     description: Reading passport state and history.
+  - name: gs1-resolver
+    description: |
+      The hosted GS1-Conformant Resolver on `RESOLVER_ORIGIN` (the standard's
+      `spec/gs1-discovery.md`): primary key 01 with its qualifiers, the
+      special compressed EPC-binary form, linksets, negotiated redirects and
+      the description file. Public audience only; restricted links are never
+      returned here. Records are administered on the API origin under
+      `/resolver/records`.
   - name: attestation
     description: Receiving lifecycle attestations from a publisher.
   - name: validation
@@ -76,6 +94,16 @@ x-intentional-omissions:
       gated by SHOWCASE=1 and deployed as a static file elsewhere. The two
       JSON routes it reads are documented under the showcase tag; the page
       itself is not an API operation.
+  - method: GET
+    path: /01/*
+    origin: resolver
+    reason: >-
+      The resolver origin's catch-all under primary key 01: every path shape
+      the grammar admits is documented above as its own path item, and this
+      route answers any other shape (a qualifier out of order, an unsupported
+      qualifier, a trailing segment) with 400 and the grammar's reason, as the
+      resolver standard requires, instead of the router's 404. Not an
+      operation a client addresses on purpose.
 
 paths:
   /health:
@@ -266,6 +294,8 @@ paths:
         '503': { description: No signing identity is configured, so no package is signed or served. }
 
   /01/{gtin}/21/{serial}:
+    x-dpp-origin: api
+    x-dpp-also-on-resolver: '#/components/pathItems/gs1ResolverEntity'
     get:
       tags: [resolution]
       operationId: getByDigitalLink
@@ -346,12 +376,212 @@ paths:
                   passportId: { type: string, description: The identifier that was looked up. }
                   found: { type: boolean, enum: [false] }
 
-  /capabilities:
+  /resolve/gs1/01/{gtin}/21/{serial}:
     get:
-      summary: Current representation and overlay contracts; no certification claim.
+      tags: [resolution]
+      operationId: getByDigitalLinkAlias
+      summary: The explicit alias of the legacy evidence JSON.
+      description: |
+        Answers exactly as `GET /01/{gtin}/21/{serial}` does on this origin,
+        from the same handler. The alias exists because the same path on the
+        configured resolver origin is the GS1 resolver's answer, and a client
+        that wants the evidence JSON by a name that cannot be confused with a
+        resolver request asks here (`spec/gs1-discovery.md` §4).
+      parameters:
+        - name: gtin
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[0-9]{8,14}$' }
+        - name: serial
+          in: path
+          required: true
+          schema: { type: string, minLength: 1 }
       responses:
         '200':
-          description: Supported representations, tm_attestation, ls_attestation and legacy intake configuration.
+          description: "As GET /01/{gtin}/21/{serial}."
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DigitalLinkResolution' }
+        '303': { description: "As GET /01/{gtin}/21/{serial}." }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { description: "As GET /01/{gtin}/21/{serial}." }
+
+  /resolver/records:
+    get:
+      tags: [gs1-resolver]
+      operationId: listResolutionRecords
+      summary: The resolution records registered under one GTIN, at every granularity.
+      parameters:
+        - name: gtin
+          in: query
+          required: true
+          schema: { type: string, pattern: '^[0-9]{8,14}$' }
+      responses:
+        '200':
+          description: The records, summarised and in full.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [gtin, records, full]
+                properties:
+                  gtin: { type: string }
+                  records: { type: array, items: { $ref: '#/components/schemas/ResolutionRecordSummary' } }
+                  full: { type: array, items: { $ref: '#/components/schemas/ResolutionRecord' } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorised' }
+        '403': { $ref: '#/components/responses/OutsideNamespace' }
+        '503': { $ref: '#/components/responses/NamespacesUnconfigured' }
+      security:
+        - {}
+        - writeToken: []
+    post:
+      tags: [gs1-resolver]
+      operationId: putResolutionRecord
+      summary: Register or replace the resolution record of one entity.
+      description: |
+        Validated at write with the package's `resolutionRecordProblems`
+        (the resolver standard's registration rules: check digit, qualifier
+        order, a serial never beside a variant or lot, one default link, https
+        targets, titles, carriable relations, declared disclosure), so a
+        request never meets a record the standard refuses. Requires the write
+        token and a GTIN inside `RESOLVER_NAMESPACES`; nothing infers that
+        authority from a check digit, a DID, a host or an account. A record
+        for a tuple already held replaces it and moves its configuration
+        revision.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolutionRecordInput' }
+      responses:
+        '201':
+          description: A new record.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResolutionRecordWritten' }
+        '200':
+          description: A replaced record.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResolutionRecordWritten' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorised' }
+        '403': { $ref: '#/components/responses/OutsideNamespace' }
+        '422':
+          description: The record fails the registration rules; every problem is named and nothing is stored.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error, problems]
+                properties:
+                  error: { const: record-refused }
+                  problems: { type: array, items: { type: string } }
+        '503': { $ref: '#/components/responses/NamespacesUnconfigured' }
+      security:
+        - {}
+        - writeToken: []
+
+  /resolver/records/{key}:
+    delete:
+      tags: [gs1-resolver]
+      operationId: deleteResolutionRecord
+      summary: Remove one resolution record by its key tuple.
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: The canonical key tuple, `01:{gtin14}` followed by `|ai:value` qualifiers, percent-encoded.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Removed.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [removed, keyTuple]
+                properties:
+                  removed: { const: true }
+                  keyTuple: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorised' }
+        '403': { $ref: '#/components/responses/OutsideNamespace' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/NamespacesUnconfigured' }
+      security:
+        - {}
+        - writeToken: []
+
+  /.well-known/gs1resolver:
+    x-dpp-origin: resolver
+    get:
+      tags: [gs1-resolver]
+      operationId: getResolverDescription
+      summary: The resolver description file (GS1-Conformant Resolver 1.2.1 §3).
+      description: |
+        Published only by the origin that provides the resolver contract:
+        primary key 01 as the one supported key, the GS1 vocabulary and the
+        standard's own link namespace as link type namespaces, `linkset` never
+        the default, and the pinned GS1 context for JSON linksets. Validates
+        against the pinned description-file schema the profiles package carries.
+      responses:
+        '200':
+          description: The description file.
+          content:
+            application/json:
+              schema: { type: object }
+        '404': { description: No resolver origin is configured. }
+
+  /01/{gtin}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+  /01/{gtin}/22/{cpv}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+  /01/{gtin}/10/{lot}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+  /01/{gtin}/22/{cpv}/10/{lot}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+  /01/{gtin}/22/{cpv}/21/{serial}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+  /01/{gtin}/10/{lot}/21/{serial}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+  /01/{gtin}/22/{cpv}/10/{lot}/21/{serial}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
+
+  /{compressed}:
+    x-dpp-origin: resolver
+    get:
+      tags: [gs1-resolver]
+      operationId: resolveCompressed
+      summary: Resolve the special compressed form carrying an EPC binary string.
+      description: |
+        One path segment beginning `eh` (hexadecimal) or `ex` (URI-safe base
+        64), decoded under the GS1 Digital Link URI Compression standard for
+        EPC binary strings and the Tag Data Standard for SGTIN-96 and
+        SGTIN-198, then resolved exactly as the uncompressed request would be
+        under this origin, with the query string carried across. A segment that
+        is neither prefix, an EPC scheme the profile does not implement, or a
+        string that does not decode answers 400 with the reason and never
+        resolves to something plausible.
+      parameters:
+        - name: compressed
+          in: path
+          required: true
+          schema: { type: string, pattern: '^(eh|ex)[A-Za-z0-9_-]+$' }
+      responses:
+        '200': { description: As the uncompressed request. }
+        '300': { description: As the uncompressed request. }
+        '307': { description: As the uncompressed request. }
+        '400':
+          description: The compression string does not decode, or the segment is not a compression string.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResolverRefusal' }
+        '404': { description: As the uncompressed request. }
+
+  /capabilities:
+    get:
+      summary: Current representations, discovery and overlay contracts, and what is explicitly not supported; no certification claim.
+      responses:
+        '200':
+          description: Supported representations and proof suites, the interoperability profiles in force, the two readiness statements under `unsupported`, tm_attestation, ls_attestation and legacy intake configuration.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Capabilities' }
   /attestations:
     get:
       tags: [attestation]
@@ -425,6 +655,7 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/NativeLifecycleSubmission'
                 - $ref: '#/components/schemas/SealSubmission'
+                - $ref: '#/components/schemas/ExternalCredentialSubmission'
       responses:
         '202':
           description: Verified input accepted. Anchored can be false; broadcast is not confirmed inclusion.
@@ -437,7 +668,7 @@ paths:
                   accepted: { const: true }
                   attestationId: { type: string }
                   digest: { type: string, pattern: '^[0-9a-f]{64}$' }
-                  representation: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1] }
+                  representation: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] }
                   mediaType: { enum: [application/json, application/vc+ld+json] }
                   verdict: { const: valid }
                   verification: { type: object, description: Named checks and their evidence scope; native validity does not imply VSC conformance. }
@@ -449,8 +680,13 @@ paths:
                   unannounced: { type: string }
         '400': { description: Malformed or duplicate-key JSON, or disabled legacy intake. }
         '401': { $ref: '#/components/responses/Unauthorised' }
-        '409': { description: Duplicate attestation identifier. }
-        '422': { description: Invalid, unsupported or indeterminate verification; nothing stored or anchored. }
+        '409':
+          description: |
+            The identifier is already secured here: `duplicate_attestation`
+            for the same bytes, `credential_id_collision` for different bytes
+            under one identifier, whose earlier bytes are kept. Nothing is
+            stored or anchored either way.
+        '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement answers here with outcome unsupported." }
       security:
         - {}
         - writeToken: []
@@ -576,6 +812,7 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/ValidateNativeRequest'
                 - $ref: '#/components/schemas/ValidateSealRequest'
+                - $ref: '#/components/schemas/ValidateExternalRequest'
                 - $ref: '#/components/schemas/ValidateRequest'
       responses:
         '200':
@@ -946,6 +1183,93 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Problem' }
+    OutsideNamespace:
+      description: The GTIN is outside the namespaces this deployment administers (`RESOLVER_NAMESPACES`); a check digit, a DID, a host or an account grants no authority over it.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NamespacesUnconfigured:
+      description: No namespace is configured, so no record can be written; the answer says which variable names one.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  pathItems:
+    gs1ResolverEntity:
+      x-dpp-origin: resolver
+      summary: Resolve a GS1 Digital Link URI for primary key 01 at any granularity.
+      description: |
+        One path item for the eight combinations the URI syntax admits under
+        primary key 01: the GTIN alone, and with the consumer product variant
+        (22), the lot (10) and the serial (21) in that order. The handler
+        reads the whole request URI under the package's grammar; the router
+        registers each combination because it matches by segment count.
+        Data attributes travel as query parameters keyed by AI; `linkType`
+        names a link type as a `gs1:` term, a full IRI, or `linkset` (`all`).
+
+        Answers, exactly as the resolver standard's flow chart: the linkset
+        for `linkType=linkset` or an `Accept` of `application/linkset+json`;
+        307 to the default link, or to the requested link type's best match by
+        media type, language and context, with the request's query string
+        forwarded (except `linkType`) unless the link declines it; 300 with the
+        candidates as a linkset when the best match is not unique; 404 with
+        the available links when the requested type is not registered; 404
+        with nothing beside it for an identifier nobody registered; 400 for a
+        URI the grammar refuses. An error is never a 200. Every linkset anchor
+        is the uncompressed URI of the record the link was registered at, so
+        a link found at the GTIN level under a serialised request is model
+        information and is not evidence that an item passport exists. A
+        `text/html` request with no `linkType` is sent to the default link,
+        which a deployment points at its existing passport page.
+
+        Responses vary on `Accept` and `Accept-Language`, public answers are
+        cacheable for 300 seconds, and a public audience is never returned a
+        restricted link.
+      parameters:
+        - name: gtin
+          in: path
+          required: true
+          description: AI 01, 8 to 14 digits; left-padded to GTIN-14. The check digit is reported, not enforced on reading.
+          schema: { type: string, pattern: '^[0-9]{8,14}$' }
+        - name: linkType
+          in: query
+          required: false
+          schema: { type: string }
+      get:
+        tags: [gs1-resolver]
+        operationId: resolveGs1DigitalLink
+        summary: Resolve the identifier to a link or a linkset.
+        responses:
+          '200':
+            description: The linkset.
+            headers:
+              Link:
+                description: The pinned JSON-LD context of the linkset, under the relation `http://www.w3.org/ns/json-ld#context`.
+                schema: { type: string }
+              Vary: { schema: { type: string } }
+              Cache-Control: { schema: { type: string } }
+            content:
+              application/linkset+json:
+                schema: { $ref: '#/components/schemas/Linkset' }
+          '300':
+            description: The best match for the requested type is not unique; the candidates as a linkset.
+            content:
+              application/linkset+json:
+                schema: { $ref: '#/components/schemas/Linkset' }
+          '307':
+            description: The default link, or the requested type's best match, with the query string forwarded.
+            headers:
+              Location: { schema: { type: string, format: uri } }
+          '400':
+            description: The URI is refused by the grammar, with the standard's reason.
+            content:
+              application/json:
+                schema: { $ref: '#/components/schemas/ResolverRefusal' }
+          '404':
+            description: No record is registered for the identifier, or the requested link type is not registered (then `available` carries the links that are).
+            content:
+              application/json:
+                schema: { type: object }
 
   schemas:
     NativeLifecycleClaim:
@@ -991,6 +1315,151 @@ components:
       allOf:
         - $ref: '#/components/schemas/SealEnvelope'
       unevaluatedProperties: false
+    ExternalCredentialEnvelope:
+      type: object
+      required: [representation, credential]
+      description: |
+        The external ecdsa-rdfc-2019 credential representation of the
+        standard's `spec/external-credential-profile.md`: a W3C Verifiable
+        Credentials 2.0 credential secured with a `DataIntegrityProof` under
+        `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists
+        the key for assertion. Verified through the VSC package's separate
+        `exchange` entry point under the `external` section of the operator's
+        verification bundle, never under the SEAL rules. The exact issued
+        bytes are what is retained and anchored; a reformatted copy has a
+        different digest even where its RDF proof still verifies.
+      properties:
+        representation: { const: 'vc-di-ecdsa-rdfc-2019@1' }
+        credential: { type: string, description: Exact UTF-8 JSON string of the complete issued credential including its proof, at most 256 KiB. }
+        subject:
+          type: string
+          description: >-
+            The passport identifier the caller expects. It never overrides the
+            signed subject: it must equal it, or be bound to it by the
+            operator's subject-binding policy with an evidence reference, else
+            the submission is refused as a subject mismatch.
+    ExternalCredentialSubmission:
+      allOf:
+        - $ref: '#/components/schemas/ExternalCredentialEnvelope'
+      unevaluatedProperties: false
+    ValidateExternalRequest:
+      description: An external credential envelope for `POST /validate`, with the operation's own `tokenHistory` beside it.
+      allOf:
+        - $ref: '#/components/schemas/ExternalCredentialEnvelope'
+      properties:
+        tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
+      unevaluatedProperties: false
+    Capabilities:
+      type: object
+      required: [protocol, topic, lookupService, representations, vscProfile, vscConformance, proofSuites, interoperability, unsupported, legacyIntake]
+      properties:
+        protocol: { const: attestation-registry/1 }
+        topic: { const: tm_attestation }
+        lookupService: { const: ls_attestation }
+        representations: { type: array, items: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] } }
+        vscProfile: { const: vsc-draft-compat/0.1.0 }
+        vscConformance: { const: not-certified }
+        proofSuites: { type: array, items: { enum: [Ed25519Signature2020, bbs-2023, ecdsa-rdfc-2019] } }
+        interoperability:
+          type: object
+          required: [discovery, externalCredential, externalCredentialPolicy]
+          properties:
+            discovery: { enum: ['gs1-digital-link@1', not-configured] }
+            resolverOrigin: { type: string, format: uri }
+            externalCredential: { const: 'vc-di-ecdsa-rdfc-2019@1' }
+            externalCredentialPolicy: { enum: [configured, not-configured] }
+        unsupported:
+          type: array
+          description: What is explicitly not implemented, each with its reason; the two readiness statements are carried verbatim from the programme's readiness records.
+          items:
+            type: object
+            required: [id, reason]
+            properties:
+              id: { type: string }
+              reason: { type: string }
+        legacyIntake: { type: boolean }
+    ResolverRefusal:
+      type: object
+      required: [error, reason, detail]
+      properties:
+        error: { enum: [invalid-digital-link, invalid-compressed-digital-link, link-type-unrecognised] }
+        reason: { type: string, description: The grammar's or the decoder's reason, as the profiles package names it. }
+        detail: { type: string }
+        epcHeader: { type: string, description: The EPC header as two hex digits, when a compression string carried a scheme the profile does not implement. }
+    Linkset:
+      type: object
+      description: RFC 9264 as the GS1 linkset schema shapes it; validated against the pinned schema `packages/dpp-profiles/schemas/gs1/resolver-linkset-schema-1.2.1.json`.
+      required: [linkset]
+      properties:
+        linkset:
+          type: array
+          items:
+            type: object
+            required: [anchor]
+            properties:
+              anchor: { type: string, format: uri, description: The uncompressed URI of the record the links were registered at, never the request's. }
+            additionalProperties: true
+    ResolutionLink:
+      type: object
+      required: [rel, href, title, disclosure]
+      properties:
+        rel: { type: string, description: The descriptive link relation type as a full IRI. }
+        href: { type: string, format: uri }
+        title: { type: string }
+        type: { type: string }
+        hreflang: { type: array, items: { type: string } }
+        context: { type: array, items: { type: string } }
+        default: { enum: [single, multi] }
+        disclosure: { enum: [public, restricted] }
+        forwardQuery: { type: boolean }
+    ResolutionRecordInput:
+      type: object
+      required: [key, qualifiers, links]
+      properties:
+        key:
+          type: object
+          required: [ai, value]
+          properties:
+            ai: { const: '01' }
+            value: { type: string, pattern: '^[0-9]{8,14}$' }
+        qualifiers:
+          type: array
+          items:
+            type: object
+            required: [ai, value]
+            properties:
+              ai: { enum: ['22', '10', '21'] }
+              value: { type: string, minLength: 1, maxLength: 20 }
+        passportId: { type: string, description: The exact signed passport identifier bound to this entity, where the binding is established; never inferred from the key. }
+        bindingRef: { type: string }
+        links: { type: array, items: { $ref: '#/components/schemas/ResolutionLink' } }
+        description: { type: string }
+    ResolutionRecord:
+      allOf:
+        - $ref: '#/components/schemas/ResolutionRecordInput'
+        - type: object
+          required: [keyTuple, configurationRevision, updatedAt]
+          properties:
+            keyTuple: { type: string }
+            configurationRevision: { type: string }
+            updatedAt: { type: string, format: date-time }
+    ResolutionRecordSummary:
+      type: object
+      required: [keyTuple, key, qualifiers, links, configurationRevision, updatedAt]
+      properties:
+        keyTuple: { type: string }
+        key: { type: object }
+        qualifiers: { type: array }
+        links: { type: integer, description: How many links the record carries. }
+        configurationRevision: { type: string }
+        updatedAt: { type: string, format: date-time }
+        passportId: { type: string }
+    ResolutionRecordWritten:
+      type: object
+      required: [outcome, record]
+      properties:
+        outcome: { enum: [inserted, replaced] }
+        record: { $ref: '#/components/schemas/ResolutionRecord' }
     ValidateSealRequest:
       description: A VSC envelope for `POST /validate`, with the operation's own `tokenHistory` beside it.
       allOf:
@@ -1186,7 +1655,7 @@ components:
       required: [profile, nativeOperation, nativeOperationSource, evidenceFacets, outcome, missingEvidence, losses, mappedFields, unmappedFields]
       properties:
         profile: { type: string, description: '`{id}@{version}` the mapping was computed under.' }
-        nativeOperation: { enum: [ACTIVATE, SOLD, RESOLD, REPAIRED, RECYCLED, EDIT, TRANSFER] }
+        nativeOperation: { enum: [ACTIVATE, SOLD, RESOLD, REPAIRED, RECYCLED, EDIT, TRANSFER, ISSUE, UPDATE, RETIRE] }
         nativeOperationSource: { enum: [token-state, event-type] }
         evidenceFacets: { type: array, items: { type: string } }
         outcome: { enum: [lossless, transformed, unsupported, insufficient-data] }

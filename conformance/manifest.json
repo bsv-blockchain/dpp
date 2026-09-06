@@ -112,7 +112,7 @@
       "version": "0.2.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "afb5d69e6ee6233af8c7c5194b8af037b9a98ea081d86be73fd5c547f65ebc16"
+      "digest": "c83543a08bddaf0a813837577574d95c509a8d4e6aab520e0de7448c558cdded"
     },
     {
       "id": "contract-report-schema",
@@ -152,7 +152,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "2a1e29aaa7affa47b81962136d2c9494ed2f9f8df404b6453a011d12bf20c3ad"
+      "digest": "7495f64a8d1cffa93e7ca22a68afd56dfe43276b9d6881cfe6b74b33f1c80f92"
     },
     {
       "id": "profiles-manifest-schema",
@@ -168,7 +168,7 @@
       "version": "frozen 2026-09-05",
       "kind": "local",
       "path": "packages/dpp-profiles/frozen.json",
-      "digest": "d8576103fcd07b2d56d61d984910b97159e2fa1a35037aa2c75efa6d70d93f87",
+      "digest": "7138a3cb86615f7fed9b66ead25becb4adf303408080cd0cbe9db835c09eda3e",
       "notes": "The digests battery@2, textile@2, general@2, textile@1 and general@1 are held to."
     },
     {
@@ -400,7 +400,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/exchange.md",
-      "digest": "3f4b24a729710b928934cfd9a2a2cd6a64c5b29533e90ea52617f91972169096"
+      "digest": "985ba0365cb32077e9c4001f0df3c2f6cad698a82bd73f183239c90bb8a59d47"
     },
     {
       "id": "contract-native-evidence-extension",
@@ -472,7 +472,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "188e1790eff2178507487af243709a3b0e23d0deac24f4d4041903dc7e50fbe2"
+      "digest": "2fd3fbc78a143903a782af35f60607564c6e662027fedbec483d62ade4fd8275"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -504,7 +504,159 @@
       "version": "0.1.0",
       "kind": "local",
       "path": "packages/dpp-profiles/src/combinations.ts",
-      "digest": "01ad3109d5fcc27905b1a76a5c93f483735fff1ac3050fb72189ff219862d87a"
+      "digest": "0288a5bbcd7dd3842123917587cf4dcb8288c477116b15950e15e77e295fd2bf"
+    },
+    {
+      "id": "spec-gs1-discovery",
+      "uri": "spec/gs1-discovery.md",
+      "version": "gs1-digital-link@1",
+      "kind": "local",
+      "path": "spec/gs1-discovery.md",
+      "digest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5"
+    },
+    {
+      "id": "spec-epcis-interoperability",
+      "uri": "spec/epcis-interoperability.md",
+      "version": "epcis-json@1, epcis-vsc@1",
+      "kind": "local",
+      "path": "spec/epcis-interoperability.md",
+      "digest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+    },
+    {
+      "id": "spec-external-credential-profile",
+      "uri": "spec/external-credential-profile.md",
+      "version": "vc-di-ecdsa-rdfc-2019@1",
+      "kind": "local",
+      "path": "spec/external-credential-profile.md",
+      "digest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+    },
+    {
+      "id": "spec-passport-projections",
+      "uri": "spec/passport-projections.md",
+      "version": "passport-projection@1",
+      "kind": "local",
+      "path": "spec/passport-projections.md",
+      "digest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37"
+    },
+    {
+      "id": "contract-interoperability",
+      "uri": "contracts/interoperability.yaml",
+      "version": "0.1.0-draft",
+      "kind": "local",
+      "path": "contracts/interoperability.yaml",
+      "digest": "adc11c1a78ba67989956b72c4261b36943128f44468baea3ae9f01c93c627b6a"
+    },
+    {
+      "id": "contract-epcis-import",
+      "uri": "contracts/epcis-import.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/epcis-import.schema.json",
+      "digest": "23c4167319c6b269a908426d6d23499fe8c19ab9949342f3de8e13b4885b4bdb"
+    },
+    {
+      "id": "contract-passport-source",
+      "uri": "contracts/passport-source.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/passport-source.schema.json",
+      "digest": "bfd9b06926b093f0cf8cd51dbcb9a5431d8a3656f058236166c9ef72003e2a78"
+    },
+    {
+      "id": "contract-passport-projection",
+      "uri": "contracts/passport-projection.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/passport-projection.schema.json",
+      "digest": "c489252c83fc3708f984dcbbff4b914cf20ada6ca47818b7ab89a2dbebd52ed9"
+    },
+    {
+      "id": "contract-profile-evidence",
+      "uri": "contracts/profile-evidence.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/profile-evidence.schema.json",
+      "digest": "08d6521c4ae69860c940cfd4ee1e2c8f9f4a16a9f5dd951352037b32add91261"
+    },
+    {
+      "id": "profiles-interoperability-schema",
+      "uri": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
+      "digest": "7a1dfd887af7b278b25c2a5d6f19c409790825da558416a9d55b2b7509fa922f"
+    },
+    {
+      "id": "profiles-manifest-v2-schema",
+      "uri": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
+      "version": "2",
+      "kind": "local",
+      "path": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
+      "digest": "983284a926c7d3cfa814ca0b5179f42db85951230eb44afb7b79595c013a3a44"
+    },
+    {
+      "id": "gs1-uri-syntax",
+      "uri": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/",
+      "version": "1.7.0",
+      "kind": "public",
+      "attribution": "GS1",
+      "notes": "The grammar of primary key 01 with its qualifiers and data attributes that gs1-digital-link@1 reads."
+    },
+    {
+      "id": "gs1-epc-compression",
+      "uri": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/",
+      "version": "1.0.0 (July 2025)",
+      "kind": "public",
+      "attribution": "GS1",
+      "notes": "The EPC binary form of a compressed Digital Link URI (prefixes eh and ex) a conformant resolver decompresses; its two worked examples are vectors."
+    },
+    {
+      "id": "gs1-tds",
+      "uri": "https://ref.gs1.org/standards/tds/",
+      "version": "current standard at review",
+      "kind": "public",
+      "attribution": "GS1",
+      "notes": "The SGTIN-96 and SGTIN-198 binary encodings the decompression decodes; other schemes are refused by name."
+    },
+    {
+      "id": "epcis-2.0.1",
+      "uri": "https://ref.gs1.org/standards/epcis/2.0.1/",
+      "version": "2.0.1",
+      "kind": "public",
+      "attribution": "GS1",
+      "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) carried under packages/vsc/artifacts/epcis/ and the REST binding pinned by digest 3d33792c... in the epcis-json@1 manifest."
+    },
+    {
+      "id": "w3c-vc-di-ecdsa",
+      "uri": "https://www.w3.org/TR/2025/REC-vc-di-ecdsa-20250515/",
+      "version": "Recommendation 15 May 2025",
+      "kind": "public",
+      "attribution": "W3C",
+      "notes": "The ecdsa-rdfc-2019 cryptosuite vc-di-ecdsa-rdfc-2019@1 verifies through the maintained @digitalbazaar implementation."
+    },
+    {
+      "id": "rfc-8785",
+      "uri": "https://www.rfc-editor.org/rfc/rfc8785",
+      "version": "RFC 8785",
+      "kind": "public",
+      "attribution": "IETF",
+      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 4.0.0) and the EPCIS event body digest (packages/vsc/src/jcs.ts)."
+    },
+    {
+      "id": "eu-battery-guidance-2026-08",
+      "uri": "https://single-market-economy.ec.europa.eu/document/download/cd1e5e6c-4a4a-4b99-995a-49eb6916187e_en",
+      "version": "Version 2.0, 15 August 2026 (CC BY 4.0), sha256 e045a7668015520f4c353e72fb57a89bdd62baaf0a98e6f4aefc7f5f42819eb7",
+      "kind": "public",
+      "attribution": "European Commission (not its official position, by its own disclaimer)",
+      "notes": "The data points by category the battery@3 draft applies as requirement statuses and applicability rules; guidance, not a legal instrument."
+    },
+    {
+      "id": "eu-registry-2026-1778",
+      "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32026R1778",
+      "version": "Commission Implementing Regulation (EU) 2026/1778 of 16 July 2026, sha256 9cebbf082dfa4234a19d87c498138c506672333db6dd17f969f832da4523e805",
+      "kind": "public",
+      "attribution": "European Union",
+      "notes": "The Union digital product passport registry; no adapter is implemented and the readiness gate is recorded outside the repository."
     }
   ],
   "requirements": [
@@ -513,7 +665,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A passport state is one output: key, OP_CHECKSIG, fourteen minimal pushes, seven OP_2DROP; exactly one DPP output per transaction.",
       "layer": "core",
       "roles": [
@@ -543,7 +695,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "OP_0 is the empty field and its only encoding; the single byte 0x00 is refused however pushed; non-minimal pushes of non-empty fields are accepted; UTF-8 fields must round-trip.",
       "layer": "core",
       "roles": [
@@ -572,7 +724,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "The fourteen fields, their encodings, bounds (passport_id 512 bytes, actor_keyID 256 bytes), canonical compressed keys, the strict timestamp grammar and the JSON rules.",
       "layer": "core",
       "roles": [
@@ -602,7 +754,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§3, the paragraph after the field table",
+      "clause": "\u00a73, the paragraph after the field table",
       "summary": "A writer publishes a GS1 Digital Link passport_id only under a prefix licensed to the brand described, or under prefix 952 for a record describing no real object; the check digit is correct when written.",
       "layer": "role",
       "roles": [
@@ -630,7 +782,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "Seven operations; ACTIVATE at genesis only; payload changes only on ACTIVATE, EDIT, TRANSFER; owner changes only on TRANSFER; event_data empty on ACTIVATE and EDIT.",
       "layer": "core",
       "roles": [
@@ -658,7 +810,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§5",
+      "clause": "\u00a75",
       "summary": "User signature over fields 1 to 12 under [1, 'dpp token v1'] with actor_keyID and counterparty anyone; server signature over fields 1 to 13 with passport_id; both via BRC-100 createSignature.",
       "layer": "core",
       "roles": [
@@ -686,7 +838,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "The seven chain invariants, including the three-way spend check.",
       "layer": "core",
       "roles": [
@@ -718,7 +870,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§7",
+      "clause": "\u00a77",
       "summary": "The owner-tier blob's SHA-256 is field 11; a blob against an empty commitment is a refusal; disclosure is cryptographic.",
       "layer": "core",
       "roles": [
@@ -745,7 +897,7 @@
       "sourceId": "spec-record-model",
       "sourceUri": "spec/record-model.md",
       "sourceVersion": "working draft",
-      "clause": "§8",
+      "clause": "\u00a78",
       "summary": "Verified means signatures, linkage and inclusion; inclusion has three outcomes and an unreachable header source is pending, never failed; a proof that does not contain the transaction fails.",
       "layer": "core",
       "roles": [
@@ -774,7 +926,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A version 2 state is one output: key, OP_CHECKSIG, seventeen minimal pushes, eight OP_2DROP and one OP_DROP; the version is selected by field count, a layout carrying the other version's string is refused, and an unknown version is no DPP output; every version 1 reading rule applies.",
       "layer": "core",
       "roles": [
@@ -807,7 +959,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "The seventeen fields: the version 1 rules for the shared fields, event_data JSON or empty at most 4096 bytes on every operation, payload_public at most 65535 bytes, lineage_genesis and previous_outpoint empty or 36 bytes, control_linkage and authorisation_commitment empty or 32 bytes, control_linkage empty on ISSUE.",
       "layer": "core",
       "roles": [
@@ -841,7 +993,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "Four operations: ISSUE at genesis only; controller_key changes only on TRANSFER; payload_public and payload_owner_hash unchanged on RETIRE; RETIRE terminal; event_data JSON or empty on every operation; the version 1 vocabulary is a profile's property of event_data.",
       "layer": "core",
       "roles": [
@@ -871,7 +1023,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§5",
+      "clause": "\u00a75",
       "summary": "Both preimages are VarInt-framed and opened by a domain tag (dpp-record-v2/actor-signature, dpp-record-v2/publisher-signature); keys derive under [1, 'dpp token v2'] with actor_keyID and passport_id as key identifiers, counterparty anyone; a version 1 signature verifies under nothing in version 2 and a signature in the wrong slot fails.",
       "layer": "core",
       "roles": [
@@ -905,7 +1057,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "The nine invariants: one DPP output; the genesis rules and a genesis that spends an admitted output refused; no ISSUE, no state after RETIRE and only an UPDATE after a version 1 state; previous_outpoint equal to the spent tip on txid, index and structural spend; lineage_genesis equal to the chain genesis and never assumed; immutable passport_id; controller_key only on TRANSFER and unchanged on the upgrade; RETIRE payload immutable; control proven; no downgrade.",
       "layer": "core",
       "roles": [
@@ -939,7 +1091,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "On every UPDATE, TRANSFER and RETIRE the actor proves control of the previous state in the fixed order equality, named authority, linkage; a scalar beside a settled proof is refused as redundant; a missing or non-linking scalar is refused; authorities are the verifier's policy and never the record's.",
       "layer": "core",
       "roles": [
@@ -974,7 +1126,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§8",
+      "clause": "\u00a78",
       "summary": "authorisation_commitment is the SHA-256 of a profile-defined authorisation record; the record model accepts it on any operation, a profile says where it is required, and a verifier that cannot obtain the record reports the artefact unavailable and not the state invalid.",
       "layer": "core",
       "roles": [
@@ -1007,7 +1159,7 @@
       "sourceId": "spec-record-model-v2",
       "sourceUri": "spec/record-model-v2.md",
       "sourceVersion": "working draft",
-      "clause": "§9",
+      "clause": "\u00a79",
       "summary": "Verified means signatures, linkage and inclusion under each state's own version, with the upgrade rule at the boundary and the optional publisher check; a mixed history is verified state by state.",
       "layer": "core",
       "roles": [
@@ -1039,7 +1191,7 @@
       "sourceId": "spec-custody",
       "sourceUri": "spec/custody.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "Field 6 should be the owner's BRC-42 child under [1, 'dpp owner v1'] with passport_id and counterparty self.",
       "layer": "profile",
       "roles": [
@@ -1066,7 +1218,7 @@
       "sourceId": "spec-custody",
       "sourceUri": "spec/custody.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "The optional owner-signed transfer: equality, then transfer authorities, then owner_linkage with one accepted spelling.",
       "layer": "profile",
       "roles": [
@@ -1097,7 +1249,7 @@
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "The dpp-managed-acceptance@1 record: its exact properties and bounds, the nested canonical JSON, the custodian's direct signature over the unsigned form, the SHA-256 commitment over the signed form, the time order and the named-recipient consistency, with structure, signature and time order reported separately.",
       "layer": "profile",
       "roles": [
@@ -1129,7 +1281,7 @@
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "A record binds to a TRANSFER on operation, passport, lineage, predecessor, destination, holder, commitment and time order, each mismatch named; under the profile a version 2 TRANSFER without a commitment is refused, and the same bytes pass with the profile off.",
       "layer": "profile",
       "roles": [
@@ -1163,7 +1315,7 @@
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "An offer is idempotent by requestId and fixes the tip, the terms digest and the expiry; an offer accepts once, may be declined or expire with no chain state, and one acceptance executes at most one TRANSFER, retried and never rebuilt against another tip.",
       "layer": "role",
       "roles": [
@@ -1188,7 +1340,7 @@
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
-      "clause": "§5",
+      "clause": "\u00a75",
       "summary": "The profile is reported in three places and never as one word: acceptance-commitment-absent on linkage, the acceptance record under evidenceAvailability as pass, referenced-artefact-mismatch or referenced-artefact-unavailable, the custodian under issuerAuthority as acceptance-custodian, and the custody-dependence sentence in limits.",
       "layer": "profile",
       "roles": [
@@ -1220,7 +1372,7 @@
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
-      "clause": "§7",
+      "clause": "\u00a77",
       "summary": "An index or verifier declares the profile as a custody profile entry managed-custody@1 with acceptanceCommitment required and its control authorities, or record-model-baseline@2 when it does not require the commitment; the reference index selects it with ACCEPTANCE_COMMITMENT=required and names authorities with CONTROL_AUTHORITIES.",
       "layer": "role",
       "roles": [
@@ -1248,7 +1400,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "The native claim's exact properties and bounds; signature over the restricted canonical JSON excluding signature under [1, 'dpp attestation v1'] with passportId; a nominated issuerKeyDid never authenticates a resolvable issuer.",
       "layer": "core",
       "roles": [
@@ -1276,7 +1428,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A version 2 operation is read for mapping as the version 1 operation it stands for (ISSUE as ACTIVATE, UPDATE as EDIT, TRANSFER as TRANSFER, RETIRE as RECYCLED) with the same event type, facets and conditions.",
       "layer": "core",
       "roles": [
@@ -1301,7 +1453,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "Two representations with distinct hashed bytes: canonical complete signed native claim, exact UTF-8 VSC credential; duplicate JSON keys refused; a presentation never inherits the anchored digest.",
       "layer": "core",
       "roles": [
@@ -1333,7 +1485,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§5",
+      "clause": "\u00a75",
       "summary": "bsv-attestation-anchor-v1: ten fields, nine length-framed signed fields, derived locking key under [1, 'bsv attestation anchor v1'] with attestationId, exactly five OP_2DROP, strict bounds and UTF-8.",
       "layer": "core",
       "roles": [
@@ -1365,7 +1517,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "A reader checks exact script, service signature and derivation, then the supplied secured bytes against the digest and every carried metadata field against verified content; unsupported representations remain unsupported.",
       "layer": "core",
       "roles": [
@@ -1395,7 +1547,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§7",
+      "clause": "\u00a77",
       "summary": "uora-anchor-v3 outputs stay historical under their old digest rule; uora-anchor-v2 stays refused; legacy topics are not aliases for new evidence.",
       "layer": "core",
       "roles": [
@@ -1428,7 +1580,7 @@
       "sourceId": "spec-legacy-anchor-v3",
       "sourceUri": "spec/legacy-uora-anchor-v3.md",
       "sourceVersion": "historical",
-      "clause": "§4 to §6",
+      "clause": "\u00a74 to \u00a76",
       "summary": "The historical native anchor v3: canonical unsigned claim, seven fields, length-delimited preimage, derived locking key, and its refusals; readable, never reinterpreted.",
       "layer": "core",
       "roles": [
@@ -1457,7 +1609,7 @@
       "sourceId": "spec-identity",
       "sourceUri": "spec/identity.md",
       "sourceVersion": "working draft",
-      "clause": "§1",
+      "clause": "\u00a71",
       "summary": "Subject, issuer, verification method, controller, custodian and operator are distinct; an application account is none of them by definition and confers no authority.",
       "layer": "core",
       "roles": [
@@ -1487,7 +1639,7 @@
       "sourceId": "spec-identity",
       "sourceUri": "spec/identity.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "did:key for canonical compressed secp256k1 keys; the actor identity key is a BRC-42 parent and the signing child is distinct; other curves refused for native keys.",
       "layer": "core",
       "roles": [
@@ -1515,7 +1667,7 @@
       "sourceId": "spec-identity",
       "sourceUri": "spec/identity.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Under the VSC profile the actor DID equals the issuer and the proof's verification method is authorised for assertion in the issuer's DID document; a did:web document is identity, not accreditation.",
       "layer": "profile",
       "roles": [
@@ -1566,7 +1718,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A writer runs the verifier's own checks on the unsent candidate against the tip it spends before broadcast or announcement; an anchor writer validates the representation, hashes the complete bytes and decodes its own anchor.",
       "layer": "role",
       "roles": [
@@ -1593,7 +1745,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Where an index is named, build unsent, announce, and send only on admission; an unreachable index is not a refusal.",
       "layer": "role",
       "roles": [
@@ -1616,7 +1768,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "Serialise writes per passport; spend a tip again only after the first spend's fate is known; a queued broadcast is not a written state.",
       "layer": "role",
       "roles": [
@@ -1639,7 +1791,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§5",
+      "clause": "\u00a75",
       "summary": "The wallet broadcasts; a deployment should use ARC-compatible endpoints with proof callbacks, more than one, with fee policy read from the endpoint and the monitor running; the standard names no confirmation depth.",
       "layer": "role",
       "roles": [
@@ -1662,7 +1814,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "A failed announcement never fails a record and is retried, never rebuilt; announce with the predecessor's bytes; backfill in chain order.",
       "layer": "role",
       "roles": [
@@ -1684,7 +1836,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§7",
+      "clause": "\u00a77",
       "summary": "Obtain the merkle path once mined, attach it, keep it, and offer it to every announced index through its proof-ingestion route.",
       "layer": "role",
       "roles": [
@@ -1709,7 +1861,7 @@
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
       "sourceVersion": "working draft",
-      "clause": "§8",
+      "clause": "\u00a78",
       "summary": "Retain the raw transaction, its BEEF and its proof for the passport's life; for attestations also the original secured representation, identifier, digest and verification observations.",
       "layer": "role",
       "roles": [
@@ -1733,7 +1885,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§1",
+      "clause": "\u00a71",
       "summary": "Public overlays should advertise through SHIP/SLAP; discovery, synchronisation and retention are declared and tested before a deployment is called independently replicated; the reference node does not enable peer synchronisation.",
       "layer": "profile",
       "roles": [
@@ -1762,7 +1914,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "tm_dpp admits a state on the native rules, the configured publisher key and the selected custody policy, retaining spent tips; ls_dpp answers by passport identifier or data carrier.",
       "layer": "role",
       "roles": [
@@ -1791,7 +1943,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "tm_dpp admits a version 2 state only when its lineage genesis is traceable through the submitted bytes or the admitted history, never after a RETIRE, never as a genesis spending an admitted output, and under managed-custody@1 never as a TRANSFER without its commitment; the refused spend keeps the tip.",
       "layer": "role",
       "roles": [
@@ -1819,7 +1971,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "tm_attestation admits an anchor on its exact script, framed signature and derived key, optionally restricted to named anchoring services; it validates no credential absent from the transaction.",
       "layer": "role",
       "roles": [
@@ -1847,7 +1999,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "Anchor lookup uses exact metadata selectors and an exact outpoint cursor; a truncated answer is never described as complete.",
       "layer": "role",
       "roles": [
@@ -1874,7 +2026,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A pushed proof is checked to contain the transaction and validated against the index's header source before storage; unavailable headers defer, never refuse.",
       "layer": "role",
       "roles": [
@@ -1900,7 +2052,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "The registry stores complete original bytes, media type, representation, digest, verified metadata and a scoped report; current representations never fall through to legacy intake; a VSC credential acquires no fabricated token state.",
       "layer": "role",
       "roles": [
@@ -1932,7 +2084,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Legacy intake is off by default and, when enabled, carries only its historical assurance.",
       "layer": "profile",
       "roles": [
@@ -1958,7 +2110,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "Replay of an admitted outpoint is idempotent; eviction and recovery use the same exact evidence rules.",
       "layer": "role",
       "roles": [
@@ -1986,7 +2138,7 @@
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "The report: version 1, injected checkedAt, expected subject, supplied tip, policy, sixteen checks in order, observations and limits; no aggregate verdict.",
       "layer": "core",
       "roles": [
@@ -2017,7 +2169,7 @@
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "The expected subject comes from the request context or an established binding, never from the evidence; two genesis records under one identifier stay candidates.",
       "layer": "core",
       "roles": [
@@ -2047,7 +2199,7 @@
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "Sixteen named checks with pass, fail, unknown or not-applicable; a missing input is unknown; a token pass says nothing about the anchor rail; shared reason codes.",
       "layer": "core",
       "roles": [
@@ -2076,7 +2228,7 @@
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
-      "clause": "§5 and §6",
+      "clause": "\u00a75 and \u00a76",
       "summary": "Latest state observed, superseded, conflicting or unknown from named sources with candidates visible; never a proof; limits stated.",
       "layer": "core",
       "roles": [
@@ -2103,7 +2255,7 @@
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "The report is unchanged in shape and version; linkage carries lineage-retired, control-not-proven, version-transition-invalid and acceptance-commitment-absent, evidenceAvailability covers acceptance records, issuerAuthority the acceptance-custodian role, forks are reported apart from rival geneses, and the limits name the version 1 preimage boundary, the custody-dependence of a commitment and a supplied fork.",
       "layer": "core",
       "roles": [
@@ -2136,7 +2288,7 @@
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
-      "clause": "§7",
+      "clause": "\u00a77",
       "summary": "An API, an embedded view and a standalone tool produce equal reports for the pinned cases.",
       "layer": "role",
       "roles": [
@@ -2166,7 +2318,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "The reader quick start works from the fixtures alone: no account, wallet, network or other role.",
       "layer": "role",
       "roles": [
@@ -2193,7 +2345,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "native-baseline@1 names exact wire versions, representations, derivations, refused and historical formats, reason codes, fixtures with digests, role requirements and tested dependency versions.",
       "layer": "reference",
       "roles": [
@@ -2218,7 +2370,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "native-baseline@2 is the same selection with record version 2 current and version 1 read beside it, the version 2 derivation, the managed acceptance representation and the version 2 fixtures; neither baseline supersedes the other before 1.0.",
       "layer": "reference",
       "roles": [
@@ -2244,7 +2396,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "A capability document declares roles, protocols, exact profiles with digests, representations, proof suites, anchor formats, limits and explicit unsupported items.",
       "layer": "core",
       "roles": [
@@ -2269,7 +2421,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "The reference overlay node serves its capability document.",
       "layer": "role",
       "roles": [
@@ -2297,7 +2449,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "Every row has a layer and role scope; a claim is refused while any required row is unassessed or below the claim's minimum status; a moved source digest invalidates its rows pending review.",
       "layer": "core",
       "roles": [
@@ -2322,7 +2474,7 @@
       "sourceId": "vsc-core",
       "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
       "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "SEAL structure and event vector, as selected in spec/vsc-profile.md §2",
+      "clause": "SEAL structure and event vector, as selected in spec/vsc-profile.md \u00a72",
       "summary": "Contexts, types, stable id, issuer DID equal to actor DID, sealVersion 1.0, eventVector what/when/where/who/how, extensions, chainOfCustody, correctionOf, credentialStatus, proof; strict parsing of exact bytes.",
       "layer": "profile",
       "roles": [
@@ -2353,7 +2505,7 @@
       "sourceId": "vsc-core",
       "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
       "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "proof requirements, as selected in spec/vsc-profile.md §3",
+      "clause": "proof requirements, as selected in spec/vsc-profile.md \u00a73",
       "summary": "Genuine Ed25519Signature2020 and bbs-2023 Data Integrity proofs with suite canonicalisation; assertion-purpose check against the issuer's DID document; request-bound BBS derived disclosure with required disclosure fields.",
       "layer": "profile",
       "roles": [
@@ -2381,7 +2533,7 @@
       "sourceId": "w3c-bitstring-status-list",
       "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
       "sourceVersion": "current TR at review",
-      "clause": "validate algorithm, as selected in spec/vsc-profile.md §4",
+      "clause": "validate algorithm, as selected in spec/vsc-profile.md \u00a74",
       "summary": "Verify the list credential's proof, its issuer or an explicitly delegated issuer, identity, purpose, canonical index, temporal validity and freshness before reading the bit; bounded decompression; at least 131072 bits.",
       "layer": "profile",
       "roles": [
@@ -2406,7 +2558,7 @@
       "sourceId": "vsc-requirements",
       "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html",
       "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "trust and authority, as selected in spec/vsc-profile.md §4",
+      "clause": "trust and authority, as selected in spec/vsc-profile.md \u00a74",
       "summary": "Signed scoped VscEventAuthorisation grants from configured trust anchors, with proof, validity and status verified; an explicit not-required policy is a recorded warning, not a pass.",
       "layer": "profile",
       "roles": [
@@ -2431,7 +2583,7 @@
       "sourceId": "vsc-core",
       "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
       "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "custody chain, forks, merges, corrections, as selected in spec/vsc-profile.md §5",
+      "clause": "custody chain, forks, merges, corrections, as selected in spec/vsc-profile.md \u00a75",
       "summary": "Backward parent traversal with path-local cycle detection and a completed-node cache so diamonds pass; branch-height sequences; preallocated fork children; corrections with exactly their target as parent, a new chain at sequence 1, scoped delegation and conflict on competing termini.",
       "layer": "profile",
       "roles": [
@@ -2458,7 +2610,7 @@
       "sourceId": "vsc-core",
       "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
       "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "EPCIS mapping, as selected in spec/vsc-profile.md §6",
+      "clause": "EPCIS mapping, as selected in spec/vsc-profile.md \u00a76",
       "summary": "The five EPCIS event types mapped with the source event retained in a signed round-trip extension; missing time, place, step, disposition or action is an error, never fabricated.",
       "layer": "profile",
       "roles": [
@@ -2643,7 +2795,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§3 and §5 (bounded retrieval)",
+      "clause": "\u00a73 and \u00a75 (bounded retrieval)",
       "summary": "Status and identity documents are fetched with a timeout, a response byte cap, a decompression cap, no automatic redirects and address checks.",
       "layer": "role",
       "roles": [
@@ -2969,10 +3121,10 @@
       "implementationRefs": [],
       "testRefs": [],
       "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-05",
+      "status": "gap",
+      "reviewedAt": "2026-09-06",
       "reviewOwner": "dpp maintainers",
-      "notes": "Harmonised reference."
+      "notes": "Only the NEN catalogue abstract of NEN-EN 18223:2026 is held; the normative text was not accessed, so no representation, media type, schema artefact or conformance clause of the standard is claimed, and a request framed as EN 18223 is representation-unsupported. A serializer needs a separate evidence-backed addendum with the exact scope and vectors."
     },
     {
       "id": "EN-18239",
@@ -3146,7 +3298,7 @@
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "An industry profile is an immutable manifest validating against the manifest schema: identity, status, regulatory line, applicability with enacted, anticipated or needs-review statements, JSON Schema 2020-12 dialect with recorded digests, contexts, stamps, fields, event mappings, access tiers, sources and the identity model.",
       "layer": "core",
       "roles": [
@@ -3176,7 +3328,7 @@
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Fields carry pointer, semantic URI, value type, unit or code list, resolved constraints, cardinality, granularity, provenance, access tier, obligation separate from legal basis and a machine-evaluable applicability rule; needs-review is neither satisfied nor universally required; constraints are resolved, never implied.",
       "layer": "core",
       "roles": [
@@ -3207,7 +3359,7 @@
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "battery@2, textile@2, general@2, textile@1 and general@1 are frozen by digest; a frozen manifest changes only by a new version or a reviewed re-freeze; generation is deterministic and drift is a red test.",
       "layer": "core",
       "roles": [
@@ -3234,7 +3386,7 @@
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
-      "clause": "§5",
+      "clause": "\u00a75",
       "summary": "Model, batch and item granularities with declared parent relations; the enduring passport identifier and genesis are preserved; GS1 check digit, GTIN-14 spelling, demonstration prefix 952 and Digital Link path helpers exist for writers and readers; syntax never proves allocation.",
       "layer": "core",
       "roles": [
@@ -3262,7 +3414,7 @@
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "Application field registries, payload validators and the registry's profile endpoint are generated from the manifest and held identical by a test in each consumer.",
       "layer": "role",
       "roles": [
@@ -3290,7 +3442,7 @@
       "sourceId": "spec-conformance",
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
-      "clause": "§6 (independently-tested)",
+      "clause": "\u00a76 (independently-tested)",
       "summary": "An implementation by another implementing party, importing none of this repository's code for the property, passes every fixture including every refusal vector. A second reader written within this programme is engineering evidence and is recorded here without moving any row to independently-tested.",
       "layer": "reference",
       "roles": [
@@ -3319,7 +3471,7 @@
       "sourceId": "spec-exchange",
       "sourceUri": "spec/exchange.md",
       "sourceVersion": "working draft",
-      "clause": "§1 and §2",
+      "clause": "\u00a71 and \u00a72",
       "summary": "Representations are named and versioned; a reader dispatches on the identifier and reports an unimplemented one as unsupported; each exchange profile is a manifest whose artefacts state their retrieval status and never carry an uncomputed digest.",
       "layer": "core",
       "roles": [
@@ -3348,7 +3500,7 @@
       "sourceId": "spec-exchange",
       "sourceUri": "spec/exchange.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Native claim, original secured credential (identical bytes with mediaType, byteLength, sha256, credentialId, issuer, receivedAt, schemaRefs and report reference), decoded credential and projection are kept apart; a projection has its own identity and signature and never inherits the original's anchor.",
       "layer": "role",
       "roles": [
@@ -3373,7 +3525,7 @@
       "sourceId": "spec-exchange",
       "sourceUri": "spec/exchange.md",
       "sourceVersion": "working draft",
-      "clause": "§4",
+      "clause": "\u00a74",
       "summary": "A signer takes exact bytes, algorithm and key id and never exposes a key; ES256K is a supported suite a consumer must confirm; an optional ES256 suite uses a dedicated, separately authorised P-256 key never derived by the secp256k1 BRC-42 rule.",
       "layer": "role",
       "roles": [
@@ -3429,7 +3581,7 @@
       "sourceId": "spec-exchange",
       "sourceUri": "spec/exchange.md",
       "sourceVersion": "working draft",
-      "clause": "§6",
+      "clause": "\u00a76",
       "summary": "Exact external credential bytes are committed with the generic anchor, representation and media type naming the format, the credential id as attestationId and one signed product identifier as subject; a changed byte fails the digest.",
       "layer": "core",
       "roles": [
@@ -3483,7 +3635,7 @@
       "sourceId": "spec-portable-evidence",
       "sourceUri": "spec/portable-evidence.md",
       "sourceVersion": "working draft",
-      "clause": "§1",
+      "clause": "\u00a71",
       "summary": "An export answers in pages over a stable snapshot with items, nextCursor, snapshotId, scope, truncated and completeForSnapshot, ordered by source sequence then outpoint, with opaque tamper-checked cursors and a named restart on expiry; default 100, maximum 500, no hidden total cap.",
       "layer": "role",
       "roles": [
@@ -3512,7 +3664,7 @@
       "sourceId": "spec-portable-evidence",
       "sourceUri": "spec/portable-evidence.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "dpp-evidence-package@1 is a signed manifest over a content-addressed inventory in nine categories, binding passport, genesis and selected tip, declaring disclosure scope and completeness; the signature authenticates the exporter and inventory only, and a reader verifies every digest, transaction, proof and claim independently.",
       "layer": "role",
       "roles": [
@@ -3544,7 +3696,7 @@
       "sourceId": "spec-portable-evidence",
       "sourceUri": "spec/portable-evidence.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "An operator claiming durable publication keeps an independently administered replica, states RPO and RTO as service objectives not regulatory periods, distinguishes blockchain acceptance from completed durable publication while replication is pending, and encrypts restricted evidence in every copy.",
       "layer": "role",
       "roles": [
@@ -3566,7 +3718,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Registry relations supersedes, revokes, suspends, expires and disputes are independent of token spending; historical authority precedence applies only within one comparable named trust framework, otherwise the conflict is returned unresolved; antecedents resolve by expected identifier and verified content under bounded traversal.",
       "layer": "role",
       "roles": [
@@ -3592,7 +3744,7 @@
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A native-to-external lifecycle mapping is conditional on evidence; its result is exactly one of lossless, transformed, unsupported or insufficient-data, and any result other than lossless lists what was lost or missing.",
       "layer": "role",
       "roles": [
@@ -3645,7 +3797,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§1",
+      "clause": "\u00a71",
       "summary": "Publisher keys are a bounded, versioned set declared in dpp-publisher-policy@1 with roles, activation and retirement times, a superseded-version digest and an authorisation the previous version accepts; a state is checked against the key active at its time, a retired key still authenticates what it signed while active, and handover never moves the spending key by editing a list.",
       "layer": "role",
       "roles": [
@@ -3678,7 +3830,7 @@
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
-      "clause": "§3",
+      "clause": "\u00a73",
       "summary": "Every profile field declares whether its value is a fact, a declaration, a calculation or a third-party assessment, and a consumer never upgrades a declaration to a fact or an assessment to an accreditation on the strength of a signature; accreditation is a separately named authority confirmed under issuerAuthority.",
       "layer": "profile",
       "roles": [
@@ -3874,7 +4026,7 @@
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
-      "clause": "§2",
+      "clause": "\u00a72",
       "summary": "A spend of a tip that the topic manager refuses must not erase the retained history: the refused transaction is not admitted, and the tip and its lineage stay served as spent history or as the unspent tip, never evicted.",
       "layer": "role",
       "roles": [
@@ -3920,6 +4072,957 @@
       "reviewedAt": "2026-09-05",
       "reviewOwner": "dpp maintainers",
       "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so."
+    },
+    {
+      "id": "GS1D-1-grammar",
+      "sourceId": "spec-gs1-discovery",
+      "sourceUri": "spec/gs1-discovery.md",
+      "sourceVersion": "gs1-digital-link@1",
+      "clause": "\u00a73",
+      "summary": "parseGs1DigitalLinkUri reads primary key 01 with the qualifiers 22, 10 and 21 in order and data attributes in the query, answers uncompressed, compressed or invalid with a named reason, and never throws.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-reader"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-resolution.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5"
+    },
+    {
+      "id": "GS1D-2-key-tuple",
+      "sourceId": "spec-gs1-discovery",
+      "sourceUri": "spec/gs1-discovery.md",
+      "sourceVersion": "gs1-digital-link@1",
+      "clause": "\u00a72",
+      "summary": "Two URIs under different hosts that reduce to one key tuple name one entity; the same serial under another GTIN is a different tuple; tuple equivalence is never authority to bind a signed credential.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-reader"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-resolution.ts#gs1KeyTuple"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5"
+    },
+    {
+      "id": "GS1D-3-decompression",
+      "sourceId": "gs1-epc-compression",
+      "sourceUri": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/",
+      "sourceVersion": "1.0.0 (July 2025)",
+      "clause": "\u00a74.1, \u00a74.2",
+      "summary": "A compressed string with prefix eh (hex) or ex (URI-safe base 64) carries an EPC binary string decoded under the Tag Data Standard for SGTIN-96 and SGTIN-198 to the uncompressed URI under the input stem; every other scheme is refused with its header named.",
+      "layer": "profile",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-epc-binary.ts",
+        "packages/dpp-profiles/src/gs1-resolution.ts#decompressGs1DigitalLink"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-epc-binary.test.ts",
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/gs1/epc-binary.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The standard's two worked examples decode exactly; further vectors were cross-checked against GS1's prototype toolkit outside the repository."
+    },
+    {
+      "id": "GS1D-4-hierarchy-anchors",
+      "sourceId": "gs1-resolver",
+      "sourceUri": "https://ref.gs1.org/standards/resolver/",
+      "sourceVersion": "current standard at review",
+      "clause": "\u00a72.5.9, \u00a72.5.10",
+      "summary": "Records are matched by the union rule, most specific first, and every matched record keeps its own anchor and granularity, so a serial request answered from a GTIN record is model information and never evidence of an item passport.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-reader"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-resolution.ts#matchRecords"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/gs1/resolution.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "GS1D-5-resolution-flow",
+      "sourceId": "gs1-resolver",
+      "sourceUri": "https://ref.gs1.org/standards/resolver/",
+      "sourceVersion": "current standard at review",
+      "clause": "\u00a72.5.8, \u00a72.6, \u00a72.9, \u00a72.12",
+      "summary": "Default and refined default links, a requested link type ranked by media type, language and context, 300 on a tie, 404 with the available links, linkset never redirected, query forwarded on redirect, restricted links never served to a public audience.",
+      "layer": "profile",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-resolution.ts#resolveLinks"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/gs1/resolution.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "GS1D-6-linkset-schema",
+      "sourceId": "gs1-resolver",
+      "sourceUri": "https://ref.gs1.org/standards/resolver/",
+      "sourceVersion": "current standard at review",
+      "clause": "\u00a72.10, \u00a73",
+      "summary": "Every linkset and description file produced validates against the pinned GS1 schemas carried under packages/dpp-profiles/schemas/gs1/, whose digests a test holds.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-reader"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-resolution.ts#linksetDocument",
+        "packages/dpp-profiles/schemas/gs1/NOTICE.md"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-resolution.test.ts",
+        "packages/dpp-profiles/test/gs1-artefacts.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "GS1D-7-hosted-route",
+      "sourceId": "spec-gs1-discovery",
+      "sourceUri": "spec/gs1-discovery.md",
+      "sourceVersion": "gs1-digital-link@1",
+      "clause": "\u00a74",
+      "summary": "The registry serves the resolver on a configured origin distinct from its API origin: the description file, the qualifier routes, the compressed route, linksets, redirects with the query forwarded, negotiation and cache headers; the legacy evidence route is kept and aliased.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "uora-bsv src/routes/gs1-resolver.ts",
+        "uora-bsv src/store/resolution.ts",
+        "uora-bsv src/router.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/gs1-resolver.test.ts",
+        "uora-bsv test/resolution-store.test.ts",
+        "uora-bsv test/openapi-contract.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/registry.yaml#/paths/~1.well-known~1gs1resolver"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5",
+      "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests)."
+    },
+    {
+      "id": "GS1D-8-discovery-client",
+      "sourceId": "spec-gs1-discovery",
+      "sourceUri": "spec/gs1-discovery.md",
+      "sourceVersion": "gs1-digital-link@1",
+      "clause": "\u00a75",
+      "summary": "A discovery client retrieves and validates the description file and linkset, selects a relation and media type, reports the anchor scope, and treats a discovered endpoint as neither issuer authority nor a latest state.",
+      "layer": "role",
+      "roles": [
+        "passport-reader"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/gs1-discovery.ts",
+        "dpp-app packages/dpp-service/src/network-policy.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/gs1-discovery.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5",
+      "notes": "Description file and linkset validated against the pinned GS1 schemas, selection through the profiles helper, a broader anchor labelled with its granularity, an external resolver through the same client, cross-origin redirects refused and no credential ever returned."
+    },
+    {
+      "id": "EPCIS-1-strict-parse",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "clause": "\u00a72",
+      "summary": "A source is read as exact bytes under the disclosed limits; malformed UTF-8, duplicate keys, depth over 64, non-finite or inexact numbers and oversized documents are refused before anything is retained; a safely parsed document that fails validation is retained with its findings and is not publishable.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-writer"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "packages/vsc/src/epcis-source.ts#parseEpcisSource"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis-source.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+    },
+    {
+      "id": "EPCIS-2-schema-validation",
+      "sourceId": "epcis-2.0.1",
+      "sourceUri": "https://ref.gs1.org/standards/epcis/2.0.1/",
+      "sourceVersion": "2.0.1",
+      "clause": "JSON Schema 2.0.1",
+      "summary": "Validation runs against the pinned EPCIS 2.0.1 schema without stripping, coercing or rewriting a field; claimed GS1 identifiers are checked, other schemes keep their scheme, extensions are preserved.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-writer"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "packages/vsc/src/epcis-source.ts#validateEpcisDocument",
+        "packages/vsc/artifacts/epcis/NOTICE.md"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis-source.test.ts",
+        "packages/vsc/test/epcis-artefacts.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EPCIS-3-body-digest",
+      "sourceId": "rfc-8785",
+      "sourceUri": "https://www.rfc-editor.org/rfc/rfc8785",
+      "sourceVersion": "RFC 8785",
+      "clause": "JCS",
+      "summary": "The event body digest is SHA-256 over the RFC 8785 form of the event without recordTime and errorDeclaration plus the selected context digests, so formatting differences yield one digest and a changed body another.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-writer"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "packages/vsc/src/jcs.ts",
+        "packages/vsc/src/epcis-source.ts#epcisEventBodyDigest"
+      ],
+      "testRefs": [
+        "packages/vsc/test/jcs.test.ts",
+        "packages/vsc/test/epcis-source.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EPCIS-4-arrival-classification",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "clause": "\u00a73",
+      "summary": "Under a scoped event identity a repeat is a duplicate, a changed record time or error declaration is a new observation, and a changed body is a conflict retained with both digests visible; an event without an identifier receives a labelled local identity.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "passport-writer"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "packages/vsc/src/epcis-source.ts#classifyEventArrival"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis-source.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+    },
+    {
+      "id": "EPCIS-5-source-reference",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "clause": "\u00a75",
+      "summary": "A mapped SEAL carries the signed source reference urn:bsv:dpp:epcis-source:1 (source digest, media type, event pointer, event identifier, context digests, mapping profile) beside the round-trip extension, and the source reporter is never the signing issuer.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when the mapping profile is selected",
+      "profileId": "epcis-vsc@1",
+      "implementationRefs": [
+        "packages/vsc/src/epcis-source.ts#epcisSourceReference",
+        "packages/vsc/src/epcis.ts#mapEpcisEventWithReport"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis-report.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+    },
+    {
+      "id": "EPCIS-6-mapping-outcomes",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "clause": "\u00a75",
+      "summary": "mapEpcisEventWithReport answers lossless, transformed, unsupported or insufficient-data with every missing requirement and unmapped semantic named; nothing physical is fabricated and the VSC custody rules are not changed to admit an event.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when the mapping profile is selected",
+      "profileId": "epcis-vsc@1",
+      "implementationRefs": [
+        "packages/vsc/src/epcis.ts#mapEpcisEventWithReport"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis-report.test.ts",
+        "packages/vsc/test/epcis.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+    },
+    {
+      "id": "EPCIS-7-import-record",
+      "sourceId": "contract-epcis-import",
+      "sourceUri": "contracts/epcis-import.schema.json",
+      "sourceVersion": "1",
+      "clause": "schema",
+      "summary": "The durable import record carries the received bytes' identity, provenance without credentials, per-event validation, mapping, conflict and publication results, and progress with completeness limits.",
+      "layer": "role",
+      "roles": [
+        "passport-writer",
+        "registry"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "contracts/epcis-import.schema.json",
+        "dpp-app packages/dpp-service/src/epcis-import.ts",
+        "dpp-app apps/web/src/server/store-mongo-epcis.ts"
+      ],
+      "testRefs": [
+        "packages/vsc/test/epcis-artefacts.test.ts",
+        "dpp-app packages/dpp-service/test/epcis-import.test.ts",
+        "dpp-app apps/web/test/epcis-mongo.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "23c4167319c6b269a908426d6d23499fe8c19ab9949342f3de8e13b4885b4bdb",
+      "notes": "The record validates against the schema; the exact bytes and digest survive a store round trip and a simulated restart on a real mongod."
+    },
+    {
+      "id": "EPCIS-8-no-token-operation",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "clause": "\u00a76",
+      "summary": "Import, pull and rendering never invoke Issue, Update, Transfer or Retire; publication of a mapped event is a separately authorised action under a named policy, and an EPCIS error declaration is not a VSC correction or an authority grant.",
+      "layer": "role",
+      "roles": [
+        "passport-writer",
+        "registry"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/epcis-import.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/epcis-import.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904",
+      "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
+    },
+    {
+      "id": "EPCIS-9-pull-outcomes",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "clause": "\u00a74",
+      "summary": "The pull client consumes the standard events query, follows next links within the run limits, checkpoints only after a durable page, revalidates every target, forwards no credential across origins, and answers one of the eight source outcomes, never mistaking one for another.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/epcis-client.ts",
+        "dpp-app packages/dpp-service/src/network-policy.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/epcis-client.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904",
+      "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
+    },
+    {
+      "id": "EXTC-1-representation",
+      "sourceId": "spec-external-credential-profile",
+      "sourceUri": "spec/external-credential-profile.md",
+      "sourceVersion": "vc-di-ecdsa-rdfc-2019@1",
+      "clause": "\u00a71",
+      "summary": "vc-di-ecdsa-rdfc-2019@1 commits the exact issued UTF-8 bytes of a VC 2.0 credential secured with ecdsa-rdfc-2019 over a P-256 Multikey under a did:web issuer; other curves, suites, inline contexts and multi-subject credentials are unsupported, never passed and never silently failed.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when the exchange profile is selected",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "implementationRefs": [
+        "packages/vsc/src/exchange.ts",
+        "packages/dpp-profiles/manifests/exchange/vc-di-ecdsa-rdfc-2019@1.json"
+      ],
+      "testRefs": [
+        "packages/vsc/test/exchange.test.ts",
+        "packages/vsc/test/exchange-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+    },
+    {
+      "id": "EXTC-2-proof-and-binding",
+      "sourceId": "w3c-vc-di-ecdsa",
+      "sourceUri": "https://www.w3.org/TR/2025/REC-vc-di-ecdsa-20250515/",
+      "sourceVersion": "Recommendation 15 May 2025",
+      "clause": "ecdsa-rdfc-2019",
+      "summary": "The proof verifies through the maintained suite; the verification method must be a P-256 Multikey controlled by the issuer and listed for assertion in the issuer document; a substituted key, issuer or context fails or is unsupported.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when the exchange profile is selected",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "implementationRefs": [
+        "packages/vsc/src/exchange.ts#verifyExternalCredential"
+      ],
+      "testRefs": [
+        "packages/vsc/test/exchange-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "EXTC-3-status-authority-subject",
+      "sourceId": "spec-external-credential-profile",
+      "sourceUri": "spec/external-credential-profile.md",
+      "sourceVersion": "vc-di-ecdsa-rdfc-2019@1",
+      "clause": "\u00a73, \u00a74",
+      "summary": "Status through Bitstring Status List under the profile's suite, authority under a named independent policy the credential cannot supply, and the subject bound to the signed credential subject or to a configured binding with its evidence reference, each reported separately.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when the exchange profile is selected",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "implementationRefs": [
+        "packages/vsc/src/exchange.ts"
+      ],
+      "testRefs": [
+        "packages/vsc/test/exchange-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+    },
+    {
+      "id": "EXTC-4-reformat-vs-bytes",
+      "sourceId": "spec-external-credential-profile",
+      "sourceUri": "spec/external-credential-profile.md",
+      "sourceVersion": "vc-di-ecdsa-rdfc-2019@1",
+      "clause": "\u00a75",
+      "summary": "A reformatted credential's RDF proof still verifies while its exact-byte digest differs from the issued bytes an anchor commits to; the two findings are reported independently and a transformed copy never inherits an anchor.",
+      "layer": "profile",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when the exchange profile is selected",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "implementationRefs": [
+        "packages/vsc/src/exchange.ts",
+        "examples/verify-external-credential.mjs"
+      ],
+      "testRefs": [
+        "packages/vsc/test/exchange-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+    },
+    {
+      "id": "EXTC-5-registry-intake",
+      "sourceId": "contract-registry",
+      "sourceUri": "contracts/registry.yaml",
+      "sourceVersion": "0.2.0",
+      "clause": "POST /attestations, vc-di-ecdsa-rdfc-2019@1",
+      "summary": "The registry accepts the representation as exact bytes under the operator's external policy, refuses a failing credential with nothing stored, refuses a credential id collision, and anchors accepted bytes through the existing anchor and topic with metadata matching the credential.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when the exchange profile is selected",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "implementationRefs": [
+        "uora-bsv src/credentials/external.ts",
+        "uora-bsv src/credentials/secured.ts",
+        "uora-bsv src/anchoring/secured.ts",
+        "uora-bsv src/anchoring/resume.ts"
+      ],
+      "testRefs": [
+        "uora-bsv test/external-credentials.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "c83543a08bddaf0a813837577574d95c509a8d4e6aab520e0de7448c558cdded",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested)."
+    },
+    {
+      "id": "PROJ-1-source-revisions",
+      "sourceId": "contract-passport-source",
+      "sourceUri": "contracts/passport-source.schema.json",
+      "sourceVersion": "1",
+      "clause": "sourceRevision",
+      "summary": "A source revision carries record and revision identifiers, subject and granularity, profile, times, payload digest, authorisation provenance, disclosure and an optional predecessor; revisions are append-only and the current pointer moves by compare-and-swap.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "contracts/passport-source.schema.json",
+        "packages/dpp-profiles/src/projections.ts",
+        "dpp-app packages/dpp-service/src/passport-sources.ts",
+        "dpp-app apps/web/src/server/store-mongo-sources.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/projections.test.ts",
+        "dpp-app packages/dpp-service/test/passport-sources.test.ts",
+        "dpp-app apps/web/test/source-revisions-mongo.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/projection/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "bfd9b06926b093f0cf8cd51dbcb9a5431d8a3656f058236166c9ef72003e2a78",
+      "notes": "Append-only sequential revisions with a compare-and-swap pointer in memory and in MongoDB (filtered update), a typed conflict carrying the current revision, and the legacy wrap under migration-unknown-ancestry."
+    },
+    {
+      "id": "PROJ-2-commitment-digest",
+      "sourceId": "spec-passport-projections",
+      "sourceUri": "spec/passport-projections.md",
+      "sourceVersion": "passport-projection@1",
+      "clause": "\u00a73",
+      "summary": "The projection digest is SHA-256 over the RFC 8785 form of the commitment body, which excludes the projection identity, retrieval time and template and orders unordered references by stable identifier; same pinned inputs give one digest and changed inputs another.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "passport-writer"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/projections.ts#projectPassport",
+        "contracts/passport-projection.schema.json"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/projections.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/projection/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37"
+    },
+    {
+      "id": "PROJ-3-precedence",
+      "sourceId": "spec-passport-projections",
+      "sourceUri": "spec/passport-projections.md",
+      "sourceVersion": "passport-projection@1",
+      "clause": "\u00a74",
+      "summary": "Fields are read only at the granularity the profile declares, a model fallback is model information and never an item value, overrides apply only where declared and authorised, else a conflict with both sources; measurements need exact scope and an authorised source, are selected by observation time with stable ties, and replay in any arrival order to one result.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "passport-writer"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/projections.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/projections.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/projection/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37"
+    },
+    {
+      "id": "PROJ-4-availability-applicability",
+      "sourceId": "spec-passport-projections",
+      "sourceUri": "spec/passport-projections.md",
+      "sourceVersion": "passport-projection@1",
+      "clause": "\u00a74",
+      "summary": "Zero and false are preserved; availability (present, missing, unknown, withheld), applicability (applies, not-applicable, unresolved) and unsupported or conflict findings are separate axes; an absent field is never automatically not-applicable.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/projections.ts",
+        "packages/dpp-profiles/src/applicability.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/projections.test.ts",
+        "packages/dpp-profiles/test/applicability.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/projection/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37"
+    },
+    {
+      "id": "PROJ-5-bounds-disclosure",
+      "sourceId": "spec-passport-projections",
+      "sourceUri": "spec/passport-projections.md",
+      "sourceVersion": "passport-projection@1",
+      "clause": "\u00a74, \u00a76",
+      "summary": "Traversal is bounded (depth 8, 100 references) with cycles, missing sources and limits as explicit findings; fields above the audience's disclosure scope are withheld, never leaked, in every representation and cache.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/projections.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/projections.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/projection/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37"
+    },
+    {
+      "id": "PROJ-6-shapes-language-dates",
+      "sourceId": "contract-profile-evidence",
+      "sourceUri": "contracts/profile-evidence.schema.json",
+      "sourceVersion": "1",
+      "clause": "$defs",
+      "summary": "Claim evidence, certification, measurement, related document and language shapes; month and year precision kept without fabricating a day; a warranty expiry derived only from a specified rule and evidenced start; only explicit compatible conversions; language selected exact, then base, then default with the returned language recorded.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "passport-writer"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "contracts/profile-evidence.schema.json",
+        "packages/dpp-profiles/src/evidence-shapes.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/evidence-shapes.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/projection/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "08d6521c4ae69860c940cfd4ee1e2c8f9f4a16a9f5dd951352037b32add91261"
+    },
+    {
+      "id": "PROJ-7-publication-policy",
+      "sourceId": "spec-passport-projections",
+      "sourceUri": "spec/passport-projections.md",
+      "sourceVersion": "passport-projection@1",
+      "clause": "\u00a75",
+      "summary": "The publication policy names the current representation, a linked successor, responsibility assertions and any cessation, apart from token state; a successor never rewrites or revives the original lineage and a retired token stays terminal.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "dpp-app packages/dpp-service/src/publication-policy.ts"
+      ],
+      "testRefs": [
+        "dpp-app packages/dpp-service/test/publication-policy.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37",
+      "notes": "A successor link and a cessation are revisions of the logical passport; the test holds the token chain byte-identical before and after both."
+    },
+    {
+      "id": "PROJ-8-viewer-presets",
+      "sourceId": "spec-passport-projections",
+      "sourceUri": "spec/passport-projections.md",
+      "sourceVersion": "passport-projection@1",
+      "clause": "\u00a77",
+      "summary": "One recommended profile-driven view rendered from the pinned profile groups; a second rendering preset changes presentation only and never subject, profile, evidence findings or disclosure; an unsupported profile shows permitted data without claiming validation.",
+      "layer": "reference",
+      "roles": [
+        "passport-reader"
+      ],
+      "applicability": "when the projection profile is selected",
+      "profileId": "passport-projection@1",
+      "implementationRefs": [
+        "dpp-app apps/web/src/components/surfaces/product/profile-view.tsx",
+        "dpp-app packages/dpp-service/src/passport-projection.ts"
+      ],
+      "testRefs": [
+        "dpp-app apps/web/test/profile-view.test.tsx",
+        "dpp-app packages/dpp-service/test/passport-projection.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "998d1b3e9544ef76826dee5fce47ac6091213be3ce96fd7a40256f5c754dab37",
+      "notes": "Both presets render one projection with the same subject, profile, evidence findings and disclosure; the preset lives in template, outside the commitment, and the digest is equal across presets."
+    },
+    {
+      "id": "PROF-2-manifest-version-2",
+      "sourceId": "profiles-manifest-v2-schema",
+      "sourceUri": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
+      "sourceVersion": "2",
+      "clause": "manifestVersion 2",
+      "summary": "A successor industry manifest carries a requirement status per field, composed applicability rules with an unresolved outcome, the new value types, precision, scope and a succession block; every version 1 property is kept so old readers read the fields they know.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "when a manifest version 2 profile is selected",
+      "profileId": "profiles",
+      "implementationRefs": [
+        "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
+        "packages/dpp-profiles/scripts/build.mjs",
+        "packages/dpp-profiles/src/manifest-v2.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/manifest-v2.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "983284a926c7d3cfa814ca0b5179f42db85951230eb44afb7b79595c013a3a44"
+    },
+    {
+      "id": "PROF-3-applicability-evaluator",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "\u00a73",
+      "summary": "The declarative evaluator answers applies, not-applicable or unresolved for always, category, jurisdiction, effective-date, threshold, all, any and unresolved rules and a declared inapplicability; unresolved never passes and never blocks retained draft data.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "when a manifest version 2 profile is selected",
+      "profileId": "profiles",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/applicability.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/applicability.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "7495f64a8d1cffa93e7ca22a68afd56dfe43276b9d6881cfe6b74b33f1c80f92"
+    },
+    {
+      "id": "PROF-4-frozen-unchanged",
+      "sourceId": "profiles-frozen",
+      "sourceUri": "packages/dpp-profiles/frozen.json",
+      "sourceVersion": "frozen 2026-09-05",
+      "clause": "frozen.json",
+      "summary": "Publishing a successor adds entries to frozen.json and moves no existing digest of a frozen manifest or generated file.",
+      "layer": "profile",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "profiles",
+      "implementationRefs": [
+        "packages/dpp-profiles/scripts/build.mjs"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/frozen-unchanged.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "7138a3cb86615f7fed9b66ead25becb4adf303408080cd0cbe9db835c09eda3e"
+    },
+    {
+      "id": "READY-2-eu-registry",
+      "sourceId": "eu-registry-2026-1778",
+      "sourceUri": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32026R1778",
+      "sourceVersion": "Commission Implementing Regulation (EU) 2026/1778 of 16 July 2026, sha256 9cebbf082dfa4234a19d87c498138c506672333db6dd17f969f832da4523e805",
+      "clause": "Articles 3, 4, 5, 6a, 8, 9, 10, 14, 19",
+      "summary": "No adapter to the Union registry is implemented: the implementation does not register, update, transfer or delete registrations, authenticate to the registry, validate registration identifiers or proofs of registration, or represent registry status; an externally supplied registration reference is preserved verbatim as unverified evidence; the API, hash definition, proof format and status vocabulary the regulation defers to implementing acts are the gate for any adapter.",
+      "layer": "profile",
+      "roles": [
+        "none"
+      ],
+      "applicability": "when EU registration is in scope",
+      "profileId": "eu-dpp-system",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "notes": "A readiness record with article citations is kept outside the repository; the capability documents carry the statement verbatim."
     }
   ],
   "claims": [
@@ -4228,6 +5331,71 @@
         "WR-2-verify-before-send",
         "WR-4-one-writer"
       ]
+    },
+    {
+      "id": "gs1-discovery-1",
+      "description": "The gs1-digital-link@1 discovery profile: grammar, key tuples, EPC-binary decompression, hierarchy with anchors, the resolution flow and schema-valid linksets, with the hosted route and the discovery client.",
+      "profileId": "gs1-digital-link@1",
+      "requires": [
+        "GS1D-1-grammar",
+        "GS1D-2-key-tuple",
+        "GS1D-3-decompression",
+        "GS1D-4-hierarchy-anchors",
+        "GS1D-5-resolution-flow",
+        "GS1D-6-linkset-schema",
+        "GS1D-7-hosted-route",
+        "GS1D-8-discovery-client"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "epcis-source-exchange-1",
+      "description": "The epcis-json@1 and epcis-vsc@1 profiles: exact-byte retention under limits, pinned-schema validation, stable digests, arrival classification, signed source references, explicit mapping outcomes, the import record, no token operation from an import and the bounded pull client.",
+      "profileId": "epcis-json@1",
+      "requires": [
+        "EPCIS-1-strict-parse",
+        "EPCIS-2-schema-validation",
+        "EPCIS-3-body-digest",
+        "EPCIS-4-arrival-classification",
+        "EPCIS-5-source-reference",
+        "EPCIS-6-mapping-outcomes",
+        "EPCIS-7-import-record",
+        "EPCIS-8-no-token-operation",
+        "EPCIS-9-pull-outcomes"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "external-credential-ecdsa-1",
+      "description": "The vc-di-ecdsa-rdfc-2019@1 exchange profile: representation, proof and binding, status, authority and subject, the reformat-versus-bytes distinction and registry intake.",
+      "profileId": "vc-di-ecdsa-rdfc-2019@1",
+      "requires": [
+        "EXTC-1-representation",
+        "EXTC-2-proof-and-binding",
+        "EXTC-3-status-authority-subject",
+        "EXTC-4-reformat-vs-bytes",
+        "EXTC-5-registry-intake"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "passport-projection-1",
+      "description": "passport-projection@1 with its source revisions, commitment digest, precedence, availability and applicability axes, bounds and disclosure, shapes, the publication policy and the viewer presets.",
+      "profileId": "passport-projection@1",
+      "requires": [
+        "PROJ-1-source-revisions",
+        "PROJ-2-commitment-digest",
+        "PROJ-3-precedence",
+        "PROJ-4-availability-applicability",
+        "PROJ-5-bounds-disclosure",
+        "PROJ-6-shapes-language-dates",
+        "PROJ-7-publication-policy",
+        "PROJ-8-viewer-presets",
+        "PROF-2-manifest-version-2",
+        "PROF-3-applicability-evaluator",
+        "PROF-4-frozen-unchanged"
+      ],
+      "minimumStatus": "tested"
     }
   ]
 }

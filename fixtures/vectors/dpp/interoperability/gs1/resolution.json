@@ -1,0 +1,1305 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.gs1.resolution",
+  "name": "Resolution over one set of records: the hierarchy of section 2.5.10, defaults, requested types, negotiation, disclosure and the linkset",
+  "version": "1.0.0",
+  "reference_impl": "dpp-profiles@0.3.0",
+  "parity_class": "required",
+  "records": [
+    {
+      "key": {
+        "ai": "01",
+        "value": "09521234000013"
+      },
+      "qualifiers": [],
+      "configurationRevision": "cfg-7",
+      "description": "Demonstration cell pack",
+      "links": [
+        {
+          "rel": "https://ref.gs1.org/voc/pip",
+          "href": "https://products.example.org/cell-pack",
+          "title": "Product information",
+          "default": "single",
+          "disclosure": "public"
+        },
+        {
+          "rel": "https://ref.gs1.org/voc/pip",
+          "href": "https://products.example.org/fr/cell-pack",
+          "title": "Fiche produit",
+          "hreflang": [
+            "fr"
+          ],
+          "default": "multi",
+          "disclosure": "public"
+        },
+        {
+          "rel": "https://ref.gs1.org/voc/pip",
+          "href": "https://products.example.org/en/cell-pack",
+          "title": "Product information",
+          "hreflang": [
+            "en"
+          ],
+          "default": "multi",
+          "disclosure": "public"
+        },
+        {
+          "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+          "href": "https://products.example.org/cell-pack/sustainability",
+          "title": "Sustainability",
+          "type": "text/html",
+          "disclosure": "public"
+        },
+        {
+          "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+          "href": "https://api.example.org/cell-pack/sustainability.json",
+          "title": "Sustainability data",
+          "type": "application/json",
+          "disclosure": "public"
+        },
+        {
+          "rel": "https://ref.gs1.org/voc/epcis",
+          "href": "https://epcis.example.org/events",
+          "title": "Event query service",
+          "type": "application/json",
+          "disclosure": "restricted"
+        }
+      ]
+    },
+    {
+      "key": {
+        "ai": "01",
+        "value": "09521234000013"
+      },
+      "qualifiers": [
+        {
+          "ai": "22",
+          "value": "2A"
+        }
+      ],
+      "configurationRevision": "cfg-7",
+      "links": [
+        {
+          "rel": "https://ref.gs1.org/voc/pip",
+          "href": "https://products.example.org/cell-pack/variant-2A",
+          "title": "Variant 2A",
+          "disclosure": "public"
+        }
+      ]
+    },
+    {
+      "key": {
+        "ai": "01",
+        "value": "09521234000013"
+      },
+      "qualifiers": [
+        {
+          "ai": "10",
+          "value": "LOT-2026-01"
+        }
+      ],
+      "configurationRevision": "cfg-7",
+      "links": [
+        {
+          "rel": "https://ref.gs1.org/voc/recallStatus",
+          "href": "https://products.example.org/recalls/LOT-2026-01",
+          "title": "Recall status",
+          "disclosure": "public"
+        }
+      ]
+    },
+    {
+      "key": {
+        "ai": "01",
+        "value": "09521234000013"
+      },
+      "qualifiers": [
+        {
+          "ai": "22",
+          "value": "2A"
+        },
+        {
+          "ai": "10",
+          "value": "LOT-2026-01"
+        }
+      ],
+      "configurationRevision": "cfg-7",
+      "links": [
+        {
+          "rel": "https://ref.gs1.org/voc/certificationInfo",
+          "href": "https://products.example.org/certificates/2A-LOT-2026-01",
+          "title": "Lot certificate",
+          "disclosure": "public"
+        }
+      ]
+    },
+    {
+      "key": {
+        "ai": "01",
+        "value": "09521234000013"
+      },
+      "qualifiers": [
+        {
+          "ai": "21",
+          "value": "SER-0001"
+        }
+      ],
+      "passportId": "https://dpp.example.org/01/09521234000013/21/SER-0001",
+      "bindingRef": "genesis:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0",
+      "configurationRevision": "cfg-7",
+      "links": [
+        {
+          "rel": "https://dpp.bsvb.net/link/evidencePackage/1",
+          "href": "https://registry.example.org/passports/https%3A%2F%2Fdpp.example.org%2F01%2F09521234000013%2F21%2FSER-0001/evidence-package",
+          "title": "Evidence package",
+          "type": "application/json",
+          "disclosure": "public"
+        }
+      ]
+    }
+  ],
+  "vectors": [
+    {
+      "id": "serial-default-inherits-model",
+      "description": "A serialised request with no linkType redirects to the model's default; the link is model information and the item record contributes only its own link.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "21",
+                "value": "SER-0001"
+              }
+            ]
+          },
+          "audience": "public",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013/21/SER-0001",
+            "granularity": "item"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://products.example.org/cell-pack",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://dpp.bsvb.net/link/evidencePackage/1",
+            "href": "https://registry.example.org/passports/https%3A%2F%2Fdpp.example.org%2F01%2F09521234000013%2F21%2FSER-0001/evidence-package",
+            "anchor": "https://id.example.org/01/09521234000013/21/SER-0001",
+            "granularity": "item",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "serial-linkset-two-anchors",
+      "description": "The linkset for a serialised request carries the item anchor and the model anchor, each with its own links.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "21",
+                "value": "SER-0001"
+              }
+            ]
+          },
+          "audience": "public",
+          "linkType": "linkset",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "linkset",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013/21/SER-0001",
+            "granularity": "item"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "links": [
+          {
+            "rel": "https://dpp.bsvb.net/link/evidencePackage/1",
+            "href": "https://registry.example.org/passports/https%3A%2F%2Fdpp.example.org%2F01%2F09521234000013%2F21%2FSER-0001/evidence-package",
+            "anchor": "https://id.example.org/01/09521234000013/21/SER-0001",
+            "granularity": "item",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "variant-and-lot-union",
+      "description": "A variant-and-lot request unions the 01+22+10, 01+10, 01+22 and 01 levels, most specific first.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "22",
+                "value": "2A"
+              },
+              {
+                "ai": "10",
+                "value": "LOT-2026-01"
+              }
+            ]
+          },
+          "audience": "public",
+          "linkType": "linkset",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "linkset",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013/22/2A/10/LOT-2026-01",
+            "granularity": "lot"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+            "granularity": "lot"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013/22/2A",
+            "granularity": "variant"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/certificationInfo",
+            "href": "https://products.example.org/certificates/2A-LOT-2026-01",
+            "anchor": "https://id.example.org/01/09521234000013/22/2A/10/LOT-2026-01",
+            "granularity": "lot",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/recallStatus",
+            "href": "https://products.example.org/recalls/LOT-2026-01",
+            "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+            "granularity": "lot",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack/variant-2A",
+            "anchor": "https://id.example.org/01/09521234000013/22/2A",
+            "granularity": "variant",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "lot-only-excludes-variant-level",
+      "description": "A lot-only request does not find a link registered against the variant and lot together.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "10",
+                "value": "LOT-2026-01"
+              }
+            ]
+          },
+          "audience": "public",
+          "linkType": "linkset",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "linkset",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+            "granularity": "lot"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/recallStatus",
+            "href": "https://products.example.org/recalls/LOT-2026-01",
+            "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+            "granularity": "lot",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "requested-type-redirect",
+      "description": "A requested type registered at the lot level redirects to it.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "10",
+                "value": "LOT-2026-01"
+              }
+            ]
+          },
+          "audience": "public",
+          "linkType": "https://ref.gs1.org/voc/recallStatus",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+            "granularity": "lot"
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://products.example.org/recalls/LOT-2026-01",
+        "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+        "granularity": "lot",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/recallStatus",
+            "href": "https://products.example.org/recalls/LOT-2026-01",
+            "anchor": "https://id.example.org/01/09521234000013/10/LOT-2026-01",
+            "granularity": "lot",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "language-refines-default",
+      "description": "Accept-Language fr picks the French refined default.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "acceptLanguage": [
+            "fr"
+          ],
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://products.example.org/fr/cell-pack",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "language-without-match-falls-back",
+      "description": "Accept-Language de matches no refined default, so the single default answers.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "acceptLanguage": [
+            "de"
+          ],
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://products.example.org/cell-pack",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "media-type-picks-json",
+      "description": "A requested type with two representations is decided by the Accept header.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "linkType": "https://ref.gs1.org/voc/sustainabilityInfo",
+          "accept": [
+            "application/json"
+          ],
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://api.example.org/cell-pack/sustainability.json",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "restricted-hidden-from-public",
+      "description": "A restricted link type requested by a public audience is not found; it is not disclosed by refusal wording either.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "linkType": "https://ref.gs1.org/voc/epcis",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "not-found",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "requested": "https://ref.gs1.org/voc/epcis",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "restricted-shown-to-authorised",
+      "description": "The same request from an authorised audience redirects, with the link flagged restricted.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "authorised",
+          "linkType": "https://ref.gs1.org/voc/epcis",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://epcis.example.org/events",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/epcis",
+            "href": "https://epcis.example.org/events",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "restricted"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "undeclared-language-outranks-mismatch",
+      "description": "Three product pages, one with no language declared and two contradicting Vietnamese: the one that makes no claim answers.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "linkType": "https://ref.gs1.org/voc/pip",
+          "acceptLanguage": [
+            "vi"
+          ],
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://products.example.org/cell-pack",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "multiple-choices-on-tie",
+      "description": "Two sustainability representations under an Accept of */*: neither is better, so the resolver answers 300 rather than choosing.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "linkType": "https://ref.gs1.org/voc/sustainabilityInfo",
+          "accept": [
+            "*/*"
+          ],
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "multiple-choices",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "candidates": [
+          "https://api.example.org/cell-pack/sustainability.json",
+          "https://products.example.org/cell-pack/sustainability"
+        ],
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "type-not-available",
+      "description": "A requested type nobody registered is 404 with the available links beside it.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "linkType": "https://ref.gs1.org/voc/traceability",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "not-found",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "requested": "https://ref.gs1.org/voc/traceability",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "unknown-gtin",
+      "description": "A GTIN nobody registered is 404 with nothing beside it.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000020",
+            "qualifiers": []
+          },
+          "audience": "public",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "no-records"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "linkset-document-item",
+      "description": "The linkset document for the serialised request, which validates against the pinned GS1 linkset schema.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "21",
+                "value": "SER-0001"
+              }
+            ]
+          },
+          "audience": "public",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "linkset": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013/21/SER-0001",
+            "https://dpp.bsvb.net/link/evidencePackage/1": [
+              {
+                "href": "https://registry.example.org/passports/https%3A%2F%2Fdpp.example.org%2F01%2F09521234000013%2F21%2FSER-0001/evidence-package",
+                "title": "Evidence package",
+                "type": "application/json"
+              }
+            ]
+          },
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "description": "Demonstration cell pack",
+            "https://ref.gs1.org/voc/pip": [
+              {
+                "href": "https://products.example.org/cell-pack",
+                "title": "Product information"
+              },
+              {
+                "href": "https://products.example.org/fr/cell-pack",
+                "title": "Fiche produit",
+                "hreflang": [
+                  "fr"
+                ]
+              },
+              {
+                "href": "https://products.example.org/en/cell-pack",
+                "title": "Product information",
+                "hreflang": [
+                  "en"
+                ]
+              }
+            ],
+            "https://ref.gs1.org/voc/defaultLink": [
+              {
+                "href": "https://products.example.org/cell-pack",
+                "title": "Product information"
+              }
+            ],
+            "https://ref.gs1.org/voc/defaultLinkMulti": [
+              {
+                "href": "https://products.example.org/fr/cell-pack",
+                "title": "Fiche produit",
+                "hreflang": [
+                  "fr"
+                ]
+              },
+              {
+                "href": "https://products.example.org/en/cell-pack",
+                "title": "Product information",
+                "hreflang": [
+                  "en"
+                ]
+              }
+            ],
+            "https://ref.gs1.org/voc/sustainabilityInfo": [
+              {
+                "href": "https://products.example.org/cell-pack/sustainability",
+                "title": "Sustainability",
+                "type": "text/html"
+              },
+              {
+                "href": "https://api.example.org/cell-pack/sustainability.json",
+                "title": "Sustainability data",
+                "type": "application/json"
+              }
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "description-file",
+      "description": "The resolver description file for the demonstration root, which validates against the pinned description schema.",
+      "input": {
+        "resolverRoot": "https://id.example.org",
+        "name": "Demonstration resolver"
+      },
+      "expected": {
+        "name": "Demonstration resolver",
+        "resolverRoot": "https://id.example.org",
+        "supportedPrimaryKeys": [
+          "01"
+        ],
+        "supportedLinkType": [
+          {
+            "namespace": "https://ref.gs1.org/voc/",
+            "prefix": "gs1:"
+          },
+          {
+            "namespace": "https://dpp.bsvb.net/link/",
+            "prefix": "dpp:"
+          }
+        ],
+        "linkTypeDefaultCanBeLinkset": false,
+        "jsonLdContextLocation": "https://ref.gs1.org/standards/resolver/1.2.1/linkset-context"
+      },
+      "tags": [
+        "happy-path"
+      ]
+    }
+  ]
+}

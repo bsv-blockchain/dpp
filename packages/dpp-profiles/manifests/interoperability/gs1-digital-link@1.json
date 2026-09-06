@@ -1,0 +1,71 @@
+{
+  "manifestVersion": "1",
+  "id": "gs1-digital-link",
+  "version": "1",
+  "profile": "gs1-digital-link@1",
+  "kind": "interoperability",
+  "role": "discovery",
+  "status": "proposed",
+  "title": "GS1 Digital Link discovery for primary key 01, with a hosted GS1-Conformant Resolver and a replaceable discovery client",
+  "description": "How a passport identified by a GS1 Digital Link URI is resolved to its passport and evidence services: the URI grammar for the GTIN and its three key qualifiers, decompression of the EPC binary form, resolution records with authorised links at each granularity, the linkset a GS1-Conformant Resolver 1.2.1 returns and the selection a discovery client makes over it. The profile claims the resolver standard's clauses for one supported primary key; it does not claim allocation authority for any GTIN, host any other primary key, or decode the general GS1 Digital Link compression. A link inherited from the model level is model information under a serialised request, never an item passport.",
+  "specification": "spec/gs1-discovery.md",
+  "standards": [
+    { "id": "gs1-uri-syntax", "name": "GS1 Digital Link: URI Syntax", "version": "1.7.0", "uri": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/", "scope": "Primary key 01 with key qualifiers 22, 10 and 21 in that order, data attributes in the query string, percent-encoding, and the special compressed form." },
+    { "id": "gs1-resolver", "name": "GS1-Conformant Resolver", "version": "1.2.1", "uri": "https://ref.gs1.org/standards/resolver/1.2.1/", "scope": "Sections 2.2 to 2.14 and 3 for one supported primary key: decompression, validation and error differentiation, link attributes, the default link, the granular-identifier hierarchy of 2.5.9 and 2.5.10, redirection, requested link types, matching by media type, language and context, the linkset in application/linkset+json, query forwarding, trailing slashes, the GS1 vocabulary namespace and the resolver description file." },
+    { "id": "gs1-epc-binary-compression", "name": "GS1 Digital Link URI: Compression Technical Standard for EPC binary strings", "version": "1.0.0", "uri": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/", "scope": "Sections 4.1 and 4.2: the eh (hexadecimal) and ex (URI-safe base 64) compression strings and their decoding to an uncompressed URI under the given stem." },
+    { "id": "gs1-tds", "name": "GS1 EPC Tag Data Standard", "version": "current at implementation", "uri": "https://ref.gs1.org/standards/tds/", "scope": "The SGTIN-96 and SGTIN-198 schemes: headers 30 and 36, the filter value, the seven-row partition table, the integer and seven-bit-character serials, and the pure-identity EPC URI." }
+  ],
+  "artefacts": [
+    { "id": "resolver-linkset-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/resolver/1.2.1/linkset-schema", "version": "1.2.1", "digest": "d2e23510f17558c29f9d1baf9e112a70df42efd6557a49dc9a317048973669f2", "byteLength": 4696, "retrieval": "pinned", "carried": "schemas/gs1/resolver-linkset-schema-1.2.1.json", "licence": "GS1 published standards artefact; see schemas/gs1/NOTICE.md", "notes": "Every linkset this profile produces validates against it. The schema admits a link relation key only as a lower-case token or an http(s) IRI of letters, digits, dots and slashes, which is why the owned evidence-package relation is spelled without a hyphen." },
+    { "id": "resolver-description-file-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/resolver/1.2.0/description-file-schema", "version": "1.2.0", "digest": "99d505c7aa2004cde3277651e8db0e019eab61d2746b2631ddab3fec8a13617e", "byteLength": 3593, "retrieval": "pinned", "carried": "schemas/gs1/resolver-description-file-schema-1.2.0.json", "licence": "GS1 published standards artefact; see schemas/gs1/NOTICE.md", "notes": "The resolver description file at /.well-known/gs1resolver validates against it; the 1.2.1 standard points at the 1.2.0 schema." },
+    { "id": "resolver-linkset-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/resolver/1.2.1/linkset-context", "version": "1.2.1", "digest": "05792d010165fa6f28cc9cc3463cc1668f522ac75c26abe5b2877ec4a37b1312", "byteLength": 838, "retrieval": "pinned", "carried": "schemas/gs1/resolver-linkset-context-1.2.1.jsonld", "licence": "GS1 published standards artefact; see schemas/gs1/NOTICE.md", "notes": "Named in the Link header beside a JSON linkset and in the description file. It maps gs1: to http://gs1.org/voc/ while the resolver standard's text expands gs1: to https://ref.gs1.org/voc/; the reference code writes the latter and reads both." },
+    { "id": "gs1-uri-syntax-specification", "kind": "specification", "uri": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/", "version": "1.7.0", "retrieval": "not-retrieved", "notes": "Read at implementation; the grammar implemented is stated in the specification document, and no conformance claim rests on a text that was not pinned." },
+    { "id": "gs1-resolver-specification", "kind": "specification", "uri": "https://ref.gs1.org/standards/resolver/1.2.1/", "version": "1.2.1", "retrieval": "not-retrieved", "notes": "Read at implementation as HTML; the clauses implemented are listed in the specification document." },
+    { "id": "gs1-epc-binary-compression-specification", "kind": "specification", "uri": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/", "version": "1.0.0", "retrieval": "not-retrieved", "notes": "Read at implementation as PDF; its two worked examples are the independent decompression vectors." },
+    { "id": "gs1-application-identifiers", "kind": "vocabulary", "uri": "https://ref.gs1.org/ai/GS1_Application_Identifiers.jsonld", "version": "current at implementation", "retrieval": "not-retrieved", "notes": "The complete AI grammar. The reference code validates the AIs it states with certainty and carries any other data attribute unvalidated, so a new AI is never refused for being unknown." }
+  ],
+  "inputs": [
+    { "id": "uncompressed-uri", "mediaType": "text/uri-list", "format": "GS1 Digital Link URI, uncompressed, primary key 01", "notes": "Optional qualifiers 22, 10, 21 in that order; data attributes and linkType in the query; one trailing slash tolerated." },
+    { "id": "compressed-epc-uri", "mediaType": "text/uri-list", "format": "GS1 Digital Link URI, special compressed form carrying an EPC binary string (eh or ex)", "notes": "SGTIN-96 and SGTIN-198 only." },
+    { "id": "resolution-record", "mediaType": "application/json", "format": "ResolutionRecord", "notes": "A key, its qualifiers, an established passport binding where one exists, authorised links with disclosure and a configuration revision; validated at ingestion by resolutionRecordProblems." },
+    { "id": "linkset", "mediaType": "application/linkset+json", "format": "RFC 9264 linkset as the GS1 resolver schema shapes it", "notes": "What the discovery client reads from this or any other GS1-Conformant Resolver." }
+  ],
+  "outputs": [
+    { "id": "linkset", "mediaType": "application/linkset+json", "format": "RFC 9264 linkset, anchored at each matched record's uncompressed URI, validating against the pinned schema" },
+    { "id": "resolver-description", "mediaType": "application/json", "format": "GS1 resolver description file, validating against the pinned schema" },
+    { "id": "resolution-outcome", "mediaType": "application/json", "format": "redirect, multiple-choices, not-found, linkset or no-records, with every matched record's anchor and granularity" },
+    { "id": "selected-link", "mediaType": "application/json", "format": "The discovery client's selection: one link, its anchor and the anchor's scope, or ambiguous, or not-found with the relations available" }
+  ],
+  "dependencies": [],
+  "limits": {
+    "primaryKeys": "01",
+    "qualifierValueMaxLength": 20,
+    "epcSchemes": "sgtin-96, sgtin-198",
+    "trailingSlashesTolerated": 1,
+    "linkRelationKeyGrammar": "lower-case token or http(s) IRI of letters, digits, dots and slashes, per the pinned linkset schema"
+  },
+  "mappingLimits": [
+    { "id": "model-fact-under-item-request", "outcome": "transformed", "reason": "A link registered at the model or lot level answers a serialised request with its own anchor and granularity; it is broader information and is never returned as an item fact." },
+    { "id": "unknown-data-attribute", "outcome": "transformed", "reason": "A data attribute whose AI the reference code does not know is carried with validated false; its value is preserved, not interpreted." },
+    { "id": "key-equivalence-is-not-binding", "outcome": "insufficient-data", "reason": "Two URIs with one key tuple name one entity; binding a signed credential or passport to that entity needs the evidence the specification names, which a resolver record does not supply." }
+  ],
+  "unsupported": [
+    { "id": "other-primary-keys", "reason": "SSCC (00), GLN (414, 415, 417), GRAI (8003), GIAI (8004), ITIP (8006), GDTI (253), GCN (255), GINC (401), GSIN (402), CPID (8010), GMN (8013), GSRN (8017, 8018) are refused as unsupported primary keys; the description file declares 01 only." },
+    { "id": "third-party-serialised-extension", "reason": "AI 235 is a GTIN qualifier this profile does not host; it is refused by name rather than read as a serial." },
+    { "id": "general-digital-link-compression", "reason": "The general compression algorithm of GS1 Digital Link 1.1 is optional for a conformant resolver and is not decoded; only the EPC binary form (eh, ex) is." },
+    { "id": "other-epc-schemes", "reason": "EPC headers other than SGTIN-96 (30) and SGTIN-198 (36) are refused with the header named; SSCC, SGLN, GRAI, GIAI, GSRN, GDTI, CPI, SGCN, ITIP and GID are outside the declared scope." },
+    { "id": "allocation-authority", "reason": "A valid check digit, a decodable EPC, a matching DID or a URL under a host proves nothing about who GS1 allocated a number to; link administration needs scoped operator authority over the configured namespace." },
+    { "id": "target-url-templates", "reason": "Links are stored as complete target URLs; RFC 6570 templating of targets from the request is not implemented." },
+    { "id": "pattern-based-redirection", "reason": "Redirection of whole prefixes to another resolver (gs1:handledBy) is a deployment's configuration, not part of this profile's reference code." },
+    { "id": "context-value-lists", "reason": "The context keyword is matched against values a link declares; no external list of context values is fetched." },
+    { "id": "html-linkset-page", "reason": "The reference code produces the JSON linkset; a human-readable page for text/html requests is the hosting route's presentation, reusing the existing passport page." }
+  ],
+  "sourceRefs": [
+    { "id": "gs1-uri-syntax", "name": "GS1 Digital Link: URI Syntax 1.7.0", "reference": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/", "version": "1.7.0", "attribution": "GS1 AISBL", "use": "The grammar of the request URI." },
+    { "id": "gs1-resolver", "name": "GS1-Conformant Resolver 1.2.1", "reference": "https://ref.gs1.org/standards/resolver/1.2.1/", "version": "1.2.1", "attribution": "GS1 AISBL", "use": "Resolver behaviour, linkset shape, description file." },
+    { "id": "gs1-epc-binary-compression", "name": "GS1 Digital Link URI: Compression Technical Standard for EPC binary strings 1.0.0", "reference": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/", "version": "1.0.0", "attribution": "GS1 AISBL", "use": "Decompression of the eh and ex forms; its worked examples are the independent vectors." },
+    { "id": "gs1-tds", "name": "GS1 EPC Tag Data Standard", "reference": "https://ref.gs1.org/standards/tds/", "attribution": "GS1 AISBL", "use": "SGTIN-96 and SGTIN-198 decoding." },
+    { "id": "rfc-9264", "name": "Linkset: Media Types and a Link Relation Type for Link Sets", "reference": "https://www.rfc-editor.org/rfc/rfc9264", "attribution": "IETF", "use": "The linkset document." },
+    { "id": "rfc-8615", "name": "Well-Known Uniform Resource Identifiers", "reference": "https://www.rfc-editor.org/rfc/rfc8615", "attribution": "IETF", "use": "The /.well-known/gs1resolver location." }
+  ]
+}

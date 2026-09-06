@@ -6,3 +6,4 @@ export { sealSchema } from './schema.js';
 export * from './verification.js';
 export * from './epcis.js';
 export * from './did-web.js';
+export * from './epcis-source.js';

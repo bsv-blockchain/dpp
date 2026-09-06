@@ -1,0 +1,3 @@
+# Owned external passport artefacts
+
+`dpp-external-passport-1.schema.json` (`urn:bsv:dpp:external-passport:schema:1`) and `dpp-external-passport-1.context.jsonld` (`urn:bsv:dpp:external-passport:context:1`) are published by this repository for the `vc-di-ecdsa-rdfc-2019@1` exchange profile (spec/external-credential-profile.md). The context is served by the profile's document loader from these bytes and never from the network; the schema is the structural check of the profile. Both are versioned: a changed meaning is a new identifier, and their digests are recorded as `owned` artefacts in the profile manifest and held by a test.

@@ -1,0 +1,872 @@
+{
+  "manifestVersion": "2",
+  "kind": "industry",
+  "baseline": "native-baseline@2",
+  "roles": [
+    "passport-writer",
+    "attestation-issuer",
+    "registry",
+    "passport-reader"
+  ],
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "accessPolicyRef": "spec/record-model.md#7-the-owner-tier-binding",
+  "accessTiers": [
+    {
+      "id": "public",
+      "description": "Anyone with the identifier.",
+      "storage": "on-chain public payload"
+    },
+    {
+      "id": "owner",
+      "description": "The current holder.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "legitimate",
+      "description": "Persons with a legitimate interest.",
+      "storage": "off-chain encrypted"
+    },
+    {
+      "id": "authority",
+      "description": "Authorities.",
+      "storage": "off-chain encrypted"
+    }
+  ],
+  "extends": null,
+  "id": "synthetic",
+  "version": 2,
+  "profile": "synthetic@2",
+  "status": "draft",
+  "title": "Synthetic test profile",
+  "description": "A manifest under version 2 that exists only to exercise the generator, the applicability evaluator and the projector. No product, instrument or guidance it names is real.",
+  "regulatoryLine": "Aligned with a synthetic instrument that does not exist; never compliant with anything.",
+  "applicability": {
+    "categories": [
+      {
+        "value": "lmt",
+        "label": "Light transport"
+      },
+      {
+        "value": "ev",
+        "label": "Vehicle"
+      },
+      {
+        "value": "industrial",
+        "label": "Industrial"
+      }
+    ],
+    "categoryKey": "category",
+    "jurisdictions": [
+      "EU"
+    ],
+    "statements": [
+      {
+        "text": "The synthetic instrument applies from 18 February 2027 to the categories it names.",
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "effectiveDate": "2027-02-18"
+      },
+      {
+        "text": "The synthetic guidance is guidance, not law.",
+        "status": "needs-review",
+        "source": "synthetic-guidance"
+      }
+    ]
+  },
+  "schemaUri": "generated/payload-schema/synthetic@2.public.schema.json",
+  "schemaDigest": "14777a204a6d7b1858fdbc819e694fde1c9d9dd8023f161793f058e970e26524",
+  "restrictedSchemaUri": "generated/payload-schema/synthetic@2.restricted.schema.json",
+  "restrictedSchemaDigest": "0e416dca8c1fa4833b8a597bf4b230e877dec2c78a8063d8b555a66a3667b161",
+  "contextRefs": [],
+  "stamps": [
+    {
+      "key": "notice",
+      "description": "The sample marker a demonstration record carries first; never product data.",
+      "valueType": "text"
+    },
+    {
+      "key": "profile",
+      "description": "The profile identifier the payload declares.",
+      "valueType": "id",
+      "const": "synthetic"
+    },
+    {
+      "key": "profile_version",
+      "description": "The profile version the payload declares.",
+      "valueType": "integer",
+      "const": 2
+    }
+  ],
+  "fields": [
+    {
+      "key": "category",
+      "pointer": "/category",
+      "label": "Category",
+      "valueType": "enum",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(1): the category decides which fields apply.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "lmt",
+            "label": "Light transport"
+          },
+          {
+            "value": "ev",
+            "label": "Vehicle"
+          },
+          {
+            "value": "industrial",
+            "label": "Industrial"
+          }
+        ]
+      },
+      "group": "identification"
+    },
+    {
+      "key": "modelName",
+      "pointer": "/modelName",
+      "label": "Model name",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(2).",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "batchId",
+      "pointer": "/batchId",
+      "label": "Batch",
+      "valueType": "id",
+      "cardinality": "one",
+      "granularity": "batch",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(2): the production run.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "serial",
+      "pointer": "/serial",
+      "label": "Serial",
+      "valueType": "id",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(2): the one unit.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "massKg",
+      "pointer": "/massKg",
+      "label": "Mass",
+      "valueType": "decimal",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(5).",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "unit": "kg",
+      "constraints": {
+        "minimum": 0
+      },
+      "group": "identification"
+    },
+    {
+      "key": "capacityKwh",
+      "pointer": "/capacityKwh",
+      "label": "Rated capacity",
+      "valueType": "decimal",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(6).",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "unit": "kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "group": "performance"
+    },
+    {
+      "key": "originCountry",
+      "pointer": "/originCountry",
+      "label": "Country of origin",
+      "valueType": "country",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(3): a batch may be made elsewhere than the model's usual plant.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "constraints": {
+        "pattern": "^[A-Z]{2}$"
+      },
+      "overridable": {
+        "at": "batch",
+        "policy": "origin-per-batch@1"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "madeMonth",
+      "pointer": "/madeMonth",
+      "label": "Made",
+      "valueType": "date",
+      "cardinality": "one",
+      "granularity": "batch",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(4): month and year of manufacture.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "precision": "month",
+      "group": "identification"
+    },
+    {
+      "key": "colour",
+      "pointer": "/colour",
+      "label": "Colour",
+      "valueType": "localisedText",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this; it identifies the object to the person holding it.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "guidance",
+        "source": "synthetic-guidance",
+        "clause": "row 12"
+      },
+      "group": "identification"
+    },
+    {
+      "key": "recycledShare",
+      "pointer": "/recycledShare",
+      "label": "Recycled content",
+      "valueType": "percent",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(7): a share, whose basis the source states.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "guidance",
+        "source": "synthetic-guidance",
+        "clause": "row 24"
+      },
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "group": "materials"
+    },
+    {
+      "key": "hazardousSubstanceCount",
+      "pointer": "/hazardousSubstanceCount",
+      "label": "Hazardous substances declared",
+      "valueType": "integer",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(8): zero is a declaration.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "constraints": {
+        "minimum": 0
+      },
+      "group": "materials"
+    },
+    {
+      "key": "secondLife",
+      "pointer": "/secondLife",
+      "label": "Second life",
+      "valueType": "any",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this; false is a value.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "guidance",
+        "source": "synthetic-guidance",
+        "clause": "row 67"
+      },
+      "group": "materials"
+    },
+    {
+      "key": "warrantyMonths",
+      "pointer": "/warrantyMonths",
+      "label": "Warranty duration",
+      "valueType": "integer",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Synthetic instrument Annex I(9): the commercial warranty period, where envisaged.",
+      "applicability": {
+        "rule": "needs-review",
+        "condition": "only where a commercial warranty is envisaged"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I(9)"
+      },
+      "unit": "months",
+      "constraints": {
+        "minimum": 1
+      },
+      "group": "durability"
+    },
+    {
+      "key": "warrantyRule",
+      "pointer": "/warrantyRule",
+      "label": "Warranty counted from",
+      "valueType": "enum",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Synthetic instrument Annex I(9).",
+      "applicability": {
+        "rule": "needs-review",
+        "condition": "only where a commercial warranty is envisaged"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I(9)"
+      },
+      "codeList": {
+        "closed": true,
+        "options": [
+          {
+            "value": "purchase-date",
+            "label": "Purchase"
+          },
+          {
+            "value": "manufacture-date",
+            "label": "Manufacture"
+          }
+        ]
+      },
+      "group": "durability"
+    },
+    {
+      "key": "purchaseDate",
+      "pointer": "/purchaseDate",
+      "label": "Purchased",
+      "valueType": "date",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event"
+      },
+      "accessTier": "owner",
+      "obligation": "optional",
+      "legalBasis": "Nothing requires this; it is the owner's evidence of the warranty start.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "guidance",
+        "source": "synthetic-guidance",
+        "clause": "row 35"
+      },
+      "precision": "day",
+      "group": "owner"
+    },
+    {
+      "key": "exhaustionThreshold",
+      "pointer": "/exhaustionThreshold",
+      "label": "Capacity threshold for exhaustion",
+      "valueType": "percent",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(10): vehicle batteries only, from the application date.",
+      "applicability": {
+        "rule": "all",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev"
+            ]
+          },
+          {
+            "rule": "effective",
+            "from": "2027-02-18"
+          }
+        ]
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "group": "performance"
+    },
+    {
+      "key": "remainingCapacity",
+      "pointer": "/remainingCapacity",
+      "label": "Remaining capacity",
+      "valueType": "decimal",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex II(1): light transport, and industrial above 2 kWh.",
+      "applicability": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial"
+                ]
+              },
+              {
+                "rule": "threshold",
+                "field": "capacityKwh",
+                "operator": "gt",
+                "value": 2,
+                "unit": "kWh"
+              }
+            ]
+          }
+        ]
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex I",
+        "effectiveDate": "2027-02-18"
+      },
+      "unit": "kWh",
+      "constraints": {
+        "minimum": 0
+      },
+      "group": "performance"
+    },
+    {
+      "key": "stateOfHealth",
+      "pointer": "/stateOfHealth",
+      "label": "State of health",
+      "valueType": "percent",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "legitimate",
+      "obligation": "recommended",
+      "legalBasis": "Synthetic instrument Annex II(2): periodically recorded.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex II(2)"
+      },
+      "unit": "%",
+      "constraints": {
+        "minimum": 0,
+        "maximum": 100
+      },
+      "group": "performance"
+    },
+    {
+      "key": "cyclesUsed",
+      "pointer": "/cyclesUsed",
+      "label": "Cycles used",
+      "valueType": "integer",
+      "cardinality": "one",
+      "granularity": "item",
+      "provenance": {
+        "capture": "event",
+        "dynamic": true
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Synthetic instrument Annex II(3): periodically recorded.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "enacted",
+        "source": "synthetic-instrument",
+        "clause": "Annex II(3)"
+      },
+      "constraints": {
+        "minimum": 0
+      },
+      "group": "performance",
+      "unit": "count"
+    },
+    {
+      "key": "dueDiligenceReport",
+      "pointer": "/dueDiligenceReport",
+      "label": "Due diligence report",
+      "valueType": "relatedDocument",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(11): required from a later date, whose primary text was not confirmed.",
+      "applicability": {
+        "rule": "unresolved",
+        "reason": "the primary text of the due diligence obligation was not confirmed",
+        "source": "synthetic-instrument Article 48"
+      },
+      "requirement": {
+        "status": "anticipated",
+        "source": "synthetic-instrument",
+        "clause": "Article 48(1)",
+        "effectiveDate": "2027-08-18"
+      },
+      "group": "supply"
+    },
+    {
+      "key": "carbonFootprintClass",
+      "pointer": "/carbonFootprintClass",
+      "label": "Carbon footprint class",
+      "valueType": "text",
+      "cardinality": "one",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "required",
+      "legalBasis": "Synthetic instrument Annex I(12): the format waits on an implementing act.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "not-to-be-displayed",
+        "source": "synthetic-guidance",
+        "clause": "row 18",
+        "effectiveDate": "2027-02-18",
+        "note": "format still to be specified"
+      },
+      "awaitingAct": "the implementing act on the carbon footprint format",
+      "group": "footprint"
+    },
+    {
+      "key": "certification",
+      "pointer": "/certification",
+      "label": "Certification",
+      "valueType": "certification",
+      "cardinality": "many",
+      "granularity": "model",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "recommended",
+      "legalBasis": "Nothing requires this; a certificate is evidence, not a claim.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "guidance",
+        "source": "synthetic-guidance",
+        "clause": "row 50"
+      },
+      "group": "supply"
+    },
+    {
+      "key": "componentComposition",
+      "pointer": "/componentComposition",
+      "label": "Component composition",
+      "valueType": "measurement",
+      "cardinality": "many",
+      "granularity": "item",
+      "provenance": {
+        "capture": "form"
+      },
+      "accessTier": "public",
+      "obligation": "optional",
+      "legalBasis": "Synthetic instrument Annex I(13): per component.",
+      "applicability": {
+        "rule": "always"
+      },
+      "requirement": {
+        "status": "guidance",
+        "source": "synthetic-guidance",
+        "clause": "row 45"
+      },
+      "scope": "component",
+      "componentScoped": true,
+      "group": "materials"
+    }
+  ],
+  "eventMappings": [
+    {
+      "nativeOperation": "ACTIVATE",
+      "eventType": "Origin",
+      "externalEvent": "manufacture",
+      "requires": "manufacturing evidence",
+      "withoutEvidence": "insufficient-data"
+    }
+  ],
+  "sourceRefs": [
+    {
+      "id": "synthetic-instrument",
+      "name": "Synthetic instrument (does not exist)",
+      "use": "The legal basis every field cites, invented for tests."
+    },
+    {
+      "id": "synthetic-guidance",
+      "name": "Synthetic guidance (does not exist)",
+      "use": "The guidance rows the requirement statuses cite, invented for tests."
+    }
+  ],
+  "groups": [
+    {
+      "id": "identification",
+      "title": "Identification"
+    },
+    {
+      "id": "materials",
+      "title": "Materials"
+    },
+    {
+      "id": "performance",
+      "title": "Performance"
+    },
+    {
+      "id": "durability",
+      "title": "Durability"
+    },
+    {
+      "id": "supply",
+      "title": "Supply chain"
+    },
+    {
+      "id": "footprint",
+      "title": "Footprint"
+    },
+    {
+      "id": "owner",
+      "title": "Private to you"
+    }
+  ],
+  "identity": {
+    "passportIdentifier": "A GS1 Digital Link URI under the demonstration prefix 952.",
+    "granularities": [
+      "model",
+      "batch",
+      "item"
+    ],
+    "itemIdentifier": "serial",
+    "modelIdentifier": "modelName",
+    "batchIdentifier": "batchId",
+    "parentRelations": [
+      {
+        "child": "item",
+        "parent": "model"
+      },
+      {
+        "child": "item",
+        "parent": "batch"
+      },
+      {
+        "child": "batch",
+        "parent": "model"
+      }
+    ]
+  },
+  "succession": {
+    "of": "synthetic@1",
+    "migration": [
+      {
+        "from": "made",
+        "to": "madeMonth",
+        "outcome": "renamed",
+        "note": "The month of manufacture moves to the batch and declares month precision."
+      },
+      {
+        "from": "recycledShare",
+        "outcome": "retyped",
+        "note": "A bare percent becomes a value with a stated basis."
+      },
+      {
+        "from": "dueDiligenceReport",
+        "outcome": "new",
+        "note": "Added as a related document with an unresolved applicability until the primary text is confirmed."
+      },
+      {
+        "from": "legacyScore",
+        "outcome": "withdrawn",
+        "note": "No instrument asks for it."
+      }
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 {
   "releaseSet": "dpp-release-2026-09",
-  "status": "candidate",
-  "description": "The first compatible release set of the standard's packages: record versions 1 and 2, the managed-custody profile, the verification report, the overlay contract at 0.6.0-draft, on the BSV stack baseline of @bsv/sdk 2.4.2 and @bsv/overlay 2.3.1 under Node 22. Candidate until the packages are published under the versions named here; a package published from this set carries the exact version named, and a later change to any wire contract or profile is a new set.",
+  "status": "superseded",
+  "description": "The first compatible release set of the standard's packages: record versions 1 and 2, the managed-custody profile, the verification report, the overlay contract at 0.6.0-draft, on the BSV stack baseline of @bsv/sdk 2.4.2 and @bsv/overlay 2.3.1 under Node 22. Candidate until the packages are published under the versions named here; a package published from this set carries the exact version named, and a later change to any wire contract or profile is a new set. Superseded by dpp-release-2026-09-2 before publication: the profiles and VSC packages moved on with the interoperability work, and this record is kept as the history of the first set.",
   "baseline": "native-baseline@2",
   "runtime": {
     "node": ">=22",

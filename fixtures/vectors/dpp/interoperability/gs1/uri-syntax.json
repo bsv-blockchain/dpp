@@ -1,0 +1,356 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.gs1.uri-syntax",
+  "name": "GS1 Digital Link URI syntax for primary key 01: what the discovery profile reads and what it refuses",
+  "version": "1.0.0",
+  "reference_impl": "dpp-profiles@0.3.0",
+  "parity_class": "required",
+  "vectors": [
+    {
+      "id": "gtin-with-every-qualifier-and-attributes",
+      "description": "Primary key 01 with the consumer product variant, lot and serial in order, a percent-encoded serial, dates and measures as data attributes, an unknown attribute carried unvalidated, a gs1: CURIE linkType and a foreign query parameter.",
+      "input": {
+        "uri": "https://id.example.org/01/9521234000013/22/2A/10/LOT-2026-01/21/SER%2F0001?17=261231&3103=001500&7003=2611011200&linkType=gs1:pip&utm=x"
+      },
+      "expected": {
+        "kind": "uncompressed",
+        "origin": "https://id.example.org",
+        "host": "id.example.org",
+        "pathStem": "",
+        "primaryKey": {
+          "ai": "01",
+          "value": "09521234000013",
+          "checkDigitValid": true,
+          "demonstration": true
+        },
+        "qualifiers": [
+          {
+            "ai": "22",
+            "value": "2A"
+          },
+          {
+            "ai": "10",
+            "value": "LOT-2026-01"
+          },
+          {
+            "ai": "21",
+            "value": "SER/0001"
+          }
+        ],
+        "dataAttributes": [
+          {
+            "ai": "17",
+            "value": "261231",
+            "validated": true
+          },
+          {
+            "ai": "3103",
+            "value": "001500",
+            "validated": true
+          },
+          {
+            "ai": "7003",
+            "value": "2611011200",
+            "validated": false
+          }
+        ],
+        "linkType": {
+          "raw": "gs1:pip",
+          "iri": "https://ref.gs1.org/voc/pip"
+        },
+        "otherQuery": [
+          [
+            "utm",
+            "x"
+          ]
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "gtin-only-with-trailing-slash",
+      "description": "A bare GTIN with one trailing slash, tolerated as the resolver standard section 2.13 asks.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/"
+      },
+      "expected": {
+        "kind": "uncompressed",
+        "origin": "https://id.example.org",
+        "host": "id.example.org",
+        "pathStem": "",
+        "primaryKey": {
+          "ai": "01",
+          "value": "09521234000013",
+          "checkDigitValid": true,
+          "demonstration": true
+        },
+        "qualifiers": [],
+        "dataAttributes": [],
+        "otherQuery": []
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "gtin-eight-digits-and-stem",
+      "description": "A GTIN-8 under a stem is spelled at fourteen digits; the stem is kept apart.",
+      "input": {
+        "uri": "https://resolver.example.org/dl/01/96385074/21/S1"
+      },
+      "expected": {
+        "kind": "uncompressed",
+        "origin": "https://resolver.example.org",
+        "host": "resolver.example.org",
+        "pathStem": "dl",
+        "primaryKey": {
+          "ai": "01",
+          "value": "00000096385074",
+          "checkDigitValid": true,
+          "demonstration": false
+        },
+        "qualifiers": [
+          {
+            "ai": "21",
+            "value": "S1"
+          }
+        ],
+        "dataAttributes": [],
+        "otherQuery": []
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "check-digit-failure-reported",
+      "description": "A GTIN whose check digit fails is read and reported, never refused: historical records carry such numbers.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000014/21/X"
+      },
+      "expected": {
+        "kind": "uncompressed",
+        "origin": "https://id.example.org",
+        "host": "id.example.org",
+        "pathStem": "",
+        "primaryKey": {
+          "ai": "01",
+          "value": "09521234000014",
+          "checkDigitValid": false,
+          "demonstration": true
+        },
+        "qualifiers": [
+          {
+            "ai": "21",
+            "value": "X"
+          }
+        ],
+        "dataAttributes": [],
+        "otherQuery": []
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "linktype-linkset",
+      "description": "linkType=linkset asks for the list, not a redirect.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013?linkType=linkset"
+      },
+      "expected": {
+        "kind": "uncompressed",
+        "origin": "https://id.example.org",
+        "host": "id.example.org",
+        "pathStem": "",
+        "primaryKey": {
+          "ai": "01",
+          "value": "09521234000013",
+          "checkDigitValid": true,
+          "demonstration": true
+        },
+        "qualifiers": [],
+        "dataAttributes": [],
+        "linkType": {
+          "raw": "linkset",
+          "linkset": true
+        },
+        "otherQuery": []
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "compressed-detected",
+      "description": "The special compressed form is recognised by its prefix and handed to decompression; nothing is guessed from it here.",
+      "input": {
+        "uri": "https://id.example.org/eh30164596f40c0e5cbe991a83"
+      },
+      "expected": {
+        "kind": "compressed",
+        "origin": "https://id.example.org",
+        "host": "id.example.org",
+        "pathStem": "",
+        "prefix": "eh",
+        "compressionString": "eh30164596f40c0e5cbe991a83",
+        "query": ""
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "refuse-unsupported-primary-key",
+      "description": "An SSCC is a real primary key this profile does not host.",
+      "input": {
+        "uri": "https://id.example.org/00/095212340000000013"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "unsupported-primary-key",
+        "detail": "primary key 00 is not hosted; this profile resolves 01 only"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-no-primary-key",
+      "description": "No segment is an application identifier, and the general compressed form is not decoded.",
+      "input": {
+        "uri": "https://id.example.org/AQnYUc"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "no-primary-key",
+        "detail": "no path segment is a GS1 application identifier; the general compressed form is not decoded"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-qualifier-order",
+      "description": "A lot after a serial breaks the fixed order 22, 10, 21.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/21/S/10/L"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "qualifier-order",
+        "detail": "application identifier 10 must precede 21: the order is 22, 10, 21"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-qualifier-repeated",
+      "description": "A qualifier appears twice.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/10/L/10/M"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "qualifier-repeated",
+        "detail": "application identifier 10 appears twice"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-tpx",
+      "description": "The third-party serialised extension is a GTIN qualifier outside the hosted scope.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/235/TPX1"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "qualifier-unsupported",
+        "detail": "application identifier 235 (third-party serialised extension) is not hosted by this profile"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-serial-too-long",
+      "description": "Twenty-one characters exceed AI 21.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/21/aaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "qualifier-value",
+        "detail": "application identifier 21 carries 1 to 20 characters of the GS1 encodable set 82"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-key-in-query",
+      "description": "A key qualifier in the query belongs in the path.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013?21=X"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "key-in-query",
+        "detail": "application identifier 21 is a key or key qualifier and belongs in the path"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-bad-date-attribute",
+      "description": "AI 17 is a six-digit date; month 13 is not one.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013?17=261332"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "attribute-value",
+        "detail": "application identifier 17 requires a real month and day (day 00 permitted)"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-trailing-segment",
+      "description": "An application identifier with no value.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/21"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "trailing-segment",
+        "detail": "a path segment follows the last application identifier without a value"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-percent-encoding",
+      "description": "A malformed percent sequence in a qualifier.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013/21/%E0%A4%A"
+      },
+      "expected": {
+        "kind": "invalid",
+        "reason": "percent-encoding",
+        "detail": "the path segment %E0%A4%A is not valid percent-encoding"
+      },
+      "tags": [
+        "error-case"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/passport-source.schema.json",
+  "title": "DPP passport source revision and relationship, version 1",
+  "description": "The two records a passport's facts are derived from (spec/passport-projections.md sections 2 and 3): an immutable source revision of a model, batch, item or component record, and a typed relationship between subjects. Revisions are append-only; a current pointer moves by compare-and-swap and never rewrites a revision. A relationship is an accepted assertion under a named policy, kept apart from any source event's own edges.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/sourceRevision"
+    },
+    {
+      "$ref": "#/$defs/relationship"
+    }
+  ],
+  "$defs": {
+    "hex64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dateTime": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "dateOrDateTime": {
+      "type": "string",
+      "pattern": "^\\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\\d|3[01])(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?)?)?$"
+    },
+    "subjectRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "granularity"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "granularity": {
+          "enum": [
+            "model",
+            "batch",
+            "item",
+            "component"
+          ]
+        }
+      }
+    },
+    "revisionRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId",
+        "revisionId"
+      ],
+      "properties": {
+        "recordId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revisionId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "interval": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "until": {
+          "$ref": "#/$defs/dateOrDateTime"
+        }
+      }
+    },
+    "sourceRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordId",
+        "revisionId",
+        "subject",
+        "profileRef",
+        "recordedAt",
+        "payloadDigest",
+        "authorisation",
+        "disclosure"
+      ],
+      "properties": {
+        "recordId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The stable identifier of the record the revision belongs to."
+        },
+        "revisionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique within the record; a revision is never edited or deleted, only superseded."
+        },
+        "subject": {
+          "$ref": "#/$defs/subjectRef"
+        },
+        "profileRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "version"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "recordedAt": {
+          "$ref": "#/$defs/dateTime"
+        },
+        "effective": {
+          "$ref": "#/$defs/interval",
+          "description": "When the facts hold, where the source says so; distinct from when they were recorded."
+        },
+        "payloadDigest": {
+          "$ref": "#/$defs/hex64",
+          "description": "SHA-256 of the payload's exact bytes as retained."
+        },
+        "payload": {
+          "type": "object",
+          "description": "The payload when carried inline; keys are the profile's field keys."
+        },
+        "payloadRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "uri"
+          ],
+          "properties": {
+            "uri": {
+              "type": "string",
+              "minLength": 1
+            },
+            "byteLength": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "mediaType": {
+              "type": "string"
+            }
+          }
+        },
+        "authorisation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "policyId"
+          ],
+          "description": "Who was entitled to write this revision and under which policy. migration-unknown-ancestry marks a legacy copy whose provenance is not known and is never invented.",
+          "properties": {
+            "kind": {
+              "enum": [
+                "registration",
+                "import",
+                "migration-unknown-ancestry",
+                "operator"
+              ]
+            },
+            "principal": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidenceRef": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policyId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "disclosure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policyId",
+            "scope"
+          ],
+          "properties": {
+            "policyId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "scope": {
+              "enum": [
+                "public",
+                "owner",
+                "legitimate",
+                "authority"
+              ]
+            }
+          }
+        },
+        "supersedes": {
+          "$ref": "#/$defs/revisionRef"
+        },
+        "sourceRefs": {
+          "type": "array",
+          "description": "Where the values came from, when the revision was derived from a retained source such as an import: opaque pointers, never the source bytes.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relationshipId",
+        "kind",
+        "source",
+        "target",
+        "evidence",
+        "policyRef"
+      ],
+      "properties": {
+        "relationshipId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "instance-of-model",
+            "member-of-batch",
+            "component-of",
+            "successor-of"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/subjectRef"
+        },
+        "target": {
+          "$ref": "#/$defs/subjectRef"
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "What the assertion rests on: a source revision, a credential or a retained source event. At least one is named.",
+          "minProperties": 1,
+          "properties": {
+            "sourceRevision": {
+              "$ref": "#/$defs/revisionRef"
+            },
+            "credentialRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "digest": {
+                  "$ref": "#/$defs/hex64"
+                }
+              }
+            },
+            "eventRef": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "importId",
+                "eventRef"
+              ],
+              "properties": {
+                "importId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "eventRef": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "effective": {
+          "$ref": "#/$defs/interval"
+        },
+        "policyRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quantities": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "For component-of only: the quantities the accepted assertion covers. A source event's own input and output quantities stay on the event and are not copied here.",
+          "properties": {
+            "input": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value",
+                "unit"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "output": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value",
+                "unit"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "not": {
+                  "const": "component-of"
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "quantities": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}

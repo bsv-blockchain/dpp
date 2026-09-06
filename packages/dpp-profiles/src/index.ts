@@ -13,6 +13,11 @@ import { readFileSync } from 'node:fs'
 export * from './identifiers.js'
 export * from './mapping.js'
 export * from './combinations.js'
+export * from './evidence-shapes.js'
+export * from './applicability.js'
+export * from './projections.js'
+export * from './manifest-v2.js'
+export * from './gs1-resolution.js'
 
 export type ValueType = 'id' | 'text' | 'enum' | 'multi' | 'decimal' | 'integer' | 'percent' | 'monthYear' | 'date' | 'url' | 'document' | 'graphic' | 'country' | 'record' | 'any'
 export type AccessTier = 'public' | 'owner' | 'legitimate' | 'authority'
@@ -63,7 +68,7 @@ export interface ProfileManifest {
   regulatoryLine: string
   baseline: string
   roles: string[]
-  applicability: { categories: Option[]; categoryKey?: string; jurisdictions: string[]; statements: Array<{ text: string; status: 'enacted' | 'anticipated' | 'needs-review'; source?: string; effectiveDate?: string }> }
+  applicability: { categories: Option[]; categoryKey?: string; jurisdictions: string[]; statements: Array<{ text: string; status: 'enacted' | 'anticipated' | 'needs-review' | 'guidance'; source?: string; effectiveDate?: string }> }
   schemaDialect: 'https://json-schema.org/draft/2020-12/schema'
   schemaUri: string
   schemaDigest: string
@@ -81,8 +86,14 @@ export interface ProfileManifest {
   identity: { passportIdentifier: string; granularities: Granularity[]; itemIdentifier?: string; modelIdentifier?: string; batchIdentifier?: string; parentRelations: Array<{ child: 'item' | 'batch'; parent: 'model' | 'batch' }> }
 }
 
-/** The profiles this package publishes, current and superseded, in the order the index lists them. */
-export const PROFILE_IDS = ['battery@2', 'textile@2', 'general@2', 'textile@1', 'general@1'] as const
+/**
+ * Current versions first, then the draft successors under manifest version 2
+ * (opt-in by explicit version; `readManifestAny` reads them with their version
+ * 2 fields), then the superseded versions. `readManifest` is typed for version
+ * 1; a draft successor read through it carries version 2 keys the type does
+ * not name.
+ */
+export const PROFILE_IDS = ['battery@2', 'textile@2', 'general@2', 'battery@3', 'textile@3', 'textile@1', 'general@1'] as const
 export type ProfileId = (typeof PROFILE_IDS)[number]
 
 const packageRoot = new URL('../', import.meta.url)
@@ -112,7 +123,7 @@ export function readConsumerDocument(profile: ProfileId): Record<string, unknown
 }
 
 /** Exchange profiles this package catalogues (spec/exchange.md section 2). */
-export const EXCHANGE_PROFILE_IDS = ['untp-0.7.0-jose@1', 'vsc-draft-compat@0.1.0'] as const
+export const EXCHANGE_PROFILE_IDS = ['untp-0.7.0-jose@1', 'vsc-draft-compat@0.1.0', 'vc-di-ecdsa-rdfc-2019@1'] as const
 export type ExchangeProfileId = (typeof EXCHANGE_PROFILE_IDS)[number]
 
 /** Operator profiles this package catalogues (spec/services.md, spec/conformance.md section 4). */
@@ -127,6 +138,22 @@ export function readExchangeProfile(profile: ExchangeProfileId): Record<string, 
 /** The manifest of one operator profile: admission, publisher policy, discovery, synchronisation, retention and acceptance exercises. */
 export function readOperatorProfile(profile: OperatorProfileId): Record<string, unknown> {
   return readJson(`manifests/operator/${profile}.json`)
+}
+
+/**
+ * Interoperability profiles this package catalogues
+ * (`schemas/interoperability-profile.schema.json`): how a passport is
+ * discovered (spec/gs1-discovery.md), how source events are exchanged and how
+ * a source is mapped into an existing credential profile
+ * (spec/epcis-interoperability.md). Neither industry profiles nor signed
+ * credential formats, and never a mapping to a native operation.
+ */
+export const INTEROPERABILITY_PROFILE_IDS = ['gs1-digital-link@1', 'epcis-json@1', 'epcis-vsc@1'] as const
+export type InteroperabilityProfileId = (typeof INTEROPERABILITY_PROFILE_IDS)[number]
+
+/** The manifest of one interoperability profile: role, pinned standards and artefacts, formats, dependencies, limits and what it cannot map. */
+export function readInteroperabilityProfile(profile: InteroperabilityProfileId): Record<string, unknown> {
+  return readJson(`manifests/interoperability/${profile}.json`)
 }
 
 /** The frozen digests every published manifest and generated file is held to. */

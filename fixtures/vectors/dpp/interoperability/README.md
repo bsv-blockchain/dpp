@@ -1,0 +1,12 @@
+# Interoperability vectors
+
+The conformance vectors of the interoperability profiles of Part C, in the same cross-language vector format as the other files under `fixtures/vectors/` (`../../../README.md`): a stable dotted identifier, a version, the producing reference implementation, and vectors that each carry an identifier, an input, an expected result and the tags `happy-path` or `error-case`. Every file here is synthetic and neutral: GS1 keys under the demonstration prefix 952, `example.org` hosts, `did:web:issuer.example` issuers and published test keys from which nothing will ever hold value. Public source examples found during research were used only to design negative and inspection cases and are not copied here.
+
+| Directory | Profile | What the vectors prove |
+|---|---|---|
+| `gs1/` | `gs1-digital-link@1` | Parsing of primary key 01 with its qualifiers and data attributes, key-tuple equivalence across hosts, EPC-binary decompression for SGTIN-96 and SGTIN-198 with the standard's own worked examples, linkset selection and the hierarchy of granularities. |
+| `epcis/` | `epcis-json@1`, `epcis-vsc@1` | Exact-byte retention of all five event types, refusal of unsafe transports before retention, retention of a safely parsed but schema-invalid document with its findings, event body digests that are stable across formatting and different across bodies, duplicate, conflict and new-observation classification, and mapping outcomes from lossless to insufficient-data. |
+| `external-credential/` | `vc-di-ecdsa-rdfc-2019@1` | An independently produced positive P-256 credential, the same credential reformatted so its RDF proof holds while its exact-byte digest differs, and tampered, substituted, expired, revoked and unsupported variants with the check each one fails. |
+| `projection/` | `passport-projection@1` | Deterministic projections from versioned model, batch and item sources: declared overrides against undeclared conflicts, out-of-order measurements and correction replay reaching the same digest, cycles and limits reported as findings, withheld restricted fields, month-precision dates with a purchase-based warranty, fraction against percent with an explicit basis, zero and false preserved, and language fallback. |
+
+A conformance report over these vectors is presented as `GOVERNANCE.md` requires: one sentence per vector, refusals included, no aggregate score. Each directory's own README names the module that generates its files and how the expected results were produced independently of the code under test.

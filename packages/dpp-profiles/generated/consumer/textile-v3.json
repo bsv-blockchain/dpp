@@ -1,0 +1,2011 @@
+{
+  "id": "textile",
+  "version": 3,
+  "profile": "textile@3",
+  "status": "candidate successor to textile@2: opt-in by explicit version until the reviewed cutover",
+  "manifestVersion": "2",
+  "succession": {
+    "of": "textile@2",
+    "migration": [
+      {
+        "from": "name",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "category",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "modelIdentifier",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "batch",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "gtin",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "manufacturer",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "manufacturerContact",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "operatorId",
+        "outcome": "relabelled",
+        "note": "carried unchanged with awaitingAct; requirement status anticipated, so it is never schema-required and never counted missing"
+      },
+      {
+        "from": "manufacturingPlace",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "made",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "colour",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "size",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "weight",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "fibres",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the whole-product composition; components and componentFibres carry the composition per component"
+      },
+      {
+        "from": "nonTextileParts",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "recycledContent",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the model-level declared share; recycledContentAssessment is the method-qualified companion"
+      },
+      {
+        "from": "biobasedContent",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "trims",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "substancesOfConcern",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "substanceStatement",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the default-language text; substanceStatementLocalised is the language-tagged companion"
+      },
+      {
+        "from": "chemicalCompliance",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "microplasticRelease",
+        "outcome": "relabelled",
+        "note": "carried unchanged with awaitingAct; requirement status anticipated, so it is never schema-required and never counted missing"
+      },
+      {
+        "from": "care",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "careNote",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the default-language text; careNoteLocalised is the language-tagged companion"
+      },
+      {
+        "from": "expectedLifetime",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "washCycles",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "colourFastness",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "dimensionalStability",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "pillingResistance",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "guarantee",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the guarantee term in months; the companion warrantyTerms carries the calendar rule an item expiry is derived under"
+      },
+      {
+        "from": "repairability",
+        "outcome": "relabelled",
+        "note": "carried unchanged with awaitingAct; requirement status anticipated, so it is never schema-required and never counted missing"
+      },
+      {
+        "from": "spareParts",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "repairInstructions",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "repairServices",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status needs-review"
+      },
+      {
+        "from": "carbonFootprint",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "carbonFootprintStudy",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "footprintClass",
+        "outcome": "relabelled",
+        "note": "carried unchanged with awaitingAct; requirement status anticipated, so it is never schema-required and never counted missing"
+      },
+      {
+        "from": "waterUse",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "collection",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status enacted"
+      },
+      {
+        "from": "recyclability",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "separability",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "eprRegistration",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "supplyChain",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "certifications",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the declared list of schemes; certificationEvidence carries the certificate, its validity and its verification result"
+      },
+      {
+        "from": "dueDiligence",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status anticipated"
+      },
+      {
+        "from": "provenance",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "purchase",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "personalisation",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "warrantyRegistration",
+        "outcome": "unchanged",
+        "note": "carried unchanged; requirement status none"
+      },
+      {
+        "from": "components",
+        "outcome": "new",
+        "note": "One entry per component of the product, named once here and referenced by componentFibres, substancesOfConcern.location and certificationEvidence.subject.componentRef."
+      },
+      {
+        "from": "componentFibres",
+        "outcome": "new",
+        "note": "Regulation (EU) 1007/2011 Articles 5, 9 and 14 read per component; ESPR Annex I"
+      },
+      {
+        "from": "recycledContentAssessment",
+        "outcome": "new",
+        "note": "The measurement shape keeps a physical recycled share apart from a mass-balance claim through its basis and method; recycledContent stays the declared scalar."
+      },
+      {
+        "from": "certificationEvidence",
+        "outcome": "new",
+        "note": "Dir. (EU) 2024/825 Art. 2: the certification behind a sustainability label, as evidence"
+      },
+      {
+        "from": "relatedDocuments",
+        "outcome": "new",
+        "note": "none: documents a value points at, with their access policy and, where retained, their digest"
+      },
+      {
+        "from": "microfibreReleaseAssessment",
+        "outcome": "new",
+        "note": "ESPR Annex I(k): microplastic and microfibre release, by a named method"
+      },
+      {
+        "from": "repairabilityAssessment",
+        "outcome": "new",
+        "note": "ESPR Annex I(c) and Art. 7(2)(b)(iii): a repairability assessment under a named method"
+      },
+      {
+        "from": "warrantyTerms",
+        "outcome": "new",
+        "note": "Dir. (EU) 2024/825: a commercial guarantee of durability states its term and what it counts from"
+      },
+      {
+        "from": "careNoteLocalised",
+        "outcome": "new",
+        "note": "careNote stays the default-language text; a reader selects the exact language, then the base language, then the default, and never rewrites a value."
+      },
+      {
+        "from": "substanceStatementLocalised",
+        "outcome": "new",
+        "note": "ESPR Art. 9(2)(b): the substance statement in each language it was supplied in"
+      },
+      {
+        "from": "inapplicableFields",
+        "outcome": "new",
+        "note": "A declaration is an assertion by the declaring party under the record's authorisation; it is shown beside the field it concerns and is never read as the field's value."
+      }
+    ]
+  },
+  "regulatoryLine": "Mapped to the ESPR passport requirements (Reg. (EU) 2024/1781 Art. 9 and Annex III) and binding EU textile labelling law (Reg. (EU) 1007/2011), ready to absorb the textile delegated act when adopted.",
+  "note": "The successor to textile@2 under manifest version 2, published as a draft that a deployment selects by explicit version. Every field carries a requirement status separate from the profile's own obligation: enacted for the binding labelling, consumer and waste law that names it, anticipated for every ESPR parameter until the textile delegated act is adopted, needs-review where only a recital could be cited, and none for the profile's own additions. Composition and evidence can be declared per component, assessments carry the method they were made by, a certificate is evidence with a verification result rather than a name, documents are references with an access policy, and prose fields have language-tagged companions. No universal repairability score, microfibre method or certification scheme is mandated. Every byte of textile@2 and of its generated files is unchanged; the migration outcome of every field is in succession.",
+  "sources": [
+    "Regulation (EU) 2024/1781 (ESPR): Art. 4 and Annex I for the product parameters, Art. 9 and Annex III for passport contents, Art. 7(5) for substances of concern",
+    "European Commission, textile and apparel digital product passport page, retrieved 6 September 2026 (SHA-256 c40001fdab9a33f65353e11678e64e736f3209a9dbb04625cef24d12135683b0)",
+    "Regulation (EC) 1907/2006 (REACH), Article 33: information on substances of very high concern in articles",
+    "Directive (EU) 2024/1760 on corporate sustainability due diligence",
+    "Regulation (EU) 1007/2011 on textile fibre names and labelling: binding today, and the source of the fibre composition and animal-origin declarations",
+    "Directive (EU) 2024/825 on empowering consumers: durability and reparability claims",
+    "Directive 2008/98/EC as amended: textile extended producer responsibility and separate collection",
+    "ISO 3758, ISO 5077, ISO 6330, ISO 12945 and the ISO 105 series, for the test methods the performance values are measured by"
+  ],
+  "registers": [
+    {
+      "prefix": "iso3166",
+      "name": "ISO 3166-1 alpha-2",
+      "reference": "ISO 3166-1",
+      "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+      "fields": [
+        "manufacturingPlace.country",
+        "supplyChain.country",
+        "trims.origin"
+      ]
+    }
+  ],
+  "conventions": {
+    "resolved": "Constraints are resolved, not implied: a percent field carries minimum 0 and maximum 100 explicitly, and a country field carries its pattern. No type-specific defaults need reapplying.",
+    "closed": "closed:true means options are exhaustive and a value outside them is invalid. closed:false means the list is what is known in practice and a value outside it is valid, because the source names no exhaustive vocabulary. A field with options and no closed key is closed.",
+    "awaitingAct": "awaitingAct names a delegated or implementing act that will fix this value's permitted form. Until it is adopted no list or pattern is stated, because stating one would publish a guess as a standard. Do not reject values on this field.",
+    "prose": "prose:true marks a value that is meant to be written for a person to read. It is a deliberate per-field decision, not an absent constraint.",
+    "record": "type:record carries fields describing its parts. With repeat:true the value is an array of such records; without, a single one."
+  },
+  "fields": [
+    {
+      "key": "name",
+      "label": "Product name",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "prose": true,
+      "onLabel": true,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Annex III(a); the passport has to say what the product is",
+      "supersedes": "name",
+      "note": "The name the brand sells it under, written by a person for a person.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-espr",
+        "clause": "Annex III(a)",
+        "note": "the framework is in force; the delegated act will fix the exact form"
+      }
+    },
+    {
+      "key": "category",
+      "label": "Kind of product",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "enum",
+      "options": [
+        {
+          "value": "apparel",
+          "label": "Clothing"
+        },
+        {
+          "value": "footwear",
+          "label": "Footwear"
+        },
+        {
+          "value": "home",
+          "label": "Home textile"
+        },
+        {
+          "value": "accessory",
+          "label": "Accessory"
+        }
+      ],
+      "closed": false,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Art. 4; the parameters that apply depend on what the product is",
+      "note": "Open: ESPR scope for textiles is set by the delegated act, so a closed list would be our guess wearing the regulation’s clothes.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-espr",
+        "clause": "Article 4",
+        "note": "the framework is in force; the delegated act will fix the exact form"
+      }
+    },
+    {
+      "key": "modelIdentifier",
+      "label": "Model or style reference",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "id",
+      "maxLength": 64,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Annex III(b): the unique product identifier is model-level",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-espr",
+        "clause": "Annex III(b)",
+        "note": "the framework is in force; the delegated act will fix the exact form"
+      }
+    },
+    {
+      "key": "batch",
+      "label": "Batch",
+      "obligation": "must",
+      "access": "public",
+      "level": "batch",
+      "type": "id",
+      "maxLength": 64,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Annex III(b); Reg. 1007/2011 traceability of a labelled lot",
+      "supersedes": "batch",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-espr",
+        "clause": "Annex III(b); Regulation (EU) 1007/2011",
+        "note": "the framework is in force; the delegated act will fix the granularity"
+      }
+    },
+    {
+      "key": "gtin",
+      "label": "Article number (GTIN)",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "id",
+      "pattern": "^\\d{8}$|^\\d{12,14}$",
+      "patternHint": "8, 12, 13 or 14 digits",
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Annex III(c): commodity and trade item codes where they exist",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex III(c)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "manufacturer",
+      "label": "Brand name",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "prose": true,
+      "onLabel": true,
+      "group": "identification",
+      "source": "brand",
+      "legalRef": "ESPR Annex III(e); Reg. 1007/2011 Art. 15 identifies the responsible operator",
+      "supersedes": "manufacturer",
+      "note": "A company name; nothing to constrain it to but itself.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-1007-2011",
+        "clause": "Article 15; ESPR Annex III(e)"
+      }
+    },
+    {
+      "key": "manufacturerContact",
+      "label": "Brand contact",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "prose": true,
+      "group": "identification",
+      "source": "brand",
+      "legalRef": "ESPR Annex III(e): the operator has to be reachable, not merely named",
+      "supersedes": "manufacturerContact",
+      "note": "An email, a postal address or a page. Constraining it to one shape would exclude the others.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-espr",
+        "clause": "Annex III(e)",
+        "note": "the framework is in force; the delegated act will fix the exact form"
+      }
+    },
+    {
+      "key": "operatorId",
+      "label": "EU operator identifier",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "id",
+      "awaitingAct": "the ESPR implementing act on unique operator identifiers",
+      "group": "identification",
+      "source": "deferred",
+      "legalRef": "ESPR Annex III(e)",
+      "note": "Declared and not captured: the identifier scheme does not exist yet, so an empty box would invite a made-up value.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex III(e)",
+        "note": "waits on the implementing act on unique operator identifiers"
+      }
+    },
+    {
+      "key": "manufacturingPlace",
+      "label": "Where it was made",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "city",
+          "label": "Town or city",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code",
+          "required": true
+        }
+      ],
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Reg. 1007/2011 Art. 16 read with the Union Customs Code origin rules",
+      "supersedes": "origin",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-1007-2011",
+        "clause": "Article 16, read with the Union Customs Code"
+      }
+    },
+    {
+      "key": "made",
+      "label": "Made",
+      "obligation": "should",
+      "access": "public",
+      "level": "batch",
+      "type": "monthYear",
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Annex I(a): a durability claim is meaningless without a start date",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(a)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      },
+      "precision": "month"
+    },
+    {
+      "key": "colour",
+      "label": "Colour",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 60,
+      "prose": true,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. It identifies the item to the person holding it.",
+      "note": "Brands name colours, and the name is part of the product.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this"
+      }
+    },
+    {
+      "key": "size",
+      "label": "Size",
+      "obligation": "should",
+      "access": "public",
+      "level": "item",
+      "type": "text",
+      "maxLength": 32,
+      "prose": true,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is what makes a passport match the garment in hand.",
+      "note": "Size systems differ by market and by brand; a closed list would be wrong somewhere.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this"
+      }
+    },
+    {
+      "key": "weight",
+      "label": "Weight",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "g",
+      "minimum": 1,
+      "maximum": 50000,
+      "step": 1,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "ESPR Annex I(l): resource use, and the basis of every per-mass figure below",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(l)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "fibres",
+      "label": "Fibre composition",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "fibre",
+          "label": "Fibre",
+          "type": "enum",
+          "options": [
+            {
+              "value": "wool",
+              "label": "Wool"
+            },
+            {
+              "value": "cotton",
+              "label": "Cotton"
+            },
+            {
+              "value": "linen",
+              "label": "Linen (flax)"
+            },
+            {
+              "value": "silk",
+              "label": "Silk"
+            },
+            {
+              "value": "hemp",
+              "label": "Hemp"
+            },
+            {
+              "value": "cashmere",
+              "label": "Cashmere"
+            },
+            {
+              "value": "mohair",
+              "label": "Mohair"
+            },
+            {
+              "value": "alpaca",
+              "label": "Alpaca"
+            },
+            {
+              "value": "viscose",
+              "label": "Viscose"
+            },
+            {
+              "value": "lyocell",
+              "label": "Lyocell"
+            },
+            {
+              "value": "modal",
+              "label": "Modal"
+            },
+            {
+              "value": "cupro",
+              "label": "Cupro"
+            },
+            {
+              "value": "acetate",
+              "label": "Acetate"
+            },
+            {
+              "value": "polyester",
+              "label": "Polyester"
+            },
+            {
+              "value": "polyamide",
+              "label": "Polyamide (nylon)"
+            },
+            {
+              "value": "elastane",
+              "label": "Elastane"
+            },
+            {
+              "value": "acrylic",
+              "label": "Acrylic"
+            },
+            {
+              "value": "polypropylene",
+              "label": "Polypropylene"
+            }
+          ],
+          "closed": false,
+          "required": true
+        },
+        {
+          "key": "percent",
+          "label": "Share by weight",
+          "type": "percent",
+          "unit": "%",
+          "minimum": 0,
+          "maximum": 100,
+          "required": true
+        },
+        {
+          "key": "source",
+          "label": "Source",
+          "type": "enum",
+          "options": [
+            {
+              "value": "preConsumer",
+              "label": "Pre-consumer recycled"
+            },
+            {
+              "value": "postConsumer",
+              "label": "Post-consumer recycled"
+            },
+            {
+              "value": "virgin",
+              "label": "Virgin"
+            }
+          ],
+          "closed": true
+        }
+      ],
+      "repeat": true,
+      "onLabel": true,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "Reg. (EU) 1007/2011 Art. 5, 9 and 14: binding today, by weight, in descending order",
+      "supersedes": "fibres",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-1007-2011",
+        "clause": "Articles 5, 9 and 14"
+      }
+    },
+    {
+      "key": "nonTextileParts",
+      "label": "Non-textile parts of animal origin",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 200,
+      "prose": true,
+      "conditional": "the product contains non-textile parts of animal origin",
+      "onLabel": true,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "Reg. (EU) 1007/2011 Art. 12: mandatory where such parts are present",
+      "note": "The regulation asks for a phrase, not a code: \"contains non-textile parts of animal origin\".",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-1007-2011",
+        "clause": "Article 12",
+        "note": "mandatory where non-textile parts of animal origin are present; the applicability stays needs-review"
+      }
+    },
+    {
+      "key": "recycledContent",
+      "label": "Recycled content",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "ESPR Annex I(g): recycled content is a named parameter; the threshold waits on the act",
+      "supersedes": "recycled",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(g)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "biobasedContent",
+      "label": "Bio-based content",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "Nothing requires this. Declared where a brand can substantiate it.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this"
+      }
+    },
+    {
+      "key": "trims",
+      "label": "Trims and hardware",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "part",
+          "label": "Part",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "origin",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code"
+        }
+      ],
+      "repeat": true,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "ESPR Annex I(d) and (n): what separates for repair, and what separates for recycling",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(d); Annex I(n)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "substancesOfConcern",
+      "label": "Substances of concern",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "substance",
+          "label": "Substance",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "casNumber",
+          "label": "CAS number",
+          "type": "text",
+          "pattern": "^\\d{2,7}-\\d{2}-\\d$",
+          "patternHint": "a CAS registry number, e.g. 7440-48-4"
+        },
+        {
+          "key": "concentration",
+          "label": "Concentration",
+          "type": "percent",
+          "unit": "%",
+          "minimum": 0,
+          "maximum": 100
+        },
+        {
+          "key": "location",
+          "label": "Where in the product",
+          "type": "text"
+        }
+      ],
+      "repeat": true,
+      "conditional": "a substance of concern is present above the threshold the act will set",
+      "group": "substances",
+      "source": "form",
+      "legalRef": "ESPR Art. 7(5): substances of concern must be traceable through the passport",
+      "supersedes": "substances",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Article 7(5)",
+        "note": "the threshold the delegated act will set is not adopted; the applicability stays needs-review"
+      }
+    },
+    {
+      "key": "substanceStatement",
+      "label": "What that means for you",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "substances",
+      "source": "form",
+      "legalRef": "ESPR Art. 9(2)(b): passport information shall be complete and comprehensible",
+      "note": "A list of CAS numbers tells a consumer nothing. This is the sentence that does.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Article 9(2)(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "chemicalCompliance",
+      "label": "Chemical compliance evidence",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "document",
+      "group": "substances",
+      "source": "form",
+      "legalRef": "REACH Art. 33 read with ESPR Annex III(d): compliance documentation",
+      "requirement": {
+        "status": "enacted",
+        "source": "reach-1907-2006",
+        "clause": "Article 33",
+        "note": "REACH Article 33 is in force; the ESPR Annex III(d) reading waits on the delegated act"
+      }
+    },
+    {
+      "key": "microplasticRelease",
+      "label": "Microplastic release",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "awaitingAct": "the harmonised test method for microfibre release",
+      "prose": true,
+      "group": "substances",
+      "source": "form",
+      "legalRef": "ESPR Annex I(k); the method is not yet fixed",
+      "note": "No measurement method is harmonised, so a number here would be incomparable with anyone else’s.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(k)",
+        "note": "the harmonised test method for microfibre release is not fixed"
+      }
+    },
+    {
+      "key": "care",
+      "label": "Care",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "multi",
+      "options": [
+        {
+          "value": "wash30",
+          "label": "Machine wash at 30 °C"
+        },
+        {
+          "value": "wash40",
+          "label": "Machine wash at 40 °C"
+        },
+        {
+          "value": "wash60",
+          "label": "Machine wash at 60 °C"
+        },
+        {
+          "value": "handWash",
+          "label": "Hand wash only"
+        },
+        {
+          "value": "noWash",
+          "label": "Do not wash"
+        },
+        {
+          "value": "noBleach",
+          "label": "Do not bleach"
+        },
+        {
+          "value": "tumbleLow",
+          "label": "Tumble dry low"
+        },
+        {
+          "value": "noTumble",
+          "label": "Do not tumble dry"
+        },
+        {
+          "value": "ironLow",
+          "label": "Iron low"
+        },
+        {
+          "value": "ironMedium",
+          "label": "Iron medium"
+        },
+        {
+          "value": "noIron",
+          "label": "Do not iron"
+        },
+        {
+          "value": "dryClean",
+          "label": "Professional dry clean"
+        },
+        {
+          "value": "noDryClean",
+          "label": "Do not dry clean"
+        }
+      ],
+      "closed": true,
+      "onLabel": true,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ISO 3758 care symbols; Dir. (EU) 2024/825 Art. 2 on durability information",
+      "supersedes": "care",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2024-825",
+        "clause": "Article 2; ISO 3758 care symbols"
+      }
+    },
+    {
+      "key": "careNote",
+      "label": "How to make it last",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(a): extending lifetime is the parameter; this is how",
+      "note": "The advice a maker would give in person, which no symbol carries.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(a)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "expectedLifetime",
+      "label": "Expected lifetime",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "years",
+      "minimum": 1,
+      "maximum": 100,
+      "step": 1,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(a) and Dir. (EU) 2024/825: a durability claim must be substantiated",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2024-825",
+        "clause": "Article 2",
+        "note": "a durability claim under the directive states its basis; the ESPR parameter reading waits on the delegated act"
+      }
+    },
+    {
+      "key": "washCycles",
+      "label": "Tested to",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "wash cycles",
+      "minimum": 1,
+      "maximum": 1000,
+      "step": 1,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(b) reliability, tested per ISO 6330 domestic washing procedures",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "colourFastness",
+      "label": "Colour fastness",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "grade",
+      "minimum": 1,
+      "maximum": 5,
+      "step": 0.5,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(b), graded 1-5 per the ISO 105 series",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "dimensionalStability",
+      "label": "Dimensional change after washing",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "%",
+      "minimum": -20,
+      "maximum": 20,
+      "step": 0.5,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(b), measured per ISO 5077",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "pillingResistance",
+      "label": "Pilling resistance",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "grade",
+      "minimum": 1,
+      "maximum": 5,
+      "step": 0.5,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(b), graded 1-5 per ISO 12945",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "guarantee",
+      "label": "Guarantee",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "months",
+      "minimum": 0,
+      "maximum": 600,
+      "step": 1,
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Dir. (EU) 2024/825: a commercial guarantee of durability must state its term",
+      "supersedes": "warranty",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2024-825",
+        "clause": "Article 2"
+      }
+    },
+    {
+      "key": "repairability",
+      "label": "Repairability",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 300,
+      "awaitingAct": "the ESPR delegated act on repairability scoring for textiles",
+      "prose": true,
+      "group": "repair",
+      "source": "form",
+      "legalRef": "ESPR Annex I(c) and Art. 7(2)(b)(iii)",
+      "note": "The scoring class is not fixed, so a letter or a number here would be invented.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(c); Article 7(2)(b)(iii)",
+        "note": "waits on the delegated act on repairability scoring for textiles; no score is mandated"
+      }
+    },
+    {
+      "key": "spareParts",
+      "label": "Spare parts",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 300,
+      "prose": true,
+      "group": "repair",
+      "source": "form",
+      "legalRef": "ESPR Annex I(d): availability of spare parts is a named parameter",
+      "note": "Which parts, and for how long. A yes/no would hide the part that matters.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(d)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "repairInstructions",
+      "label": "Repair instructions",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "group": "repair",
+      "source": "form",
+      "legalRef": "ESPR Annex I(e): access to repair information",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(e)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "repairServices",
+      "label": "Where to get it repaired",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "url",
+      "group": "repair",
+      "source": "form",
+      "legalRef": "Dir. (EU) 2024/825 recital 22: repair should be the visible option",
+      "requirement": {
+        "status": "needs-review",
+        "source": "eu-2024-825",
+        "clause": "recital 22",
+        "note": "the basis is a recital, not an article; no article confirmed"
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": "Carbon footprint",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg CO₂e",
+      "minimum": 0,
+      "maximum": 10000,
+      "step": 0.01,
+      "group": "footprint",
+      "source": "form",
+      "legalRef": "ESPR Annex I(m), computed per the Apparel and Footwear PEFCR",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(m)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "carbonFootprintStudy",
+      "label": "The study behind the figure",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "group": "footprint",
+      "source": "form",
+      "legalRef": "ESPR Art. 9(2)(b): a figure a reader cannot check is not information",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Article 9(2)(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "footprintClass",
+      "label": "Environmental footprint class",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 80,
+      "awaitingAct": "the ESPR delegated act setting performance classes for textiles",
+      "prose": true,
+      "group": "footprint",
+      "source": "deferred",
+      "legalRef": "ESPR Art. 7(4)",
+      "note": "The class format is not set. Naming one would publish our guess as a grade.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Article 7(4)",
+        "note": "waits on the delegated act setting performance classes for textiles"
+      }
+    },
+    {
+      "key": "waterUse",
+      "label": "Water use",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "m³",
+      "minimum": 0,
+      "maximum": 100000,
+      "step": 0.1,
+      "group": "footprint",
+      "source": "form",
+      "legalRef": "ESPR Annex I(l): resource use. Declared where a brand has measured it.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(l)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "collection",
+      "label": "Where to return it",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "endOfLife",
+      "source": "form",
+      "legalRef": "Waste Framework Directive: separate collection of textiles since 1 January 2025",
+      "supersedes": "endOfLife",
+      "note": "A place and a method, in the words the person returning it will use.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2008-98",
+        "clause": "Article 11(1) as amended: separate collection of textiles"
+      }
+    },
+    {
+      "key": "recyclability",
+      "label": "How it can be recycled",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 400,
+      "prose": true,
+      "group": "endOfLife",
+      "source": "form",
+      "legalRef": "ESPR Annex I(n): expected generation of waste materials",
+      "note": "What a recycler can actually do with it, which no percentage conveys.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(n)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "separability",
+      "label": "What comes apart",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "text",
+      "maxLength": 300,
+      "prose": true,
+      "group": "endOfLife",
+      "source": "form",
+      "legalRef": "ESPR Annex I(h) and (i): ease of disassembly, for reuse and recycling",
+      "note": "Which components separate, and how. The sentence a dismantler needs.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(h); Annex I(i)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "eprRegistration",
+      "label": "Producer responsibility registration",
+      "obligation": "should",
+      "access": "authority",
+      "level": "model",
+      "type": "id",
+      "maxLength": 64,
+      "group": "endOfLife",
+      "source": "brand",
+      "legalRef": "Waste Framework Directive textile EPR: the producer register number",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-2008-98",
+        "clause": "textile extended producer responsibility as amended",
+        "note": "the amending directive is in force and the producer registration obligations apply from the dates it sets; no application date is recorded here"
+      }
+    },
+    {
+      "key": "supplyChain",
+      "label": "Supply chain",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "stage",
+          "label": "Stage",
+          "type": "enum",
+          "options": [
+            {
+              "value": "fibre",
+              "label": "Fibre production"
+            },
+            {
+              "value": "spinning",
+              "label": "Spinning"
+            },
+            {
+              "value": "weaving",
+              "label": "Weaving or knitting"
+            },
+            {
+              "value": "dyeing",
+              "label": "Dyeing and finishing"
+            },
+            {
+              "value": "assembly",
+              "label": "Cutting and assembly"
+            }
+          ],
+          "closed": true,
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code",
+          "required": true
+        },
+        {
+          "key": "facility",
+          "label": "Facility",
+          "type": "text"
+        }
+      ],
+      "repeat": true,
+      "group": "supply",
+      "source": "form",
+      "legalRef": "ESPR Annex III(f): unique facility identifiers, at the stages that have them",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex III(f)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "certifications",
+      "label": "Independent certification",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "multi",
+      "options": [
+        {
+          "value": "gots",
+          "label": "GOTS"
+        },
+        {
+          "value": "oekoTex100",
+          "label": "OEKO-TEX Standard 100"
+        },
+        {
+          "value": "grs",
+          "label": "Global Recycled Standard"
+        },
+        {
+          "value": "rws",
+          "label": "Responsible Wool Standard"
+        },
+        {
+          "value": "euEcolabel",
+          "label": "EU Ecolabel"
+        },
+        {
+          "value": "cradleToCradle",
+          "label": "Cradle to Cradle"
+        },
+        {
+          "value": "bluesign",
+          "label": "bluesign"
+        }
+      ],
+      "closed": false,
+      "group": "supply",
+      "source": "form",
+      "legalRef": "Dir. (EU) 2024/825 Art. 2: a sustainability label needs a certification behind it",
+      "note": "Open: a closed list of schemes would read as an endorsement of exactly those.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2024-825",
+        "clause": "Article 2"
+      }
+    },
+    {
+      "key": "dueDiligence",
+      "label": "Due diligence report",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "document",
+      "group": "supply",
+      "source": "form",
+      "legalRef": "Dir. (EU) 2024/1760 corporate sustainability due diligence, where in scope",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-2024-1760",
+        "clause": "Directive (EU) 2024/1760",
+        "note": "in force with deferred application dates; not recorded here as settled"
+      }
+    },
+    {
+      "key": "provenance",
+      "label": "Provenance",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 600,
+      "prose": true,
+      "group": "owner",
+      "source": "form",
+      "legalRef": "Nothing requires this. It is the owner tier the selective-disclosure demo turns on.",
+      "supersedes": "provenance",
+      "note": "The story of this particular item, which is prose by definition.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this; the owner tier"
+      }
+    },
+    {
+      "key": "purchase",
+      "label": "Purchased",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 200,
+      "prose": true,
+      "dynamic": true,
+      "group": "owner",
+      "source": "event",
+      "legalRef": "Nothing requires this. It is what makes the record theirs.",
+      "note": "Where and when, as the owner would write it.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this; the owner tier"
+      }
+    },
+    {
+      "key": "personalisation",
+      "label": "Alterations and fit",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "text",
+      "maxLength": 300,
+      "prose": true,
+      "dynamic": true,
+      "group": "owner",
+      "source": "event",
+      "legalRef": "Nothing requires this. An altered garment is a different garment to its owner.",
+      "supersedes": "personalisation",
+      "note": "Sleeve lengths and hems, in the tailor’s words.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this; the owner tier"
+      }
+    },
+    {
+      "key": "warrantyRegistration",
+      "label": "Guarantee registration",
+      "obligation": "nice",
+      "access": "owner",
+      "level": "item",
+      "type": "id",
+      "maxLength": 64,
+      "group": "owner",
+      "source": "form",
+      "legalRef": "Nothing requires this. It saves the owner keeping a receipt.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "nothing requires this; the owner tier"
+      }
+    },
+    {
+      "key": "components",
+      "label": "Components",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "component",
+          "label": "Component",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "role",
+          "label": "Role",
+          "type": "enum",
+          "options": [
+            {
+              "value": "shell",
+              "label": "Shell"
+            },
+            {
+              "value": "lining",
+              "label": "Lining"
+            },
+            {
+              "value": "insulation",
+              "label": "Insulation or padding"
+            },
+            {
+              "value": "trim",
+              "label": "Trim"
+            },
+            {
+              "value": "fastening",
+              "label": "Fastening"
+            },
+            {
+              "value": "label",
+              "label": "Label"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ],
+          "closed": false
+        },
+        {
+          "key": "massShare",
+          "label": "Share of product mass",
+          "type": "percent",
+          "unit": "%",
+          "minimum": 0,
+          "maximum": 100
+        }
+      ],
+      "repeat": true,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "ESPR Annex III and Annex I: composition and evidence at the level of the component the delegated act may name",
+      "note": "One entry per component of the product, named once here and referenced by componentFibres, substancesOfConcern.location and certificationEvidence.subject.componentRef.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex III; Annex I",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      },
+      "scope": "component",
+      "componentScoped": true
+    },
+    {
+      "key": "componentFibres",
+      "label": "Fibre composition per component",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "component",
+          "label": "Component",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "fibre",
+          "label": "Fibre",
+          "type": "enum",
+          "options": [
+            {
+              "value": "wool",
+              "label": "Wool"
+            },
+            {
+              "value": "cotton",
+              "label": "Cotton"
+            },
+            {
+              "value": "linen",
+              "label": "Linen (flax)"
+            },
+            {
+              "value": "silk",
+              "label": "Silk"
+            },
+            {
+              "value": "hemp",
+              "label": "Hemp"
+            },
+            {
+              "value": "cashmere",
+              "label": "Cashmere"
+            },
+            {
+              "value": "mohair",
+              "label": "Mohair"
+            },
+            {
+              "value": "alpaca",
+              "label": "Alpaca"
+            },
+            {
+              "value": "viscose",
+              "label": "Viscose"
+            },
+            {
+              "value": "lyocell",
+              "label": "Lyocell"
+            },
+            {
+              "value": "modal",
+              "label": "Modal"
+            },
+            {
+              "value": "cupro",
+              "label": "Cupro"
+            },
+            {
+              "value": "acetate",
+              "label": "Acetate"
+            },
+            {
+              "value": "polyester",
+              "label": "Polyester"
+            },
+            {
+              "value": "polyamide",
+              "label": "Polyamide (nylon)"
+            },
+            {
+              "value": "elastane",
+              "label": "Elastane"
+            },
+            {
+              "value": "acrylic",
+              "label": "Acrylic"
+            },
+            {
+              "value": "polypropylene",
+              "label": "Polypropylene"
+            }
+          ],
+          "closed": false,
+          "required": true
+        },
+        {
+          "key": "percent",
+          "label": "Share by weight of the component",
+          "type": "percent",
+          "unit": "%",
+          "minimum": 0,
+          "maximum": 100,
+          "required": true
+        },
+        {
+          "key": "source",
+          "label": "Source",
+          "type": "enum",
+          "options": [
+            {
+              "value": "preConsumer",
+              "label": "Pre-consumer recycled"
+            },
+            {
+              "value": "postConsumer",
+              "label": "Post-consumer recycled"
+            },
+            {
+              "value": "virgin",
+              "label": "Virgin"
+            }
+          ],
+          "closed": true
+        }
+      ],
+      "repeat": true,
+      "group": "composition",
+      "source": "form",
+      "legalRef": "Regulation (EU) 1007/2011 Articles 5, 9 and 14 read per component; ESPR Annex I",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027; the whole-product composition under fibres stays the binding labelling declaration"
+      },
+      "scope": "component",
+      "componentScoped": true
+    },
+    {
+      "key": "recycledContentAssessment",
+      "label": "Recycled content, assessed",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "measurement",
+      "unit": "%",
+      "group": "composition",
+      "source": "form",
+      "legalRef": "ESPR Annex I(g): recycled content with its method, basis and boundary",
+      "note": "The measurement shape keeps a physical recycled share apart from a mass-balance claim through its basis and method; recycledContent stays the declared scalar.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(g)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "certificationEvidence",
+      "label": "Certification evidence",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "certification",
+      "repeat": true,
+      "group": "supply",
+      "source": "form",
+      "legalRef": "Dir. (EU) 2024/825 Art. 2: the certification behind a sustainability label, as evidence",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2024-825",
+        "clause": "Article 2",
+        "note": "the evidence behind a scheme named under certifications; a scheme homepage or an issuer signature alone proves nothing, only verification.status says what was established"
+      }
+    },
+    {
+      "key": "relatedDocuments",
+      "label": "Related documents",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "relatedDocument",
+      "repeat": true,
+      "group": "identification",
+      "source": "form",
+      "legalRef": "none: documents a value points at, with their access policy and, where retained, their digest",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "a document reference is a pointer, not a commitment to content, unless the bytes were retained"
+      }
+    },
+    {
+      "key": "microfibreReleaseAssessment",
+      "label": "Microfibre release, assessed",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "measurement",
+      "group": "substances",
+      "source": "form",
+      "legalRef": "ESPR Annex I(k): microplastic and microfibre release, by a named method",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(k)",
+        "note": "no harmonised method is fixed; the measurement names the method it was made by and claims no more"
+      }
+    },
+    {
+      "key": "repairabilityAssessment",
+      "label": "Repairability, assessed",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "measurement",
+      "group": "repair",
+      "source": "form",
+      "legalRef": "ESPR Annex I(c) and Art. 7(2)(b)(iii): a repairability assessment under a named method",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(c); Article 7(2)(b)(iii)",
+        "note": "waits on the delegated act on repairability scoring; the assessment names its method and no universal score is mandated"
+      }
+    },
+    {
+      "key": "warrantyTerms",
+      "label": "Commercial guarantee terms",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "warrantyTerms",
+      "group": "durability",
+      "source": "form",
+      "legalRef": "Dir. (EU) 2024/825: a commercial guarantee of durability states its term and what it counts from",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-2024-825",
+        "clause": "Article 2",
+        "note": "guarantee carries the term in months; the terms carry the calendar rule an item expiry is derived under, and never an expiry by themselves"
+      }
+    },
+    {
+      "key": "careNoteLocalised",
+      "label": "Care note, by language",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "localisedText",
+      "group": "durability",
+      "source": "form",
+      "legalRef": "ESPR Annex I(a): care information as the maker supplied it in each language",
+      "note": "careNote stays the default-language text; a reader selects the exact language, then the base language, then the default, and never rewrites a value.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Annex I(a)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "substanceStatementLocalised",
+      "label": "Substance statement, by language",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "localisedText",
+      "group": "substances",
+      "source": "form",
+      "legalRef": "ESPR Art. 9(2)(b): the substance statement in each language it was supplied in",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-espr",
+        "clause": "Article 9(2)(b)",
+        "note": "the ESPR delegated act for textiles is not adopted; the Commission's textile and apparel page gives it an indicative adoption in the fourth quarter of 2027"
+      }
+    },
+    {
+      "key": "inapplicableFields",
+      "label": "Declared inapplicable fields",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "field",
+          "label": "Field key",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "reason",
+          "label": "Reason",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "declaredBy",
+          "label": "Declared by",
+          "type": "text"
+        }
+      ],
+      "repeat": true,
+      "group": "declarations",
+      "source": "form",
+      "legalRef": "none: the profile's own declaration by which a record says that a conditional field does not apply to it, with the reason",
+      "note": "A declaration is an assertion by the declaring party under the record's authorisation; it is shown beside the field it concerns and is never read as the field's value.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "a declaration is how a missing conditional value stops being unresolved; it never makes a required enacted field optional"
+      }
+    }
+  ]
+}

@@ -38,6 +38,8 @@ for (const path of ['conformance/baseline-native-1.json', 'conformance/baseline-
 // or fixture moves the set's record and the checker says so.
 for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f))) {
   const set = read(`release/${name}`)
+  // A superseded set keeps the digests it recorded when it was current.
+  if (set.status === 'superseded') { console.log(`release/${name} is superseded; its recorded digests are left as history.`); continue }
   let moved = 0
   for (const a of set.artefacts) {
     const digest = sha256(a.path)

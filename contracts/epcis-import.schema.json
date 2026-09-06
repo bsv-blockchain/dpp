@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/epcis-import.schema.json",
+  "title": "DPP EPCIS import record, version 1",
+  "description": "The durable record of one retained EPCIS source under the epcis-json@1 profile (spec/epcis-interoperability.md section 2): what was received, where its exact bytes are kept, how it was interpreted, what each event's validation and mapping found, which events conflict with earlier ones, what was published from it under separate authority, and how far a pull got. Operational state never substitutes for a verification report, and no field of this record is a token operation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["importVersion", "importId", "requestId", "sourceId", "receivedAt", "mediaType", "byteLength", "sha256", "bytesRef", "sourceLocation", "contextRefs", "profileRefs", "policyId", "state", "events", "progress"],
+  "properties": {
+    "importVersion": { "const": "1" },
+    "importId": { "type": "string", "minLength": 1, "maxLength": 256, "description": "The stable internal identity of this import." },
+    "requestId": { "type": "string", "minLength": 1, "maxLength": 256, "description": "The caller's idempotency key, bound to requestDigest: an identical retry resumes or returns this import, a reuse with different bytes is a conflict." },
+    "requestDigest": { "$ref": "#/$defs/sha256", "description": "SHA-256 of the canonical request the idempotency key is bound to." },
+    "sourceId": { "type": "string", "minLength": 1, "maxLength": 256, "description": "The configured source identity events are scoped under. It names a configured origin, never an account type." },
+    "receivedAt": { "$ref": "#/$defs/dateTime" },
+    "mediaType": { "enum": ["application/json", "application/ld+json"] },
+    "byteLength": { "type": "integer", "minimum": 0 },
+    "sha256": { "$ref": "#/$defs/sha256", "description": "The digest of the exact received bytes; export returns bytes with this digest or nothing." },
+    "bytesRef": { "type": "string", "minLength": 1, "description": "Where the exact bytes are retained: a store key, a path or a content address, as the deployment names it." },
+    "sourceLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "description": "Provenance, never authentication proof. Credentials are never recorded here.",
+      "properties": {
+        "kind": { "enum": ["file", "query", "single-event"] },
+        "origin": { "type": "string", "format": "uri", "description": "The configured repository origin a query was made to, without credentials." },
+        "query": { "type": "object", "additionalProperties": { "type": "string" }, "description": "The standard query parameters used, by name." },
+        "page": { "type": "integer", "minimum": 1 },
+        "filename": { "type": "string" }
+      }
+    },
+    "contextRefs": {
+      "type": "array",
+      "description": "The context declarations of the source exactly as found, each with its pinned digest or the statement that it is unpinned.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "value", "pinned"],
+        "properties": {
+          "kind": { "enum": ["iri", "inline"] },
+          "value": { "type": "string", "minLength": 1 },
+          "digest": { "$ref": "#/$defs/sha256" },
+          "pinned": { "type": "boolean" },
+          "scope": { "type": "string", "description": "document, or the pointer of the event that declared it." }
+        }
+      }
+    },
+    "profileRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$" },
+      "description": "The interoperability and credential profiles this import was interpreted under, for example epcis-json@1 and epcis-vsc@1."
+    },
+    "policyId": { "type": "string", "minLength": 1, "description": "The named operator policy the limits, source scope and any automation were read from." },
+    "limits": { "type": "object", "additionalProperties": { "type": ["integer", "string"] }, "description": "The limits in force for this import, as the profile discloses them." },
+    "state": { "enum": ["received", "evaluated", "publication-pending", "published", "blocked"], "description": "received: bytes retained, not yet evaluated. evaluated: validation and mapping findings recorded, nothing published. publication-pending: a separately authorised publication was requested and is unresolved. published: at least one event was published as a credential. blocked: a conflict or a refused publication needs explicit resolution. Never a verification verdict." },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["EPCISDocument", "EPCISQueryDocument"] },
+        "schemaVersion": { "type": "string" },
+        "creationDate": { "type": "string" },
+        "queryName": { "type": "string" },
+        "hasHeader": { "type": "boolean" },
+        "hasMasterData": { "type": "boolean" }
+      }
+    },
+    "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" }, "description": "Document-level findings: envelope, schema and context findings that are not about one event." },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+    "progress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pagesRead", "complete", "completenessLimits"],
+      "properties": {
+        "checkpoint": { "type": "string", "description": "The durable pull checkpoint (the next page token, or the record-time cutoff reached), written only after the page's imports and results are durable." },
+        "checkpointExpiresAt": { "$ref": "#/$defs/dateTime" },
+        "pagesRead": { "type": "integer", "minimum": 0 },
+        "bytesRead": { "type": "integer", "minimum": 0 },
+        "complete": { "type": "boolean", "description": "True only when the source answered the whole bounded query without a next page and within the limits; never an assertion of complete history." },
+        "completenessLimits": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Every reason the result is not complete history: the query scope, a page limit reached, an expired cursor, a timestamp-only bound." },
+        "sourceOutcome": { "$ref": "#/$defs/sourceOutcome" },
+        "sourceDetail": { "type": "string" }
+      }
+    },
+    "createdAt": { "$ref": "#/$defs/dateTime" },
+    "updatedAt": { "$ref": "#/$defs/dateTime" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "dateTime": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$" },
+    "pointer": { "type": "string", "pattern": "^(/[^/]*)*$", "description": "An RFC 6901 JSON pointer into the retained document; the empty pointer is a single event accepted as the whole source." },
+    "sourceOutcome": {
+      "enum": ["source-link-missing", "source-authentication-required", "source-forbidden", "source-unavailable", "unexpected-media-type", "invalid-source", "partial-history", "ok"],
+      "description": "The outcome of reaching a source: no discovered EPCIS link; the source demanded authentication; the source refused this caller; the source did not answer or answered an error; the source answered a media type that is not EPCIS (an HTML login page with status 200 is this, never success); the bytes were refused before retention; the bounded query ended before the source did; or the bounded query completed. A successful query with zero matching events is ok with an empty event list, never any other outcome."
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "path", "message", "severity"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "path": { "type": "string" },
+        "message": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["error", "warning", "info"] }
+      }
+    },
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "value", "scheme"],
+      "properties": {
+        "path": { "$ref": "#/$defs/pointer" },
+        "value": { "type": "string" },
+        "scheme": { "enum": ["gs1-sgtin", "gs1-lgtin", "gs1-sgtin-pattern", "gs1-digital-link", "epc-other", "other"] },
+        "gtin": { "type": "string", "pattern": "^\\d{14}$" },
+        "serial": { "type": "string" },
+        "lot": { "type": "string" },
+        "checkDigitValid": { "type": "boolean" },
+        "problem": { "type": "string" }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "identity", "identityKind", "eventType", "bodyDigest", "validation", "mapping"],
+      "properties": {
+        "pointer": { "$ref": "#/$defs/pointer" },
+        "eventId": { "type": "string", "format": "uri", "description": "The event's own eventID, when it carries one." },
+        "identity": { "type": "string", "minLength": 1, "description": "The scoped identity duplicates and conflicts are decided under: the eventID, or the local identity." },
+        "identityKind": { "enum": ["event-id", "local"] },
+        "eventType": { "type": "string", "minLength": 1 },
+        "eventTime": { "type": "string" },
+        "recordTime": { "type": "string" },
+        "bodyDigest": { "$ref": "#/$defs/sha256", "description": "The canonical event-body digest: RFC 8785 over the event without recordTime and errorDeclaration plus the sorted context digests." },
+        "identifiers": { "type": "array", "items": { "$ref": "#/$defs/identifier" } },
+        "preservedExtensions": { "type": "array", "items": { "type": "string" } },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "findings"],
+          "properties": {
+            "schema": { "enum": ["pass", "fail", "unknown"], "description": "Whether the pinned schema accepted the document this event belongs to; unknown when validation was not run." },
+            "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } }
+          }
+        },
+        "errorDeclaration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["correctiveEventIDs", "resolution"],
+          "properties": {
+            "declarationTime": { "type": "string" },
+            "reason": { "type": "string" },
+            "correctiveEventIDs": { "type": "array", "items": { "type": "string" } },
+            "resolution": { "enum": ["resolved", "unresolved"], "description": "resolved only when every corrective event named is held under this source; an EPCIS error declaration is never a VSC correction." },
+            "missing": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["outcome", "missing", "unmapped"],
+          "properties": {
+            "profile": { "type": "string", "pattern": "^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$" },
+            "outcome": { "enum": ["lossless", "transformed", "unsupported", "insufficient-data", "not-attempted"] },
+            "missing": { "type": "array", "items": { "type": "string" } },
+            "unmapped": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "arrival": { "enum": ["new", "duplicate", "new-observation", "conflict"], "description": "How this event relates to what the source already held under the same identity." },
+        "conflict": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["withImportId", "withBodyDigest", "state"],
+          "description": "A different body under the same scoped identity; both bodies stay retained and visible until a person resolves it by name.",
+          "properties": {
+            "withImportId": { "type": "string" },
+            "withPointer": { "$ref": "#/$defs/pointer" },
+            "withBodyDigest": { "$ref": "#/$defs/sha256" },
+            "state": { "enum": ["open", "resolved"] },
+            "resolution": { "type": "string" },
+            "resolvedAt": { "$ref": "#/$defs/dateTime" }
+          }
+        },
+        "publication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state"],
+          "description": "The separately authorised publication of this event as a credential, if one was requested. The credential's bytes and identity are persisted before anchoring; a retry after an uncertain answer resumes this record and never issues again.",
+          "properties": {
+            "state": { "enum": ["requested", "issued", "submitted", "anchored", "refused", "unavailable"] },
+            "credentialId": { "type": "string", "format": "uri" },
+            "digest": { "$ref": "#/$defs/sha256", "description": "The digest of the exact issued credential bytes." },
+            "representation": { "type": "string" },
+            "operationId": { "type": "string", "description": "The durable operation the publication runs under." },
+            "anchor": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["txid", "outputIndex"],
+              "properties": { "txid": { "$ref": "#/$defs/sha256" }, "outputIndex": { "type": "integer", "minimum": 0 } }
+            },
+            "refusal": { "type": "string" },
+            "authorisedBy": { "type": "string", "description": "The server-side authority that permitted publication; never a role the request body supplied." },
+            "at": { "$ref": "#/$defs/dateTime" }
+          }
+        }
+      }
+    }
+  }
+}
