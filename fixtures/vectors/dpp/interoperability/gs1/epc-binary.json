@@ -1,0 +1,216 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.gs1.epc-binary",
+  "name": "Special compressed GS1 Digital Link URIs carrying EPC binary strings, decompressed to primary key 01 and serial",
+  "version": "1.0.0",
+  "reference_impl": "dpp-profiles@0.3.0",
+  "parity_class": "required",
+  "vectors": [
+    {
+      "id": "worked-example-hexadecimal",
+      "description": "The compression standard's worked example under the eh prefix (section 4.2.1), an SGTIN-96 in hexadecimal; GS1 published the expected result.",
+      "input": {
+        "uri": "https://example.com/eh30164596f40c0e5cbe991a83"
+      },
+      "expected": {
+        "ok": true,
+        "uri": "https://example.com/01/09528765123457/21/123456789123",
+        "key": {
+          "ai": "01",
+          "value": "09528765123457",
+          "qualifiers": [
+            {
+              "ai": "21",
+              "value": "123456789123"
+            }
+          ]
+        },
+        "epc": {
+          "ok": true,
+          "scheme": "sgtin-96",
+          "header": 48,
+          "filter": 0,
+          "partition": 5,
+          "companyPrefix": "9528765",
+          "itemReference": "012345",
+          "gtin": "09528765123457",
+          "serial": "123456789123",
+          "epcUri": "urn:epc:id:sgtin:9528765.012345.123456789123"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "worked-example-base64",
+      "description": "The same EPC under the ex prefix (section 4.2.2), URI-safe base 64.",
+      "input": {
+        "uri": "https://example.com/exMBZFlvQMDly-mRqD"
+      },
+      "expected": {
+        "ok": true,
+        "uri": "https://example.com/01/09528765123457/21/123456789123",
+        "key": {
+          "ai": "01",
+          "value": "09528765123457",
+          "qualifiers": [
+            {
+              "ai": "21",
+              "value": "123456789123"
+            }
+          ]
+        },
+        "epc": {
+          "ok": true,
+          "scheme": "sgtin-96",
+          "header": 48,
+          "filter": 0,
+          "partition": 5,
+          "companyPrefix": "9528765",
+          "itemReference": "012345",
+          "gtin": "09528765123457",
+          "serial": "123456789123",
+          "epcUri": "urn:epc:id:sgtin:9528765.012345.123456789123"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "stem-and-query-carried",
+      "description": "The stem before the compression string and the query after it survive decompression.",
+      "input": {
+        "uri": "https://id.example.org/dl/eh30164596f40c0e5cbe991a83?linkType=gs1:pip"
+      },
+      "expected": {
+        "ok": true,
+        "uri": "https://id.example.org/dl/01/09528765123457/21/123456789123?linkType=gs1:pip",
+        "key": {
+          "ai": "01",
+          "value": "09528765123457",
+          "qualifiers": [
+            {
+              "ai": "21",
+              "value": "123456789123"
+            }
+          ]
+        },
+        "epc": {
+          "ok": true,
+          "scheme": "sgtin-96",
+          "header": 48,
+          "filter": 0,
+          "partition": 5,
+          "companyPrefix": "9528765",
+          "itemReference": "012345",
+          "gtin": "09528765123457",
+          "serial": "123456789123",
+          "epcUri": "urn:epc:id:sgtin:9528765.012345.123456789123"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "sgtin-198-demonstration-prefix",
+      "description": "An SGTIN-198 under the demonstration prefix with a character serial, fifty hexadecimal characters with two zero padding bits; built by this package's encoder, so a positive vector of the 198-bit layout rather than an independent one.",
+      "input": {
+        "uri": "https://id.example.org/eh3636452148000069c5a4b583060c4000000000000000000000"
+      },
+      "expected": {
+        "ok": true,
+        "uri": "https://id.example.org/01/09521234000013/21/SER-0001",
+        "key": {
+          "ai": "01",
+          "value": "09521234000013",
+          "qualifiers": [
+            {
+              "ai": "21",
+              "value": "SER-0001"
+            }
+          ]
+        },
+        "epc": {
+          "ok": true,
+          "scheme": "sgtin-198",
+          "header": 54,
+          "filter": 1,
+          "partition": 5,
+          "companyPrefix": "9521234",
+          "itemReference": "000001",
+          "gtin": "09521234000013",
+          "serial": "SER-0001",
+          "epcUri": "urn:epc:id:sgtin:9521234.000001.SER-0001"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "refuse-uncompressed",
+      "description": "An uncompressed URI is not echoed as a decompression.",
+      "input": {
+        "uri": "https://id.example.org/01/09521234000013"
+      },
+      "expected": {
+        "ok": false,
+        "reason": "not-compressed",
+        "detail": "the URI is already uncompressed"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-other-epc-scheme",
+      "description": "An SSCC-96 header (31) is a GS1 scheme outside the declared scope.",
+      "input": {
+        "uri": "https://id.example.org/eh310000000000000000000000"
+      },
+      "expected": {
+        "ok": false,
+        "reason": "unsupported-epc-scheme",
+        "detail": "EPC header 31 is not SGTIN-96 (30) or SGTIN-198 (36); only serialised trade items are decoded",
+        "header": "31"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-upper-case-hex",
+      "description": "The eh form is lower-case hexadecimal.",
+      "input": {
+        "uri": "https://id.example.org/eh30164596F40C0E5CBE991A83"
+      },
+      "expected": {
+        "ok": false,
+        "reason": "not-hex",
+        "detail": "the characters after eh are not lower-case hexadecimal"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-wrong-length",
+      "description": "A truncated SGTIN-96.",
+      "input": {
+        "uri": "https://id.example.org/eh3016459"
+      },
+      "expected": {
+        "ok": false,
+        "reason": "length",
+        "detail": "SGTIN-96 is 96 bits; 28 were given",
+        "header": "30"
+      },
+      "tags": [
+        "error-case"
+      ]
+    }
+  ]
+}

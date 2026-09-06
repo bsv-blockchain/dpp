@@ -1,0 +1,69 @@
+{
+  "manifestVersion": "1",
+  "id": "epcis-json",
+  "version": "1",
+  "profile": "epcis-json@1",
+  "kind": "interoperability",
+  "role": "source-exchange",
+  "status": "current",
+  "title": "EPCIS 2.0.1 JSON and JSON-LD source exchange",
+  "description": "Bounded import, standard query consumption, exact-byte retention, idempotent and conflict-aware re-arrival, and original-byte export of EPCIS 2.0.1 documents, as spec/epcis-interoperability.md defines. A source is validated against the pinned schema and retained with its findings; it is never repaired, coerced or reordered, and importing it never publishes a credential or touches a native token. Not an EPCIS repository, not a capture interface, and not a claim of GS1 conformance.",
+  "specification": "spec/epcis-interoperability.md",
+  "standards": [
+    { "id": "epcis", "name": "GS1 EPCIS", "version": "2.0.1", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/", "scope": "The JSON and JSON-LD bindings of EPCISDocument and EPCISQueryDocument, the five event types, event identity and error declarations, and the REST query binding's events query, pagination and headers." },
+    { "id": "cbv", "name": "GS1 Core Business Vocabulary", "version": "2.0.0", "uri": "https://ref.gs1.org/standards/cbv/", "scope": "Business step, disposition, business transaction and source or destination type values as the JSON binding carries them; no other vocabulary is interpreted." },
+    { "id": "gs1-digital-link-uri-syntax", "name": "GS1 Digital Link URI syntax", "version": "1.7.0", "uri": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/", "scope": "The reading of claimed-GS1 identifiers that appear as HTTPS Digital Link URIs; the grammar is applied, never used to rewrite an identifier." },
+    { "id": "jcs", "name": "JSON Canonicalization Scheme", "version": "RFC 8785", "uri": "https://www.rfc-editor.org/rfc/rfc8785", "scope": "The canonical form the event-body digest and inline context digests are taken over." }
+  ],
+  "artefacts": [
+    { "id": "epcis-json-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json", "version": "2.0.1", "digest": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af", "byteLength": 55680, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/epcis-json-schema-2.0.1.json", "notes": "Every source document is validated against these exact bytes; a document the schema rejects is retained with failed findings, never repaired." },
+    { "id": "epcis-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld", "version": "2.0.1", "digest": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737", "byteLength": 20690, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/epcis-context-2.0.1.jsonld", "notes": "The one context IRI this profile pins; its digest enters every event-body digest of a document that declares it." },
+    { "id": "epcis-query-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/query-schema.json", "version": "2.0.1", "digest": "4b5583c9a0a715324594617f3cf6744f4f930568484f7df8fb7aa81819355341", "byteLength": 27229, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/query-schema-2.0.1.json", "notes": "The shape of a named query body; the pull connector expresses its bounded query through the standard parameters and this schema names them." },
+    { "id": "epcis-openapi", "kind": "openapi", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/openapi.json", "version": "2.0.1", "digest": "3d33792c520d7a7a1d080382d956730bb07021c7dd1cc17229fce27b784d66fc", "byteLength": 351201, "retrieval": "pinned", "licence": "Apache-2.0 as its info block declares", "notes": "Pinned by digest and not carried: the pull connector consumes GET /events with MATCH_anyEPC, eventType, GE_eventTime, LT_eventTime, GE_recordTime, EQ_eventID, perPage and nextPageToken, the Link rel=next header, GS1-EPCIS-Version and GS1-CBV-Version, and GS1-Next-Page-Token-Expires, exactly as this artefact defines them." }
+  ],
+  "inputs": [
+    { "id": "epcis-document-json", "mediaType": "application/json", "format": "EPCISDocument", "notes": "The JSON binding; the document declares its @context." },
+    { "id": "epcis-document-jsonld", "mediaType": "application/ld+json", "format": "EPCISDocument" },
+    { "id": "epcis-query-document-json", "mediaType": "application/json", "format": "EPCISQueryDocument", "notes": "One page of a standard query result, from a file or from the pull connector." },
+    { "id": "epcis-query-document-jsonld", "mediaType": "application/ld+json", "format": "EPCISQueryDocument" }
+  ],
+  "outputs": [
+    { "id": "original-bytes", "mediaType": "application/octet-stream", "format": "the exact received bytes, served under the received media type", "notes": "Export returns the retained bytes and never a re-serialisation." },
+    { "id": "import-record", "mediaType": "application/json", "format": "epcis-import@1 (contracts/epcis-import.schema.json)", "notes": "Per-event pointers, identities, validation and mapping findings, conflicts and publication references." }
+  ],
+  "dependencies": [
+    { "name": "ajv", "version": "8.20.0", "licence": "MIT", "use": "Validation of a source against the pinned schema, formats asserted, nothing coerced." },
+    { "name": "ajv-formats", "version": "3.0.1", "licence": "MIT", "use": "The uri and date-time formats the schema names." }
+  ],
+  "limits": {
+    "maxDocumentBytes": 2097152,
+    "maxEventsPerPage": 100,
+    "maxJsonDepth": 64,
+    "maxContextDocuments": 16,
+    "maxContextBytes": 1048576,
+    "fetchTimeoutMs": 10000,
+    "maxPullPages": 10,
+    "maxPullBytes": 20971520,
+    "maxPullSeconds": 60
+  },
+  "mappingLimits": [
+    { "id": "unpinned-context", "outcome": "unsupported", "reason": "A context IRI this profile has not pinned is preserved as declared; no claim that depends on its terms can pass." },
+    { "id": "extension-event-type", "outcome": "unsupported", "reason": "An event whose type is not one of the five is retained with its pointer and identity and is not interpreted." },
+    { "id": "alternative-jsonld-terms", "outcome": "transformed", "reason": "Two JSON-LD spellings of one meaning digest differently; equivalence across terms or sources is not promised and never inferred." },
+    { "id": "timestamp-only-polling", "outcome": "transformed", "reason": "A pull bounded by record time cannot discover every retrospective error declaration; completeness is declared per query, never assumed." }
+  ],
+  "unsupported": [
+    { "id": "xml-binding", "reason": "The XML binding is not read; a source in XML is refused by media type." },
+    { "id": "soap-and-as2", "reason": "No SOAP or AS2 transport." },
+    { "id": "subscriptions", "reason": "No subscription or push delivery; retrieval is a bounded pull or a file import." },
+    { "id": "capture-interface", "reason": "This profile imports and retains; it does not operate a capture endpoint or an EPCIS repository." },
+    { "id": "complete-history", "reason": "No import or pull asserts complete history; each result declares its query, cutoff and limits." },
+    { "id": "automatic-native-operations", "reason": "An import never issues, updates, transfers or retires a native passport state and never publishes a credential; those are separately authorised operations." },
+    { "id": "recursive-crawl", "reason": "Retrieval of further identifiers requires explicit caller or configured scope; there is no repository crawler." }
+  ],
+  "sourceRefs": [
+    { "id": "epcis-2.0.1", "name": "GS1 EPCIS 2.0.1", "reference": "https://ref.gs1.org/standards/epcis/2.0.1/", "version": "2.0.1", "attribution": "GS1 AISBL", "use": "The document, event and query contracts this profile reads." },
+    { "id": "cbv-2.0.0", "name": "GS1 Core Business Vocabulary 2.0.0", "reference": "https://ref.gs1.org/standards/cbv/", "version": "2.0.0", "attribution": "GS1 AISBL", "use": "The vocabulary values the JSON binding carries." },
+    { "id": "rfc-8785", "name": "JSON Canonicalization Scheme", "reference": "https://www.rfc-editor.org/rfc/rfc8785", "attribution": "IETF", "use": "Canonical form for digests." }
+  ]
+}

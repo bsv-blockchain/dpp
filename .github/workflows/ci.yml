@@ -32,6 +32,11 @@ jobs:
       - run: node examples/write-passport.mjs --dry-run
       - run: node examples/verify-anchor.mjs
       - run: node examples/verify-attestation-anchor.mjs
+      # The interoperability profiles, each from the built packages alone.
+      - run: node examples/resolve-digital-link.mjs
+      - run: node examples/import-epcis.mjs
+      - run: node examples/verify-external-credential.mjs
+      - run: node examples/project-passport.mjs
       - run: python3 conformance/independent/python/dpp_verify.py
 
   # The clean consumer: the packed candidates installed into a project outside

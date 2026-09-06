@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/profiles/schemas/interoperability-profile.schema.json",
+  "title": "DPP interoperability profile manifest, version 1",
+  "description": "One named, versioned selection of how a passport is discovered, how source events are exchanged, or how a source event is mapped into an existing credential profile (spec/gs1-discovery.md, spec/epcis-interoperability.md). Neither an industry profile nor a signed credential format: it records the role, the standards and artefact versions it pins, the formats it accepts and produces, its dependencies, its resource limits, what it cannot map and what it does not support. An artefact without a digest is recorded as not retrieved and supports no claim.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifestVersion",
+    "id",
+    "version",
+    "profile",
+    "kind",
+    "role",
+    "status",
+    "title",
+    "standards",
+    "artefacts",
+    "inputs",
+    "outputs",
+    "dependencies",
+    "limits",
+    "mappingLimits",
+    "unsupported",
+    "sourceRefs"
+  ],
+  "properties": {
+    "manifestVersion": {
+      "const": "1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9][0-9a-z.-]*$"
+    },
+    "profile": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$"
+    },
+    "kind": {
+      "const": "interoperability"
+    },
+    "role": {
+      "enum": [
+        "discovery",
+        "source-exchange",
+        "mapping"
+      ],
+      "description": "discovery: resolving an identifier to services. source-exchange: importing, querying, retaining and exporting source documents. mapping: projecting a retained source into an existing credential or data profile."
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "current",
+        "superseded"
+      ]
+    },
+    "supersededBy": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]*@[0-9][0-9a-z.-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "specification": {
+      "type": "string",
+      "description": "Where in spec/ the profile's normative behaviour is defined."
+    },
+    "standards": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "version",
+          "uri"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string",
+            "description": "The clauses or capabilities of the standard this profile claims, in words."
+          }
+        }
+      }
+    },
+    "artefacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "uri",
+          "version",
+          "retrieval"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "json-schema",
+              "jsonld-context",
+              "openapi",
+              "vocabulary",
+              "specification",
+              "grammar"
+            ]
+          },
+          "uri": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "byteLength": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "retrieval": {
+            "enum": [
+              "pinned",
+              "not-retrieved",
+              "unavailable",
+              "owned"
+            ],
+            "description": "pinned: digest computed over retrieved bytes. not-retrieved: documented location, no bytes fetched. unavailable: the upstream location does not serve it. owned: published by this repository."
+          },
+          "carried": {
+            "type": "string",
+            "description": "The package path the pinned bytes are carried at, when they are."
+          },
+          "licence": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "retrieval": {
+                  "const": "pinned"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "digest": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "digest"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/format"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/format"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "The maintained implementations this profile's reference code relies on, with the exact version tested; an empty list means the reference code is self-contained.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "licence": {
+            "type": "string"
+          },
+          "use": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Named resource limits the reference implementation enforces and discloses, for example maxDocumentBytes, maxEventsPerPage, maxJsonDepth, fetchTimeoutMs.",
+      "additionalProperties": {
+        "type": [
+          "integer",
+          "string"
+        ]
+      }
+    },
+    "mappingLimits": {
+      "type": "array",
+      "description": "What this profile cannot express losslessly, each named so a mapping result can cite it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "outcome",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "transformed",
+              "unsupported",
+              "insufficient-data"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unsupported": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sourceRefs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "use"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "attribution": {
+            "type": "string"
+          },
+          "use": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "format": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "mediaType",
+        "format"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The document or message shape, for example EPCISDocument, EPCISQueryDocument, GS1 linkset, resolver description file."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

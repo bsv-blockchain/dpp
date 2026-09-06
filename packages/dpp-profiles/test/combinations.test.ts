@@ -39,6 +39,15 @@ describe('profile combinations (conformance.md §4)', () => {
     expect(codes({ baseline: 'native-baseline@1', operator: 'federated-operators@1', deployment: { operators: 2, discovery: 'ship-slap' }, purpose: 'claim' })).toEqual(['operator-proposed'])
   })
 
+  it('lets a deployment read and write under a draft successor by explicit version, and refuses a claim on it', () => {
+    const write = checkSelection({ baseline: 'native-baseline@2', industry: 'battery@3', purpose: 'write' })
+    expect(write.ok).toBe(true)
+    expect(write.notes[0]).toMatch(/draft: opt-in successor to battery@2/)
+    expect(checkSelection({ baseline: 'native-baseline@2', industry: 'textile@3', purpose: 'read' }).notes[0]).toMatch(/opt-in successor to textile@2/)
+    expect(codes({ baseline: 'native-baseline@2', industry: 'battery@3', purpose: 'claim' })).toEqual(['industry-draft'])
+    expect(codes({ baseline: 'native-baseline@2', industry: 'battery@2', purpose: 'claim' })).toEqual([])
+  })
+
   it('names an unknown baseline or profile instead of guessing', () => {
     expect(codes({ baseline: 'native-baseline@9', industry: 'battery@9', exchange: ['x@1'], operator: 'solo@1', purpose: 'read' })).toEqual(['baseline-unknown', 'industry-unknown', 'exchange-unknown', 'operator-unknown'])
   })

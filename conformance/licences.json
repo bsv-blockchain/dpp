@@ -18,9 +18,16 @@
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "licence": "SEE LICENSE IN LICENSE",
-      "dependencies": []
+      "dependencies": [
+        {
+          "name": "canonicalize",
+          "range": "4.0.0",
+          "version": "2.1.0",
+          "licence": "Apache-2.0"
+        }
+      ]
     },
     {
       "name": "@bsv/dpp-overlay-topics",
@@ -55,7 +62,7 @@
     },
     {
       "name": "@bsv/vsc",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {
@@ -86,6 +93,18 @@
           "name": "@digitalbazaar/data-integrity-context",
           "range": "2.0.1",
           "version": "2.0.1",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/ecdsa-multikey",
+          "range": "1.8.0",
+          "version": "1.8.0",
+          "licence": "BSD-3-Clause"
+        },
+        {
+          "name": "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite",
+          "range": "1.3.0",
+          "version": "1.3.0",
           "licence": "BSD-3-Clause"
         },
         {

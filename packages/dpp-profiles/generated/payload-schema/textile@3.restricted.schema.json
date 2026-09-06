@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:textile@3:payload-restricted",
+  "title": "Textile passport (textile@3), restricted payload",
+  "description": "textile@3: the restricted tiers held off chain, encrypted, and committed by field 11. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "chemicalCompliance": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Chemical compliance evidence",
+      "description": "recommended; REACH Art. 33 read with ESPR Annex III(d): compliance documentation"
+    },
+    "separability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "title": "What comes apart",
+      "description": "recommended; ESPR Annex I(h) and (i): ease of disassembly, for reuse and recycling"
+    },
+    "eprRegistration": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "title": "Producer responsibility registration",
+      "description": "recommended; Waste Framework Directive textile EPR: the producer register number"
+    },
+    "dueDiligence": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Due diligence report",
+      "description": "recommended; Dir. (EU) 2024/1760 corporate sustainability due diligence, where in scope"
+    },
+    "provenance": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "title": "Provenance",
+      "description": "optional; Nothing requires this. It is the owner tier the selective-disclosure demo turns on."
+    },
+    "purchase": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "title": "Purchased",
+      "description": "optional; Nothing requires this. It is what makes the record theirs."
+    },
+    "personalisation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "title": "Alterations and fit",
+      "description": "optional; Nothing requires this. An altered garment is a different garment to its owner."
+    },
+    "warrantyRegistration": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "title": "Guarantee registration",
+      "description": "optional; Nothing requires this. It saves the owner keeping a receipt."
+    }
+  }
+}

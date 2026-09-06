@@ -1,0 +1,64 @@
+{
+  "manifestVersion": "1",
+  "id": "epcis-vsc",
+  "version": "1",
+  "profile": "epcis-vsc@1",
+  "kind": "interoperability",
+  "role": "mapping",
+  "status": "current",
+  "title": "EPCIS event to VSC SEAL mapping with explicit outcomes",
+  "description": "The bounded projection of one retained EPCIS 2.0.1 event into the existing vsc-draft-compat@0.1.0 SEAL, as packages/vsc mapEpcisEventWithReport implements it and spec/epcis-interoperability.md section 3 defines it. Every mapping returns one of lossless, transformed, unsupported or insufficient-data with its losses or missing inputs named; the source event is retained in the signed round-trip extension and the exact source bytes and pointer are named in the signed source reference urn:bsv:dpp:epcis-source:1. Mapping never issues: issuance needs the actual issuer, key, role, jurisdiction, status and custody evidence and the complete SEAL must pass the VSC profile unchanged.",
+  "specification": "spec/epcis-interoperability.md",
+  "standards": [
+    { "id": "epcis", "name": "GS1 EPCIS", "version": "2.0.1", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/", "scope": "The five event types and their identifier, time, place, step, disposition and action members." },
+    { "id": "cbv", "name": "GS1 Core Business Vocabulary", "version": "2.0.0", "uri": "https://ref.gs1.org/standards/cbv/", "scope": "Business steps and dispositions carried as the JSON binding spells them; a disposition the VSC custody model does not name is unsupported, never substituted." },
+    { "id": "vsc-draft-compat", "name": "VSC draft compatibility profile", "version": "0.1.0", "uri": "spec/vsc-profile.md", "scope": "The SEAL structure, custody state model and correction rules the mapped credential must satisfy unchanged." }
+  ],
+  "artefacts": [
+    { "id": "epcis-json-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json", "version": "2.0.1", "digest": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af", "byteLength": 55680, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/epcis-json-schema-2.0.1.json" },
+    { "id": "epcis-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld", "version": "2.0.1", "digest": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737", "byteLength": 20690, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/epcis-context-2.0.1.jsonld" },
+    { "id": "owned-seal-schema", "kind": "json-schema", "uri": "urn:bsv:vsc:schema:0.1.0", "version": "0.1.0", "digest": "839123ea6a2ca459c62143a9a38ece281a7b91e719dca057b28baf4d53106d15", "retrieval": "owned", "carried": "packages/vsc/artifacts/seal-0.1.0.schema.json", "notes": "The mapped SEAL validates against the owned schema before it is returned." },
+    { "id": "owned-context", "kind": "jsonld-context", "uri": "urn:bsv:vsc:context:0.1.0", "version": "0.1.0", "digest": "3c74b79c50ebb151086c8bbe05222d0177a9d20c6f7b725b4e3a60645274cccc", "retrieval": "owned", "carried": "packages/vsc/artifacts/context-0.1.0.jsonld" }
+  ],
+  "inputs": [
+    { "id": "retained-event", "mediaType": "application/json", "format": "one event of a retained EPCISDocument or EPCISQueryDocument, with its pointer, source digest and pinned context digests" },
+    { "id": "mapping-options", "mediaType": "application/json", "format": "issuer DID, assertion method, actor role, jurisdiction, issuance time, credential status entry, custody chain and, for a TransformationEvent, the explicit action decision", "notes": "Every option is the signing issuer's own evidence, never read from the event." }
+  ],
+  "outputs": [
+    { "id": "mapping-report", "mediaType": "application/json", "format": "mapping outcome, missing inputs, unmapped semantics, preserved members and the unsigned SEAL when one exists" },
+    { "id": "unsigned-seal", "mediaType": "application/vc+ld+json", "format": "vsc-seal-json-v1 without proof, carrying the round-trip extension urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0 and the source reference urn:bsv:dpp:epcis-source:1", "notes": "Issuance, status, authority, custody evaluation and anchoring are separate steps under the VSC profile and the registry contract." }
+  ],
+  "dependencies": [],
+  "limits": {
+    "maxProductIdentifiers": 256,
+    "extensionVocabularies": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0, urn:bsv:dpp:epcis-source:1"
+  },
+  "mappingLimits": [
+    { "id": "multi-product-event", "outcome": "transformed", "reason": "Several product identifiers are carried in what.productIdentifiers, but linear custody continuity and subject scope are evaluated per identifier by the VSC profile; a multi-product event is not a custody step for any one product." },
+    { "id": "transformation-action-decision", "outcome": "transformed", "reason": "A TransformationEvent carries no action; the action in the SEAL is the caller's explicit decision, not a source fact. Without the decision the mapping is unsupported." },
+    { "id": "custody-state-unnamed", "outcome": "unsupported", "reason": "A disposition outside the VSC custody model (for example in_progress, sellable_accessible, damaged) has no custody state; the event stays evidence only." },
+    { "id": "maintenance-observation", "outcome": "unsupported", "reason": "An observation with no custody transition (an inspection, a repair, a sensor reading) is retained; the VSC profile's Q-state rules are not changed to admit it." },
+    { "id": "sensor-elements", "outcome": "transformed", "reason": "Sensor reports, their units and metadata are retained in the round-trip extension only; the event vector carries no measurement." },
+    { "id": "source-destination-parties", "outcome": "transformed", "reason": "Owning and possessing party lists are retained, never projected into who: the SEAL's actor is the signing issuer and a named party is not attributed with the event." },
+    { "id": "business-transactions", "outcome": "transformed", "reason": "Business transaction references are retained in the round-trip extension only." },
+    { "id": "quantities", "outcome": "transformed", "reason": "Quantity lists and their units are retained; the SEAL's single quantity is not populated from a list." },
+    { "id": "persistent-disposition", "outcome": "transformed", "reason": "Set and unset persistent dispositions are retained, not evaluated." },
+    { "id": "instance-lot-master-data", "outcome": "transformed", "reason": "ILMD is retained under its own keys without interpretation." },
+    { "id": "certification-info", "outcome": "transformed", "reason": "A certificationInfo reference is retained; it is not certification evidence until separately verified." },
+    { "id": "error-declaration", "outcome": "transformed", "reason": "An EPCIS error declaration is retained and reported; it is not a VSC correctionOf and grants no correction authority." },
+    { "id": "transformation-id", "outcome": "transformed", "reason": "The transformation identifier linking stages is retained in the extension; the VSC chain does not carry it." },
+    { "id": "event-level-context", "outcome": "transformed", "reason": "An event-level @context is retained; only the document-level pinned context enters the digest and the mapping." },
+    { "id": "extension-members", "outcome": "transformed", "reason": "Members outside the five event types' schema are retained verbatim under extension:<name> and never interpreted." },
+    { "id": "insufficient-event-vector", "outcome": "insufficient-data", "reason": "Missing eventTime, eventTimeZoneOffset, bizStep, disposition, recordTime (with no recordedAt) or product identifiers are never fabricated." }
+  ],
+  "unsupported": [
+    { "id": "automatic-issuance", "reason": "A mapping result is not a credential; issuing the SEAL is a separately authorised operation with its own issuer, status, authority and custody inputs." },
+    { "id": "native-token-operations", "reason": "No mapped event invokes Issue, Update, Transfer or Retire; shipping, receiving or owning-party fields never establish token authority or acceptance." },
+    { "id": "vsc-correction-from-error-declaration", "reason": "A VSC correction requires the existing issuer or delegation, chain and reason evidence; an EPCIS error declaration alone does not create one." },
+    { "id": "reporter-attribution", "reason": "A SEAL signed by this service attests to receipt and mapping of a report; it does not assert that the service performed the physical event and the source reporter is named only in the retained extension." }
+  ],
+  "sourceRefs": [
+    { "id": "epcis-2.0.1", "name": "GS1 EPCIS 2.0.1", "reference": "https://ref.gs1.org/standards/epcis/2.0.1/", "version": "2.0.1", "attribution": "GS1 AISBL", "use": "The event members mapped or retained." },
+    { "id": "vsc-core", "name": "VSC Core draft", "reference": "https://w3c-cg.github.io/vsc/specs/vsc-core.html", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "attribution": "Verifiable Supply Chain Community Group", "use": "The SEAL and custody rules the mapped credential must satisfy." }
+  ]
+}

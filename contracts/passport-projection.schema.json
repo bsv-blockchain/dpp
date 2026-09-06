@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/passport-projection.schema.json",
+  "title": "DPP passport projection, version 1",
+  "description": "passport-projection@1 (spec/passport-projections.md section 4): the deterministic derivation of one passport's fields from pinned source revisions, accepted relationships and a named policy, at a stated cutoff and for a stated audience. A data projection envelope with its own identity and digest; not a token format, not a credential, and never carrying a proof copied from a source. The same pinned inputs produce the same projectionDigest whatever the arrival order.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["projectionId", "projectionVersion", "projectionDigest", "passportId", "subjectId", "granularity", "profileRef", "sourceRefs", "relationshipRefs", "policyRef", "asOf", "disclosureScope", "values", "fieldResults", "evidenceRefs", "validationRefs"],
+  "properties": {
+    "projectionId": { "type": "string", "pattern": "^urn:bsv:dpp:projection:sha256:[0-9a-f]{64}$", "description": "Derived from projectionDigest; never a secured-source digest." },
+    "projectionVersion": { "const": "1" },
+    "projectionDigest": { "$ref": "#/$defs/hex64", "description": "SHA-256 of the RFC 8785 canonical JSON of the commitment body: every property of this document except projectionId, projectionDigest, diagnostics and template." },
+    "passportId": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "subjectId": { "type": "string", "minLength": 1, "maxLength": 512 },
+    "granularity": { "enum": ["model", "batch", "item"] },
+    "profileRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": { "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }, "version": { "type": "integer", "minimum": 1 } }
+    },
+    "sourceRefs": {
+      "type": "array",
+      "description": "Every source revision the projection read, sorted by record then revision identifier.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["recordId", "revisionId", "digest"],
+        "properties": {
+          "recordId": { "type": "string", "minLength": 1 },
+          "revisionId": { "type": "string", "minLength": 1 },
+          "digest": { "$ref": "#/$defs/hex64" },
+          "subjectId": { "type": "string", "minLength": 1 },
+          "granularity": { "enum": ["model", "batch", "item", "component"] },
+          "pointer": { "type": "string" }
+        }
+      }
+    },
+    "relationshipRefs": {
+      "type": "array",
+      "description": "Every accepted relationship the projection followed, sorted by identifier.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relationshipId", "kind", "sourceId", "targetId"],
+        "properties": {
+          "relationshipId": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["instance-of-model", "member-of-batch", "component-of", "successor-of"] },
+          "sourceId": { "type": "string", "minLength": 1 },
+          "targetId": { "type": "string", "minLength": 1 },
+          "policyRef": { "type": "string" }
+        }
+      }
+    },
+    "policyRef": { "type": "string", "minLength": 1 },
+    "asOf": { "type": ["string", "null"], "description": "The historical cutoff sources and measurements were selected at, or null when none was selected." },
+    "disclosureScope": { "enum": ["public", "owner", "legitimate", "authority"] },
+    "values": {
+      "type": "object",
+      "description": "The derived value of each field that has one, keyed by field key.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "source", "granularity"],
+        "properties": {
+          "value": {},
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["recordId", "revisionId", "pointer"],
+            "properties": {
+              "recordId": { "type": "string", "minLength": 1 },
+              "revisionId": { "type": "string", "minLength": 1 },
+              "pointer": { "type": "string" }
+            }
+          },
+          "granularity": { "enum": ["model", "batch", "item", "component"] },
+          "language": { "type": "string" },
+          "selection": { "enum": ["exact", "base", "default"] },
+          "conversion": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fromUnit", "toUnit", "rule", "explicit"],
+            "properties": {
+              "fromUnit": { "type": "string" },
+              "toUnit": { "type": "string" },
+              "rule": { "type": "string" },
+              "explicit": { "const": true }
+            }
+          },
+          "observedAt": { "type": "string" },
+          "method": { "type": "string" }
+        }
+      }
+    },
+    "fieldResults": {
+      "type": "object",
+      "description": "One result per field the profile declares, keyed by field key: availability, applicability and any finding, on separate axes.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["availability", "applicability"],
+        "properties": {
+          "availability": { "enum": ["present", "missing", "unknown", "withheld"] },
+          "applicability": { "enum": ["applies", "not-applicable", "unresolved"] },
+          "finding": { "enum": ["conflict", "unsupported", "limit", "cycle", "missing-source"] },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["recordId", "revisionId", "value"],
+              "properties": {
+                "recordId": { "type": "string" },
+                "revisionId": { "type": "string" },
+                "value": {}
+              }
+            }
+          },
+          "reason": { "type": "string" },
+          "excluded": {
+            "type": "array",
+            "description": "Measurements or sources set aside with the reason, so the history stays inspectable.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["recordId", "revisionId", "reason"],
+              "properties": { "recordId": { "type": "string" }, "revisionId": { "type": "string" }, "reason": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "evidenceRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "validationRefs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Outside the commitment: what the derivation ran into.",
+      "properties": {
+        "truncated": { "type": "boolean" },
+        "limits": { "type": "object", "additionalProperties": { "type": "integer" } },
+        "findings": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["code", "detail"], "properties": { "code": { "type": "string" }, "field": { "type": "string" }, "detail": { "type": "string" } } } }
+      }
+    },
+    "template": { "type": "string", "description": "Outside the commitment: the rendering preset a surface applied, if any." }
+  },
+  "$defs": {
+    "hex64": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

@@ -1,0 +1,532 @@
+openapi: 3.1.0
+info:
+  title: DPP interoperability service API
+  version: 0.1.0-draft
+  summary: Import, pull, review, publish and export EPCIS sources; read a passport projection; write model source revisions.
+  description: |
+    The thin service surface an application exposes for the interoperability
+    profiles of spec/epcis-interoperability.md and spec/passport-projections.md.
+    Every route is authenticated by the deployment's own session adapter; a
+    role or a source location supplied in a request body confers no authority.
+    Import and pull default to validation and retention only. Publication of a
+    mapped event is a separately authorised action. No route accepts or
+    performs a native token operation: Issue, Update, Transfer and Retire stay
+    with the passport service under spec/managed-custody.md.
+
+    Status codes are fixed by spec/epcis-interoperability.md section 6.3: 400
+    for a malformed request, 401 or 403 for authentication and authorisation,
+    404 for a record that does not exist or may not be disclosed, 409 for an
+    idempotency or content conflict, 413 for a size limit, 415 for a transport
+    format the profile does not accept, 422 for a publication request that
+    fails required validation, and 503 for an unavailable dependency with a
+    retryable operational result.
+servers:
+  - url: https://app.example.org/api/interoperability
+    description: The application's interoperability routes, under its own session.
+
+tags:
+  - name: epcis
+    description: Source document import, standard query pull, review, publication and export.
+  - name: passports
+    description: Deterministic passport projections and model source revisions.
+
+paths:
+  /epcis/imports:
+    post:
+      tags: [epcis]
+      operationId: importEpcis
+      summary: Import one EPCIS document as exact bytes.
+      description: |
+        The body carries the exact source bytes as a UTF-8 string, its declared
+        media type and the configured source identity. The 2 MiB source limit
+        applies to the decoded string; the request envelope is capped at 6 MiB
+        to leave room for JSON escaping. An unsafe transport (malformed UTF-8,
+        duplicate keys, depth over 64, non-finite numbers) is refused before
+        anything is retained; a safely parsed document that fails event
+        validation is retained with its findings and is not publishable on
+        that basis. The caller's idempotency key is bound to the digest of the
+        request; an identical retry answers 200 with the existing import, a
+        reuse with different bytes answers 409.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportRequest' }
+      responses:
+        '201':
+          description: A new import, evaluated, with per-event findings, even when no event is publishable.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EpcisImportRecord' }
+        '200':
+          description: An identical completed retry under the same idempotency key.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EpcisImportRecord' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMediaType' }
+
+  /epcis/imports/{id}:
+    get:
+      tags: [epcis]
+      operationId: getEpcisImport
+      summary: The durable import record with its per-event results.
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+      responses:
+        '200':
+          description: The record. Operational state never substitutes for a verification report.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EpcisImportRecord' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /epcis/imports/{id}/source:
+    get:
+      tags: [epcis]
+      operationId: exportEpcisSource
+      summary: The original source bytes, exactly as received.
+      description: |
+        Answers the retained bytes under the original content type. Disclosure
+        is authorised for the whole document: a multi-party envelope is served
+        in full to an authorised caller or not at all, never filtered. A
+        redacted projection, where a deployment offers one, is a separate
+        resource with its own identity and digest and never this route.
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+      responses:
+        '200':
+          description: The exact bytes.
+          headers:
+            Content-Type:
+              schema: { type: string }
+              description: The media type declared at import.
+            Digest:
+              schema: { type: string }
+              description: "`sha-256=<base64>` of the bytes served, equal to the record's sha256."
+          content:
+            application/json: { schema: { type: string, format: binary } }
+            application/ld+json: { schema: { type: string, format: binary } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /epcis/imports/{id}/events/{eventRef}/publish:
+    post:
+      tags: [epcis]
+      operationId: publishMappedEvent
+      summary: Separately authorised publication of one retained event as a VSC SEAL.
+      description: |
+        `eventRef` is the opaque URL-safe reference the import record gives
+        each event; it resolves to the retained source pointer and never
+        exposes the source location. Publication requires the actual signing
+        issuer, assertion key, role, jurisdiction, status entry and custody or
+        predecessor evidence from server configuration and policy, evaluates
+        the complete SEAL under the existing VSC profile, persists the issued
+        credential and its identifier before submitting it for anchoring, and
+        resumes an uncertain submission by querying the existing result rather
+        than issuing again. A valid EPCIS event that the profile cannot express
+        answers 422 with the mapping outcome; an EPCIS error declaration does
+        not by itself authorise a VSC correction.
+      parameters:
+        - $ref: '#/components/parameters/ImportId'
+        - name: eventRef
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[A-Za-z0-9_-]{1,128}$' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishRequest' }
+      responses:
+        '201':
+          description: The credential was issued, persisted and submitted for anchoring.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicationResult' }
+        '200':
+          description: A retry that found the existing publication.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicationResult' }
+        '202':
+          description: Anchoring continues asynchronously; the body names the operation to read.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicationResult' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422':
+          description: Required validation failed; the mapping outcome and every missing requirement are named. Nothing was issued.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicationRefusal' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /epcis/pulls:
+    post:
+      tags: [epcis]
+      operationId: pullEpcis
+      summary: Run one bounded pull against a configured EPCIS query source.
+      description: |
+        The source and its credentials are server configuration named by
+        `sourceId`; the body never carries a URL or a credential. The client
+        consumes the standard events query with `MATCH_anyEPC`, event type,
+        time bounds and explicit event identifiers, follows `Link: rel=next`
+        within the run limits (10 pages, 20 MiB, 60 seconds by default),
+        checkpoints only after a page's imports are durable, and reports the
+        selected subject, query, cutoff and completeness limits. A run that
+        exceeds a limit is `partial-history`, never a complete history.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PullRequest' }
+      responses:
+        '201':
+          description: The run completed within its limits; imports are listed with their records.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PullResult' }
+        '200':
+          description: An identical completed retry.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PullResult' }
+        '202':
+          description: The run continues in the background; the body names the operation to read.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PullResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: The source identity is not configured for this caller.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /passports/{passportRef}/projection:
+    get:
+      tags: [passports]
+      operationId: getPassportProjection
+      summary: The deterministic passport-projection@1 for a passport under the caller's disclosure scope.
+      description: |
+        The server derives the subject, profile and disclosure scope from
+        trusted records and the caller's session; `asOf`, `locale` and
+        `preset` select a historical cutoff, a language preference and a
+        rendering preset and grant nothing. Same pinned sources, policy,
+        cutoff and disclosure produce the same `projectionDigest`; the
+        `template` is outside the commitment. Responses vary by session and
+        locale and are private or bounded accordingly.
+      parameters:
+        - name: passportRef
+          in: path
+          required: true
+          description: The passport identifier, percent-encoded, or the deployment's opaque passport reference.
+          schema: { type: string }
+        - name: asOf
+          in: query
+          required: false
+          schema: { type: string, format: date-time }
+        - name: locale
+          in: query
+          required: false
+          schema: { type: string }
+        - name: preset
+          in: query
+          required: false
+          description: A rendering preset; it changes presentation only.
+          schema: { type: string, enum: [default, compact] }
+      responses:
+        '200':
+          description: The projection with its validation result.
+          headers:
+            Cache-Control:
+              schema: { type: string }
+              description: "`private, no-store` for a restricted scope; a bounded public max-age with `Vary: Accept-Language` otherwise."
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectionResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /models/{modelId}/revisions:
+    get:
+      tags: [passports]
+      operationId: listModelRevisions
+      summary: The source revisions of one model, newest first, with the current pointer.
+      parameters:
+        - name: modelId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: The revisions.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RevisionList' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [passports]
+      operationId: registerPassportSourceRevision
+      summary: Append a new immutable revision and move the current pointer with compare-and-swap.
+      description: |
+        `expectedRevisionId` names the revision the caller believes is current;
+        a pointer that has moved answers 409 with the current revision so a
+        concurrent edit is never silently overwritten. Revisions are
+        append-only and never edited or deleted. Existing issued payloads are
+        not rewritten by a new revision.
+      parameters:
+        - name: modelId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RevisionRequest' }
+      responses:
+        '201':
+          description: The new revision, now current.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SourceRevision' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The current pointer moved; the body carries the current revision identifier.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RevisionConflict' }
+
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: The caller's retry key; bound to the request digest, so reuse with other bytes is a conflict.
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    ImportId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Malformed request.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthenticated:
+      description: No session.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: The session is not permitted this operation on this source or passport.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: No such record, or one this caller may not learn exists.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Conflict:
+      description: Idempotency key reused with different bytes, or a scoped event identity with a different body.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ConflictError' } } }
+    TooLarge:
+      description: The source or the envelope exceeds the disclosed limit.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    UnsupportedMediaType:
+      description: A transport format the epcis-json@1 profile does not accept.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unavailable:
+      description: A dependency did not answer; the result is retryable and nothing was issued twice.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: A stable error code, for example invalid-source, unsupported-media-type, source-too-large, idempotency-conflict, not-authorised.
+        message: { type: string }
+        eventPointers:
+          type: array
+          description: The affected events, as JSON pointers into the retained source.
+          items: { type: string }
+    ConflictError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            existingImportId: { type: string }
+            conflict:
+              type: object
+              description: A scoped event identity seen before with a different body digest; both digests are named and nothing is overwritten.
+              properties:
+                sourceId: { type: string }
+                eventId: { type: string }
+                existingBodyDigest: { type: string, pattern: '^[0-9a-f]{64}$' }
+                incomingBodyDigest: { type: string, pattern: '^[0-9a-f]{64}$' }
+    ImportRequest:
+      type: object
+      required: [sourceId, mediaType, source]
+      additionalProperties: false
+      properties:
+        sourceId: { type: string, description: A configured source identity; not a URL and not a credential. }
+        mediaType: { type: string, enum: [application/json, application/ld+json] }
+        source: { type: string, description: The exact source bytes as a UTF-8 string. }
+        requestId: { type: string, description: The idempotency key when not sent as a header. }
+        policyId: { type: string, description: A named interpretation policy the deployment configures; absent selects the default. }
+    PublishRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        policyId: { type: string, description: A named publication policy naming the signing issuer and custody scope; the body never names the issuer itself. }
+        transformationAction:
+          type: string
+          enum: [ADD, OBSERVE, DELETE]
+          description: The explicit action decision a TransformationEvent needs.
+    PullRequest:
+      type: object
+      required: [sourceId, subject]
+      additionalProperties: false
+      properties:
+        sourceId: { type: string }
+        subject:
+          type: object
+          description: The exact subject selection; an exact-subject query does not retrieve every ancestral transformation.
+          properties:
+            epc: { type: string, description: The value passed as MATCH_anyEPC. }
+        eventTypes:
+          type: array
+          items: { type: string, enum: [ObjectEvent, AggregationEvent, TransformationEvent, TransactionEvent, AssociationEvent] }
+        eventTime: { $ref: '#/components/schemas/TimeBounds' }
+        recordTime: { $ref: '#/components/schemas/TimeBounds' }
+        eventIds:
+          type: array
+          description: Explicit refresh by known event identifier.
+          items: { type: string }
+        resume: { type: boolean, description: Resume from the durable checkpoint of the same configured query. }
+    TimeBounds:
+      type: object
+      properties:
+        from: { type: string, format: date-time }
+        until: { type: string, format: date-time }
+    EpcisImportRecord:
+      description: The durable import record of contracts/epcis-import.schema.json.
+      $ref: 'https://bsv-blockchain.github.io/dpp/contracts/epcis-import.schema.json'
+    PublicationResult:
+      type: object
+      required: [importId, eventRef, state, credentialId, digest]
+      properties:
+        importId: { type: string }
+        eventRef: { type: string }
+        state: { type: string, enum: [publication-pending, published] }
+        credentialId: { type: string }
+        digest: { type: string, pattern: '^[0-9a-f]{64}$' }
+        mapping: { type: string, enum: [lossless, transformed] }
+        anchor:
+          type: object
+          properties:
+            state: { type: string, enum: [submitted, accepted, anchored, unavailable] }
+            txid: { type: string }
+            outputIndex: { type: integer }
+        operation: { type: string, description: The operation reference to read when the answer is 202. }
+    PublicationRefusal:
+      type: object
+      required: [code, mapping, missing]
+      properties:
+        code: { type: string, enum: [mapping-insufficient-data, mapping-unsupported, validation-failed, authority-missing, custody-invalid] }
+        mapping: { type: string, enum: [unsupported, insufficient-data] }
+        missing: { type: array, items: { type: string } }
+        unmapped: { type: array, items: { type: string } }
+        message: { type: string }
+    PullResult:
+      type: object
+      required: [pullId, sourceId, outcome, query, imports, progress]
+      properties:
+        pullId: { type: string }
+        sourceId: { type: string }
+        outcome:
+          type: string
+          enum: [ok, partial-history, source-link-missing, source-authentication-required, source-forbidden, source-unavailable, unexpected-media-type, invalid-source]
+        query:
+          type: object
+          description: The exact standard query parameters sent, credentials excluded.
+          additionalProperties: true
+        imports:
+          type: array
+          items: { $ref: '#/components/schemas/EpcisImportRecord' }
+        progress:
+          type: object
+          properties:
+            pagesRead: { type: integer }
+            bytesRead: { type: integer }
+            checkpoint: { type: string, description: The opaque next-page token persisted after the last durable page. }
+            complete: { type: boolean }
+            completenessLimits: { type: array, items: { type: string } }
+        operation: { type: string }
+    ProjectionResponse:
+      type: object
+      required: [projection, validation]
+      properties:
+        projection:
+          $ref: 'https://bsv-blockchain.github.io/dpp/contracts/passport-projection.schema.json'
+        validation:
+          type: object
+          required: [ok, findings]
+          properties:
+            ok: { type: boolean }
+            findings: { type: array, items: { type: object } }
+        retrievedAt: { type: string, format: date-time, description: Outside the projection commitment. }
+    SourceRevision:
+      $ref: 'https://bsv-blockchain.github.io/dpp/contracts/passport-source.schema.json#/$defs/sourceRevision'
+    RevisionList:
+      type: object
+      required: [modelId, currentRevisionId, revisions]
+      properties:
+        modelId: { type: string }
+        currentRevisionId: { type: string }
+        revisions:
+          type: array
+          items: { $ref: '#/components/schemas/SourceRevision' }
+    RevisionRequest:
+      type: object
+      required: [expectedRevisionId, payload]
+      additionalProperties: false
+      properties:
+        expectedRevisionId:
+          type: [string, 'null']
+          description: The revision the caller believes is current; null only for the first revision of a record that has none.
+        payload: { type: object, additionalProperties: true }
+        effective: { $ref: '#/components/schemas/TimeBounds' }
+        note: { type: string }
+    RevisionConflict:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          required: [currentRevisionId]
+          properties:
+            currentRevisionId: { type: string }

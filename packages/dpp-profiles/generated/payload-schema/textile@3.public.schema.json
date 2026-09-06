@@ -1,0 +1,1299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:profile:textile@3:payload-public",
+  "title": "Textile passport (textile@3), public payload",
+  "description": "textile@3: the public payload carried on chain in field 10. JSON Schema validity is one check; obligation under a condition (needs-review), units, provenance and legal applicability are separate checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "notice": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The sample marker a demonstration record carries first; never product data."
+    },
+    "profile": {
+      "const": "textile",
+      "description": "The profile identifier the payload declares."
+    },
+    "profile_version": {
+      "const": 3,
+      "description": "The profile version the payload declares; a reader decodes under it and never under a newer one."
+    },
+    "object_did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding."
+    },
+    "dataCarrier": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Product name",
+      "description": "required; ESPR Annex III(a); the passport has to say what the product is"
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Kind of product",
+      "description": "required; ESPR Art. 4; the parameters that apply depend on what the product is"
+    },
+    "modelIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "title": "Model or style reference",
+      "description": "required; ESPR Annex III(b): the unique product identifier is model-level"
+    },
+    "batch": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "title": "Batch",
+      "description": "required; ESPR Annex III(b); Reg. 1007/2011 traceability of a labelled lot"
+    },
+    "gtin": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^\\d{8}$|^\\d{12,14}$",
+      "title": "Article number (GTIN)",
+      "description": "recommended; ESPR Annex III(c): commodity and trade item codes where they exist"
+    },
+    "manufacturer": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Brand name",
+      "description": "required; ESPR Annex III(e); Reg. 1007/2011 Art. 15 identifies the responsible operator"
+    },
+    "manufacturerContact": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Brand contact",
+      "description": "required; ESPR Annex III(e): the operator has to be reachable, not merely named"
+    },
+    "operatorId": {
+      "type": "string",
+      "title": "EU operator identifier",
+      "description": "recommended; ESPR Annex III(e)"
+    },
+    "manufacturingPlace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "city": {
+          "type": "string",
+          "minLength": 1
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        }
+      },
+      "required": [
+        "city",
+        "country"
+      ],
+      "title": "Where it was made",
+      "description": "required; Reg. 1007/2011 Art. 16 read with the Union Customs Code origin rules"
+    },
+    "made": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+      "title": "Made",
+      "description": "recommended; ESPR Annex I(a): a durability claim is meaningless without a start date"
+    },
+    "colour": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60,
+      "title": "Colour",
+      "description": "recommended; Nothing requires this. It identifies the item to the person holding it."
+    },
+    "size": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "title": "Size",
+      "description": "recommended; Nothing requires this. It is what makes a passport match the garment in hand."
+    },
+    "weight": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 50000,
+      "multipleOf": 1,
+      "title": "Weight",
+      "description": "recommended; ESPR Annex I(l): resource use, and the basis of every per-mass figure below"
+    },
+    "fibres": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fibre": {
+            "type": "string",
+            "minLength": 1
+          },
+          "percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "source": {
+            "enum": [
+              "preConsumer",
+              "postConsumer",
+              "virgin"
+            ]
+          }
+        },
+        "required": [
+          "fibre",
+          "percent"
+        ]
+      },
+      "title": "Fibre composition",
+      "description": "required; Reg. (EU) 1007/2011 Art. 5, 9 and 14: binding today, by weight, in descending order"
+    },
+    "nonTextileParts": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "title": "Non-textile parts of animal origin",
+      "description": "required; Reg. (EU) 1007/2011 Art. 12: mandatory where such parts are present; applicability needs-review"
+    },
+    "recycledContent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Recycled content",
+      "description": "recommended; ESPR Annex I(g): recycled content is a named parameter; the threshold waits on the act"
+    },
+    "biobasedContent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "title": "Bio-based content",
+      "description": "optional; Nothing requires this. Declared where a brand can substantiate it."
+    },
+    "trims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "part": {
+            "type": "string",
+            "minLength": 1
+          },
+          "material": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          }
+        },
+        "required": [
+          "part",
+          "material"
+        ]
+      },
+      "title": "Trims and hardware",
+      "description": "recommended; ESPR Annex I(d) and (n): what separates for repair, and what separates for recycling"
+    },
+    "substancesOfConcern": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "substance": {
+            "type": "string",
+            "minLength": 1
+          },
+          "casNumber": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\d{2,7}-\\d{2}-\\d$"
+          },
+          "concentration": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "substance"
+        ]
+      },
+      "title": "Substances of concern",
+      "description": "required; ESPR Art. 7(5): substances of concern must be traceable through the passport; applicability needs-review"
+    },
+    "substanceStatement": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "What that means for you",
+      "description": "recommended; ESPR Art. 9(2)(b): passport information shall be complete and comprehensible"
+    },
+    "microplasticRelease": {
+      "type": "string",
+      "title": "Microplastic release",
+      "description": "optional; ESPR Annex I(k); the method is not yet fixed"
+    },
+    "care": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "wash30",
+          "wash40",
+          "wash60",
+          "handWash",
+          "noWash",
+          "noBleach",
+          "tumbleLow",
+          "noTumble",
+          "ironLow",
+          "ironMedium",
+          "noIron",
+          "dryClean",
+          "noDryClean"
+        ]
+      },
+      "title": "Care",
+      "description": "required; ISO 3758 care symbols; Dir. (EU) 2024/825 Art. 2 on durability information"
+    },
+    "careNote": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "How to make it last",
+      "description": "recommended; ESPR Annex I(a): extending lifetime is the parameter; this is how"
+    },
+    "expectedLifetime": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "title": "Expected lifetime",
+      "description": "recommended; ESPR Annex I(a) and Dir. (EU) 2024/825: a durability claim must be substantiated"
+    },
+    "washCycles": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "title": "Tested to",
+      "description": "recommended; ESPR Annex I(b) reliability, tested per ISO 6330 domestic washing procedures"
+    },
+    "colourFastness": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "multipleOf": 0.5,
+      "title": "Colour fastness",
+      "description": "recommended; ESPR Annex I(b), graded 1-5 per the ISO 105 series"
+    },
+    "dimensionalStability": {
+      "type": "number",
+      "minimum": -20,
+      "maximum": 20,
+      "multipleOf": 0.5,
+      "title": "Dimensional change after washing",
+      "description": "recommended; ESPR Annex I(b), measured per ISO 5077"
+    },
+    "pillingResistance": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "multipleOf": 0.5,
+      "title": "Pilling resistance",
+      "description": "recommended; ESPR Annex I(b), graded 1-5 per ISO 12945"
+    },
+    "guarantee": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 600,
+      "title": "Guarantee",
+      "description": "recommended; Dir. (EU) 2024/825: a commercial guarantee of durability must state its term"
+    },
+    "repairability": {
+      "type": "string",
+      "title": "Repairability",
+      "description": "recommended; ESPR Annex I(c) and Art. 7(2)(b)(iii)"
+    },
+    "spareParts": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "title": "Spare parts",
+      "description": "recommended; ESPR Annex I(d): availability of spare parts is a named parameter"
+    },
+    "repairInstructions": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "Repair instructions",
+      "description": "recommended; ESPR Annex I(e): access to repair information"
+    },
+    "repairServices": {
+      "type": "string",
+      "format": "uri",
+      "title": "Where to get it repaired",
+      "description": "recommended; Dir. (EU) 2024/825 recital 22: repair should be the visible option"
+    },
+    "carbonFootprint": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10000,
+      "multipleOf": 0.01,
+      "title": "Carbon footprint",
+      "description": "recommended; ESPR Annex I(m), computed per the Apparel and Footwear PEFCR"
+    },
+    "carbonFootprintStudy": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object"
+        }
+      ],
+      "title": "The study behind the figure",
+      "description": "recommended; ESPR Art. 9(2)(b): a figure a reader cannot check is not information"
+    },
+    "footprintClass": {
+      "type": "string",
+      "title": "Environmental footprint class",
+      "description": "recommended; ESPR Art. 7(4)"
+    },
+    "waterUse": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000,
+      "multipleOf": 0.1,
+      "title": "Water use",
+      "description": "optional; ESPR Annex I(l): resource use. Declared where a brand has measured it."
+    },
+    "collection": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "Where to return it",
+      "description": "required; Waste Framework Directive: separate collection of textiles since 1 January 2025"
+    },
+    "recyclability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "title": "How it can be recycled",
+      "description": "recommended; ESPR Annex I(n): expected generation of waste materials"
+    },
+    "supplyChain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stage": {
+            "enum": [
+              "fibre",
+              "spinning",
+              "weaving",
+              "dyeing",
+              "assembly"
+            ]
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "facility": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "stage",
+          "country"
+        ]
+      },
+      "title": "Supply chain",
+      "description": "recommended; ESPR Annex III(f): unique facility identifiers, at the stages that have them"
+    },
+    "certifications": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "title": "Independent certification",
+      "description": "recommended; Dir. (EU) 2024/825 Art. 2: a sustainability label needs a certification behind it"
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1
+          },
+          "massShare": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "component"
+        ]
+      },
+      "title": "Components",
+      "description": "recommended; ESPR Annex III and Annex I: composition and evidence at the level of the component the delegated act may name"
+    },
+    "componentFibres": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "component": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fibre": {
+            "type": "string",
+            "minLength": 1
+          },
+          "percent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "source": {
+            "enum": [
+              "preConsumer",
+              "postConsumer",
+              "virgin"
+            ]
+          }
+        },
+        "required": [
+          "component",
+          "fibre",
+          "percent"
+        ]
+      },
+      "title": "Fibre composition per component",
+      "description": "recommended; Regulation (EU) 1007/2011 Articles 5, 9 and 14 read per component; ESPR Annex I"
+    },
+    "recycledContentAssessment": {
+      "$ref": "#/$defs/measurement",
+      "title": "Recycled content, assessed",
+      "description": "optional; ESPR Annex I(g): recycled content with its method, basis and boundary"
+    },
+    "certificationEvidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/certification"
+      },
+      "title": "Certification evidence",
+      "description": "optional; Dir. (EU) 2024/825 Art. 2: the certification behind a sustainability label, as evidence"
+    },
+    "relatedDocuments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relatedDocument"
+      },
+      "title": "Related documents",
+      "description": "optional; none: documents a value points at, with their access policy and, where retained, their digest"
+    },
+    "microfibreReleaseAssessment": {
+      "$ref": "#/$defs/measurement",
+      "title": "Microfibre release, assessed",
+      "description": "optional; ESPR Annex I(k): microplastic and microfibre release, by a named method"
+    },
+    "repairabilityAssessment": {
+      "$ref": "#/$defs/measurement",
+      "title": "Repairability, assessed",
+      "description": "optional; ESPR Annex I(c) and Art. 7(2)(b)(iii): a repairability assessment under a named method"
+    },
+    "warrantyTerms": {
+      "$ref": "#/$defs/warrantyTerms",
+      "title": "Commercial guarantee terms",
+      "description": "optional; Dir. (EU) 2024/825: a commercial guarantee of durability states its term and what it counts from"
+    },
+    "careNoteLocalised": {
+      "$ref": "#/$defs/localisedText",
+      "title": "Care note, by language",
+      "description": "optional; ESPR Annex I(a): care information as the maker supplied it in each language"
+    },
+    "substanceStatementLocalised": {
+      "$ref": "#/$defs/localisedText",
+      "title": "Substance statement, by language",
+      "description": "optional; ESPR Art. 9(2)(b): the substance statement in each language it was supplied in"
+    },
+    "inapplicableFields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "declaredBy": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "field",
+          "reason"
+        ]
+      },
+      "title": "Declared inapplicable fields",
+      "description": "optional; none: the profile's own declaration by which a record says that a conditional field does not apply to it, with the reason"
+    }
+  },
+  "required": [
+    "batch",
+    "care",
+    "category",
+    "collection",
+    "fibres",
+    "manufacturer",
+    "manufacturerContact",
+    "manufacturingPlace",
+    "modelIdentifier",
+    "name",
+    "profile",
+    "profile_version"
+  ],
+  "$defs": {
+    "datePrecision": {
+      "enum": [
+        "day",
+        "month",
+        "year"
+      ],
+      "description": "How precise a date is. A month-precision date is written YYYY-MM and never given a day; a year-precision date is written YYYY."
+    },
+    "hex64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "dayDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"
+    },
+    "monthDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+    },
+    "yearDate": {
+      "type": "string",
+      "pattern": "^\\d{4}$"
+    },
+    "dateOrDateTime": {
+      "type": "string",
+      "pattern": "^\\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\\d|3[01])(T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2}))?)?)?$",
+      "description": "A year, a month, a day or an instant; the precision the shape declares says which is meant."
+    },
+    "preciseDate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "date",
+        "precision"
+      ],
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "precision": {
+          "$ref": "#/$defs/datePrecision"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "precision": {
+                "const": "day"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "date": {
+                "$ref": "#/$defs/dayDate"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "precision": {
+                "const": "month"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "date": {
+                "$ref": "#/$defs/monthDate"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "precision": {
+                "const": "year"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "date": {
+                "$ref": "#/$defs/yearDate"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subjectRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "granularity"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "granularity": {
+          "enum": [
+            "model",
+            "batch",
+            "item",
+            "component"
+          ]
+        },
+        "componentRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The component this evidence covers, when the granularity is component; a component need not have a token."
+        }
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "source-revision",
+            "credential",
+            "document"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revisionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "$ref": "#/$defs/hex64"
+        }
+      }
+    },
+    "relevantTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "precision"
+      ],
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "from": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "until": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "precision": {
+          "$ref": "#/$defs/datePrecision"
+        }
+      }
+    },
+    "claimEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "property",
+        "subject",
+        "source"
+      ],
+      "properties": {
+        "property": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "The JSON pointer of the field the evidence is about."
+        },
+        "subject": {
+          "$ref": "#/$defs/subjectRef"
+        },
+        "source": {
+          "$ref": "#/$defs/sourceRef"
+        },
+        "reporter": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Who reported the fact, when that is not the issuer of the source."
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relevantTime": {
+          "$ref": "#/$defs/relevantTime"
+        },
+        "reportRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A verification report the evidence was evaluated in."
+        }
+      }
+    },
+    "certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme",
+        "certificateId",
+        "issuer",
+        "subject",
+        "verification"
+      ],
+      "description": "A certificate as evidence. The scheme's homepage and the issuer's signature are inputs to a verification; only verification.status says what was established, and unknown is not a pass.",
+      "properties": {
+        "scheme": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        },
+        "certificateId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The certification body or issuer as named on the certificate."
+        },
+        "subject": {
+          "$ref": "#/$defs/subjectRef"
+        },
+        "validFrom": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "validUntil": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "precision": {
+          "$ref": "#/$defs/datePrecision"
+        },
+        "documentRef": {
+          "$ref": "#/$defs/relatedDocument"
+        },
+        "credentialRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "digest": {
+              "$ref": "#/$defs/hex64"
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "verified",
+                "failed",
+                "unknown",
+                "not-checked"
+              ]
+            },
+            "checkedAt": {
+              "$ref": "#/$defs/dateOrDateTime"
+            },
+            "reportRef": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit"
+      ],
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "property",
+        "value",
+        "unit",
+        "subject"
+      ],
+      "description": "A measured or assessed value with the scope that makes it comparable: the unit, the basis (a fraction is not a percent), the functional unit or denominator, the method and its version, the boundary and conditions, when it was measured and for which subject. A value that is a string carries a basis, because a bare string cannot be compared.",
+      "properties": {
+        "property": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "basis": {
+          "$ref": "#/$defs/measurementBasis"
+        },
+        "functionalUnit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "denominator": {
+          "$ref": "#/$defs/quantity"
+        },
+        "method": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        },
+        "boundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conditions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "measuredAt": {
+          "$ref": "#/$defs/preciseDate"
+        },
+        "effective": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "$ref": "#/$defs/dateOrDateTime"
+            },
+            "until": {
+              "$ref": "#/$defs/dateOrDateTime"
+            }
+          }
+        },
+        "subject": {
+          "$ref": "#/$defs/subjectRef"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claimEvidence"
+          }
+        },
+        "conversion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fromUnit",
+            "toUnit",
+            "rule",
+            "explicit"
+          ],
+          "description": "Present only when the value was converted from its source unit under a stated rule; a converted value never loses its source unit.",
+          "properties": {
+            "fromUnit": {
+              "type": "string",
+              "minLength": 1
+            },
+            "toUnit": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule": {
+              "type": "string",
+              "minLength": 1
+            },
+            "explicit": {
+              "const": true
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "basis": {
+                "$ref": "#/$defs/measurementBasis"
+              }
+            },
+            "required": [
+              "basis"
+            ]
+          }
+        }
+      ]
+    },
+    "relatedDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "purpose",
+        "retained",
+        "access"
+      ],
+      "description": "A document a value points at. A URL is where the document was seen, not a commitment to its content; only retained bytes carry a digest.",
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "date": {
+          "$ref": "#/$defs/dateOrDateTime"
+        },
+        "precision": {
+          "$ref": "#/$defs/datePrecision"
+        },
+        "digest": {
+          "$ref": "#/$defs/hex64"
+        },
+        "byteLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retained": {
+          "type": "boolean"
+        },
+        "access": {
+          "enum": [
+            "public",
+            "owner",
+            "legitimate",
+            "authority"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "retained": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "digest": {
+                "$ref": "#/$defs/hex64"
+              },
+              "byteLength": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "digest",
+              "byteLength"
+            ]
+          }
+        }
+      ]
+    },
+    "localisedText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "values"
+      ],
+      "description": "Text in one or more languages as the source supplied it. A reader selects the exact tag, then the base language, then the declared default, and records which; it never rewrites a value as another language.",
+      "properties": {
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "language",
+              "text"
+            ],
+            "properties": {
+              "language": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+              },
+              "text": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "returnedLanguage": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+        },
+        "selection": {
+          "enum": [
+            "exact",
+            "base",
+            "default"
+          ]
+        }
+      }
+    },
+    "warrantyTerms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "duration",
+        "calendarRule"
+      ],
+      "description": "A model's warranty terms: a duration and the calendar rule that says what the duration counts from. Terms alone give no expiry.",
+      "properties": {
+        "duration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "unit"
+          ],
+          "properties": {
+            "value": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "unit": {
+              "enum": [
+                "months",
+                "years"
+              ]
+            }
+          }
+        },
+        "calendarRule": {
+          "enum": [
+            "purchase-date",
+            "manufacture-date",
+            "first-use"
+          ]
+        },
+        "conditions": {
+          "type": "string"
+        }
+      }
+    },
+    "warrantyExpiry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "terms",
+        "derived"
+      ],
+      "description": "An item's derived warranty expiry: the evidenced start, the terms applied and the derived date at the precision the start permits. A month-precision start yields a month, never an invented day.",
+      "properties": {
+        "start": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "date",
+            "precision",
+            "evidenceRef"
+          ],
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "precision": {
+              "$ref": "#/$defs/datePrecision"
+            },
+            "evidenceRef": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "terms": {
+          "$ref": "#/$defs/warrantyTerms"
+        },
+        "derived": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "date",
+            "precision",
+            "rule"
+          ],
+          "properties": {
+            "date": {
+              "type": "string"
+            },
+            "precision": {
+              "$ref": "#/$defs/datePrecision"
+            },
+            "rule": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "measurementBasis": {
+      "enum": [
+        "fraction",
+        "percent",
+        "mass",
+        "count",
+        "per-functional-unit"
+      ]
+    }
+  }
+}

@@ -1,0 +1,3278 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.projection.packaging-v1",
+  "name": "DPP passport projection v1 over a packaging relationship graph: container, components and content under general@2",
+  "brc": [],
+  "version": "1.0.0",
+  "reference_impl": "dpp-profiles@0.3.0",
+  "parity_class": "required",
+  "shared": {
+    "profile": {
+      "manifestVersion": "1",
+      "kind": "industry",
+      "baseline": "native-baseline@1",
+      "roles": [
+        "passport-writer",
+        "attestation-issuer",
+        "registry",
+        "passport-reader"
+      ],
+      "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+      "accessPolicyRef": "spec/record-model.md#7-the-owner-tier-binding",
+      "accessTiers": [
+        {
+          "id": "public",
+          "description": "Anyone with the identifier.",
+          "storage": "on-chain public payload"
+        },
+        {
+          "id": "owner",
+          "description": "The current holder, travelling with possession rather than with an authorisation.",
+          "storage": "off-chain encrypted"
+        },
+        {
+          "id": "legitimate",
+          "description": "Persons with a legitimate interest, the Batteries Regulation Article 77(2) group generalised.",
+          "storage": "off-chain encrypted"
+        },
+        {
+          "id": "authority",
+          "description": "Notified bodies, market surveillance and other authorities.",
+          "storage": "off-chain encrypted"
+        }
+      ],
+      "extends": null,
+      "id": "general",
+      "version": 2,
+      "profile": "general@2",
+      "status": "current",
+      "title": "General product passport",
+      "description": "A voluntary profile. An obligation of \"must\" here means the record would not be a passport without the value, not that any law asks for it.",
+      "regulatoryLine": "No rule covers these products, and none is claimed. The record follows the same shape as the regulated profiles so a maker who later falls in scope is already close to it.",
+      "applicability": {
+        "categories": [
+          {
+            "value": "bicycle",
+            "label": "Bicycle"
+          },
+          {
+            "value": "watch",
+            "label": "Watch or clock"
+          },
+          {
+            "value": "instrument",
+            "label": "Musical instrument"
+          },
+          {
+            "value": "furniture",
+            "label": "Furniture"
+          },
+          {
+            "value": "luggage",
+            "label": "Luggage or leather goods"
+          },
+          {
+            "value": "jewellery",
+            "label": "Jewellery"
+          },
+          {
+            "value": "appliance",
+            "label": "Appliance or tool"
+          },
+          {
+            "value": "sportsEquipment",
+            "label": "Sports equipment"
+          },
+          {
+            "value": "artwork",
+            "label": "Artwork or object"
+          }
+        ],
+        "categoryKey": "category",
+        "jurisdictions": [],
+        "statements": [
+          {
+            "text": "No instrument requires a passport for these products, and none is cited as if one did; every field states that in its legal basis.",
+            "status": "needs-review"
+          }
+        ]
+      },
+      "schemaUri": "generated/payload-schema/general@2.public.schema.json",
+      "schemaDigest": "fa82ad26b73ddfb99b7fea20b464b20c6f2e4c58ef750f567c880f83f5fa8a6c",
+      "restrictedSchemaUri": "generated/payload-schema/general@2.restricted.schema.json",
+      "restrictedSchemaDigest": "4960025fb10a0fd274f9527ca1d0184adf22621d950a0a72dad6c339639c6c1f",
+      "contextRefs": [],
+      "stamps": [
+        {
+          "key": "notice",
+          "description": "The sample marker a demonstration record carries first; never product data.",
+          "valueType": "text"
+        },
+        {
+          "key": "profile",
+          "description": "The profile identifier the payload declares.",
+          "valueType": "id",
+          "const": "general"
+        },
+        {
+          "key": "profile_version",
+          "description": "The profile version the payload declares; a reader decodes under it and never under a newer one.",
+          "valueType": "integer",
+          "const": 2
+        },
+        {
+          "key": "object_did",
+          "description": "An optional physical-object DID carried in the public payload; carrying it does not implement physical binding.",
+          "valueType": "id"
+        },
+        {
+          "key": "dataCarrier",
+          "description": "The data-carrier identifier (chip UID) the lookup service indexes beside the passport identifier.",
+          "valueType": "id"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "pointer": "/name",
+          "label": "Product name",
+          "valueType": "text",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "required",
+          "legalBasis": "Nothing requires this. A record with no name is not a passport.",
+          "applicability": {
+            "rule": "always"
+          },
+          "supersedes": "name",
+          "group": "identification",
+          "note": "What the maker calls it. Nothing else identifies an object to the person holding it."
+        },
+        {
+          "key": "category",
+          "pointer": "/category",
+          "label": "Kind of object",
+          "valueType": "enum",
+          "codeList": {
+            "closed": false,
+            "options": [
+              {
+                "value": "bicycle",
+                "label": "Bicycle"
+              },
+              {
+                "value": "watch",
+                "label": "Watch or clock"
+              },
+              {
+                "value": "instrument",
+                "label": "Musical instrument"
+              },
+              {
+                "value": "furniture",
+                "label": "Furniture"
+              },
+              {
+                "value": "luggage",
+                "label": "Luggage or leather goods"
+              },
+              {
+                "value": "jewellery",
+                "label": "Jewellery"
+              },
+              {
+                "value": "appliance",
+                "label": "Appliance or tool"
+              },
+              {
+                "value": "sportsEquipment",
+                "label": "Sports equipment"
+              },
+              {
+                "value": "artwork",
+                "label": "Artwork or object"
+              }
+            ]
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "required",
+          "legalBasis": "Nothing requires this. It decides which of the fields below make sense.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification",
+          "note": "Open by definition: the whole point of this profile is that the list is not knowable."
+        },
+        {
+          "key": "manufacturer",
+          "pointer": "/manufacturer",
+          "label": "Maker",
+          "valueType": "text",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "brand",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "required",
+          "legalBasis": "Nothing requires this. On a handbuilt object the maker is the claim.",
+          "applicability": {
+            "rule": "always"
+          },
+          "supersedes": "manufacturer",
+          "group": "identification",
+          "note": "A workshop, a studio or a company; a name and nothing to constrain it to."
+        },
+        {
+          "key": "manufacturerContact",
+          "pointer": "/manufacturerContact",
+          "label": "How to reach the maker",
+          "valueType": "text",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "brand",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "required",
+          "legalBasis": "Nothing requires this. A guarantee nobody can claim against is decoration.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification",
+          "note": "An email, an address or a page. Constraining it to one shape would exclude the others."
+        },
+        {
+          "key": "modelIdentifier",
+          "pointer": "/modelIdentifier",
+          "label": "Model or reference",
+          "valueType": "id",
+          "constraints": {
+            "maxLength": 64
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is how a maker finds the drawings again.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification"
+        },
+        {
+          "key": "serialNumber",
+          "pointer": "/serialNumber",
+          "label": "Serial number",
+          "valueType": "id",
+          "constraints": {
+            "maxLength": 64
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is the commonest way an object proves it is the one.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification"
+        },
+        {
+          "key": "manufacturingPlace",
+          "pointer": "/manufacturingPlace",
+          "label": "Where it was made",
+          "valueType": "record",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. Place is half of provenance.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification",
+          "parts": [
+            {
+              "key": "city",
+              "label": "Town or city",
+              "valueType": "text",
+              "required": true
+            },
+            {
+              "key": "country",
+              "label": "Country",
+              "valueType": "country",
+              "constraints": {
+                "pattern": "^[A-Z]{2}$",
+                "patternHint": "a two-letter country code"
+              },
+              "required": true
+            }
+          ]
+        },
+        {
+          "key": "made",
+          "pointer": "/made",
+          "label": "Made",
+          "valueType": "monthYear",
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. Age is what a durable object is judged on.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification"
+        },
+        {
+          "key": "dimensions",
+          "pointer": "/dimensions",
+          "label": "Dimensions",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 120
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is what a second buyer asks first.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification",
+          "note": "A frame size, a case diameter, a seat height. No two categories measure alike."
+        },
+        {
+          "key": "weight",
+          "pointer": "/weight",
+          "label": "Weight",
+          "valueType": "decimal",
+          "unit": "g",
+          "constraints": {
+            "minimum": 1,
+            "maximum": 50000,
+            "step": 1
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "identification"
+        },
+        {
+          "key": "edition",
+          "pointer": "/edition",
+          "label": "Edition",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 80
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. On a limited run it is most of the value.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "provenance",
+          "note": "Numbered, limited, one of one, or a named run. Every workshop counts differently."
+        },
+        {
+          "key": "makerName",
+          "pointer": "/makerName",
+          "label": "Made by",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 120
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is the difference between made and manufactured.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "provenance",
+          "note": "The person, where a person can be named. A workshop is a company; a maker is not."
+        },
+        {
+          "key": "authentication",
+          "pointer": "/authentication",
+          "label": "How to tell it is the real one",
+          "valueType": "multi",
+          "codeList": {
+            "closed": false,
+            "options": [
+              {
+                "value": "serial",
+                "label": "Serial number"
+              },
+              {
+                "value": "makersMark",
+                "label": "Maker's mark"
+              },
+              {
+                "value": "signature",
+                "label": "Signature"
+              },
+              {
+                "value": "certificate",
+                "label": "Certificate of authenticity"
+              },
+              {
+                "value": "tag",
+                "label": "Tag on the product"
+              },
+              {
+                "value": "hallmark",
+                "label": "Hallmark"
+              }
+            ]
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is the question a passport exists to answer.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "provenance",
+          "note": "Open: trades authenticate in ways this list will not have thought of."
+        },
+        {
+          "key": "certificate",
+          "pointer": "/certificate",
+          "label": "Certificate",
+          "valueType": "document",
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. The paper certificate, kept where it cannot be lost.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "provenance"
+        },
+        {
+          "key": "commission",
+          "pointer": "/commission",
+          "label": "Made for",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 200
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. Published only where the first owner wanted it published.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "provenance",
+          "note": "Who it was built for, where the first owner is part of the story."
+        },
+        {
+          "key": "materials",
+          "pointer": "/materials",
+          "label": "Materials",
+          "valueType": "record",
+          "cardinality": "many",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "required",
+          "legalBasis": "Nothing requires this. It is the first thing a repairer needs and the last thing a recycler needs.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "making",
+          "parts": [
+            {
+              "key": "part",
+              "label": "Part",
+              "valueType": "text",
+              "required": true
+            },
+            {
+              "key": "material",
+              "label": "Material",
+              "valueType": "text",
+              "required": true
+            },
+            {
+              "key": "origin",
+              "label": "Country",
+              "valueType": "country",
+              "constraints": {
+                "pattern": "^[A-Z]{2}$",
+                "patternHint": "a two-letter country code"
+              }
+            }
+          ]
+        },
+        {
+          "key": "method",
+          "pointer": "/method",
+          "label": "How it was made",
+          "valueType": "enum",
+          "codeList": {
+            "closed": false,
+            "options": [
+              {
+                "value": "handmade",
+                "label": "Handmade"
+              },
+              {
+                "value": "handFinished",
+                "label": "Hand-finished"
+              },
+              {
+                "value": "madeToOrder",
+                "label": "Made to order"
+              },
+              {
+                "value": "smallSeries",
+                "label": "Small series"
+              },
+              {
+                "value": "series",
+                "label": "Series production"
+              }
+            ]
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is most of what a buyer is paying for.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "making",
+          "note": "Open: crafts describe their own methods, and a closed list would flatten them."
+        },
+        {
+          "key": "finish",
+          "pointer": "/finish",
+          "label": "Finish",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 200
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "making",
+          "note": "Lacquer, patina, plating, oil. The thing a restorer must not strip by mistake."
+        },
+        {
+          "key": "notes",
+          "pointer": "/notes",
+          "label": "Anything else worth recording",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 1200
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. It is what keeps a declared profile usable for objects nobody has thought of.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "making",
+          "note": "The declared fields cannot anticipate every craft, so one field stays open. It is a named field with a place in the record, not a freeform profile."
+        },
+        {
+          "key": "recycledContent",
+          "pointer": "/recycledContent",
+          "label": "Recycled content",
+          "valueType": "percent",
+          "unit": "%",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 100
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. Declared where a maker can substantiate it.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "making"
+        },
+        {
+          "key": "substanceStatement",
+          "pointer": "/substanceStatement",
+          "label": "Substances to handle with care",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 400
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this here, though REACH Art. 33 may require it of the article itself.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "making",
+          "note": "Lead solder, shellac, cadmium in old plating. Prose, because the reader is a person."
+        },
+        {
+          "key": "careNote",
+          "pointer": "/careNote",
+          "label": "How to look after it",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 600
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "required",
+          "legalBasis": "Nothing requires this. It is the single field most likely to extend the object’s life.",
+          "applicability": {
+            "rule": "always"
+          },
+          "supersedes": "care",
+          "group": "durability",
+          "note": "The advice a maker gives when they hand it over, which no symbol set carries."
+        },
+        {
+          "key": "serviceInterval",
+          "pointer": "/serviceInterval",
+          "label": "Service interval",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 120
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "durability",
+          "note": "Every five years, every 5,000 km, after every season. No one unit fits."
+        },
+        {
+          "key": "expectedLifetime",
+          "pointer": "/expectedLifetime",
+          "label": "Expected lifetime",
+          "valueType": "integer",
+          "unit": "years",
+          "constraints": {
+            "minimum": 1,
+            "maximum": 500,
+            "step": 1
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. A claim made here is one the maker can be held to.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "durability"
+        },
+        {
+          "key": "guarantee",
+          "pointer": "/guarantee",
+          "label": "Guarantee",
+          "valueType": "integer",
+          "unit": "months",
+          "constraints": {
+            "minimum": 0,
+            "maximum": 1200,
+            "step": 1
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires the figure, though a stated commercial guarantee binds the maker.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "durability"
+        },
+        {
+          "key": "guaranteeTerms",
+          "pointer": "/guaranteeTerms",
+          "label": "Guarantee terms",
+          "valueType": "document",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. A term with no conditions attached is not a guarantee.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "durability"
+        },
+        {
+          "key": "repairability",
+          "pointer": "/repairability",
+          "label": "What can be repaired",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 400
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "repair",
+          "note": "Which parts come off, and what needs the workshop. A score would say less."
+        },
+        {
+          "key": "spareParts",
+          "pointer": "/spareParts",
+          "label": "Spare parts",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 300
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. It is what decides whether the object outlives its owner.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "repair",
+          "note": "Which parts, and for how long. A yes/no would hide the part that matters."
+        },
+        {
+          "key": "repairInstructions",
+          "pointer": "/repairInstructions",
+          "label": "Repair notes",
+          "valueType": "document",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "repair"
+        },
+        {
+          "key": "repairServices",
+          "pointer": "/repairServices",
+          "label": "Where to get it repaired",
+          "valueType": "url",
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "repair"
+        },
+        {
+          "key": "serviceNotes",
+          "pointer": "/serviceNotes",
+          "label": "Workshop notes",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 600
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "legitimate",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. Restricted because it is useless to a consumer and valuable to a repairer.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "repair",
+          "note": "Torque figures, thread sizes, the fixture that releases the part. Written for a trade, not a buyer."
+        },
+        {
+          "key": "collection",
+          "pointer": "/collection",
+          "label": "Where to return it",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 400
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this. A maker who takes it back says so here.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "endOfLife",
+          "note": "A place and a method, in the words the person returning it will use."
+        },
+        {
+          "key": "recyclability",
+          "pointer": "/recyclability",
+          "label": "What can be recovered",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 400
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "public",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "endOfLife",
+          "note": "What a recycler can actually do with it, which no percentage conveys."
+        },
+        {
+          "key": "separability",
+          "pointer": "/separability",
+          "label": "What comes apart",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 300
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "legitimate",
+          "obligation": "recommended",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "endOfLife",
+          "note": "Which components separate, and how. The sentence a dismantler needs."
+        },
+        {
+          "key": "supplyChain",
+          "pointer": "/supplyChain",
+          "label": "Supply chain",
+          "valueType": "record",
+          "cardinality": "many",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. Declared by makers who treat their suppliers as a credential.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "supply",
+          "parts": [
+            {
+              "key": "stage",
+              "label": "Stage",
+              "valueType": "text",
+              "required": true
+            },
+            {
+              "key": "country",
+              "label": "Country",
+              "valueType": "country",
+              "constraints": {
+                "pattern": "^[A-Z]{2}$",
+                "patternHint": "a two-letter country code"
+              },
+              "required": true
+            },
+            {
+              "key": "facility",
+              "label": "Workshop or supplier",
+              "valueType": "text"
+            }
+          ]
+        },
+        {
+          "key": "certifications",
+          "pointer": "/certifications",
+          "label": "Independent certification",
+          "valueType": "multi",
+          "codeList": {
+            "closed": false,
+            "options": []
+          },
+          "cardinality": "one",
+          "granularity": "model",
+          "provenance": {
+            "capture": "form"
+          },
+          "accessTier": "public",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "supply",
+          "note": "Open, and with no list at all: the schemes that matter differ completely between a violin and a bicycle, so nothing here could be exhaustive."
+        },
+        {
+          "key": "provenance",
+          "pointer": "/provenance",
+          "label": "Provenance",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 600
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "owner",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. It is the owner tier the selective-disclosure demo turns on.",
+          "applicability": {
+            "rule": "always"
+          },
+          "supersedes": "provenance",
+          "group": "owner",
+          "note": "The story of this particular object, which is prose by definition."
+        },
+        {
+          "key": "purchase",
+          "pointer": "/purchase",
+          "label": "Purchased",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 200
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "owner",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. It is what makes the record theirs.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "owner",
+          "note": "Where and when, as the owner would write it."
+        },
+        {
+          "key": "personalisation",
+          "pointer": "/personalisation",
+          "label": "Fitting and setup",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 300
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "owner",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. A fitted object is a different object to its owner.",
+          "applicability": {
+            "rule": "always"
+          },
+          "supersedes": "personalisation",
+          "group": "owner",
+          "note": "Saddle height, string gauge, engraving. Written by whoever set it up."
+        },
+        {
+          "key": "valuation",
+          "pointer": "/valuation",
+          "label": "Valuation reference",
+          "valueType": "text",
+          "constraints": {
+            "maxLength": 160
+          },
+          "cardinality": "one",
+          "granularity": "item",
+          "provenance": {
+            "capture": "form",
+            "prose": true
+          },
+          "accessTier": "owner",
+          "obligation": "optional",
+          "legalBasis": "Nothing requires this. Owner tier only, and no figure ever reaches the public payload.",
+          "applicability": {
+            "rule": "always"
+          },
+          "group": "owner",
+          "note": "An insurer’s reference or an appraisal note. Never a price on the public record."
+        }
+      ],
+      "eventMappings": [
+        {
+          "nativeOperation": "ACTIVATE",
+          "eventType": "Origin",
+          "externalEvent": "manufacture or commissioning",
+          "requires": "manufacturing or commissioning evidence naming the facility, time and responsible party; the native ACTIVATE alone records only that a passport was opened",
+          "withoutEvidence": "insufficient-data"
+        },
+        {
+          "nativeOperation": "SOLD",
+          "eventType": "Transfer",
+          "externalEvent": "physical move or change of custody",
+          "requires": "actual source and destination movement or custody evidence; a change of token control is not a shipment",
+          "withoutEvidence": "insufficient-data"
+        },
+        {
+          "nativeOperation": "RESOLD",
+          "eventType": "Transfer",
+          "externalEvent": "physical move or change of custody",
+          "requires": "actual source and destination movement or custody evidence",
+          "withoutEvidence": "insufficient-data"
+        },
+        {
+          "nativeOperation": "TRANSFER",
+          "eventType": "Transfer",
+          "externalEvent": "change of custody",
+          "requires": "custody evidence beyond the token transfer; the transfer of token control alone establishes neither physical movement nor legal title",
+          "withoutEvidence": "insufficient-data"
+        },
+        {
+          "nativeOperation": "REPAIRED",
+          "eventType": "Transformation",
+          "externalEvent": "modification (repair)",
+          "requires": "repair evidence naming what was done, by whom and when",
+          "withoutEvidence": "insufficient-data"
+        },
+        {
+          "nativeOperation": "EDIT",
+          "eventType": "Transformation",
+          "externalEvent": "metadata revision",
+          "requires": "nothing physical: an EDIT is a native metadata operation and maps to a record revision, not a physical transformation",
+          "withoutEvidence": "transformed"
+        },
+        {
+          "nativeOperation": "RECYCLED",
+          "eventType": "Disposition",
+          "externalEvent": "disposition, or a process creating new products or materials",
+          "requires": "recycling evidence distinguishing disposition of this item from a process whose outputs carry new identities",
+          "withoutEvidence": "insufficient-data"
+        }
+      ],
+      "sourceRefs": [
+        {
+          "id": "none",
+          "name": "Nothing. No instrument requires a passport for these products, and none is cited as if one did; every field states that in its legalRef.",
+          "use": "The honest statement of legal basis."
+        },
+        {
+          "id": "shape",
+          "name": "The shape follows the regulated profiles so a maker who later falls in scope is already close to it.",
+          "use": "Design intent."
+        },
+        {
+          "id": "iso3166",
+          "name": "ISO 3166-1 alpha-2",
+          "reference": "ISO 3166-1",
+          "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+          "fields": [
+            "manufacturingPlace.country",
+            "materials.origin",
+            "supplyChain.country"
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "id": "identification",
+          "title": "Identification"
+        },
+        {
+          "id": "provenance",
+          "title": "Provenance and authenticity"
+        },
+        {
+          "id": "making",
+          "title": "What it is made of"
+        },
+        {
+          "id": "durability",
+          "title": "Care and guarantee"
+        },
+        {
+          "id": "repair",
+          "title": "Repair and parts"
+        },
+        {
+          "id": "endOfLife",
+          "title": "End of life"
+        },
+        {
+          "id": "supply",
+          "title": "Supply chain"
+        },
+        {
+          "id": "owner",
+          "title": "Private to you"
+        }
+      ],
+      "identity": {
+        "passportIdentifier": "A GS1 Digital Link URI carrying the GTIN under application identifier 01 and the serial under 21 (spec/record-model.md section 3); the enduring identifier never changes across the chain.",
+        "granularities": [
+          "item",
+          "model"
+        ],
+        "modelIdentifier": "name",
+        "parentRelations": []
+      }
+    }
+  },
+  "vectors": [
+    {
+      "id": "container-public",
+      "description": "The bottle for a public audience: model and item values each name their source, the closure and label relationships are recorded without being entered, the return scheme and the producer-responsibility registration are carried as documents, and the content the bottle is part of is not read.",
+      "input": {
+        "passportId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+        "subject": {
+          "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+          "granularity": "item"
+        },
+        "sources": [
+          {
+            "recordId": "rec-bottle-model",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000042",
+              "granularity": "model"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "name": "Demonstration 750 ml bottle",
+              "category": "packaging",
+              "manufacturer": "Demonstration Glassworks",
+              "manufacturerContact": "packaging@example.org",
+              "modelIdentifier": "BTL-750-CLR",
+              "manufacturingPlace": {
+                "city": "Leipzig",
+                "country": "DE"
+              },
+              "dimensions": "750 ml, 300 mm high, 75 mm diameter",
+              "weight": 0.39,
+              "materials": [
+                {
+                  "part": "body",
+                  "material": "clear soda-lime glass",
+                  "origin": "DE"
+                },
+                {
+                  "part": "closure",
+                  "material": "HDPE"
+                },
+                {
+                  "part": "label",
+                  "material": "paper"
+                }
+              ],
+              "recycledContent": 60,
+              "careNote": "Rinse and return through the deposit scheme; the closure and label separate by hand.",
+              "collection": "Deposit return at any participating collection point; the deposit is refunded on return of the intact container.",
+              "recyclability": "Glass body recyclable in the container glass stream; closure and label are separate streams.",
+              "separability": "Closure unscrews; label lifts in warm water.",
+              "guaranteeTerms": {
+                "purpose": "deposit return scheme terms",
+                "title": "Demonstration deposit return scheme, container terms",
+                "url": "https://example.org/return-scheme/terms-2026",
+                "digest": {
+                  "algorithm": "sha256",
+                  "value": "2ff1c4b1d5f5a1f8b3a9c0e7d6b5a4938271605f4e3d2c1b0a9f8e7d6c5b4a39"
+                },
+                "language": "en",
+                "retained": false,
+                "access": "public"
+              }
+            },
+            "digest": "a985c0154f5dc1aab990eb3698d59ca57a6008855fe846ed0302a9017ca77b0c",
+            "recordedAt": "2026-03-02T09:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-bottle-model@r1"
+            }
+          },
+          {
+            "recordId": "rec-bottle-item",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "BTL-0001",
+              "made": "2026-04",
+              "certificate": {
+                "scheme": {
+                  "id": "urn:example:scheme:producer-responsibility-register",
+                  "name": "Demonstration producer responsibility register"
+                },
+                "certificateId": "PRR-2026-000451",
+                "issuer": "Demonstration producer responsibility organisation",
+                "subject": {
+                  "id": "https://id.example.org/01/09520000000042",
+                  "granularity": "model"
+                },
+                "validity": {
+                  "from": "2026-01-01",
+                  "until": "2026-12-31"
+                },
+                "verification": {
+                  "status": "not-checked"
+                }
+              }
+            },
+            "digest": "6918ad5fda0149c62ef5bf0e1ae512bb5daaf71554d10729e2564b02d5dcfade",
+            "recordedAt": "2026-04-14T10:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-bottle-item@r1"
+            }
+          },
+          {
+            "recordId": "rec-closure",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "CAP-0001",
+              "made": "2026-04"
+            },
+            "digest": "2f56676ef7de162a54c4b022825bca95762c5cc89637b9f8087c75f4cf0105a7",
+            "recordedAt": "2026-04-14T10:05:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-closure@r1"
+            }
+          },
+          {
+            "recordId": "rec-label",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "LBL-0001",
+              "made": "2026-04"
+            },
+            "digest": "9cab56fbcaacddb1465f183ded11705c45725ae9ee655fb1ea2a2dcfb0bdf414",
+            "recordedAt": "2026-04-14T10:06:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-label@r1"
+            }
+          },
+          {
+            "recordId": "rec-content-item",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+              "granularity": "item"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "CNT-0001",
+              "made": "2026-04",
+              "makerName": "Demonstration Spring Water"
+            },
+            "digest": "78e61b5f4424c47d1ff4bbe21d71bc13c71a322babbd10c86fa253301d916fda",
+            "recordedAt": "2026-04-20T08:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-content-item@r1"
+            }
+          }
+        ],
+        "relationships": [
+          {
+            "relationshipId": "rel-bottle-model",
+            "kind": "instance-of-model",
+            "source": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042",
+              "granularity": "model"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-bottle-model",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "registration-policy@1"
+          },
+          {
+            "relationshipId": "rel-closure-of-bottle",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-closure",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-label-of-bottle",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-label",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-bottle-of-content",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "eventRef": {
+                "importId": "urn:example:import:filling-2026-04-20",
+                "eventRef": "ni:///sha-256;3b1f5c2d7e9a4b6c8d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e?ver=CBV2.0"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          }
+        ],
+        "measurements": [
+          {
+            "property": "materialMass",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "value": 2.4,
+            "unit": "g",
+            "method": "urn:example:method:balance-1",
+            "observedAt": "2026-04-14T10:05:00Z",
+            "source": {
+              "recordId": "obs-closure-mass",
+              "revisionId": "r1"
+            }
+          },
+          {
+            "property": "materialMass",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "value": 0.9,
+            "unit": "g",
+            "method": "urn:example:method:balance-1",
+            "observedAt": "2026-04-14T10:06:00Z",
+            "source": {
+              "recordId": "obs-label-mass",
+              "revisionId": "r1"
+            }
+          }
+        ],
+        "policy": {
+          "id": "projection-policy@1",
+          "precedence": {
+            "batchOverrides": [],
+            "itemOverrides": []
+          },
+          "measurementSelection": "latest-observed",
+          "tie": "conflict"
+        },
+        "disclosureScope": "public",
+        "locale": {
+          "exact": "en",
+          "base": "en",
+          "default": "en"
+        },
+        "profile": {
+          "$shared": "profile"
+        }
+      },
+      "expected": {
+        "projectionDigest": "60c96739cb1bcbe18bf2edc8f129b44540a51089ad570df38f2ac0fff67bc644",
+        "projectionId": "urn:bsv:dpp:projection:sha256:60c96739cb1bcbe18bf2edc8f129b44540a51089ad570df38f2ac0fff67bc644",
+        "replayedDigest": "60c96739cb1bcbe18bf2edc8f129b44540a51089ad570df38f2ac0fff67bc644",
+        "values": {
+          "careNote": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/careNote"
+            },
+            "granularity": "model",
+            "value": "Rinse and return through the deposit scheme; the closure and label separate by hand."
+          },
+          "category": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/category"
+            },
+            "granularity": "model",
+            "value": "packaging"
+          },
+          "certificate": {
+            "source": {
+              "recordId": "rec-bottle-item",
+              "revisionId": "r1",
+              "pointer": "/certificate"
+            },
+            "granularity": "item",
+            "value": {
+              "scheme": {
+                "id": "urn:example:scheme:producer-responsibility-register",
+                "name": "Demonstration producer responsibility register"
+              },
+              "certificateId": "PRR-2026-000451",
+              "issuer": "Demonstration producer responsibility organisation",
+              "subject": {
+                "id": "https://id.example.org/01/09520000000042",
+                "granularity": "model"
+              },
+              "validity": {
+                "from": "2026-01-01",
+                "until": "2026-12-31"
+              },
+              "verification": {
+                "status": "not-checked"
+              }
+            }
+          },
+          "collection": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/collection"
+            },
+            "granularity": "model",
+            "value": "Deposit return at any participating collection point; the deposit is refunded on return of the intact container."
+          },
+          "dimensions": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/dimensions"
+            },
+            "granularity": "model",
+            "value": "750 ml, 300 mm high, 75 mm diameter"
+          },
+          "guaranteeTerms": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/guaranteeTerms"
+            },
+            "granularity": "model",
+            "value": {
+              "purpose": "deposit return scheme terms",
+              "title": "Demonstration deposit return scheme, container terms",
+              "url": "https://example.org/return-scheme/terms-2026",
+              "digest": {
+                "algorithm": "sha256",
+                "value": "2ff1c4b1d5f5a1f8b3a9c0e7d6b5a4938271605f4e3d2c1b0a9f8e7d6c5b4a39"
+              },
+              "language": "en",
+              "retained": false,
+              "access": "public"
+            }
+          },
+          "made": {
+            "source": {
+              "recordId": "rec-bottle-item",
+              "revisionId": "r1",
+              "pointer": "/made"
+            },
+            "granularity": "item",
+            "value": "2026-04"
+          },
+          "manufacturer": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/manufacturer"
+            },
+            "granularity": "model",
+            "value": "Demonstration Glassworks"
+          },
+          "manufacturerContact": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/manufacturerContact"
+            },
+            "granularity": "model",
+            "value": "packaging@example.org"
+          },
+          "manufacturingPlace": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/manufacturingPlace"
+            },
+            "granularity": "model",
+            "value": {
+              "city": "Leipzig",
+              "country": "DE"
+            }
+          },
+          "materials": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/materials"
+            },
+            "granularity": "model",
+            "value": [
+              {
+                "part": "body",
+                "material": "clear soda-lime glass",
+                "origin": "DE"
+              },
+              {
+                "part": "closure",
+                "material": "HDPE"
+              },
+              {
+                "part": "label",
+                "material": "paper"
+              }
+            ]
+          },
+          "modelIdentifier": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/modelIdentifier"
+            },
+            "granularity": "model",
+            "value": "BTL-750-CLR"
+          },
+          "name": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/name"
+            },
+            "granularity": "model",
+            "value": "Demonstration 750 ml bottle"
+          },
+          "recyclability": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/recyclability"
+            },
+            "granularity": "model",
+            "value": "Glass body recyclable in the container glass stream; closure and label are separate streams."
+          },
+          "recycledContent": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/recycledContent"
+            },
+            "granularity": "model",
+            "value": 60
+          },
+          "serialNumber": {
+            "source": {
+              "recordId": "rec-bottle-item",
+              "revisionId": "r1",
+              "pointer": "/serialNumber"
+            },
+            "granularity": "item",
+            "value": "BTL-0001"
+          },
+          "weight": {
+            "source": {
+              "recordId": "rec-bottle-model",
+              "revisionId": "r1",
+              "pointer": "/weight"
+            },
+            "granularity": "model",
+            "value": 0.39
+          }
+        },
+        "fieldResults": {
+          "authentication": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "careNote": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "category": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "certificate": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "certifications": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "collection": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "commission": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "dimensions": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "edition": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "expectedLifetime": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "finish": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "guarantee": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "guaranteeTerms": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "made": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "makerName": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "manufacturer": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "manufacturerContact": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "manufacturingPlace": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "materials": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "method": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "modelIdentifier": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "name": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "notes": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "personalisation": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "provenance": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "purchase": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "recyclability": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "recycledContent": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "repairInstructions": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "repairServices": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "repairability": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "separability": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the legitimate tier is outside the public audience"
+          },
+          "serialNumber": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "serviceInterval": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "serviceNotes": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the legitimate tier is outside the public audience"
+          },
+          "spareParts": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "substanceStatement": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "supplyChain": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "valuation": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "weight": {
+            "availability": "present",
+            "applicability": "applies"
+          }
+        },
+        "sourceRefs": [
+          {
+            "recordId": "rec-bottle-item",
+            "revisionId": "r1",
+            "digest": "6918ad5fda0149c62ef5bf0e1ae512bb5daaf71554d10729e2564b02d5dcfade",
+            "subjectId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "granularity": "item"
+          },
+          {
+            "recordId": "rec-bottle-model",
+            "revisionId": "r1",
+            "digest": "a985c0154f5dc1aab990eb3698d59ca57a6008855fe846ed0302a9017ca77b0c",
+            "subjectId": "https://id.example.org/01/09520000000042",
+            "granularity": "model"
+          }
+        ],
+        "relationshipRefs": [
+          {
+            "relationshipId": "rel-bottle-model",
+            "kind": "instance-of-model",
+            "sourceId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "targetId": "https://id.example.org/01/09520000000042",
+            "policyRef": "registration-policy@1"
+          },
+          {
+            "relationshipId": "rel-closure-of-bottle",
+            "kind": "component-of",
+            "sourceId": "https://id.example.org/01/09520000000059/21/CAP-0001",
+            "targetId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-label-of-bottle",
+            "kind": "component-of",
+            "sourceId": "https://id.example.org/01/09520000000066/21/LBL-0001",
+            "targetId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "policyRef": "component-assertion@1"
+          }
+        ],
+        "findings": [],
+        "complete": true
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "content-subject",
+      "description": "The filled product as the subject: its own item source only, the bottle relationship recorded, the model fields unknown because no content model source was supplied.",
+      "input": {
+        "passportId": "https://id.example.org/01/09520000000073/21/CNT-0001",
+        "subject": {
+          "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+          "granularity": "item"
+        },
+        "sources": [
+          {
+            "recordId": "rec-bottle-model",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000042",
+              "granularity": "model"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "name": "Demonstration 750 ml bottle",
+              "category": "packaging",
+              "manufacturer": "Demonstration Glassworks",
+              "manufacturerContact": "packaging@example.org",
+              "modelIdentifier": "BTL-750-CLR",
+              "manufacturingPlace": {
+                "city": "Leipzig",
+                "country": "DE"
+              },
+              "dimensions": "750 ml, 300 mm high, 75 mm diameter",
+              "weight": 0.39,
+              "materials": [
+                {
+                  "part": "body",
+                  "material": "clear soda-lime glass",
+                  "origin": "DE"
+                },
+                {
+                  "part": "closure",
+                  "material": "HDPE"
+                },
+                {
+                  "part": "label",
+                  "material": "paper"
+                }
+              ],
+              "recycledContent": 60,
+              "careNote": "Rinse and return through the deposit scheme; the closure and label separate by hand.",
+              "collection": "Deposit return at any participating collection point; the deposit is refunded on return of the intact container.",
+              "recyclability": "Glass body recyclable in the container glass stream; closure and label are separate streams.",
+              "separability": "Closure unscrews; label lifts in warm water.",
+              "guaranteeTerms": {
+                "purpose": "deposit return scheme terms",
+                "title": "Demonstration deposit return scheme, container terms",
+                "url": "https://example.org/return-scheme/terms-2026",
+                "digest": {
+                  "algorithm": "sha256",
+                  "value": "2ff1c4b1d5f5a1f8b3a9c0e7d6b5a4938271605f4e3d2c1b0a9f8e7d6c5b4a39"
+                },
+                "language": "en",
+                "retained": false,
+                "access": "public"
+              }
+            },
+            "digest": "a985c0154f5dc1aab990eb3698d59ca57a6008855fe846ed0302a9017ca77b0c",
+            "recordedAt": "2026-03-02T09:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-bottle-model@r1"
+            }
+          },
+          {
+            "recordId": "rec-bottle-item",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "BTL-0001",
+              "made": "2026-04",
+              "certificate": {
+                "scheme": {
+                  "id": "urn:example:scheme:producer-responsibility-register",
+                  "name": "Demonstration producer responsibility register"
+                },
+                "certificateId": "PRR-2026-000451",
+                "issuer": "Demonstration producer responsibility organisation",
+                "subject": {
+                  "id": "https://id.example.org/01/09520000000042",
+                  "granularity": "model"
+                },
+                "validity": {
+                  "from": "2026-01-01",
+                  "until": "2026-12-31"
+                },
+                "verification": {
+                  "status": "not-checked"
+                }
+              }
+            },
+            "digest": "6918ad5fda0149c62ef5bf0e1ae512bb5daaf71554d10729e2564b02d5dcfade",
+            "recordedAt": "2026-04-14T10:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-bottle-item@r1"
+            }
+          },
+          {
+            "recordId": "rec-closure",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "CAP-0001",
+              "made": "2026-04"
+            },
+            "digest": "2f56676ef7de162a54c4b022825bca95762c5cc89637b9f8087c75f4cf0105a7",
+            "recordedAt": "2026-04-14T10:05:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-closure@r1"
+            }
+          },
+          {
+            "recordId": "rec-label",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "LBL-0001",
+              "made": "2026-04"
+            },
+            "digest": "9cab56fbcaacddb1465f183ded11705c45725ae9ee655fb1ea2a2dcfb0bdf414",
+            "recordedAt": "2026-04-14T10:06:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-label@r1"
+            }
+          },
+          {
+            "recordId": "rec-content-item",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+              "granularity": "item"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "CNT-0001",
+              "made": "2026-04",
+              "makerName": "Demonstration Spring Water"
+            },
+            "digest": "78e61b5f4424c47d1ff4bbe21d71bc13c71a322babbd10c86fa253301d916fda",
+            "recordedAt": "2026-04-20T08:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-content-item@r1"
+            }
+          }
+        ],
+        "relationships": [
+          {
+            "relationshipId": "rel-bottle-model",
+            "kind": "instance-of-model",
+            "source": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042",
+              "granularity": "model"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-bottle-model",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "registration-policy@1"
+          },
+          {
+            "relationshipId": "rel-closure-of-bottle",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-closure",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-label-of-bottle",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-label",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-bottle-of-content",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "eventRef": {
+                "importId": "urn:example:import:filling-2026-04-20",
+                "eventRef": "ni:///sha-256;3b1f5c2d7e9a4b6c8d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e?ver=CBV2.0"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          }
+        ],
+        "measurements": [
+          {
+            "property": "materialMass",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "value": 2.4,
+            "unit": "g",
+            "method": "urn:example:method:balance-1",
+            "observedAt": "2026-04-14T10:05:00Z",
+            "source": {
+              "recordId": "obs-closure-mass",
+              "revisionId": "r1"
+            }
+          },
+          {
+            "property": "materialMass",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "value": 0.9,
+            "unit": "g",
+            "method": "urn:example:method:balance-1",
+            "observedAt": "2026-04-14T10:06:00Z",
+            "source": {
+              "recordId": "obs-label-mass",
+              "revisionId": "r1"
+            }
+          }
+        ],
+        "policy": {
+          "id": "projection-policy@1",
+          "precedence": {
+            "batchOverrides": [],
+            "itemOverrides": []
+          },
+          "measurementSelection": "latest-observed",
+          "tie": "conflict"
+        },
+        "disclosureScope": "public",
+        "locale": {
+          "exact": "en",
+          "base": "en",
+          "default": "en"
+        },
+        "profile": {
+          "$shared": "profile"
+        }
+      },
+      "expected": {
+        "projectionDigest": "62c07312fbe493a697fbc9ee03ff12c398fa49dd63b88cb558c1a4ac8f1bc34e",
+        "projectionId": "urn:bsv:dpp:projection:sha256:62c07312fbe493a697fbc9ee03ff12c398fa49dd63b88cb558c1a4ac8f1bc34e",
+        "replayedDigest": "62c07312fbe493a697fbc9ee03ff12c398fa49dd63b88cb558c1a4ac8f1bc34e",
+        "values": {
+          "made": {
+            "source": {
+              "recordId": "rec-content-item",
+              "revisionId": "r1",
+              "pointer": "/made"
+            },
+            "granularity": "item",
+            "value": "2026-04"
+          },
+          "makerName": {
+            "source": {
+              "recordId": "rec-content-item",
+              "revisionId": "r1",
+              "pointer": "/makerName"
+            },
+            "granularity": "item",
+            "value": "Demonstration Spring Water"
+          },
+          "serialNumber": {
+            "source": {
+              "recordId": "rec-content-item",
+              "revisionId": "r1",
+              "pointer": "/serialNumber"
+            },
+            "granularity": "item",
+            "value": "CNT-0001"
+          }
+        },
+        "fieldResults": {
+          "authentication": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "careNote": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "category": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "certificate": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "certifications": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "collection": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "commission": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "dimensions": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "edition": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "expectedLifetime": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "finish": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "guarantee": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "guaranteeTerms": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "made": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "makerName": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "manufacturer": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "manufacturerContact": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "manufacturingPlace": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "materials": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "method": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "modelIdentifier": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "name": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "notes": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "personalisation": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "provenance": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "purchase": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "recyclability": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "recycledContent": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "repairInstructions": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "repairServices": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "repairability": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "separability": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the legitimate tier is outside the public audience"
+          },
+          "serialNumber": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "serviceInterval": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "serviceNotes": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the legitimate tier is outside the public audience"
+          },
+          "spareParts": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "substanceStatement": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "supplyChain": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          },
+          "valuation": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "weight": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no model is related to https://id.example.org/01/09520000000073/21/CNT-0001"
+          }
+        },
+        "sourceRefs": [
+          {
+            "recordId": "rec-content-item",
+            "revisionId": "r1",
+            "digest": "78e61b5f4424c47d1ff4bbe21d71bc13c71a322babbd10c86fa253301d916fda",
+            "subjectId": "https://id.example.org/01/09520000000073/21/CNT-0001",
+            "granularity": "item"
+          }
+        ],
+        "relationshipRefs": [
+          {
+            "relationshipId": "rel-bottle-of-content",
+            "kind": "component-of",
+            "sourceId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "targetId": "https://id.example.org/01/09520000000073/21/CNT-0001",
+            "policyRef": "component-assertion@1"
+          }
+        ],
+        "findings": [],
+        "complete": true
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "container-without-model",
+      "description": "The bottle without its model source: model fields are unknown with a missing-source finding and nothing is fabricated from the components.",
+      "input": {
+        "passportId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+        "subject": {
+          "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+          "granularity": "item"
+        },
+        "sources": [
+          {
+            "recordId": "rec-bottle-item",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "BTL-0001",
+              "made": "2026-04",
+              "certificate": {
+                "scheme": {
+                  "id": "urn:example:scheme:producer-responsibility-register",
+                  "name": "Demonstration producer responsibility register"
+                },
+                "certificateId": "PRR-2026-000451",
+                "issuer": "Demonstration producer responsibility organisation",
+                "subject": {
+                  "id": "https://id.example.org/01/09520000000042",
+                  "granularity": "model"
+                },
+                "validity": {
+                  "from": "2026-01-01",
+                  "until": "2026-12-31"
+                },
+                "verification": {
+                  "status": "not-checked"
+                }
+              }
+            },
+            "digest": "6918ad5fda0149c62ef5bf0e1ae512bb5daaf71554d10729e2564b02d5dcfade",
+            "recordedAt": "2026-04-14T10:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-bottle-item@r1"
+            }
+          },
+          {
+            "recordId": "rec-closure",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "CAP-0001",
+              "made": "2026-04"
+            },
+            "digest": "2f56676ef7de162a54c4b022825bca95762c5cc89637b9f8087c75f4cf0105a7",
+            "recordedAt": "2026-04-14T10:05:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-closure@r1"
+            }
+          },
+          {
+            "recordId": "rec-label",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "LBL-0001",
+              "made": "2026-04"
+            },
+            "digest": "9cab56fbcaacddb1465f183ded11705c45725ae9ee655fb1ea2a2dcfb0bdf414",
+            "recordedAt": "2026-04-14T10:06:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-label@r1"
+            }
+          },
+          {
+            "recordId": "rec-content-item",
+            "revisionId": "r1",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+              "granularity": "item"
+            },
+            "profileRef": {
+              "id": "general",
+              "version": 2
+            },
+            "payload": {
+              "profile": "general",
+              "profile_version": 2,
+              "serialNumber": "CNT-0001",
+              "made": "2026-04",
+              "makerName": "Demonstration Spring Water"
+            },
+            "digest": "78e61b5f4424c47d1ff4bbe21d71bc13c71a322babbd10c86fa253301d916fda",
+            "recordedAt": "2026-04-20T08:00:00Z",
+            "disclosure": {
+              "policyId": "disclosure-default@1",
+              "scope": "public"
+            },
+            "authorisation": {
+              "kind": "registration",
+              "policyId": "registration-policy@1",
+              "principal": "urn:example:principal:filler",
+              "evidenceRef": "registration:rec-content-item@r1"
+            }
+          }
+        ],
+        "relationships": [
+          {
+            "relationshipId": "rel-bottle-model",
+            "kind": "instance-of-model",
+            "source": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042",
+              "granularity": "model"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-bottle-model",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "registration-policy@1"
+          },
+          {
+            "relationshipId": "rel-closure-of-bottle",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-closure",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-label-of-bottle",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "sourceRevision": {
+                "recordId": "rec-label",
+                "revisionId": "r1"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-bottle-of-content",
+            "kind": "component-of",
+            "source": {
+              "id": "https://id.example.org/01/09520000000042/21/BTL-0001",
+              "granularity": "item"
+            },
+            "target": {
+              "id": "https://id.example.org/01/09520000000073/21/CNT-0001",
+              "granularity": "item"
+            },
+            "evidence": {
+              "eventRef": {
+                "importId": "urn:example:import:filling-2026-04-20",
+                "eventRef": "ni:///sha-256;3b1f5c2d7e9a4b6c8d0e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e?ver=CBV2.0"
+              }
+            },
+            "policyRef": "component-assertion@1"
+          }
+        ],
+        "measurements": [
+          {
+            "property": "materialMass",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000059/21/CAP-0001",
+              "granularity": "component"
+            },
+            "value": 2.4,
+            "unit": "g",
+            "method": "urn:example:method:balance-1",
+            "observedAt": "2026-04-14T10:05:00Z",
+            "source": {
+              "recordId": "obs-closure-mass",
+              "revisionId": "r1"
+            }
+          },
+          {
+            "property": "materialMass",
+            "subject": {
+              "id": "https://id.example.org/01/09520000000066/21/LBL-0001",
+              "granularity": "component"
+            },
+            "value": 0.9,
+            "unit": "g",
+            "method": "urn:example:method:balance-1",
+            "observedAt": "2026-04-14T10:06:00Z",
+            "source": {
+              "recordId": "obs-label-mass",
+              "revisionId": "r1"
+            }
+          }
+        ],
+        "policy": {
+          "id": "projection-policy@1",
+          "precedence": {
+            "batchOverrides": [],
+            "itemOverrides": []
+          },
+          "measurementSelection": "latest-observed",
+          "tie": "conflict"
+        },
+        "disclosureScope": "public",
+        "locale": {
+          "exact": "en",
+          "base": "en",
+          "default": "en"
+        },
+        "profile": {
+          "$shared": "profile"
+        }
+      },
+      "expected": {
+        "projectionDigest": "e9d54b2fcc3f6a9dc8393f9a00660a0e82ba6a82467ceb672a327c185cfdc99e",
+        "projectionId": "urn:bsv:dpp:projection:sha256:e9d54b2fcc3f6a9dc8393f9a00660a0e82ba6a82467ceb672a327c185cfdc99e",
+        "replayedDigest": "e9d54b2fcc3f6a9dc8393f9a00660a0e82ba6a82467ceb672a327c185cfdc99e",
+        "values": {
+          "certificate": {
+            "source": {
+              "recordId": "rec-bottle-item",
+              "revisionId": "r1",
+              "pointer": "/certificate"
+            },
+            "granularity": "item",
+            "value": {
+              "scheme": {
+                "id": "urn:example:scheme:producer-responsibility-register",
+                "name": "Demonstration producer responsibility register"
+              },
+              "certificateId": "PRR-2026-000451",
+              "issuer": "Demonstration producer responsibility organisation",
+              "subject": {
+                "id": "https://id.example.org/01/09520000000042",
+                "granularity": "model"
+              },
+              "validity": {
+                "from": "2026-01-01",
+                "until": "2026-12-31"
+              },
+              "verification": {
+                "status": "not-checked"
+              }
+            }
+          },
+          "made": {
+            "source": {
+              "recordId": "rec-bottle-item",
+              "revisionId": "r1",
+              "pointer": "/made"
+            },
+            "granularity": "item",
+            "value": "2026-04"
+          },
+          "serialNumber": {
+            "source": {
+              "recordId": "rec-bottle-item",
+              "revisionId": "r1",
+              "pointer": "/serialNumber"
+            },
+            "granularity": "item",
+            "value": "BTL-0001"
+          }
+        },
+        "fieldResults": {
+          "authentication": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "careNote": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "category": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "certificate": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "certifications": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "collection": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "commission": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "dimensions": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "edition": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "expectedLifetime": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "finish": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "guarantee": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "guaranteeTerms": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "made": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "makerName": {
+            "availability": "missing",
+            "applicability": "applies"
+          },
+          "manufacturer": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "manufacturerContact": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "manufacturingPlace": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "materials": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "method": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "modelIdentifier": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "name": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "notes": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "personalisation": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "provenance": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "purchase": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "recyclability": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "recycledContent": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "repairInstructions": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "repairServices": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "repairability": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "separability": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the legitimate tier is outside the public audience"
+          },
+          "serialNumber": {
+            "availability": "present",
+            "applicability": "applies"
+          },
+          "serviceInterval": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "serviceNotes": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the legitimate tier is outside the public audience"
+          },
+          "spareParts": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "substanceStatement": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "supplyChain": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          },
+          "valuation": {
+            "availability": "withheld",
+            "applicability": "applies",
+            "reason": "the owner tier is outside the public audience"
+          },
+          "weight": {
+            "availability": "unknown",
+            "applicability": "applies",
+            "finding": "missing-source",
+            "reason": "no source revision was supplied for the model"
+          }
+        },
+        "sourceRefs": [
+          {
+            "recordId": "rec-bottle-item",
+            "revisionId": "r1",
+            "digest": "6918ad5fda0149c62ef5bf0e1ae512bb5daaf71554d10729e2564b02d5dcfade",
+            "subjectId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "granularity": "item"
+          }
+        ],
+        "relationshipRefs": [
+          {
+            "relationshipId": "rel-bottle-model",
+            "kind": "instance-of-model",
+            "sourceId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "targetId": "https://id.example.org/01/09520000000042",
+            "policyRef": "registration-policy@1"
+          },
+          {
+            "relationshipId": "rel-closure-of-bottle",
+            "kind": "component-of",
+            "sourceId": "https://id.example.org/01/09520000000059/21/CAP-0001",
+            "targetId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "policyRef": "component-assertion@1"
+          },
+          {
+            "relationshipId": "rel-label-of-bottle",
+            "kind": "component-of",
+            "sourceId": "https://id.example.org/01/09520000000066/21/LBL-0001",
+            "targetId": "https://id.example.org/01/09520000000042/21/BTL-0001",
+            "policyRef": "component-assertion@1"
+          }
+        ],
+        "findings": [
+          "missing-source"
+        ],
+        "complete": false
+      },
+      "tags": [
+        "error-case"
+      ]
+    }
+  ]
+}

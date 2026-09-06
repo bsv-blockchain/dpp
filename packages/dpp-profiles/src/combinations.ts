@@ -9,7 +9,8 @@
  * choosing for the caller, and passes with notes when the selection is only
  * unusual.
  */
-import { EXCHANGE_PROFILE_IDS, OPERATOR_PROFILE_IDS, PROFILE_IDS, readExchangeProfile, readManifest, readOperatorProfile, type ExchangeProfileId, type OperatorProfileId, type ProfileId } from './index.js'
+import { EXCHANGE_PROFILE_IDS, OPERATOR_PROFILE_IDS, PROFILE_IDS, readExchangeProfile, readOperatorProfile, type ExchangeProfileId, type OperatorProfileId } from './index.js'
+import { isManifestV2, readManifestAny } from './manifest-v2.js'
 
 export const BASELINE_ID = 'native-baseline@1'
 /** The second recommended baseline: record version 2 with the managed-custody profile (conformance/baseline-native-2.json). */
@@ -38,6 +39,7 @@ export type SelectionConflictCode =
   | 'baseline-unknown'
   | 'industry-unknown'
   | 'industry-superseded'
+  | 'industry-draft'
   | 'exchange-unknown'
   | 'exchange-duplicate'
   | 'exchange-proposed'
@@ -65,10 +67,17 @@ export function checkSelection(selection: ProfileSelection): SelectionResult {
     if (!(PROFILE_IDS as readonly string[]).includes(selection.industry)) {
       conflict('industry-unknown', `${selection.industry} is not an industry profile in this catalogue`)
     } else {
-      const manifest = readManifest(selection.industry as ProfileId)
+      const manifest = readManifestAny(selection.industry)
       if (manifest.status === 'superseded') {
         if (selection.purpose === 'read') notes.push(`${manifest.profile} is superseded by ${manifest.supersededBy}; states that declare it decode under it and are never reinterpreted`)
         else conflict('industry-superseded', `${manifest.profile} is superseded by ${manifest.supersededBy}; a new state or claim is issued under the current version`)
+      } else if (manifest.status === 'draft') {
+        // A draft successor is opt-in: a deployment may read and write under
+        // it by explicit version, and is told so; a conformance claim rests on
+        // the current version until the reviewed cutover marks it superseded.
+        const of = isManifestV2(manifest) && manifest.succession != null ? manifest.succession.of : 'the current version'
+        if (selection.purpose === 'claim') conflict('industry-draft', `${manifest.profile} is a draft successor to ${of}; a conformance claim rests on the current version`)
+        else notes.push(`${manifest.profile} is a draft: opt-in successor to ${of}, not yet the current version; a conformance claim rests on the current version`)
       }
     }
   }

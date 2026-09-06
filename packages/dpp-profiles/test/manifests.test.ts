@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { PROFILE_IDS, fieldsFor, missingRequired, readConsumerDocument, readFrozen, readManifest, readPublicPayloadSchema, readRestrictedPayloadSchema } from '../src/index.js'
+import { PROFILE_IDS, fieldsFor, isManifestV2, missingRequired, readConsumerDocument, readFrozen, readManifest, readManifestAny, readPublicPayloadSchema, readRestrictedPayloadSchema } from '../src/index.js'
 import { generateAll, readManifests } from '../scripts/build.mjs'
 
 const root = join(import.meta.dirname, '..')
@@ -14,13 +14,19 @@ const sha256 = (text: string | Buffer): string => createHash('sha256').update(te
 const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true })
 addFormats(ajv)
 const validateManifest = ajv.compile(read('schemas/profile-manifest.schema.json') as object)
+const validateManifestV2 = ajv.compile(read('schemas/profile-manifest-v2.schema.json') as object)
 
 describe('the profile manifests (spec/profiles.md)', () => {
-  it.each(PROFILE_IDS)('%s validates against the manifest schema', (profile) => {
-    const manifest = readManifest(profile)
-    const ok = validateManifest(manifest)
-    expect(validateManifest.errors ?? [], profile).toEqual([])
+  it.each(PROFILE_IDS)('%s validates against the manifest schema of the version it declares', (profile) => {
+    const manifest = readManifestAny(profile)
+    // A version 2 manifest validates against the version 2 schema and never
+    // against the version 1 one, which does not know its keys; a version 1
+    // manifest is exactly as it was.
+    const validate = isManifestV2(manifest) ? validateManifestV2 : validateManifest
+    const ok = validate(manifest)
+    expect(validate.errors ?? [], profile).toEqual([])
     expect(ok).toBe(true)
+    if (isManifestV2(manifest)) expect(validateManifest(manifest)).toBe(false)
     expect(manifest.profile).toBe(profile)
     expect(manifest.profile).toBe(`${manifest.id}@${manifest.version}`)
   })
@@ -44,6 +50,10 @@ describe('the profile manifests (spec/profiles.md)', () => {
     expect(readManifest('general@2').fields).toHaveLength(40)
     expect(readManifest('textile@1').fields).toHaveLength(13)
     expect(readManifest('general@1').fields).toHaveLength(0)
+    // The draft successors carry every field of their predecessor and the
+    // companions the successor adds: 105 plus 12, and 49 plus 11.
+    expect(readManifestAny('battery@3').fields).toHaveLength(117)
+    expect(readManifestAny('textile@3').fields).toHaveLength(60)
     const captures = new Set(readManifest('battery@2').fields.map((f) => f.provenance.capture))
     expect([...captures].sort()).toEqual(['brand', 'deferred', 'derived', 'event', 'form', 'platform'])
   })
@@ -119,7 +129,7 @@ describe('the profile manifests (spec/profiles.md)', () => {
       const doc = readConsumerDocument(profile) as Record<string, unknown>
       expect(doc.profile).toBe(profile)
       expect(Array.isArray(doc.fields)).toBe(true)
-      expect(String(doc.status)).toMatch(/^(in use|superseded by )/)
+      expect(String(doc.status)).toMatch(/^(in use|superseded by |candidate successor to )/)
       expect(String(doc.regulatoryLine)).not.toMatch(/\bcompliant\b/i)
     }
     // The consumer document describes the registry in full, every capture

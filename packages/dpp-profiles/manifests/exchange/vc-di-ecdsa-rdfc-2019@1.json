@@ -1,0 +1,74 @@
+{
+  "manifestVersion": "1",
+  "id": "vc-di-ecdsa-rdfc-2019",
+  "version": "1",
+  "profile": "vc-di-ecdsa-rdfc-2019@1",
+  "kind": "exchange",
+  "status": "current",
+  "title": "Externally issued VC 2.0 passport credentials secured with ecdsa-rdfc-2019",
+  "description": "The exchange profile for a passport credential another party issued in the W3C Verifiable Credentials Data Model 2.0, secured with a Data Integrity proof under the ecdsa-rdfc-2019 cryptosuite over a P-256 Multikey published in the issuer's did:web document, and committed by the exact UTF-8 bytes as issued. Verification and intake only: this repository issues nothing under it. Proof validity, issuer binding, subject binding, validity interval, status, issuer authority under a named policy and artefact availability are separate findings; an RDF proof that still holds over re-serialised bytes does not make those bytes the anchored ones.",
+  "representation": "vc-di-ecdsa-rdfc-2019@1",
+  "mediaType": "application/vc+ld+json",
+  "dataModel": "W3C Verifiable Credentials Data Model 2.0 with the owned external passport context urn:bsv:dpp:external-passport:context:1 for subject terms",
+  "specification": "spec/external-credential-profile.md",
+  "artefacts": [
+    { "id": "vc-v2-context", "kind": "jsonld-context", "uri": "https://www.w3.org/ns/credentials/v2", "version": "2.0", "digest": "59955ced6697d61e03f2b2556febe5308ab16842846f5b586d7f1f7adec92734", "retrieval": "pinned", "licence": "W3C document licence", "notes": "Retrieved 2026-09-06 (10131 bytes); carried at packages/vsc/artifacts/w3c/credentials-v2.jsonld and served at run time from the maintained @digitalbazaar/credentials-context package, which a test holds equal to the carried bytes." },
+    { "id": "data-integrity-v2-context", "kind": "jsonld-context", "uri": "https://w3id.org/security/data-integrity/v2", "version": "2", "digest": "67f21e6e33a6c14e5ccfd2fc7865f7474fb71a04af7e94136cb399dfac8ae8f4", "retrieval": "pinned", "licence": "W3C document licence", "notes": "Retrieved 2026-09-06 (2609 bytes); served at run time from @digitalbazaar/data-integrity-context 2.0.1." },
+    { "id": "multikey-v1-context", "kind": "jsonld-context", "uri": "https://w3id.org/security/multikey/v1", "version": "1", "digest": "ba2c182de2d92f7e47184bcca8fcf0beaee6d3986c527bf664c195bbc7c58597", "retrieval": "pinned", "licence": "W3C document licence", "notes": "Retrieved 2026-09-06 (1010 bytes); served at run time from @digitalbazaar/multikey-context 2.0.1." },
+    { "id": "vc-data-model-2", "kind": "specification", "uri": "https://www.w3.org/TR/vc-data-model-2.0/", "version": "2.0 Recommendation", "retrieval": "not-retrieved", "notes": "The data model; the pinned context above is the artefact the implementation reads." },
+    { "id": "vc-di-ecdsa", "kind": "specification", "uri": "https://www.w3.org/TR/2025/REC-vc-di-ecdsa-20250515/", "version": "Recommendation of 15 May 2025", "retrieval": "not-retrieved", "notes": "The ecdsa-rdfc-2019 cryptosuite; implemented through the maintained @digitalbazaar/ecdsa-rdfc-2019-cryptosuite 1.3.0 and @digitalbazaar/ecdsa-multikey 1.8.0 (BSD-3-Clause) on @digitalbazaar/data-integrity 2.5.0 and jsonld-signatures 11.6.0, never a second cryptographic implementation." },
+    { "id": "rdf-canon", "kind": "specification", "uri": "https://www.w3.org/TR/rdf-canon/", "version": "RDFC-1.0", "retrieval": "not-retrieved", "notes": "The canonicalisation the suite applies, through rdf-canonize 5.0.0." },
+    { "id": "owned-external-passport-context", "kind": "jsonld-context", "uri": "urn:bsv:dpp:external-passport:context:1", "version": "1", "digest": "f2c50bc81d8ada697b4096377ccb24f6034c7dad06003a4424fe2145edb726b4", "retrieval": "owned", "notes": "packages/vsc/artifacts/external/dpp-external-passport-1.context.jsonld: a protected context with a vocabulary base for subject terms, served from these bytes and never fetched." },
+    { "id": "owned-external-passport-schema", "kind": "json-schema", "uri": "urn:bsv:dpp:external-passport:schema:1", "version": "1", "digest": "844b34250290d450207d87a3e82656ca301077eb129e5e793cf27bc9a0b07d63", "retrieval": "owned", "notes": "packages/vsc/artifacts/external/dpp-external-passport-1.schema.json: the structural shape the profile's schema check holds a credential to." }
+  ],
+  "proofSuites": [
+    { "id": "ecdsa-rdfc-2019", "support": "verify-only", "keyRule": "A P-256 Multikey (publicKeyMultibase prefix zDn) whose controller is the credential issuer and which the issuer's did:web document lists under assertionMethod; never the native BSV secp256k1 key, never derived by the BRC-42 rule, and never a P-384 or P-521 key, which this profile reports as unsupported rather than verified.", "consumerMustConfirm": false, "notes": "Verified with the maintained suite under RDFC-1.0 canonicalisation in safe mode, so an undeclared term is a failure and a re-serialised copy still verifies." }
+  ],
+  "anchoring": {
+    "format": "bsv-attestation-anchor-v1",
+    "bytesCommitted": "the exact UTF-8 bytes of the credential as issued, including its Data Integrity proof; a re-serialised copy has a different digest and is a different commitment even though its RDF proof verifies",
+    "attestationIdRule": "the credential id; a second credential under an identifier already secured is refused, never a replacement of the earlier bytes",
+    "subjectRule": "the one credentialSubject.id the credential signs; a passport identifier that differs from it is related only through an established subject-binding policy with an evidence reference",
+    "attestationType": "the credential's first type after VerifiableCredential"
+  },
+  "nativeEvidenceExtension": {
+    "schema": "contracts/native-evidence-extension.schema.json",
+    "version": "1",
+    "carried": "optional",
+    "notes": "An external credential may reference native evidence under urn:bsv:dpp:native-evidence:1; the native evidence exists first and each reference is verified independently."
+  },
+  "mappings": [
+    { "nativeOperation": "ACTIVATE", "externalEvent": "none: an external passport credential is retained evidence about the product and drives no token operation", "requires": "a separately authorised native operation with its own authority and evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "SOLD", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "RESOLD", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "TRANSFER", "externalEvent": "none: a credential from any issuer cannot move token control", "requires": "the current controller's authorised transfer and the recipient's acceptance", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "REPAIRED", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "EDIT", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "RECYCLED", "externalEvent": "none: a later independent credential does not reopen a retired lineage", "requires": "as above", "withoutEvidence": "insufficient-data" }
+  ],
+  "storage": {
+    "nativeClaim": "none; the credential is independent evidence",
+    "originalSecured": "the exact credential string as received, with mediaType, byteLength, sha256, credentialId, issuer, receivedAt, the profile identifier and the intake verification reference",
+    "decoded": "the strictly parsed credential, for reading and never re-serialised as the original",
+    "projection": "any derived document has its own identity and digest and inherits neither the original's proof nor its anchor"
+  },
+  "unsupported": [
+    { "id": "issuance", "reason": "This repository verifies and retains external credentials; it does not issue under this profile." },
+    { "id": "p384-and-p521-keys", "reason": "The suite can verify them; this profile declares P-256 only and reports other curves as unsupported until profiled." },
+    { "id": "ecdsa-jcs-2019", "reason": "JCS canonicalisation is a different suite with different exact-byte properties; not selected." },
+    { "id": "ecdsa-sd-2023", "reason": "Selective disclosure is selected only when a real restricted-disclosure use case names it." },
+    { "id": "multiple-credential-subjects", "reason": "One signed subject binds to one passport; a multi-subject credential is reported unsupported, never split." },
+    { "id": "embedded-issuer-objects", "reason": "The issuer is a DID string; an issuer object is unsupported rather than read for its id." },
+    { "id": "did-methods-other-than-did-web", "reason": "did:web with pinned documents or an explicitly bounded resolver is the initial method; others are unsupported until profiled." },
+    { "id": "holder-presentation", "reason": "No presentation protocol, challenge or holder binding is implemented." },
+    { "id": "jwt-securing", "reason": "Enveloping proofs (VC-JOSE-COSE) are a different representation; see untp-0.7.0-jose@1." },
+    { "id": "inline-contexts", "reason": "An inline context object could redefine signed terms; only the pinned context sets are accepted." }
+  ],
+  "sourceRefs": [
+    { "id": "w3c-vc-data-model-2", "name": "W3C Verifiable Credentials Data Model 2.0", "reference": "https://www.w3.org/TR/vc-data-model-2.0/", "attribution": "W3C", "use": "The data model and the pinned context." },
+    { "id": "w3c-vc-di-ecdsa", "name": "W3C Data Integrity ECDSA Cryptosuites v1.0", "reference": "https://www.w3.org/TR/2025/REC-vc-di-ecdsa-20250515/", "version": "Recommendation, 15 May 2025", "attribution": "W3C", "use": "The ecdsa-rdfc-2019 suite this profile verifies." },
+    { "id": "w3c-rdf-canon", "name": "W3C RDF Dataset Canonicalization", "reference": "https://www.w3.org/TR/rdf-canon/", "attribution": "W3C", "use": "The canonicalisation under the suite." },
+    { "id": "w3c-bitstring-status-list", "name": "W3C Bitstring Status List v1.0", "reference": "https://www.w3.org/TR/vc-bitstring-status-list/", "attribution": "W3C", "use": "The status mechanism, evaluated under the same bounded rules as the VSC profile." },
+    { "id": "w3c-did-core", "name": "W3C Decentralized Identifiers v1.0", "reference": "https://www.w3.org/TR/did-core/", "attribution": "W3C", "use": "Issuer documents and the assertionMethod relationship." }
+  ]
+}

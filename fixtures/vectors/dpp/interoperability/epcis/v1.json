@@ -1,0 +1,1664 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.epcis.v1",
+  "name": "EPCIS 2.0.1 source exchange (epcis-json@1) and explicit VSC mapping (epcis-vsc@1)",
+  "version": "1.0.0",
+  "reference_impl": "vsc@0.2.0",
+  "parity_class": "required",
+  "brc": [],
+  "notes": "Pinned EPCIS 2.0.1 JSON Schema 0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af and context 5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737. Every identifier uses the GS1 demonstration prefix 952 and example.org hosts.",
+  "vectors": [
+    {
+      "id": "five-event-document",
+      "description": "A neutral EPCISDocument carrying a two-stage TransformationEvent chain, a commissioning ObjectEvent, an AssociationEvent (component membership), an AggregationEvent (shipping container), a separately constructed TransactionEvent with parties, and a sensor observation without an eventID. Parsed under the default limits, validated against the pinned 2.0.1 schema, every event digested and identified.",
+      "input": {
+        "media_type": "application/ld+json",
+        "document": {
+          "@context": [
+            "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+            {
+              "example": "https://example.org/vocab/"
+            }
+          ],
+          "type": "EPCISDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "epcisBody": {
+            "eventList": [
+              {
+                "type": "TransformationEvent",
+                "eventTime": "2026-03-01T08:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000001",
+                "inputEPCList": [
+                  "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                  "urn:epc:id:sgtin:9521234.022222.CELL-B"
+                ],
+                "outputEPCList": [
+                  "urn:epc:id:sgtin:9521234.044444.MOD-1"
+                ],
+                "bizStep": "assembling",
+                "disposition": "in_progress",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                },
+                "bizLocation": {
+                  "id": "urn:epc:id:sgln:9521234.00002.0"
+                },
+                "transformationID": "urn:example:transformation:stage-1"
+              },
+              {
+                "type": "TransformationEvent",
+                "eventTime": "2026-03-01T12:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000002",
+                "inputEPCList": [
+                  "urn:epc:id:sgtin:9521234.044444.MOD-1"
+                ],
+                "inputQuantityList": [
+                  {
+                    "epcClass": "urn:epc:class:lgtin:9521234.033333.LOT7",
+                    "quantity": 4,
+                    "uom": "EA"
+                  }
+                ],
+                "outputEPCList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "outputQuantityList": [
+                  {
+                    "epcClass": "urn:epc:idpat:sgtin:9521234.055555.*",
+                    "quantity": 0.5,
+                    "uom": "KGM"
+                  }
+                ],
+                "bizStep": "assembling",
+                "disposition": "in_progress",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                },
+                "bizLocation": {
+                  "id": "urn:epc:id:sgln:9521234.00002.0"
+                },
+                "transformationID": "urn:example:transformation:stage-2"
+              },
+              {
+                "type": "ObjectEvent",
+                "eventTime": "2026-03-02T08:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "ADD",
+                "bizStep": "commissioning",
+                "disposition": "active",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                },
+                "bizLocation": {
+                  "id": "urn:epc:id:sgln:9521234.00002.0"
+                }
+              },
+              {
+                "type": "AssociationEvent",
+                "eventTime": "2026-03-02T08:30:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000004",
+                "parentID": "urn:epc:id:sgtin:9521234.012345.SER1",
+                "childEPCs": [
+                  "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                  "urn:epc:id:sgtin:9521234.022222.CELL-B"
+                ],
+                "action": "ADD",
+                "bizStep": "installing",
+                "disposition": "active",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                }
+              },
+              {
+                "type": "AggregationEvent",
+                "eventTime": "2026-03-02T09:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000005",
+                "parentID": "urn:epc:id:sscc:9521234.0000000001",
+                "childEPCs": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "ADD",
+                "bizStep": "packing",
+                "disposition": "in_transit",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                }
+              },
+              {
+                "type": "TransactionEvent",
+                "eventTime": "2026-03-02T10:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000006",
+                "bizTransactionList": [
+                  {
+                    "type": "po",
+                    "bizTransaction": "urn:epcglobal:cbv:bt:9521234000018:PO-77"
+                  }
+                ],
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "ADD",
+                "bizStep": "shipping",
+                "disposition": "in_transit",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                },
+                "sourceList": [
+                  {
+                    "type": "owning_party",
+                    "source": "urn:epc:id:pgln:9521234.00003"
+                  }
+                ],
+                "destinationList": [
+                  {
+                    "type": "owning_party",
+                    "destination": "urn:epc:id:pgln:9521234.00004"
+                  }
+                ]
+              },
+              {
+                "type": "ObjectEvent",
+                "eventTime": "2026-03-03T06:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "OBSERVE",
+                "bizStep": "sensor_reporting",
+                "disposition": "in_transit",
+                "sensorElementList": [
+                  {
+                    "sensorMetadata": {
+                      "time": "2026-03-03T06:00:00.000Z",
+                      "deviceID": "urn:epc:id:giai:9521234.SENSOR-1"
+                    },
+                    "sensorReport": [
+                      {
+                        "type": "Temperature",
+                        "value": 27.5,
+                        "uom": "CEL"
+                      }
+                    ]
+                  }
+                ],
+                "example:note": "temperature observed in transit"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "sha256_hex": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+        "envelope": {
+          "type": "EPCISDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "hasHeader": false,
+          "hasMasterData": false
+        },
+        "schema": "pass",
+        "finding_codes": [],
+        "context_digests_hex": [
+          "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+          "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+        ],
+        "events": [
+          {
+            "pointer": "/epcisBody/eventList/0",
+            "type": "TransformationEvent",
+            "identity_kind": "event-id",
+            "event_id": "urn:uuid:00000000-0000-4000-8000-000000000001",
+            "body_digest_hex": "73b45377631939993fd6053b1b2fe45476362c21dbbdde5401486b6d82473e2d",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/0/inputEPCList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234222224",
+                "serial": "CELL-A"
+              },
+              {
+                "path": "/epcisBody/eventList/0/inputEPCList/1",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234222224",
+                "serial": "CELL-B"
+              },
+              {
+                "path": "/epcisBody/eventList/0/outputEPCList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234444442",
+                "serial": "MOD-1"
+              }
+            ],
+            "preserved_extensions": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/1",
+            "type": "TransformationEvent",
+            "identity_kind": "event-id",
+            "event_id": "urn:uuid:00000000-0000-4000-8000-000000000002",
+            "body_digest_hex": "68fbb2444b5069da6e67327f2cefe508b9ae4c101402c7e4bcb19b6304383564",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/1/inputEPCList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234444442",
+                "serial": "MOD-1"
+              },
+              {
+                "path": "/epcisBody/eventList/1/outputEPCList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234123453",
+                "serial": "SER1"
+              },
+              {
+                "path": "/epcisBody/eventList/1/inputQuantityList/0/epcClass",
+                "scheme": "gs1-lgtin",
+                "gtin": "09521234333333",
+                "lot": "LOT7"
+              },
+              {
+                "path": "/epcisBody/eventList/1/outputQuantityList/0/epcClass",
+                "scheme": "gs1-sgtin-pattern",
+                "gtin": "09521234555551"
+              }
+            ],
+            "preserved_extensions": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/2",
+            "type": "ObjectEvent",
+            "identity_kind": "event-id",
+            "event_id": "urn:uuid:00000000-0000-4000-8000-000000000003",
+            "body_digest_hex": "5494d3d841806af0e5201f8a4f778b4e87d328914798abe4c41a276c22adf88f",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/2/epcList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234123453",
+                "serial": "SER1"
+              }
+            ],
+            "preserved_extensions": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/3",
+            "type": "AssociationEvent",
+            "identity_kind": "event-id",
+            "event_id": "urn:uuid:00000000-0000-4000-8000-000000000004",
+            "body_digest_hex": "f0d1b3ce2f6adf2421403fca1d4fcbc1d55e26726f694393c2ac7c320e34d6e5",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/3/childEPCs/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234222224",
+                "serial": "CELL-A"
+              },
+              {
+                "path": "/epcisBody/eventList/3/childEPCs/1",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234222224",
+                "serial": "CELL-B"
+              },
+              {
+                "path": "/epcisBody/eventList/3/parentID",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234123453",
+                "serial": "SER1"
+              }
+            ],
+            "preserved_extensions": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/4",
+            "type": "AggregationEvent",
+            "identity_kind": "event-id",
+            "event_id": "urn:uuid:00000000-0000-4000-8000-000000000005",
+            "body_digest_hex": "e27bfd4a24743c1a2852437d5895a10b6d360b0dbde3cb33225637af13022945",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/4/childEPCs/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234123453",
+                "serial": "SER1"
+              },
+              {
+                "path": "/epcisBody/eventList/4/parentID",
+                "scheme": "epc-other"
+              }
+            ],
+            "preserved_extensions": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/5",
+            "type": "TransactionEvent",
+            "identity_kind": "event-id",
+            "event_id": "urn:uuid:00000000-0000-4000-8000-000000000006",
+            "body_digest_hex": "c42ac8dfbe74a0f2b7e5293a743e61191fae660991a4f6e04d34834fc260cdb4",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/5/epcList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234123453",
+                "serial": "SER1"
+              }
+            ],
+            "preserved_extensions": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/6",
+            "type": "ObjectEvent",
+            "identity_kind": "local",
+            "local_identity": "urn:bsv:dpp:epcis:local-event:sha256:108b05ca9ae67bc8d6c94556ef1fa6ef1dc2b01030c798b9770cb44e24c18fee",
+            "body_digest_hex": "16766858f93d67495343ea6183c7cda2f758a8b05f0d7234db5f911fb489abf5",
+            "identifiers": [
+              {
+                "path": "/epcisBody/eventList/6/epcList/0",
+                "scheme": "gs1-sgtin",
+                "gtin": "09521234123453",
+                "serial": "SER1"
+              }
+            ],
+            "preserved_extensions": [
+              "example:note"
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "happy-path"
+      ]
+    },
+    {
+      "id": "query-document-page",
+      "description": "One page of a standard query result: the same events under the EPCISQueryDocument envelope, located at the query result pointer.",
+      "input": {
+        "media_type": "application/json",
+        "document": {
+          "@context": [
+            "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld"
+          ],
+          "type": "EPCISQueryDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "epcisBody": {
+            "queryResults": {
+              "queryName": "SimpleEventQuery",
+              "resultsBody": {
+                "eventList": [
+                  {
+                    "type": "ObjectEvent",
+                    "eventTime": "2026-03-02T08:00:00.000Z",
+                    "eventTimeZoneOffset": "+00:00",
+                    "recordTime": "2026-03-02T09:00:00.000Z",
+                    "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+                    "epcList": [
+                      "urn:epc:id:sgtin:9521234.012345.SER1"
+                    ],
+                    "action": "ADD",
+                    "bizStep": "commissioning",
+                    "disposition": "active",
+                    "readPoint": {
+                      "id": "urn:epc:id:sgln:9521234.00001.0"
+                    },
+                    "bizLocation": {
+                      "id": "urn:epc:id:sgln:9521234.00002.0"
+                    }
+                  },
+                  {
+                    "type": "AssociationEvent",
+                    "eventTime": "2026-03-02T08:30:00.000Z",
+                    "eventTimeZoneOffset": "+00:00",
+                    "recordTime": "2026-03-02T09:00:00.000Z",
+                    "eventID": "urn:uuid:00000000-0000-4000-8000-000000000004",
+                    "parentID": "urn:epc:id:sgtin:9521234.012345.SER1",
+                    "childEPCs": [
+                      "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                      "urn:epc:id:sgtin:9521234.022222.CELL-B"
+                    ],
+                    "action": "ADD",
+                    "bizStep": "installing",
+                    "disposition": "active",
+                    "readPoint": {
+                      "id": "urn:epc:id:sgln:9521234.00001.0"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "sha256_hex": "b9466846ee7ce187abe85fd113f8a9f705b417958cd6dd23100939f042b6222f",
+        "envelope": {
+          "type": "EPCISQueryDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "hasHeader": false,
+          "hasMasterData": false,
+          "queryName": "SimpleEventQuery"
+        },
+        "event_pointers": [
+          "/epcisBody/queryResults/resultsBody/eventList/0",
+          "/epcisBody/queryResults/resultsBody/eventList/1"
+        ],
+        "schema": "pass"
+      },
+      "tags": [
+        "epcis",
+        "happy-path"
+      ]
+    },
+    {
+      "id": "event-body-digest-and-arrival",
+      "description": "The canonical event-body digest ignores formatting and member order, excludes recordTime and errorDeclaration, and includes the sorted context digests; a changed recordTime or error declaration is a new observation, a changed body is a conflict.",
+      "input": {
+        "context_digests_hex": [
+          "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+          "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+        ],
+        "event": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "ADD",
+          "bizStep": "commissioning",
+          "disposition": "active",
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          },
+          "bizLocation": {
+            "id": "urn:epc:id:sgln:9521234.00002.0"
+          }
+        },
+        "reordered_spelling": {
+          "bizLocation": {
+            "id": "urn:epc:id:sgln:9521234.00002.0"
+          },
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          },
+          "disposition": "active",
+          "bizStep": "commissioning",
+          "action": "ADD",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "type": "ObjectEvent"
+        },
+        "changed_body": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "ADD",
+          "bizStep": "commissioning",
+          "disposition": "in_transit",
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          },
+          "bizLocation": {
+            "id": "urn:epc:id:sgln:9521234.00002.0"
+          }
+        },
+        "later_observation": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-09T00:00:00.000Z",
+          "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "ADD",
+          "bizStep": "commissioning",
+          "disposition": "active",
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          },
+          "bizLocation": {
+            "id": "urn:epc:id:sgln:9521234.00002.0"
+          },
+          "errorDeclaration": {
+            "declarationTime": "2026-03-09T00:00:00.000Z",
+            "reason": "incorrect_data",
+            "correctiveEventIDs": []
+          }
+        }
+      },
+      "expected": {
+        "body_digest_hex": "5494d3d841806af0e5201f8a4f778b4e87d328914798abe4c41a276c22adf88f",
+        "reordered_spelling_digest_hex": "5494d3d841806af0e5201f8a4f778b4e87d328914798abe4c41a276c22adf88f",
+        "changed_body_digest_hex": "735c8d2014d94207b54c5a2ec6ed017e20ebafc0e6033a102a7a93a8d1c25c0a",
+        "later_observation_digest_hex": "5494d3d841806af0e5201f8a4f778b4e87d328914798abe4c41a276c22adf88f",
+        "arrival_reordered": "duplicate",
+        "arrival_changed_body": "conflict",
+        "arrival_later_observation": "new-observation"
+      },
+      "tags": [
+        "epcis",
+        "happy-path"
+      ]
+    },
+    {
+      "id": "local-identity-without-event-id",
+      "description": "An event without an eventID is valid EPCIS; its local ingestion identity is derived from the source digest and the event pointer, labelled local and never inserted into the source.",
+      "input": {
+        "source_sha256_hex": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+        "pointer": "/epcisBody/eventList/6",
+        "event": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-03T06:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "sensor_reporting",
+          "disposition": "in_transit",
+          "sensorElementList": [
+            {
+              "sensorMetadata": {
+                "time": "2026-03-03T06:00:00.000Z",
+                "deviceID": "urn:epc:id:giai:9521234.SENSOR-1"
+              },
+              "sensorReport": [
+                {
+                  "type": "Temperature",
+                  "value": 27.5,
+                  "uom": "CEL"
+                }
+              ]
+            }
+          ],
+          "example:note": "temperature observed in transit"
+        }
+      },
+      "expected": {
+        "local_identity": "urn:bsv:dpp:epcis:local-event:sha256:108b05ca9ae67bc8d6c94556ef1fa6ef1dc2b01030c798b9770cb44e24c18fee",
+        "event_unchanged": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-03T06:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "sensor_reporting",
+          "disposition": "in_transit",
+          "sensorElementList": [
+            {
+              "sensorMetadata": {
+                "time": "2026-03-03T06:00:00.000Z",
+                "deviceID": "urn:epc:id:giai:9521234.SENSOR-1"
+              },
+              "sensorReport": [
+                {
+                  "type": "Temperature",
+                  "value": 27.5,
+                  "uom": "CEL"
+                }
+              ]
+            }
+          ],
+          "example:note": "temperature observed in transit"
+        }
+      },
+      "tags": [
+        "epcis",
+        "happy-path"
+      ]
+    },
+    {
+      "id": "error-declaration-resolved-and-unresolved",
+      "description": "An error declaration is retained with its corrective event references; when the corrective event is held the declaration is resolved, when it is absent it stays unresolved. Neither is a VSC correction or an authority grant.",
+      "input": {
+        "with_corrective_event": {
+          "@context": [
+            "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+            {
+              "example": "https://example.org/vocab/"
+            }
+          ],
+          "type": "EPCISDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "epcisBody": {
+            "eventList": [
+              {
+                "type": "ObjectEvent",
+                "eventTime": "2026-03-04T08:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-00000000000a",
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "OBSERVE",
+                "bizStep": "receiving",
+                "disposition": "in_transit",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                },
+                "errorDeclaration": {
+                  "declarationTime": "2026-03-04T10:00:00.000Z",
+                  "reason": "incorrect_data",
+                  "correctiveEventIDs": [
+                    "urn:uuid:00000000-0000-4000-8000-00000000000b"
+                  ]
+                }
+              },
+              {
+                "type": "ObjectEvent",
+                "eventTime": "2026-03-04T08:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-00000000000b",
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "OBSERVE",
+                "bizStep": "receiving",
+                "disposition": "returned",
+                "readPoint": {
+                  "id": "urn:epc:id:sgln:9521234.00001.0"
+                }
+              }
+            ]
+          }
+        },
+        "with_absent_corrective_event": {
+          "@context": [
+            "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+            {
+              "example": "https://example.org/vocab/"
+            }
+          ],
+          "type": "EPCISDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "epcisBody": {
+            "eventList": [
+              {
+                "type": "ObjectEvent",
+                "eventTime": "2026-03-05T08:00:00.000Z",
+                "eventTimeZoneOffset": "+00:00",
+                "recordTime": "2026-03-02T09:00:00.000Z",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-00000000000c",
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "action": "OBSERVE",
+                "bizStep": "inspecting",
+                "disposition": "active",
+                "errorDeclaration": {
+                  "declarationTime": "2026-03-05T10:00:00.000Z",
+                  "reason": "did_not_occur",
+                  "correctiveEventIDs": [
+                    "urn:uuid:00000000-0000-4000-8000-00000000000d"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "with_corrective_event_schema": "pass",
+        "resolved_unresolved": [],
+        "absent_unresolved": [
+          {
+            "pointer": "/epcisBody/eventList/0",
+            "missing": [
+              "urn:uuid:00000000-0000-4000-8000-00000000000d"
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "schema-invalid-safe-transport",
+      "description": "A document the pinned schema rejects (no action on an ObjectEvent, a malformed zone offset) is safe to parse and is retained with failed findings; it is never publishable on that basis and never repaired.",
+      "input": {
+        "media_type": "application/json",
+        "document": {
+          "@context": [
+            "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+            {
+              "example": "https://example.org/vocab/"
+            }
+          ],
+          "type": "EPCISDocument",
+          "schemaVersion": "2.0",
+          "creationDate": "2026-03-03T07:00:00.000Z",
+          "epcisBody": {
+            "eventList": [
+              {
+                "type": "ObjectEvent",
+                "eventID": "urn:uuid:00000000-0000-4000-8000-000000000021",
+                "eventTime": "2026-03-02T08:00:00.000Z",
+                "eventTimeZoneOffset": "+0:00",
+                "epcList": [
+                  "urn:epc:id:sgtin:9521234.012345.SER1"
+                ],
+                "bizStep": "commissioning",
+                "disposition": "active"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "accepted": true,
+        "retained": true,
+        "sha256_hex": "c719064bc59cd24e7c2cdfab5df614c0515b659f0d6b0957563397461c4dd382",
+        "schema": "fail",
+        "finding_paths": [
+          "/epcisBody/eventList/0/eventTimeZoneOffset",
+          "/epcisBody/eventList/0",
+          "/"
+        ]
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-duplicate-key",
+      "description": "A member name repeated within one object is refused before parsing, whatever the values.",
+      "input": {
+        "bytes_hex": "7b2274797065223a224550434953446f63756d656e74222c22736368656d6156657273696f6e223a22322e30222c2274797065223a224550434953446f63756d656e74227d",
+        "media_type": "application/json"
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "duplicate-key"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-malformed-utf8",
+      "description": "A byte sequence that is not well-formed UTF-8 is refused before parsing.",
+      "input": {
+        "bytes_hex": "7b2274797065223a22ff227d",
+        "media_type": "application/json"
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "malformed-utf8"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-depth",
+      "description": "A container nested past the depth limit (64) is refused.",
+      "input": {
+        "bytes_hex": "7b2274797065223a224550434953446f63756d656e74222c2261223a5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d5d7d",
+        "media_type": "application/json"
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "depth"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-non-finite-number",
+      "description": "A number literal a double cannot carry (here one that overflows to infinity) is refused.",
+      "input": {
+        "bytes_hex": "7b2274797065223a224550434953446f63756d656e74222c2276616c7565223a31653939397d",
+        "media_type": "application/json"
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "unsafe-number"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-precision-loss",
+      "description": "A number literal whose decimal digits a double cannot carry exactly is refused rather than silently rounded.",
+      "input": {
+        "bytes_hex": "7b2274797065223a224550434953446f63756d656e74222c2276616c7565223a393030373139393235343734303939337d",
+        "media_type": "application/json"
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "unsafe-number"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-oversized",
+      "description": "A document over the byte limit is refused; the limit here is lowered to 64 bytes so the vector stays small.",
+      "input": {
+        "bytes_hex": "7b2240636f6e74657874223a5b2268747470733a2f2f7265662e6773312e6f72672f7374616e64617264732f65706369732f322e302e312f65706369732d636f6e746578742e6a736f6e6c64222c7b226578616d706c65223a2268747470733a2f2f6578616d706c652e6f72672f766f6361622f227d5d2c2274797065223a224550434953446f63756d656e74222c22736368656d6156657273696f6e223a22322e30222c226372656174696f6e44617465223a22323032362d30332d30335430373a30303a30302e3030305a222c226570636973426f6479223a7b226576656e744c697374223a5b5d7d7d",
+        "media_type": "application/json",
+        "limits": {
+          "maxDocumentBytes": 64
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "oversized"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-too-many-events",
+      "description": "More events than the per-document limit (lowered to 2 here) is refused; a larger source is split, never truncated.",
+      "input": {
+        "bytes_hex": "7b2240636f6e74657874223a5b2268747470733a2f2f7265662e6773312e6f72672f7374616e64617264732f65706369732f322e302e312f65706369732d636f6e746578742e6a736f6e6c64222c7b226578616d706c65223a2268747470733a2f2f6578616d706c652e6f72672f766f6361622f227d5d2c2274797065223a224550434953446f63756d656e74222c22736368656d6156657273696f6e223a22322e30222c226372656174696f6e44617465223a22323032362d30332d30335430373a30303a30302e3030305a222c226570636973426f6479223a7b226576656e744c697374223a5b7b2274797065223a225472616e73666f726d6174696f6e4576656e74222c226576656e7454696d65223a22323032362d30332d30315430383a30303a30302e3030305a222c226576656e7454696d655a6f6e654f6666736574223a222b30303a3030222c227265636f726454696d65223a22323032362d30332d30325430393a30303a30302e3030305a222c226576656e744944223a2275726e3a757569643a30303030303030302d303030302d343030302d383030302d303030303030303030303031222c22696e7075744550434c697374223a5b2275726e3a6570633a69643a736774696e3a393532313233342e3032323232322e43454c4c2d41222c2275726e3a6570633a69643a736774696e3a393532313233342e3032323232322e43454c4c2d42225d2c226f75747075744550434c697374223a5b2275726e3a6570633a69643a736774696e3a393532313233342e3034343434342e4d4f442d31225d2c2262697a53746570223a22617373656d626c696e67222c22646973706f736974696f6e223a22696e5f70726f6772657373222c2272656164506f696e74223a7b226964223a2275726e3a6570633a69643a73676c6e3a393532313233342e30303030312e30227d2c2262697a4c6f636174696f6e223a7b226964223a2275726e3a6570633a69643a73676c6e3a393532313233342e30303030322e30227d2c227472616e73666f726d6174696f6e4944223a2275726e3a6578616d706c653a7472616e73666f726d6174696f6e3a73746167652d31227d2c7b2274797065223a225472616e73666f726d6174696f6e4576656e74222c226576656e7454696d65223a22323032362d30332d30315431323a30303a30302e3030305a222c226576656e7454696d655a6f6e654f6666736574223a222b30303a3030222c227265636f726454696d65223a22323032362d30332d30325430393a30303a30302e3030305a222c226576656e744944223a2275726e3a757569643a30303030303030302d303030302d343030302d383030302d303030303030303030303032222c22696e7075744550434c697374223a5b2275726e3a6570633a69643a736774696e3a393532313233342e3034343434342e4d4f442d31225d2c22696e7075745175616e746974794c697374223a5b7b22657063436c617373223a2275726e3a6570633a636c6173733a6c6774696e3a393532313233342e3033333333332e4c4f5437222c227175616e74697479223a342c22756f6d223a224541227d5d2c226f75747075744550434c697374223a5b2275726e3a6570633a69643a736774696e3a393532313233342e3031323334352e53455231225d2c226f75747075745175616e746974794c697374223a5b7b22657063436c617373223a2275726e3a6570633a69647061743a736774696e3a393532313233342e3035353535352e2a222c227175616e74697479223a302e352c22756f6d223a224b474d227d5d2c2262697a53746570223a22617373656d626c696e67222c22646973706f736974696f6e223a22696e5f70726f6772657373222c2272656164506f696e74223a7b226964223a2275726e3a6570633a69643a73676c6e3a393532313233342e30303030312e30227d2c2262697a4c6f636174696f6e223a7b226964223a2275726e3a6570633a69643a73676c6e3a393532313233342e30303030322e30227d2c227472616e73666f726d6174696f6e4944223a2275726e3a6578616d706c653a7472616e73666f726d6174696f6e3a73746167652d32227d2c7b2274797065223a224f626a6563744576656e74222c226576656e7454696d65223a22323032362d30332d30325430383a30303a30302e3030305a222c226576656e7454696d655a6f6e654f6666736574223a222b30303a3030222c227265636f726454696d65223a22323032362d30332d30325430393a30303a30302e3030305a222c226576656e744944223a2275726e3a757569643a30303030303030302d303030302d343030302d383030302d303030303030303030303033222c226570634c697374223a5b2275726e3a6570633a69643a736774696e3a393532313233342e3031323334352e53455231225d2c22616374696f6e223a22414444222c2262697a53746570223a22636f6d6d697373696f6e696e67222c22646973706f736974696f6e223a22616374697665222c2272656164506f696e74223a7b226964223a2275726e3a6570633a69643a73676c6e3a393532313233342e30303030312e30227d2c2262697a4c6f636174696f6e223a7b226964223a2275726e3a6570633a69643a73676c6e3a393532313233342e30303030322e30227d7d5d7d7d",
+        "media_type": "application/json",
+        "limits": {
+          "maxEventsPerPage": 2
+        }
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "too-many-events"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-unsupported-media-type",
+      "description": "An XML media type is refused by name; this profile reads JSON and JSON-LD only.",
+      "input": {
+        "bytes_hex": "3c65706369732f3e",
+        "media_type": "application/xml"
+      },
+      "expected": {
+        "accepted": false,
+        "reason": "unsupported-media-type"
+      },
+      "tags": [
+        "epcis",
+        "error-case"
+      ]
+    },
+    {
+      "id": "mapping-outcomes",
+      "description": "Every event of the five-event document mapped into the VSC profile with an explicit outcome: the commissioning ObjectEvent is lossless and yields a structurally valid unsigned SEAL carrying the source reference; events with parties, transactions, sensors, quantities or a caller-decided transformation action are transformed with their losses named; an in_progress disposition the custody model does not name is unsupported. No SEAL is issued, and nothing touches a token.",
+      "input": {
+        "source_sha256_hex": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+        "context_digests_hex": [
+          "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+          "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+        ],
+        "issuer": "did:web:issuer.example",
+        "transformation_action": "ADD"
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "pointer": "/epcisBody/eventList/0",
+            "type": "TransformationEvent",
+            "mapping": "unsupported",
+            "missing": [
+              "disposition \"in_progress\" is not one the VSC profile's custody model names"
+            ],
+            "unmapped": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/1",
+            "type": "TransformationEvent",
+            "mapping": "unsupported",
+            "missing": [
+              "disposition \"in_progress\" is not one the VSC profile's custody model names"
+            ],
+            "unmapped": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/2",
+            "type": "ObjectEvent",
+            "mapping": "lossless",
+            "missing": [],
+            "unmapped": [],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000000f2",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000000f2"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T08:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  },
+                  "businessLocation": {
+                    "id": "urn:epc:id:sgln:9521234.00002.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "ObjectEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "commissioning",
+                  "disposition": "active",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "ObjectEvent",
+                      "eventTime": "2026-03-02T08:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+                      "epcList": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "commissioning",
+                      "disposition": "active",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      },
+                      "bizLocation": {
+                        "id": "urn:epc:id:sgln:9521234.00002.0"
+                      }
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/2",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000003",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@1"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/3",
+            "type": "AssociationEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "multi-product-event"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000000f3",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000000f3"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                      "schemeAuthority": "GS1"
+                    },
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.022222.CELL-B",
+                      "schemeAuthority": "GS1"
+                    },
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T08:30:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "AssociationEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "installing",
+                  "disposition": "active",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "AssociationEvent",
+                      "eventTime": "2026-03-02T08:30:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000004",
+                      "parentID": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "childEPCs": [
+                        "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                        "urn:epc:id:sgtin:9521234.022222.CELL-B"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "installing",
+                      "disposition": "active",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      }
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/3",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000004",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@1"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/4",
+            "type": "AggregationEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "multi-product-event"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000000f4",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000000f4"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    },
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sscc:9521234.0000000001",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T09:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "AggregationEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "packing",
+                  "disposition": "in_transit",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "AggregationEvent",
+                      "eventTime": "2026-03-02T09:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000005",
+                      "parentID": "urn:epc:id:sscc:9521234.0000000001",
+                      "childEPCs": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "packing",
+                      "disposition": "in_transit",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      }
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/4",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000005",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@1"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/5",
+            "type": "TransactionEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "business-transactions",
+              "source-destination-parties"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000000f5",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000000f5"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T10:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "TransactionEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "shipping",
+                  "disposition": "in_transit",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "TransactionEvent",
+                      "eventTime": "2026-03-02T10:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000006",
+                      "bizTransactionList": [
+                        {
+                          "type": "po",
+                          "bizTransaction": "urn:epcglobal:cbv:bt:9521234000018:PO-77"
+                        }
+                      ],
+                      "epcList": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "shipping",
+                      "disposition": "in_transit",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      },
+                      "sourceList": [
+                        {
+                          "type": "owning_party",
+                          "source": "urn:epc:id:pgln:9521234.00003"
+                        }
+                      ],
+                      "destinationList": [
+                        {
+                          "type": "owning_party",
+                          "destination": "urn:epc:id:pgln:9521234.00004"
+                        }
+                      ]
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/5",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000006",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@1"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/6",
+            "type": "ObjectEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "extension:example:note",
+              "sensor-elements"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000000f6",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000000f6"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-03T06:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU"
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "ObjectEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "sensor_reporting",
+                  "disposition": "in_transit",
+                  "action": "OBSERVE"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "ObjectEvent",
+                      "eventTime": "2026-03-03T06:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "epcList": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "OBSERVE",
+                      "bizStep": "sensor_reporting",
+                      "disposition": "in_transit",
+                      "sensorElementList": [
+                        {
+                          "sensorMetadata": {
+                            "time": "2026-03-03T06:00:00.000Z",
+                            "deviceID": "urn:epc:id:giai:9521234.SENSOR-1"
+                          },
+                          "sensorReport": [
+                            {
+                              "type": "Temperature",
+                              "value": 27.5,
+                              "uom": "CEL"
+                            }
+                          ]
+                        }
+                      ],
+                      "example:note": "temperature observed in transit"
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/6",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@1"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping"
+      ]
+    },
+    {
+      "id": "evidence-only-and-attribution",
+      "description": "Valid EPCIS that lacks a disposition is insufficient-data and stays evidence only; an event naming an owning party and a business location maps with the configured issuer as actor, never with the party or location the event names.",
+      "input": {
+        "insufficient_event": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "inspecting"
+        },
+        "party_event": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T08:00:00.000Z",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "storing",
+          "disposition": "active",
+          "bizLocation": {
+            "id": "urn:epc:id:sgln:9521234.00002.0"
+          },
+          "sourceList": [
+            {
+              "type": "owning_party",
+              "source": "urn:epc:id:pgln:9521234.00004"
+            }
+          ]
+        },
+        "issuer": "did:web:issuer.example"
+      },
+      "expected": {
+        "insufficient": {
+          "mapping": "insufficient-data",
+          "missing": [
+            "disposition"
+          ]
+        },
+        "party": {
+          "mapping": "transformed",
+          "unmapped": [
+            "source-destination-parties"
+          ],
+          "actor_did": "did:web:issuer.example",
+          "issuer": "did:web:issuer.example"
+        }
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "error-case"
+      ]
+    }
+  ]
+}

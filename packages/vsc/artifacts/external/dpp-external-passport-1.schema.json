@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bsv:dpp:external-passport:schema:1",
+  "title": "External passport credential, version 1",
+  "description": "The minimal structural shape an externally issued passport credential must have to pass the schema check of the vc-di-ecdsa-rdfc-2019@1 exchange profile (spec/external-credential-profile.md): a W3C Verifiable Credentials 2.0 credential with one identified subject, a DID issuer and a Data Integrity proof. Structural validity is one check; proof, issuer binding, status, authority and subject binding are separate checks and none is implied by this schema.",
+  "type": "object",
+  "required": [
+    "@context",
+    "type",
+    "id",
+    "issuer",
+    "validFrom",
+    "credentialSubject",
+    "proof"
+  ],
+  "properties": {
+    "@context": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "contains": {
+        "const": "https://www.w3.org/ns/credentials/v2"
+      }
+    },
+    "type": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "contains": {
+        "const": "VerifiableCredential"
+      }
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri"
+    },
+    "issuer": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^did:[a-z0-9]+:[^\\s]+$"
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "validUntil": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "credentialSubject": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "format": "uri"
+        }
+      }
+    },
+    "credentialStatus": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "statusPurpose",
+        "statusListIndex",
+        "statusListCredential"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "format": "uri"
+        },
+        "type": {
+          "const": "BitstringStatusListEntry"
+        },
+        "statusPurpose": {
+          "enum": [
+            "revocation",
+            "suspension"
+          ]
+        },
+        "statusListIndex": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "statusListCredential": {
+          "type": "string",
+          "minLength": 1,
+          "format": "uri"
+        }
+      }
+    },
+    "proof": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/proof"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/proof"
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "proof": {
+      "type": "object",
+      "required": [
+        "type",
+        "verificationMethod",
+        "proofPurpose",
+        "proofValue"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cryptosuite": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verificationMethod": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proofPurpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proofValue": {
+          "type": "string",
+          "pattern": "^[zu][A-Za-z0-9_-]+$"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

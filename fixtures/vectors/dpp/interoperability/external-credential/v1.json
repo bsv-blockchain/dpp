@@ -1,0 +1,3188 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.external-credential.v1",
+  "name": "DPP external credential profile vc-di-ecdsa-rdfc-2019@1: exact-byte VC 2.0 credentials under ecdsa-rdfc-2019 with P-256 Multikeys, their did:web documents and status lists",
+  "brc": [],
+  "version": "1.0.0",
+  "reference_impl": "vsc@0.2.0",
+  "parity_class": "required",
+  "vectors": [
+    {
+      "id": "positive",
+      "description": "A passport credential under the VC 2.0 and owned payload contexts, secured with ecdsa-rdfc-2019 under the issuer's P-256 Multikey listed for assertion in its did:web document, with an authenticated status list, an expected subject equal to the signed subject and a named authority policy trusting the issuer. The private keys are the published scalars in `keys`; nothing derived from them will ever hold value.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        },
+        "keys": {
+          "issuer": {
+            "id": "did:web:issuer.example#key-1",
+            "controller": "did:web:issuer.example",
+            "curve": "P-256",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ",
+            "secretKeyMultibase": "z42tj2w6PsZmktQ8ccEcfE6vn3h31cmP884pYwZeUnhWh6Gg"
+          },
+          "issuerUnauthorised": {
+            "id": "did:web:issuer.example#key-2",
+            "controller": "did:web:issuer.example",
+            "curve": "P-256",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c",
+            "secretKeyMultibase": "z42tkBZ7pzUwoxSyz9VF5JeYivp1AKLoaCjm3stoUFThPkkh"
+          },
+          "other": {
+            "id": "did:web:other.example#key-1",
+            "controller": "did:web:other.example",
+            "curve": "P-256",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi",
+            "secretKeyMultibase": "z42tmLB9G7Q7s2VqMgjsVPCAfovyK1vE2HQhYpDxTiDt6REi"
+          },
+          "issuerP384": {
+            "id": "did:web:issuer.example#key-384",
+            "controller": "did:web:issuer.example",
+            "curve": "P-384",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT",
+            "secretKeyMultibase": "z2famXpdvGPAre4bqiPNwfSFufMCb2R9wU2MWbaKMhqiJuQMcS9JhjwArSPJfX7L4k634w"
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {},
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "reformatted",
+      "description": "The positive credential re-serialised with indentation: the RDF proof still verifies because canonicalisation removes formatting, and the exact-byte digest differs, which is the C-11 distinction between proof validity and the anchored commitment.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\n  \"@context\": [\n    \"https://www.w3.org/ns/credentials/v2\",\n    \"urn:bsv:dpp:external-passport:context:1\"\n  ],\n  \"type\": [\n    \"VerifiableCredential\",\n    \"ProductPassportCredential\"\n  ],\n  \"id\": \"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\n  \"issuer\": \"did:web:issuer.example\",\n  \"validFrom\": \"2026-09-01T00:00:00Z\",\n  \"validUntil\": \"2027-09-01T00:00:00Z\",\n  \"credentialStatus\": {\n    \"id\": \"https://issuer.example/status/1#7\",\n    \"type\": \"BitstringStatusListEntry\",\n    \"statusPurpose\": \"revocation\",\n    \"statusListIndex\": \"7\",\n    \"statusListCredential\": \"https://issuer.example/status/1\"\n  },\n  \"credentialSubject\": {\n    \"id\": \"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\n    \"productName\": \"Demonstration battery module\",\n    \"manufacturer\": \"Example Batteries\",\n    \"massKg\": 12.5,\n    \"recycledContentDeclared\": false\n  },\n  \"proof\": {\n    \"type\": \"DataIntegrityProof\",\n    \"created\": \"2026-09-01T00:00:00Z\",\n    \"verificationMethod\": \"did:web:issuer.example#key-1\",\n    \"cryptosuite\": \"ecdsa-rdfc-2019\",\n    \"proofPurpose\": \"assertionMethod\",\n    \"proofValue\": \"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"\n  }\n}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "13e0ccab7ce25ce21b7d12f3da085274f5333e8a2ad6aed27a19bf2cbe7255d7",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {},
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "happy-path",
+        "exact-bytes"
+      ]
+    },
+    {
+      "id": "tampered-subject",
+      "description": "One subject value changed in the issued bytes; the proof fails.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":13.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "5f6a6576e9b222fec726818962f0b77bec40d3bf7dbcc7b5b0cc4bae07de99d1",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "invalid",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "proof": "proof_failed"
+        },
+        "report": {
+          "proof": "fail:signature-invalid",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "context-substituted",
+      "description": "An inline context object appended to the pinned set, redefining a subject term: the context set is unsupported, and the proof is not evaluated under it.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\",{\"massKg\":\"urn:example:redefined#massKg\"}],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "9c90354fffd34e446f5372702de733710dcdddc64526a4272593e164f0299eaa",
+        "checks": {
+          "parse": "verified",
+          "contexts": "unsupported",
+          "schema": "invalid",
+          "proof": "unsupported",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "contexts": "context_inline",
+          "schema": "schema",
+          "proof": "context_unsupported"
+        },
+        "report": {
+          "proof": "unknown:suite-unsupported",
+          "schema": "fail:schema-invalid",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "key-substituted",
+      "description": "Signed by a key the issuer holds but never listed under assertionMethod: the issuer binding fails and the suite refuses the proof for its purpose.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-2\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zDGNsQbFJNEBtRHzBZAKC7M1KKSu8bpKdMB9oWvgzh6SsVihrHkvi1HvJFYTtnriWpidaCdSmh3ogcZqZVUVrumx\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "f231abfba4a282bde87268c5061f6554db2840a98b83f8dff46fbc63365130e6",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "invalid",
+          "issuerBinding": "invalid",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "proof": "key_not_authorised",
+          "issuerBinding": "key_not_authorised"
+        },
+        "report": {
+          "proof": "fail:signature-invalid",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "issuer-substituted",
+      "description": "The credential names did:web:other.example as issuer while its proof is by the first issuer's key: the key's controller is not the issuer, and the proof does not verify against the named issuer's document.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:other.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z48D5HXi6uJJw6QTz8PKJjbCjXrN36m68gy6ttMShqeHAM9tVkUHrp3XFvB9S9W2XnXfrFssk9BKdfv8V74Le1hUn\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "38a37f6277eab2299c4ebd06633f39766d8fea8f7503c229f612d73efab302e2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "invalid",
+          "issuerBinding": "invalid",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "invalid",
+          "authority": "invalid",
+          "availability": "verified"
+        },
+        "issues": {
+          "proof": "key_not_authorised",
+          "issuerBinding": "key_controller_mismatch",
+          "status": "status_issuer",
+          "authority": "issuer_unauthorised"
+        },
+        "report": {
+          "proof": "fail:signature-invalid",
+          "schema": "pass",
+          "time": "pass",
+          "status": "fail:status-unauthenticated",
+          "authority": "fail:authority-unconfirmed",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "expired",
+      "description": "validUntil before the evaluation time.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2026-09-05T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z2mfWQHkwaJLd4Uvcc26n6729ucmssVkE3tkp9ek2muV3JdAmGR17JpSnzdsos2SAKbsrENsDQRGRLBCV7KLvBU6P\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "b0106f041f3c93e18bb1aadb9fafa6a65be8bb541d73942e68d76c6e9eb45d86",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "invalid",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "temporal": "expired"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "fail:expired",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "not-yet-valid",
+      "description": "validFrom after the evaluation time.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2027-01-01T00:00:00Z\",\"validUntil\":\"2028-01-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z5QBzGBurRhTaiuMpvYUNMx36Xao2PEgEan8fFNWmk4fkmPCBpLesrktHjquTDmFfKZw1hhfe1ameQoNGMFRVdjdA\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "8abfe8b8abc8ed77b87bc748b737557d49111ed07f4bab64f19616f37bf0c3f7",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "invalid",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "temporal": "not_yet_valid"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "fail:not-yet-valid",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "revoked",
+      "description": "The status list the credential names has its bit set; the list is signed by the issuer and fresh.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BIQEAAAACIP1_2hkWoAEAAAAAAAAAAAAAAAAAAADeBjn7xTYAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z2YS1wFtsPCeDNvmTb8r25XZq1YRZTahNEtt4rtSrn54HeQhyYWmigx5N4zhCF3qLH4aV8fd9C2TMHiqGBHokdcvk"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "invalid",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "status": "revoked"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "fail:status-revoked",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "status-other-issuer",
+      "description": "The status list is issued and signed by a different party the policy has not delegated to.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:other.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:other.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z2oZwvDbv9VLKRrG84bLhx4Qoxss3Yjk7v1WXS2761qXpT3VKRtdC4L1W1ZxhTSEu6FYkgiRT15Qd5tHw9NkoZYcU"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "invalid",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "status": "status_issuer"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "fail:status-unauthenticated",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "status-list-unavailable",
+      "description": "The status list is not pinned and no fetch is permitted: status and availability are indeterminate, never passed.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "indeterminate",
+          "authority": "verified",
+          "availability": "indeterminate"
+        },
+        "issues": {
+          "status": "status_unavailable",
+          "availability": "referenced_artefact_unavailable"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "unknown:status-unknown",
+          "authority": "pass",
+          "availability": "unknown:referenced-artefact-unavailable"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "p384-key",
+      "description": "Signed by the issuer's authorised P-384 key: the suite could verify it, and this profile declares P-256 only, so the answer is unsupported rather than a failure.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-384\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z2W8rNkCChbf37Z5xg42yvrTrPmZvk77zLYAZe5ZjfsuDPcgMV97ZS3DQ9Zq5hoivtWn6ueHTEqnSYPMD6SohfVoumNPRZegp9NvTWcSN44UTDy52ZHww82hoYgFBugtZyHxA\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "c945c9bb0180a7b08f2ceb02da19e37ed631d1bc3edc138be5652ded4effa172",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "unsupported",
+          "issuerBinding": "unsupported",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "proof": "curve_unsupported",
+          "issuerBinding": "curve_unsupported"
+        },
+        "report": {
+          "proof": "unknown:suite-unsupported",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case",
+        "unsupported"
+      ]
+    },
+    {
+      "id": "jcs-suite",
+      "description": "The proof declares ecdsa-jcs-2019: unsupported by this profile, refused before any signature is evaluated.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-jcs-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "dca8367b2891d42396e7dccbc8091e5d0f2db8935c648bdd9ec20bfd047c0ff5",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "unsupported",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "proof": "suite_unsupported"
+        },
+        "report": {
+          "proof": "unknown:suite-unsupported",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case",
+        "unsupported"
+      ]
+    },
+    {
+      "id": "two-subjects",
+      "description": "Two credential subjects, validly signed: the proof holds, the owned schema refuses the shape and the subject binding is unsupported.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":[{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"massKg\":12.5},{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0002\",\"massKg\":12.4}],\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z5GMErsnBzztaLont1EWBKdX1m2uB2rgN5Na9w17nn3NQKhb5mv91GtpLQmXVdtnvmhP4fbMao5KnQ7qBpXrYhwF3\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "b4d618d960a05f3994940c0bffffe9899293da41ec70b0b39bd3022a573cac5e",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "invalid",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "unsupported",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "schema": "schema",
+          "subjectBinding": "subject_structure_unsupported"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "fail:schema-invalid",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case",
+        "unsupported"
+      ]
+    },
+    {
+      "id": "subject-bound-by-policy",
+      "description": "The signed subject is an alias identifier; the expected passport differs and a named binding policy relates the two with an evidence reference, so the binding verifies under that policy and not by inference.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"urn:example:object:serial-0001\",\"massKg\":12.5},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zmHE3NUMKCceQXitSahRx3SALSWqnbhghMQvqs7tzNifQwKXkxmpaUj6Kb4wt4ENrMg3U1PnoU6Q81dCXuvjAUSK\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          },
+          "subjectBinding": {
+            "id": "urn:example:policy:subject-binding:1",
+            "bindings": [
+              {
+                "credentialSubject": "urn:example:object:serial-0001",
+                "passportId": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+                "evidenceRef": "urn:example:binding-evidence:1"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "sha256": "c5d51c2178f6f9509f99a6e1a83b164563e516e3ec1fc7057bed6b63d57b6283",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {},
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "subject-mismatch",
+      "description": "The signed subject is the alias and no binding policy is configured: the binding fails; nothing is inferred from matching text elsewhere.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"urn:example:object:serial-0001\",\"massKg\":12.5},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zKmUjZQPJLcJjzzPBLaeu6PZDko2VTqacUVUMbGUFmKCB9PSvTFD3k6cBJn91LAMtGw6Y6NygmA12UARHa5qf7jZ\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "3cdafbcba1c37d7a924a6635722e45d539717a716d3ae828a08c5048b5e8fa2e",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "invalid",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "subjectBinding": "subject_mismatch"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "authority-not-required",
+      "description": "The positive credential under a policy that records that no external issuer authority is required: the authority check is not-required with the stated reason, never passed by omission.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:no-authority:1",
+            "required": false,
+            "reason": "This verifier has no required external issuer registry; authority remains unconfirmed"
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "not-required",
+          "availability": "verified"
+        },
+        "issues": {
+          "authority": "authority_not_required"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "not-applicable:authority-not-required",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "issuer-untrusted",
+      "description": "The positive credential under a policy whose trusted issuers do not include this one.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:other.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "invalid",
+          "availability": "verified"
+        },
+        "issues": {
+          "authority": "issuer_unauthorised"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "fail:authority-unconfirmed",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "status-missing-optional",
+      "description": "No status entry, no status policy, and the profile option that accepts that with a recorded limitation.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z42zqSTkPjQDn2CckPhczcPQinqU3zd5MyEwzLDxpHnM7yLFE4fd4mqK6yGPTMhHS7F6RpZF8VHLMM6L18QFard8w\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "statusOptional": true
+        }
+      },
+      "expected": {
+        "sha256": "4d4ded876dbb3b66f2c7f674727ffd4a2fced53f34598313d912a02529e7a644",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "not-required",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {
+          "status": "status_not_required"
+        },
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "not-applicable:status-unset",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "happy-path",
+        "limitation"
+      ]
+    },
+    {
+      "id": "id-collision",
+      "description": "Two validly signed credentials carrying the same credential id and different bytes: each verifies on its own; a registry must refuse the second under the first's identifier rather than replace the secured bytes.",
+      "input": {
+        "representation": "vc-di-ecdsa-rdfc-2019@1",
+        "credential": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.5,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"zbtQzJJcAr1kzHu9TDRjwEGxFmrSHdi1gxWDbYpB53epA3UxtRgN9MepMD6azVjKE6zZoSwM8oWokqaF1xVfBSgR\"}}",
+        "credentialB": "{\"@context\":[\"https://www.w3.org/ns/credentials/v2\",\"urn:bsv:dpp:external-passport:context:1\"],\"type\":[\"VerifiableCredential\",\"ProductPassportCredential\"],\"id\":\"urn:uuid:5c1f5a7e-1b2a-4f5e-9a1d-000000000001\",\"issuer\":\"did:web:issuer.example\",\"validFrom\":\"2026-09-01T00:00:00Z\",\"validUntil\":\"2027-09-01T00:00:00Z\",\"credentialStatus\":{\"id\":\"https://issuer.example/status/1#7\",\"type\":\"BitstringStatusListEntry\",\"statusPurpose\":\"revocation\",\"statusListIndex\":\"7\",\"statusListCredential\":\"https://issuer.example/status/1\"},\"credentialSubject\":{\"id\":\"https://id.example.org/01/09520123456788/21/SERIAL-0001\",\"productName\":\"Demonstration battery module\",\"manufacturer\":\"Example Batteries\",\"massKg\":12.9,\"recycledContentDeclared\":false},\"proof\":{\"type\":\"DataIntegrityProof\",\"created\":\"2026-09-01T00:00:00Z\",\"verificationMethod\":\"did:web:issuer.example#key-1\",\"cryptosuite\":\"ecdsa-rdfc-2019\",\"proofPurpose\":\"assertionMethod\",\"proofValue\":\"z2i5XZgNWtMkTZdvoht657fts8oB1G7uScvCRFYnbLGqhUXBp5CWcXSf9ovMNTHjc8j3pHHTdt8nqFApKLGDPtFnS\"}}",
+        "documents": {
+          "did:web:issuer.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+          },
+          "did:web:issuer.example#key-2": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-2",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+          },
+          "did:web:other.example#key-1": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:other.example#key-1",
+            "type": "Multikey",
+            "controller": "did:web:other.example",
+            "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+          },
+          "did:web:issuer.example#key-384": {
+            "@context": "https://w3id.org/security/multikey/v1",
+            "id": "did:web:issuer.example#key-384",
+            "type": "Multikey",
+            "controller": "did:web:issuer.example",
+            "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+          },
+          "did:web:issuer.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:issuer.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:issuer.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaeQa8zprPhHA7Yuxcgc2Uh6XNQgaKjmFZE4EaA9fk5svmJ"
+              },
+              {
+                "id": "did:web:issuer.example#key-2",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "zDnaex62me84JZnkEzmeYRa8FCLNe7y1asoSwBMK26GBYpL7c"
+              },
+              {
+                "id": "did:web:issuer.example#key-384",
+                "type": "Multikey",
+                "controller": "did:web:issuer.example",
+                "publicKeyMultibase": "z82Lm2NQL63MwCBymSFo6zNrNNtUGmuL7G5uWTG1XzKCSGJ2Q1zdyaagqqYPyNsrer6oABT"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:issuer.example#key-1",
+              "did:web:issuer.example#key-384"
+            ]
+          },
+          "did:web:other.example": {
+            "@context": [
+              "https://www.w3.org/ns/did/v1",
+              "https://w3id.org/security/multikey/v1"
+            ],
+            "id": "did:web:other.example",
+            "verificationMethod": [
+              {
+                "id": "did:web:other.example#key-1",
+                "type": "Multikey",
+                "controller": "did:web:other.example",
+                "publicKeyMultibase": "zDnaeoA2SUkGYYDAVZBKgd4xWMGadgX2U29YPw8iEvCuELmfi"
+              }
+            ],
+            "assertionMethod": [
+              "did:web:other.example#key-1"
+            ]
+          },
+          "https://issuer.example/status/1": {
+            "@context": [
+              "https://www.w3.org/ns/credentials/v2"
+            ],
+            "type": [
+              "VerifiableCredential",
+              "BitstringStatusListCredential"
+            ],
+            "id": "https://issuer.example/status/1",
+            "issuer": "did:web:issuer.example",
+            "validFrom": "2026-09-06T00:00:00Z",
+            "validUntil": "2026-09-13T00:00:00Z",
+            "credentialSubject": {
+              "id": "https://issuer.example/status/1#list",
+              "type": "BitstringStatusList",
+              "statusPurpose": "revocation",
+              "encodedList": "uH4sIAAAAAAAAE-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+            },
+            "proof": {
+              "type": "DataIntegrityProof",
+              "created": "2026-09-06T00:00:00Z",
+              "verificationMethod": "did:web:issuer.example#key-1",
+              "cryptosuite": "ecdsa-rdfc-2019",
+              "proofPurpose": "assertionMethod",
+              "proofValue": "z5bxS7aJBVw2SMN1WmvCdinAvosVUaDhNAbCfHm1Yi6PVSSh1sqWykyjVVc5TfoP92WvHE6mYtn6mQouNCayUZLvj"
+            }
+          }
+        },
+        "policy": {
+          "evaluationTime": "2026-09-06T12:00:00Z",
+          "expectedSubject": "https://id.example.org/01/09520123456788/21/SERIAL-0001",
+          "authority": {
+            "id": "urn:example:policy:external-issuers:1",
+            "required": true,
+            "trustedIssuers": [
+              "did:web:issuer.example"
+            ]
+          },
+          "status": {
+            "id": "urn:example:policy:status:1",
+            "maxAgeMs": 86400000
+          }
+        }
+      },
+      "expected": {
+        "sha256": "0e6de4e8edf04b82b7cc3699ff30ff1036bd6b73405f62046efadb7e57305ed2",
+        "sha256B": "2bed94424308489b657be8572e9e5111cd011ff02ad815ce77492c708a73e1d2",
+        "checks": {
+          "parse": "verified",
+          "contexts": "verified",
+          "schema": "verified",
+          "proof": "verified",
+          "issuerBinding": "verified",
+          "subjectBinding": "verified",
+          "temporal": "verified",
+          "status": "verified",
+          "authority": "verified",
+          "availability": "verified"
+        },
+        "issues": {},
+        "report": {
+          "proof": "pass",
+          "schema": "pass",
+          "time": "pass",
+          "status": "pass",
+          "authority": "pass",
+          "availability": "pass"
+        }
+      },
+      "tags": [
+        "error-case",
+        "registry-intake"
+      ]
+    }
+  ]
+}

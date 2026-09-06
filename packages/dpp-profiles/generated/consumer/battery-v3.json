@@ -1,0 +1,4354 @@
+{
+  "id": "battery",
+  "version": 3,
+  "profile": "battery@3",
+  "status": "candidate successor to battery@2: opt-in by explicit version until the reviewed cutover",
+  "manifestVersion": "2",
+  "succession": {
+    "of": "battery@2",
+    "migration": [
+      {
+        "from": "passportId",
+        "outcome": "relabelled",
+        "note": "obligation raised from recommended to required: guidance rows 1 and 2 are mandatory for every category under Article 77(3)"
+      },
+      {
+        "from": "serial",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "modelName",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "operator",
+        "outcome": "relabelled",
+        "note": "obligation raised from recommended to required: guidance rows 1 and 2 are mandatory for every category under Article 77(3)"
+      },
+      {
+        "from": "manufacturer",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "manufacturerContact",
+        "to": "manufacturerAddress",
+        "outcome": "split",
+        "note": "kept for compatibility; the mandatory postal address moves to manufacturerAddress and the optional web and email addresses to manufacturerWeb and manufacturerEmail, so guidance rows 4 and 5 are represented at their own obligations"
+      },
+      {
+        "from": "manufacturingPlace",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "manufacturingDate",
+        "outcome": "unchanged",
+        "note": "carried unchanged at day precision; manufacturingMonth is the month-precision companion for a source that supplies only month and year"
+      },
+      {
+        "from": "serviceDate",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "warrantyUntil",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved (if a commercial warranty is envisaged); the model terms move to the companion warrantyTerms and an item expiry is derived only from evidenced start under spec/passport-projections.md"
+      },
+      {
+        "from": "category",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "massKg",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "status",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "separateCollectionSymbol",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "elementSymbols",
+        "outcome": "relabelled",
+        "note": "applicability becomes needs-review on the cadmium and lead thresholds: guidance row 41 says the symbol applies if applicable, and an empty set is valid when neither substance is present"
+      },
+      {
+        "from": "carbonFootprintLabel",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "extinguishingAgent",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "labelMeaning",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "declarationOfConformity",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "testReports",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "carbonFootprint",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonRawMaterials",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonProduction",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonDistribution",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonEndOfLife",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonClass",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonStudyUrl",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonGeneralInfo",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "carbonAbsolute",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "dueDiligenceReport",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "dueDiligenceAssurances",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "supplyChainIndices",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "chemistry",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "criticalRawMaterials",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "electrodeMaterials",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "hazardousSubstances",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "substanceImpact",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "dismantlingManual",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "partNumbersUrl",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "sparePartsAddress",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "sparePartsEmail",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "sparePartsUrl",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "safetyMeasures",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "recycledShareTotal",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledNickelPre",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledCobaltPre",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledLithiumPre",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledLeadPre",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledNickelPost",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledCobaltPost",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledLithiumPost",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "recycledLeadPost",
+        "outcome": "relabelled",
+        "note": "obligation unchanged; requirement status anticipated, so the field is never schema-required and never counted missing while the guidance says not to be filled or displayed"
+      },
+      {
+        "from": "renewableShare",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "endUserWastePrevention",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "endUserCollection",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "endOfLifeTreatment",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "ratedCapacityAh",
+        "outcome": "unchanged",
+        "note": "carried unchanged as the model declaration of rows 11 and 25; the dynamic per-item value of row 51 is the new companion ratedCapacityCurrentAh"
+      },
+      {
+        "from": "remainingCapacityAh",
+        "outcome": "relabelled",
+        "note": "applicability re-scoped to the guidance rows 62 to 65: light transport applies, industrial and stationary unresolved, vehicles not applicable"
+      },
+      {
+        "from": "capacityFade",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "certifiedEnergyKwh",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "remainingEnergyKwh",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "soce",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "stateOfCharge",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass; the field carries the latest reading and the periodically recorded series is the new companion stateOfChargeSeries"
+      },
+      {
+        "from": "voltageMin",
+        "outcome": "unchanged",
+        "note": "carried unchanged; the temperature range the guidance asks for when relevant is the new companion operatingTemperatureRange"
+      },
+      {
+        "from": "voltageMax",
+        "outcome": "unchanged",
+        "note": "carried unchanged; the temperature range the guidance asks for when relevant is the new companion operatingTemperatureRange"
+      },
+      {
+        "from": "voltageNominal",
+        "outcome": "unchanged",
+        "note": "carried unchanged; the temperature range the guidance asks for when relevant is the new companion operatingTemperatureRange"
+      },
+      {
+        "from": "powerOriginal",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "powerRemaining",
+        "outcome": "relabelled",
+        "note": "applicability re-scoped to the guidance rows 62 to 65: light transport applies, industrial and stationary unresolved, vehicles not applicable"
+      },
+      {
+        "from": "powerFade",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "powerMax",
+        "outcome": "unchanged",
+        "note": "carried unchanged; the temperature range the guidance asks for when relevant is the new companion operatingTemperatureRange"
+      },
+      {
+        "from": "powerToEnergy",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "roundTripInitial",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "roundTripAtHalfLife",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "roundTripRemaining",
+        "outcome": "relabelled",
+        "note": "applicability re-scoped to the guidance rows 62 to 65: light transport applies, industrial and stationary unresolved, vehicles not applicable"
+      },
+      {
+        "from": "roundTripFade",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "selfDischargeInitial",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "selfDischargeCurrent",
+        "outcome": "relabelled",
+        "note": "applicability re-scoped to the guidance rows 62 to 65: light transport applies, industrial and stationary unresolved, vehicles not applicable"
+      },
+      {
+        "from": "selfDischargeEvolution",
+        "outcome": "relabelled",
+        "note": "applicability re-scoped to the guidance rows 62 to 65: light transport applies, industrial and stationary unresolved, vehicles not applicable"
+      },
+      {
+        "from": "resistancePack",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "resistanceCell",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "resistanceModule",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "resistanceIncreasePack",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "resistanceIncreaseCell",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "resistanceIncreaseModule",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "expectedYears",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "expectedCycles",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "cyclesUsed",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "cycleLifeTest",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "cRate",
+        "outcome": "relabelled",
+        "note": "applicability composed: applies to vehicle and light transport batteries, unresolved for industrial and stationary batteries where the guidance says only some industrial batteries or if applicable"
+      },
+      {
+        "from": "energyThroughput",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "capacityThroughput",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "exhaustionThreshold",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "temperatureRecord",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass; the field carries the latest reading and the periodically recorded series is the new companion temperatureSeries"
+      },
+      {
+        "from": "idleTempLower",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "idleTempUpper",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "timeAboveRange",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "timeBelowRange",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "chargingAboveRange",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "chargingBelowRange",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "deepDischargeEvents",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "overchargeEvents",
+        "outcome": "unchanged",
+        "note": "carried unchanged; its requirement status is recorded"
+      },
+      {
+        "from": "accidents",
+        "outcome": "relabelled",
+        "note": "applicability becomes unresolved for every category: the guidance says if applicable and prints no criterion, so absence is neither a gap nor a pass"
+      },
+      {
+        "from": "safety",
+        "outcome": "unchanged",
+        "note": "carried unchanged as an application addition with requirement status none"
+      },
+      {
+        "from": "stateOfHealth",
+        "outcome": "unchanged",
+        "note": "carried unchanged as an application addition with requirement status none"
+      },
+      {
+        "from": "measured",
+        "outcome": "unchanged",
+        "note": "carried unchanged as an application addition with requirement status none"
+      },
+      {
+        "from": "manufacturerAddress",
+        "outcome": "new",
+        "note": "The mandatory half of what manufacturerContact carried as one string; the city and the country are the parts that identify a single contact point."
+      },
+      {
+        "from": "manufacturerWeb",
+        "outcome": "new",
+        "note": "Annex VI Part A(1): web address, if available"
+      },
+      {
+        "from": "manufacturerEmail",
+        "outcome": "new",
+        "note": "Annex VI Part A(1): email address, if available"
+      },
+      {
+        "from": "manufacturingMonth",
+        "outcome": "new",
+        "note": "For a source that supplies month and year only. manufacturingDate at day precision remains the primary carrier; a month is never widened to a day."
+      },
+      {
+        "from": "warrantyTerms",
+        "outcome": "new",
+        "note": "Annex XIII 1 (m): the period for which the commercial warranty for the calendar life applies"
+      },
+      {
+        "from": "operatingTemperatureRange",
+        "outcome": "new",
+        "note": "Annex XIII 1 (h) and (i): the temperature range that qualifies the voltage and power values when relevant"
+      },
+      {
+        "from": "ratedCapacityCurrentAh",
+        "outcome": "new",
+        "note": "The model declaration stays in ratedCapacityAh; this is the per-item re-declared value with its method and time."
+      },
+      {
+        "from": "resistanceCurrentOhm",
+        "outcome": "new",
+        "note": "Every resistance field of the previous version is a model declaration; this is the per-item reading of row 66."
+      },
+      {
+        "from": "temperatureSeries",
+        "outcome": "new",
+        "note": "The series the guidance names; temperatureRecord carries the latest reading."
+      },
+      {
+        "from": "stateOfChargeSeries",
+        "outcome": "new",
+        "note": "The series the guidance names; stateOfCharge carries the latest reading."
+      },
+      {
+        "from": "instructionsForUse",
+        "outcome": "new",
+        "note": "Annex XIII 1 (t): clear, understandable and readable instructions for use in a format that can be printed, downloaded and saved"
+      },
+      {
+        "from": "inapplicableFields",
+        "outcome": "new",
+        "note": "A declaration is an assertion by the declaring party under the record's authorisation; it is shown beside the field it concerns and is never read as the field's value."
+      }
+    ]
+  },
+  "regulatoryLine": "Mapped to Regulation (EU) 2023/1542 Annex XIII and Annex VI, read with the Commission's guidance on battery passport data points by category of 15 August 2026, ahead of the 18 February 2027 battery passport mandate; a mapping, not a conformance claim.",
+  "note": "The successor to battery@2 under manifest version 2, published as a draft that a deployment selects by explicit version. Every field carries a requirement status separate from the profile's own obligation: enacted where an instrument in force names it, anticipated where the value waits on a delegated or implementing act or a later application date, needs-review where the primary text could not be confirmed, not-to-be-displayed where the Commission's guidance says the value is not to be filled or displayed as of 18 February 2027, and none for an application addition. The Commission's guidance document on data points by category (version 2.0, 15 August 2026) is the interpretation source for the per-category applicability: a data point it makes conditional for industrial batteries is unresolved rather than failed or passed, and a record declares an inapplicable field under inapplicableFields. Item-level dynamic companions exist for the rated capacity, the ohmic resistance, the temperature and the state of charge. Every byte of battery@2 and of its generated files is unchanged; the migration outcome of every field is in succession.",
+  "sources": [
+    "Regulation (EU) 2023/1542, Article 77 and Annex XIII (normative)",
+    "Guidance Document: Digital Batteries Passport, data points by category, version 2.0, 15 August 2026 (European Commission, Directorate-General for Internal Market, Industry, Entrepreneurship and SMEs)",
+    "DIN DKE SPEC 99100:2025-02, cited by clause; a licensed standard, not reproduced",
+    "Battery Pass Data Model 1.2.0, CC-BY-4.0, vocabulary only (the \"bpdm\" key)",
+    "Regulation (EU) 2024/1252 Annex II, the critical raw materials register",
+    "ISO 3166-1 alpha-2, for every value typed country"
+  ],
+  "vocabularies": [
+    {
+      "prefix": "bpdm",
+      "name": "Battery Pass Data Model 1.2.0",
+      "repository": "https://github.com/batterypass/BatteryPassDataModel",
+      "licence": "CC-BY-4.0, declared in the repository README; no LICENCE file present",
+      "retrieved": "2026-07-25",
+      "urnPattern": "urn:samm:io.BatteryPass.{subModel}:{version}#{property}",
+      "use": "Vocabulary alignment only. No file from that repository is redistributed here, and its generated JSON Schema is deliberately not used for validation: every property is required by SAMM generation, so no tiered payload can validate."
+    }
+  ],
+  "registers": [
+    {
+      "prefix": "crma",
+      "name": "Critical Raw Materials Act, Annex II Section 1",
+      "reference": "Regulation (EU) 2024/1252",
+      "use": "The closed option list for criticalRawMaterials. Revised at least every three years, so a consumer should check the list date rather than assume permanence.",
+      "fields": [
+        "criticalRawMaterials"
+      ]
+    },
+    {
+      "prefix": "iso3166",
+      "name": "ISO 3166-1 alpha-2",
+      "reference": "ISO 3166-1",
+      "use": "Every value typed country. Officially assigned codes only; user-assigned and exceptionally-reserved codes are excluded so a passport cannot name a place no register resolves.",
+      "fields": [
+        "manufacturingPlace.country",
+        "sparePartsAddress.country"
+      ]
+    },
+    {
+      "prefix": "cas",
+      "name": "CAS Registry Number",
+      "reference": "Chemical Abstracts Service",
+      "use": "The pattern on hazardousSubstances.cas. The final digit is a check digit, so a consumer can verify the number arithmetically and not only its shape.",
+      "fields": [
+        "hazardousSubstances.cas"
+      ]
+    }
+  ],
+  "conventions": {
+    "resolved": "Constraints are resolved, not implied: a percent field carries minimum 0 and maximum 100 explicitly, and a country field carries its pattern. No type-specific defaults need reapplying.",
+    "closed": "closed:true means options are exhaustive and a value outside them is invalid. closed:false means the list is what is known in practice and a value outside it is valid, because the source names no exhaustive vocabulary. A field with options and no closed key is closed.",
+    "awaitingAct": "awaitingAct names a delegated or implementing act that will fix this value's permitted form. Until it is adopted no list or pattern is stated, because stating one would publish a guess as a standard. Do not reject values on this field.",
+    "prose": "prose:true marks a value that is meant to be written for a person to read. It is a deliberate per-field decision, not an absent constraint.",
+    "record": "type:record carries fields describing its parts. With repeat:true the value is an array of such records; without, a single one."
+  },
+  "fields": [
+    {
+      "key": "passportId",
+      "label": "Passport reference",
+      "obligation": "must",
+      "access": "public",
+      "level": "item",
+      "type": "id",
+      "source": "platform",
+      "clause": "6.1.2.1",
+      "specName": "Battery passport identifier",
+      "legalRef": "Art. 77(3)",
+      "bpdm": "batteryPassportIdentifier",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryPassportIdentifier",
+      "note": "Distinct from the battery identifier: 6.1.2.1(a) expects several passports over one physical battery, because 5.2.1(d) requires a new passport on remanufacture, repurpose or preparation for re-use.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Article 77(3)",
+        "note": "guidance row 1: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "serial",
+      "label": "Serial number",
+      "obligation": "must",
+      "access": "public",
+      "level": "item",
+      "type": "id",
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.1.2.2",
+      "specName": "Battery identifier",
+      "legalRef": "Annex XIII (1a); Art. 38(6); Art. 77(3)",
+      "bpdm": "productIdentifier",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#productIdentifier",
+      "supersedes": "serial",
+      "note": "Must comply with ISO/IEC 15459 or equivalent, and should be serialised. The spec deviates from BattReg here deliberately: the regulation attaches the identifier to the model, 6.1.2.2(e) attaches it to the item.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Article 77(3); Annex VI Part A(2)",
+        "note": "guidance row 1: EV mandatory, LMT mandatory, industrial mandatory; guidance row 7: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "modelName",
+      "label": "Model name",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 200,
+      "prose": true,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.1.2.2",
+      "specName": "Model identification",
+      "legalRef": "Annex VI Part A(2)",
+      "supersedes": "name",
+      "note": "Prose by nature: it is whatever the maker calls the model. Length is capped so it fits a label and a passport heading.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(2)",
+        "note": "guidance row 7: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "operator",
+      "label": "Responsible operator",
+      "obligation": "must",
+      "access": "public",
+      "level": "item",
+      "type": "id",
+      "source": "brand",
+      "clause": "6.1.2.3",
+      "specName": "Operator identifier and information",
+      "legalRef": "Art. 77(3)",
+      "bpdm": "operatorInformation",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#operatorInformation",
+      "note": "The operator answering for the passport, which need not be the manufacturer and can change over life.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Article 77(3)",
+        "note": "guidance row 2: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "manufacturer",
+      "label": "Brand name",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "onLabel": true,
+      "source": "brand",
+      "clause": "6.1.2.4",
+      "specName": "Manufacturer identifier and information",
+      "legalRef": "Annex VI Part A(1); Art. 38(7)",
+      "bpdm": "manufacturerInformation",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturerInformation",
+      "supersedes": "manufacturer",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(1)",
+        "note": "guidance row 3: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "manufacturerContact",
+      "label": "Brand contact",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "onLabel": true,
+      "source": "brand",
+      "clause": "6.1.2.4",
+      "specName": "Manufacturer information (contact point)",
+      "legalRef": "Annex VI Part A(1)",
+      "bpdm": "manufacturerInformation.emailAddress",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturerInformation",
+      "supersedes": "manufacturerContact",
+      "note": "6.1.2.4(c) wants five parts: name, registered trade name or trademark, postal address with a single contact point, web address, e-mail. Our brand record holds one contact string.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(1)",
+        "note": "guidance row 4: EV mandatory, LMT mandatory, industrial mandatory; guidance row 5: EV optional, LMT optional, industrial optional",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "manufacturingPlace",
+      "label": "Place of manufacture",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "site",
+          "label": "Plant or city",
+          "type": "text"
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "A two-letter country code",
+          "required": true
+        }
+      ],
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.1.3.1",
+      "specName": "Manufacturing place",
+      "legalRef": "Annex VI Part A(3)",
+      "bpdm": "manufacturingPlace",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturingPlace",
+      "supersedes": "made",
+      "note": "Model level, not unit: it is the plant. A record rather than a sentence, so the country is a code a consumer can group and compare on while the plant stays human-readable. `battery@1` put it on the unit and joined it to the date in one free-text string.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(3)",
+        "note": "guidance row 8: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "manufacturingDate",
+      "label": "Made",
+      "obligation": "must",
+      "access": "public",
+      "level": "item",
+      "type": "date",
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.1.3.2",
+      "specName": "Manufacturing date",
+      "legalRef": "Annex VI Part A(4)",
+      "bpdm": "manufacturingDate",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#manufacturingDate",
+      "supersedes": "made",
+      "note": "The spec caps this at month; the product owner asked for the day (2026-07-27). Day precision truncates to month, so a reader expecting 6.1.3.2 loses nothing. Item level, unlike the place.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(4)",
+        "note": "guidance row 9: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      },
+      "precision": "day"
+    },
+    {
+      "key": "serviceDate",
+      "label": "Put into service",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "date",
+      "categories": [
+        "stationary",
+        "lmt"
+      ],
+      "needsBms": true,
+      "source": "event",
+      "clause": "6.1.3.3",
+      "specName": "Date of putting the battery into service",
+      "legalRef": "Annex XIII (4)",
+      "bpdm": "puttingIntoService",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#puttingIntoService",
+      "note": "Restricted, not public, which is counter-intuitive.",
+      "requirement": {
+        "status": "needs-review",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII (4), unconfirmed",
+        "note": "the manifest cites Annex XIII (4) and the guidance lists no date of putting into service; the anchor is unconfirmed from the primary text consulted"
+      }
+    },
+    {
+      "key": "warrantyUntil",
+      "label": "Guarantee until",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "date",
+      "source": "form",
+      "clause": "6.1.3.4",
+      "specName": "Warranty period of the battery",
+      "legalRef": "Annex XIII (1m)",
+      "bpdm": "warrentyPeriod",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#warrentyPeriod",
+      "note": "Legal warranty period, or the manufacturer guarantee where longer, from the purchase date. Absent from battery@1.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (m)",
+        "note": "guidance row 35: EV if-applicable:warranty-envisaged, LMT if-applicable:warranty-envisaged, industrial if-applicable:warranty-envisaged",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable, if a commercial warranty is envisaged; a missing end date stays unresolved until the record declares that no commercial warranty is envisaged under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "category",
+      "label": "Category",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "enum",
+      "options": [
+        {
+          "value": "lmt",
+          "label": "Light transport"
+        },
+        {
+          "value": "ev",
+          "label": "Vehicle"
+        },
+        {
+          "value": "industrial",
+          "label": "Industrial"
+        },
+        {
+          "value": "stationary",
+          "label": "Stationary storage"
+        }
+      ],
+      "closed": true,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.1.3.5",
+      "specName": "Battery category",
+      "legalRef": "Annex VI Part A(2); Art. 3",
+      "bpdm": "batteryCategory",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryCategory",
+      "supersedes": "kind",
+      "note": "May change when a new passport is issued, for instance an EV battery repurposed into stationary storage. Consumer wording (\"e-bike\") stays in the UI; the payload carries the category.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(2); Article 3",
+        "note": "guidance row 6: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "massKg",
+      "label": "Mass",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg",
+      "minimum": 0,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.1.3.6",
+      "specName": "Battery mass",
+      "legalRef": "Annex VI Part A(5)",
+      "bpdm": "batteryMass",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryMass",
+      "supersedes": "weight",
+      "note": "The spec says mass, not weight: BattReg says weight, the physically correct quantity is mass (footnote 5, DIN EN ISO 80000-4). Module and cell mass should also be given, for recycling efficiency.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(5)",
+        "note": "guidance row 10: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "status",
+      "label": "Status",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "enum",
+      "options": [
+        {
+          "value": "Original",
+          "label": "As made"
+        },
+        {
+          "value": "Reused",
+          "label": "Re-used"
+        },
+        {
+          "value": "Repurposed",
+          "label": "Repurposed"
+        },
+        {
+          "value": "Remanufactured",
+          "label": "Remanufactured"
+        },
+        {
+          "value": "Waste",
+          "label": "Waste"
+        }
+      ],
+      "closed": true,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.1.3.7",
+      "specName": "Battery status",
+      "legalRef": "Annex XIII 4(c); Art. 77(7)",
+      "bpdm": "batteryStatus",
+      "bpdmUrn": "urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryStatus",
+      "note": "Our lifecycle already produces this. The spec warns the five words are undefined at source and must travel with a description of the treatments applied.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (c)",
+        "note": "guidance row 67: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "separateCollectionSymbol",
+      "label": "Separate collection symbol",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "graphic",
+      "onLabel": true,
+      "source": "platform",
+      "clause": "6.2.2",
+      "specName": "Separate collection symbol",
+      "legalRef": "Art. 13(4); Annex VI Part B; Annex XIII (1q)",
+      "bpdm": "labels",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Labels:1.2.0#labels",
+      "note": "Mandatory on every battery since 18 August 2025. We draw it, nobody types it.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (q); Article 13(4)",
+        "note": "guidance row 40: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "elementSymbols",
+      "label": "Element symbols",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "graphic",
+      "conditional": "cadmium above 0.002 % or lead above 0.004 % by weight is present, in which case the symbol of the element is required",
+      "onLabel": true,
+      "source": "derived",
+      "clause": "6.2.3",
+      "specName": "Symbols for cadmium and lead",
+      "legalRef": "Art. 13(5); Art. 74(1e); Annex XIII (1s)",
+      "bpdm": "labels",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Labels:1.2.0#labels",
+      "note": "Required above 0.002% cadmium or 0.004% lead, so derived from the substance figures.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (q); Article 13(5)",
+        "note": "guidance row 41: EV symbol-if-applicable, LMT symbol-if-applicable, industrial symbol-if-applicable",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "carbonFootprintLabel",
+      "label": "Carbon footprint label",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "graphic",
+      "awaitingAct": "Art. 7(2) delegated and implementing acts, not yet adopted",
+      "onLabel": true,
+      "source": "derived",
+      "clause": "6.2.4",
+      "specName": "Carbon footprint label",
+      "legalRef": "Art. 7(2); Annex XIII (1c)",
+      "bpdm": "labels",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Labels:1.2.0#labels",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(2)",
+        "note": "guidance row 18: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "extinguishingAgent",
+      "label": "Usable extinguishing agent",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "multi",
+      "options": [
+        {
+          "value": "water",
+          "label": "Water"
+        },
+        {
+          "value": "water-mist",
+          "label": "Water mist"
+        },
+        {
+          "value": "foam",
+          "label": "Foam"
+        },
+        {
+          "value": "co2",
+          "label": "Carbon dioxide"
+        },
+        {
+          "value": "dry-powder-abc",
+          "label": "Dry powder, ABC"
+        },
+        {
+          "value": "dry-powder-bc",
+          "label": "Dry powder, BC"
+        },
+        {
+          "value": "metal-fire-powder",
+          "label": "Class D metal-fire powder"
+        },
+        {
+          "value": "sand",
+          "label": "Dry sand"
+        },
+        {
+          "value": "vermiculite",
+          "label": "Vermiculite"
+        },
+        {
+          "value": "encapsulator",
+          "label": "Encapsulating agent"
+        }
+      ],
+      "closed": false,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.2.5",
+      "specName": "Extinguishing agent",
+      "legalRef": "Annex VI Part A(9)",
+      "note": "Several agents may be usable, so this takes more than one. Open: the Annex requires the agent to be stated but names no vocabulary, and proprietary agents appear faster than a list is revised.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(9)",
+        "note": "guidance row 14: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "labelMeaning",
+      "label": "What the symbols mean",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "onLabel": true,
+      "source": "platform",
+      "clause": "6.2.6",
+      "specName": "Meaning of labels and symbols",
+      "legalRef": "Art. 74(1e); Annex XIII (1s)",
+      "note": "Standard explanatory copy, the same for every brand. Ours to write once.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (s); Article 74(1)",
+        "note": "guidance row 43: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "declarationOfConformity",
+      "label": "Declaration of conformity",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "onLabel": true,
+      "source": "deferred",
+      "clause": "6.2.7",
+      "specName": "EU declaration of conformity",
+      "legalRef": "Art. 18; Annex XIII (1r)",
+      "bpdm": "declarationOfConformity",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Labels:1.2.0#declarationOfConformity",
+      "note": "Public document. Needs the attachment seam we do not have yet.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (r); Article 18",
+        "note": "guidance row 42: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "testReports",
+      "label": "Test reports",
+      "obligation": "must",
+      "access": "authority",
+      "level": "model",
+      "type": "document",
+      "source": "deferred",
+      "clause": "6.2.8",
+      "specName": "Results of test reports proving compliance",
+      "legalRef": "Annex XIII (3)",
+      "bpdm": "resultOfTestReport",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Labels:1.2.0#resultOfTestReport",
+      "note": "The whole reason the authority tier exists: notified bodies, market surveillance authorities and the Commission, nobody else.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 3",
+        "note": "guidance row 50: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "carbonFootprint",
+      "label": "Declared footprint",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "minimum": 0,
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.3.2",
+      "specName": "Battery carbon footprint per functional unit",
+      "legalRef": "Art. 7(1); Annex XIII",
+      "bpdm": "batteryCarbonFootprint",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#batteryCarbonFootprint",
+      "supersedes": "carbonDeclared",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonRawMaterials",
+      "label": "Footprint: raw materials",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "minimum": 0,
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "form",
+      "clause": "6.3.3",
+      "specName": "Contribution of raw material acquisition and pre-processing lifecycle stage",
+      "legalRef": "Art. 7(1)",
+      "bpdm": "carbonFootprintPerLifecycleStage",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonProduction",
+      "label": "Footprint: production",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "minimum": 0,
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "form",
+      "clause": "6.3.4",
+      "specName": "Contribution of main product production/manufacturing lifecycle stage",
+      "legalRef": "Art. 7(1)",
+      "bpdm": "carbonFootprintPerLifecycleStage",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonDistribution",
+      "label": "Footprint: distribution",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "minimum": 0,
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "form",
+      "clause": "6.3.5",
+      "specName": "Contribution of distribution lifecycle stage",
+      "legalRef": "Art. 7(1)",
+      "bpdm": "carbonFootprintPerLifecycleStage",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonEndOfLife",
+      "label": "Footprint: end of life",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kg CO₂e/kWh",
+      "minimum": 0,
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "form",
+      "clause": "6.3.6",
+      "specName": "Contribution of end of life and recycling lifecycle stage",
+      "legalRef": "Art. 7(1)",
+      "bpdm": "carbonFootprintPerLifecycleStage",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerLifecycleStage",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonClass",
+      "label": "Carbon class",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 32,
+      "awaitingAct": "Art. 7(2) delegated and implementing acts, not yet adopted",
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.3.7",
+      "specName": "Carbon footprint performance class",
+      "legalRef": "Art. 7(2); Annex XIII (1c)",
+      "bpdm": "carbonFootprintPerformanceClass",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintPerformanceClass",
+      "supersedes": "carbonClass",
+      "note": "The one field that cannot be constrained yet, and the reason is stated rather than worked around: both the class set and the declaration format come from acts under Art. 7(2) that have not been adopted. Offering a guessed A-to-G list would publish our invention as the class scheme. The surface says the format is pending instead of presenting an open box as a free choice. Becomes a closed enum the day the act lands.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(2)",
+        "note": "guidance row 18: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7(2) acts the field already names"
+      }
+    },
+    {
+      "key": "carbonStudyUrl",
+      "label": "Footprint study",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "url",
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "form",
+      "clause": "6.3.8",
+      "specName": "Web link to public carbon footprint study",
+      "legalRef": "Art. 7(1)",
+      "bpdm": "carbonFootprintStudy",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#carbonFootprintStudy",
+      "note": "The declaration alone does not discharge the duty; the study has to be reachable.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonGeneralInfo",
+      "label": "Battery and brand information",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "derived",
+      "clause": "6.3.9",
+      "specName": "General battery and manufacturer information",
+      "legalRef": "Art. 7(1)",
+      "note": "The spec points back at 6.1 and 6.2 rather than adding fields.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c); Article 7(1)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "carbonAbsolute",
+      "label": "Total footprint",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "t CO₂e",
+      "minimum": 0,
+      "awaitingAct": "Art. 7 delegated and implementing acts on the carbon footprint declaration format, not yet adopted",
+      "source": "form",
+      "clause": "6.3.10",
+      "specName": "Absolute battery carbon footprint",
+      "legalRef": "none (spec recommendation)",
+      "bpdm": "absoluteCarbonFootprint",
+      "bpdmUrn": "urn:samm:io.BatteryPass.CarbonFootprint:1.2.0#absoluteCarbonFootprint",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (c)",
+        "note": "guidance row 17: EV not-to-be-displayed:format-pending-act, LMT not-to-be-displayed:format-pending-act, industrial not-to-be-displayed:format-pending-act; not to be filled or displayed as of 18 February 2027 while the format waits on the Article 7 delegated and implementing acts"
+      }
+    },
+    {
+      "key": "dueDiligenceReport",
+      "label": "Due diligence report",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "source": "form",
+      "clause": "6.4.2",
+      "specName": "Information of due diligence report in the battery passport",
+      "legalRef": "Annex XIII (1d); Art. 52(3)",
+      "bpdm": "supplyChainDueDiligenceReport",
+      "bpdmUrn": "urn:samm:io.BatteryPass.SupplyChainDueDiligence:1.2.0#supplyChainDueDiligenceReport",
+      "supersedes": "dueDiligence",
+      "note": "battery@1 takes a reference string. The duty is a published report, so a link is the honest minimum.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (d); Article 48(1); Article 52(3)",
+        "effectiveDate": "2027-08-18",
+        "note": "guidance row 19: EV not-to-be-displayed:later-date, LMT not-to-be-displayed:later-date, industrial not-to-be-displayed:later-date; not to be filled or displayed as of 18 February 2027, required from August 2027 under Article 48(1) as amended (18 August 2027 as this profile reads it; confirm against the consolidated text)"
+      }
+    },
+    {
+      "key": "dueDiligenceAssurances",
+      "label": "Third-party assurance",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "scheme",
+          "label": "Scheme",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "assurer",
+          "label": "Who verified it",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "reference",
+          "label": "Certificate reference",
+          "type": "text"
+        }
+      ],
+      "repeat": true,
+      "source": "form",
+      "clause": "6.4.3",
+      "specName": "Third-party assurances of recognised schemes",
+      "legalRef": "Art. 53",
+      "bpdm": "thirdPartyAussurances",
+      "bpdmUrn": "urn:samm:io.BatteryPass.SupplyChainDueDiligence:1.2.0#thirdPartyAussurances",
+      "note": "A record, because an assurance is only worth what the verifier is worth: naming the scheme without the body that certified against it is unfalsifiable. The scheme name stays open text rather than a list, since recognition itself arrives by implementing and delegated acts under Art. 53.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (d); Article 53",
+        "effectiveDate": "2027-08-18",
+        "note": "guidance row 19: EV not-to-be-displayed:later-date, LMT not-to-be-displayed:later-date, industrial not-to-be-displayed:later-date; not to be filled or displayed as of 18 February 2027, required from August 2027 under Article 48(1) as amended (18 August 2027 as this profile reads it; confirm against the consolidated text)"
+      }
+    },
+    {
+      "key": "supplyChainIndices",
+      "label": "Supply chain indices",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "source": "deferred",
+      "clause": "6.4.4",
+      "specName": "Supply chain indices",
+      "legalRef": "none (spec recommendation)",
+      "bpdm": "supplyChainIndicies",
+      "bpdmUrn": "urn:samm:io.BatteryPass.SupplyChainDueDiligence:1.2.0#supplyChainIndicies",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "a specification recommendation with no instrument behind it"
+      }
+    },
+    {
+      "key": "chemistry",
+      "label": "Chemistry",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "enum",
+      "options": [
+        {
+          "value": "LFP",
+          "label": "LFP, lithium iron phosphate"
+        },
+        {
+          "value": "LMFP",
+          "label": "LMFP, lithium manganese iron phosphate"
+        },
+        {
+          "value": "NMC",
+          "label": "NMC, nickel manganese cobalt"
+        },
+        {
+          "value": "NCA",
+          "label": "NCA, nickel cobalt aluminium"
+        },
+        {
+          "value": "LCO",
+          "label": "LCO, lithium cobalt oxide"
+        },
+        {
+          "value": "LMO",
+          "label": "LMO, lithium manganese oxide"
+        },
+        {
+          "value": "LTO",
+          "label": "LTO, lithium titanate"
+        },
+        {
+          "value": "NA-ION",
+          "label": "Sodium-ion"
+        },
+        {
+          "value": "LI-METAL",
+          "label": "Lithium metal"
+        },
+        {
+          "value": "SOLID-STATE",
+          "label": "Solid state"
+        },
+        {
+          "value": "PB-ACID",
+          "label": "Lead-acid"
+        },
+        {
+          "value": "NIMH",
+          "label": "Nickel metal hydride"
+        },
+        {
+          "value": "NICD",
+          "label": "Nickel cadmium"
+        }
+      ],
+      "closed": false,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.5.2",
+      "specName": "Battery chemistry",
+      "legalRef": "Annex XIII (1b)",
+      "bpdm": "batteryChemistry",
+      "bpdmUrn": "urn:samm:io.BatteryPass.MaterialComposition:1.2.0#batteryChemistry",
+      "supersedes": "chemistry",
+      "note": "An open list, not a closed one: 6.5.2 NOTE records that no unambiguous nomenclature exists yet, so the familiar abbreviations are offered and a value outside them stays valid. The fuller cathode, anode and electrolyte description belongs to electrodeMaterials.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(7); Annex XIII 1 (b)",
+        "note": "guidance row 12: EV mandatory, LMT mandatory, industrial mandatory; guidance row 16: EV not-to-be-displayed:repetition, LMT not-to-be-displayed:repetition, industrial not-to-be-displayed:repetition",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "criticalRawMaterials",
+      "label": "Critical raw materials",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "multi",
+      "options": [
+        {
+          "value": "aluminium",
+          "label": "Aluminium / bauxite / alumina"
+        },
+        {
+          "value": "antimony",
+          "label": "Antimony"
+        },
+        {
+          "value": "arsenic",
+          "label": "Arsenic"
+        },
+        {
+          "value": "baryte",
+          "label": "Baryte"
+        },
+        {
+          "value": "beryllium",
+          "label": "Beryllium"
+        },
+        {
+          "value": "bismuth",
+          "label": "Bismuth"
+        },
+        {
+          "value": "boron",
+          "label": "Boron"
+        },
+        {
+          "value": "cobalt",
+          "label": "Cobalt"
+        },
+        {
+          "value": "coking-coal",
+          "label": "Coking coal"
+        },
+        {
+          "value": "copper",
+          "label": "Copper"
+        },
+        {
+          "value": "feldspar",
+          "label": "Feldspar"
+        },
+        {
+          "value": "fluorspar",
+          "label": "Fluorspar"
+        },
+        {
+          "value": "gallium",
+          "label": "Gallium"
+        },
+        {
+          "value": "germanium",
+          "label": "Germanium"
+        },
+        {
+          "value": "hafnium",
+          "label": "Hafnium"
+        },
+        {
+          "value": "helium",
+          "label": "Helium"
+        },
+        {
+          "value": "heavy-ree",
+          "label": "Rare earths, heavy"
+        },
+        {
+          "value": "light-ree",
+          "label": "Rare earths, light"
+        },
+        {
+          "value": "lithium",
+          "label": "Lithium"
+        },
+        {
+          "value": "magnesium",
+          "label": "Magnesium"
+        },
+        {
+          "value": "manganese",
+          "label": "Manganese"
+        },
+        {
+          "value": "natural-graphite",
+          "label": "Graphite, natural"
+        },
+        {
+          "value": "nickel",
+          "label": "Nickel, battery grade"
+        },
+        {
+          "value": "niobium",
+          "label": "Niobium"
+        },
+        {
+          "value": "pgm",
+          "label": "Platinum group metals"
+        },
+        {
+          "value": "phosphate-rock",
+          "label": "Phosphate rock"
+        },
+        {
+          "value": "phosphorus",
+          "label": "Phosphorus"
+        },
+        {
+          "value": "scandium",
+          "label": "Scandium"
+        },
+        {
+          "value": "silicon-metal",
+          "label": "Silicon metal"
+        },
+        {
+          "value": "strontium",
+          "label": "Strontium"
+        },
+        {
+          "value": "tantalum",
+          "label": "Tantalum"
+        },
+        {
+          "value": "titanium-metal",
+          "label": "Titanium metal"
+        },
+        {
+          "value": "tungsten",
+          "label": "Tungsten"
+        },
+        {
+          "value": "vanadium",
+          "label": "Vanadium"
+        }
+      ],
+      "closed": true,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.5.3",
+      "specName": "Critical raw materials",
+      "legalRef": "Annex XIII (1b); Annex VI Part A(10)",
+      "note": "Those present above 0.1% by weight, selected from Reg. (EU) 2024/1252 Annex II. Closed, because that register is exhaustive by law; it is revised at least every three years, so the mirrored list carries that review duty with it.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(10); Annex XIII 1 (b)",
+        "note": "guidance row 15: EV mandatory, LMT mandatory, industrial mandatory; guidance row 16: EV not-to-be-displayed:repetition, LMT not-to-be-displayed:repetition, industrial not-to-be-displayed:repetition",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "electrodeMaterials",
+      "label": "Cathode, anode and electrolyte materials",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "component",
+          "label": "Component",
+          "type": "enum",
+          "options": [
+            {
+              "value": "cathode",
+              "label": "Cathode"
+            },
+            {
+              "value": "anode",
+              "label": "Anode"
+            },
+            {
+              "value": "electrolyte",
+              "label": "Electrolyte"
+            },
+            {
+              "value": "separator",
+              "label": "Separator"
+            },
+            {
+              "value": "casing",
+              "label": "Casing"
+            }
+          ],
+          "closed": true,
+          "required": true
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "share",
+          "label": "Share by weight",
+          "type": "percent",
+          "unit": "%",
+          "minimum": 0,
+          "maximum": 100
+        }
+      ],
+      "repeat": true,
+      "source": "form",
+      "clause": "6.5.4",
+      "specName": "Materials used in cathode, anode and electrolyte",
+      "legalRef": "Annex XIII (2a)",
+      "bpdm": "batteryMaterials",
+      "bpdmUrn": "urn:samm:io.BatteryPass.MaterialComposition:1.2.0#batteryMaterials",
+      "note": "The spec names three components, so the component is a closed list while the material stays open: chemistry nomenclature is unsettled (6.5.2 NOTE) but which part of a cell you are describing is not. Separator and casing are included because a dismantler needs them and the Annex says \"used in\", not \"used in only these three\".",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (a)",
+        "note": "guidance row 45: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "hazardousSubstances",
+      "label": "Hazardous substances",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "name",
+          "label": "Substance",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "cas",
+          "label": "CAS number",
+          "type": "text",
+          "pattern": "^\\d{2,7}-\\d{2}-\\d$",
+          "patternHint": "Two to seven digits, two digits, then a check digit, as in 7439-92-1",
+          "required": true
+        },
+        {
+          "key": "concentration",
+          "label": "Concentration",
+          "type": "percent",
+          "unit": "%",
+          "minimum": 0,
+          "maximum": 100
+        }
+      ],
+      "repeat": true,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.5.5",
+      "specName": "Hazardous substances",
+      "legalRef": "Annex XIII (1b); Annex VI Part A(8)",
+      "bpdm": "hazardousSubstances",
+      "bpdmUrn": "urn:samm:io.BatteryPass.MaterialComposition:1.2.0#hazardousSubstances",
+      "note": "Those other than mercury, cadmium and lead. A repeated record rather than a sentence, because each substance needs its own name and CAS number to be machine-checkable. The CAS check digit is computable, so a consumer can verify the number as well as its shape. No closed substance list: the ECHA candidate list runs to hundreds of entries and is revised twice a year, so mirroring it here would go stale between releases.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(8); Annex XIII 1 (b)",
+        "note": "guidance row 13: EV mandatory, LMT mandatory, industrial mandatory; guidance row 16: EV not-to-be-displayed:repetition, LMT not-to-be-displayed:repetition, industrial not-to-be-displayed:repetition",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "substanceImpact",
+      "label": "Effects of those substances",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 2000,
+      "prose": true,
+      "source": "form",
+      "clause": "6.5.6",
+      "specName": "Impact of substances on environment, human health, safety, persons",
+      "legalRef": "Art. 74(1f)",
+      "note": "Prose by nature, and by duty: Art. 74(1f) requires an explanation of impacts on the environment, human health and safety written for a person to act on. A code list would defeat the purpose of the article.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (s); Article 74(1)(f)",
+        "note": "guidance row 43: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "dismantlingManual",
+      "label": "Dismantling manual",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "document",
+      "source": "form",
+      "clause": "6.6.1.2",
+      "specName": "Dismantling information: manuals for the removal and the disassembly of the battery pack",
+      "legalRef": "Annex XIII (2c)",
+      "bpdm": "dismantlingAndRemovalInformation",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#dismantlingAndRemovalInformation",
+      "supersedes": "dismantling",
+      "note": "The duty is the manual, not a reference to one. battery@1 stores a document number.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (c)",
+        "note": "guidance row 48: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "partNumbersUrl",
+      "label": "Part numbers",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "url",
+      "source": "form",
+      "clause": "6.6.1.3",
+      "specName": "Part numbers for components",
+      "legalRef": "Annex XIII (2b)",
+      "bpdm": "sparePartSources.components.partNumber",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (b)",
+        "note": "guidance row 46: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "sparePartsAddress",
+      "label": "Spare parts: postal address",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "street",
+          "label": "Street",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "locality",
+          "label": "Town or city",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "postcode",
+          "label": "Postcode",
+          "type": "text"
+        },
+        {
+          "key": "region",
+          "label": "State or region",
+          "type": "text"
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "A two-letter country code",
+          "required": true
+        }
+      ],
+      "source": "form",
+      "clause": "6.6.1.4",
+      "specName": "Postal address of sources of spare parts",
+      "legalRef": "Annex XIII (2b)",
+      "bpdm": "sparePartSources.addressOfSupplier",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "note": "A record rather than one box, so the country is a code and the rest stays as postal services expect. Postcode is optional because several countries have none.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (b)",
+        "note": "guidance row 47: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "sparePartsEmail",
+      "label": "Spare parts: e-mail",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "text",
+      "pattern": "^[^@\\s]+@[^@\\s.]+(\\.[^@\\s.]+)+$",
+      "patternHint": "An e-mail address",
+      "maxLength": 254,
+      "source": "form",
+      "clause": "6.6.1.4",
+      "specName": "E-mail address of sources of spare parts",
+      "legalRef": "Annex XIII (2b)",
+      "bpdm": "sparePartSources.emailAddressOfSupplier",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "note": "Deliberately a permissive shape check, not RFC 5322: the aim is to catch a typo before publication, and a pattern strict enough to be correct rejects addresses that work. 254 is the practical maximum length.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (b)",
+        "note": "guidance row 47: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "sparePartsUrl",
+      "label": "Spare parts: web address",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "url",
+      "source": "form",
+      "clause": "6.6.1.4",
+      "specName": "Web address of sources of spare parts",
+      "legalRef": "Annex XIII (2b)",
+      "bpdm": "sparePartSources.supplierWebAddress",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#sparePartSources",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (b)",
+        "note": "guidance row 47: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "safetyMeasures",
+      "label": "Safety measures",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "document",
+      "source": "form",
+      "clause": "6.6.1.5",
+      "specName": "Safety measures",
+      "legalRef": "Annex XIII (2d)",
+      "bpdm": "safetyMeasures",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#safetyMeasures",
+      "note": "Restricted and detailed. Distinct from the public consumer safety line battery@1 carries as `safety`.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 2 (d)",
+        "note": "guidance row 49: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "recycledShareTotal",
+      "label": "Recycled content",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "derived",
+      "clause": "6.6.2.2",
+      "specName": "Pre-consumer and post-consumer recycled cobalt, lithium, nickel and lead share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "supersedes": "recycledContent",
+      "note": "The umbrella figure over the eight splits below. Scoped per model per year per manufacturing plant, which is finer than model level alone. Annex C carries the mandatory targets.",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 20: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; guidance row 21: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; guidance row 22: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; guidance row 23: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledNickelPre",
+      "label": "Nickel, pre-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.3",
+      "specName": "Pre-consumer recycled nickel share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.preConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 22: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledCobaltPre",
+      "label": "Cobalt, pre-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.4",
+      "specName": "Pre-consumer recycled cobalt share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.preConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 20: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledLithiumPre",
+      "label": "Lithium, pre-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.5",
+      "specName": "Pre-consumer recycled lithium share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.preConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 21: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledLeadPre",
+      "label": "Lead, pre-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.6",
+      "specName": "Pre-consumer recycled lead share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.preConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 23: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledNickelPost",
+      "label": "Nickel, post-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.7",
+      "specName": "Post-consumer recycled nickel share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.postConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 22: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledCobaltPost",
+      "label": "Cobalt, post-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.8",
+      "specName": "Post-consumer recycled cobalt share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.postConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 20: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledLithiumPost",
+      "label": "Lithium, post-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.9",
+      "specName": "Post-consumer recycled lithium share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.postConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 21: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "recycledLeadPost",
+      "label": "Lead, post-consumer",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "awaitingAct": "Art. 8 delegated act on recycled content, not yet adopted",
+      "source": "form",
+      "clause": "6.6.2.10",
+      "specName": "Post-consumer recycled lead share",
+      "legalRef": "Annex XIII (1e); Art. 8(1)",
+      "bpdm": "recycledContent.postConsumerShare",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#recycledContent",
+      "requirement": {
+        "status": "anticipated",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (e); Article 8",
+        "note": "guidance row 23: EV not-to-be-displayed:delegated-act-pending, LMT not-to-be-displayed:delegated-act-pending, industrial not-to-be-displayed:delegated-act-pending; not to be filled or displayed as of 18 February 2027, to be applied in line with Article 8 and the delegated act on recycled content"
+      }
+    },
+    {
+      "key": "renewableShare",
+      "label": "Renewable content",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.6.2.11",
+      "specName": "Renewable content share",
+      "legalRef": "Annex XIII (1f)",
+      "bpdm": "renewableContent",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#renewableContent",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (f)",
+        "note": "guidance row 24: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "endUserWastePrevention",
+      "label": "Making it last",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 500,
+      "prose": true,
+      "source": "form",
+      "clause": "6.6.3.2",
+      "specName": "Information on the role of end-users in contributing to waste prevention",
+      "legalRef": "Annex XIII (1s); Art. 74(1a)",
+      "bpdm": "endOfLifeInformation",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#endOfLifeInformation",
+      "note": "Information, not a document. The clause asks what the end user should do; a sentence on the passport answers that where a linked PDF defers it. Typed as a document until 2026-07-28, which is why the consumer page carried three labels with nothing behind them: the attachment seam is G16, so a document can only be a link, and a sample can only ever declare a reserved host. A brand holding a real document declares its URL here and the surface links it, because the care block sorts on the value rather than the type.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (s); Article 74(1)",
+        "note": "guidance row 43: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "endUserCollection",
+      "label": "Where to return it",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 500,
+      "prose": true,
+      "source": "form",
+      "clause": "6.6.3.3",
+      "specName": "Information on the role of end-users in contributing to the separate collection of waste batteries",
+      "legalRef": "Annex XIII (1s); Art. 74",
+      "bpdm": "endOfLifeInformation",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#endOfLifeInformation",
+      "supersedes": "collection",
+      "note": "battery@1 carried this as a sentence, which reads better on a consumer page than a linked PDF. Retyped from document to text on 2026-07-28 to do what that note asked for, matching the textile registry, which answers the same question in prose and reads the better for it.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (s); Article 74(1)",
+        "note": "guidance row 43: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "endOfLifeTreatment",
+      "label": "End of life",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 500,
+      "prose": true,
+      "source": "form",
+      "clause": "6.6.3.4",
+      "specName": "Information on battery collection, preparation for second life and on treatment at end of life",
+      "legalRef": "Annex XIII (1s); Art. 74",
+      "bpdm": "endOfLifeInformation",
+      "bpdmUrn": "urn:samm:io.BatteryPass.Circularity:1.2.0#endOfLifeInformation",
+      "note": "Retyped with the other two end-user clauses on 2026-07-28. What actually happens to the battery is a thing a reader can be told in three sentences, and a document reference tells them nothing at all until they open it.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (s); Article 74(1)",
+        "note": "guidance row 43: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "ratedCapacityAh",
+      "label": "Rated capacity",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "Ah",
+      "minimum": 0,
+      "onLabel": true,
+      "source": "form",
+      "clause": "6.7.2.2",
+      "specName": "Rated capacity",
+      "legalRef": "Annex IV Part A(1); Annex VI Part A(6)",
+      "supersedes": "ratedCapacity",
+      "note": "Ampere-hours. battery@1 held a free string and the sample filled it with 630 Wh, which is energy: a different attribute (6.7.2.5).",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(6); Annex XIII 1 (g)",
+        "note": "guidance row 11: EV mandatory, LMT mandatory, industrial mandatory; guidance row 25: EV not-to-be-displayed:repetition, LMT not-to-be-displayed:repetition, industrial not-to-be-displayed:repetition; guidance row 51: EV dynamic-same-as-11, LMT dynamic-same-as-11, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "remainingCapacityAh",
+      "label": "Remaining capacity",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "Ah",
+      "minimum": 0,
+      "needsBms": true,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.2.3",
+      "specName": "Remaining capacity",
+      "legalRef": "Annex VII Part A(1)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "note": "guidance row 62: EV not-to-be-displayed, LMT mandatory, industrial if-applicable; guidance row 51: EV dynamic-same-as-11, LMT dynamic-same-as-11, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance makes this state of health data point mandatory for light transport, if applicable for industrial and stationary, and not to be displayed for vehicles; for an industrial or stationary battery a missing value stays unresolved until declared inapplicable or supplied",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "capacityFade",
+      "label": "Capacity fade",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.2.4",
+      "specName": "Capacity fade",
+      "legalRef": "Annex IV Part A(1)",
+      "supersedes": "capacityFade",
+      "note": "Model level and static in the spec: the declared fade characteristic, not this unit’s measured loss.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a); Annex IV Part A(1)",
+        "note": "guidance row 52: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "certifiedEnergyKwh",
+      "label": "Usable energy",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "decimal",
+      "unit": "kWh",
+      "minimum": 0,
+      "categories": [
+        "ev"
+      ],
+      "source": "form",
+      "clause": "6.7.2.5",
+      "specName": "Certified usable battery energy",
+      "legalRef": "added by the consortium, based on UN GTR No 22",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "a consortium addition based on UN GTR No 22; no data point of the guidance"
+      }
+    },
+    {
+      "key": "remainingEnergyKwh",
+      "label": "Remaining usable energy",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "kWh",
+      "minimum": 0,
+      "categories": [
+        "ev"
+      ],
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.2.6",
+      "specName": "Remaining usable battery energy",
+      "legalRef": "added by the consortium, based on UN GTR No 22",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "a consortium addition based on UN GTR No 22; no data point of the guidance"
+      }
+    },
+    {
+      "key": "soce",
+      "label": "State of certified energy",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "categories": [
+        "ev"
+      ],
+      "needsBms": true,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.2.7",
+      "specName": "State of certified energy (SOCE)",
+      "legalRef": "UN GTR No 22",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "note": "guidance row 61: EV mandatory, LMT not-to-be-displayed, industrial not-to-be-displayed",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "stateOfCharge",
+      "label": "State of charge",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.2.8",
+      "specName": "State of charge (SoC)",
+      "legalRef": "Annex XIII 4(d)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d)",
+        "note": "guidance row 71: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "voltageMin",
+      "label": "Minimum voltage",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "V",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.2.9",
+      "specName": "Minimum voltage",
+      "legalRef": "Annex XIII (1h)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (h)",
+        "note": "guidance row 26: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "voltageMax",
+      "label": "Maximum voltage",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "V",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.2.10",
+      "specName": "Maximum voltage",
+      "legalRef": "Annex XIII (1h)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (h)",
+        "note": "guidance row 28: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "voltageNominal",
+      "label": "Nominal voltage",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "V",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.2.11",
+      "specName": "Nominal voltage",
+      "legalRef": "Annex XIII (1h)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (h)",
+        "note": "guidance row 27: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "powerOriginal",
+      "label": "Original power",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "W",
+      "minimum": 0,
+      "step": 1,
+      "source": "form",
+      "clause": "6.7.3.2",
+      "specName": "Original power capability",
+      "legalRef": "Annex XIII (1i)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (i); Annex XIII 4 (a)",
+        "note": "guidance row 29: EV mandatory, LMT mandatory, industrial mandatory; guidance row 53: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "powerRemaining",
+      "label": "Remaining power",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "integer",
+      "unit": "W",
+      "minimum": 0,
+      "step": 1,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.3.3",
+      "specName": "Remaining power capability",
+      "legalRef": "Annex VII Part A(2); Annex IV",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "note": "guidance row 63: EV not-to-be-displayed, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance makes this state of health data point mandatory for light transport, if applicable for industrial and stationary, and not to be displayed for vehicles; for an industrial or stationary battery a missing value stays unresolved until declared inapplicable or supplied",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "powerFade",
+      "label": "Power fade",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.3.4",
+      "specName": "Power fade",
+      "legalRef": "Annex IV Part A(2)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a); Annex IV Part A(2)",
+        "note": "guidance row 54: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "powerMax",
+      "label": "Maximum permitted power",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "W",
+      "minimum": 0,
+      "step": 1,
+      "source": "form",
+      "clause": "6.7.3.5",
+      "specName": "Maximum permitted battery power",
+      "legalRef": "Annex XIII (1i)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (i)",
+        "note": "guidance row 30: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "powerToEnergy",
+      "label": "Power to energy ratio",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "decimal",
+      "unit": "W/Wh",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.3.6",
+      "specName": "Ratio between nominal battery power and battery energy",
+      "legalRef": "Annex IV Part B(2)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex IV Part B(2)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "roundTripInitial",
+      "label": "Round trip efficiency, initial",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.4.2",
+      "specName": "Initial round trip energy efficiency",
+      "legalRef": "Annex XIII (1n)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (n); Annex XIII 4 (a)",
+        "note": "guidance row 36: EV mandatory, LMT mandatory, industrial if-applicable:some-industrial; guidance row 57: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "roundTripAtHalfLife",
+      "label": "Round trip efficiency at half life",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.4.3",
+      "specName": "Round trip energy efficiency at 50% of cycle-life",
+      "legalRef": "Annex XIII (1n)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (n)",
+        "note": "guidance row 37: EV mandatory, LMT mandatory, industrial if-applicable:some-industrial",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "roundTripRemaining",
+      "label": "Round trip efficiency, remaining",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.4.4",
+      "specName": "Remaining round trip energy efficiency",
+      "legalRef": "Annex VII Part A(3)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "note": "guidance row 64: EV not-to-be-displayed, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance makes this state of health data point mandatory for light transport, if applicable for industrial and stationary, and not to be displayed for vehicles; for an industrial or stationary battery a missing value stays unresolved until declared inapplicable or supplied",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "roundTripFade",
+      "label": "Round trip efficiency fade",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.4.5",
+      "specName": "Energy round trip efficiency fade",
+      "legalRef": "Annex IV Part A(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a); Annex IV Part A(4)",
+        "note": "guidance row 58: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "selfDischargeInitial",
+      "label": "Self-discharge, initial",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "decimal",
+      "unit": "%/month",
+      "minimum": 0,
+      "categories": [
+        "stationary"
+      ],
+      "source": "form",
+      "clause": "6.7.4.6",
+      "specName": "Initial self-discharge rate",
+      "legalRef": "Annex VII Part A(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VII Part A(4)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "selfDischargeCurrent",
+      "label": "Self-discharge, current",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "%/month",
+      "minimum": 0,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.4.7",
+      "specName": "Current self-discharge rate",
+      "legalRef": "Annex VII Part A(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "note": "guidance row 65: EV not-to-be-displayed, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance makes this state of health data point mandatory for light transport, if applicable for industrial and stationary, and not to be displayed for vehicles; for an industrial or stationary battery a missing value stays unresolved until declared inapplicable or supplied",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "selfDischargeEvolution",
+      "label": "Self-discharge over time",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.4.8",
+      "specName": "Evolution of self-discharge rates",
+      "legalRef": "Annex VII Part A(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "note": "guidance row 65: EV not-to-be-displayed, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance makes this state of health data point mandatory for light transport, if applicable for industrial and stationary, and not to be displayed for vehicles; for an industrial or stationary battery a missing value stays unresolved until declared inapplicable or supplied",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "resistancePack",
+      "label": "Internal resistance, pack",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "Ω",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.5.2",
+      "specName": "Initial internal resistance of battery pack",
+      "legalRef": "Annex XIII (1o)",
+      "note": "Decimal, not an integer: an internal resistance is tens of milliohms, so whole ohms would round every honest value to nought. The unit stays as the spec declares it and the type stops discarding the quantity.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (o); Annex XIII 4 (a)",
+        "note": "guidance row 38: EV mandatory, LMT mandatory, industrial mandatory; guidance row 55: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "resistanceCell",
+      "label": "Internal resistance, cell",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "Ω",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.5.2",
+      "specName": "Initial internal resistance of battery cell",
+      "legalRef": "Annex XIII (1o)",
+      "note": "Decimal, not an integer: an internal resistance is tens of milliohms, so whole ohms would round every honest value to nought. The unit stays as the spec declares it and the type stops discarding the quantity.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (o); Annex XIII 4 (a)",
+        "note": "guidance row 38: EV mandatory, LMT mandatory, industrial mandatory; guidance row 55: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "resistanceModule",
+      "label": "Internal resistance, module",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "Ω",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.5.2",
+      "specName": "Initial internal resistance of battery module",
+      "legalRef": "Annex XIII (1o)",
+      "note": "Decimal, not an integer: an internal resistance is tens of milliohms, so whole ohms would round every honest value to nought. The unit stays as the spec declares it and the type stops discarding the quantity.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (o)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "resistanceIncreasePack",
+      "label": "Resistance increase, pack",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.5.3",
+      "specName": "Internal resistance increase of battery pack",
+      "legalRef": "Annex IV Part A(3)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a); Annex IV Part A(3)",
+        "note": "guidance row 56: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "resistanceIncreaseCell",
+      "label": "Resistance increase, cell",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.5.3",
+      "specName": "Internal resistance increase of battery cell",
+      "legalRef": "Annex IV Part A(3)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "resistanceIncreaseModule",
+      "label": "Resistance increase, module",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "source": "form",
+      "clause": "6.7.5.3",
+      "specName": "Internal resistance increase of battery module",
+      "legalRef": "Annex IV Part A(3)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "expectedYears",
+      "label": "Expected life in years",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "model",
+      "type": "decimal",
+      "unit": "years",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.6.2",
+      "specName": "Expected lifetime in calendar years",
+      "legalRef": "Annex IV Part A(5)",
+      "note": "Restricted, while the cycle count below is public.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a); Annex IV Part A(5)",
+        "note": "guidance row 60: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "expectedCycles",
+      "label": "Expected life in cycles",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "minimum": 0,
+      "step": 1,
+      "source": "form",
+      "clause": "6.7.6.3",
+      "specName": "Expected lifetime: number of charge-discharge cycles",
+      "legalRef": "Annex XIII (1j)",
+      "supersedes": "expectedLife",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (j); Annex XIII 4 (a)",
+        "note": "guidance row 31: EV mandatory, LMT mandatory, industrial if-applicable:some-industrial; guidance row 59: EV mandatory, LMT mandatory, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "cyclesUsed",
+      "label": "Cycles so far",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "integer",
+      "minimum": 0,
+      "step": 1,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.6.4",
+      "specName": "Number of full charging and discharging cycles",
+      "legalRef": "Annex XIII (4d)",
+      "supersedes": "chargeCycles",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d)",
+        "note": "guidance row 68: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "cycleLifeTest",
+      "label": "Cycle life test used",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "enum",
+      "options": [
+        {
+          "value": "IEC-61960-3",
+          "label": "IEC 61960-3"
+        },
+        {
+          "value": "IEC-62660-1",
+          "label": "IEC 62660-1"
+        },
+        {
+          "value": "IEC-62620",
+          "label": "IEC 62620"
+        },
+        {
+          "value": "IEC-63330",
+          "label": "IEC 63330"
+        },
+        {
+          "value": "EN-50604-1",
+          "label": "EN 50604-1"
+        },
+        {
+          "value": "UN-GTR-22",
+          "label": "UN GTR No. 22"
+        },
+        {
+          "value": "MANUFACTURER",
+          "label": "The maker's own protocol"
+        }
+      ],
+      "closed": false,
+      "source": "form",
+      "clause": "6.7.6.5",
+      "specName": "Cycle-life reference test",
+      "legalRef": "Annex XIII (1j)",
+      "note": "Without the test, the cycle figure is not comparable between brands. Open: the applicable standard differs by category and JTC 24 and IEC are still issuing them.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (j)",
+        "note": "guidance row 32: EV mandatory, LMT mandatory, industrial if-applicable:some-industrial",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "cRate",
+      "label": "C-rate of that test",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "decimal",
+      "unit": "A/Ah",
+      "minimum": 0,
+      "source": "form",
+      "clause": "6.7.6.6",
+      "specName": "C-rate of relevant cycle-life test",
+      "legalRef": "Annex XIII (1p)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (p)",
+        "note": "guidance row 39: EV mandatory, LMT mandatory, industrial if-applicable:some-industrial",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "energyThroughput",
+      "label": "Energy through the battery",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "kWh",
+      "minimum": 0,
+      "categories": [
+        "stationary",
+        "lmt"
+      ],
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.6.7",
+      "specName": "Energy throughput",
+      "legalRef": "Annex VII Part B(2)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VII Part B(2)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "capacityThroughput",
+      "label": "Capacity through the battery",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "Ah",
+      "minimum": 0,
+      "categories": [
+        "stationary",
+        "lmt"
+      ],
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.6.8",
+      "specName": "Capacity throughput",
+      "legalRef": "Annex VII Part B(3)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VII Part B(3)",
+        "note": "no data point of the guidance names this field; the instrument cited is in force",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "exhaustionThreshold",
+      "label": "Exhaustion threshold",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "categories": [
+        "ev"
+      ],
+      "source": "form",
+      "clause": "6.7.6.9",
+      "specName": "Capacity threshold for exhaustion",
+      "legalRef": "Annex XIII (1k)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (k)",
+        "note": "guidance row 33: EV mandatory, LMT not-to-be-displayed, industrial not-to-be-displayed",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "temperatureRecord",
+      "label": "Temperature record",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "°C",
+      "minimum": -60,
+      "maximum": 150,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.7.2",
+      "specName": "Temperature information",
+      "legalRef": "Annex XIII (4d)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d)",
+        "note": "guidance row 70: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "idleTempLower",
+      "label": "Idle temperature, lowest",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "°C",
+      "minimum": -60,
+      "maximum": 150,
+      "step": 1,
+      "source": "form",
+      "clause": "6.7.7.3",
+      "specName": "Temperature range idle state, lower boundary",
+      "legalRef": "Annex XIII (1l)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (l)",
+        "note": "guidance row 34: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "idleTempUpper",
+      "label": "Idle temperature, highest",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "integer",
+      "unit": "°C",
+      "minimum": -60,
+      "maximum": 150,
+      "step": 1,
+      "source": "form",
+      "clause": "6.7.7.4",
+      "specName": "Temperature range idle state, upper boundary",
+      "legalRef": "Annex XIII (1l)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (l)",
+        "note": "guidance row 34: EV mandatory, LMT mandatory, industrial mandatory",
+        "effectiveDate": "2027-02-18"
+      }
+    },
+    {
+      "key": "timeAboveRange",
+      "label": "Time above range",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "min",
+      "minimum": 0,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.7.5",
+      "specName": "Time spent in extreme temperatures above boundary",
+      "legalRef": "Annex VII Part B(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d); Annex VII Part B(4)",
+        "note": "guidance row 70: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "timeBelowRange",
+      "label": "Time below range",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "min",
+      "minimum": 0,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.7.6",
+      "specName": "Time spent in extreme temperatures below boundary",
+      "legalRef": "Annex VII Part B(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d); Annex VII Part B(4)",
+        "note": "guidance row 70: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "chargingAboveRange",
+      "label": "Charging above range",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "min",
+      "minimum": 0,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.7.7",
+      "specName": "Time spent charging during extreme temperatures above boundary",
+      "legalRef": "Annex VII Part B(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d); Annex VII Part B(4)",
+        "note": "guidance row 70: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "chargingBelowRange",
+      "label": "Charging below range",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "decimal",
+      "unit": "min",
+      "minimum": 0,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.7.8",
+      "specName": "Time spent charging during extreme temperatures below boundary",
+      "legalRef": "Annex VII Part B(4)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d); Annex VII Part B(4)",
+        "note": "guidance row 70: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "deepDischargeEvents",
+      "label": "Deep discharges",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "integer",
+      "minimum": 0,
+      "step": 1,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.8.2",
+      "specName": "Number of deep discharge events",
+      "legalRef": "Annex VII",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d); Annex VII",
+        "note": "guidance row 69: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "overchargeEvents",
+      "label": "Overcharges",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "item",
+      "type": "integer",
+      "minimum": 0,
+      "step": 1,
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.8.3",
+      "specName": "Number of overcharge events",
+      "legalRef": "added by the consortium",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "a consortium addition; the guidance names accidents, not this counter"
+      }
+    },
+    {
+      "key": "accidents",
+      "label": "Accidents",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "document",
+      "dynamic": true,
+      "source": "event",
+      "clause": "6.7.8.4",
+      "specName": "Information on accidents",
+      "legalRef": "Annex XIII (4d)",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d)",
+        "note": "guidance row 69: EV if-applicable, LMT if-applicable, industrial if-applicable",
+        "effectiveDate": "2027-02-18"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "safety",
+      "label": "Safety",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 500,
+      "prose": true,
+      "source": "form",
+      "clause": "app",
+      "specName": "not in the spec: plain-language safety line",
+      "legalRef": "app addition; the spec puts safety measures at 6.6.1.5, restricted",
+      "supersedes": "safety",
+      "note": "Prose by nature: a plain-language line a consumer reads on the passport. The spec's own safety measures at 6.6.1.5 sit in the restricted tier, so this is the public summary of them, not a substitute.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "app addition; the spec puts safety measures at 6.6.1.5, restricted"
+      }
+    },
+    {
+      "key": "stateOfHealth",
+      "label": "State of health",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "item",
+      "type": "percent",
+      "unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "dynamic": true,
+      "source": "event",
+      "clause": "app",
+      "specName": "not in the spec: state of health as a single figure",
+      "legalRef": "app addition; the spec decomposes SoH into Annex VII Part A parameters",
+      "supersedes": "stateOfHealth",
+      "note": "Annex VII has no single SoH figure: it lists remaining capacity, remaining power, remaining round trip efficiency, self-discharge evolution and resistance. Our one number is a summary, and should be presented as one.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "an application summary figure; not the Article 14 state of health information, which the six data points of rows 61 to 66 carry field by field"
+      }
+    },
+    {
+      "key": "measured",
+      "label": "Measured by",
+      "obligation": "should",
+      "access": "legitimate",
+      "level": "item",
+      "type": "enum",
+      "options": [
+        {
+          "value": "manufacturer",
+          "label": "The maker"
+        },
+        {
+          "value": "authorised-service",
+          "label": "An authorised service partner"
+        },
+        {
+          "value": "independent-lab",
+          "label": "An independent laboratory"
+        },
+        {
+          "value": "operator",
+          "label": "The operator or fleet"
+        },
+        {
+          "value": "repurposer",
+          "label": "A repurposer"
+        },
+        {
+          "value": "recycler",
+          "label": "A recycler"
+        }
+      ],
+      "closed": true,
+      "dynamic": true,
+      "source": "event",
+      "clause": "app",
+      "specName": "not in the spec: who measured, and when",
+      "legalRef": "app addition",
+      "supersedes": "measured",
+      "note": "Closed, and closable because the attribute is ours rather than the spec's: no consumer outside the app depends on this vocabulary, so fixing it costs no interop. Who measured decides how much a reading is worth.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "note": "app addition"
+      }
+    },
+    {
+      "key": "manufacturerAddress",
+      "label": "Manufacturer postal address",
+      "obligation": "must",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "street",
+          "label": "Street address",
+          "type": "text"
+        },
+        {
+          "key": "postalCode",
+          "label": "Postal code",
+          "type": "text"
+        },
+        {
+          "key": "city",
+          "label": "City",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "country",
+          "label": "Country",
+          "type": "country",
+          "pattern": "^[A-Z]{2}$",
+          "patternHint": "a two-letter country code",
+          "required": true
+        }
+      ],
+      "group": "6.1",
+      "source": "brand",
+      "legalRef": "Annex VI Part A(1): the postal address of the manufacturer, indicating a single contact point",
+      "note": "The mandatory half of what manufacturerContact carried as one string; the city and the country are the parts that identify a single contact point.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(1)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 4: EV mandatory, LMT mandatory, industrial mandatory"
+      }
+    },
+    {
+      "key": "manufacturerWeb",
+      "label": "Manufacturer web address",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "url",
+      "group": "6.1",
+      "source": "brand",
+      "legalRef": "Annex VI Part A(1): web address, if available",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(1)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 5: EV optional, LMT optional, industrial optional; optional, to be filled if such data is available"
+      }
+    },
+    {
+      "key": "manufacturerEmail",
+      "label": "Manufacturer email address",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "text",
+      "maxLength": 254,
+      "group": "6.1",
+      "source": "brand",
+      "legalRef": "Annex VI Part A(1): email address, if available",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(1)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 5: EV optional, LMT optional, industrial optional; optional, to be filled if such data is available"
+      }
+    },
+    {
+      "key": "manufacturingMonth",
+      "label": "Month of manufacture",
+      "obligation": "nice",
+      "access": "public",
+      "level": "item",
+      "type": "monthYear",
+      "group": "6.1",
+      "source": "form",
+      "legalRef": "Annex VI Part A(4): the date of manufacturing as month and year",
+      "note": "For a source that supplies month and year only. manufacturingDate at day precision remains the primary carrier; a month is never widened to a day.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex VI Part A(4)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 9: EV mandatory, LMT mandatory, industrial mandatory; the guidance asks for month and year"
+      }
+    },
+    {
+      "key": "warrantyTerms",
+      "label": "Commercial warranty terms",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "warrantyTerms",
+      "group": "6.1",
+      "source": "form",
+      "legalRef": "Annex XIII 1 (m): the period for which the commercial warranty for the calendar life applies",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (m)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 35: EV if-applicable:warranty-envisaged, LMT if-applicable:warranty-envisaged, industrial if-applicable:warranty-envisaged; the guidance asks for a period, which fits the model; an item expiry is derived only from an evidenced start"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "if a commercial warranty is envisaged; a missing value stays unresolved until declared inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "operatingTemperatureRange",
+      "label": "Operating temperature range",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "lower",
+          "label": "Lower limit",
+          "type": "integer",
+          "unit": "°C",
+          "required": true
+        },
+        {
+          "key": "upper",
+          "label": "Upper limit",
+          "type": "integer",
+          "unit": "°C",
+          "required": true
+        }
+      ],
+      "group": "6.7",
+      "source": "form",
+      "legalRef": "Annex XIII 1 (h) and (i): the temperature range that qualifies the voltage and power values when relevant",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (h); Annex XIII 1 (i)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance rows 26 to 28 and 30: with temperature range when relevant"
+      }
+    },
+    {
+      "key": "ratedCapacityCurrentAh",
+      "label": "Rated capacity, current",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "measurement",
+      "unit": "Ah",
+      "dynamic": true,
+      "group": "6.7",
+      "source": "event",
+      "legalRef": "Annex XIII 4 (a): the rated capacity as a dynamic value after a change of status",
+      "note": "The model declaration stays in ratedCapacityAh; this is the per-item re-declared value with its method and time.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (a)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 51: EV dynamic-same-as-11, LMT dynamic-same-as-11, industrial if-applicable; the same value as data point 11 but now dynamic"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "ev",
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance says the data point is only applicable for some industrial batteries, or if applicable, and prints no criterion; a value applies to a vehicle or light transport battery, and for an industrial or stationary battery a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields or supplies it",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "resistanceCurrentOhm",
+      "label": "Internal resistance, current",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "measurement",
+      "unit": "Ω",
+      "dynamic": true,
+      "group": "6.7",
+      "source": "event",
+      "legalRef": "Annex XIII 4 (b); Art. 14: the ohmic resistance as state of health information, where possible",
+      "note": "Every resistance field of the previous version is a model declaration; this is the per-item reading of row 66.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (b); Article 14",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 66: EV not-to-be-displayed, LMT mandatory, industrial if-applicable; where possible"
+      },
+      "applicabilityRule": {
+        "rule": "any",
+        "rules": [
+          {
+            "rule": "category-in",
+            "categories": [
+              "lmt"
+            ]
+          },
+          {
+            "rule": "all",
+            "rules": [
+              {
+                "rule": "category-in",
+                "categories": [
+                  "industrial",
+                  "stationary"
+                ]
+              },
+              {
+                "rule": "unresolved",
+                "reason": "the guidance makes this state of health data point mandatory for light transport, if applicable for industrial and stationary, and not to be displayed for vehicles; for an industrial or stationary battery a missing value stays unresolved until declared inapplicable or supplied",
+                "source": "eu-battery-guidance-2026-08"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "temperatureSeries",
+      "label": "Temperature, periodically recorded",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "measurement",
+      "unit": "°C",
+      "repeat": true,
+      "dynamic": true,
+      "group": "6.7",
+      "source": "event",
+      "legalRef": "Annex XIII 4 (d): periodically recorded information on the operating environmental conditions, including temperature",
+      "note": "The series the guidance names; temperatureRecord carries the latest reading.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 70: EV if-applicable, LMT if-applicable, industrial if-applicable"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "stateOfChargeSeries",
+      "label": "State of charge, periodically recorded",
+      "obligation": "must",
+      "access": "legitimate",
+      "level": "item",
+      "type": "measurement",
+      "unit": "%",
+      "repeat": true,
+      "dynamic": true,
+      "group": "6.7",
+      "source": "event",
+      "legalRef": "Annex XIII 4 (d): periodically recorded information on the state of charge",
+      "note": "The series the guidance names; stateOfCharge carries the latest reading.",
+      "requirement": {
+        "status": "enacted",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 4 (d)",
+        "effectiveDate": "2027-02-18",
+        "note": "guidance row 71: EV if-applicable, LMT if-applicable, industrial if-applicable"
+      },
+      "applicabilityRule": {
+        "rule": "unresolved",
+        "reason": "the guidance says if applicable for every category and prints no criterion; a present value applies and a missing value stays unresolved until the record declares the field inapplicable under inapplicableFields",
+        "source": "eu-battery-guidance-2026-08"
+      }
+    },
+    {
+      "key": "instructionsForUse",
+      "label": "Instructions for use",
+      "obligation": "should",
+      "access": "public",
+      "level": "model",
+      "type": "document",
+      "awaitingAct": "Omnibus adoption of the application provisions for Annex XIII 1 (t)",
+      "group": "6.2",
+      "source": "form",
+      "legalRef": "Annex XIII 1 (t): clear, understandable and readable instructions for use in a format that can be printed, downloaded and saved",
+      "requirement": {
+        "status": "not-to-be-displayed",
+        "source": "eu-batteries-regulation",
+        "clause": "Annex XIII 1 (t)",
+        "note": "guidance row 44: EV not-to-be-displayed:on-hold, LMT not-to-be-displayed:on-hold, industrial not-to-be-displayed:on-hold; application provisions on hold pending Omnibus adoption; the slot exists so the clause is not lost and is never required or shown as required"
+      }
+    },
+    {
+      "key": "inapplicableFields",
+      "label": "Declared inapplicable fields",
+      "obligation": "nice",
+      "access": "public",
+      "level": "model",
+      "type": "record",
+      "fields": [
+        {
+          "key": "field",
+          "label": "Field key",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "reason",
+          "label": "Reason",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "declaredBy",
+          "label": "Declared by",
+          "type": "text"
+        }
+      ],
+      "repeat": true,
+      "group": "app",
+      "source": "form",
+      "legalRef": "none: the profile's own declaration by which a record says that a conditional data point does not apply to it, with the reason",
+      "note": "A declaration is an assertion by the declaring party under the record's authorisation; it is shown beside the field it concerns and is never read as the field's value.",
+      "requirement": {
+        "status": "none",
+        "source": "profile addition",
+        "clause": "none",
+        "note": "a declaration is how a missing conditional value stops being unresolved; it never makes a required enacted field optional"
+      },
+      "overridable": {
+        "at": "item",
+        "policy": "inapplicability-declaration@1"
+      }
+    }
+  ]
+}

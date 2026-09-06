@@ -1,0 +1,39 @@
+{
+	"@context": {
+		"schema": "https://schema.org/",
+		"gs1": "http://gs1.org/voc/",
+		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		"rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+		"owl": "http://www.w3.org/2002/07/owl#",
+		"dcterms": "http://purl.org/dc/terms/",
+		"xsd": "http://www.w3.org/2001/XMLSchema#",
+		"skos": "http://www.w3.org/2004/02/skos/core#",
+		"gs1:value": {
+			"@type": "xsd:float"
+		},
+		"@protected": true,
+		"href": "@id",
+		"hreflang": {
+			"@id": "dcterms:language",
+			"@container": "@set"
+		},
+		"title": {
+			"@id": "dcterms:title"
+		},
+		"title*": {
+			"@id": "dcterms:title",
+			"@container": "@set"
+		},
+		"type": {
+			"@id": "dcterms:format"
+		},
+		"modified": {
+			"@id": "dcterms:modified"
+		},
+		"itemDescription": {
+			"@id": "rdfs:comment"
+		},
+		"linkset": "@nest",
+		"anchor": "@id"
+	}
+}
