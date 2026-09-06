@@ -18,8 +18,24 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const setPath = process.argv[2] ?? 'release/dpp-release-2026-09.json'
+/**
+ * The set to pack: the one named on the command line, else the current
+ * candidate under release/, which is the newest set whose status is not
+ * superseded. A superseded set records versions the tree has moved past, so
+ * packing it by default would refuse every package that moved.
+ */
+const currentSet = () => {
+  const candidates = readdirSync(join(root, 'release'))
+    .filter((name) => /^dpp-release-.*\.json$/.test(name))
+    .map((name) => ({ name, set: JSON.parse(readFileSync(join(root, 'release', name), 'utf8')) }))
+    .filter(({ set }) => set.status !== 'superseded')
+    .sort((a, b) => a.name.localeCompare(b.name))
+  if (candidates.length === 0) throw new Error('no release set under release/ is current; name one on the command line')
+  return `release/${candidates.at(-1).name}`
+}
+const setPath = process.argv[2] ?? currentSet()
 const set = JSON.parse(readFileSync(join(root, setPath), 'utf8'))
+console.log(`packing ${setPath}`)
 const out = join(root, 'release', 'candidates')
 rmSync(out, { recursive: true, force: true })
 mkdirSync(out, { recursive: true })
