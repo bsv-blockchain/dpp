@@ -23,14 +23,29 @@ const sha256 = (relative) => createHash('sha256').update(readFileSync(join(root,
 
 // The baseline first, because the ledger pins the baseline file itself: its
 // fixture digests must be final before the ledger records its digest.
-const baseline = read('conformance/baseline-native-1.json')
-let fixtures = 0
-for (const f of baseline.fixtures) {
-  const digest = sha256(f.path)
-  if (f.sha256 !== digest) { f.sha256 = digest; fixtures += 1 }
+for (const path of ['conformance/baseline-native-1.json', 'conformance/baseline-native-2.json']) {
+  const baseline = read(path)
+  let fixtures = 0
+  for (const f of baseline.fixtures) {
+    const digest = sha256(f.path)
+    if (f.sha256 !== digest) { f.sha256 = digest; fixtures += 1 }
+  }
+  write(path, baseline)
+  console.log(`${fixtures} fixture digest${fixtures === 1 ? '' : 's'} moved in ${path}.`)
 }
-write('conformance/baseline-native-1.json', baseline)
-console.log(`${fixtures} fixture digest${fixtures === 1 ? '' : 's'} moved in conformance/baseline-native-1.json.`)
+
+// The release sets: the artefact digests each names, so a changed contract
+// or fixture moves the set's record and the checker says so.
+for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f))) {
+  const set = read(`release/${name}`)
+  let moved = 0
+  for (const a of set.artefacts) {
+    const digest = sha256(a.path)
+    if (a.sha256 !== digest) { a.sha256 = digest; moved += 1 }
+  }
+  write(`release/${name}`, set)
+  console.log(`${moved} artefact digest${moved === 1 ? '' : 's'} moved in release/${name}.`)
+}
 
 const ledger = read('conformance/manifest.json')
 let pinned = 0

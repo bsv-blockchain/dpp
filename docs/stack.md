@@ -2,7 +2,7 @@
 
 **Status: informative.** The specification and contracts define the requirements. This map identifies reusable BSV components and the additional credential capability supplied by this repository.
 
-The native packages pin `@bsv/sdk` 2.1.4 and the overlay host pins `@bsv/overlay` 2.0.3. The current stack source baseline reviewed for the generic attestation integration is `98734b07cf0845bff239e38b2f3a26177ee1ea12`. Package manifests and lockfiles select the versions actually used; availability in upstream source does not mean a deployed application has integrated a capability.
+The native packages pin `@bsv/sdk` 2.4.2 and the overlay host pins `@bsv/overlay` 2.3.1 (which resolves `@bsv/gasp` 1.3.6); the packages and the index image run on Node 22. The current stack source baseline reviewed for the generic attestation integration is `98734b07cf0845bff239e38b2f3a26177ee1ea12`. Package manifests and lockfiles select the versions actually used; availability in upstream source does not mean a deployed application has integrated a capability.
 
 Use the [official stack documentation](https://bsv-blockchain.github.io/ts-stack/) for package boundaries and contracts, the [source repository](https://github.com/bsv-blockchain/ts-stack) for exact implementation behaviour, and [DeepWiki](https://deepwiki.com/bsv-blockchain/ts-stack) for supporting navigation. Verify method-specific identity and proof support against the selected component version.
 
@@ -11,6 +11,7 @@ Use the [official stack documentation](https://bsv-blockchain.github.io/ts-stack
 | Native token state encoding and verification | SDK Script, PublicKey, ECDSA, KeyDeriver, BEEF and MerklePath | `@bsv/dpp-core`; [record model](../spec/record-model.md) |
 | Key custody and transaction writing | BRC-100 WalletClient, wallet-toolbox and compatible wallets | Native signing and spending through the selected wallet, without requiring an application account holder to operate one |
 | Owner keys and optional consent | BRC-42 derivation and BRC-69 linkage evidence | [Custody](../spec/custody.md), with explicit recovery and disclosure limits |
+| Version 2 records and managed custody | The same primitives: the anchor rail's VarInt framing for the preimages, BRC-42 for the controller key, BRC-69 for the control proof, SDK ECDSA over canonical JSON for the acceptance record | [Record model version 2](../spec/record-model-v2.md), [managed custody](../spec/managed-custody.md); `ACCEPTANCE_COMMITMENT` and `CONTROL_AUTHORITIES` on the index |
 | Generic attestation anchoring | SDK signatures, public child-key derivation and script primitives | Ten-field `bsv-attestation-anchor-v1`; [anchor rules](../spec/rules.md) |
 | Topic admission and indexing | Overlay Engine, TopicManager and LookupService | `tm_dpp`/`ls_dpp`, current `tm_attestation`/`ls_attestation`, separate historical `tm_uora_dpp`/`ls_uora_dpp` |
 | Submission and lookup | TopicBroadcaster, LookupResolver, BRC-22 and BRC-24 | [Overlay HTTP contract](../contracts/overlay.yaml); exact metadata selectors and bounded outpoint cursors for current anchors |
@@ -22,6 +23,8 @@ Use the [official stack documentation](https://bsv-blockchain.github.io/ts-stack
 | VSC credential cryptography | Maintained Ed25519Signature2020 and bbs-2023 suites | `@bsv/vsc`; no BSV runtime dependency, with a separate explicit BSV anchor adapter |
 
 The canonical generic topic components in the stack live under `packages/overlays/topics/src/attestation`. The DPP implementation exposes its corresponding components from `@bsv/dpp-overlay-topics`. [Portable fixtures](../fixtures/attestation-anchor-v1.json) pin the same signed metadata, secured bytes and script so separately built consumers can verify agreement. Select a release containing the current generic format explicitly; an older UORA topic export is not a format-compatible substitute.
+
+Two habits of the current SDK bear on the writer's announcement duty ([`../spec/writing.md`](../spec/writing.md) §6). `Beef.toBinaryAtomic` serialises exactly the subject and its unproven ancestry, so a state that spends a proven predecessor travels without the predecessor's bytes; the reference index then judges it against the predecessor it already holds, and a writer that wants the whole chain in one announcement frames the atomic prefix over a full BEEF itself, as the overlay suite's `atomicOver` helper shows. And a state a peer synchronises through GASP arrives as an atomic BEEF and is stored as such, so two operators serving one lineage may hold the same transaction in two BEEF framings, which decode identically.
 
 Generic PushDrop decoding alone is insufficient for either native wire format. The DPP readers enforce the exact field count, UTF-8, key encoding, signature preimages and drop tail. Any alternative implementation must reproduce those checks and the refusal vectors.
 

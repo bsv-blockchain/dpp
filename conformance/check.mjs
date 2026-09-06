@@ -10,9 +10,9 @@
  * source's digest still matches its file, and a moved file invalidates every
  * row that cites it; every claim names rows that exist, and a claim is refused
  * while any required row is unassessed or below the claim's minimum status;
- * the baseline's role requirements exist, its fixtures' digests match, and its
+ * each baseline's role requirements exist, its fixtures' digests match, and its
  * wire values are the ones the reference implementation exports; every report
- * in fixtures/evidence-v1.json validates against the report schema with its
+ * in fixtures/evidence-v1.json and fixtures/evidence-v2.json validates against the report schema with its
  * checks in the schema's order; the example capability document validates;
  * and the recorded dependency licences match what is installed.
  *
@@ -23,7 +23,7 @@
  * dangling reference, a moved source or a licence that changed.
  */
 import { createHash } from 'node:crypto'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020 } from 'ajv/dist/2020.js'
@@ -33,14 +33,17 @@ import {
   ATTESTATION_ANCHOR_PREFIX,
   ATTESTATION_ANCHOR_PROTOCOL,
   DPP_PROTOCOL_ID,
+  DPP_PROTOCOL_ID_V2,
   EVIDENCE_CHECK_NAMES,
   FIELD_COUNT,
+  FIELD_COUNT_V2,
   LIFECYCLE_CLAIM_FORMAT,
   LIFECYCLE_CLAIM_PROTOCOL,
   OWNER_PROTOCOL_ID,
   PROTOCOL_MARKER,
   REPORT_VERSION,
   STANDARD_VERSION,
+  STANDARD_VERSION_V2,
 } from '@bsv/dpp-core'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -54,8 +57,10 @@ const blocked = (sentence) => console.log(`blocked: ${sentence}`)
 
 const ajv = new Ajv2020({ allErrors: true, strict: false })
 addFormats(ajv)
+const compiled = new Map()
 const validateWith = (schemaPath, value, name) => {
-  const validate = ajv.compile(read(schemaPath))
+  if (!compiled.has(schemaPath)) compiled.set(schemaPath, ajv.compile(read(schemaPath)))
+  const validate = compiled.get(schemaPath)
   if (validate(value)) { note(`${name} validates against ${schemaPath}.`); return true }
   for (const e of validate.errors ?? []) defect(`${name} ${e.instancePath || '/'} ${e.message}${e.params?.allowedValues ? ` (${e.params.allowedValues.join(', ')})` : ''}.`)
   return false
@@ -114,54 +119,115 @@ for (const claim of ledger.claims) {
   else blocked(`claim ${claim.id} cannot be made: ${problems.join('; ')}.`)
 }
 
-// 3. The baseline.
-const baseline = read('conformance/baseline-native-1.json')
-validateWith('conformance/baseline.schema.json', baseline, 'conformance/baseline-native-1.json')
+// 3. The baselines: native-baseline@1 reads version 1, native-baseline@2 reads both.
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
-const expectWire = (label, actual, expected) => (same(actual, expected) ? note(`baseline ${label} is ${JSON.stringify(expected)}, as the reference exports it.`) : defect(`baseline ${label} is ${JSON.stringify(actual)} but the reference exports ${JSON.stringify(expected)}.`))
-expectWire('record.protocolMarker', baseline.wire.record.protocolMarker, PROTOCOL_MARKER)
-expectWire('record.version', baseline.wire.record.version, STANDARD_VERSION)
-expectWire('record.fieldCount', baseline.wire.record.fieldCount, FIELD_COUNT)
-expectWire('nativeClaim.claimFormat', baseline.wire.nativeClaim.claimFormat, LIFECYCLE_CLAIM_FORMAT)
-expectWire('anchor.prefix', baseline.wire.anchor.prefix, ATTESTATION_ANCHOR_PREFIX)
-expectWire('anchor.signedFieldCount', baseline.wire.anchor.signedFieldCount, ATTESTATION_ANCHOR_FIELD_COUNT)
-expectWire('verificationReport.reportVersion', baseline.wire.verificationReport.reportVersion, REPORT_VERSION)
-expectWire('verificationReport.checkNames', baseline.wire.verificationReport.checkNames, [...EVIDENCE_CHECK_NAMES])
-expectWire('derivations.userSignature.protocolId', baseline.derivations.userSignature.protocolId, DPP_PROTOCOL_ID)
-expectWire('derivations.ownerKey.protocolId', baseline.derivations.ownerKey.protocolId, OWNER_PROTOCOL_ID)
-expectWire('derivations.nativeClaimSignature.protocolId', baseline.derivations.nativeClaimSignature.protocolId, LIFECYCLE_CLAIM_PROTOCOL)
-expectWire('derivations.anchorSignature.protocolId', baseline.derivations.anchorSignature.protocolId, ATTESTATION_ANCHOR_PROTOCOL)
-for (const [role, spec] of Object.entries(baseline.roles)) {
-  for (const id of [...spec.requires, ...(spec.optional ?? [])]) {
-    if (!rows.has(id)) defect(`baseline role ${role} names requirement ${id}, which the ledger does not carry.`)
+const checkBaseline = (path, record) => {
+  const baseline = read(path)
+  validateWith('conformance/baseline.schema.json', baseline, path)
+  const expectWire = (label, actual, expected) => (same(actual, expected) ? note(`${baseline.baselineId} ${label} is ${JSON.stringify(expected)}, as the reference exports it.`) : defect(`${baseline.baselineId} ${label} is ${JSON.stringify(actual)} but the reference exports ${JSON.stringify(expected)}.`))
+  expectWire('record.protocolMarker', baseline.wire.record.protocolMarker, PROTOCOL_MARKER)
+  expectWire('record.version', baseline.wire.record.version, record.version)
+  expectWire('record.fieldCount', baseline.wire.record.fieldCount, record.fieldCount)
+  if (record.alsoReads != null) {
+    expectWire('record.alsoReads.version', baseline.wire.record.alsoReads?.version, record.alsoReads.version)
+    expectWire('record.alsoReads.fieldCount', baseline.wire.record.alsoReads?.fieldCount, record.alsoReads.fieldCount)
+    expectWire('derivations.actorSignatureV2.protocolId', baseline.derivations.actorSignatureV2?.protocolId, DPP_PROTOCOL_ID_V2)
+    expectWire('derivations.publisherSignatureV2.protocolId', baseline.derivations.publisherSignatureV2?.protocolId, DPP_PROTOCOL_ID_V2)
+    expectWire('derivations.controllerKey.protocolId', baseline.derivations.controllerKey?.protocolId, OWNER_PROTOCOL_ID)
   }
-  const below = spec.requires.filter((id) => rows.get(id) != null && rank[rows.get(id).status] < rank.tested)
-  if (below.length === 0) note(`baseline role ${role}: every mandatory requirement is tested.`)
-  else blocked(`baseline role ${role}: ${below.map((id) => `${id} is ${rows.get(id).status}`).join(', ')}.`)
+  expectWire('nativeClaim.claimFormat', baseline.wire.nativeClaim.claimFormat, LIFECYCLE_CLAIM_FORMAT)
+  expectWire('anchor.prefix', baseline.wire.anchor.prefix, ATTESTATION_ANCHOR_PREFIX)
+  expectWire('anchor.signedFieldCount', baseline.wire.anchor.signedFieldCount, ATTESTATION_ANCHOR_FIELD_COUNT)
+  expectWire('verificationReport.reportVersion', baseline.wire.verificationReport.reportVersion, REPORT_VERSION)
+  expectWire('verificationReport.checkNames', baseline.wire.verificationReport.checkNames, [...EVIDENCE_CHECK_NAMES])
+  expectWire('derivations.userSignature.protocolId', baseline.derivations.userSignature.protocolId, DPP_PROTOCOL_ID)
+  expectWire('derivations.ownerKey.protocolId', baseline.derivations.ownerKey.protocolId, OWNER_PROTOCOL_ID)
+  expectWire('derivations.nativeClaimSignature.protocolId', baseline.derivations.nativeClaimSignature.protocolId, LIFECYCLE_CLAIM_PROTOCOL)
+  expectWire('derivations.anchorSignature.protocolId', baseline.derivations.anchorSignature.protocolId, ATTESTATION_ANCHOR_PROTOCOL)
+  for (const [role, spec] of Object.entries(baseline.roles)) {
+    for (const id of [...spec.requires, ...(spec.optional ?? [])]) {
+      if (!rows.has(id)) defect(`${baseline.baselineId} role ${role} names requirement ${id}, which the ledger does not carry.`)
+    }
+    const below = spec.requires.filter((id) => rows.get(id) != null && rank[rows.get(id).status] < rank.tested)
+    if (below.length === 0) note(`${baseline.baselineId} role ${role}: every mandatory requirement is tested.`)
+    else blocked(`${baseline.baselineId} role ${role}: ${below.map((id) => `${id} is ${rows.get(id).status}`).join(', ')}.`)
+  }
+  for (const f of baseline.fixtures) {
+    if (!existsSync(join(root, f.path))) { defect(`${baseline.baselineId} fixture ${f.path} does not exist.`); continue }
+    const actual = sha256(f.path)
+    if (actual === f.sha256) note(`${baseline.baselineId} fixture ${f.path} has the recorded digest.`)
+    else defect(`${baseline.baselineId} fixture ${f.path} has digest ${actual.slice(0, 12)}…, not the recorded ${f.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
+  }
 }
-for (const f of baseline.fixtures) {
-  if (!existsSync(join(root, f.path))) { defect(`baseline fixture ${f.path} does not exist.`); continue }
-  const actual = sha256(f.path)
-  if (actual === f.sha256) note(`baseline fixture ${f.path} has the recorded digest.`)
-  else defect(`baseline fixture ${f.path} has digest ${actual.slice(0, 12)}…, not the recorded ${f.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
-}
+checkBaseline('conformance/baseline-native-1.json', { version: STANDARD_VERSION, fieldCount: FIELD_COUNT })
+checkBaseline('conformance/baseline-native-2.json', { version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2, alsoReads: { version: STANDARD_VERSION, fieldCount: FIELD_COUNT } })
 
 // 4. The report schema and every pinned report.
 const reportSchema = read('contracts/verification-report.schema.json')
 if (!same(reportSchema.$defs.checkName.enum, [...EVIDENCE_CHECK_NAMES])) defect('the report schema lists the check names in a different order from the reference implementation.')
 else note('the report schema names the sixteen checks in the reference order.')
 const validateReport = ajv.compile(reportSchema)
-const evidence = read('fixtures/evidence-v1.json')
-let reportDefects = 0
-for (const c of evidence.cases) {
-  if (!validateReport(c.report)) {
-    reportDefects += 1
-    for (const e of validateReport.errors ?? []) defect(`evidence case ${c.id} report ${e.instancePath || '/'} ${e.message}.`)
+for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json']) {
+  const evidence = read(file)
+  let reportDefects = 0
+  for (const c of evidence.cases) {
+    if (!validateReport(c.report)) {
+      reportDefects += 1
+      for (const e of validateReport.errors ?? []) defect(`${file} case ${c.id} report ${e.instancePath || '/'} ${e.message}.`)
+    }
+    if (!same(c.report.checks.map((k) => k.name), [...EVIDENCE_CHECK_NAMES])) { reportDefects += 1; defect(`${file} case ${c.id} lists its checks out of order.`) }
+    if (c.report.checkedAt !== evidence.checkedAt) { reportDefects += 1; defect(`${file} case ${c.id} was checked at ${c.report.checkedAt}, not the fixture's ${evidence.checkedAt}.`) }
   }
-  if (!same(c.report.checks.map((k) => k.name), [...EVIDENCE_CHECK_NAMES])) { reportDefects += 1; defect(`evidence case ${c.id} lists its checks out of order.`) }
-  if (c.report.checkedAt !== evidence.checkedAt) { reportDefects += 1; defect(`evidence case ${c.id} was checked at ${c.report.checkedAt}, not the fixture's ${evidence.checkedAt}.`) }
+  if (reportDefects === 0) note(`all ${evidence.cases.length} pinned reports in ${file} validate against the report schema in check order.`)
 }
-if (reportDefects === 0) note(`all ${evidence.cases.length} pinned reports validate against the report schema in check order.`)
+
+// 4b. The release sets: a compatible set names the packages at the versions
+// their manifests carry, the wire versions the reference exports, the runtime
+// the root requires, a baseline that exists, and artefacts whose digests hold.
+for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f))) {
+  const set = read(`release/${name}`)
+  if (!validateWith('release/release-set.schema.json', set, `release/${name}`)) continue
+  for (const pkg of set.packages) {
+    const manifest = read(`${pkg.directory}/package.json`)
+    if (manifest.name === pkg.name && manifest.version === pkg.version) note(`${set.releaseSet} names ${pkg.name}@${pkg.version}, which ${pkg.directory}/package.json carries.`)
+    else defect(`${set.releaseSet} names ${pkg.name}@${pkg.version} but ${pkg.directory}/package.json carries ${manifest.name}@${manifest.version}.`)
+    for (const entry of pkg.entryPoints) {
+      if (manifest.exports?.[entry] == null) defect(`${set.releaseSet}: ${pkg.name} does not export ${entry}.`)
+    }
+  }
+  const rootManifest = read('package.json')
+  if (set.runtime.node === rootManifest.engines?.node) note(`${set.releaseSet} requires Node ${set.runtime.node}, as the repository does.`)
+  else defect(`${set.releaseSet} requires Node ${set.runtime.node} but the repository requires ${rootManifest.engines?.node}.`)
+  for (const dep of set.runtime.dependencies) {
+    const installed = join(root, 'node_modules', dep.name, 'package.json')
+    if (!existsSync(installed)) { if (dep.name !== '@bsv/wallet-toolbox-client') defect(`${set.releaseSet} names ${dep.name}@${dep.version}, which is not installed here.`); continue }
+    const version = JSON.parse(readFileSync(installed, 'utf8')).version
+    if (version === dep.version) note(`${set.releaseSet} runtime ${dep.name}@${dep.version} is what is installed.`)
+    else defect(`${set.releaseSet} runtime names ${dep.name}@${dep.version} but ${version} is installed.`)
+  }
+  const versions = set.wire.records.map((r) => r.version)
+  if (same(versions, [STANDARD_VERSION, STANDARD_VERSION_V2])) note(`${set.releaseSet} names record versions ${versions.join(' and ')}, as the reference exports them.`)
+  else defect(`${set.releaseSet} names record versions ${versions.join(', ')}; the reference exports ${STANDARD_VERSION} and ${STANDARD_VERSION_V2}.`)
+  for (const r of set.wire.records) {
+    const expected = r.version === STANDARD_VERSION ? { fieldCount: FIELD_COUNT, protocolId: DPP_PROTOCOL_ID } : { fieldCount: FIELD_COUNT_V2, protocolId: DPP_PROTOCOL_ID_V2 }
+    if (r.fieldCount !== expected.fieldCount || !same(r.protocolId, expected.protocolId)) defect(`${set.releaseSet} record version ${r.version} names ${r.fieldCount} fields under ${JSON.stringify(r.protocolId)}; the reference exports ${expected.fieldCount} under ${JSON.stringify(expected.protocolId)}.`)
+  }
+  if (set.wire.verificationReport !== REPORT_VERSION) defect(`${set.releaseSet} names report version ${set.wire.verificationReport}; the reference exports ${REPORT_VERSION}.`)
+  if (set.wire.nativeClaim !== LIFECYCLE_CLAIM_FORMAT) defect(`${set.releaseSet} names native claim ${set.wire.nativeClaim}; the reference exports ${LIFECYCLE_CLAIM_FORMAT}.`)
+  if (set.wire.anchor !== ATTESTATION_ANCHOR_PREFIX) defect(`${set.releaseSet} names anchor ${set.wire.anchor}; the reference exports ${ATTESTATION_ANCHOR_PREFIX}.`)
+  const overlayVersion = /^\s*version:\s*(\S+)/m.exec(readFileSync(join(root, 'contracts/overlay.yaml'), 'utf8'))?.[1]
+  if (set.wire.overlayContract === overlayVersion) note(`${set.releaseSet} names overlay contract ${overlayVersion}, as contracts/overlay.yaml does.`)
+  else defect(`${set.releaseSet} names overlay contract ${set.wire.overlayContract} but contracts/overlay.yaml is ${overlayVersion}.`)
+  const baselinePath = `conformance/baseline-${set.baseline.replace(/^native-baseline@/, 'native-')}.json`
+  if (existsSync(join(root, baselinePath))) note(`${set.releaseSet} claims ${set.baseline}, which ${baselinePath} defines.`)
+  else defect(`${set.releaseSet} claims ${set.baseline}, which no baseline file defines.`)
+  for (const a of set.artefacts) {
+    if (!existsSync(join(root, a.path))) { defect(`${set.releaseSet} artefact ${a.path} does not exist.`); continue }
+    const actual = sha256(a.path)
+    if (actual === a.sha256) note(`${set.releaseSet} artefact ${a.path} has the recorded digest.`)
+    else defect(`${set.releaseSet} artefact ${a.path} has digest ${actual.slice(0, 12)}…, not the recorded ${a.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
+  }
+}
 
 // 5. The capability document.
 validateWith('contracts/capabilities.schema.json', read('conformance/examples/capabilities-reference-node.json'), 'conformance/examples/capabilities-reference-node.json')

@@ -1,0 +1,195 @@
+{
+  "releaseSet": "dpp-release-2026-09",
+  "status": "candidate",
+  "description": "The first compatible release set of the standard's packages: record versions 1 and 2, the managed-custody profile, the verification report, the overlay contract at 0.6.0-draft, on the BSV stack baseline of @bsv/sdk 2.4.2 and @bsv/overlay 2.3.1 under Node 22. Candidate until the packages are published under the versions named here; a package published from this set carries the exact version named, and a later change to any wire contract or profile is a new set.",
+  "baseline": "native-baseline@2",
+  "runtime": {
+    "node": ">=22",
+    "dependencies": [
+      {
+        "name": "@bsv/sdk",
+        "version": "2.4.2"
+      },
+      {
+        "name": "@bsv/overlay",
+        "version": "2.3.1",
+        "note": "resolves @bsv/gasp 1.3.6; consumed by @bsv/dpp-overlay-topics only"
+      },
+      {
+        "name": "mongodb",
+        "version": "7.5.0",
+        "note": "the reference persistence of the index node, replaceable"
+      },
+      {
+        "name": "@bsv/wallet-toolbox-client",
+        "version": "2.11.0",
+        "note": "the application service's wallet, not a dependency of any package here"
+      }
+    ]
+  },
+  "packages": [
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.3.0",
+      "directory": "packages/dpp-core",
+      "role": "the record model (both versions), signatures, chain verification, the verification report, the native claim, the generic anchor, the managed acceptance record, publisher policy and evidence packages",
+      "entryPoints": [
+        "."
+      ],
+      "carries": [
+        "dist"
+      ]
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.3.0",
+      "directory": "packages/overlay-topics",
+      "role": "the topic managers, lookup services, storage adapters, capabilities, history, export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
+      "entryPoints": [
+        "."
+      ],
+      "carries": [
+        "dist"
+      ],
+      "serverOnly": true
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.2.0",
+      "directory": "packages/dpp-profiles",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers",
+      "entryPoints": [
+        ".",
+        "./manifests/*",
+        "./schemas/*",
+        "./generated/*",
+        "./frozen.json"
+      ],
+      "carries": [
+        "dist",
+        "manifests",
+        "schemas",
+        "generated",
+        "frozen.json"
+      ]
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.1.1",
+      "directory": "packages/vsc",
+      "role": "the VSC draft compatibility profile with its owned context and schema artefacts and the two proof suites",
+      "entryPoints": [
+        ".",
+        "./artifacts/*"
+      ],
+      "carries": [
+        "dist",
+        "artifacts"
+      ]
+    }
+  ],
+  "wire": {
+    "records": [
+      {
+        "version": "1",
+        "fieldCount": 14,
+        "protocolId": [
+          1,
+          "dpp token v1"
+        ],
+        "specification": "spec/record-model.md"
+      },
+      {
+        "version": "2",
+        "fieldCount": 17,
+        "protocolId": [
+          1,
+          "dpp token v2"
+        ],
+        "specification": "spec/record-model-v2.md"
+      }
+    ],
+    "nativeClaim": "dpp-lifecycle-v1",
+    "anchor": "bsv-attestation-anchor-v1",
+    "acceptanceRecord": "dpp-managed-acceptance@1",
+    "verificationReport": "1",
+    "overlayContract": "0.6.0-draft"
+  },
+  "custody": {
+    "selected": "managed-custody@1",
+    "profile": "custody",
+    "specification": "spec/managed-custody.md",
+    "alsoSupported": [
+      "record-model-baseline@2",
+      "owner-signed transfer (spec/custody.md section 4) for version 1 lineages"
+    ]
+  },
+  "serviceInterface": {
+    "package": "@dpp/service",
+    "version": "0.2.0",
+    "repository": "bsv-blockchain-demos/dpp-app",
+    "entryPoints": [
+      ".",
+      "./verify",
+      "./server"
+    ],
+    "operations": [
+      "issue",
+      "update",
+      "offer",
+      "accept",
+      "decline",
+      "retire",
+      "upgrade",
+      "status",
+      "operation",
+      "settle",
+      "verify",
+      "exportEvidence"
+    ],
+    "note": "PassportService in the application repository is the account-agnostic entry point over the writer's journal; it consumes the packages above and is not itself published in this set."
+  },
+  "artefacts": [
+    {
+      "path": "conformance/baseline-native-2.json",
+      "sha256": "54255ec2088287560d4a59f78eefbb076d9e1396e35dd09a33afa451a6f672c4",
+      "pins": "the baseline this set claims, with every fixture digest"
+    },
+    {
+      "path": "contracts/overlay.yaml",
+      "sha256": "c01ca3b54de2fba7ca2894a7e359e99856780cbe2e3c68dc7d2e058dad5dd0bb",
+      "pins": "the index's HTTP contract"
+    },
+    {
+      "path": "contracts/verification-report.schema.json",
+      "sha256": "6c54bd1106a7a4aac5bdc0403453d292fc640d033a218b531c2ab35bc156b5ce",
+      "pins": "the report schema and reason codes"
+    },
+    {
+      "path": "contracts/capabilities.schema.json",
+      "sha256": "2b9bcdab73627a146689c1eb73772cf7d7a6ad40d1e71d67046f63d4db9f66d8",
+      "pins": "the capability document"
+    },
+    {
+      "path": "packages/dpp-profiles/frozen.json",
+      "sha256": "d8576103fcd07b2d56d61d984910b97159e2fa1a35037aa2c75efa6d70d93f87",
+      "pins": "the frozen profile manifests"
+    }
+  ],
+  "consumers": [
+    {
+      "name": "bsv-blockchain-demos/dpp-app",
+      "consumes": "verbatim mirrors of packages/dpp-core, packages/overlay-topics and packages/dpp-profiles pinned by blob hash (packages/STANDARD_MIRROR.json), to be replaced by the published packages of this set",
+      "note": "the example consumer with the sector workflows"
+    },
+    {
+      "name": "bsv-blockchain-demos/uora-bsv",
+      "consumes": "the four packages as vendored tarballs, to be replaced by the published packages of this set"
+    }
+  ],
+  "image": {
+    "dockerfile": "packages/overlay-topics/Dockerfile",
+    "preset": "deploy/compose.yml",
+    "tag": "dpp-overlay:0.3.0"
+  }
+}

@@ -1,48 +1,48 @@
 {
   "description": "Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository itself is under the Open BSV License version 4 (LICENSE), including the packages that declare SEE LICENSE IN LICENSE; a package with no BSV runtime dependency is not thereby unrestricted open source.",
   "repositoryLicence": "Open BSV License version 4",
-  "pinnedAt": "2026-09-05",
+  "pinnedAt": "2026-09-06",
   "components": [
     {
       "name": "@bsv/dpp-core",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {
           "name": "@bsv/sdk",
-          "range": "2.1.4",
-          "version": "2.1.4",
+          "range": "2.4.2",
+          "version": "2.4.2",
           "licence": "SEE LICENSE IN LICENSE.txt"
         }
       ]
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": []
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {
           "name": "@bsv/dpp-core",
-          "range": "^0.2.0",
-          "version": "0.2.0",
+          "range": "^0.3.0",
+          "version": "0.3.0",
           "licence": "SEE LICENSE IN LICENSE"
         },
         {
           "name": "@bsv/overlay",
-          "range": "2.0.3",
-          "version": "2.0.3",
+          "range": "2.3.1",
+          "version": "2.3.1",
           "licence": "SEE LICENSE IN LICENSE.txt"
         },
         {
           "name": "@bsv/sdk",
-          "range": "2.1.4",
-          "version": "2.1.4",
+          "range": "2.4.2",
+          "version": "2.4.2",
           "licence": "SEE LICENSE IN LICENSE.txt"
         },
         {
@@ -55,7 +55,7 @@
     },
     {
       "name": "@bsv/vsc",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {

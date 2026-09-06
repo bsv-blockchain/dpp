@@ -142,6 +142,9 @@ export interface NodeComponents {
   serviceIdentityKey?: string
   anchorServiceKeys?: string[]
   ownerConsent?: boolean | { authorities: string[] }
+  /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
+  controlAuthorities?: string[]
+  managedAcceptance?: boolean
   /** SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the Engine holds the same peers as its syncConfiguration. */
   sync?: Pick<SyncSettings, 'peers' | 'intervalMs'>
 }
@@ -502,7 +505,7 @@ async function reconsiderRefusedEarlier(
   const held = await storage.findOutputsForTransaction(txid)
   const refusedEarlier = duplicates.filter((topic) => !held.some((output) => output.topic === topic))
   if (refusedEarlier.length === 0) return []
-  for (const topic of refusedEarlier) await storage.deleteAppliedTransaction({ txid, topic })
+  for (const topic of refusedEarlier) await storage.deleteAppliedTransaction(txid, topic)
   const again = await engine.submit({ beef, topics: refusedEarlier, offChainValues })
   for (const topic of refusedEarlier) if (again[topic] != null) steak[topic] = again[topic]
   return refusedEarlier
@@ -612,6 +615,8 @@ async function handle(
         serviceIdentityKey: components?.serviceIdentityKey,
         anchorServiceKeys: components?.anchorServiceKeys,
         ownerConsent: components?.ownerConsent,
+        controlAuthorities: components?.controlAuthorities,
+        managedAcceptance: components?.managedAcceptance,
         exportAvailable: options.exportSigner != null,
         networkOracleConfigured: options.knownOnChain != null,
         at: options.now(),
@@ -782,6 +787,30 @@ async function handle(
       if (typeof outputIndex !== 'number' || !Number.isSafeInteger(outputIndex) || outputIndex < 0) {
         throw new HttpError(400, 'outputIndex must be a non-negative integer')
       }
+      /*
+       * Answered from this index's own storage first, by the transaction the
+       * peer asked for. The engine's provider walks the graph from its root
+       * through hydrated inputs, and since `@bsv/overlay` 2.3.1 the engine
+       * stores a proven state as the compact atomic BEEF of that state alone,
+       * so a walk from a proven tip meets an unhydrated input at the first
+       * step and a peer starting from nothing could never fetch a lineage
+       * whose tip is proven. Every retained state is held here with its own
+       * proof, so the node the peer names is served directly; the engine's
+       * walk remains the answer for anything this index does not hold by
+       * outpoint.
+       */
+      const held = options.components?.engineStorage == null ? undefined : await options.components.engineStorage.findOutput(txid, outputIndex, undefined, undefined, true)
+      if (held?.beef != null) {
+        try {
+          const tx = Transaction.fromBEEF(held.beef)
+          if (tx.id('hex') === txid) {
+            json(response, 200, { rawTx: tx.toHex(), graphID, outputIndex, ...(tx.merklePath == null ? {} : { proof: tx.merklePath.toHex() }) })
+            return
+          }
+        } catch {
+          // A stored BEEF this reader cannot parse falls through to the engine.
+        }
+      }
       try {
         json(response, 200, await engine.provideForeignGASPNode(graphID, txid, outputIndex))
       } catch (cause) {
@@ -851,6 +880,8 @@ async function handle(
         publisherPolicy: options.components.publisherPolicy,
         serviceIdentityKey: options.components.serviceIdentityKey,
         ownerConsent: options.components.ownerConsent,
+        controlAuthorities: options.components.controlAuthorities,
+        managedAcceptance: options.components.managedAcceptance,
         chainTracker: options.chainTracker,
         now: options.now(),
         software: options.software,
@@ -1052,6 +1083,28 @@ export function ownerConsentPolicy(): boolean | { authorities: string[] } {
 }
 
 /**
+ * The version 2 admission options (`spec/record-model-v2.md` §6,
+ * `spec/managed-custody.md`). ACCEPTANCE_COMMITMENT=required selects the
+ * managed-custody profile: a version 2 TRANSFER is admitted only with its
+ * acceptance commitment. CONTROL_AUTHORITIES names, comma-separated, the
+ * identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted without
+ * a control proof; absent, the TRANSFER_AUTHORITIES serve both versions.
+ * Public keys only, validated when the topic manager is built; any other value
+ * of ACCEPTANCE_COMMITMENT fails the boot.
+ */
+export function versionTwoAdmission(): { managedAcceptance: boolean; controlAuthorities?: string[] } {
+  const declared = (process.env.ACCEPTANCE_COMMITMENT ?? '').trim()
+  if (declared !== '' && declared !== 'required') {
+    throw new Error(`ACCEPTANCE_COMMITMENT must be "required" or unset, got "${declared}"`)
+  }
+  const authorities = (process.env.CONTROL_AUTHORITIES ?? '')
+    .split(',')
+    .map((key) => key.trim())
+    .filter((key) => key !== '')
+  return { managedAcceptance: declared === 'required', ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }) }
+}
+
+/**
  * EXPORT_SIGNING_KEY: the private key that signs evidence-package manifests
  * (`spec/portable-evidence.md` section 2). Optional, because a node that
  * exports nothing needs no key; malformed, it fails the boot, because a key
@@ -1177,6 +1230,15 @@ async function engineFromEnvironment(
   }
 
   const ownerConsent = ownerConsentPolicy()
+  const versionTwo = versionTwoAdmission()
+  console.log(
+    versionTwo.managedAcceptance
+      ? `${TOPIC} admits a version 2 TRANSFER only with its acceptance commitment (ACCEPTANCE_COMMITMENT=required, the managed-custody profile)`
+      : `${TOPIC} admits a version 2 TRANSFER with or without an acceptance commitment (ACCEPTANCE_COMMITMENT is unset)`
+  )
+  if (versionTwo.controlAuthorities != null) {
+    console.log(`${TOPIC} admits version 2 states by the control authorities ${versionTwo.controlAuthorities.join(', ')} without a control proof`)
+  }
   if (ownerConsent === false) {
     console.log(`${TOPIC} admits any signed TRANSFER that spends the tip (OWNER_CONSENT is unset)`)
   } else {
@@ -1206,7 +1268,7 @@ async function engineFromEnvironment(
       // The engine's storage is handed to tm_dpp so a state whose BEEF omits
       // its admitted predecessor (a proven state announced alone, or one a
       // peer offers) is judged against the predecessor this index holds.
-      [TOPIC]: new DppTopicManager(identityKey ?? '', { ownerConsent, publisherPolicy: publisherPolicy?.chain, admittedOutputs: engineStorage }),
+      [TOPIC]: new DppTopicManager(identityKey ?? '', { ownerConsent, ...versionTwo, publisherPolicy: publisherPolicy?.chain, admittedOutputs: engineStorage }),
       [ATTESTATION_TOPIC]: new AttestationTopicManager(acceptedAnchorServices, { publisherPolicy: publisherPolicy?.chain }),
       [UORA_TOPIC]: new UoraAnchorTopicManager(acceptedAnchorServices),
     },
@@ -1231,6 +1293,8 @@ async function engineFromEnvironment(
     serviceIdentityKey: identityKey,
     anchorServiceKeys: acceptedAnchorServices,
     ownerConsent,
+    managedAcceptance: versionTwo.managedAcceptance,
+    ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
     sync: { peers: sync.peers, intervalMs: sync.intervalMs },
   }
   return { engine, components, close }

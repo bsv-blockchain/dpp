@@ -12,7 +12,9 @@ import {
   ATTESTATION_ANCHOR_PREFIX,
   LIFECYCLE_MEDIA_TYPE,
   LIFECYCLE_REPRESENTATION,
+  MANAGED_CUSTODY_PROFILE,
   STANDARD_VERSION,
+  STANDARD_VERSION_V2,
   policyInForceAt,
 } from '@bsv/dpp-core'
 import { DPP_TOPIC } from './tmDpp.js'
@@ -31,7 +33,7 @@ import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
  * test holds the two equal, so the document cannot claim a contract version
  * the file does not carry.
  */
-export const OVERLAY_HTTP_CONTRACT_VERSION = '0.5.0-draft'
+export const OVERLAY_HTTP_CONTRACT_VERSION = '0.6.0-draft'
 
 /** The recommended baseline this node claims (`conformance/baseline-native-1.json`). */
 export const BASELINE_ID = 'native-baseline@1'
@@ -104,6 +106,10 @@ export interface CapabilityInput {
   /** ANCHOR_SERVICE_KEYS: the anchoring services admitted when no chain is configured. */
   anchorServiceKeys?: string[]
   ownerConsent?: boolean | { authorities: string[] }
+  /** CONTROL_AUTHORITIES: identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted without a control proof. */
+  controlAuthorities?: string[]
+  /** ACCEPTANCE_COMMITMENT=required: the managed-custody profile is selected, so a version 2 TRANSFER must carry its acceptance commitment. */
+  managedAcceptance?: boolean
   /** Whether EXPORT_SIGNING_KEY is set. */
   exportAvailable: boolean
   /** Whether POST /retract can ask the network about a transaction (false under CHAIN_TRACKER=scripts-only). */
@@ -160,6 +166,8 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   const anchorsUnrestricted = anchorPolicyKeys == null && anchoringServices.length === 0
   const consentSelected = input.ownerConsent != null && input.ownerConsent !== false
   const transferAuthorities = typeof input.ownerConsent === 'object' ? [...input.ownerConsent.authorities] : []
+  const controlAuthorities = input.controlAuthorities ?? transferAuthorities
+  const managedAcceptance = input.managedAcceptance === true
 
   const unsupported: CapabilityDocument['unsupported'] = [
     { id: 'ship-slap-discovery', reason: 'This node advertises nothing; a public deployment declares its discovery profile separately.' },
@@ -205,6 +213,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
     roles: ['overlay'],
     protocols: [
       { id: 'dpp-record', version: STANDARD_VERSION },
+      { id: 'dpp-record', version: STANDARD_VERSION_V2 },
       protocolFromPrefix(ATTESTATION_ANCHOR_PREFIX),
       { id: 'overlay-http', version: OVERLAY_HTTP_CONTRACT_VERSION },
     ],
@@ -217,6 +226,18 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
           gasp: synchronising,
           ...(policy == null ? {} : { operators: [...newestPolicy(policy).scope.operators] }),
           ...(synchronising ? { peers, syncIntervalMs: input.syncIntervalMs ?? DEFAULT_SYNC_INTERVAL_MS } : {}),
+        },
+      },
+      // The custody profile this index admits version 2 states under: the
+      // managed-custody profile when its acceptance commitment is required,
+      // else the record model baseline, named so a writer learns which rule
+      // applies from the document and not from a refusal.
+      {
+        ...profileEntry(managedAcceptance ? MANAGED_CUSTODY_PROFILE : 'record-model-baseline@2'),
+        kind: 'custody',
+        options: {
+          acceptanceCommitment: managedAcceptance ? 'required' : 'not-selected',
+          controlAuthorities,
         },
       },
     ],

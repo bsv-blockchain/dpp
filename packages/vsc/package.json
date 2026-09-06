@@ -1,6 +1,6 @@
 {
   "name": "@bsv/vsc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Versioned VSC draft compatibility profile, credential proofs and verification",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -48,6 +48,6 @@
     "directory": "packages/vsc"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

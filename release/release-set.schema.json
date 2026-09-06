@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/release/release-set.schema.json",
+  "title": "DPP compatible release set",
+  "description": "One compatible set of the standard's packages, the wire versions they implement, the custody profile the reference selects, the runtime they need and the fixtures and schemas they were tested against. A documentation and conformance selection: nothing here changes a byte, and a changed wire or profile contract is a new identifier, never an edit of a frozen one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["releaseSet", "status", "baseline", "runtime", "packages", "wire", "custody", "serviceInterface", "artefacts", "consumers"],
+  "properties": {
+    "releaseSet": { "type": "string", "pattern": "^dpp-release-[0-9]{4}-[0-9]{2}(-[a-z0-9]+)?$" },
+    "status": { "enum": ["candidate", "released", "superseded"] },
+    "description": { "type": "string" },
+    "baseline": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[0-9]+$" },
+    "runtime": {
+      "type": "object", "additionalProperties": false, "required": ["node", "dependencies"],
+      "properties": {
+        "node": { "type": "string" },
+        "dependencies": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["name", "version"], "properties": { "name": { "type": "string" }, "version": { "type": "string" }, "note": { "type": "string" } } } }
+      }
+    },
+    "packages": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "version", "directory", "entryPoints", "role"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string" },
+          "directory": { "type": "string" },
+          "role": { "type": "string" },
+          "entryPoints": { "type": "array", "items": { "type": "string" } },
+          "carries": { "type": "array", "items": { "type": "string" } },
+          "serverOnly": { "type": "boolean" }
+        }
+      }
+    },
+    "wire": {
+      "type": "object", "additionalProperties": false, "required": ["records", "nativeClaim", "anchor", "acceptanceRecord", "verificationReport", "overlayContract"],
+      "properties": {
+        "records": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["version", "fieldCount", "protocolId", "specification"], "properties": { "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "protocolId": { "type": "array" }, "specification": { "type": "string" } } } },
+        "nativeClaim": { "type": "string" },
+        "anchor": { "type": "string" },
+        "acceptanceRecord": { "type": "string" },
+        "verificationReport": { "type": "string" },
+        "overlayContract": { "type": "string" }
+      }
+    },
+    "custody": {
+      "type": "object", "additionalProperties": false, "required": ["selected", "profile", "specification"],
+      "properties": { "selected": { "type": "string" }, "profile": { "type": "string" }, "specification": { "type": "string" }, "alsoSupported": { "type": "array", "items": { "type": "string" } } }
+    },
+    "serviceInterface": {
+      "type": "object", "additionalProperties": false, "required": ["package", "version", "entryPoints", "operations"],
+      "properties": { "package": { "type": "string" }, "version": { "type": "string" }, "repository": { "type": "string" }, "entryPoints": { "type": "array", "items": { "type": "string" } }, "operations": { "type": "array", "items": { "type": "string" } }, "note": { "type": "string" } }
+    },
+    "artefacts": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": { "path": { "type": "string" }, "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }, "pins": { "type": "string" } } }
+    },
+    "consumers": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["name", "consumes"], "properties": { "name": { "type": "string" }, "consumes": { "type": "string" }, "note": { "type": "string" } } } },
+    "image": { "type": "object", "additionalProperties": false, "required": ["dockerfile", "preset"], "properties": { "dockerfile": { "type": "string" }, "preset": { "type": "string" }, "tag": { "type": "string" } } }
+  }
+}

@@ -167,7 +167,7 @@ export async function retractOutput(request: RetractionRequest): Promise<Retract
     restoredTip = { txid: consumed.txid, outputIndex: consumed.outputIndex }
   }
   if (storage.deleteAppliedTransaction != null) {
-    await storage.deleteAppliedTransaction({ txid, topic })
+    await storage.deleteAppliedTransaction(txid, topic)
   } else {
     unrepaired.push(`engine storage still records ${txid} as applied to ${topic}, so a re-announcement would be skipped as a duplicate`)
   }

@@ -55,15 +55,20 @@ export interface EvidenceCase {
     alternativeHistories?: string[][]
     nativeClaims?: unknown[]
     anchors?: Array<{ lockingScript: string; txid?: string; outputIndex?: number; securedBytes?: string }>
+    /** Managed acceptance records (`spec/managed-custody.md`), as posted; version 2 cases only. */
+    acceptanceRecords?: unknown[]
   }
   expectedSubject: ExpectedSubject
   policy: {
     policyId?: string
     publisherKeys?: string[]
     ownerConsent?: boolean | { authorities: string[] }
+    /** Version 2 control authorities and the managed-custody profile; absent on version 1 cases. */
+    controlAuthorities?: string[]
+    managedAcceptance?: { required: boolean }
     chainTracker: 'scripts-only' | 'header-source'
     headerSource?: Record<string, string> | 'unavailable'
-    authority?: { required: false; reason: string } | { required: true; genesisIssuers?: string[]; claimIssuers?: string[]; anchoringServices?: string[] }
+    authority?: { required: false; reason: string } | { required: true; genesisIssuers?: string[]; claimIssuers?: string[]; anchoringServices?: string[]; acceptanceCustodians?: string[] }
   }
   observers?: DeclaredObserver[]
   report: EvidenceReport
@@ -91,6 +96,7 @@ export function materialise(c: Omit<EvidenceCase, 'report'>): { evidence: Passpo
     ...(c.evidence.alternativeHistories == null ? {} : { alternativeHistories: c.evidence.alternativeHistories.map((h) => h.map((hex) => Transaction.fromHex(hex))) }),
     ...(c.evidence.nativeClaims == null ? {} : { nativeClaims: c.evidence.nativeClaims }),
     ...(c.evidence.anchors == null ? {} : { anchors: c.evidence.anchors.map((a) => ({ ...a, lockingScript: LockingScript.fromHex(a.lockingScript) })) }),
+    ...(c.evidence.acceptanceRecords == null ? {} : { acceptanceRecords: c.evidence.acceptanceRecords }),
   }
   const observers: LatestStateObserver[] = (c.observers ?? []).map((o) => ({
     id: o.id,
@@ -103,6 +109,8 @@ export function materialise(c: Omit<EvidenceCase, 'report'>): { evidence: Passpo
     ...(c.policy.policyId == null ? {} : { policyId: c.policy.policyId }),
     ...(c.policy.publisherKeys == null ? {} : { publisherKeys: c.policy.publisherKeys }),
     ...(c.policy.ownerConsent == null ? {} : { ownerConsent: c.policy.ownerConsent }),
+    ...(c.policy.controlAuthorities == null ? {} : { controlAuthorities: c.policy.controlAuthorities }),
+    ...(c.policy.managedAcceptance == null ? {} : { managedAcceptance: c.policy.managedAcceptance }),
     ...(c.policy.authority == null ? {} : { authority: c.policy.authority }),
     ...(observers.length === 0 ? {} : { observers }),
   }

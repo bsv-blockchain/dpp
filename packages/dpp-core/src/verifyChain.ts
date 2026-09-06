@@ -1,10 +1,12 @@
 import { Beef, PublicKey, Transaction, type ChainTracker } from '@bsv/sdk'
 import { tryParseDppOutput } from './codec.js'
+import { MANAGED_CUSTODY_PROFILE } from './constants.js'
 import { verifyServerSignature, verifyUserSignature } from './signatures.js'
 import { publisherKeysAt, type PublisherPolicy } from './publisherPolicy.js'
-import { checkOwnerConsent, normaliseTransferAuthorities } from './owner.js'
+import { checkControl, checkOwnerConsent, normaliseTransferAuthorities } from './owner.js'
 import { checkGenesisState, checkTransition } from './transition.js'
-import type { ChainVerifyResult, DppState, StateCheck } from './types.js'
+import type { DppVersion } from './constants.js'
+import type { ChainVerifyResult, DppState, Outpoint, StateCheck } from './types.js'
 
 export interface VerifyChainOptions {
   /**
@@ -21,12 +23,29 @@ export interface VerifyChainOptions {
   serverIdentityKey?: string
   /**
    * The optional owner-signed transfer (`spec/custody.md` §4), selected by a
-   * profile. `true` runs the predicate on every TRANSFER; an object also names
-   * the transfer authorities, identity keys whose TRANSFER passes without it
-   * (recovery). A malformed authority throws before any state is read: a
-   * misconfigured authority must be loud, never silently unmatched.
+   * profile for version 1 states. `true` runs the predicate on every version 1
+   * TRANSFER; an object also names the transfer authorities, identity keys
+   * whose TRANSFER passes without it (recovery). A malformed authority throws
+   * before any state is read: a misconfigured authority must be loud, never
+   * silently unmatched. Version 2 states prove control on every UPDATE,
+   * TRANSFER and RETIRE regardless (`spec/record-model-v2.md` §6); the same
+   * authorities serve them unless `controlAuthorities` names others.
    */
   ownerConsent?: boolean | { authorities: string[] }
+  /**
+   * Identity keys the profile names as authorities for version 2 states: an
+   * UPDATE, TRANSFER or RETIRE by one of them passes without a control proof
+   * (recovery, or a scoped authority the profile defines). Defaults to the
+   * `ownerConsent` authorities. Malformed keys throw at construction.
+   */
+  controlAuthorities?: string[]
+  /**
+   * The managed-custody profile (`spec/managed-custody.md`): when true, every
+   * version 2 TRANSFER must carry an `authorisation_commitment`, the
+   * commitment to the acceptance record the custodian retains. Off, the
+   * record model alone is checked and the commitment is read but not required.
+   */
+  managedAcceptance?: boolean
 }
 
 export interface DppOutputRef {
@@ -34,6 +53,9 @@ export interface DppOutputRef {
   outputIndex: number
   lockingPublicKey: PublicKey
 }
+
+/** What a reader reports when the managed-custody profile is selected and a version 2 TRANSFER carries no commitment. */
+export const ACCEPTANCE_COMMITMENT_REFUSAL = `TRANSFER carries no authorisation_commitment under ${MANAGED_CUSTODY_PROFILE}`
 
 /**
  * Locate THE DPP output of a transaction (§6 invariant 1: exactly one).
@@ -77,8 +99,16 @@ export interface StateInspection extends StateCheck {
   index: number
   outputIndex: number
   state: DppState
+  /** The record version the state carries. */
+  version: DppVersion
   linkError: string | null
   consentError: string | null
+  /**
+   * The version 2 control proof (`spec/record-model-v2.md` §6): true when
+   * the actor proved control of the predecessor, false when it did not, null
+   * on a genesis and on every version 1 state, where the rule does not run.
+   */
+  controlValid: boolean | null
   /** True when the countersignature verifies under a key the policy names, but one not active at this state's timestamp. */
   publisherOutsideWindow?: boolean
   /** Why `spv` is 'pending' or 'failed'; absent when 'verified'. */
@@ -131,12 +161,15 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
   const publisherKeysFor = (state: DppState): string[] =>
     policy == null ? staticPublisherKeys : [...staticPublisherKeys, ...publisherKeysAt(policy, state.timestamp, 'state-publisher')]
   const consentSelected = options.ownerConsent != null && options.ownerConsent !== false
-  const authorities =
+  const consentAuthorities =
     typeof options.ownerConsent === 'object'
       ? normaliseTransferAuthorities(options.ownerConsent.authorities)
       : []
+  const controlAuthorities =
+    options.controlAuthorities != null ? normaliseTransferAuthorities(options.controlAuthorities) : consentAuthorities
 
   let prev: { state: DppState; txid: string; outputIndex: number } | null = null
+  let genesis: Outpoint | undefined
   for (let i = 0; i < txs.length; i++) {
     const tx = txs[i]
     const txid = tx.id('hex')
@@ -155,10 +188,16 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       serverSignatureValid === false && everPolicyKeys.some((key) => verifyServerSignature(state, key))
 
     let linkError: string | null
+    let controlValid: boolean | null = null
     if (prev == null) {
       linkError = checkGenesisState(state)
+      genesis = { txid, outputIndex }
     } else {
-      linkError = checkTransition(prev.state, state, prev.txid)
+      linkError = checkTransition(prev.state, state, prev.txid, {
+        prevOutputIndex: prev.outputIndex,
+        lineageGenesis: genesis,
+        authorities: controlAuthorities,
+      })
       if (linkError == null) {
         const spendsPrev = tx.inputs.some(
           (input) =>
@@ -167,17 +206,25 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
         )
         if (!spendsPrev) linkError = 'state does not spend the previous tip output'
       }
+      // The version 2 control proof is part of the link; it is reported on
+      // its own as well, so a report can say which rule a refused state broke.
+      if (state.version === '2') controlValid = checkControl(prev.state, state, controlAuthorities) == null
     }
 
-    // The eighth, optional invariant runs only where it is defined: on a
-    // TRANSFER whose link holds, under a profile that selects it. Anywhere
-    // else it reports null, so a consumer prints "not applicable" and never a
-    // pass the predicate did not earn.
+    // The eighth, optional invariant of version 1 runs only where it is
+    // defined: on a TRANSFER whose link holds, under a profile that selects
+    // it. Anywhere else it reports null, so a consumer prints "not applicable"
+    // and never a pass the predicate did not earn. The managed-custody
+    // profile's requirement on a version 2 TRANSFER is reported the same way.
     let consentError: string | null = null
     let ownerConsentValid: boolean | null = null
-    if (consentSelected && prev != null && state.op === 'TRANSFER' && linkError == null) {
-      consentError = checkOwnerConsent(prev.state, state, authorities)
-      ownerConsentValid = consentError == null
+    if (prev != null && linkError == null && state.op === 'TRANSFER') {
+      if (state.version === '1' && consentSelected) {
+        consentError = checkOwnerConsent(prev.state, state, consentAuthorities)
+        ownerConsentValid = consentError == null
+      } else if (state.version === '2' && options.managedAcceptance === true && state.authorisationCommitment === '') {
+        consentError = ACCEPTANCE_COMMITMENT_REFUSAL
+      }
     }
 
     let spv: StateCheck['spv']
@@ -247,6 +294,7 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       index: i,
       outputIndex,
       state,
+      version: state.version,
       txid,
       op: state.op,
       userSignatureValid,
@@ -254,6 +302,7 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       ...(publisherOutsideWindow ? { publisherOutsideWindow: true } : {}),
       linkageValid: linkError == null,
       ownerConsentValid,
+      controlValid,
       spv,
       linkError,
       consentError,
@@ -352,6 +401,8 @@ export async function verifyChain(
  * Reconstruct the ordered passport chain (genesis → tip) from a BEEF, e.g.
  * as returned by the ls_dpp lookup. Transactions come out hydrated: merkle
  * paths attached, input source transactions linked - ready for verifyChain.
+ * States of either version link by `previousTxid`; a version 2 state also
+ * carries the predecessor's output index, which the verifier checks.
  */
 export function chainFromBeef(beef: Beef, passportId?: string): Transaction[] {
   const entries: Array<{ txid: string; state: DppState }> = []

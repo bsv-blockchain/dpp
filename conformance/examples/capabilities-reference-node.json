@@ -2,7 +2,7 @@
   "capabilitiesVersion": "1",
   "implementation": {
     "name": "@bsv/dpp-overlay-topics",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "baselineId": "native-baseline@1"
   },
   "roles": [
@@ -14,12 +14,16 @@
       "version": "1"
     },
     {
+      "id": "dpp-record",
+      "version": "2"
+    },
+    {
       "id": "bsv-attestation-anchor",
       "version": "1"
     },
     {
       "id": "overlay-http",
-      "version": "0.5.0-draft"
+      "version": "0.6.0-draft"
     }
   ],
   "profiles": [
@@ -30,6 +34,15 @@
       "options": {
         "discovery": "none",
         "gasp": false
+      }
+    },
+    {
+      "id": "record-model-baseline",
+      "version": "2",
+      "kind": "custody",
+      "options": {
+        "acceptanceCommitment": "not-selected",
+        "controlAuthorities": []
       }
     }
   ],

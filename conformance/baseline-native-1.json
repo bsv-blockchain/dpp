@@ -271,7 +271,7 @@
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "3469b99da341530d9f351b2da55d4db6b3d6c472f5d139995b9c0caae897ae8a",
+      "sha256": "f4207b5d26d67b6c4ea5140d12461c16aa54193a84ad9759da730111d6a70605",
       "pins": "the verification report for twenty-one evidence cases"
     },
     {
@@ -298,7 +298,7 @@
   "dependencies": [
     {
       "name": "@bsv/sdk",
-      "version": "2.1.4",
+      "version": "2.4.2",
       "usedBy": [
         "@bsv/dpp-core",
         "@bsv/dpp-overlay-topics",
@@ -307,7 +307,7 @@
     },
     {
       "name": "@bsv/overlay",
-      "version": "2.0.3",
+      "version": "2.3.1",
       "usedBy": [
         "@bsv/dpp-overlay-topics"
       ]
@@ -317,6 +317,15 @@
       "version": "7.x",
       "usedBy": [
         "@bsv/dpp-overlay-topics (reference persistence, replaceable)"
+      ]
+    },
+    {
+      "name": "node",
+      "version": ">=22",
+      "usedBy": [
+        "every workspace package",
+        "the index image",
+        "CI"
       ]
     }
   ],

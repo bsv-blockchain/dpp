@@ -59,6 +59,9 @@ export interface EvidenceExportRequest {
   publisherPolicy?: PublisherPolicyConfig
   serviceIdentityKey?: string
   ownerConsent?: boolean | { authorities: string[] }
+  /** The version 2 options the node admits under (CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT). */
+  controlAuthorities?: string[]
+  managedAcceptance?: boolean
   chainTracker?: ChainTracker | 'scripts only'
   /** The export instant, injected so a test can pin it. */
   now: Date
@@ -192,6 +195,8 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
         ? { publisherKeys: [request.serviceIdentityKey] }
         : {}),
     ownerConsent: request.ownerConsent,
+    ...(request.controlAuthorities == null ? {} : { controlAuthorities: request.controlAuthorities }),
+    ...(request.managedAcceptance == null ? {} : { managedAcceptance: { required: request.managedAcceptance } }),
     chainTracker: request.chainTracker,
     checkedAt: exportedAt,
     observers: [observer],

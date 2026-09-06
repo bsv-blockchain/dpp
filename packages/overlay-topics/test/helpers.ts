@@ -8,6 +8,7 @@ import {
   Transaction,
   TransactionSignature,
   UnlockingScript,
+  Utils,
   type PublicKey,
 } from '@bsv/sdk'
 import { Engine, type LookupService } from '@bsv/overlay'
@@ -258,7 +259,7 @@ export function fixtureChain(): FixtureChain {
   const beefs = txs.map((tx, i) => {
     const beef = new Beef()
     for (const earlier of txs.slice(0, i + 1)) beef.mergeTransaction(earlier)
-    return beef.toBinaryAtomic(tx.id('hex'))
+    return atomicOver(beef, tx.id('hex'))
   })
   const payload = JSON.parse(fixture.states[0].data.payloadPublic) as { dataCarrier: string }
   return {
@@ -269,6 +270,20 @@ export function fixtureChain(): FixtureChain {
     beefs,
     outputIndexes: fixture.states.map((s) => s.outputIndex),
   }
+}
+
+/**
+ * The atomic frame (BRC-95: the prefix, the subject txid reversed, then the
+ * BEEF) over a whole BEEF. Since `@bsv/sdk` 2.4.2 `Beef.toBinaryAtomic`
+ * serialises exactly the subject and its unproven ancestry, so a proven
+ * predecessor merged beside a proven subject is dropped; the backfill shape
+ * these tests exercise, the subject atomic over the whole stored chain, is
+ * framed here by hand and reads back through `Transaction.fromBEEF` and
+ * `Beef.fromBinary` exactly as before.
+ */
+export function atomicOver(beef: Beef, subjectTxid: string): number[] {
+  const txid = Utils.toArray(subjectTxid, 'hex').reverse()
+  return [0x01, 0x01, 0x01, 0x01, ...txid, ...beef.toBinary()]
 }
 
 export const JSON_BODY = { 'Content-Type': 'application/json' }

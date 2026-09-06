@@ -40,6 +40,6 @@ describe('profile combinations (conformance.md §4)', () => {
   })
 
   it('names an unknown baseline or profile instead of guessing', () => {
-    expect(codes({ baseline: 'native-baseline@2', industry: 'battery@9', exchange: ['x@1'], operator: 'solo@1', purpose: 'read' })).toEqual(['baseline-unknown', 'industry-unknown', 'exchange-unknown', 'operator-unknown'])
+    expect(codes({ baseline: 'native-baseline@9', industry: 'battery@9', exchange: ['x@1'], operator: 'solo@1', purpose: 'read' })).toEqual(['baseline-unknown', 'industry-unknown', 'exchange-unknown', 'operator-unknown'])
   })
 })
