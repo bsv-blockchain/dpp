@@ -1,9 +1,13 @@
 # @bsv/dpp-core
 
-The DPP Token Standard reference implementation for record versions 1 and 2,
-and the only place in this repository the standard is implemented. Everything else imports it: the overlay
-topic manager admits outputs by asking this package whether a state is valid,
-and consuming applications build and verify every record through it.
+The DPP standard's reference implementation for record versions 1 and 2, the
+attestation rail and the verification report, and the only place in this
+repository the standard's rules are implemented. Everything else in the
+reference implementation imports it: the overlay topic manager admits outputs
+by asking this package whether a state is valid, and the consuming
+applications build and verify every record through it. An independent
+implementation does not import it; it reproduces the same rules from `spec/`
+and holds itself to the same `fixtures/`.
 
 Standard v1 is v0 plus the JSON field conventions (`spec/record-model.md` §3,
 fields 9 and 10). The 14-field layout and the
@@ -46,8 +50,11 @@ that imports `@bsv/dpp-core`.
 
 ## The rule that governs it
 
-This package is the single source of truth for the token standard, and none of
-it may be reimplemented anywhere else. If a consumer needs behaviour that is
-not here, the change belongs here, with a test. The normative text lives beside
-it in this repository: `spec/record-model.md` for the record rail, and
-`spec/rules.md` for the attestation and anchor rail.
+Within the reference implementation this package is the single place the
+standard's rules are coded, and no reference consumer reimplements any of it:
+if a consumer needs behaviour that is not here, the change belongs here, with a
+test. The normative text is the specification, not this package: `spec/`
+defines the rules, `fixtures/` pins the bytes, and an independent
+implementation reproduces both without this code. Where this package and the
+specification disagree before version 1.0, `GOVERNANCE.md` names the
+tiebreaker.

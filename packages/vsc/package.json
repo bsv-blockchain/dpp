@@ -1,7 +1,7 @@
 {
   "name": "@bsv/vsc",
   "version": "0.2.0",
-  "description": "Versioned VSC draft compatibility profile, credential proofs and verification",
+  "description": "Versioned VSC draft compatibility profile with its proof suites and verification, the EPCIS source helpers with pinned EPCIS 2.0.1 artefacts, and the external ecdsa-rdfc-2019 credential verifier",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/index.js",
