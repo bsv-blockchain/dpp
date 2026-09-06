@@ -7,6 +7,7 @@
  *   node examples/verify-passport.mjs --fixture
  *   node examples/verify-passport.mjs --fixture --owner-consent [--authorities=<hex,hex>]
  *   node examples/verify-passport.mjs --fixture --report
+ *   node examples/verify-passport.mjs --fixture --version=2 [--report]
  *
  * With a passport identifier, the script asks an index (default: the
  * demonstration deployment) for the record's outputs, rebuilds the chain from
@@ -38,6 +39,17 @@
  * fixtures/evidence-v1.json from its hex, produces its own report, and compares
  * it to the pinned one, one sentence per case.
  *
+ * With --version=2 in fixture mode, the same is done for record version 2
+ * (spec/record-model-v2.md): fixtures/chain-v2.json is verified under the
+ * managed-custody profile with the custodian as publisher, every one of its
+ * refusals is shown refused for the pinned reason under the option it names
+ * (and accepted again with the profile off, or under the named control
+ * authorities, where the fixture says so), the upgrade of the version 1
+ * fixture chain is verified and its refusals refused, and --report compares
+ * every case of fixtures/evidence-v2.json. Live, the reader is version-aware
+ * by itself: a lineage of either version, or one that was upgraded, verifies
+ * under the same call, and the flag changes nothing.
+ *
  * Results print one sentence per check, never a score, as GOVERNANCE.md
  * requires of every conformance surface.
  */
@@ -52,6 +64,12 @@ const args = process.argv.slice(2)
 const fixtureMode = args.includes('--fixture')
 const consentFlag = args.includes('--owner-consent')
 const reportFlag = args.includes('--report')
+const versionFlag = args.find((a) => a.startsWith('--version='))?.slice('--version='.length) ?? '1'
+if (versionFlag !== '1' && versionFlag !== '2') {
+  console.error('usage: --version=1 (default) or --version=2')
+  process.exit(2)
+}
+const versionTwo = versionFlag === '2'
 const authorities = args
   .filter((a) => a.startsWith('--authorities='))
   .flatMap((a) => a.slice('--authorities='.length).split(','))
@@ -95,6 +113,7 @@ function materialise(c) {
     ...(c.evidence.tokenHistory == null ? {} : { tokenHistory: history }),
     ...(c.evidence.alternativeHistories == null ? {} : { alternativeHistories: c.evidence.alternativeHistories.map((h) => h.map((hex) => Transaction.fromHex(hex))) }),
     ...(c.evidence.nativeClaims == null ? {} : { nativeClaims: c.evidence.nativeClaims }),
+    ...(c.evidence.acceptanceRecords == null ? {} : { acceptanceRecords: c.evidence.acceptanceRecords }),
     ...(c.evidence.anchors == null ? {} : { anchors: c.evidence.anchors.map((a) => ({ ...a, lockingScript: LockingScript.fromHex(a.lockingScript) })) }),
   }
   let chainTracker = 'scripts only'
@@ -117,6 +136,8 @@ function materialise(c) {
     ...(c.policy.policyId == null ? {} : { policyId: c.policy.policyId }),
     ...(c.policy.publisherKeys == null ? {} : { publisherKeys: c.policy.publisherKeys }),
     ...(c.policy.ownerConsent == null ? {} : { ownerConsent: c.policy.ownerConsent }),
+    ...(c.policy.controlAuthorities == null ? {} : { controlAuthorities: c.policy.controlAuthorities }),
+    ...(c.policy.managedAcceptance == null ? {} : { managedAcceptance: c.policy.managedAcceptance }),
     ...(c.policy.authority == null ? {} : { authority: c.policy.authority }),
     ...(observers.length === 0 ? {} : { observers }),
   }
@@ -128,10 +149,10 @@ let chain
 let tracker
 let fixture
 if (fixtureMode) {
-  fixture = JSON.parse(readFileSync(join(here, '..', 'fixtures', 'chain-v1.json'), 'utf8'))
+  fixture = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionTwo ? 'chain-v2.json' : 'chain-v1.json'), 'utf8'))
   chain = fixture.states.map((s) => Transaction.fromHex(s.rawTx))
   tracker = 'scripts only'
-  console.log(`Fixture chain: ${chain.length} states, verified from raw transaction hex, no header source.`)
+  console.log(`Fixture chain (record version ${versionFlag}): ${chain.length} states, verified from raw transaction hex, no header source.`)
 } else {
   const response = await fetch(`${indexUrl}/lookup`, {
     method: 'POST',
@@ -160,7 +181,11 @@ if (consentFlag) {
   console.log(`The owner-signed transfer is selected${authorities.length > 0 ? `, with ${authorities.length} transfer authorit${authorities.length === 1 ? 'y' : 'ies'}` : ', with no transfer authorities'}.`)
 }
 
-const result = await verifyChain(chain, { chainTracker: tracker, ownerConsent })
+// The version 2 fixture is a managed-custody lineage published by the custodian, so it is
+// verified as a verifier configured for that profile and publisher would (spec/managed-custody.md §5).
+const versionTwoOptions = fixtureMode && versionTwo ? { managedAcceptance: true, serverIdentityKey: fixture.custodianKey } : {}
+if (fixtureMode && versionTwo) console.log('The managed-custody profile is selected, with the custodian as the publisher and no control authorities.')
+const result = await verifyChain(chain, { chainTracker: tracker, ownerConsent, ...versionTwoOptions })
 
 const consentSentence = (s) =>
   s.ownerConsentValid == null ? 'not applicable (not a TRANSFER)' : s.ownerConsentValid ? 'holds' : 'FAILS'
@@ -190,6 +215,35 @@ if (fixtureMode && consentFlag) {
   }
 }
 
+// The version 2 fixture's refusals, each under the option it names, with the control
+// that the profile's rule accepts the same bytes with the profile off and that a named
+// authority is admitted; then the upgrade of the version 1 chain and its refusals.
+if (fixtureMode && versionTwo) {
+  console.log(`Version 2 refusals in the fixture: ${fixture.refusals.length}.`)
+  for (const r of fixture.refusals) {
+    const prefix = fixture.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
+    const attempt = [...prefix, Transaction.fromHex(r.rawTx)]
+    const refused = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true })
+    say(!refused.valid && (refused.error ?? '').includes(r.error), `the verifier refuses ${r.name}: ${r.error}.`)
+    if (r.managedAcceptance) {
+      const without = await verifyChain(attempt, { chainTracker: 'scripts only' })
+      say(without.valid, 'and accepts the same bytes with the managed-custody profile off, as the record model alone requires.')
+    }
+    if (r.acceptedUnder != null) {
+      const under = await verifyChain(attempt, { chainTracker: 'scripts only', controlAuthorities: r.acceptedUnder.authorities })
+      say(under.valid, `and admits it with ${r.acceptedUnder.authorities.map((k) => k.slice(0, 12) + '...').join(', ')} as a control authority: a recovery, visibly.`)
+    }
+  }
+  const v1 = JSON.parse(readFileSync(join(here, '..', 'fixtures', 'chain-v1.json'), 'utf8'))
+  const v1Chain = v1.states.map((s) => Transaction.fromHex(s.rawTx))
+  const upgraded = await verifyChain([...v1Chain, Transaction.fromHex(fixture.upgrade.rawTx)], { chainTracker: 'scripts only', serverIdentityKey: v1.serverKey })
+  say(upgraded.valid, `the six version 1 states followed by the version 2 UPDATE verify as one lineage under the version 1 publisher key: ${upgraded.states.map((s) => s.op).join(' -> ')}.`)
+  for (const r of fixture.upgrade.refusals) {
+    const refused = await verifyChain([...v1Chain, Transaction.fromHex(r.rawTx)], { chainTracker: 'scripts only' })
+    say(!refused.valid && (refused.error ?? '').includes(r.error), `the verifier refuses upgrade ${r.name}: ${r.error}.`)
+  }
+}
+
 // The one verification contract. Live: the report for what the index returned,
 // with the typed identifier as the independently expected subject. Fixture: the
 // standalone surface of the equivalence test over fixtures/evidence-v1.json.
@@ -202,7 +256,7 @@ if (reportFlag && !fixtureMode) {
   printReport(report)
 }
 if (reportFlag && fixtureMode) {
-  const cases = JSON.parse(readFileSync(join(here, '..', 'fixtures', 'evidence-v1.json'), 'utf8'))
+  const cases = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionTwo ? 'evidence-v2.json' : 'evidence-v1.json'), 'utf8'))
   FIXTURE_CHECKED_AT = cases.checkedAt
   console.log(`Report cases in the fixture: ${cases.cases.length}, checked at ${cases.checkedAt}.`)
   for (const c of cases.cases) {

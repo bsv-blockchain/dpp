@@ -12,6 +12,9 @@
 import { EXCHANGE_PROFILE_IDS, OPERATOR_PROFILE_IDS, PROFILE_IDS, readExchangeProfile, readManifest, readOperatorProfile, type ExchangeProfileId, type OperatorProfileId, type ProfileId } from './index.js'
 
 export const BASELINE_ID = 'native-baseline@1'
+/** The second recommended baseline: record version 2 with the managed-custody profile (conformance/baseline-native-2.json). */
+export const BASELINE_ID_2 = 'native-baseline@2'
+export const BASELINE_IDS = [BASELINE_ID, BASELINE_ID_2] as const
 
 export type SelectionPurpose = 'read' | 'write' | 'claim'
 
@@ -56,7 +59,7 @@ export function checkSelection(selection: ProfileSelection): SelectionResult {
   const notes: string[] = []
   const conflict = (code: SelectionConflictCode, detail: string): void => { conflicts.push({ code, detail }) }
 
-  if (selection.baseline !== BASELINE_ID) conflict('baseline-unknown', `${selection.baseline} is not a baseline this catalogue knows; the only one is ${BASELINE_ID}`)
+  if (!(BASELINE_IDS as readonly string[]).includes(selection.baseline)) conflict('baseline-unknown', `${selection.baseline} is not a baseline this catalogue knows; the baselines are ${BASELINE_IDS.join(' and ')}`)
 
   if (selection.industry != null) {
     if (!(PROFILE_IDS as readonly string[]).includes(selection.industry)) {

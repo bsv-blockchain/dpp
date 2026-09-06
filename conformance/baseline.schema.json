@@ -18,7 +18,14 @@
       "properties": {
         "record": {
           "type": "object", "additionalProperties": false, "required": ["protocolMarker", "version", "fieldCount", "specification"],
-          "properties": { "protocolMarker": { "type": "string" }, "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "specification": { "type": "string" } }
+          "properties": {
+            "protocolMarker": { "type": "string" }, "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "specification": { "type": "string" },
+            "alsoReads": {
+              "type": "object", "additionalProperties": false, "required": ["version", "fieldCount", "specification", "rule"],
+              "description": "A second record version a component under this baseline reads beside the current one, because a lineage may hold both.",
+              "properties": { "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "specification": { "type": "string" }, "rule": { "type": "string" } }
+            }
+          }
         },
         "nativeClaim": {
           "type": "object", "additionalProperties": false, "required": ["claimFormat", "specification"],

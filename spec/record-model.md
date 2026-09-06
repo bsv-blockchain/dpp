@@ -8,6 +8,8 @@ A digital product passport is a chain of token states on the BSV blockchain. Eac
 
 Native signatures, supplied-history linkage and transaction inclusion can be verified from transaction bytes and public block-header evidence without an application account. These checks do not establish current ownership, physical truth, issuer accreditation, complete history or VSC credential validity. Restricted owner-tier content lives off chain, encrypted, with its ciphertext hash committed in the record. Public payloads, actor keys and other on-chain metadata remain visible and may be identifying or correlatable.
 
+Record version 2 is defined in [`record-model-v2.md`](record-model-v2.md): a seventeen-field layout with framed, domain-tagged preimages, explicit lineage and predecessor outpoints, a control proof on every operation, a terminal retirement and an authorisation commitment. A reader selects the version by the field count of the output, a version 1 lineage continues under version 2 through the single upgrade transition that document defines, and no version 1 state follows a version 2 state. Nothing in this document changes for a version 1 state, which is read under it for as long as the state exists.
+
 ## 2. The output script
 
 A passport state is a single output whose locking script is:

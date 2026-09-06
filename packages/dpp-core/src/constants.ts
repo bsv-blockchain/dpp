@@ -115,3 +115,93 @@ export const NO_EVENT_OPS: readonly string[] = ['ACTIVATE', 'EDIT']
  * `uid` query key in `contracts/overlay.yaml`.
  */
 export const PAYLOAD_DATA_CARRIER_KEY = 'dataCarrier'
+
+/*
+ * DPP Token Standard version 2 (`spec/record-model-v2.md`). A second wire
+ * contract beside version 1, never a reinterpretation of it: a reader decodes
+ * each version under its own rules, and a version 1 state keeps the meaning
+ * it had when it was written. What version 2 adds is stated once here and
+ * enforced in the codec, the preimages and the transition rules.
+ *
+ * - Four operations: ISSUE, UPDATE, TRANSFER, RETIRE. Sector events live on
+ *   the attestation rail, not in the token.
+ * - Seventeen fields: the fourteen of version 1 with the predecessor named as
+ *   an outpoint, the lineage bound to its genesis outpoint, the control proof
+ *   carried as its own field and a commitment to off-chain authorisation
+ *   evidence.
+ * - Both signature preimages are length-framed and domain-tagged, so two
+ *   different field tuples never share signed bytes and a signature made for
+ *   one purpose or version never verifies for another.
+ * - Retirement is terminal under the DPP validity rules: no state may follow
+ *   a RETIRE. The simple locking script does not make a later Bitcoin spend
+ *   impossible; a reader refuses what such a spend would carry.
+ */
+
+export const STANDARD_VERSION_V2 = '2'
+
+/** The record versions a reader of this release decodes; any other value is refused by name. */
+export const SUPPORTED_VERSIONS = ['1', '2'] as const
+export type DppVersion = (typeof SUPPORTED_VERSIONS)[number]
+
+/**
+ * BRC-43 protocol ID of both version 2 record signatures, counterparty
+ * 'anyone' as in version 1. Distinct from `DPP_PROTOCOL_ID` so a key derived
+ * for one version signs nothing under the other.
+ */
+export const DPP_PROTOCOL_ID_V2: WalletProtocol = [1, 'dpp token v2']
+
+/** Total PushDrop fields per version 2 state. */
+export const FIELD_COUNT_V2 = 17
+
+/** Zero-based indices into the seventeen-field layout. */
+export const FieldV2 = {
+  protocolMarker: 0,
+  version: 1,
+  passportId: 2,
+  op: 3,
+  timestamp: 4,
+  controllerKey: 5,
+  actorIdentityKey: 6,
+  actorKeyId: 7,
+  eventData: 8,
+  payloadPublic: 9,
+  payloadOwnerHash: 10,
+  lineageGenesis: 11,
+  previousOutpoint: 12,
+  controlLinkage: 13,
+  authorisationCommitment: 14,
+  actorSignature: 15,
+  publisherSignature: 16,
+} as const
+
+export const DPP_OPS_V2 = ['ISSUE', 'UPDATE', 'TRANSFER', 'RETIRE'] as const
+
+/** Version 2 ops that may change payload_public / payload_owner_hash. RETIRE changes neither. */
+export const PAYLOAD_CHANGE_OPS_V2: readonly string[] = ['ISSUE', 'UPDATE', 'TRANSFER']
+
+/** Version 2 ops whose actor must prove control of the predecessor. */
+export const CONTROL_PROOF_OPS_V2: readonly string[] = ['UPDATE', 'TRANSFER', 'RETIRE']
+
+/**
+ * The domain tags that open the two version 2 preimages. Each preimage is the
+ * tag, then every signed field, each as a Bitcoin VarInt length followed by
+ * its bytes (`spec/record-model-v2.md` §5), so the actor preimage and the
+ * publisher preimage of one state, and the preimages of any two states,
+ * never share bytes by accident.
+ */
+export const RECORD_V2_ACTOR_TAG = 'dpp-record-v2/actor-signature'
+export const RECORD_V2_PUBLISHER_TAG = 'dpp-record-v2/publisher-signature'
+
+/**
+ * Byte bounds on the two JSON fields, in UTF-8 bytes (§3). Version 1 left
+ * them unbounded; version 2 keeps on-chain data intentional. A profile may
+ * bound them tighter, never wider.
+ */
+export const MAX_EVENT_DATA_BYTES_V2 = 4096
+export const MAX_PAYLOAD_PUBLIC_BYTES_V2 = 65535
+
+/** An outpoint field: the 32-byte txid in display order, then the output index as four big-endian bytes. */
+export const OUTPOINT_FIELD_BYTES = 36
+
+/** The custody profile Part B delivers: managed custody with explicit recipient acceptance (`spec/managed-custody.md`). */
+export const MANAGED_CUSTODY_PROFILE = 'managed-custody@1'

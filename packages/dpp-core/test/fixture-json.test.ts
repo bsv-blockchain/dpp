@@ -10,6 +10,13 @@ import { chainV1Vectors } from './chain-v1-vectors.js'
 import { evidenceV1Fixture } from './evidence-v1-fixture.js'
 import { publisherPolicyVectors } from './publisher-policy-vectors.js'
 import { evidencePackageVectors } from './evidence-package-vectors.js'
+import { recordV2Fixture } from './record-v2-fixture.js'
+import { recordV2Vectors } from './record-v2-vectors.js'
+import { chainV2Fixture } from './chain-v2-fixture.js'
+import { chainV2Vectors } from './chain-v2-vectors.js'
+import { managedAcceptanceV1Fixture } from './managed-acceptance-v1-fixture.js'
+import { managedAcceptanceV1Vectors } from './managed-acceptance-v1-vectors.js'
+import { evidenceV2Fixture } from './evidence-v2-fixture.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
@@ -105,6 +112,37 @@ describe('the published fixture files', () => {
     const generated = await evidencePackageVectors()
     expectPublished('vectors/dpp/evidence-package/v1.json', generated)
     expectStackShape(generated as never)
+  })
+
+  it('record-v2.json is recordV2Fixture(), verbatim, and vectors/dpp/record/v2.json its vector form', async () => {
+    const generated = await recordV2Fixture()
+    expectPublished('record-v2.json', generated)
+    const vectors = recordV2Vectors(generated)
+    expectPublished('vectors/dpp/record/v2.json', vectors)
+    expectStackShape(vectors)
+  })
+
+  it('chain-v2.json is chainV2Fixture(), verbatim, and vectors/dpp/chain/v2.json its vector form', async () => {
+    const generated = await chainV2Fixture()
+    expectPublished('chain-v2.json', generated)
+    const vectors = chainV2Vectors(generated)
+    expectPublished('vectors/dpp/chain/v2.json', vectors)
+    expectStackShape(vectors as never)
+  })
+
+  it('managed-acceptance-v1.json is managedAcceptanceV1Fixture(), verbatim, and vectors/dpp/managed-acceptance/v1.json its vector form', async () => {
+    const generated = await managedAcceptanceV1Fixture()
+    expectPublished('managed-acceptance-v1.json', generated)
+    const vectors = managedAcceptanceV1Vectors(generated)
+    expectPublished('vectors/dpp/managed-acceptance/v1.json', vectors)
+    expectStackShape(vectors as never)
+  })
+
+  it('evidence-v2.json is evidenceV2Fixture(), verbatim: the report every surface produces for each version 2 case', async () => {
+    const generated = await evidenceV2Fixture()
+    expect(generated.cases.map((c) => c.id)).toEqual([...new Set(generated.cases.map((c) => c.id))])
+    for (const c of generated.cases) expect(c.report.checkedAt).toBe(generated.checkedAt)
+    expectPublished('evidence-v2.json', generated)
   })
 
   it('anchor-v3.json canonical bytes and digest are what this package computes', () => {

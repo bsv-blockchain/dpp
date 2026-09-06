@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-09-05",
+  "updatedAt": "2026-09-06",
   "sources": [
     {
       "id": "spec-record-model",
@@ -8,7 +8,15 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "d1c311e70e7827d747fc22adac5282e83e10475473f5d91c1413a1a913d9e9aa"
+      "digest": "ac43a01072afb60049c7c78f75669d7c05824f0e7260511cf44dd456a98f59d2"
+    },
+    {
+      "id": "spec-record-model-v2",
+      "uri": "spec/record-model-v2.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/record-model-v2.md",
+      "digest": "a237f2a398c356343b0bd71274b04a0df8c204a5d696d0a297722e8cd75f5fef"
     },
     {
       "id": "spec-rules",
@@ -16,7 +24,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/rules.md",
-      "digest": "5a781ce71764bde6f439eabe309426e3efdf0a50e26e117074571dcfdb825a85"
+      "digest": "e430230837a2f6a6ad122bb14617bb9199f3569b66738d4da5ba69b06409ebc7"
     },
     {
       "id": "spec-identity",
@@ -32,7 +40,15 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/custody.md",
-      "digest": "7dac500be3203269749a0cdfc339325b0621d4c52d4b462b5efeb54e9120d34a"
+      "digest": "d2878f986eaac18ff7fd3daa828f109f7cdd639f2970193a092b56e045ad568f"
+    },
+    {
+      "id": "spec-managed-custody",
+      "uri": "spec/managed-custody.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/managed-custody.md",
+      "digest": "827ce2e20e06930b2fff889792571976ab894b0cc79448ca2daac6fbc5e6bc02"
     },
     {
       "id": "spec-writing",
@@ -40,7 +56,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/writing.md",
-      "digest": "07901e45f004cd6c8f43039d455df30a8ee25db628fa739d4d09b74584842717"
+      "digest": "cfdd8a317798f0efdab6da3518965de81ec76a9234ccbea36b676539fca16576"
     },
     {
       "id": "spec-services",
@@ -48,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "3a2e157e9668fb57467f43dc7294230dd0329aa19f655a89932f2b841e049417"
+      "digest": "fba17a3f229690a7acbb62cc1a4f3853049205b6f9ea93769007431c2b46e701"
     },
     {
       "id": "spec-verification",
@@ -56,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "3d99b9517300bba0250aeb529a8196b51af6e6416f694fe3cd2a236a0cc6283e"
+      "digest": "28842b84f7103de5ac16bc9dd3b336f668797cf1758b748a8c11eb761d507daa"
     },
     {
       "id": "spec-conformance",
@@ -64,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "8b4f3db71097f3603405b9050e93212fc2b8b14799377dfa7bb46b42299c0407"
+      "digest": "f0e18c146e183d20bfe5c91d0897674cca26e43448b2df60706a738761326a0d"
     },
     {
       "id": "spec-vsc-profile",
@@ -85,10 +101,10 @@
     {
       "id": "contract-overlay",
       "uri": "contracts/overlay.yaml",
-      "version": "0.4.0-draft",
+      "version": "0.6.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "0514bf725d5bfc05439a82851c8112a73677b422a7b745cb1b1efce117c9d256"
+      "digest": "c01ca3b54de2fba7ca2894a7e359e99856780cbe2e3c68dc7d2e058dad5dd0bb"
     },
     {
       "id": "contract-registry",
@@ -104,7 +120,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/verification-report.schema.json",
-      "digest": "9a499589b78ea62bffcb15ff898f52287e3c31023f98186eda80fca324b467b8"
+      "digest": "6c54bd1106a7a4aac5bdc0403453d292fc640d033a218b531c2ab35bc156b5ce"
     },
     {
       "id": "contract-capabilities-schema",
@@ -120,7 +136,15 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "a1bca6646c240299f02f0d164d088662c354f2c846e66d396520f33a6b52ee32"
+      "digest": "1134f19faf1bbd027c6c5f96465ca05749c767f54966cdac92913c4bb08e7e83"
+    },
+    {
+      "id": "baseline-native-2",
+      "uri": "conformance/baseline-native-2.json",
+      "version": "native-baseline@2",
+      "kind": "local",
+      "path": "conformance/baseline-native-2.json",
+      "digest": "54255ec2088287560d4a59f78eefbb076d9e1396e35dd09a33afa451a6f672c4"
     },
     {
       "id": "spec-profiles",
@@ -448,7 +472,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "c41dd99517acc4e2e1b932c88f0594e4eb8e34eda49c002059a91321e3f361f8"
+      "digest": "188e1790eff2178507487af243709a3b0e23d0deac24f4d4041903dc7e50fbe2"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -456,7 +480,7 @@
       "version": "1",
       "kind": "local",
       "path": "fixtures/battery-lifecycle-v1.json",
-      "digest": "38bf65ce3a094e9e18310c71a9dcb049151622fdee313bda9b5cafd6e62ad9f7"
+      "digest": "d2335a18a6e3e8d7d84e001bc2332a8ec04d04a9c516f5d559829aa162914d24"
     },
     {
       "id": "vectors-publisher-policy",
@@ -480,7 +504,7 @@
       "version": "0.1.0",
       "kind": "local",
       "path": "packages/dpp-profiles/src/combinations.ts",
-      "digest": "a6181e698f2c42e62535eda5a12c92590be966c6dfcaec5e491efcb110f6601c"
+      "digest": "01ad3109d5fcc27905b1a76a5c93f483735fff1ac3050fb72189ff219862d87a"
     }
   ],
   "requirements": [
@@ -746,6 +770,271 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "id": "RM2-2-script",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A version 2 state is one output: key, OP_CHECKSIG, seventeen minimal pushes, eight OP_2DROP and one OP_DROP; the version is selected by field count, a layout carrying the other version's string is refused, and an unknown version is no DPP output; every version 1 reading rule applies.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#parseDppOutput",
+        "packages/dpp-core/src/codec.ts#fieldsToStateV2"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/record-v2.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v2.json#refusals.v1LayoutWithVersion2",
+        "fixtures/record-v2.json#refusals.v2LayoutWithVersion1",
+        "fixtures/record-v2.json#refusals.unsupportedVersion",
+        "fixtures/record-v2.json#refusals.tailShort",
+        "fixtures/record-v2.json#refusals.tailWithoutOddDrop"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-3-fields",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The seventeen fields: the version 1 rules for the shared fields, event_data JSON or empty at most 4096 bytes on every operation, payload_public at most 65535 bytes, lineage_genesis and previous_outpoint empty or 36 bytes, control_linkage and authorisation_commitment empty or 32 bytes, control_linkage empty on ISSUE.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#fieldsToStateV2",
+        "packages/dpp-core/src/codec.ts#dataFieldsV2",
+        "packages/dpp-core/src/constants.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/record-v2.test.ts",
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v2.json",
+        "fixtures/record-v2.json#refusals.outpointWrongLength",
+        "fixtures/record-v2.json#refusals.linkageWrongLength",
+        "fixtures/record-v2.json#refusals.linkageOnIssue",
+        "fixtures/record-v2.json#refusals.eventDataOverBound"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-4-operations",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "Four operations: ISSUE at genesis only; controller_key changes only on TRANSFER; payload_public and payload_owner_hash unchanged on RETIRE; RETIRE terminal; event_data JSON or empty on every operation; the version 1 vocabulary is a profile's property of event_data.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/transition.ts#checkTransitionV2",
+        "packages/dpp-profiles/src/mapping.ts#VERSION_2_OPERATION_MAPPING"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-profiles/test/mapping-v2.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json#refusals.issueAfterGenesis",
+        "fixtures/chain-v2.json#refusals.controllerChangedOnUpdate",
+        "fixtures/chain-v2.json#refusals.payloadChangedOnRetire"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-5-signatures",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "Both preimages are VarInt-framed and opened by a domain tag (dpp-record-v2/actor-signature, dpp-record-v2/publisher-signature); keys derive under [1, 'dpp token v2'] with actor_keyID and passport_id as key identifiers, counterparty anyone; a version 1 signature verifies under nothing in version 2 and a signature in the wrong slot fails.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/signatures.ts#actorPreimageV2",
+        "packages/dpp-core/src/signatures.ts#publisherPreimageV2",
+        "packages/dpp-core/src/signatures.ts#frameFields"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/signatures-v2.test.ts",
+        "packages/dpp-core/test/record-v2.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v2.json#actorPreimage",
+        "fixtures/record-v2.json#publisherPreimage",
+        "fixtures/chain-v2.json#refusals.actorSignatureFromVersion1Preimage",
+        "fixtures/chain-v2.json#refusals.publisherSignatureInActorSlot",
+        "fixtures/chain-v2.json#refusals.boundarySubstitution"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-6-invariants",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "The nine invariants: one DPP output; the genesis rules and a genesis that spends an admitted output refused; no ISSUE, no state after RETIRE and only an UPDATE after a version 1 state; previous_outpoint equal to the spent tip on txid, index and structural spend; lineage_genesis equal to the chain genesis and never assumed; immutable passport_id; controller_key only on TRANSFER and unchanged on the upgrade; RETIRE payload immutable; control proven; no downgrade.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/transition.ts#checkTransitionV2",
+        "packages/dpp-core/src/verifyChain.ts#inspectChain",
+        "packages/overlay-topics/src/tmDpp.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/overlay-topics/test/tmDppV2.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json#refusals",
+        "fixtures/chain-v2.json#upgrade",
+        "fixtures/vectors/dpp/chain/v2.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-6-control-proof",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "On every UPDATE, TRANSFER and RETIRE the actor proves control of the previous state in the fixed order equality, named authority, linkage; a scalar beside a settled proof is refused as redundant; a missing or non-linking scalar is refused; authorities are the verifier's policy and never the record's.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/owner.ts#checkControl",
+        "packages/dpp-core/src/owner.ts#verifyOwnerLinkage"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/overlay-topics/test/tmDppV2.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json#states",
+        "fixtures/chain-v2.json#refusals.controlNotProven",
+        "fixtures/chain-v2.json#refusals.controlWrongLinkage",
+        "fixtures/chain-v2.json#refusals.controlRedundantLinkage",
+        "fixtures/chain-v2.json#refusals.recoveryWithoutAuthority"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-8-commitment",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§8",
+      "summary": "authorisation_commitment is the SHA-256 of a profile-defined authorisation record; the record model accepts it on any operation, a profile says where it is required, and a verifier that cannot obtain the record reports the artefact unavailable and not the state invalid.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#fieldsToStateV2",
+        "packages/dpp-core/src/evidence.ts",
+        "packages/dpp-core/src/verifyChain.ts#ACCEPTANCE_COMMITMENT_REFUSAL"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-core/test/acceptance.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json#refusals.transferWithoutCommitment",
+        "fixtures/evidence-v2.json#cases.v2-valid-lineage",
+        "fixtures/evidence-v2.json#cases.v2-transfer-without-commitment-profile-off"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM2-9-verifier",
+      "sourceId": "spec-record-model-v2",
+      "sourceUri": "spec/record-model-v2.md",
+      "sourceVersion": "working draft",
+      "clause": "§9",
+      "summary": "Verified means signatures, linkage and inclusion under each state's own version, with the upgrade rule at the boundary and the optional publisher check; a mixed history is verified state by state.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/verifyChain.ts",
+        "packages/dpp-core/src/signatures.ts#verifyUserSignature"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-core/test/evidence-v1-fixture.ts",
+        "examples/verify-passport.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json#upgrade",
+        "fixtures/evidence-v2.json#cases.v1-to-v2-upgrade",
+        "fixtures/evidence-v2.json#cases.unknown-version"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
       "id": "CUST-2-owner-key",
       "sourceId": "spec-custody",
       "sourceUri": "spec/custody.md",
@@ -804,6 +1093,157 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "id": "MC-3-acceptance-record",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The dpp-managed-acceptance@1 record: its exact properties and bounds, the nested canonical JSON, the custodian's direct signature over the unsigned form, the SHA-256 commitment over the signed form, the time order and the named-recipient consistency, with structure, signature and time order reported separately.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "registry"
+      ],
+      "applicability": "when managed-custody@1 is selected",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "packages/dpp-core/src/acceptance.ts#inspectManagedAcceptance",
+        "packages/dpp-core/src/acceptance.ts#acceptanceCommitment",
+        "packages/dpp-core/src/acceptance.ts#signManagedAcceptance"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/acceptance.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/managed-acceptance-v1.json",
+        "fixtures/vectors/dpp/managed-acceptance/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "MC-4-transfer-binding",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "A record binds to a TRANSFER on operation, passport, lineage, predecessor, destination, holder, commitment and time order, each mismatch named; under the profile a version 2 TRANSFER without a commitment is refused, and the same bytes pass with the profile off.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "when managed-custody@1 is selected",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "packages/dpp-core/src/acceptance.ts#bindAcceptanceToState",
+        "packages/dpp-core/src/verifyChain.ts",
+        "packages/overlay-topics/src/tmDpp.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/acceptance.test.ts",
+        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/overlay-topics/test/tmDppV2.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/managed-acceptance-v1.json#refusals",
+        "fixtures/chain-v2.json#refusals.transferWithoutCommitment"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "MC-4-offer-lifecycle",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "An offer is idempotent by requestId and fixes the tip, the terms digest and the expiry; an offer accepts once, may be declined or expire with no chain state, and one acceptance executes at most one TRANSFER, retried and never rebuilt against another tip.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when managed-custody@1 is selected",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "examples/lifecycle-v2.mjs"
+      ],
+      "testRefs": [
+        ".github/workflows/ci.yml"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers",
+      "notes": "A writer duty, self-reported one sentence per rule as GOVERNANCE.md describes; the example demonstrates the sequence and the refusals from fresh keys, and the consuming application's handover service implements the idempotency, decline and expiry in its own suite."
+    },
+    {
+      "id": "MC-5-verification-report",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "The profile is reported in three places and never as one word: acceptance-commitment-absent on linkage, the acceptance record under evidenceAvailability as pass, referenced-artefact-mismatch or referenced-artefact-unavailable, the custodian under issuerAuthority as acceptance-custodian, and the custody-dependence sentence in limits.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "when managed-custody@1 is selected",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence-v2-fixture.ts",
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "examples/verify-passport.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v2.json#cases.v2-valid-with-acceptance",
+        "fixtures/evidence-v2.json#cases.v2-acceptance-mismatch",
+        "fixtures/evidence-v2.json#cases.v2-acceptance-custodian-unauthorised",
+        "fixtures/evidence-v2.json#cases.v2-transfer-without-commitment"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "MC-7-declaration",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "An index or verifier declares the profile as a custody profile entry managed-custody@1 with acceptanceCommitment required and its control authorities, or record-model-baseline@2 when it does not require the commitment; the reference index selects it with ACCEPTANCE_COMMITMENT=required and names authorities with CONTROL_AUTHORITIES.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when version 2 states are admitted",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "packages/overlay-topics/src/capabilities.ts",
+        "packages/overlay-topics/src/index.ts#versionTwoAdmission"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/capabilities.test.ts",
+        "packages/overlay-topics/test/tmDppV2.test.ts"
+      ],
+      "evidenceRefs": [
+        "conformance/examples/capabilities-reference-node.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
       "id": "RULES-3-native-claim",
       "sourceId": "spec-rules",
       "sourceUri": "spec/rules.md",
@@ -829,6 +1269,31 @@
       ],
       "status": "tested",
       "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RULES-2-version-2-vocabulary",
+      "sourceId": "spec-rules",
+      "sourceUri": "spec/rules.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A version 2 operation is read for mapping as the version 1 operation it stands for (ISSUE as ACTIVATE, UPDATE as EDIT, TRANSFER as TRANSFER, RETIRE as RECYCLED) with the same event type, facets and conditions.",
+      "layer": "core",
+      "roles": [
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/mapping.ts#VERSION_2_OPERATION_MAPPING"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/mapping-v2.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1322,6 +1787,34 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "id": "SVC-2-version-2-admission",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "tm_dpp admits a version 2 state only when its lineage genesis is traceable through the submitted bytes or the admitted history, never after a RETIRE, never as a genesis spending an admitted output, and under managed-custody@1 never as a TRANSFER without its commitment; the refused spend keeps the tip.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmDpp.ts#lineageGenesisFor",
+        "packages/overlay-topics/src/tmDpp.ts#identifyAdmissibleOutputs"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/tmDppV2.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json",
+        "fixtures/chain-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
       "id": "SVC-2-anchor-admission",
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
@@ -1606,6 +2099,39 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "id": "VER-4-version-2-findings",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "The report is unchanged in shape and version; linkage carries lineage-retired, control-not-proven, version-transition-invalid and acceptance-commitment-absent, evidenceAvailability covers acceptance records, issuerAuthority the acceptance-custodian role, forks are reported apart from rival geneses, and the limits name the version 1 preimage boundary, the custody-dependence of a commitment and a supplied fork.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts",
+        "contracts/verification-report.schema.json"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence-v2-fixture.ts",
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "conformance/check.mjs",
+        "examples/verify-passport.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v2.json",
+        "fixtures/evidence-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
       "id": "VER-7-surfaces-equivalent",
       "sourceId": "spec-verification",
       "sourceUri": "spec/verification.md",
@@ -1685,6 +2211,32 @@
       "evidenceRefs": [],
       "status": "tested",
       "reviewedAt": "2026-09-05",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CONF-3-baseline-2",
+      "sourceId": "spec-conformance",
+      "sourceUri": "spec/conformance.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "native-baseline@2 is the same selection with record version 2 current and version 1 read beside it, the version 2 derivation, the managed acceptance representation and the version 2 fixtures; neither baseline supersedes the other before 1.0.",
+      "layer": "reference",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "conformance/baseline-native-2.json"
+      ],
+      "testRefs": [
+        "conformance/check.mjs"
+      ],
+      "evidenceRefs": [
+        "conformance/baseline-native-2.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-09-06",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2511,7 +3063,7 @@
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.4.0-draft",
+      "sourceVersion": "0.6.0-draft",
       "clause": "x-dpp-profile.must",
       "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
       "layer": "role",
@@ -3347,7 +3899,7 @@
       "id": "OVL-2-retraction",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.4.0-draft",
+      "sourceVersion": "0.6.0-draft",
       "clause": "POST /retract",
       "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
       "layer": "role",
@@ -3619,6 +4171,63 @@
         "OPR-profiles-named"
       ],
       "minimumStatus": "tested"
+    },
+    {
+      "id": "passport-reader-native-baseline-2",
+      "role": "passport-reader",
+      "minimumStatus": "tested",
+      "description": "A passport reader conforming to native-baseline@2: supplied-history verification of both record versions, the control proof, retirement, the upgrade, and the verification report with its version 2 findings.",
+      "requires": [
+        "CONF-2-reader-quickstart",
+        "RM-2-minimal-push",
+        "RM-2-script",
+        "RM-3-fields",
+        "RM-4-operations",
+        "RM-5-signatures",
+        "RM-6-invariants",
+        "RM-7-owner-tier",
+        "RM-8-verifier",
+        "VER-2-report",
+        "VER-3-expected-subject",
+        "VER-4-checks",
+        "VER-5-observations",
+        "RM2-2-script",
+        "RM2-3-fields",
+        "RM2-4-operations",
+        "RM2-5-signatures",
+        "RM2-6-invariants",
+        "RM2-6-control-proof",
+        "RM2-8-commitment",
+        "RM2-9-verifier",
+        "VER-4-version-2-findings",
+        "CONF-3-baseline-2"
+      ]
+    },
+    {
+      "id": "managed-custody-1",
+      "minimumStatus": "tested",
+      "description": "The managed-custody@1 profile as this repository implements and verifies it: the acceptance record, its binding to the TRANSFER, the report, the index's admission and declaration. The offer lifecycle is a writer duty and is a separate, self-reported claim.",
+      "requires": [
+        "MC-3-acceptance-record",
+        "MC-4-transfer-binding",
+        "MC-5-verification-report",
+        "MC-7-declaration",
+        "SVC-2-version-2-admission",
+        "RM2-6-control-proof",
+        "RM2-8-commitment"
+      ]
+    },
+    {
+      "id": "managed-custody-1-writer",
+      "role": "passport-writer",
+      "minimumStatus": "implemented",
+      "description": "A writer under managed-custody@1: offers idempotent by request, one acceptance per offer, no chain state on decline or expiry, one TRANSFER per acceptance; self-reported beside the reference example.",
+      "requires": [
+        "MC-4-offer-lifecycle",
+        "MC-4-transfer-binding",
+        "WR-2-verify-before-send",
+        "WR-4-one-writer"
+      ]
     }
   ]
 }

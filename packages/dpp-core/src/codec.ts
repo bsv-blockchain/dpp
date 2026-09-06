@@ -1,16 +1,22 @@
 import { LockingScript, OP, PublicKey, Utils, type ScriptChunk } from '@bsv/sdk'
 import {
   DPP_OPS,
+  DPP_OPS_V2,
   FIELD_COUNT,
+  FIELD_COUNT_V2,
   MAX_ACTOR_KEY_ID_BYTES,
+  MAX_EVENT_DATA_BYTES_V2,
   MAX_PASSPORT_ID_BYTES,
+  MAX_PAYLOAD_PUBLIC_BYTES_V2,
   NO_EVENT_OPS,
+  OUTPOINT_FIELD_BYTES,
   PROTOCOL_MARKER,
   STANDARD_VERSION,
+  STANDARD_VERSION_V2,
 } from './constants.js'
-import type { DppOp, DppState, DppStateData } from './types.js'
+import type { DppOpV1, DppOpV2, DppState, DppStateData, DppStateDataV2, DppStateV1, DppStateV2, Outpoint } from './types.js'
 
-/** Thrown when a script does not carry a well-formed DPP v1 output. */
+/** Thrown when a script does not carry a well-formed DPP output of a version this reader decodes. */
 export class DppFormatError extends Error {
   constructor(message: string) {
     super(message)
@@ -51,7 +57,12 @@ function chunkToField(chunk: ScriptChunk): number[] | null {
   return null
 }
 
-/** Fields 1–12 (the signable content) as raw wire bytes, in standard order. */
+/** Whether signable content, of either version, is version 2. */
+export function isV2Data(d: object): d is DppStateDataV2 {
+  return (d as { version?: unknown }).version === STANDARD_VERSION_V2
+}
+
+/** Fields 1–12 (the signable content) of a version 1 state as raw wire bytes, in standard order. */
 export function dataFields(d: DppStateData): number[][] {
   return [
     Utils.toArray(PROTOCOL_MARKER, 'utf8'),
@@ -69,14 +80,52 @@ export function dataFields(d: DppStateData): number[][] {
   ]
 }
 
-/** All 14 fields as raw wire bytes. */
+/** An outpoint as the version 2 fields 12 and 13 carry it: 32 txid bytes in display order, then a big-endian uint32 index. */
+export function outpointFieldBytes(outpoint: Outpoint | null): number[] {
+  if (outpoint == null) return []
+  const txid = Utils.toArray(outpoint.txid, 'hex')
+  if (txid.length !== 32) throw new DppFormatError('an outpoint txid must be 32 bytes')
+  const index = outpoint.outputIndex
+  if (!Number.isInteger(index) || index < 0 || index > 0xffffffff) {
+    throw new DppFormatError('an outpoint output index must be an unsigned 32-bit integer')
+  }
+  return [...txid, (index >>> 24) & 0xff, (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff]
+}
+
+/** Fields 1–15 (the signable content) of a version 2 state as raw wire bytes, in standard order. */
+export function dataFieldsV2(d: DppStateDataV2): number[][] {
+  const predecessor: Outpoint | null =
+    d.previousTxid === '' ? null : { txid: d.previousTxid, outputIndex: d.previousOutputIndex ?? -1 }
+  return [
+    Utils.toArray(PROTOCOL_MARKER, 'utf8'),
+    Utils.toArray(STANDARD_VERSION_V2, 'utf8'),
+    Utils.toArray(d.passportId, 'utf8'),
+    Utils.toArray(d.op, 'utf8'),
+    Utils.toArray(d.timestamp, 'utf8'),
+    Utils.toArray(d.ownerIdentityKey, 'hex'),
+    Utils.toArray(d.actorIdentityKey, 'hex'),
+    Utils.toArray(d.actorKeyId, 'utf8'),
+    Utils.toArray(d.eventData, 'utf8'),
+    Utils.toArray(d.payloadPublic, 'utf8'),
+    Utils.toArray(d.payloadOwnerHash, 'hex'),
+    outpointFieldBytes(d.lineageGenesis),
+    outpointFieldBytes(predecessor),
+    Utils.toArray(d.controlLinkage, 'hex'),
+    Utils.toArray(d.authorisationCommitment, 'hex'),
+  ]
+}
+
+/** All fields of a state as raw wire bytes: 14 for version 1, 17 for version 2. */
 export function stateToFields(s: DppState): number[][] {
-  return [...dataFields(s), [...s.userSignature], [...s.serverSignature]]
+  const data = s.version === STANDARD_VERSION_V2 ? dataFieldsV2(s) : dataFields(s)
+  return [...data, [...s.userSignature], [...s.serverSignature]]
 }
 
 /**
- * Build the DPP locking script: <33-byte key> OP_CHECKSIG <14 fields> drops.
+ * Build the DPP locking script: <33-byte key> OP_CHECKSIG <fields> drops.
  * Custody-neutral (`spec/record-model.md` §2): the locking key may be treasury-derived or user-held.
+ * The drop tail is one OP_2DROP per pair of fields and one OP_DROP for an odd
+ * field left over: seven OP_2DROP for version 1, eight and an OP_DROP for version 2.
  */
 export function buildLockingScript(
   state: DppState,
@@ -87,12 +136,13 @@ export function buildLockingScript(
       ? PublicKey.fromString(lockingPublicKey)
       : lockingPublicKey
   const pubBytes = pub.encode(true) as number[]
+  const fields = stateToFields(state)
   const chunks: ScriptChunk[] = [
     { op: pubBytes.length, data: pubBytes },
     { op: OP.OP_CHECKSIG },
-    ...stateToFields(state).map(minimalChunk),
+    ...fields.map(minimalChunk),
   ]
-  let undropped = FIELD_COUNT
+  let undropped = fields.length
   while (undropped > 1) {
     chunks.push({ op: OP.OP_2DROP })
     undropped -= 2
@@ -169,6 +219,17 @@ function digestHex(bytes: number[], name: string): string {
   return Utils.toHex(bytes)
 }
 
+/** A version 2 outpoint field: empty, or exactly 36 bytes. */
+function outpointField(bytes: number[], name: string): Outpoint | null {
+  if (bytes.length === 0) return null
+  if (bytes.length !== OUTPOINT_FIELD_BYTES) {
+    throw new DppFormatError(`${name} must be empty or ${OUTPOINT_FIELD_BYTES} bytes`)
+  }
+  const txid = Utils.toHex(bytes.slice(0, 32))
+  const outputIndex = ((bytes[32] << 24) >>> 0) + (bytes[33] << 16) + (bytes[34] << 8) + bytes[35]
+  return { txid, outputIndex }
+}
+
 function requireJson(text: string, name: string): void {
   try {
     JSON.parse(text)
@@ -177,39 +238,8 @@ function requireJson(text: string, name: string): void {
   }
 }
 
-/** Validate and type raw fields per `spec/record-model.md` §2-§3. Throws DppFormatError. */
-export function fieldsToState(fields: number[][]): DppState {
-  if (fields.length !== FIELD_COUNT) {
-    throw new DppFormatError(`expected ${FIELD_COUNT} fields, found ${fields.length}`)
-  }
-  // No field may be the single byte 0x00 (§2). Minimal writing encodes it
-  // as OP_0, which reads back as the empty field, so it can only arrive by a
-  // non-minimal push; admitting it would give one value two spellings.
-  fields.forEach((f, i) => {
-    if (f.length === 1 && f[0] === 0) {
-      throw new DppFormatError(`field ${i + 1} is the single byte 0x00`)
-    }
-  })
-  const marker = Utils.toUTF8(fields[0])
-  if (marker !== PROTOCOL_MARKER) {
-    throw new DppFormatError(`protocol_marker must be "${PROTOCOL_MARKER}"`)
-  }
-  const version = Utils.toUTF8(fields[1])
-  if (version !== STANDARD_VERSION) {
-    throw new DppFormatError(`unsupported standard version "${version}"`)
-  }
-  // Bounded in bytes, before decoding: the field is the server signature's
-  // BRC-42 key identifier and a wallet refuses one above 800 characters (§3).
-  if (fields[2].length > MAX_PASSPORT_ID_BYTES) {
-    throw new DppFormatError(`passport_id exceeds ${MAX_PASSPORT_ID_BYTES} bytes`)
-  }
-  const passportId = utf8Field(fields[2], 'passport_id')
-  if (passportId.length === 0) throw new DppFormatError('passport_id must be non-empty')
-  const op = Utils.toUTF8(fields[3]) as DppOp
-  if (!(DPP_OPS as readonly string[]).includes(op)) {
-    throw new DppFormatError(`unknown op "${op}"`)
-  }
-  const timestamp = Utils.toUTF8(fields[4])
+function timestampField(bytes: number[]): string {
+  const timestamp = Utils.toUTF8(bytes)
   const isoMatch = ISO_8601.exec(timestamp)
   if (isoMatch == null || Number.isNaN(Date.parse(timestamp))) {
     throw new DppFormatError('timestamp must be ISO 8601')
@@ -217,14 +247,69 @@ export function fieldsToState(fields: number[][]): DppState {
   if (!isRealInstant(isoMatch)) {
     throw new DppFormatError('timestamp must name a real calendar instant')
   }
-  const ownerIdentityKey = identityKeyHex(fields[5], 'owner_identity_key')
-  const actorIdentityKey = identityKeyHex(fields[6], 'actor_identity_key')
+  return timestamp
+}
+
+/** No field of either version may be the single byte 0x00 (`spec/record-model.md` §2). */
+function refuseLoneNul(fields: number[][]): void {
+  // Minimal writing encodes it as OP_0, which reads back as the empty field,
+  // so it can only arrive by a non-minimal push; admitting it would give one
+  // value two spellings.
+  fields.forEach((f, i) => {
+    if (f.length === 1 && f[0] === 0) {
+      throw new DppFormatError(`field ${i + 1} is the single byte 0x00`)
+    }
+  })
+}
+
+function passportIdField(bytes: number[]): string {
+  // Bounded in bytes, before decoding: the field is the server signature's
+  // BRC-42 key identifier and a wallet refuses one above 800 characters (§3).
+  if (bytes.length > MAX_PASSPORT_ID_BYTES) {
+    throw new DppFormatError(`passport_id exceeds ${MAX_PASSPORT_ID_BYTES} bytes`)
+  }
+  const passportId = utf8Field(bytes, 'passport_id')
+  if (passportId.length === 0) throw new DppFormatError('passport_id must be non-empty')
+  return passportId
+}
+
+function actorKeyIdField(bytes: number[]): string {
   // Same reason as passport_id: the user signature's BRC-42 key identifier.
-  if (fields[7].length > MAX_ACTOR_KEY_ID_BYTES) {
+  if (bytes.length > MAX_ACTOR_KEY_ID_BYTES) {
     throw new DppFormatError(`actor_keyID exceeds ${MAX_ACTOR_KEY_ID_BYTES} bytes`)
   }
-  const actorKeyId = utf8Field(fields[7], 'actor_keyID')
+  const actorKeyId = utf8Field(bytes, 'actor_keyID')
   if (actorKeyId.length === 0) throw new DppFormatError('actor_keyID must be non-empty')
+  return actorKeyId
+}
+
+/** Validate and type raw version 1 fields per `spec/record-model.md` §2-§3. Throws DppFormatError. */
+export function fieldsToState(fields: number[][]): DppStateV1 {
+  if (fields.length !== FIELD_COUNT) {
+    throw new DppFormatError(`expected ${FIELD_COUNT} fields, found ${fields.length}`)
+  }
+  refuseLoneNul(fields)
+  const marker = Utils.toUTF8(fields[0])
+  if (marker !== PROTOCOL_MARKER) {
+    throw new DppFormatError(`protocol_marker must be "${PROTOCOL_MARKER}"`)
+  }
+  const version = Utils.toUTF8(fields[1])
+  if (version !== STANDARD_VERSION) {
+    throw new DppFormatError(
+      version === STANDARD_VERSION_V2
+        ? `version "${STANDARD_VERSION_V2}" is carried by the ${FIELD_COUNT_V2}-field layout, not the ${FIELD_COUNT}-field one`
+        : `unsupported standard version "${version}"`
+    )
+  }
+  const passportId = passportIdField(fields[2])
+  const op = Utils.toUTF8(fields[3]) as DppOpV1
+  if (!(DPP_OPS as readonly string[]).includes(op)) {
+    throw new DppFormatError(`unknown op "${op}"`)
+  }
+  const timestamp = timestampField(fields[4])
+  const ownerIdentityKey = identityKeyHex(fields[5], 'owner_identity_key')
+  const actorIdentityKey = identityKeyHex(fields[6], 'actor_identity_key')
+  const actorKeyId = actorKeyIdField(fields[7])
   const eventData = utf8Field(fields[8], 'event_data')
   if (NO_EVENT_OPS.includes(op)) {
     if (eventData !== '') {
@@ -248,7 +333,7 @@ export function fieldsToState(fields: number[][]): DppState {
   }
   return {
     protocolMarker: marker,
-    version,
+    version: '1',
     passportId,
     op,
     timestamp,
@@ -264,9 +349,87 @@ export function fieldsToState(fields: number[][]): DppState {
   }
 }
 
+/** Validate and type raw version 2 fields per `spec/record-model-v2.md` §2-§3. Throws DppFormatError. */
+export function fieldsToStateV2(fields: number[][]): DppStateV2 {
+  if (fields.length !== FIELD_COUNT_V2) {
+    throw new DppFormatError(`expected ${FIELD_COUNT_V2} fields, found ${fields.length}`)
+  }
+  refuseLoneNul(fields)
+  const marker = Utils.toUTF8(fields[0])
+  if (marker !== PROTOCOL_MARKER) {
+    throw new DppFormatError(`protocol_marker must be "${PROTOCOL_MARKER}"`)
+  }
+  const version = Utils.toUTF8(fields[1])
+  if (version !== STANDARD_VERSION_V2) {
+    throw new DppFormatError(
+      version === STANDARD_VERSION
+        ? `version "${STANDARD_VERSION}" is carried by the ${FIELD_COUNT}-field layout, not the ${FIELD_COUNT_V2}-field one`
+        : `unsupported standard version "${version}"`
+    )
+  }
+  const passportId = passportIdField(fields[2])
+  const op = Utils.toUTF8(fields[3]) as DppOpV2
+  if (!(DPP_OPS_V2 as readonly string[]).includes(op)) {
+    throw new DppFormatError(`unknown op "${op}"`)
+  }
+  const timestamp = timestampField(fields[4])
+  const ownerIdentityKey = identityKeyHex(fields[5], 'controller_key')
+  const actorIdentityKey = identityKeyHex(fields[6], 'actor_identity_key')
+  const actorKeyId = actorKeyIdField(fields[7])
+  if (fields[8].length > MAX_EVENT_DATA_BYTES_V2) {
+    throw new DppFormatError(`event_data exceeds ${MAX_EVENT_DATA_BYTES_V2} bytes`)
+  }
+  const eventData = utf8Field(fields[8], 'event_data')
+  if (eventData !== '') requireJson(eventData, 'event_data')
+  if (fields[9].length > MAX_PAYLOAD_PUBLIC_BYTES_V2) {
+    throw new DppFormatError(`payload_public exceeds ${MAX_PAYLOAD_PUBLIC_BYTES_V2} bytes`)
+  }
+  const payloadPublic = utf8Field(fields[9], 'payload_public')
+  if (payloadPublic.length === 0) {
+    throw new DppFormatError('payload_public must be present on every state')
+  }
+  requireJson(payloadPublic, 'payload_public')
+  const payloadOwnerHash = digestHex(fields[10], 'payload_owner_hash')
+  const lineageGenesis = outpointField(fields[11], 'lineage_genesis')
+  const predecessor = outpointField(fields[12], 'previous_outpoint')
+  const controlLinkage = digestHex(fields[13], 'control_linkage')
+  if (op === 'ISSUE' && controlLinkage !== '') {
+    throw new DppFormatError('control_linkage must be empty on ISSUE')
+  }
+  const authorisationCommitment = digestHex(fields[14], 'authorisation_commitment')
+  const userSignature = fields[15]
+  if (userSignature.length === 0) throw new DppFormatError('actor_signature must be present')
+  const serverSignature = fields[16]
+  if (serverSignature.length === 0) throw new DppFormatError('publisher_signature must be present')
+  return {
+    protocolMarker: marker,
+    version: '2',
+    passportId,
+    op,
+    timestamp,
+    ownerIdentityKey,
+    actorIdentityKey,
+    actorKeyId,
+    eventData,
+    payloadPublic,
+    payloadOwnerHash,
+    previousTxid: predecessor?.txid ?? '',
+    previousOutputIndex: predecessor?.outputIndex ?? null,
+    lineageGenesis,
+    controlLinkage,
+    authorisationCommitment,
+    userSignature,
+    serverSignature,
+  }
+}
+
 /**
- * Parse a DPP output script. Throws DppFormatError when the script is not a
- * well-formed DPP v1 output.
+ * Parse a DPP output script of either version. Throws DppFormatError when the
+ * script is not a well-formed DPP output: the field count selects the version's
+ * rules (fourteen fields for version 1, seventeen for version 2), the version
+ * field must agree with the count, and any other count or version is refused by
+ * name so an older reader meeting a newer state fails clearly rather than
+ * guessing.
  */
 export function parseDppOutput(script: LockingScript): {
   state: DppState
@@ -290,16 +453,16 @@ export function parseDppOutput(script: LockingScript): {
     }
     fields.push(field)
   }
-  if (fields.length !== FIELD_COUNT) {
-    throw new DppFormatError(`expected ${FIELD_COUNT} fields, found ${fields.length}`)
+  if (fields.length !== FIELD_COUNT && fields.length !== FIELD_COUNT_V2) {
+    throw new DppFormatError(`expected ${FIELD_COUNT} or ${FIELD_COUNT_V2} fields, found ${fields.length}`)
   }
   const tail = chunks.slice(i)
-  const twoDrops = Math.floor(FIELD_COUNT / 2)
-  const oneDrop = FIELD_COUNT % 2
+  const twoDrops = Math.floor(fields.length / 2)
+  const oneDrop = fields.length % 2
   const tailValid =
     tail.length === twoDrops + oneDrop &&
-    tail.slice(0, twoDrops).every((c) => c.op === OP.OP_2DROP) &&
-    (oneDrop === 0 || tail[twoDrops].op === OP.OP_DROP)
+    tail.slice(0, twoDrops).every((c) => c.op === OP.OP_2DROP && c.data === undefined) &&
+    (oneDrop === 0 || (tail[twoDrops].op === OP.OP_DROP && tail[twoDrops].data === undefined))
   if (!tailValid) {
     throw new DppFormatError('not a DPP output: malformed drop tail')
   }
@@ -310,7 +473,8 @@ export function parseDppOutput(script: LockingScript): {
     // Keep the documented contract: every refusal is a DppFormatError.
     throw new DppFormatError('not a DPP output: locking key is not a valid public key')
   }
-  return { state: fieldsToState(fields), lockingPublicKey }
+  const state = fields.length === FIELD_COUNT_V2 ? fieldsToStateV2(fields) : fieldsToState(fields)
+  return { state, lockingPublicKey }
 }
 
 /** Non-throwing variant of parseDppOutput, for scanning arbitrary outputs. */

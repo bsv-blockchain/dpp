@@ -13,7 +13,7 @@ import {
   OWNER_LINKAGE_REVELATION_PROTOCOL_ID,
   OWNER_PROTOCOL_ID,
 } from './constants.js'
-import type { DppStateData } from './types.js'
+import type { DppStateData, DppStateDataV2 } from './types.js'
 
 /**
  * The owner key, the possession convention and the owner-signed transfer
@@ -229,4 +229,41 @@ export function normaliseTransferAuthorities(keys: readonly string[]): string[] 
     }
     return canonical
   })
+}
+
+/** The three refusals of `spec/record-model-v2.md` §6 (control), verbatim; fixtures pin these strings. */
+export const CONTROL_REFUSALS = {
+  notProven: 'the actor is not the controller and control_linkage is empty',
+  redundantLinkage: 'control_linkage must be empty when the actor is the controller or a named authority',
+  notLinked: 'control_linkage does not link actor_identity_key to the previous controller_key',
+} as const
+
+type ControlFields = Pick<DppStateDataV2, 'op' | 'actorIdentityKey' | 'controlLinkage'>
+
+/**
+ * The control proof of a version 2 UPDATE, TRANSFER or RETIRE
+ * (`spec/record-model-v2.md` §6): the actor is the previous controller by
+ * equality (field 7 equals the previous field 6), or a named authority, or
+ * proves it by linkage (field 14 is the scalar with previous field 6 equal to
+ * field 7 plus the scalar times G). Evaluated in that order, and the linkage
+ * field has one accepted state under each branch: empty under equality and
+ * under an authority, the scalar otherwise. Returns null when the state
+ * passes or the rule does not apply (an ISSUE), otherwise the reason.
+ */
+export function checkControl(
+  prev: Pick<DppStateData, 'ownerIdentityKey'>,
+  next: ControlFields,
+  authorities: readonly string[] = []
+): string | null {
+  if (next.op === 'ISSUE') return null
+  const controller = next.actorIdentityKey === prev.ownerIdentityKey
+  const authority = !controller && authorities.includes(next.actorIdentityKey)
+  if (controller || authority) {
+    return next.controlLinkage === '' ? null : CONTROL_REFUSALS.redundantLinkage
+  }
+  if (next.controlLinkage === '') return CONTROL_REFUSALS.notProven
+  if (!verifyOwnerLinkage(next.actorIdentityKey, prev.ownerIdentityKey, next.controlLinkage)) {
+    return CONTROL_REFUSALS.notLinked
+  }
+  return null
 }

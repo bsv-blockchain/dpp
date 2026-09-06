@@ -10,6 +10,8 @@ import {
 import { didKeyFromIdentityKey } from './did.js'
 import { inspectChain, type ChainInspection, type StateInspection } from './verifyChain.js'
 import { verifyPolicyChain, type PublisherPolicy } from './publisherPolicy.js'
+import { bindAcceptanceToState, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
+import type { DppStateV2, Outpoint } from './types.js'
 
 /**
  * The one verification contract (`spec/verification.md`): sixteen named checks,
@@ -48,10 +50,7 @@ export const EVIDENCE_CHECK_NAMES = [
 export type EvidenceCheckName = (typeof EVIDENCE_CHECK_NAMES)[number]
 export type CheckStatus = 'pass' | 'fail' | 'unknown' | 'not-applicable'
 
-export interface Outpoint {
-  txid: string
-  outputIndex: number
-}
+export type { Outpoint }
 
 export interface CheckScope {
   artefact?: string
@@ -138,6 +137,13 @@ export interface PassportEvidence {
   nativeClaims?: unknown[]
   anchors?: AnchorEvidence[]
   externalCredentials?: ExternalCredentialEvidence[]
+  /**
+   * Managed acceptance records (`spec/managed-custody.md` §3) the custodian
+   * retained for the version 2 TRANSFERs in the history. Each is bound to the
+   * TRANSFER whose `authorisation_commitment` names it; a commitment with no
+   * record supplied leaves `evidenceAvailability` unknown, never passed.
+   */
+  acceptanceRecords?: unknown[]
 }
 
 /** A check's answer from a pluggable verifier, before the report names and orders it. */
@@ -175,7 +181,7 @@ export type ExternalCredentialVerifier = (input: {
 }) => Promise<ExternalCredentialVerification>
 
 export interface AuthorityQuestion {
-  role: 'genesis-issuer' | 'lifecycle-claimant' | 'anchoring-service'
+  role: 'genesis-issuer' | 'lifecycle-claimant' | 'anchoring-service' | 'acceptance-custodian'
   /** The identity as the evidence names it: a compressed key for native roles, a DID for claims. */
   identity: string
   at?: string
@@ -192,6 +198,8 @@ export type AuthorityPolicy =
       claimIssuers?: string[]
       /** Anchoring service identity keys whose anchors this policy accepts. */
       anchoringServices?: string[]
+      /** Custodian identity keys whose managed acceptance records this policy accepts. */
+      acceptanceCustodians?: string[]
       /** Verifies a role the lists above do not settle, on evidence the policy names. */
       verify?: (question: AuthorityQuestion) => Promise<PartialCheck>
     }
@@ -224,6 +232,15 @@ export interface EvidencePolicy {
    */
   publisherPolicy?: { chain: PublisherPolicy[]; operatorIdentityKeys: Record<string, string> }
   ownerConsent?: boolean | { authorities: string[] }
+  /** Authorities for version 2 control proofs; defaults to the `ownerConsent` authorities (`VerifyChainOptions.controlAuthorities`). */
+  controlAuthorities?: string[]
+  /**
+   * The managed-custody profile (`spec/managed-custody.md`). `required` makes
+   * every version 2 TRANSFER carry an acceptance commitment; the check is
+   * otherwise read but not demanded. Supplied acceptance records are verified
+   * either way, and the custodian's authority is the `authority` policy's.
+   */
+  managedAcceptance?: { required?: boolean }
   chainTracker?: ChainTracker | 'scripts only'
   authority?: AuthorityPolicy
   credentialVerifier?: ExternalCredentialVerifier
@@ -284,11 +301,13 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
   const perState = states.map((s) => ({
     index: s.index,
     txid: s.txid,
+    version: s.version,
     op: s.op,
     userSignatureValid: s.userSignatureValid,
     serverSignatureValid: s.serverSignatureValid,
     linkageValid: s.linkageValid,
     ownerConsentValid: s.ownerConsentValid,
+    controlValid: s.controlValid,
     spv: s.spv,
     ...(s.spvReason == null ? {} : { spvReason: s.spvReason }),
   }))
@@ -324,9 +343,9 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
 
   const linkage =
     failure?.kind === 'linkage'
-      ? check('linkage', 'fail', 'link-broken', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
+      ? check('linkage', 'fail', linkageReasonCode(failure.message), refs, { scope: { stateIndex: failure.index }, detail: failure.message })
       : failure?.kind === 'consent'
-        ? check('linkage', 'fail', 'consent-not-proven', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
+        ? check('linkage', 'fail', failure.message.includes('authorisation_commitment') ? 'acceptance-commitment-absent' : 'consent-not-proven', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
         : heldOrNotInspected('linkage')
 
   let inclusion: EvidenceCheck
@@ -353,6 +372,19 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
     genesis: states[0],
     checks: [encoding, actor, publisher, linkage, inclusion],
   }
+}
+
+/**
+ * Which shared reason code a linkage failure carries. The message is the
+ * verifier's own sentence (`transition.ts`, `owner.ts`); the code is the
+ * contract's word for the rule it names, so a consumer branches on the code
+ * and a person reads the sentence.
+ */
+function linkageReasonCode(message: string): string {
+  if (message.includes('retired')) return 'lineage-retired'
+  if (message.includes('control_linkage') || message.includes('not the controller')) return 'control-not-proven'
+  if (message.includes('version 1') || message.includes('version 2') || message.includes('upgrade transition')) return 'version-transition-invalid'
+  return 'link-broken'
 }
 
 interface NativeFindings {
@@ -494,7 +526,15 @@ export async function verifyPassportEvidence(
 
   // The token rail, and the alternative histories that make a genesis ambiguous.
   const txs = evidence.tokenHistory
-  const inspection = txs != null && txs.length > 0 ? await inspectChain(txs, { chainTracker: policy.chainTracker, publisherKeys: policy.publisherKeys, publisherPolicy: verifiedPolicyChain, ownerConsent: policy.ownerConsent }) : undefined
+  const chainOptions = {
+    chainTracker: policy.chainTracker,
+    publisherKeys: policy.publisherKeys,
+    publisherPolicy: verifiedPolicyChain,
+    ownerConsent: policy.ownerConsent,
+    ...(policy.controlAuthorities == null ? {} : { controlAuthorities: policy.controlAuthorities }),
+    managedAcceptance: policy.managedAcceptance?.required === true,
+  }
+  const inspection = txs != null && txs.length > 0 ? await inspectChain(txs, chainOptions) : undefined
   const token = tokenChecks(txs, inspection, policy)
   if (policyFailure != null) {
     const at = token.checks.findIndex((c) => c.name === 'publisherSignatures')
@@ -503,11 +543,19 @@ export async function verifyPassportEvidence(
   const alternatives: Array<{ inspection: ChainInspection; tip: Outpoint | null }> = []
   for (const history of evidence.alternativeHistories ?? []) {
     if (history.length === 0) continue
-    const alt = await inspectChain(history, { chainTracker: policy.chainTracker, publisherKeys: policy.publisherKeys, publisherPolicy: verifiedPolicyChain, ownerConsent: policy.ownerConsent })
+    const alt = await inspectChain(history, chainOptions)
     const last = alt.states.at(-1)
     alternatives.push({ inspection: alt, tip: last == null ? null : { txid: last.txid, outputIndex: last.outputIndex } })
   }
   const validAlternatives = alternatives.filter((a) => a.inspection.complete && a.inspection.states[0]?.state.passportId === expected.passportId)
+  // A valid alternative that shares this history's genesis is a fork, two
+  // successors of one state, which accepted-chain spending decides and this
+  // report only names; one with another genesis is a rival claim to the
+  // identifier, which an authority policy decides. The two are told apart
+  // because they mean different things and get different words.
+  const genesisTxid = token.genesis?.txid
+  const forks = validAlternatives.filter((a) => genesisTxid != null && a.inspection.states[0]?.txid === genesisTxid)
+  const rivalGenesis = validAlternatives.filter((a) => !forks.includes(a))
 
   // The attestation and anchor rails.
   const native = inspectNativeClaims(evidence.nativeClaims)
@@ -717,8 +765,8 @@ export async function verifyPassportEvidence(
       const accepted = [expected.passportId, ...(expected.productIdentifier == null ? [] : [expected.productIdentifier])]
       if (v.subjects != null && !v.subjects.some((s) => accepted.includes(s))) problems.push({ reasonCode: 'subject-mismatch', detail: `credential ${digestRef(digest)} names ${v.subjects.join(', ')}` })
     }
-    if (validAlternatives.length > 0 && expected.expectedGenesisOutpoint == null) {
-      problems.push({ reasonCode: 'genesis-ambiguous', detail: `${validAlternatives.length + 1} valid genesis records carry this passport identifier` })
+    if (rivalGenesis.length > 0 && expected.expectedGenesisOutpoint == null) {
+      problems.push({ reasonCode: 'genesis-ambiguous', detail: `${rivalGenesis.length + 1} valid genesis records carry this passport identifier` })
     }
     if (subjectRefs.length === 0) subjectBinding = check('subjectBinding', 'unknown', 'no-evidence')
     else if (problems.length === 0) subjectBinding = check('subjectBinding', 'pass', undefined, subjectRefs)
@@ -726,6 +774,42 @@ export async function verifyPassportEvidence(
       const ambiguous = problems.every((p) => p.reasonCode === 'genesis-ambiguous')
       subjectBinding = check('subjectBinding', ambiguous ? 'unknown' : 'fail', problems[0].reasonCode, subjectRefs, { detail: problems })
     }
+  }
+
+  // Managed acceptance (`spec/managed-custody.md`): every version 2 TRANSFER
+  // that commits to an acceptance record references an artefact. A supplied
+  // record that binds to its TRANSFER makes the reference available; one that
+  // does not is a mismatch; a commitment nobody supplied a record for is an
+  // artefact the verifier could not fetch, never a pass.
+  const acceptanceParts: PartialCheck[] = []
+  const acceptanceCustodianQuestions: AuthorityQuestion[] = []
+  const committedTransfers = (token.inspection?.states ?? []).filter(
+    (s): s is StateInspection & { state: DppStateV2 } => s.state.version === '2' && s.state.op === 'TRANSFER' && s.state.authorisationCommitment !== ''
+  )
+  const suppliedAcceptances = (evidence.acceptanceRecords ?? []).map((value, index) => ({ index, value, inspection: inspectManagedAcceptance(value) }))
+  for (const transfer of committedTransfers) {
+    const ref = `acceptance:sha256:${transfer.state.authorisationCommitment}`
+    const stateRef = outpointRef({ txid: transfer.txid, outputIndex: transfer.outputIndex })
+    const supplied = suppliedAcceptances.find((a) => a.inspection.commitment === transfer.state.authorisationCommitment)
+    if (supplied == null) {
+      acceptanceParts.push({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable', evidenceRefs: [stateRef, ref], detail: `the acceptance record ${stateRef} commits to was not supplied` })
+      continue
+    }
+    const failures = [...supplied.inspection.failures]
+    if (supplied.inspection.signatureValid === true) failures.push(...bindAcceptanceToState(supplied.value as ManagedAcceptanceRecord, transfer.state))
+    if (failures.length > 0) {
+      acceptanceParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: [stateRef, ref], detail: failures.map((f) => f.detail) })
+      continue
+    }
+    acceptanceParts.push({ status: 'pass', evidenceRefs: [stateRef, ref] })
+    acceptanceCustodianQuestions.push({ role: 'acceptance-custodian', identity: (supplied.value as ManagedAcceptanceRecord).custodian, at: (supplied.value as ManagedAcceptanceRecord).acceptance.acceptedAt, ref })
+  }
+  for (const orphan of suppliedAcceptances) {
+    if (committedTransfers.some((t) => t.state.authorisationCommitment === orphan.inspection.commitment)) continue
+    acceptanceParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: [`acceptance:${orphan.index}`], detail: orphan.inspection.commitment == null ? orphan.inspection.failures.map((f) => f.detail) : 'no supplied TRANSFER commits to this acceptance record' })
+  }
+  if (committedTransfers.length > 0) {
+    limits.push('An acceptance commitment binds a transfer to acceptance evidence the custodian retained and signed; it is custody-dependent evidence, not a signature made with a key the recipient controls.')
   }
 
   // Authority, role by role, on the policy's lists or verifier.
@@ -743,9 +827,10 @@ export async function verifyPassportEvidence(
     }
     for (const c of native.claims) questions.push({ role: 'lifecycle-claimant', identity: c.claim.issuer, at: c.claim.timestamp, ref: c.ref })
     for (const a of anchors) if (a.metadata != null) questions.push({ role: 'anchoring-service', identity: a.metadata.anchoredBy, ref: a.ref })
+    questions.push(...acceptanceCustodianQuestions)
     const parts: PartialCheck[] = []
     for (const q of questions) {
-      const list = q.role === 'genesis-issuer' ? auth.genesisIssuers : q.role === 'lifecycle-claimant' ? auth.claimIssuers : auth.anchoringServices
+      const list = q.role === 'genesis-issuer' ? auth.genesisIssuers : q.role === 'lifecycle-claimant' ? auth.claimIssuers : q.role === 'anchoring-service' ? auth.anchoringServices : auth.acceptanceCustodians
       if (list != null) {
         const names = q.role === 'genesis-issuer' ? [q.identity, didKeyFromIdentityKey(q.identity)] : [q.identity]
         parts.push(names.some((n) => list.includes(n)) ? { status: 'pass', evidenceRefs: [q.ref, policyId] } : { status: 'fail', reasonCode: 'authority-unconfirmed', evidenceRefs: [q.ref], detail: `${q.role} ${q.identity} is not permitted by ${policyId}` })
@@ -784,6 +869,7 @@ export async function verifyPassportEvidence(
 
   // Availability of everything the evidence pointed at.
   const availabilityParts: PartialCheck[] = unavailableRefs.map((ref) => ({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable', evidenceRefs: [ref] }))
+  availabilityParts.push(...acceptanceParts)
   for (const [digest, v] of verifications) if (v.availability != null) availabilityParts.push({ ...v.availability, evidenceRefs: [digestRef(digest), ...(v.availability.evidenceRefs ?? [])] })
   const referenced = [...(token.inspection?.states.map((s) => outpointRef({ txid: s.txid, outputIndex: s.outputIndex })) ?? []), ...anchorRefs, ...nativeRefs]
   const evidenceAvailability =
@@ -794,6 +880,12 @@ export async function verifyPassportEvidence(
   const observations = await observe(policy, expected.passportId, token.tip, validAlternatives.map((a) => a.tip).filter((t): t is Outpoint => t != null), checkedAt)
   if (observations.latestState !== 'unknown') {
     limits.push('The latest-state observation is as fresh and as complete as the sources asked; it is not a proof that no later spend exists.')
+  }
+  if (forks.length > 0) {
+    limits.push('Two valid successors of one state were supplied; which continuation is recognised is decided by accepted-chain spending evidence, never by this report or by counting sources.')
+  }
+  if ((token.inspection?.states ?? []).some((s) => s.version === '1')) {
+    limits.push('Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 TRANSFER proves control only where the owner-signed transfer is selected.')
   }
 
   const checks: EvidenceCheck[] = [

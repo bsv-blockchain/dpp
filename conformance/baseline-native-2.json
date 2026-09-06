@@ -1,0 +1,456 @@
+{
+  "baselineId": "native-baseline@2",
+  "version": "2",
+  "status": "proposed",
+  "description": "The recommended path through the current native formats with record version 2 as the current record and version 1 read beside it, because a lineage may hold both. The same selection as native-baseline@1 for the native claim, the anchor and the report; what is added is the seventeen-field record, its derivation, the managed acceptance record as a representation and the version 2 fixtures. A conformance and documentation selection: nothing here changes a byte, revives a refused format or requires every deployment to fill every role.",
+  "wire": {
+    "record": {
+      "protocolMarker": "dpp",
+      "version": "2",
+      "fieldCount": 17,
+      "specification": "spec/record-model-v2.md",
+      "alsoReads": {
+        "version": "1",
+        "fieldCount": 14,
+        "specification": "spec/record-model.md",
+        "rule": "A reader selects the version by the field count of the output and reads each state under its own version; a version 1 lineage continues under version 2 only through the upgrade transition of spec/record-model-v2.md section 6."
+      }
+    },
+    "nativeClaim": {
+      "claimFormat": "dpp-lifecycle-v1",
+      "specification": "spec/rules.md#3-native-signed-claim"
+    },
+    "anchor": {
+      "prefix": "bsv-attestation-anchor-v1",
+      "signedFieldCount": 9,
+      "dropCount": 5,
+      "specification": "spec/rules.md#5-bsv-anchor-v1"
+    },
+    "verificationReport": {
+      "reportVersion": "1",
+      "schema": "contracts/verification-report.schema.json",
+      "checkNames": [
+        "recordEncoding",
+        "actorSignatures",
+        "publisherSignatures",
+        "linkage",
+        "inclusion",
+        "nativeAttestationSignature",
+        "anchorSignature",
+        "anchorKeyDerivation",
+        "anchorDigestAndMetadataBinding",
+        "externalCredentialProof",
+        "subjectBinding",
+        "issuerAuthority",
+        "schema",
+        "credentialTime",
+        "credentialStatus",
+        "evidenceAvailability"
+      ]
+    }
+  },
+  "derivations": {
+    "userSignature": {
+      "protocolId": [
+        1,
+        "dpp token v1"
+      ],
+      "keyId": "actor_keyID (field 8)",
+      "counterparty": "anyone"
+    },
+    "serverSignature": {
+      "protocolId": [
+        1,
+        "dpp token v1"
+      ],
+      "keyId": "passport_id (field 3)",
+      "counterparty": "anyone"
+    },
+    "actorSignatureV2": {
+      "protocolId": [
+        1,
+        "dpp token v2"
+      ],
+      "keyId": "actor_keyID (field 8)",
+      "counterparty": "anyone"
+    },
+    "publisherSignatureV2": {
+      "protocolId": [
+        1,
+        "dpp token v2"
+      ],
+      "keyId": "passport_id (field 3)",
+      "counterparty": "anyone"
+    },
+    "ownerKey": {
+      "protocolId": [
+        1,
+        "dpp owner v1"
+      ],
+      "keyId": "passport_id",
+      "counterparty": "self"
+    },
+    "controllerKey": {
+      "protocolId": [
+        1,
+        "dpp owner v1"
+      ],
+      "keyId": "passport_id",
+      "counterparty": "self"
+    },
+    "nativeClaimSignature": {
+      "protocolId": [
+        1,
+        "dpp attestation v1"
+      ],
+      "keyId": "passportId",
+      "counterparty": "anyone"
+    },
+    "anchorSignature": {
+      "protocolId": [
+        1,
+        "bsv attestation anchor v1"
+      ],
+      "keyId": "attestationId",
+      "counterparty": "anyone"
+    }
+  },
+  "representations": [
+    {
+      "id": "dpp-lifecycle-json-v1",
+      "mediaType": "application/json",
+      "bytesHashed": "restricted canonical JSON of the complete signed native claim, including signature",
+      "specification": "spec/rules.md#4-secured-representation-bytes"
+    },
+    {
+      "id": "vsc-seal-json-v1",
+      "mediaType": "application/vc+ld+json",
+      "bytesHashed": "exact UTF-8 bytes of the complete issued credential, including its Data Integrity proof",
+      "specification": "spec/vsc-profile.md"
+    },
+    {
+      "id": "dpp-managed-acceptance-v1",
+      "mediaType": "application/json",
+      "bytesHashed": "canonical JSON (nested, code-unit sorted, no whitespace, strings and safe integers only) of the complete signed acceptance record, including signature; the custodian signs the same form without signature",
+      "specification": "spec/managed-custody.md#3-the-acceptance-record"
+    }
+  ],
+  "refused": [
+    "uora-anchor-v2"
+  ],
+  "historical": [
+    "uora-anchor-v1",
+    "uora-anchor-v3",
+    "tm_uora_dpp",
+    "ls_uora_dpp",
+    "uora_type"
+  ],
+  "reasonCodes": "contracts/verification-report.schema.json#/$defs/sharedReasonCode",
+  "roles": {
+    "passport-reader": {
+      "responsibility": "Decode and verify supplied token history of either record version and report the scope of the finding.",
+      "requires": [
+        "RM-2-script",
+        "RM-2-minimal-push",
+        "RM-3-fields",
+        "RM-4-operations",
+        "RM-5-signatures",
+        "RM-6-invariants",
+        "RM-7-owner-tier",
+        "RM-8-verifier",
+        "VER-2-report",
+        "VER-3-expected-subject",
+        "VER-4-checks",
+        "VER-5-observations",
+        "CONF-2-reader-quickstart",
+        "RM2-2-script",
+        "RM2-3-fields",
+        "RM2-4-operations",
+        "RM2-5-signatures",
+        "RM2-6-invariants",
+        "RM2-6-control-proof",
+        "RM2-8-commitment",
+        "RM2-9-verifier",
+        "VER-4-version-2-findings"
+      ],
+      "optional": [
+        "CUST-4-owner-consent",
+        "MC-3-acceptance-record",
+        "MC-4-transfer-binding",
+        "MC-5-verification-report"
+      ],
+      "testTargets": [
+        "fixtures/record-v1.json",
+        "fixtures/chain-v1.json",
+        "fixtures/evidence-v1.json",
+        "examples/verify-passport.mjs --fixture --report",
+        "fixtures/record-v2.json",
+        "fixtures/chain-v2.json",
+        "fixtures/managed-acceptance-v1.json",
+        "fixtures/evidence-v2.json",
+        "examples/verify-passport.mjs --fixture --version=2 --report"
+      ]
+    },
+    "attestation-verifier": {
+      "responsibility": "Verify supplied claim signatures, anchor attribution, digest and metadata binding, and the selected authority and status evidence, reporting what could not be checked.",
+      "requires": [
+        "RULES-3-native-claim",
+        "RULES-4-representation-bytes",
+        "RULES-5-anchor",
+        "RULES-6-verification",
+        "RULES-7-compatibility",
+        "VER-2-report",
+        "VER-4-checks",
+        "ID-2-did-key"
+      ],
+      "optional": [
+        "VSC-2-structure",
+        "VSC-3-proofs",
+        "VSC-4-status",
+        "VSC-4-authority",
+        "VSC-5-custody"
+      ],
+      "testTargets": [
+        "fixtures/attestation-anchor-v1.json",
+        "fixtures/anchor-v3.json",
+        "fixtures/evidence-v1.json",
+        "examples/verify-attestation-anchor.mjs"
+      ]
+    },
+    "passport-writer": {
+      "responsibility": "Construct valid states and discharge the broadcast, serialisation, announcement, proof and retention duties.",
+      "requires": [
+        "RM-2-script",
+        "RM-3-fields",
+        "RM-5-signatures",
+        "RM-6-invariants",
+        "WR-2-verify-before-send",
+        "WR-4-one-writer",
+        "WR-5-broadcast",
+        "WR-6-announce-retry",
+        "WR-7-proof",
+        "WR-8-retain",
+        "RM2-2-script",
+        "RM2-3-fields",
+        "RM2-4-operations",
+        "RM2-5-signatures",
+        "RM2-6-invariants",
+        "RM2-6-control-proof",
+        "RM2-8-commitment"
+      ],
+      "optional": [
+        "WR-3-announce-before-send",
+        "RM-3-gs1-allocation",
+        "GS1-check-digit-written",
+        "GS1-952-demonstration",
+        "MC-3-acceptance-record",
+        "MC-4-transfer-binding",
+        "MC-4-offer-lifecycle"
+      ],
+      "testTargets": [
+        "examples/write-passport.mjs --dry-run",
+        "writer self-report, one sentence per rule (GOVERNANCE.md)",
+        "examples/lifecycle-v2.mjs"
+      ]
+    },
+    "attestation-issuer": {
+      "responsibility": "Sign attributable lifecycle claims under the declared format and profile, without spending the passport token.",
+      "requires": [
+        "RULES-3-native-claim",
+        "RULES-4-representation-bytes",
+        "ID-2-did-key"
+      ],
+      "optional": [
+        "VSC-2-structure",
+        "VSC-3-proofs"
+      ],
+      "testTargets": [
+        "fixtures/attestation-anchor-v1.json"
+      ]
+    },
+    "registry": {
+      "responsibility": "Apply declared intake and status policies; retain and return exact secured bytes and scoped verification reports.",
+      "requires": [
+        "SVC-3-registry-bytes",
+        "RULES-4-representation-bytes",
+        "RULES-5-anchor",
+        "RULES-6-verification",
+        "STATUS-validate-algorithm",
+        "REG-contract-routes",
+        "VER-2-report"
+      ],
+      "optional": [
+        "VSC-4-status",
+        "VSC-4-authority",
+        "VSC-5-custody",
+        "SVC-3-legacy-intake"
+      ],
+      "testTargets": [
+        "contracts/registry.yaml",
+        "fixtures/attestation-anchor-v1.json"
+      ]
+    },
+    "overlay": {
+      "responsibility": "Admit and serve evidence under published policy, including the selected synchronisation profile.",
+      "requires": [
+        "SVC-2-passport-admission",
+        "SVC-2-anchor-admission",
+        "SVC-2-cursor-lookup",
+        "SVC-2-proof-ingest",
+        "SVC-6-idempotent-admission",
+        "OVL-contract-must",
+        "SVC-2-version-2-admission"
+      ],
+      "optional": [
+        "SVC-1-discovery-sync",
+        "CONF-4-overlay-capabilities",
+        "CUST-4-owner-consent",
+        "MC-7-declaration"
+      ],
+      "testTargets": [
+        "contracts/overlay.yaml",
+        "fixtures/attestation-anchor-v1.json",
+        "fixtures/vectors/",
+        "fixtures/chain-v2.json"
+      ]
+    }
+  },
+  "fixtures": [
+    {
+      "path": "fixtures/record-v1.json",
+      "sha256": "75fc74fb72819d2a0905e643a2e1ada3af0f59d0dd65e88a2a535261e93d542a",
+      "pins": "one record-model v1 output with its preimages, signatures, keys and refusals"
+    },
+    {
+      "path": "fixtures/chain-v1.json",
+      "sha256": "45658e96ff8b7daafa13b3189ec71e725a15530a9a78e7b6601169d85af2198f",
+      "pins": "a six-state chain, the possession convention, the owner-signed transfer and sixteen refusals"
+    },
+    {
+      "path": "fixtures/anchor-v3.json",
+      "sha256": "218875e0258a81bcc4097e2b92ac6e4ed704e45feeafd54c7bb45bed8e026597",
+      "pins": "the historical native anchor v3 and its refusals"
+    },
+    {
+      "path": "fixtures/attestation-anchor-v1.json",
+      "sha256": "9e7a88f5faa7c11eeb544a7ccce1fd3b17eea39b11bfdfaf7caf497cf8f36370",
+      "pins": "the current signed native claim, its complete representation, digest and ten-field anchor"
+    },
+    {
+      "path": "fixtures/evidence-v1.json",
+      "sha256": "f4207b5d26d67b6c4ea5140d12461c16aa54193a84ad9759da730111d6a70605",
+      "pins": "the verification report for twenty-one evidence cases"
+    },
+    {
+      "path": "fixtures/vectors/dpp/record/v1.json",
+      "sha256": "e0c1f57e576fde6075d4d6268d37c49d5af463441f8d2b5c3b136320a34d4216",
+      "pins": "the record fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/vectors/dpp/chain/v1.json",
+      "sha256": "4947736530889fe27fef8a152f131cc4ea9b87ad67f254192c072af33c3a02b9",
+      "pins": "the chain fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/vectors/dpp/anchor/v3.json",
+      "sha256": "940c53472e0853b4c896370674c998939c16db1cca5ddcac6ed0dff8f1053306",
+      "pins": "the historical anchor in the stack's vector format"
+    },
+    {
+      "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
+      "sha256": "3d235db28b5fa7edf8ebcf5981201e8032382d8e6a425e9154f8e329c5df9e55",
+      "pins": "the current anchor in the stack's vector format"
+    },
+    {
+      "path": "fixtures/record-v2.json",
+      "sha256": "7c186aa151c1b510b1b0a2d0c8c97daaef417265e983a34418042a83fd4791c5",
+      "pins": "one record version 2 output with its framed preimages, signatures, keys and nine refusals"
+    },
+    {
+      "path": "fixtures/chain-v2.json",
+      "sha256": "d13be45f2b8de7dab23fe78cfcfd606c6c6e1dbc46392ec3d6cd4ea49ad4f592",
+      "pins": "a five-state version 2 lineage, the control proof in both forms, the acceptance commitment, retirement, twenty-two refusals and the upgrade over the version 1 chain"
+    },
+    {
+      "path": "fixtures/managed-acceptance-v1.json",
+      "sha256": "335539e82dec85a230de4799a3533fb3a5231ced7c14ec673b708dcaa280058b",
+      "pins": "one managed acceptance record with its canonical bytes, signature, commitment, the transfer that commits to it and six refusals"
+    },
+    {
+      "path": "fixtures/evidence-v2.json",
+      "sha256": "12d5bf2e4794f614ccda1980b78ca118c98e2c73f90715caed87fa4731a1fa84",
+      "pins": "the verification report for thirteen version 2 evidence cases"
+    },
+    {
+      "path": "fixtures/vectors/dpp/record/v2.json",
+      "sha256": "018f91e26304d6516d5cad2864c276c51025af7c809af2bc06bd03df7ece515c",
+      "pins": "the version 2 record fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/vectors/dpp/chain/v2.json",
+      "sha256": "dde06e49f0ca6586b089c5ee1c60176250ae8ec92e5a7aa9e75b0b40233a303c",
+      "pins": "the version 2 chain fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/vectors/dpp/managed-acceptance/v1.json",
+      "sha256": "f8b03a497f80a0e666b8928e4af9c60f938898eb54fe72c2caa34d6b45eb2d5a",
+      "pins": "the managed acceptance fixture in the stack's vector format"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "@bsv/sdk",
+      "version": "2.4.2",
+      "usedBy": [
+        "@bsv/dpp-core",
+        "@bsv/dpp-overlay-topics",
+        "examples"
+      ]
+    },
+    {
+      "name": "@bsv/overlay",
+      "version": "2.3.1",
+      "usedBy": [
+        "@bsv/dpp-overlay-topics"
+      ]
+    },
+    {
+      "name": "mongodb",
+      "version": "7.x",
+      "usedBy": [
+        "@bsv/dpp-overlay-topics (reference persistence, replaceable)"
+      ]
+    },
+    {
+      "name": "node",
+      "version": ">=22",
+      "usedBy": [
+        "every workspace package",
+        "the index image",
+        "CI"
+      ]
+    }
+  ],
+  "quickStarts": [
+    {
+      "role": "passport-reader",
+      "command": "node examples/verify-passport.mjs --fixture --version=2 --report",
+      "needs": "the fixtures in this repository; no account, wallet, network or other role"
+    },
+    {
+      "role": "attestation-verifier",
+      "command": "node examples/verify-attestation-anchor.mjs",
+      "needs": "the fixtures in this repository"
+    },
+    {
+      "role": "passport-writer",
+      "command": "node examples/lifecycle-v2.mjs",
+      "needs": "nothing: fresh keys, no wallet and no network; live, a BRC-100 wallet with funds and an index URL"
+    },
+    {
+      "role": "overlay",
+      "command": "docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .",
+      "needs": "a service identity key; ACCEPTANCE_COMMITMENT=required to declare managed-custody@1; MongoDB for persistence, memory otherwise"
+    }
+  ]
+}

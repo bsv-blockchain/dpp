@@ -13,7 +13,27 @@
  */
 import type { ProfileManifest } from './index.js'
 
-export type NativeOperation = 'ACTIVATE' | 'SOLD' | 'RESOLD' | 'REPAIRED' | 'RECYCLED' | 'EDIT' | 'TRANSFER'
+export type NativeOperationV1 = 'ACTIVATE' | 'SOLD' | 'RESOLD' | 'REPAIRED' | 'RECYCLED' | 'EDIT' | 'TRANSFER'
+/** The four record-version-2 capabilities (`spec/record-model-v2.md` §4). */
+export type NativeOperationV2 = 'ISSUE' | 'UPDATE' | 'RETIRE'
+export type NativeOperation = NativeOperationV1 | NativeOperationV2
+
+/**
+ * Which version 1 mapping a version 2 operation is read under
+ * (`spec/rules.md` §2): ISSUE is the genesis as ACTIVATE was, UPDATE a
+ * metadata revision as EDIT was, RETIRE a disposition as RECYCLED was, and
+ * TRANSFER is TRANSFER. The evidence conditions are the same, so an ISSUE is
+ * no more a manufacture than an ACTIVATE was, and a RETIRE is a disposition
+ * only with its disposition evidence. A manifest declares its mappings under
+ * the version 1 names; a version 2 operation is mapped through this table
+ * and the result names the operation that was actually written.
+ */
+export const VERSION_2_OPERATION_MAPPING: Record<NativeOperationV2 | 'TRANSFER', NativeOperationV1> = {
+  ISSUE: 'ACTIVATE',
+  UPDATE: 'EDIT',
+  TRANSFER: 'TRANSFER',
+  RETIRE: 'RECYCLED',
+}
 export type MappingOutcome = 'lossless' | 'transformed' | 'unsupported' | 'insufficient-data'
 
 /**
@@ -75,6 +95,9 @@ export const EVIDENCE_FACETS: Record<NativeOperation, Facet[][]> = {
   REPAIRED: [['workDone', 'performedBy', 'performedAt']],
   EDIT: [[]],
   RECYCLED: [['dispositionKind']],
+  ISSUE: [['facility', 'time', 'responsibleParty']],
+  UPDATE: [[]],
+  RETIRE: [['dispositionKind']],
 }
 
 const present = (evidence: LifecycleEvidence, facet: Facet): boolean => {
@@ -94,7 +117,9 @@ export function mapNativeOperation(manifest: ProfileManifest, request: MappingRe
   const unmappedFields = keys.filter((key) => !byKey.get(key)?.semanticUri)
   const base = { nativeOperation, missingEvidence: [] as string[], losses: [] as string[], mappedFields, unmappedFields }
 
-  const mapping = manifest.eventMappings.find((m) => m.nativeOperation === nativeOperation)
+  // A version 2 operation is mapped under the version 1 name the manifest declares.
+  const declared: NativeOperationV1 = nativeOperation in VERSION_2_OPERATION_MAPPING ? VERSION_2_OPERATION_MAPPING[nativeOperation as NativeOperationV2 | 'TRANSFER'] : (nativeOperation as NativeOperationV1)
+  const mapping = manifest.eventMappings.find((m) => m.nativeOperation === declared)
   if (mapping == null) {
     return { ...base, outcome: 'unsupported', losses: [`${manifest.profile} declares no external mapping for ${nativeOperation}; the native operation stays native`] }
   }
@@ -120,8 +145,8 @@ export function mapNativeOperation(manifest: ProfileManifest, request: MappingRe
   }
 
   const losses: string[] = []
-  if (nativeOperation === 'EDIT') losses.push('an EDIT is a metadata revision; no physical transformation is implied and none is mapped')
-  if (nativeOperation === 'RECYCLED' && evidence.dispositionKind === 'process-with-outputs' && !present(evidence, 'outputs')) {
+  if (declared === 'EDIT') losses.push(`${nativeOperation === 'EDIT' ? 'an EDIT' : 'an UPDATE'} is a metadata revision; no physical transformation is implied and none is mapped`)
+  if (declared === 'RECYCLED' && evidence.dispositionKind === 'process-with-outputs' && !present(evidence, 'outputs')) {
     return {
       ...base,
       ...target,

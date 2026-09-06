@@ -8,13 +8,28 @@ Each start below is complete for one role and needs nothing from another role un
 node examples/verify-passport.mjs --fixture
 node examples/verify-passport.mjs --fixture --report
 node examples/verify-passport.mjs --fixture --owner-consent
+node examples/verify-passport.mjs --fixture --version=2
+node examples/verify-passport.mjs --fixture --version=2 --report
+node examples/lifecycle-v2.mjs
 node examples/verify-anchor.mjs
 node examples/verify-attestation-anchor.mjs
 ```
 
-The first command replays `fixtures/chain-v1.json` through the reference reader and prints each finding. The second reports the same evidence as the one verification report of `spec/verification.md`, then materialises every case of `fixtures/evidence-v1.json` and compares the reports byte for byte. The third adds the owner-signed transfer check. The two anchor commands verify the historical `uora-anchor-v3` fixture and the generic `bsv-attestation-anchor-v1` fixture: layout, key derivation and signature, then the refusal vectors. A live read is `node examples/verify-passport.mjs <passportId> [indexUrl] --report`; it asks the index for the history and verifies it locally against block headers, and a missing or unreachable index is reported as unavailable evidence, never as validity.
+The first command replays `fixtures/chain-v1.json` through the reference reader and prints each finding. The second reports the same evidence as the one verification report of `spec/verification.md`, then materialises every case of `fixtures/evidence-v1.json` and compares the reports byte for byte. The third adds the owner-signed transfer check. The fourth and fifth do the same for record version 2 over `fixtures/chain-v2.json`, its refusals, the upgrade from the version 1 chain and `fixtures/evidence-v2.json`. The sixth builds a version 2 lifecycle from fresh keys with no wallet and no network: issue, update, an offer accepted under `managed-custody@1`, the transfer that commits to the acceptance, retirement, and the refusals the profile and the record model make along the way. The two anchor commands verify the historical `uora-anchor-v3` fixture and the generic `bsv-attestation-anchor-v1` fixture: layout, key derivation and signature, then the refusal vectors. A live read is `node examples/verify-passport.mjs <passportId> [indexUrl] --report`; it asks the index for the history and verifies it locally against block headers, and a missing or unreachable index is reported as unavailable evidence, never as validity.
 
-What a reader implementation reproduces, and what it may leave to a build, is `spec/conformance.md` §2; the requirement ids for the reader role are in `conformance/baseline-native-1.json`.
+What a reader implementation reproduces, and what it may leave to a build, is `spec/conformance.md` §2; the requirement ids for the reader role are in `conformance/baseline-native-1.json` for version 1 and `conformance/baseline-native-2.json` for a reader of both versions.
+
+## The journey through the release set
+
+The set of packages, wire versions, custody profile and runtime that go together is [`../release/dpp-release-2026-09.json`](../release/dpp-release-2026-09.json), and [`../release/README.md`](../release/README.md) is how it is packed, checked in a clean consumer and published. One journey through it, in ordinary terms:
+
+1. **Install** the four packages from the set (or, before publication, the packed candidates `scripts/release-candidates.mjs` writes to `release/candidates/`): `@bsv/dpp-core` to read and write records, `@bsv/dpp-profiles` for the product data, `@bsv/dpp-overlay-topics` if you run an index, `@bsv/vsc` if you exchange credentials. Node 22, `@bsv/sdk` 2.4.2.
+2. **Run one operator** from `deploy/` (the image, a MongoDB, one env file), with `ACCEPTANCE_COMMITMENT=required` so it admits the managed-custody profile, or announce to an operator that does.
+3. **Configure a managed service**: a custodian holding the lock and deriving every party's keys, with the writer's journal for durable, idempotent writes. The application repository's `PassportService` is the reference entry point (`issue`, `update`, `offer`, `accept`, `decline`, `retire`, `upgrade`, `status`, `verify`, `exportEvidence`); `examples/lifecycle-v2.mjs` here is the same journey with fresh keys and no service at all.
+4. **Issue** a passport, **update** it, **offer** it to a recipient who needs only an account, let them **accept**, and write the transfer that commits to their acceptance; **verify** the record from its bytes and **export** its evidence; **retire** it when the object's life ends.
+5. **Attach a lifecycle claim** later, independently: an issuer signs a `dpp-lifecycle-v1` claim and an anchoring service commits to it on the separate rail (`examples/verify-attestation-anchor.mjs` reads one), without spending the passport token and without the custodian.
+
+Every step's refusals are the standard's own: an offer against a moved tip, an expired or declined acceptance, a transfer without its commitment under the profile, a state after retirement, a signature over the wrong preimage.
 
 ## Verifier: check an attestation without trusting the registry
 

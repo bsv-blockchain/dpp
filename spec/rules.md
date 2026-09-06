@@ -19,6 +19,15 @@ The native claim records the token operation's classification. These labels are 
 | REPAIRED, EDIT | Transformation |
 | RECYCLED | Disposition |
 
+A record version 2 state ([record-model-v2.md](record-model-v2.md)) carries one of four operations, and each is read here as the version 1 operation it stands for: `ISSUE` as ACTIVATE, `UPDATE` as EDIT, `TRANSFER` as TRANSFER and `RETIRE` as RECYCLED, with the same eventType, the same evidence facets and the same mapping conditions. A profile that needs the finer version 1 vocabulary under version 2 carries it as a property of `event_data`, where the mapping reads it as evidence and never as the operation.
+
+| Version 2 operation | Read as | eventType |
+|---|---|---|
+| ISSUE | ACTIVATE | Origin |
+| TRANSFER | TRANSFER | Transfer |
+| UPDATE | EDIT | Transformation |
+| RETIRE | RECYCLED | Disposition |
+
 An EDIT is a native metadata operation, not evidence that a physical transformation occurred. A transfer of token control does not by itself establish physical movement, custody or legal ownership. A VSC mapping MUST use actual event evidence and report insufficient data where required fields or authority are unavailable. It MUST NOT manufacture locations, actors, serial identities or predecessor events.
 
 A mapping from a native operation to an external lifecycle semantics is conditional, and every profile states its conditions ([`profiles.md`](profiles.md) §2, `eventMappings`; [`exchange.md`](exchange.md) §2). ACTIVATE maps to a manufacture or commissioning event only with manufacturing evidence; SOLD, RESOLD and TRANSFER map to a physical move or change of custody only with actual source, destination or custody evidence; REPAIRED maps to a modification only with repair evidence; EDIT remains a metadata revision; RECYCLED distinguishes disposition of the item from a process whose outputs carry new identities. A mapping result is exactly one of `lossless`, `transformed`, `unsupported` or `insufficient-data`, and a result other than `lossless` carries the list of what was lost or missing. No field is dropped silently. The evidence a mapping asks for is named by facet, and each facet is a reference to a record (a claim digest, an outpoint, a document digest), never a bare flag: `facility`, `time` and `responsibleParty` for an origin; `source` and `destination`, or a `custodyRecord`, for a transfer; `workDone`, `performedBy` and `performedAt` for a repair; `dispositionKind` and, for a process, `outputs` for a disposition. A lifecycle claim that carries these facets under these names in its payload is the evidence; a claim that does not is not.
