@@ -1,0 +1,75 @@
+# The reference index node with persistent storage: one MongoDB, one node,
+# both data and configuration on named volumes and an env file, so a restart
+# or a host move keeps every admitted state. The image is this repository's
+# (packages/overlay-topics/Dockerfile), built from the repository root.
+#
+#   cp deploy/operator.env.example deploy/operator.env   # then fill it in
+#   docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
+#
+# What the node does and does not do is unchanged from running it by hand:
+# it admits and serves, it does not broadcast, proofs reach it through
+# POST /arc-ingest, and CHAIN_TRACKER=scripts-only is a local fixture setting
+# that claims no inclusion (packages/overlay-topics/README.md, Configuration).
+# deploy/README.md is the recipe, including the second operator.
+name: dpp-overlay
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  overlay:
+    build:
+      context: ..
+      dockerfile: packages/overlay-topics/Dockerfile
+    image: ${OVERLAY_IMAGE:-dpp-overlay:local}
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "${OVERLAY_PORT:-8080}:8080"
+    environment:
+      PORT: "8080"
+      MONGO_URL: mongodb://mongo:27017
+      MONGO_DB: ${MONGO_DB:-dpp}
+      NETWORK: ${NETWORK:-main}
+      # One of the two identity settings is required; the public key is the
+      # one to set, the node never needs the private half.
+      SERVICE_IDENTITY_KEY: ${SERVICE_IDENTITY_KEY:-}
+      SERVER_PRIVATE_KEY: ${SERVER_PRIVATE_KEY:-}
+      SUBMIT_TOKEN: ${SUBMIT_TOKEN:?set SUBMIT_TOKEN in the env file}
+      ARC_CALLBACK_TOKEN: ${ARC_CALLBACK_TOKEN:?set ARC_CALLBACK_TOKEN in the env file}
+      CHAIN_TRACKER: ${CHAIN_TRACKER:-}
+      WOC_API_KEY: ${WOC_API_KEY:-}
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      ANCHOR_SERVICE_KEYS: ${ANCHOR_SERVICE_KEYS:-}
+      OWNER_CONSENT: ${OWNER_CONSENT:-}
+      TRANSFER_AUTHORITIES: ${TRANSFER_AUTHORITIES:-}
+      ACCEPTANCE_COMMITMENT: ${ACCEPTANCE_COMMITMENT:-}
+      CONTROL_AUTHORITIES: ${CONTROL_AUTHORITIES:-}
+      PUBLISHER_POLICY_FILE: ${PUBLISHER_POLICY_FILE:-}
+      OPERATOR_IDENTITY_KEYS: ${OPERATOR_IDENTITY_KEYS:-}
+      EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
+      SYNC_PEERS: ${SYNC_PEERS:-}
+      SYNC_INTERVAL_MS: ${SYNC_INTERVAL_MS:-}
+      SYNC_LEGACY: ${SYNC_LEGACY:-}
+    volumes:
+      # The publisher policy chain, when PUBLISHER_POLICY_FILE names one under /config.
+      - ./config:/config:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+volumes:
+  mongo-data:

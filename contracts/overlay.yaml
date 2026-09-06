@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.5.0-draft
+  version: 0.6.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -28,15 +28,23 @@ x-dpp-profile:
   topics:
     tm_dpp: >-
       The passport rail. Admits a transaction's single DPP output when it
-      decodes under spec/record-model.md, its user signature verifies, its
-      server signature verifies against the index's configured service key
-      (admission policy, never token validity), and it is either a valid
-      genesis or spends the admitted tip under the chain invariants. Spent
-      tips are retained so the lifecycle stays resolvable. When deployed for
-      a profile that selects the owner-signed transfer (spec/custody.md
-      section 4), a TRANSFER is also refused unless its actor is the previous
-      owner, by equality or by owner_linkage, or a configured transfer
-      authority.
+      decodes under spec/record-model.md (fourteen fields) or
+      spec/record-model-v2.md (seventeen fields), its actor signature verifies
+      under its version's preimage, its publisher signature verifies against
+      the index's configured service key (admission policy, never token
+      validity), and it is either a valid genesis or spends the admitted tip
+      under its version's chain invariants. A version 2 state also names the
+      spent outpoint and the lineage genesis, which the index traces through
+      the submitted bytes or its own history, proves control of the
+      predecessor, and is refused after a RETIRE; a version 2 UPDATE may
+      spend a version 1 tip (the upgrade) and nothing else crosses versions.
+      Spent tips are retained so the lifecycle stays resolvable. When
+      deployed for a profile that selects the owner-signed transfer
+      (spec/custody.md section 4), a version 1 TRANSFER is also refused
+      unless its actor is the previous owner, by equality or by
+      owner_linkage, or a configured transfer authority. When deployed for
+      managed-custody@1 (spec/managed-custody.md), a version 2 TRANSFER is
+      refused without its acceptance commitment.
     tm_attestation: >-
       Admits bsv-attestation-anchor-v1 with ten fields, a signature over nine
       length-prefixed fields and a publicly derived anchoring-service key.
@@ -96,6 +104,11 @@ x-dpp-profile:
       Enforce the owner-signed transfer invariant (spec/custody.md section 4)
       when deployed for a profile that selects it, with its transfer
       authorities configured and named in the topic documentation.
+    - >-
+      Require the acceptance commitment on a version 2 TRANSFER when deployed
+      for managed-custody@1 (spec/managed-custody.md section 4), and name the
+      control authorities of spec/record-model-v2.md section 6 in the topic
+      documentation and the capability document.
   extensions:
     - X-Admission response header on /submit.
     - Extra fields on /health (topic, service, topics, services, network, startedAt).

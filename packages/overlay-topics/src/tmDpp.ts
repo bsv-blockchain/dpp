@@ -1,6 +1,8 @@
 import { Beef, LockingScript, Transaction, type TransactionInput } from '@bsv/sdk'
 import type { AdmittanceInstructions, Storage, TopicManager } from '@bsv/overlay'
 import {
+  ACCEPTANCE_COMMITMENT_REFUSAL,
+  MANAGED_CUSTODY_PROFILE,
   checkGenesisState,
   checkOwnerConsent,
   checkTransition,
@@ -10,6 +12,7 @@ import {
   verifyServerSignature,
   verifyUserSignature,
   type DppState,
+  type Outpoint,
   type PublisherPolicy,
 } from '@bsv/dpp-core'
 import { policyKeysFor } from './policyConfig.js'
@@ -32,8 +35,12 @@ const none = (): AdmittanceInstructions => ({ outputsToAdmit: [], coinsToRetain:
  */
 const RECENT_STATES = 4096
 
+/** The most predecessors the manager walks back to find a version 1 lineage's genesis before it gives up. */
+const MAX_LINEAGE_WALK = 10_000
+
 /**
- * tm_dpp - DPP Token Standard v1 admission (`spec/record-model.md` §6 and §8).
+ * tm_dpp - DPP Token Standard admission, versions 1 and 2
+ * (`spec/record-model.md` §6 and §8, `spec/record-model-v2.md` §6 and §8).
  *
  * Admits a transaction's single DPP output when:
  * - exactly one well-formed DPP output exists (invariant 1; field rules are
@@ -78,6 +85,22 @@ export interface DppAdmissionOptions {
    */
   publisherPolicy?: PublisherPolicy[]
   /**
+   * Authorities for version 2 control proofs (`spec/record-model-v2.md` §6):
+   * identity keys whose UPDATE, TRANSFER or RETIRE is admitted without a
+   * control proof. Defaults to the `ownerConsent` authorities, so one list
+   * serves both versions unless a deployment names another. Malformed keys
+   * throw at construction.
+   */
+  controlAuthorities?: string[]
+  /**
+   * The managed-custody profile (`spec/managed-custody.md`): when selected, a
+   * version 2 TRANSFER is admitted only when it carries an
+   * `authorisation_commitment`. Off by default: the record model admits a
+   * TRANSFER with an empty commitment, and the topic documentation says which
+   * this instance runs.
+   */
+  managedAcceptance?: boolean
+  /**
    * The engine's own storage, so the manager can read an admitted
    * predecessor's locking script when the BEEF it is handed does not carry
    * the predecessor's bytes. Two callers hand it such a BEEF: a writer that
@@ -87,14 +110,16 @@ export interface DppAdmissionOptions {
    * manager sees only what the BEEF and its own recent memory show, as it
    * always did.
    */
-  admittedOutputs?: Pick<Storage, 'findOutput'>
+  admittedOutputs?: Pick<Storage, 'findOutput'> & Partial<Pick<Storage, 'findOutputsForTransaction'>>
 }
 
 export class DppTopicManager implements TopicManager {
   private readonly consentSelected: boolean
   private readonly authorities: string[]
+  private readonly controlAuthorities: string[]
+  private readonly managedAcceptance: boolean
   private readonly policy?: PublisherPolicy[]
-  private readonly admitted?: Pick<Storage, 'findOutput'>
+  private readonly admitted?: Pick<Storage, 'findOutput'> & Partial<Pick<Storage, 'findOutputsForTransaction'>>
   /** States inspected recently, by txid: the predecessor a synchronisation pass showed one call ago. */
   private readonly recent = new Map<string, Transaction>()
 
@@ -107,6 +132,8 @@ export class DppTopicManager implements TopicManager {
       typeof options.ownerConsent === 'object'
         ? normaliseTransferAuthorities(options.ownerConsent.authorities)
         : []
+    this.controlAuthorities = options.controlAuthorities != null ? normaliseTransferAuthorities(options.controlAuthorities) : this.authorities
+    this.managedAcceptance = options.managedAcceptance === true
     this.policy = options.publisherPolicy != null && options.publisherPolicy.length > 0 ? options.publisherPolicy : undefined
     this.admitted = options.admittedOutputs
   }
@@ -166,6 +193,67 @@ export class DppTopicManager implements TopicManager {
     if (historical) {
       const remembered = this.recent.get(prevTxid)?.outputs[outputIndex]?.lockingScript
       if (remembered != null) return remembered
+    }
+    return undefined
+  }
+
+  /**
+   * The genesis outpoint of the lineage a version 2 successor must name
+   * (`spec/record-model-v2.md` §6). A version 2 predecessor carries it; the
+   * ISSUE is it. A version 1 predecessor carries none, so the manager walks
+   * the admitted history back to the genesis through the same sources the
+   * predecessor's own bytes came from: the submitted BEEF, the engine's
+   * storage, and on the historical paths its recent memory. Undefined when
+   * the walk cannot be completed, which refuses the state: a lineage this
+   * index cannot trace is not one it can vouch for.
+   */
+  private async lineageGenesisFor(
+    prev: DppState,
+    prevTxid: string,
+    prevOutputIndex: number,
+    parsedBeef: Beef | undefined,
+    historical: boolean
+  ): Promise<Outpoint | undefined> {
+    if (prev.version === '2') return prev.lineageGenesis ?? { txid: prevTxid, outputIndex: prevOutputIndex }
+    let state: DppState = prev
+    let txid = prevTxid
+    let outputIndex = prevOutputIndex
+    for (let hops = 0; hops < MAX_LINEAGE_WALK; hops++) {
+      if (state.previousTxid === '') return { txid, outputIndex }
+      const earlierTxid = state.previousTxid
+      const earlier = await this.stateAt(earlierTxid, parsedBeef, historical)
+      if (earlier == null) return undefined
+      state = earlier.state
+      txid = earlierTxid
+      outputIndex = earlier.outputIndex
+    }
+    return undefined
+  }
+
+  /** The admitted DPP state a transaction carries, by txid, from the BEEF, the engine's storage or recent memory. */
+  private async stateAt(
+    txid: string,
+    parsedBeef: Beef | undefined,
+    historical: boolean
+  ): Promise<{ state: DppState; outputIndex: number } | undefined> {
+    const fromBeef = parsedBeef?.findTxid(txid)?.tx
+    const candidates: Transaction[] = []
+    if (fromBeef != null) candidates.push(fromBeef)
+    if (historical) {
+      const remembered = this.recent.get(txid)
+      if (remembered != null) candidates.push(remembered)
+    }
+    for (const tx of candidates) {
+      const refs = findDppOutputs(tx)
+      if (refs.length === 1) return { state: refs[0].state, outputIndex: refs[0].outputIndex }
+    }
+    if (this.admitted?.findOutputsForTransaction != null) {
+      const outputs = await this.admitted.findOutputsForTransaction(txid)
+      for (const output of outputs) {
+        if (output.topic !== DPP_TOPIC) continue
+        const parsed = tryParseDppOutput(LockingScript.fromBinary(output.outputScript))
+        if (parsed != null) return { state: parsed.state, outputIndex: output.outputIndex }
+      }
     }
     return undefined
   }
@@ -241,6 +329,14 @@ export class DppTopicManager implements TopicManager {
 
     if (state.previousTxid === '') {
       if (checkGenesisState(state) != null) return refuse()
+      if (previousCoins.length > 0) {
+        // A genesis spends no passport state. One that consumes an admitted
+        // coin would end the lineage it spends without a RETIRE and without
+        // naming it, which the chain rules refuse as a second genesis
+        // (record-model-v2.md section 6, invariant 3); the coin stays.
+        console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: a genesis state must not spend an admitted passport output`)
+        return refuse()
+      }
       this.remember(tx)
       return { outputsToAdmit: [outputIndex], coinsToRetain: [] }
     }
@@ -284,8 +380,27 @@ export class DppTopicManager implements TopicManager {
       if (prevScript == null) continue
       const prev = tryParseDppOutput(prevScript)
       if (prev == null) continue
-      if (checkTransition(prev.state, state, prevTxid) != null) return refuse()
-      if (this.consentSelected) {
+      const lineageGenesis =
+        state.version === '2'
+          ? await this.lineageGenesisFor(prev.state, prevTxid, input.sourceOutputIndex, parsedBeef, historical)
+          : undefined
+      if (state.version === '2' && lineageGenesis == null) {
+        console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: the lineage genesis could not be traced from the admitted history`)
+        return refuse()
+      }
+      const link = checkTransition(prev.state, state, prevTxid, {
+        prevOutputIndex: input.sourceOutputIndex,
+        lineageGenesis,
+        authorities: this.controlAuthorities,
+      })
+      if (link != null) {
+        // A version 2 refusal names a rule the writer may not know this
+        // instance applies (a named authority, the upgrade path), so the
+        // operator's log names it; version 1 refusals stay silent as before.
+        if (state.version === '2') console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: ${link}`)
+        return refuse()
+      }
+      if (state.version === '1' && this.consentSelected) {
         const reason = checkOwnerConsent(prev.state, state, this.authorities)
         if (reason != null) {
           // The other refusals are silent because the wire says everything a
@@ -294,6 +409,10 @@ export class DppTopicManager implements TopicManager {
           console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: ${reason}`)
           return refuse()
         }
+      }
+      if (state.version === '2' && state.op === 'TRANSFER' && this.managedAcceptance && state.authorisationCommitment === '') {
+        console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
+        return refuse()
       }
       this.remember(tx)
       return { outputsToAdmit: [outputIndex], coinsToRetain: [inputIndex] }
@@ -329,11 +448,17 @@ export class DppTopicManager implements TopicManager {
     const lines = [
       `# ${DPP_TOPIC}`,
       '',
-      'Admission for DPP Token Standard v1 passports (spec/record-model.md).',
-      'One DPP output per transaction; signatures over the canonical byte',
-      'preimage; non-genesis states must spend the admitted tip; spent states',
-      'are retained as lifecycle history. Admission additionally requires a',
-      'valid service signature (deployment policy, spec/record-model.md §8).',
+      'Admission for DPP Token Standard passports, record versions 1 and 2',
+      '(spec/record-model.md, spec/record-model-v2.md). One DPP output per',
+      'transaction; signatures over the version\'s own preimage (unframed for',
+      'version 1, framed and domain-tagged for version 2); non-genesis states',
+      'must spend the admitted tip; spent states are retained as lifecycle',
+      'history. A version 2 state also binds the predecessor outpoint and the',
+      'lineage genesis, proves control of the predecessor on every UPDATE,',
+      'TRANSFER and RETIRE, and nothing is admitted after a RETIRE. A version 2',
+      'UPDATE may spend a version 1 tip, which upgrades the lineage; a version 1',
+      'state never spends a version 2 tip. Admission additionally requires a',
+      'valid publisher signature (deployment policy, spec/record-model.md §8).',
       'A refused state that spends the admitted tip leaves the tip and its',
       'history in place. The same rules judge a state a peer offers during',
       'synchronisation as one a writer announces.',
@@ -351,7 +476,19 @@ export class DppTopicManager implements TopicManager {
         'This index admits states countersigned by its one configured service identity key, an implicit single-operator policy with no rotation history. GET /capabilities names the key.'
       )
     }
-    lines.push('', '## The owner-signed transfer', '')
+    lines.push('', '## Control authorities (version 2)', '')
+    lines.push(
+      this.controlAuthorities.length === 0
+        ? 'Control authorities: none. Every version 2 UPDATE, TRANSFER and RETIRE proves control of the predecessor by equality or by control_linkage.'
+        : `Control authorities: ${this.controlAuthorities.join(', ')}. A version 2 UPDATE, TRANSFER or RETIRE by one of these keys is admitted without a control proof; the profile expects it to be attested on the anchor rail.`
+    )
+    lines.push('', `## The managed-custody profile (${MANAGED_CUSTODY_PROFILE})`, '')
+    lines.push(
+      this.managedAcceptance
+        ? 'This index is deployed for the managed-custody profile (spec/managed-custody.md): a version 2 TRANSFER is admitted only when its authorisation_commitment names the acceptance record the custodian retained.'
+        : 'Not enforced by this index, which admits a version 2 TRANSFER with an empty authorisation_commitment: the record model baseline. The managed-custody profile is switched on when the topic manager is configured for it (ACCEPTANCE_COMMITMENT=required).'
+    )
+    lines.push('', '## The owner-signed transfer (version 1)', '')
     if (this.consentSelected) {
       lines.push(
         'This index is deployed for a profile that selects the owner-signed transfer (spec/custody.md section 4). A TRANSFER is admitted only when its actor is the previous owner, proven by equality (actor_identity_key equals the previous owner_identity_key) or by linkage (event_data carries owner_linkage, 64 lower-case hex characters, with the previous owner_identity_key equal to actor_identity_key plus owner_linkage times G), or when the actor is a transfer authority named below. The predicate is evaluated in that order: equality, authorities, linkage.',
@@ -375,8 +512,8 @@ export class DppTopicManager implements TopicManager {
   }> {
     return {
       name: DPP_TOPIC,
-      shortDescription: 'Digital Product Passport token admission (DPP Standard v1)',
-      version: '1.3.0',
+      shortDescription: 'Digital Product Passport token admission (DPP Standard record versions 1 and 2)',
+      version: '2.0.0',
     }
   }
 }
