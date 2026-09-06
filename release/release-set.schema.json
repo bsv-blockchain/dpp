@@ -5,58 +5,371 @@
   "description": "One compatible set of the standard's packages, the wire versions they implement, the custody profile the reference selects, the runtime they need and the fixtures and schemas they were tested against. A documentation and conformance selection: nothing here changes a byte, and a changed wire or profile contract is a new identifier, never an edit of a frozen one.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["releaseSet", "status", "baseline", "runtime", "packages", "wire", "custody", "serviceInterface", "artefacts", "consumers"],
+  "required": [
+    "releaseSet",
+    "status",
+    "baseline",
+    "runtime",
+    "packages",
+    "wire",
+    "custody",
+    "serviceInterface",
+    "artefacts",
+    "consumers"
+  ],
   "properties": {
-    "releaseSet": { "type": "string", "pattern": "^dpp-release-[0-9]{4}-[0-9]{2}(-[a-z0-9]+)?$" },
-    "status": { "enum": ["candidate", "released", "superseded"] },
-    "description": { "type": "string" },
-    "baseline": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[0-9]+$" },
+    "releaseSet": {
+      "type": "string",
+      "pattern": "^dpp-release-[0-9]{4}-[0-9]{2}(-[a-z0-9]+)?$"
+    },
+    "status": {
+      "enum": [
+        "candidate",
+        "released",
+        "superseded"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "baseline": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*@[0-9]+$"
+    },
     "runtime": {
-      "type": "object", "additionalProperties": false, "required": ["node", "dependencies"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "dependencies"
+      ],
       "properties": {
-        "node": { "type": "string" },
-        "dependencies": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["name", "version"], "properties": { "name": { "type": "string" }, "version": { "type": "string" }, "note": { "type": "string" } } } }
+        "node": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "version"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        }
       }
     },
     "packages": {
-      "type": "array", "minItems": 1,
+      "type": "array",
+      "minItems": 1,
       "items": {
-        "type": "object", "additionalProperties": false, "required": ["name", "version", "directory", "entryPoints", "role"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "directory",
+          "entryPoints",
+          "role"
+        ],
         "properties": {
-          "name": { "type": "string" },
-          "version": { "type": "string" },
-          "directory": { "type": "string" },
-          "role": { "type": "string" },
-          "entryPoints": { "type": "array", "items": { "type": "string" } },
-          "carries": { "type": "array", "items": { "type": "string" } },
-          "serverOnly": { "type": "boolean" }
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "directory": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "entryPoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "carries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "serverOnly": {
+            "type": "boolean"
+          },
+          "nodeBuiltins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^node:[a-z_/]+$"
+            },
+            "description": "Every Node built-in module the package's built code imports, so a consumer knows what runtime it needs; the checker scans dist/ and refuses a declaration that differs from the code."
+          },
+          "support": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "entryPoint",
+                "kind",
+                "runtime",
+                "browser",
+                "types"
+              ],
+              "properties": {
+                "entryPoint": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "module",
+                    "data"
+                  ],
+                  "description": "module: code with an exports map entry; data: files served verbatim under a pattern."
+                },
+                "runtime": {
+                  "enum": [
+                    "node",
+                    "any"
+                  ],
+                  "description": "node: needs Node 22 or later; any: plain data files any runtime or language reads."
+                },
+                "browser": {
+                  "enum": [
+                    "unsupported",
+                    "untested",
+                    "supported"
+                  ],
+                  "description": "unsupported: imports Node built-ins or server-only dependencies; untested: nothing known to prevent it, but no browser route is tested or promised; supported: plain data, or a tested browser route exists."
+                },
+                "types": {
+                  "type": "boolean",
+                  "description": "Whether TypeScript declarations are shipped for the entry point."
+                },
+                "sideEffects": {
+                  "type": "boolean",
+                  "description": "Whether importing the entry point does anything beyond defining exports."
+                },
+                "carries": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Data artefacts reachable through the entry point, for a data entry point."
+                },
+                "notes": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The support declaration of every entry point the package exports, rendered as the support table in docs/packages/support-table.md and held to the code by the checker."
+          }
         }
       }
     },
     "wire": {
-      "type": "object", "additionalProperties": false, "required": ["records", "nativeClaim", "anchor", "acceptanceRecord", "verificationReport", "overlayContract"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "records",
+        "nativeClaim",
+        "anchor",
+        "acceptanceRecord",
+        "verificationReport",
+        "overlayContract"
+      ],
       "properties": {
-        "records": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["version", "fieldCount", "protocolId", "specification"], "properties": { "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "protocolId": { "type": "array" }, "specification": { "type": "string" } } } },
-        "nativeClaim": { "type": "string" },
-        "anchor": { "type": "string" },
-        "acceptanceRecord": { "type": "string" },
-        "verificationReport": { "type": "string" },
-        "overlayContract": { "type": "string" }
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "version",
+              "fieldCount",
+              "protocolId",
+              "specification"
+            ],
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "fieldCount": {
+                "type": "integer"
+              },
+              "protocolId": {
+                "type": "array"
+              },
+              "specification": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "nativeClaim": {
+          "type": "string"
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "acceptanceRecord": {
+          "type": "string"
+        },
+        "verificationReport": {
+          "type": "string"
+        },
+        "overlayContract": {
+          "type": "string"
+        }
       }
     },
     "custody": {
-      "type": "object", "additionalProperties": false, "required": ["selected", "profile", "specification"],
-      "properties": { "selected": { "type": "string" }, "profile": { "type": "string" }, "specification": { "type": "string" }, "alsoSupported": { "type": "array", "items": { "type": "string" } } }
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selected",
+        "profile",
+        "specification"
+      ],
+      "properties": {
+        "selected": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "specification": {
+          "type": "string"
+        },
+        "alsoSupported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "serviceInterface": {
-      "type": "object", "additionalProperties": false, "required": ["package", "version", "entryPoints", "operations"],
-      "properties": { "package": { "type": "string" }, "version": { "type": "string" }, "repository": { "type": "string" }, "entryPoints": { "type": "array", "items": { "type": "string" } }, "operations": { "type": "array", "items": { "type": "string" } }, "note": { "type": "string" } }
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package",
+        "version",
+        "entryPoints",
+        "operations"
+      ],
+      "properties": {
+        "package": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "entryPoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      }
     },
     "artefacts": {
       "type": "array",
-      "items": { "type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": { "path": { "type": "string" }, "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }, "pins": { "type": "string" } } }
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "pins": {
+            "type": "string"
+          }
+        }
+      }
     },
-    "consumers": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["name", "consumes"], "properties": { "name": { "type": "string" }, "consumes": { "type": "string" }, "note": { "type": "string" } } } },
-    "image": { "type": "object", "additionalProperties": false, "required": ["dockerfile", "preset"], "properties": { "dockerfile": { "type": "string" }, "preset": { "type": "string" }, "tag": { "type": "string" } } }
+    "consumers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "consumes"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "consumes": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dockerfile",
+        "preset"
+      ],
+      "properties": {
+        "dockerfile": {
+          "type": "string"
+        },
+        "preset": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        }
+      }
+    },
+    "selection": {
+      "type": "string",
+      "pattern": "^conformance/selections/[A-Za-z0-9.-]+\\.json$",
+      "description": "The selection under conformance/selections/ that qualifies this set: the claims it requires and the claims it withholds by name. The checker holds the selection to the set and the publication workflow runs its qualification before it writes anything."
+    }
   }
 }

@@ -38,6 +38,9 @@ jobs:
       - run: node examples/verify-external-credential.mjs
       - run: node examples/project-passport.mjs
       - run: python3 conformance/independent/python/dpp_verify.py
+      # The documentation site: navigation, links, pinned repository paths,
+      # example commands, version references and the two generated pages.
+      - run: node scripts/docs-check.mjs
 
   # The clean consumer: the packed candidates installed into a project outside
   # this checkout, development dependencies omitted, every entry point imported
@@ -53,6 +56,9 @@ jobs:
       - run: npm ci
       - run: node scripts/release-candidates.mjs
       - run: node scripts/consumer-check.mjs
+      # The implementer bundle assembles from the same tree, so a file it
+      # would refuse to carry is caught here.
+      - run: node scripts/implementer-bundle.mjs
 
   image:
     runs-on: ubuntu-latest

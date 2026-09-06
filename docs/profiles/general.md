@@ -1,0 +1,5 @@
+# General
+
+**Audience:** implementers handling products no sector profile covers. **Versions:** `general@2` current and frozen; `general@1` superseded and still served. **Canonical sources:** [`packages/dpp-profiles/manifests/general@2.json`](https://github.com/bsv-blockchain/dpp/blob/main/packages/dpp-profiles/manifests/general@2.json), [`packages/dpp-profiles/generated/mapping/general@2.md`](https://github.com/bsv-blockchain/dpp/blob/main/packages/dpp-profiles/generated/mapping/general@2.md).
+
+`general@2` is the profile for a product that has no sector profile: identity, description, manufacturer, materials, care and disposal at a level every product can state. It follows the same framework as every other profile (frozen manifest, generated schemas, three-valued applicability, conditional mapping) and it is what the reference application uses when no sector applies. It makes no sector-specific claim and carries no legal basis beyond the general one, and a product that a sector profile covers uses that profile, not this one.

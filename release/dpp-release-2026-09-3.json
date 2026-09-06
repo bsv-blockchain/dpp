@@ -3,6 +3,7 @@
   "status": "candidate",
   "description": "The third candidate set of September 2026: the packages of dpp-release-2026-09-2 with the complete export of the index (GET /evidence-export, parts over one snapshot bounded by states and bytes, resumed by cursor, joined by the reader; contracts/evidence-export.schema.json and contracts/overlay.yaml 0.7.0-draft) and the selected-claim qualification of the ledger (conformance/qualify.mjs). @bsv/dpp-overlay-topics moves to 0.4.0; @bsv/dpp-core 0.3.0, @bsv/dpp-profiles 0.3.0 and @bsv/vsc 0.2.0 are unchanged. Wire formats, the custody profile and the runtime baseline are those of the first set. Candidate until the packages are published under the versions named here.",
   "baseline": "native-baseline@2",
+  "selection": "conformance/selections/dpp-release-2026-09-3.json",
   "runtime": {
     "node": ">=22",
     "dependencies": [
@@ -38,6 +39,18 @@
       ],
       "carries": [
         "dist"
+      ],
+      "nodeBuiltins": [],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "untested",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Depends on @bsv/sdk only and imports no Node built-in; a browser bundle is not tested and not promised."
+        }
       ]
     },
     {
@@ -50,6 +63,23 @@
       ],
       "carries": [
         "dist"
+      ],
+      "nodeBuiltins": [
+        "node:crypto",
+        "node:fs",
+        "node:http",
+        "node:url"
+      ],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Server only: Node built-ins, the overlay engine and the MongoDB driver. Importing never starts the HTTP host, which is reached by path as dist/index.js."
+        }
       ],
       "serverOnly": true
     },
@@ -71,6 +101,72 @@
         "schemas",
         "generated",
         "frozen.json"
+      ],
+      "nodeBuiltins": [
+        "node:crypto",
+        "node:fs"
+      ],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Reads its data files through the Node file system; the one runtime dependency is the RFC 8785 canonicaliser."
+        },
+        {
+          "entryPoint": "./manifests/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "manifests/<id>@<version>.json",
+            "manifests/exchange/*.json",
+            "manifests/operator/*.json",
+            "manifests/interoperability/*.json"
+          ],
+          "notes": "Frozen profile manifests, plain JSON."
+        },
+        {
+          "entryPoint": "./schemas/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "schemas/*.schema.json",
+            "schemas/gs1/*"
+          ],
+          "notes": "The manifest, identity, exchange, operator and interoperability schemas and the pinned GS1 resolver schemas."
+        },
+        {
+          "entryPoint": "./generated/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "generated/payload-schema/*.schema.json",
+            "generated/consumer/*.json",
+            "generated/mapping/*.md",
+            "generated/index.json"
+          ],
+          "notes": "Generated payload schemas, consumer documents and mapping inventories."
+        },
+        {
+          "entryPoint": "./frozen.json",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "frozen.json"
+          ],
+          "notes": "The digests every published file is held to."
+        }
       ]
     },
     {
@@ -87,6 +183,57 @@
       "carries": [
         "dist",
         "artifacts"
+      ],
+      "nodeBuiltins": [
+        "node:crypto",
+        "node:fs",
+        "node:zlib"
+      ],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Server only: reads its artefacts through the file system and decompresses status lists with node:zlib."
+        },
+        {
+          "entryPoint": "./exchange",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The external ecdsa-rdfc-2019 credential verifier; server only for the same reasons."
+        },
+        {
+          "entryPoint": "./epcis-source",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The EPCIS source helpers; server only for the same reasons."
+        },
+        {
+          "entryPoint": "./artifacts/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "artifacts/context-0.1.0.jsonld",
+            "artifacts/seal-0.1.0.schema.json",
+            "artifacts/disclosure-0.1.0.schema.json",
+            "artifacts/profile-0.1.0.json",
+            "artifacts/epcis/*",
+            "artifacts/external/*",
+            "artifacts/w3c/*"
+          ],
+          "notes": "The owned context and schemas, the pinned EPCIS and W3C artefacts and the external passport context and schema, each with a notice file naming its digest."
+        }
       ]
     }
   ],
