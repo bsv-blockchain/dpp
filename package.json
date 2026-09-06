@@ -11,13 +11,18 @@
   },
   "scripts": {
     "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics -w @bsv/vsc -w @bsv/dpp-profiles",
-    "test": "npm run test --workspaces --if-present && npm run conformance:test && npm run conformance:check",
+    "test": "npm run test --workspaces --if-present && npm run conformance:test && npm run conformance:check && npm run docs:check",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "conformance:check": "node conformance/check.mjs",
     "conformance:test": "node --test conformance/test/*.test.mjs",
     "conformance:qualify": "node conformance/qualify.mjs",
     "conformance:pin": "node conformance/pin-sources.mjs",
-    "conformance:independent": "python3 conformance/independent/python/dpp_verify.py"
+    "conformance:independent": "python3 conformance/independent/python/dpp_verify.py",
+    "docs:check": "node scripts/docs-check.mjs",
+    "docs:render": "node scripts/render-support-table.mjs && node scripts/render-requirements-matrix.mjs",
+    "release:candidates": "node scripts/release-candidates.mjs",
+    "release:consumer": "node scripts/consumer-check.mjs",
+    "release:bundle": "node scripts/implementer-bundle.mjs"
   },
   "overrides": {
     "@bsv/overlay": {

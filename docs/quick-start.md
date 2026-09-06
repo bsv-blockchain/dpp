@@ -21,7 +21,7 @@ What a reader implementation reproduces, and what it may leave to a build, is `s
 
 ## The journey through the release set
 
-The set of packages, wire versions, custody profile and runtime that go together is [`../release/dpp-release-2026-09.json`](../release/dpp-release-2026-09.json), and [`../release/README.md`](../release/README.md) is how it is packed, checked in a clean consumer and published. One journey through it, in ordinary terms:
+The set of packages, wire versions, custody profile and runtime that go together is [`../release/dpp-release-2026-09-3.json`](https://github.com/bsv-blockchain/dpp/blob/main/release/dpp-release-2026-09-3.json), the current candidate, and [`../release/README.md`](https://github.com/bsv-blockchain/dpp/blob/main/release/README.md) is how it is packed, checked in a clean consumer, qualified and published. One journey through it, in ordinary terms:
 
 1. **Install** the four packages from the set (or, before publication, the packed candidates `scripts/release-candidates.mjs` writes to `release/candidates/`): `@bsv/dpp-core` to read and write records, `@bsv/dpp-profiles` for the product data, `@bsv/dpp-overlay-topics` if you run an index, `@bsv/vsc` if you exchange credentials. Node 22, `@bsv/sdk` 2.4.2.
 2. **Run one operator** from `deploy/` (the image, a MongoDB, one env file), with `ACCEPTANCE_COMMITMENT=required` so it admits the managed-custody profile, or announce to an operator that does.
@@ -38,7 +38,7 @@ node examples/verify-attestation-anchor.mjs [file]
 python3 conformance/independent/python/dpp_verify.py
 ```
 
-The second command is a second reader in standard-library Python that shares no code with the reference: it recomputes every preimage, derived key, digest and script the fixtures pin and refuses every refusal vector. It is engineering evidence that the specification is complete enough to implement from, written within this programme, so it is not the independent implementation `GOVERNANCE.md` requires before 1.0.
+The second command is a second reader in standard-library Python that shares no code with the reference: it recomputes every preimage, derived key, digest and script the record, chain, anchor and acceptance fixtures pin and refuses every refusal vector of those files. Its coverage of the publisher policy and evidence package vectors is narrower, and [its README](https://github.com/bsv-blockchain/dpp/blob/main/conformance/independent/python/README.md) says exactly which refusals it re-derives and which it only checks by name. It is engineering evidence that the specification is complete enough to implement from, written within this programme, so it is not the independent implementation `GOVERNANCE.md` requires before 1.0.
 
 ## Writer: produce a state without spending anything
 
@@ -48,6 +48,18 @@ node examples/write-passport.mjs <passportId> [indexUrl] [--wait-proof=<minutes>
 ```
 
 The dry run builds and checks a record with no wallet and no network. The live form needs a funded BRC-100 wallet, follows `spec/writing.md` (check, announce, send, prove, keep) and stops with a named reason at the first step that cannot be completed. Identifier discipline for the payload is `spec/profiles.md` §4 and the GS1 helpers in `@bsv/dpp-profiles`; a syntactically valid GTIN is never proof that it was allocated.
+
+## Attestation issuer: sign a claim without touching the token
+
+```
+node examples/verify-attestation-anchor.mjs
+```
+
+An issuer signs a `dpp-lifecycle-v1` claim with `signLifecycleClaim` from `@bsv/dpp-core` under the claim's BRC-42 derivation and hands the anchoring service the complete secured representation; it never spends a passport output. The fixture `fixtures/attestation-anchor-v1.json` pins a signed claim, its representation bytes and the anchor that commits to them, and the example above verifies each in turn. What an issuer reproduces and what it may leave to a build is the attestation-issuer row of `spec/conformance.md` §2, the claim shape and canonical bytes of `spec/rules.md` §3 and §4, and the identity rules of `spec/identity.md` §2; the requirement ids are in `conformance/baseline-native-2.json`. Signing establishes attribution to a key and nothing about the issuer's authority, which the verifier's policy and the registry's authority evidence decide separately.
+
+## Registry: retain exact bytes and report by check
+
+The registry role stores immutable secured bytes, evaluates the selected representation and trust policy, and returns scoped verification reports (`spec/services.md` §3). Its HTTP surface is [`../contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/main/contracts/registry.yaml), which the reference registry ([bsv-blockchain-demos/uora-bsv](https://github.com/bsv-blockchain-demos/uora-bsv)) holds identical to its own and checks against its router by machine. A registry implementation starts from the shared anchor fixture and the report fixtures: it must produce, for the same evidence and policy, the same `spec/verification.md` report the reference produces, which `fixtures/evidence-v1.json` and `fixtures/evidence-v2.json` pin case by case, and it must refuse to fall through to any legacy intake for an unsupported representation. The registry's evidence package export and its status list publication are its own routes under the same contract; the requirement ids are the registry row of `conformance/baseline-native-2.json`.
 
 ## Profile author: freeze, generate, prove no drift
 
@@ -61,7 +73,7 @@ The generator regenerates every payload schema, consumer document and mapping in
 
 ## Operator: run the index and say what it supports
 
-The reference index node builds from `packages/overlay-topics/Dockerfile` and follows the defaults `docs/deployment.md` describes; `GET /health` lists the topics and services it serves and `GET /capabilities` serves its capability document in the shape of `contracts/capabilities.schema.json`. Under the reference configuration that document equals `conformance/examples/capabilities-reference-node.json`, which states `single-operator@1` with discovery off and no peers, so the node does not claim to be independently replicated. Publisher keys come from `PUBLISHER_POLICY_FILE` under `contracts/publisher-policy.schema.json`, separate from the operator's own identity; without one the single identity key is the implicit policy. `GET /history` pages a passport's history over a fixed snapshot, `GET /evidence-package` exports its newest 500 states as a signed package once `EXPORT_SIGNING_KEY` is set, `GET /evidence-export` serves the complete export as bounded parts over one snapshot that a reader joins (behind `EXPORT_TOKEN` when set), and `POST /retract` withdraws an admitted output the network refused, behind the submit bearer.
+The reference index node builds from `packages/overlay-topics/Dockerfile` and follows the defaults `docs/deployment.md` describes; `GET /health` lists the topics and services it serves and `GET /capabilities` serves its capability document in the shape of `contracts/capabilities.schema.json`. Under the reference configuration that document equals `conformance/examples/capabilities-reference-node.json`, which states `single-operator@1` with discovery off and no peers, so the node does not claim to be independently replicated. Publisher keys come from `PUBLISHER_POLICY_FILE` under `contracts/publisher-policy.schema.json`, separate from the operator's own identity; without one the single identity key is the implicit policy. `GET /history` pages a passport's history over a fixed snapshot, `GET /evidence-package` exports its newest 500 states as a signed package once `EXPORT_SIGNING_KEY` is set, `GET /evidence-export` serves the complete export as bounded parts over one snapshot that a reader joins (behind `EXPORT_TOKEN` when set), and `POST /retract` withdraws an admitted output the network refused, behind the submit bearer. A second operator names the first in `SYNC_PEERS` and synchronises both rails through the GASP routes, admitting every offered output through its own topic managers; `deploy/README.md` is the two-node recipe and `packages/overlay-topics/README.md` states what synchronisation carries and what it does not.
 
 ## Interoperability: discover, import, verify and project
 

@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-overlay-topics",
   "version": "0.4.0",
-  "description": "DPP overlay topic components: tm_dpp topic manager (dpp-core invariants + admission policy) and ls_dpp lookup service, as a library",
+  "description": "DPP overlay index components as a library: tm_dpp and tm_attestation topic managers, ls_dpp and ls_attestation lookup services, storage adapters, capabilities, history pages, bounded and complete evidence export, retraction and static-peer synchronisation; the HTTP node ships as the image",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/lib.js",

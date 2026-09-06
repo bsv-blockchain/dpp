@@ -6,7 +6,10 @@
  * generator derives from them (payload schemas and consumer documents), and
  * `frozen.json` the digests a published version is held to. This module gives
  * a consumer typed access to those files and the GS1 identifier helpers a
- * writer needs; it has no runtime dependency.
+ * writer needs. Its one runtime dependency is the RFC 8785 canonicaliser the
+ * projection digest uses; it reads its data files through the Node file
+ * system, so this entry point is a Node module and the data files are the
+ * portable surface for everything else.
  */
 import { readFileSync } from 'node:fs'
 

@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-profiles",
   "version": "0.3.0",
-  "description": "Canonical industry data profiles for DPP passports: immutable manifests, generated payload schemas and consumer documents, and the GS1 identifier helpers a writer needs",
+  "description": "Canonical DPP industry, exchange, operator and interoperability profiles: immutable manifests, generated payload schemas and consumer documents, lifecycle mapping, GS1 identifier and discovery helpers, applicability evaluation and deterministic passport projection",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/index.js",

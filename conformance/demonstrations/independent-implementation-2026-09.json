@@ -1,0 +1,172 @@
+{
+  "demonstrationVersion": "1",
+  "demonstrationId": "independent-implementation-2026-09",
+  "purpose": "The interoperability and portability demonstration of the independent implementation trial: what each scenario must run, what evidence it retains, when it passes, when it must refuse, and which ledger rows and claims its evidence bears on. Defined before the second application exists; nothing here is claimed until it has run.",
+  "releaseSet": "dpp-release-2026-09-3",
+  "baseline": "native-baseline@2",
+  "custodyProfile": "managed-custody@1",
+  "parties": {
+    "reference": "The reference application, registry and index at the revision the release set names, operated by the programme.",
+    "independent": "The second application with its own DPP reader, verifier, writer and issuer written from the bundle, and its own registry and index instances where a scenario names separately operated services.",
+    "note": "Evidence produced by the same programme is engineering evidence. The organisational independence the governance milestone needs is recorded separately when another implementing party runs the same scenarios."
+  },
+  "scenarios": [
+    {
+      "id": "vectors",
+      "title": "Cross-implementation vectors",
+      "roles": ["passport-reader", "attestation-verifier", "passport-writer", "attestation-issuer"],
+      "inputs": ["every fixture and vector file of the bundle"],
+      "evidence": ["one sentence per vector, refusals included", "the bytes the writer reproduced beside the pinned bytes", "the report produced for every evidence case beside the pinned report"],
+      "pass": "Every applicable positive vector reproduced or verified and every refusal refused at the point the vector names, with exact bytes, digests and reason codes where the vector specifies them, by predicates in the independent code; no vector executed by calling reference logic.",
+      "refuse": "Any refusal vector accepted, any positive vector reproduced with a differing byte, or any vector satisfied by a fixtures-only shortcut in runtime logic.",
+      "rows": ["RM-2-script", "RM-2-minimal-push", "RM-3-fields", "RM-4-operations", "RM-5-signatures", "RM-6-invariants", "RM-7-owner-tier", "RM-8-verifier", "RM2-2-script", "RM2-3-fields", "RM2-4-operations", "RM2-5-signatures", "RM2-6-invariants", "RM2-6-control-proof", "RM2-8-commitment", "RM2-9-verifier", "CUST-4-owner-consent", "MC-3-acceptance-record", "MC-4-transfer-binding", "MC-5-verification-report", "RULES-3-native-claim", "RULES-4-representation-bytes", "RULES-5-anchor", "RULES-6-verification", "RULES-7-compatibility", "LEGACY-V3-rules", "ID-2-did-key", "VER-2-report", "VER-3-expected-subject", "VER-4-checks", "VER-5-observations", "VER-4-version-2-findings", "VER-7-surfaces-equivalent", "VEC-1-publisher-policy-vectors", "VEC-2-evidence-package-vectors", "STACK-vector-format"]
+    },
+    {
+      "id": "exchange-reference-writes",
+      "title": "The reference writes, the independent implementation verifies",
+      "roles": ["passport-reader", "attestation-verifier"],
+      "inputs": ["fresh version 2 records and claims written by the reference beyond the fixtures, under the pinned rules", "the reference index's lookup and history answers", "a header source"],
+      "evidence": ["the retained requests and responses", "the transactions, BEEFs and proofs as received", "the independent report for each record"],
+      "pass": "Every fresh record and claim the reference wrote is accepted by the independent reader and verifier with the same findings the reference reader produces for the same evidence, policy, evaluation time and header source; differences in evidence availability are explained by the report's own reasons.",
+      "refuse": "A record or claim the reference wrote that the independent reader accepts or refuses differently from the reference for the same evidence, unexplained by an availability reason.",
+      "rows": ["RM2-9-verifier", "VER-7-surfaces-equivalent", "SVC-2-cursor-lookup", "EXPORT-1-pages"]
+    },
+    {
+      "id": "exchange-independent-writes",
+      "title": "The independent implementation writes, the reference verifies",
+      "roles": ["passport-writer", "attestation-issuer"],
+      "inputs": ["fresh version 2 records and claims written by the independent implementation", "the reference index and registry under test", "a funded wallet where a live write is selected"],
+      "evidence": ["the retained announcements, admission answers, broadcast answers and proof pushes", "the reference report for each record", "the writer self-report, one sentence per rule"],
+      "pass": "Every record the independent writer produced is admitted by the reference index, verified by the reference reader with every check the evidence supports at pass, and every claim it issued is verified by the reference verifier and accepted by the reference registry; each refusal the independent writer is asked to make it makes before sending.",
+      "refuse": "A record the reference index refuses or the reference reader fails, other than for inclusion pending, or a claim the reference verifier refuses.",
+      "rows": ["WR-2-verify-before-send", "WR-3-announce-before-send", "WR-4-one-writer", "WR-5-broadcast", "WR-6-announce-retry", "WR-7-proof", "WR-8-retain", "RULES-3-native-claim", "RULES-4-representation-bytes", "SVC-2-version-2-admission", "SVC-6-idempotent-admission"]
+    },
+    {
+      "id": "reader-equivalence",
+      "title": "Reader and report equivalence",
+      "roles": ["passport-reader", "attestation-verifier"],
+      "inputs": ["the same evidence, policy, evaluation time and header source given to both readers"],
+      "evidence": ["both reports side by side for every case, fixtures and fresh"],
+      "pass": "Equivalent scoped results: the same check statuses and reason codes, with differences confined to observations whose sources differed and explained as such.",
+      "refuse": "A differing check status or reason code for the same evidence and policy.",
+      "rows": ["VER-7-surfaces-equivalent", "VER-4-checks", "VER-5-observations"]
+    },
+    {
+      "id": "lifecycle-and-custody",
+      "title": "Lifecycle and custody",
+      "roles": ["passport-writer", "passport-reader"],
+      "inputs": ["a passport issued by one party, updated, offered, accepted, transferred, and retired; a version 1 lineage upgraded where claimed"],
+      "evidence": ["every state and acceptance record retained", "the refusals attempted and their answers"],
+      "pass": "Activation, update, offer, accept, decline, retirement and, where claimed, the upgrade succeed under managed-custody@1; an invalid controller, a replayed acceptance, an expired acceptance and an update after retirement are refused by name by both implementations.",
+      "refuse": "Any of the named invalid operations accepted, or a valid operation refused.",
+      "rows": ["RM2-6-control-proof", "RM2-8-commitment", "MC-3-acceptance-record", "MC-4-transfer-binding", "MC-4-offer-lifecycle", "MC-7-declaration"]
+    },
+    {
+      "id": "retry-and-interruption",
+      "title": "Retry and interruption",
+      "roles": ["passport-writer"],
+      "inputs": ["a write interrupted after each step of the writer's lifecycle and resumed"],
+      "evidence": ["the operation journal or its equivalent, before and after", "the index's records", "the network's answers"],
+      "pass": "A stable operation identity across the retry, no duplicate state after a crash and a retry, and pending broadcast distinguished from admission and from mined inclusion in the writer's own words at every step.",
+      "refuse": "A second candidate built while the first spend's fate is unknown, or a queued acknowledgement treated as acceptance.",
+      "rows": ["WR-4-one-writer", "WR-6-announce-retry", "WR-7-proof"]
+    },
+    {
+      "id": "two-operators",
+      "title": "Two operators",
+      "roles": ["overlay", "registry"],
+      "inputs": ["two indexes and two registries with different endpoints, keys, databases and policy configuration, one operated by each party"],
+      "evidence": ["both capability documents", "the same passport looked up on both", "each operator's admission of evidence the other served"],
+      "pass": "Each operator validates incoming evidence through its own admission and serves byte-identical evidence for the same lineage; the declared service roles and operator ownership are recorded; a state one refuses and the other admits is visible as a disagreement and reported as such.",
+      "refuse": "Evidence admitted because a peer served it, or a claim of independence for two nodes under one administration.",
+      "rows": ["SVC-1-discovery-sync", "OPR-profiles-named", "CONF-4-overlay-capabilities", "SVC-2-passport-admission", "SVC-2-anchor-admission"]
+    },
+    {
+      "id": "partition-recovery-proof-delay",
+      "title": "Partition, recovery and proof delay",
+      "roles": ["overlay"],
+      "inputs": ["a partition between the two operators during writes; proofs arriving at one operator only"],
+      "evidence": ["the synchronisation rounds' logs", "each operator's history pages before and after reconnection", "each operator's inclusion answers"],
+      "pass": "Reconnection converges without duplicates through idempotent replay; a proof is ingested separately by the operator that lacks it; a state whose proof has not arrived reads pending at that operator until a verified proof does, and never earlier.",
+      "refuse": "A duplicate state after recovery, or an inclusion answered before a verified proof.",
+      "rows": ["SVC-2-proof-ingest", "SVC-6-idempotent-admission", "SVC-1-discovery-sync", "OVL-1-refused-spend-eviction"]
+    },
+    {
+      "id": "publisher-policy-change",
+      "title": "Publisher policy change",
+      "roles": ["overlay", "passport-reader"],
+      "inputs": ["a publisher key rotation and a handover under signed authorisation; an unauthorised, expired and incorrectly chained version"],
+      "evidence": ["the policy chain before and after", "admission answers for states dated inside and outside each key's window"],
+      "pass": "A valid rotation or handover is accepted at the correct time; historical states still verify under the retired key; states countersigned by an unauthorised, expired or incorrectly chained key are refused by name.",
+      "refuse": "Any state admitted under a key not active at its own time.",
+      "rows": ["PUB-1-publisher-policy", "VEC-1-publisher-policy-vectors", "SVC-2-passport-admission"]
+    },
+    {
+      "id": "complete-export",
+      "title": "Complete index export",
+      "roles": ["overlay", "passport-reader"],
+      "inputs": ["a lineage of more than 500 retained states on the source operator"],
+      "evidence": ["every part as received with its signed coverage record", "the join result", "the restored operator's export of the same lineage"],
+      "pass": "Multiple byte-bounded parts over one stable snapshot, resumed after an interruption from the cursor, joined from the signed coverage records with the expected signer verified, restored into the other operator through its own admission, and exported again with the same states.",
+      "refuse": "Coverage asserted from an unsigned field, a state admitted mid-export appearing in the snapshot, or a join that passes with a gap or an overlap.",
+      "rows": ["EXPORT-1-pages", "EXPORT-2-evidence-package", "EXPORT-4-complete-export", "VEC-2-evidence-package-vectors"]
+    },
+    {
+      "id": "malicious-export",
+      "title": "Incomplete or malicious export",
+      "roles": ["passport-reader"],
+      "inputs": ["exports with a missing final part, repeated, reordered and substituted parts, an altered wrapper, a wrong passport, snapshot or signer, and a tampered inventory"],
+      "evidence": ["the independent reader's refusal for each, by name"],
+      "pass": "None of them can assert completeness: each is refused by name before any state inside is trusted.",
+      "refuse": "Any of them joined as complete.",
+      "rows": ["EXPORT-4-complete-export", "VEC-2-evidence-package-vectors"]
+    },
+    {
+      "id": "original-provider-unavailable",
+      "title": "Original provider unavailable",
+      "roles": ["overlay", "registry", "passport-writer", "passport-reader"],
+      "inputs": ["a passport written under the reference provider; its retained transactions, proofs, claims and permitted off-chain evidence imported into the independent provider; source access and every cache that could conceal dependency then disabled"],
+      "evidence": ["the import record with the pinned source and snapshot", "the verification at the replacement provider with the original unreachable", "an authorised update written at the replacement provider and verified"],
+      "pass": "Verification and an authorised update succeed at the replacement provider with the original disabled, under the custody arrangement's signing authority; the completeness claim is pinned to the named source and snapshot.",
+      "refuse": "Any dependency on the original provider revealed by disabling it, or a completeness claim not pinned to a source and snapshot.",
+      "rows": ["EXPORT-2-evidence-package", "EXPORT-4-complete-export", "WR-8-retain", "RM2-6-control-proof"]
+    },
+    {
+      "id": "custodial-key-loss",
+      "title": "Custodial key loss",
+      "roles": ["passport-writer", "passport-reader"],
+      "inputs": ["a passport whose spending authority is lost", "its evidence export"],
+      "evidence": ["the refused update", "the export's manifest and its disclosure and recovery declarations"],
+      "pass": "Missing spending authority prevents every update; the export verifies everything it holds and states that it is not a recovery of private signing access.",
+      "refuse": "An update succeeding without the authority, or an export presented as restoring it.",
+      "rows": ["EXPORT-2-evidence-package", "RM2-6-control-proof"]
+    },
+    {
+      "id": "profiles",
+      "title": "Profiles",
+      "roles": ["passport-reader", "passport-writer"],
+      "inputs": ["compatible battery@2 and textile@2 payloads", "a payload declaring an unknown profile version", "a payload missing a sector field"],
+      "evidence": ["the separate core and profile results for each"],
+      "pass": "Core validity and the profile result are reported apart; compatible data validates; an unknown profile version and a missing sector field are refused by name as profile findings; no automatic product or legal compliance claim is made.",
+      "refuse": "A profile finding reported as a core failure, or a validating payload described as compliant with a regulation.",
+      "rows": ["PROF-2-manifest", "PROF-3-fields", "PROF-5-identifiers", "LIFE-2-mapping-results"]
+    },
+    {
+      "id": "stale-restricted-unavailable",
+      "title": "Stale, restricted or unavailable evidence",
+      "roles": ["passport-reader", "attestation-verifier"],
+      "inputs": ["histories with missing claims, missing status, missing authority evidence and an unavailable header source; a supplied history that a source has seen superseded"],
+      "evidence": ["the reports, with their reasons and limits"],
+      "pass": "Each produces the specified unknown, pending or refused result with its reason code, and a supplied history is never labelled globally latest.",
+      "refuse": "A pass by omission, or a latest-state claim from supplied history alone.",
+      "rows": ["VER-5-observations", "VER-4-checks", "STATUS-validate-algorithm", "STATUS-fetch-bounds"]
+    }
+  ],
+  "claims": {
+    "bearsOn": ["passport-reader-native-baseline-2", "attestation-verifier-native-baseline-1", "passport-writer-reference-example", "managed-custody-1", "managed-custody-1-writer", "overlay-single-operator-1", "registry-current-intake"],
+    "cannotMake": ["overlay-federated-operators-1", "version-1-0-readiness", "eu-dpp-system-conformance", "battery-passport-qualification"],
+    "note": "The federated operation claim needs separately administered operators, which the two-operators scenario provides only when the parties are separate organisations; version 1.0 readiness needs another implementing party on record; the European and battery claims need their own assessments and are untouched by this demonstration."
+  },
+  "mainnet": "A scenario that requires mined inclusion needs an explicitly authorised, funded mainnet run recorded with its transaction identifiers; synthetic transactions under a scripts-only tracker prove admission and structure and never mining. No live blockchain transaction is part of defining this demonstration.",
+  "migrationAndLoss": "Authorised migration followed by provider shutdown (the old provider exports everything it holds, the new provider imports and verifies, signing authority is transferred, the publisher policy is handed over, then the old provider is disabled) is defined and run separately from sudden provider loss (whatever the writer's wallet, the deployment's storage and any second operator retained). Both pin a source and a snapshot before claiming completeness, and successful recovery from a public export never establishes recovery of private credentials, keys or all registry material."
+}

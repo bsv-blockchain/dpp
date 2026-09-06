@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-core",
   "version": "0.3.0",
-  "description": "DPP Token Standard v1 reference implementation: field encode/decode, canonical signature preimage, verifyChain incl. SPV",
+  "description": "DPP standard reference implementation: record versions 1 and 2, signature preimages, chain verification with SPV, the verification report, the native lifecycle claim, the generic anchor, the managed acceptance record, publisher key policy and the evidence package manifest",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "main": "./dist/index.js",

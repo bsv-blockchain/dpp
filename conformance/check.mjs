@@ -29,7 +29,7 @@
  * refuses them, so a release names its gate without the two ever disagreeing.
  */
 import { createHash } from 'node:crypto'
-import { readFileSync, existsSync, readdirSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Ajv2020 } from 'ajv/dist/2020.js'
@@ -193,6 +193,54 @@ for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-releas
     for (const entry of pkg.entryPoints) {
       if (manifest.exports?.[entry] == null) defect(`${set.releaseSet}: ${pkg.name} does not export ${entry}.`)
     }
+    // The support declaration: one entry per exported entry point, and every
+    // declared entry point exported; the Node built-ins the built code
+    // imports, held to a scan of dist/.
+    if (pkg.support != null) {
+      const declared = pkg.support.map((s) => s.entryPoint)
+      const exported = Object.keys(manifest.exports ?? {})
+      const undeclared = exported.filter((e) => !declared.includes(e))
+      const unexported = declared.filter((e) => !exported.includes(e))
+      if (undeclared.length === 0 && unexported.length === 0) note(`${set.releaseSet}: ${pkg.name} declares support for every entry point it exports (${declared.length}).`)
+      else defect(`${set.releaseSet}: ${pkg.name} support declaration and exports differ (undeclared: ${undeclared.join(', ') || 'none'}; unexported: ${unexported.join(', ') || 'none'}).`)
+      for (const s of pkg.support) {
+        const target = manifest.exports[s.entryPoint]
+        const isModule = target != null && typeof target === 'object'
+        if (s.kind === 'module' && !isModule) defect(`${set.releaseSet}: ${pkg.name} ${s.entryPoint} is declared a module but its export is not a conditional entry.`)
+        if (s.kind === 'data' && isModule) defect(`${set.releaseSet}: ${pkg.name} ${s.entryPoint} is declared data but its export is a conditional entry.`)
+        if (s.kind === 'module' && s.types && !target?.types) defect(`${set.releaseSet}: ${pkg.name} ${s.entryPoint} declares types but its export names none.`)
+      }
+      const distDir = join(root, pkg.directory, 'dist')
+      if (existsSync(distDir)) {
+        const walk = (dir) => readdirSync(dir).flatMap((name) => { const p = join(dir, name); return statSync(p).isDirectory() ? walk(p) : p.endsWith('.js') ? [p] : [] })
+        const found = new Set()
+        for (const file of walk(distDir)) for (const m of readFileSync(file, 'utf8').matchAll(/from\s+['"](node:[a-z_/]+)['"]|require\(['"](node:[a-z_/]+)['"]\)/g)) found.add(m[1] ?? m[2])
+        const declaredBuiltins = new Set(pkg.nodeBuiltins ?? [])
+        const missing = [...found].filter((b) => !declaredBuiltins.has(b)).sort()
+        const extra = [...declaredBuiltins].filter((b) => !found.has(b)).sort()
+        if (missing.length === 0 && extra.length === 0) note(`${set.releaseSet}: ${pkg.name} imports exactly the Node built-ins it declares (${[...declaredBuiltins].sort().join(', ') || 'none'}).`)
+        else defect(`${set.releaseSet}: ${pkg.name} declares Node built-ins ${[...declaredBuiltins].sort().join(', ') || 'none'} but its built code imports ${[...found].sort().join(', ') || 'none'}; review the declaration.`)
+        const rootModule = pkg.support.find((s) => s.entryPoint === '.')
+        if (rootModule?.browser === 'supported' && found.size > 0) defect(`${set.releaseSet}: ${pkg.name} declares browser support but imports Node built-ins.`)
+        if (rootModule?.browser === 'untested' && found.size > 0) defect(`${set.releaseSet}: ${pkg.name} declares browser use untested but imports Node built-ins; declare it unsupported.`)
+      } else {
+        blocked(`${set.releaseSet}: ${pkg.name} has no dist/ here, so its Node built-ins were not scanned; build first.`)
+      }
+    } else if (set.status === 'candidate') {
+      defect(`${set.releaseSet}: ${pkg.name} carries no support declaration; a candidate set declares every entry point.`)
+    }
+  }
+  // The selection the set names qualifies this set and exists; the checker
+  // reports it above and qualify.mjs is the gate.
+  if (set.selection != null) {
+    if (!existsSync(join(root, set.selection))) defect(`${set.releaseSet} names selection ${set.selection}, which does not exist.`)
+    else {
+      const selection = read(set.selection)
+      if (selection.releaseSet === set.releaseSet) note(`${set.releaseSet} names ${set.selection}, which qualifies it.`)
+      else defect(`${set.releaseSet} names ${set.selection}, which qualifies ${selection.releaseSet ?? 'no set'}.`)
+    }
+  } else if (set.status === 'candidate') {
+    defect(`${set.releaseSet} names no selection; a candidate set names the selection that qualifies it.`)
   }
   const rootManifest = read('package.json')
   if (set.runtime.node === rootManifest.engines?.node) note(`${set.releaseSet} requires Node ${set.runtime.node}, as the repository does.`)
@@ -226,6 +274,26 @@ for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-releas
     if (actual === a.sha256) note(`${set.releaseSet} artefact ${a.path} has the recorded digest.`)
     else defect(`${set.releaseSet} artefact ${a.path} has digest ${actual.slice(0, 12)}…, not the recorded ${a.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
   }
+}
+
+// 4c. The demonstration definitions: every row and claim each scenario names
+// exists in the ledger, and the release set each names exists and is not
+// superseded, so the demonstration cannot drift from what it bears on.
+const demonstrationsDir = join(root, 'conformance', 'demonstrations')
+for (const name of existsSync(demonstrationsDir) ? readdirSync(demonstrationsDir).filter((f) => f.endsWith('.json')).sort() : []) {
+  const path = `conformance/demonstrations/${name}`
+  const demo = read(path)
+  let problems = 0
+  const setFile = join(root, 'release', `${demo.releaseSet}.json`)
+  if (!existsSync(setFile)) { problems += 1; defect(`${path} names release set ${demo.releaseSet}, which does not exist.`) }
+  else if (read(`release/${demo.releaseSet}.json`).status === 'superseded') { problems += 1; defect(`${path} names release set ${demo.releaseSet}, which is superseded.`) }
+  for (const s of demo.scenarios ?? []) {
+    for (const id of s.rows ?? []) if (!rows.has(id)) { problems += 1; defect(`${path} scenario ${s.id} names requirement ${id}, which the ledger does not carry.`) }
+    for (const role of s.roles ?? []) if (!['passport-reader', 'attestation-verifier', 'passport-writer', 'attestation-issuer', 'registry', 'overlay'].includes(role)) { problems += 1; defect(`${path} scenario ${s.id} names role ${role}, which is not one of the six.`) }
+    for (const key of ['title', 'inputs', 'evidence', 'pass', 'refuse']) if (s[key] == null || s[key].length === 0) { problems += 1; defect(`${path} scenario ${s.id} lacks ${key}.`) }
+  }
+  for (const id of [...(demo.claims?.bearsOn ?? []), ...(demo.claims?.cannotMake ?? [])]) if (!verdicts.has(id)) { problems += 1; defect(`${path} names claim ${id}, which the ledger does not carry.`) }
+  if (problems === 0) note(`${path}: ${demo.scenarios.length} scenarios, every row, role, claim and release set it names exists.`)
 }
 
 // 5. The capability document.

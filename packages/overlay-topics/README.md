@@ -11,7 +11,7 @@ service and the record stores, and nothing that listens on a port. This is how
 the demonstration app uses it: both components run in process against
 `InMemoryDppStorage`, which is what its offline mode and the tests are.
 
-**As a service.** `src/index.ts` is an HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for merkle proofs, plus `GET /health`), which is exactly the contract `contracts/overlay.yaml` in this repository pins, together with the four extension routes that contract documents beside them: `GET /capabilities`, `GET /history`, `GET /evidence-package` and `POST /retract` (see [The extension routes](#the-extension-routes)). It is reached by path and never by specifier: `npm start` runs `node dist/index.js` and the Dockerfile's `CMD` names the same file. That is deliberate, so importing the package can never start a server.
+**As a service.** `src/index.ts` is an HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for merkle proofs, plus `GET /health`), which is exactly the contract `contracts/overlay.yaml` in this repository pins, together with the five extension routes that contract documents beside them: `GET /capabilities`, `GET /history`, `GET /evidence-package`, `GET /evidence-export` and `POST /retract` (see [The extension routes](#the-extension-routes)), and the two GASP routes a synchronising peer reads. It is reached by path and never by specifier: `npm start` runs `node dist/index.js` and the Dockerfile's `CMD` names the same file. That is deliberate, so importing the package can never start a server.
 
 The service boots only when node runs the file directly, which is how
 `test/http.test.ts` drives `createRequestHandler` and `startOverlayService`
@@ -48,7 +48,7 @@ Everything is environment. An unset variable switches its feature off or falls b
 | `NETWORK` | `main` or `test`. | `main` |
 | `WOC_API_KEY` | WhatsOnChain API key for header lookups. Raises the rate limit. | Anonymous access |
 | `CHAIN_TRACKER` | `scripts-only` disables SPV verification of submissions. Local development only; hosted it would admit unproved ancestry. | WhatsOnChain on `NETWORK` |
-| `SUBMIT_TOKEN` | Shared secret required as `Authorization: Bearer` on `POST /submit` and `POST /retract`, the two routes that change what the index holds. `/lookup`, `/history`, `/capabilities`, `/evidence-package` and `/health` stay open. | `/submit` and `/retract` are open to anyone, which is only acceptable on a local container. Set it on any reachable deployment |
+| `SUBMIT_TOKEN` | Shared secret required as `Authorization: Bearer` on `POST /submit` and `POST /retract`, the two routes that change what the index holds. `/lookup`, `/history`, `/capabilities`, `/evidence-package` and `/health` stay open; `/evidence-export` has its own bearer, `EXPORT_TOKEN`. | `/submit` and `/retract` are open to anyone, which is only acceptable on a local container. Set it on any reachable deployment |
 | `ARC_CALLBACK_TOKEN` | Shared secret required on `POST /arc-ingest`, as `Authorization: Bearer` or `X-Callback-Token`, the two ways an ARC-compatible broadcaster sends the token it was given at submission. | `/arc-ingest` is open to anyone. Every proof is still verified against block headers before it is stored, so the open route costs header quota, not truth; set it on any reachable deployment |
 | `ANCHOR_SERVICE_KEYS` | Comma-separated identity keys of the anchoring services this instance carries anchors for. Public keys only. A preference, not a security control: every admitted anchor names its own author either way. Under `PUBLISHER_POLICY_FILE`, `tm_attestation` admits from the policy's anchor-publisher keys instead and this list applies to the historical `tm_uora_dpp` rail and to a topic the policy leaves out. | Anchors from any treasury are carried, each still saying whose it is |
 | `OWNER_CONSENT` | `required`: `tm_dpp` also refuses a `TRANSFER` whose actor is neither the previous `owner_identity_key`, nor linked to it by `owner_linkage` in `event_data`, nor a transfer authority. This is the owner-signed transfer of `spec/custody.md` §4, a profile's choice; the topic documentation says it is on. Any other value fails the boot. | Off: any signed `TRANSFER` that spends the tip is admitted, the record model's baseline |
@@ -66,7 +66,16 @@ Everything is environment. An unset variable switches its feature off or falls b
 
 ## The extension routes
 
-Four routes the reference deployment serves beside the ecosystem's wire, each in the shape a contract under `contracts/` fixes and each documented in `contracts/overlay.yaml`. None replaces the bounded lookup, which stays exactly what it is.
+Five routes the reference deployment serves beside the ecosystem's wire, each in the shape a contract under `contracts/` fixes and each documented in `contracts/overlay.yaml`, followed by the two GASP routes. None replaces the bounded lookup, which stays exactly what it is.
+
+| Route | What it serves | Access |
+|---|---|---|
+| `GET /capabilities` | The capability document | Open |
+| `GET /history` | Pages of one passport's history over a stable snapshot | Open |
+| `GET /evidence-package` | The bounded signed package of the newest 500 states | Open; 503 without `EXPORT_SIGNING_KEY` |
+| `GET /evidence-export` | The complete export as signed, resumable parts over one snapshot | Bearer `EXPORT_TOKEN` when set; 503 without `EXPORT_SIGNING_KEY` |
+| `POST /retract` | Withdrawal of an admitted output the network refused | Bearer `SUBMIT_TOKEN` |
+| `POST /requestSyncResponse`, `POST /requestForeignGASPNode` | The overlay protocol's synchronisation routes a peer reads | Open, bounded |
 
 ### `GET /capabilities`
 
