@@ -1,6 +1,6 @@
 # Requirements to assertions
 
-**Generated** from [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/main/conformance/manifest.json) (ledger updated 2026-09-06) and [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/main/conformance/baseline-native-2.json) by `node scripts/render-requirements-matrix.mjs`; edit the ledger, not this page. Vector counts are read from the fixture files.
+**Generated** from [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/main/conformance/manifest.json) (ledger updated 2026-09-07) and [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/main/conformance/baseline-native-2.json) by `node scripts/render-requirements-matrix.mjs`; edit the ledger, not this page. Vector counts are read from the fixture files.
 
 For every role of `native-baseline@2`: each mandatory and optional requirement row, the clause it binds, its layer and its status in the ledger today, the fixtures that exercise it with their positive and refusal counts, and whether an independent implementer executes it as a predicate. A row an implementer does not implement stays visible as not implemented; a role not claimed is not reported. Statuses are the ledger's (`tested` is the reference suite; `independently-tested` needs another implementing party) and none of them is the implementer's to change.
 

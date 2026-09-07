@@ -6,22 +6,82 @@
   "kind": "exchange",
   "status": "proposed",
   "title": "UNTP 0.7.0 credentials secured with JOSE, pilot exchange profile",
-  "description": "A pilot interoperability profile for the UN Transparency Protocol's published 0.7.0 pilot version: product passport, traceability event and conformity credentials in the W3C Verifiable Credentials Data Model 2.0, secured as compact JWS under VC-JOSE-COSE, mapped to and from native evidence with every loss visible. UNTP compatibility is a distinct claim from any regulatory conformance.",
+  "description": "A pilot interoperability profile for the UN Transparency Protocol's 0.7.0 release, tagged v0.7.0 on 4 May 2026 at the specification's GitLab home: product passport, traceability event and conformity credentials in the W3C Verifiable Credentials Data Model 2.0, secured as compact JWS under VC-JOSE-COSE, mapped to and from native evidence with every loss visible. The schema and context artefacts are pinned by digest from that tag. UNTP compatibility is a distinct claim from any regulatory conformance, and verification by UNTP's own test tooling is a further claim this profile does not make.",
   "representation": "untp-0.7.0-jose@1",
   "mediaType": "application/vc+jwt",
   "dataModel": "W3C Verifiable Credentials Data Model 2.0 with the UNTP 0.7.0 vocabularies",
   "specification": "spec/exchange.md",
   "artefacts": [
-    { "id": "untp-specification", "kind": "specification", "uri": "https://untp.unece.org/docs/specification/", "version": "0.7.0", "retrieval": "not-retrieved", "notes": "The latest published pilot version in the official repository's version configuration at revision df03d8f87e74f676ccfece87ba77cd8f804fe111; the intended 1.0 is not a release." },
-    { "id": "untp-dpp-schema", "kind": "json-schema", "uri": "https://untp.unece.org/docs/specification/DigitalProductPassport", "version": "0.7.0", "retrieval": "not-retrieved", "notes": "The DigitalProductPassport JSON Schema. Pin the exact artefact URL and digest on first retrieval; no claim rests on it until then." },
-    { "id": "untp-dpp-context", "kind": "jsonld-context", "uri": "https://untp.unece.org/docs/specification/DigitalProductPassport", "version": "0.7.0", "retrieval": "not-retrieved", "notes": "The DigitalProductPassport JSON-LD context, likewise." },
-    { "id": "untp-dte-schema", "kind": "json-schema", "uri": "https://untp.unece.org/docs/specification/DigitalTraceabilityEvents", "version": "0.7.0", "retrieval": "not-retrieved" },
-    { "id": "untp-dcc-schema", "kind": "json-schema", "uri": "https://untp.unece.org/docs/specification/ConformityCredential", "version": "0.7.0", "retrieval": "not-retrieved" },
-    { "id": "w3c-vc-jose-cose", "kind": "specification", "uri": "https://www.w3.org/TR/vc-jose-cose/", "version": "current TR at review", "retrieval": "not-retrieved" }
+    {
+      "id": "untp-specification",
+      "kind": "specification",
+      "uri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/tree/v0.7.0",
+      "version": "0.7.0",
+      "retrieval": "not-retrieved",
+      "notes": "The 0.7.0 release, tagged v0.7.0 on 4 May 2026 at the GitLab home (main last active 4 September 2026, revision df03d8f87e74f676ccfece87ba77cd8f804fe111). The GitHub repository uncefact/spec-untp is archived at 0.6.1 and points here. No 1.0 release exists. The documentation site untp.unece.org refuses non-browser clients, so the tag is the pinnable source; the specification text is many pages and carries no single digest, and the four artefacts below are pinned individually."
+    },
+    {
+      "id": "untp-dpp-schema",
+      "kind": "json-schema",
+      "uri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/raw/v0.7.0/artefacts/schema/v0.7.0/dpp/DigitalProductPassport.json",
+      "version": "0.7.0",
+      "retrieval": "pinned",
+      "notes": "The DigitalProductPassport JSON Schema at v0.7.0, 50362 bytes. Its published location https://untp.unece.org/artefacts/schema/v0.7.0/dpp/DigitalProductPassport.json answered 403 to a non-browser client on 2026-09-06. The schema defines credentialStatus as a BitstringStatusListEntry, renderMethod and issuingSoftware beside the credential subject; a credential validated against it names the UNTP context.",
+      "digest": "42c51943ab23547d5287899fd12b214b19b006c28d105a70ff390f8551b12653",
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0; pinned by digest and not copied into this repository pending a licence review"
+    },
+    {
+      "id": "untp-dpp-context",
+      "kind": "jsonld-context",
+      "uri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/raw/v0.7.0/artefacts/contexts/v0.7.0/untp-context.jsonld",
+      "version": "0.7.0",
+      "retrieval": "pinned",
+      "notes": "The one UNTP JSON-LD context at v0.7.0, 105396 bytes, shared by every credential type; its published location is https://vocabulary.uncefact.org/untp/0.7.0/context/, which answered 403 to a non-browser client on 2026-09-06. The UNTP test suite resolves a credential's schema from this context URL.",
+      "digest": "fbd4824e30d3cfc5cba949e1efe19b4c9ebaee056abe7aaf1c6b139a7bf91b0c",
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0; pinned by digest and not copied into this repository pending a licence review"
+    },
+    {
+      "id": "untp-dte-schema",
+      "kind": "json-schema",
+      "uri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/raw/v0.7.0/artefacts/schema/v0.7.0/dte/DigitalTraceabilityEvent.json",
+      "version": "0.7.0",
+      "retrieval": "pinned",
+      "digest": "a1fa17b743d729e5cb7d1e7db689b87cc0bc655395a625b7ae6f9d195ecc84f9",
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0; pinned by digest and not copied into this repository pending a licence review",
+      "notes": "The DigitalTraceabilityEvent JSON Schema at v0.7.0, 47175 bytes."
+    },
+    {
+      "id": "untp-dcc-schema",
+      "kind": "json-schema",
+      "uri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/raw/v0.7.0/artefacts/schema/v0.7.0/dcc/ConformityCredential.json",
+      "version": "0.7.0",
+      "retrieval": "pinned",
+      "digest": "3fef068faece5975daa799c8f2d1db675c902f9a4e2c6d3c5fb6833799a73af1",
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0; pinned by digest and not copied into this repository pending a licence review",
+      "notes": "The ConformityCredential JSON Schema at v0.7.0, 44904 bytes. Pinned for completeness of the profile; nothing in this programme issues or verifies a conformity credential."
+    },
+    {
+      "id": "w3c-vc-jose-cose",
+      "kind": "specification",
+      "uri": "https://www.w3.org/TR/vc-jose-cose/",
+      "version": "current TR at review",
+      "retrieval": "not-retrieved"
+    }
   ],
   "proofSuites": [
-    { "id": "ES256K", "support": "issue-and-verify", "keyRule": "The issuer's secp256k1 credential key, published under its DID as an assertion method; verified independently with a second JOSE library.", "consumerMustConfirm": true, "notes": "A JOSE library that omits ES256K is a compatibility limit, not a signature defect." },
-    { "id": "ES256", "support": "optional-dedicated-key", "keyRule": "A dedicated P-256 credential key, separately authorised and published with its relationship to the issuer and to the BSV actor. Never derived by the secp256k1 BRC-42 rule; never an ES256K signature relabelled.", "consumerMustConfirm": true }
+    {
+      "id": "ES256K",
+      "support": "issue-and-verify",
+      "keyRule": "The issuer's secp256k1 credential key, published under its DID as an assertion method; verified independently with a second JOSE library.",
+      "consumerMustConfirm": true,
+      "notes": "A JOSE library that omits ES256K is a compatibility limit, not a signature defect. UNTP's own test suite (uncefact/tests-untp, technical interoperability, verifiable credentials) verifies enveloping proofs with EdDSA on Ed25519 under a did:web issuer and a Bitstring status entry, and names no other algorithm, so a credential secured under this suite is not verifiable by that tooling; a consumer that requires the tooling's verification needs an Ed25519 signing capability this profile does not define."
+    },
+    {
+      "id": "ES256",
+      "support": "optional-dedicated-key",
+      "keyRule": "A dedicated P-256 credential key, separately authorised and published with its relationship to the issuer and to the BSV actor. Never derived by the secp256k1 BRC-42 rule; never an ES256K signature relabelled.",
+      "consumerMustConfirm": true
+    }
   ],
   "anchoring": {
     "format": "bsv-attestation-anchor-v1",
@@ -37,13 +97,48 @@
     "notes": "A credential that references existing native evidence carries the extension under urn:bsv:dpp:native-evidence:1; the native evidence exists first and the credential is signed over the references, so no digest is circular."
   },
   "mappings": [
-    { "nativeOperation": "ACTIVATE", "externalEvent": "product passport issuance; a manufacture traceability event only with manufacturing evidence", "requires": "manufacturing facility, time and responsible party for a manufacture event", "withoutEvidence": "insufficient-data" },
-    { "nativeOperation": "SOLD", "externalEvent": "a transformation or transaction event only with actual movement or custody evidence", "requires": "source, destination and custody evidence; a change of token control is not a shipment", "withoutEvidence": "insufficient-data" },
-    { "nativeOperation": "RESOLD", "externalEvent": "as for SOLD", "requires": "as for SOLD", "withoutEvidence": "insufficient-data" },
-    { "nativeOperation": "TRANSFER", "externalEvent": "a change of custody only with custody evidence", "requires": "custody evidence beyond the token transfer", "withoutEvidence": "insufficient-data" },
-    { "nativeOperation": "REPAIRED", "externalEvent": "a traceability event of the repair, with the repair facts", "requires": "what was done, by whom and when", "withoutEvidence": "insufficient-data" },
-    { "nativeOperation": "EDIT", "externalEvent": "a revised product passport credential; no physical event", "requires": "nothing physical", "withoutEvidence": "transformed" },
-    { "nativeOperation": "RECYCLED", "externalEvent": "an end-of-life traceability event, distinguishing disposition from a process whose outputs carry new identities", "requires": "recycling evidence", "withoutEvidence": "insufficient-data" }
+    {
+      "nativeOperation": "ACTIVATE",
+      "externalEvent": "product passport issuance; a manufacture traceability event only with manufacturing evidence",
+      "requires": "manufacturing facility, time and responsible party for a manufacture event",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "SOLD",
+      "externalEvent": "a transformation or transaction event only with actual movement or custody evidence",
+      "requires": "source, destination and custody evidence; a change of token control is not a shipment",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "RESOLD",
+      "externalEvent": "as for SOLD",
+      "requires": "as for SOLD",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "TRANSFER",
+      "externalEvent": "a change of custody only with custody evidence",
+      "requires": "custody evidence beyond the token transfer",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "REPAIRED",
+      "externalEvent": "a traceability event of the repair, with the repair facts",
+      "requires": "what was done, by whom and when",
+      "withoutEvidence": "insufficient-data"
+    },
+    {
+      "nativeOperation": "EDIT",
+      "externalEvent": "a revised product passport credential; no physical event",
+      "requires": "nothing physical",
+      "withoutEvidence": "transformed"
+    },
+    {
+      "nativeOperation": "RECYCLED",
+      "externalEvent": "an end-of-life traceability event, distinguishing disposition from a process whose outputs carry new identities",
+      "requires": "recycling evidence",
+      "withoutEvidence": "insufficient-data"
+    }
   ],
   "storage": {
     "nativeClaim": "the signed dpp-lifecycle-v1 object, when the event has one",
@@ -52,13 +147,45 @@
     "projection": "any derived document, with its own identity and exporter signature, naming its source"
   },
   "unsupported": [
-    { "id": "sd-jwt-holder-presentation", "reason": "Selected only when a real restricted-disclosure use case names it; ordinary JSON filtering is not cryptographic selective disclosure." },
-    { "id": "regulatory-conformance", "reason": "UNTP compatibility is a distinct claim from EU regulatory conformance, which needs the applicable legal instrument and its date." },
-    { "id": "untp-1.0", "reason": "Not a release at review; this profile pins 0.7.0 and moves only by a new profile version." }
+    {
+      "id": "sd-jwt-holder-presentation",
+      "reason": "Selected only when a real restricted-disclosure use case names it; ordinary JSON filtering is not cryptographic selective disclosure."
+    },
+    {
+      "id": "regulatory-conformance",
+      "reason": "UNTP compatibility is a distinct claim from EU regulatory conformance, which needs the applicable legal instrument and its date."
+    },
+    {
+      "id": "untp-1.0",
+      "reason": "No 1.0 release exists (checked 2026-09-06 at the GitLab home); this profile pins the 0.7.0 tag and moves only by a new profile version."
+    },
+    {
+      "id": "untp-test-suite-verification",
+      "reason": "UNTP's test suite verifies EdDSA (Ed25519) enveloping proofs under did:web issuers only; the ES256K credentials this profile secures fail its securing-mechanism check before schema or context are examined. Passing that tooling is a separate claim needing an Ed25519 signing key and a did:web issuer, neither defined here."
+    }
   ],
   "sourceRefs": [
-    { "id": "untp-0.7.0", "name": "UN Transparency Protocol, published pilot version 0.7.0", "reference": "https://untp.unece.org/docs/specification/", "version": "0.7.0", "attribution": "UN/CEFACT", "use": "The credential types, schemas and contexts this profile validates against once pinned." },
-    { "id": "w3c-vc-data-model-2", "name": "W3C Verifiable Credentials Data Model 2.0", "reference": "https://www.w3.org/TR/vc-data-model-2.0/", "attribution": "W3C", "use": "The data model." },
-    { "id": "w3c-vc-jose-cose", "name": "W3C Securing Verifiable Credentials using JOSE and COSE", "reference": "https://www.w3.org/TR/vc-jose-cose/", "attribution": "W3C", "use": "The compact JWS carriage." }
+    {
+      "id": "untp-0.7.0",
+      "name": "UN Transparency Protocol, release 0.7.0",
+      "reference": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/tree/v0.7.0",
+      "version": "0.7.0",
+      "attribution": "UN/CEFACT",
+      "use": "The credential types, schemas and context this profile validates against, pinned by digest from the v0.7.0 tag."
+    },
+    {
+      "id": "w3c-vc-data-model-2",
+      "name": "W3C Verifiable Credentials Data Model 2.0",
+      "reference": "https://www.w3.org/TR/vc-data-model-2.0/",
+      "attribution": "W3C",
+      "use": "The data model."
+    },
+    {
+      "id": "w3c-vc-jose-cose",
+      "name": "W3C Securing Verifiable Credentials using JOSE and COSE",
+      "reference": "https://www.w3.org/TR/vc-jose-cose/",
+      "attribution": "W3C",
+      "use": "The compact JWS carriage."
+    }
   ]
 }
