@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### 2026-09-07, the GitBook site configuration
+
+- `gitbook-docs.yaml` at the repository root describes the documentation site for GitBook Git Sync: one space, read from `docs/`, and nothing else. The space configuration moves from `.gitbook.yaml` to `docs/.gitbook.yaml`, where Git Sync reads it, rooted at that directory with `README.md` and `SUMMARY.md` unchanged. `scripts/docs-check.mjs` holds both files. Git Sync requires the site file on the branch before a site can connect; connecting remains a separately approved action and changes nothing about the content.
+
 ### 2026-09-07, the UNTP 0.7.0 artefacts pinned
 
 - The exchange profile `untp-0.7.0-jose@1` pins the DigitalProductPassport, DigitalTraceabilityEvent and ConformityCredential JSON Schemas and the single UNTP JSON-LD context by SHA-256 from the specification's `v0.7.0` tag (4 May 2026) at its GitLab home, records their GPL-3.0 licence without copying them, and states that no 1.0 release exists and that the GitHub repository is archived at 0.6.1. The ES256K suite entry and a new `unsupported` entry record that UNTP's test suite verifies EdDSA on Ed25519 under `did:web` issuers only, so credentials under this profile are not verifiable by that tooling. The ledger source `untp-0.7.0` carries the retrieval date, licence and provenance; the two UNTP rows stay gaps with their notes corrected, the pilot claim stays withheld with its rationale corrected, and no claim changes.

@@ -101,9 +101,12 @@ for (const script of ['scripts/render-support-table.mjs', 'scripts/render-requir
   try { execFileSync('node', [join(root, script), '--check'], { stdio: 'pipe' }); say(true, `${script} --check holds.`) } catch (e) { say(false, `${script} --check: ${String(e.stderr ?? e.message).trim()}`) }
 }
 
-// 4. GitBook configuration.
-const gitbook = readFileSync(join(root, '.gitbook.yaml'), 'utf8')
-say(/^root:\s*\.\/docs\/$/m.test(gitbook) && /readme:\s*README\.md/.test(gitbook) && /summary:\s*SUMMARY\.md/.test(gitbook), '.gitbook.yaml roots the site at docs/ with README.md and SUMMARY.md.')
+// 4. GitBook configuration: the site file maps docs/ onto one default space,
+// and the space file inside docs/ names the entry page and the navigation.
+const site = readFileSync(join(root, 'gitbook-docs.yaml'), 'utf8')
+say(/^\s*directory:\s*\.\/docs\s*$/m.test(site) && /^\s*default:\s*true\s*$/m.test(site) && (site.match(/^\s*-\s*type:\s*space\s*$/mg) ?? []).length === 1, 'gitbook-docs.yaml maps docs/ onto the site\'s one default space.')
+const space = readFileSync(join(docs, '.gitbook.yaml'), 'utf8')
+say(/^root:\s*\.\/$/m.test(space) && /readme:\s*README\.md/.test(space) && /summary:\s*SUMMARY\.md/.test(space), 'docs/.gitbook.yaml roots the space at docs/ with README.md and SUMMARY.md.')
 
 console.log(failures === 0 ? 'Every sentence above holds.' : 'At least one sentence above does not hold.')
 process.exit(failures === 0 ? 0 : 1)
