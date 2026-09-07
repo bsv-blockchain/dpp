@@ -2,7 +2,19 @@
 
 A digital product passport (DPP) combines a product's recorded history with evidence about it. This working draft uses the Bitcoin SV (BSV) blockchain for passport records and separate commitments to signed lifecycle claims.
 
-Start with the [model](start/architecture.md), then choose a [journey](start/choose-a-journey.md) and [role](start/choose-a-role.md).
+## How a passport works
+
+A product's passport has a history of signed records. Updating it creates a transaction that spends the previous record's output, so a reader can follow the history and check who signed each change. The product data can change while the passport identifier continues to identify the same lineage.
+
+Attestations hold separate claims about the product, such as a repair or a measurement. The issuer signs the claim. A separate blockchain commitment lets a reader detect changes to the secured claim when it is retrieved. A valid signature does not establish that the physical event happened.
+
+An overlay indexes the blockchain records so they can be found. A registry retains and serves claims and evidence. A reader checks the returned material and reports missing evidence as well as successful checks. [The model](start/architecture.md) connects these components.
+
+## Try it
+
+Start with the [offline quick start](quick-start.md). It installs the reference packages, checks a synthetic passport history and explains the output. No wallet, running service or funds are needed for that first exercise.
+
+Then choose the component to build. Each role guide explains its inputs, first exercise and integration work.
 
 | Task | Guide |
 |---|---|
@@ -15,6 +27,6 @@ Start with the [model](start/architecture.md), then choose a [journey](start/cho
 | Find rules and interfaces | [Specifications](reference/specifications.md), [contracts](reference/contracts.md) |
 | Propose changes | [Contribute](contribute/README.md) |
 
-The guides link to rules, contracts, fixtures and the requirement ledger at a fixed source revision. Repository access is required for those links. [Starting from that revision](packages/README.md#source-access) also supplies a local copy.
+The guides explain the working model and implementation routes here. Pinned source links identify the exact rules, schemas and evidence behind them. Running repository examples requires [source access](packages/README.md#source-access); reading this guide does not require opening those links.
 
-Repository publication: open; see [the release candidate](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/release/dpp-release-2026-09-3.json). The [status page](start/status.md) identifies the other open decisions.
+Repository publication: open; see [the release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json). The [status page](start/status.md) identifies the other open decisions.

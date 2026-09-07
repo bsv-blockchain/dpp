@@ -1,6 +1,14 @@
 # Migration
 
-Identify the deployed release, stored record versions and selected profiles before changing a service. Use the [release records](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/release/dpp-release-2026-09-3.json) and [compatibility guide](learn/versions-and-compatibility.md) to separate those changes.
+Identify the deployed release, stored record versions and selected profiles before changing a service. Use the [release records](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) and [compatibility guide](learn/versions-and-compatibility.md) to separate those changes.
+
+## Build an inventory
+
+For each running component, record its package or application revision, service contract, selected industry and custody profiles, publisher policy and stored record versions. Retain the old configuration and a recoverable data copy before changing the service.
+
+For example, a service may need to read old version 1 records while a writer begins version 2 records. Updating the reader first allows it to inspect both existing and newly created evidence. Changing a profile selection is a separate migration because the payload is interpreted under the declared profile version.
+
+Use the fixture reader and a copy of retained deployment data to compare results before and after the change. An unchanged transaction should not silently acquire a different subject or a stronger assurance claim because the software changed.
 
 ## Rollout
 
@@ -9,7 +17,7 @@ Identify the deployed release, stored record versions and selected profiles befo
 3. Check index admission policy and the writer's selected formats.
 4. Exercise writing, verification, export and recovery before switching live traffic.
 
-The exact upgrade transition is defined in the [record model](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/record-model-v2.md#L94-L114); acceptance is defined in the [managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/managed-custody.md).
+The exact upgrade transition is defined in the [record model](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model-v2.md#L94-L114); acceptance is defined in the [managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/managed-custody.md).
 
 ## Rollback and retained evidence
 

@@ -1,20 +1,34 @@
 # Attestation verifier
 
-Start with claim and anchor inputs, plus verification policy. Select this role in the [baseline](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/baseline-native-2.json) and read the [role definition](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/conformance.md).
+An attestation verifier checks a signed claim about a product and, when supplied, the blockchain commitment to that claim. It needs the secured claim, its expected subject and the selected representation. Anchor checks additionally need the anchor output and exact secured bytes. Authority, status and inclusion need their own evidence sources.
 
-## Implementation sources
+## Run the reference exercise
 
-- [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/rules.md)
-- [spec/identity.md](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/identity.md)
-- [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/verification.md)
-- [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/fixtures/attestation-anchor-v1.json)
+After [setup](../../quick-start.md#prepare-the-checkout), run:
 
-## First exercise
+```sh
+node examples/verify-attestation-anchor.mjs
+```
 
-Use the selected claim and anchor fixtures, then the report cases that combine them. Keep the expected subject separate from the evidence being tested.
+Expect separate checks for the native claim and its anchor, with altered inputs refused. This is synthetic evidence. It does not establish that the issuer has authority or that the claimed event happened.
 
-Key attribution, issuer authority and transaction inclusion are separate evidence questions.
+## Build the verifier
 
-Use [the fixture harness](../fixture-runner.md) and [evidence reporting](../reporting.md). [Source gaps](../fixture-runner.md#source-gaps) remain open. The [reference quick starts](../../quick-start.md) provide executable examples for package consumers.
+Keep the received secured bytes before decoding the claim. Select the verifier by representation; native claims and external credentials do not use interchangeable proof rules. Compare the independently expected product identifier with the signed subject.
+
+Check the claim signature, then evaluate the supplied anchor and its binding to the secured representation. Keep each result separate. A valid claim without an anchor is not a completed anchor check; a valid anchor without the claim cannot establish its contents.
+
+Run the native fixture's altered-signature, altered-metadata and altered-bytes cases. Then use the report fixtures to test missing evidence and subject substitution. Add [external credentials](../../interoperability/external-credentials.md) only for the representations the implementation supports.
+
+Present the [individual report findings](../../learn/evidence-and-freshness.md), including unknown authority or inclusion. The application can apply its policy to those findings without hiding them.
+
+## Exact implementation sources
+
+- [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md)
+- [spec/identity.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/identity.md)
+- [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/verification.md)
+- [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/attestation-anchor-v1.json)
+
+Use [evidence reporting](../reporting.md) for results. [Source gaps](../fixture-runner.md#source-gaps) remain open.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../../learn/identity-and-authority.md).

@@ -22,7 +22,7 @@ const currentSet = () => {
   return sets.at(-1)
 }
 const { name, set } = currentSet()
-const R = 'https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258'
+const R = 'https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644'
 const licences = JSON.parse(readFileSync(join(root, 'conformance', 'licences.json'), 'utf8'))
 const deps = (pkg) => (licences.components.find((c) => c.name === pkg)?.dependencies ?? []).map((d) => `\`${d.name}\` ${d.range}`).join(', ') || 'none'
 const browser = { unsupported: 'Unsupported', untested: 'Untested', supported: 'Plain data' }
