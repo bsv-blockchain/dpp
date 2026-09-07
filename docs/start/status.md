@@ -1,6 +1,6 @@
 # Where things stand
 
-Working draft. The [ledger](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/manifest.json) was updated on 2026-09-07. The [release selection](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/selections/dpp-release-2026-09-3.json) names the claims required for the candidate and those withheld.
+Working draft. The [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) was updated on 2026-09-07. The [release selection](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/selections/dpp-release-2026-09-3.json) names the claims required for the candidate and those withheld.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|
@@ -9,7 +9,7 @@ Working draft. The [ledger](https://github.com/bsv-blockchain/dpp/blob/b84344528
 | `EXPORT-3-durable-publication` | gap | An independently administered replica and deployment recovery objectives have not been demonstrated. |
 | `READY-2-eu-registry` | gap | No Union DPP Registry integration. |
 
-The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/demonstrations/independent-implementation-2026-09.json) is defined, not completed. Use [conformance review](../reference/conformance.md) to inspect each claim's evidence. Passing the reference tests does not establish product qualification or independent operation.
+The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/demonstrations/independent-implementation-2026-09.json) is defined, not completed. Use [conformance review](../reference/conformance.md) to inspect each claim's evidence. Passing the reference tests does not establish product qualification or independent operation.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
 
@@ -17,7 +17,7 @@ Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](.
 
 | Decision | State and source |
 |---|---|
-| Repository publication | open; see [release candidate](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/release/dpp-release-2026-09-3.json) |
+| Repository publication | open; see [release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) |
 | Profile repository home | open; see [D-CR5](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L182). |
 | Object identifier derivation | open; see [D-CR2](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L181). |
 | Historical issuer formats | open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209). |

@@ -2,6 +2,20 @@
 
 The separately maintained [application service](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/package.json) composes the reference packages with application storage, custody and operation handling. It is outside the standard's release set and requires separate repository access. The [independent role guides](../implement/README.md) start from the sources in this repository.
 
+## Why an application service exists
+
+Core signing and verification functions do not manage an application's storage, retries, custody requests or operation journal. The application service coordinates those responsibilities around the reference packages.
+
+For example, a transfer request can involve an application record, a wallet action, an admission response and a later proof. Retaining that operation's state lets a retry continue the intended action instead of accidentally creating another transaction.
+
+## Choose the integration route
+
+The local DPP examples run without this separate service. Start there to evaluate the record and evidence APIs. An application using the packages directly supplies its own wallet, storage, policy and service adapters.
+
+Using the separate service additionally requires its repository and application configuration. There is no command in the DPP checkout that starts it. Its package manifest selects exact dependencies; match that selection when connecting it to a DPP deployment. The [writer](../implement/roles/passport-writer.md), [custody](../learn/custody.md) and [operator](../operate/README.md) guides explain the responsibilities those adapters fulfil.
+
+## Application-specific sources
+
 | Integration concern | Source |
 |---|---|
 | Passport operations | [PassportService](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/src/passportService.ts) |

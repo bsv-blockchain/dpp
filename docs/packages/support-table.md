@@ -1,6 +1,6 @@
 # Supported entry points
 
-Generated from the [release declaration](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/release/dpp-release-2026-09-3.json) for `dpp-release-2026-09-3` (candidate).
+Generated from the [release declaration](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) for `dpp-release-2026-09-3` (candidate).
 
 | Package | Entry point | Kind | Runtime | Browser | Types | Side effects | Node built-ins | Carries |
 |---|---|---|---|---|---|---|---|---|
@@ -18,7 +18,7 @@ Generated from the [release declaration](https://github.com/bsv-blockchain/dpp/b
 
 ## Runtime dependencies per package
 
-Source: [dependency ledger](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/licences.json).
+Source: [dependency ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/licences.json).
 
 - `@bsv/dpp-core` 0.3.0: `@bsv/sdk` 2.4.2
 - `@bsv/dpp-overlay-topics` 0.4.0: `@bsv/dpp-core` ^0.3.0, `@bsv/overlay` 2.3.1, `@bsv/sdk` 2.4.2, `mongodb` ^7.0.0
