@@ -4,69 +4,68 @@
 
 * [The DPP standard](README.md)
 * [Where things stand](start/status.md)
-* [The model in ten minutes](start/architecture.md)
-* [Choose a role](start/choose-a-role.md)
+* [The passport model](start/architecture.md)
 * [Choose a journey](start/choose-a-journey.md)
+* [Choose a role](start/choose-a-role.md)
 
 ## Learn the model
 
 * [Passport states and attestations](learn/passport-and-attestations.md)
+* [Identifiers](identifiers.md)
 * [Identity and authority](learn/identity-and-authority.md)
 * [Custody](learn/custody.md)
-* [Evidence, inclusion, freshness and completeness](learn/evidence-and-freshness.md)
+* [Evidence and its limits](learn/evidence-and-freshness.md)
 * [Versions and compatibility](learn/versions-and-compatibility.md)
 
 ## Use the reference packages
 
 * [Install the selected release](packages/README.md)
-* [Support table by entry point](packages/support-table.md)
+* [Supported entry points](packages/support-table.md)
+* [Reference quick starts](quick-start.md)
 * [@bsv/dpp-core](packages/dpp-core.md)
-* [@bsv/dpp-overlay-topics](packages/dpp-overlay-topics.md)
 * [@bsv/dpp-profiles](packages/dpp-profiles.md)
 * [@bsv/vsc](packages/vsc.md)
+* [@bsv/dpp-overlay-topics](packages/dpp-overlay-topics.md)
 * [The application service](packages/application-service.md)
-* [Quick starts, by role](quick-start.md)
+* [BSV stack integration](stack.md)
 
 ## Implement independently
 
-* [The implementer contract](implement/README.md)
-* [Independence and shared dependencies](implement/independence.md)
+* [Start an independent implementation](implement/README.md)
+* [Run the fixtures](implement/fixture-runner.md)
 * [Passport reader](implement/roles/passport-reader.md)
 * [Attestation verifier](implement/roles/attestation-verifier.md)
 * [Passport writer](implement/roles/passport-writer.md)
 * [Attestation issuer](implement/roles/attestation-issuer.md)
 * [Registry](implement/roles/registry.md)
 * [Overlay](implement/roles/overlay.md)
-* [Canonical bytes and signatures](implement/canonical-bytes.md)
-* [Service contracts and errors](implement/service-contracts.md)
-* [Running the fixtures](implement/fixture-runner.md)
-* [Claims and refusal reporting](implement/reporting.md)
-* [Requirements to assertions](implement/requirements-matrix.md)
-* [The interoperability and portability demonstration](implement/demonstration.md)
+* [Requirements and evidence reporting](implement/reporting.md)
+* [Run the interoperability trial](implement/demonstration.md)
 
 ## Operate services
 
-* [A single operator](operate/README.md)
-* [Federation with static peers](operate/federation.md)
-* [Wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md)
-* [Export, import and recovery](operate/export-import-recovery.md)
+* [Run a service](operate/README.md)
 * [Known limitations](operate/limitations.md)
-* [A deployment that follows the defaults](deployment.md)
+* [Reference deployment](deployment.md)
+* [Wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md)
+* [Federation with static peers](operate/federation.md)
+* [Export, import and recovery](operate/export-import-recovery.md)
+* [Migration](migration.md)
 
 ## Industry profiles
 
-* [The shared profile framework](profiles/README.md)
+* [Choose an industry profile](profiles/README.md)
+* [General](profiles/general.md)
 * [Battery](profiles/battery.md)
 * [Textile](profiles/textile.md)
-* [General](profiles/general.md)
-* [Authoring and governance](profiles/authoring.md)
+* [Author and propose a profile](profiles/authoring.md)
 
 ## Interoperability profiles
 
-* [Optional, fixed when claimed](interoperability/README.md)
+* [Choose an interoperability profile](interoperability/README.md)
 * [GS1 discovery](interoperability/gs1-discovery.md)
-* [EPCIS source exchange](interoperability/epcis.md)
 * [External credential verification](interoperability/external-credentials.md)
+* [EPCIS source exchange](interoperability/epcis.md)
 * [Passport projections](interoperability/projections.md)
 
 ## Reference
@@ -74,16 +73,11 @@
 * [Specification index](reference/specifications.md)
 * [Contracts and schemas](reference/contracts.md)
 * [Conformance and the ledger](reference/conformance.md)
-* [Release sets and package compatibility](reference/release-sets.md)
-* [Documentation map](reference/documentation-map.md)
-* [Migration](migration.md)
-* [Identifiers](identifiers.md)
-* [BSV stack integration](stack.md)
+* [Release sets](reference/release-sets.md)
 
 ## Contribute
 
 * [How the standard changes](contribute/README.md)
-* [Implementing parties](contribute/implementing-parties.md)
 * [Licence and reuse](contribute/licence.md)
-* [Proposing a profile](contribute/profiles.md)
-* [Reporting a disagreement](contribute/disagreements.md)
+* [Implementing parties](contribute/implementing-parties.md)
+* [Report a disagreement](contribute/disagreements.md)

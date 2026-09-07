@@ -16,6 +16,9 @@ dist/
 # standard goes public and the proposal is submitted to bitcoin-sv/BRCs.
 brc/
 
+# Private documentation and review material never enter GitBook.
+/docs/private/
+
 # Filled-in operator env files for deploy/compose.yml stay local.
 deploy/*.env
 

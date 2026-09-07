@@ -1,9 +1,13 @@
 # EPCIS source exchange
 
-**Profiles:** `epcis-json@1` (source), `epcis-vsc@1` (mapping). **Canonical sources:** [`spec/epcis-interoperability.md`](https://github.com/bsv-blockchain/dpp/blob/main/spec/epcis-interoperability.md), [`contracts/epcis-import.schema.json`](https://github.com/bsv-blockchain/dpp/blob/main/contracts/epcis-import.schema.json), [`contracts/interoperability.yaml`](https://github.com/bsv-blockchain/dpp/blob/main/contracts/interoperability.yaml), [`fixtures/vectors/dpp/interoperability/epcis/`](https://github.com/bsv-blockchain/dpp/blob/main/fixtures/vectors/dpp/interoperability/epcis/README.md). **Example:** `node examples/import-epcis.mjs`.
+Electronic Product Code Information Services (EPCIS) documents supply source events. Retain the received document through the import workflow before mapping it into a passport or credential view.
 
-An EPCIS 2.0.1 document arrives as bytes and is retained as bytes. The source profile reads it under disclosed limits (2 MiB, depth 64; duplicate keys, malformed UTF-8 and inexact numbers refused before anything is retained), validates it against the pinned schema without mutating, coercing or stripping a field, digests each event body under RFC 8785 without its record time and error declaration so equivalent formatting gives one digest, classifies an arrival as a duplicate, a new observation or a conflict, labels an event without an identifier as local, and builds the signed source reference a mapped credential carries. The durable import record is the contract's schema; the application's routes for import, pull, review, publication and source export are the interoperability contract.
+| Task | Source |
+|---|---|
+| Select parsing, digest and mapping behaviour | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/epcis-interoperability.md) |
+| Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/contracts/epcis-import.schema.json) |
+| Integrate the application service | [HTTP contract](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/contracts/interoperability.yaml) |
+| Use reference parsing and mapping | [VSC package](../packages/vsc.md) |
+| Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/fixtures/vectors/dpp/interoperability/epcis/v1.json) |
 
-The mapping profile says, event by event, whether an EPCIS event maps into the VSC profile losslessly, with a transformation and the unmapped semantics listed, not at all for an event type, action or disposition the profile does not express, or not without more evidence with every missing requirement named. Retention is never a lossless claim, nothing physical is fabricated to satisfy the credential, and a valid EPCIS event may remain evidence-only. Publication of a mapped event is a separate, authorised action through the registry; no import writes a token state.
-
-The vectors cover exact-byte retention of all five event types, refusal of unsafe transports, retention of a schema-invalid document with its findings, stable and distinct digests, the three arrival classes and the four mapping outcomes (4 positive, 11 refusal).
+Use the source's digest preimage; a digest of the stripped event alone does not reproduce it. Imports do not establish custody or perform a passport transfer. The [ledger](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/manifest.json) records which import and pull outcomes have been exercised.

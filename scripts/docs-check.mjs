@@ -6,14 +6,16 @@
  *
  * One sentence per finding, exit 1 when any does not hold. It checks that
  * every page SUMMARY.md names exists and every page under docs/ is named
- * (or is deliberately unlisted), that every relative link and fragment in
+ * (excluding docs/private/), that every relative link and fragment in
  * every page resolves inside the documentation root (a link that leaves the
  * root is a defect, because GitBook serves docs/ alone), that every pinned
- * repository link names a file that exists at that path, that every example
+ * repository source URL uses a full commit hash and each DPP source path
+ * exists in the checkout, that every example
  * command a page shows names an example that exists, that the release set,
  * package versions, contract versions and baseline a page names are the
  * current set's, that no page contains a private planning path, and that
- * the two generated pages match their sources.
+ * the generated support page matches its source. This is an offline check;
+ * it does not establish access to remote repositories.
  */
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
@@ -22,12 +24,13 @@ import { execFileSync } from 'node:child_process'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const docs = join(root, 'docs')
-const REPO = 'https://github.com/bsv-blockchain/dpp/blob/main/'
+const REPO_SOURCE = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/(blob|tree)\/([^/]+)\/(.*)$/
 let failures = 0
 const say = (ok, sentence) => { if (!ok) failures += 1; console.log(`${ok ? 'ok' : 'FAIL'}: ${sentence}`) }
 
 const walk = (dir) => readdirSync(dir).flatMap((name) => {
   const p = join(dir, name)
+  if (p === join(docs, 'private')) return []
   return statSync(p).isDirectory() ? walk(p) : p.endsWith('.md') ? [p] : []
 })
 const pages = walk(docs).map((p) => relative(docs, p)).sort()
@@ -56,10 +59,24 @@ for (const page of pages) {
   for (const m of text.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
     const target = m[1]
     if (/^(https?:|mailto:)/.test(target)) {
-      if (target.startsWith(REPO)) {
+      const source = REPO_SOURCE.exec(target)
+      if (source) {
         pinned += 1
-        const path = decodeURIComponent(target.slice(REPO.length)).split('#')[0]
-        if (!existsSync(join(root, path))) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist in the repository.`) }
+        const [, repo, kind, revision, rest] = source
+        if (!/^[a-f0-9]{40}$/.test(revision)) { linkFailures += 1; say(false, `${page} references ${repo} at ${revision}; use a full commit hash.`) }
+        if (repo === 'bsv-blockchain/dpp') {
+          const [path, fragment] = decodeURIComponent(rest).split('#')
+          const local = resolve(root, path)
+          if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
+          const directory = statSync(local).isDirectory()
+          if (directory !== (kind === 'tree')) { linkFailures += 1; say(false, `${page} pins ${path} with ${kind}; use ${directory ? 'tree' : 'blob'}.`) }
+          if (fragment && !directory) {
+            const content = readFileSync(local, 'utf8')
+            const line = /^L([1-9]\d*)(?:-L([1-9]\d*))?$/.exec(fragment)
+            const valid = line ? Number(line[1]) <= Number(line[2] ?? line[1]) && Number(line[2] ?? line[1]) <= content.trimEnd().split('\n').length : path.endsWith('.md') && headings(content).includes(fragment.toLowerCase())
+            if (!valid) { linkFailures += 1; say(false, `${page} pins ${path}#${fragment}, whose fragment does not resolve in the checkout.`) }
+          }
+        }
       }
       continue
     }
@@ -82,7 +99,7 @@ for (const page of pages) {
     const explained = /superseded|history|earlier|second candidate set|first candidate set|first set|second set/.test(text)
     if (mentions > 0 && !explained) { linkFailures += 1; say(false, `${page} names the superseded set ${s} without saying it is superseded.`) }
   }
-  if (/planning\/|AGENTS\.md/.test(text)) { linkFailures += 1; say(false, `${page} names a private planning path.`) }
+  if (/planning\/|AGENTS\.md|docs\/private\//.test(text)) { linkFailures += 1; say(false, `${page} names a private working path.`) }
   for (const m of text.matchAll(/`@bsv\/(dpp-core|dpp-overlay-topics|dpp-profiles|vsc)`\s+(\d+\.\d+\.\d+)/g)) {
     const pkg = current.packages.find((p) => p.name === `@bsv/${m[1]}`)
     if (pkg.version !== m[2]) { linkFailures += 1; say(false, `${page} names @bsv/${m[1]} ${m[2]}; the current set names ${pkg.version}.`) }
@@ -94,10 +111,10 @@ for (const page of pages) {
     for (const m of text.matchAll(/registry contract[^.|\n]{0,30}?`?(0\.\d\.\d)`?/gi)) if (m[1] !== registryVersion) { linkFailures += 1; say(false, `${page} names registry contract ${m[1]}; contracts/registry.yaml is ${registryVersion}.`) }
   }
 }
-say(linkFailures === 0, `${links} relative links, ${pinned} pinned repository links and ${commands} example commands across ${pages.length} pages resolve, and every version a page names is the current set's.`)
+say(linkFailures === 0, `${links} relative links, ${pinned} commit-pinned source URLs and ${commands} example commands across ${pages.length} public pages pass offline checks; release and contract versions match their declarations.`)
 
 // 3. The generated pages.
-for (const script of ['scripts/render-support-table.mjs', 'scripts/render-requirements-matrix.mjs']) {
+for (const script of ['scripts/render-support-table.mjs']) {
   try { execFileSync('node', [join(root, script), '--check'], { stdio: 'pipe' }); say(true, `${script} --check holds.`) } catch (e) { say(false, `${script} --check: ${String(e.stderr ?? e.message).trim()}`) }
 }
 

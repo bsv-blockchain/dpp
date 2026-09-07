@@ -19,7 +19,7 @@
     "conformance:pin": "node conformance/pin-sources.mjs",
     "conformance:independent": "python3 conformance/independent/python/dpp_verify.py",
     "docs:check": "node scripts/docs-check.mjs",
-    "docs:render": "node scripts/render-support-table.mjs && node scripts/render-requirements-matrix.mjs",
+    "docs:render": "node scripts/render-support-table.mjs",
     "release:candidates": "node scripts/release-candidates.mjs",
     "release:consumer": "node scripts/consumer-check.mjs",
     "release:bundle": "node scripts/implementer-bundle.mjs"

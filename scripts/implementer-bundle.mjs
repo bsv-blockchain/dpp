@@ -17,7 +17,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { currentReleaseSet, sha256 } from './lib/candidates.mjs'
 
@@ -40,7 +40,16 @@ copy('packages/dpp-profiles/schemas', 'profiles/schemas')
 copy('packages/dpp-profiles/generated', 'profiles/generated')
 copy('packages/dpp-profiles/frozen.json', 'profiles/frozen.json')
 copy('packages/vsc/artifacts', 'profiles/vsc-artifacts')
-copy('docs/implement')
+// Carry the complete guide navigation, excluding local review material.
+cpSync(join(root, 'docs'), join(out, 'docs'), {
+  recursive: true,
+  filter: (source) => {
+    const path = relative(join(root, 'docs'), source)
+    return path !== 'private' && !path.startsWith('private/') &&
+      (statSync(source).isDirectory() || source.endsWith('.md'))
+  },
+})
+copy('GOVERNANCE.md')
 copy('LICENSE')
 copy(setPath, `release/${setPath.split('/').at(-1)}`)
 copy('release/release-set.schema.json', 'release/release-set.schema.json')
@@ -50,6 +59,19 @@ const walk = (dir) => readdirSync(dir).flatMap((name) => { const p = join(dir, n
 const files = walk(out).map((p) => relative(out, p)).sort()
 const forbidden = files.filter((f) => /(^|\/)(dist|src|test|node_modules)\//.test(f) || /package\.json$/.test(f) || /\.(ts|mjs|js)$/.test(f))
 if (forbidden.length > 0) throw new Error(`the bundle would carry code or a package manifest: ${forbidden.join(', ')}`)
+
+// Every local guide destination must travel with the bundle.
+const docsRoot = join(out, 'docs')
+for (const file of files.filter((f) => f.startsWith('docs/') && f.endsWith('.md'))) {
+  const text = readFileSync(join(out, file), 'utf8')
+  for (const [, target] of text.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
+    if (/^(https?:|mailto:|#)/.test(target)) continue
+    const destination = resolve(dirname(join(out, file)), target.split('#')[0])
+    if (!destination.startsWith(docsRoot + '/') || !existsSync(destination)) {
+      throw new Error(`${file} links to ${target}, which is outside the bundled guides`)
+    }
+  }
+}
 
 const revision = (() => { try { return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() } catch { return 'unknown' } })()
 const dirty = (() => { try { return execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim() !== '' } catch { return true } })()

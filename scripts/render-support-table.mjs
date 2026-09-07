@@ -22,18 +22,16 @@ const currentSet = () => {
   return sets.at(-1)
 }
 const { name, set } = currentSet()
-const R = 'https://github.com/bsv-blockchain/dpp/blob/main'
+const R = 'https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258'
 const licences = JSON.parse(readFileSync(join(root, 'conformance', 'licences.json'), 'utf8'))
 const deps = (pkg) => (licences.components.find((c) => c.name === pkg)?.dependencies ?? []).map((d) => `\`${d.name}\` ${d.range}`).join(', ') || 'none'
-const browser = { unsupported: 'Unsupported', untested: 'Untested, not promised', supported: 'Plain data' }
+const browser = { unsupported: 'Unsupported', untested: 'Untested', supported: 'Plain data' }
 const runtime = { node: `Node ${set.runtime.node}`, any: 'Any' }
 
 const lines = []
-lines.push('# Support table by entry point')
+lines.push('# Supported entry points')
 lines.push('')
-lines.push(`**Generated** from [\`release/${name}\`](${R}/release/${name}) by \`node scripts/render-support-table.mjs\`; edit the release set, not this page. **Release:** \`${set.releaseSet}\` (${set.status}). **Runtime baseline:** Node ${set.runtime.node}, ${set.runtime.dependencies.map((d) => `\`${d.name}\` ${d.version}`).join(', ')}.`)
-lines.push('')
-lines.push('Every entry point the four packages export, with what it needs and what it carries. A module entry point ships TypeScript declarations and is exercised by the clean consumer check from its packed tarball; a data entry point is plain files any runtime or language reads. "Unsupported" in a browser means the code imports Node built-ins or server-only dependencies; "untested, not promised" means nothing known prevents it and no browser route is tested. The checker holds the declared Node built-ins to a scan of each package\'s built code.')
+lines.push(`Generated from the [release declaration](${R}/release/${name}) for \`${set.releaseSet}\` (${set.status}).`)
 lines.push('')
 lines.push('| Package | Entry point | Kind | Runtime | Browser | Types | Side effects | Node built-ins | Carries |')
 lines.push('|---|---|---|---|---|---|---|---|---|')
@@ -46,19 +44,11 @@ for (const pkg of set.packages) {
 lines.push('')
 lines.push('## Runtime dependencies per package')
 lines.push('')
-lines.push('Read from `conformance/licences.json`, which the checker holds to what is installed.')
+lines.push(`Source: [dependency ledger](${R}/conformance/licences.json).`)
 lines.push('')
 for (const pkg of set.packages) lines.push(`- \`${pkg.name}\` ${pkg.version}: ${deps(pkg.name)}`)
 lines.push('')
-lines.push('## Notes per entry point')
-lines.push('')
-for (const pkg of set.packages) {
-  for (const s of pkg.support ?? []) if (s.notes) lines.push(`- \`${pkg.name}\` \`${s.entryPoint}\`: ${s.notes}`)
-}
-lines.push('')
-lines.push('## Version compatibility')
-lines.push('')
-lines.push(`The four packages are tested together as one set on the runtime baseline above. \`@bsv/dpp-overlay-topics\` depends on \`@bsv/dpp-core\` by a caret range on its minor version; every other cross-package relation is by the set. ${set.packages.filter((p) => p.serverOnly).map((p) => `\`${p.name}\``).join(' and ')} ${set.packages.filter((p) => p.serverOnly).length === 1 ? 'is' : 'are'} server-only by declaration in the set. A consumer pins the versions the set names; a caret range across a pre-1.0 minor is not a compatibility promise, the set is.`)
+lines.push('See [release sets](../reference/release-sets.md) for the compatibility declaration and [package installation](README.md) for candidate checks.')
 lines.push('')
 const out = lines.join('\n') + '\n'
 const target = join(root, 'docs', 'packages', 'support-table.md')

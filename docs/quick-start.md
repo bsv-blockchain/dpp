@@ -1,112 +1,88 @@
-# Quick starts, by role
+# Reference quick starts
 
-Each start below is complete for one role and needs nothing from another role unless it says so. The commands are the ones CI runs, so a start that stops working is a red build, not a stale page. `npm ci && npm run build` at the repository root is the only preparation; the pinned lockfile is the dependency contract.
+Use the [pinned checkout](packages/README.md#source-access), then run these commands from its root:
 
-## Reader: verify a passport from fixtures, with no account, wallet or service
-
-```
-node examples/verify-passport.mjs --fixture
-node examples/verify-passport.mjs --fixture --report
-node examples/verify-passport.mjs --fixture --owner-consent
-node examples/verify-passport.mjs --fixture --version=2
-node examples/verify-passport.mjs --fixture --version=2 --report
-node examples/lifecycle-v2.mjs
-node examples/verify-anchor.mjs
-node examples/verify-attestation-anchor.mjs
-```
-
-The first command replays `fixtures/chain-v1.json` through the reference reader and prints each finding. The second reports the same evidence as the one verification report of `spec/verification.md`, then materialises every case of `fixtures/evidence-v1.json` and compares the reports byte for byte. The third adds the owner-signed transfer check. The fourth and fifth do the same for record version 2 over `fixtures/chain-v2.json`, its refusals, the upgrade from the version 1 chain and `fixtures/evidence-v2.json`. The sixth builds a version 2 lifecycle from fresh keys with no wallet and no network: issue, update, an offer accepted under `managed-custody@1`, the transfer that commits to the acceptance, retirement, and the refusals the profile and the record model make along the way. The two anchor commands verify the historical `uora-anchor-v3` fixture and the generic `bsv-attestation-anchor-v1` fixture: layout, key derivation and signature, then the refusal vectors. A live read is `node examples/verify-passport.mjs <passportId> [indexUrl] --report`; it asks the index for the history and verifies it locally against block headers, and a missing or unreachable index is reported as unavailable evidence, never as validity.
-
-What a reader implementation reproduces, and what it may leave to a build, is `spec/conformance.md` §2; the requirement ids for the reader role are in `conformance/baseline-native-1.json` for version 1 and `conformance/baseline-native-2.json` for a reader of both versions.
-
-## The journey through the release set
-
-The set of packages, wire versions, custody profile and runtime that go together is [`../release/dpp-release-2026-09-3.json`](https://github.com/bsv-blockchain/dpp/blob/main/release/dpp-release-2026-09-3.json), the current candidate, and [`../release/README.md`](https://github.com/bsv-blockchain/dpp/blob/main/release/README.md) is how it is packed, checked in a clean consumer, qualified and published. One journey through it, in ordinary terms:
-
-1. **Install** the four packages from the set (or, before publication, the packed candidates `scripts/release-candidates.mjs` writes to `release/candidates/`): `@bsv/dpp-core` to read and write records, `@bsv/dpp-profiles` for the product data, `@bsv/dpp-overlay-topics` if you run an index, `@bsv/vsc` if you exchange credentials. Node 22, `@bsv/sdk` 2.4.2.
-2. **Run one operator** from `deploy/` (the image, a MongoDB, one env file), with `ACCEPTANCE_COMMITMENT=required` so it admits the managed-custody profile, or announce to an operator that does.
-3. **Configure a managed service**: a custodian holding the lock and deriving every party's keys, with the writer's journal for durable, idempotent writes. The application repository's `PassportService` is the reference entry point (`issue`, `update`, `offer`, `accept`, `decline`, `retire`, `upgrade`, `status`, `verify`, `exportEvidence`); `examples/lifecycle-v2.mjs` here is the same journey with fresh keys and no service at all.
-4. **Issue** a passport, **update** it, **offer** it to a recipient who needs only an account, let them **accept**, and write the transfer that commits to their acceptance; **verify** the record from its bytes and **export** its evidence; **retire** it when the object's life ends.
-5. **Attach a lifecycle claim** later, independently: an issuer signs a `dpp-lifecycle-v1` claim and an anchoring service commits to it on the separate rail (`examples/verify-attestation-anchor.mjs` reads one), without spending the passport token and without the custodian.
-
-Every step's refusals are the standard's own: an offer against a moved tip, an expired or declined acceptance, a transfer without its commitment under the profile, a state after retirement, a signature over the wrong preimage.
-
-## Verifier: check an attestation without trusting the registry
-
-```
-node examples/verify-attestation-anchor.mjs [file]
-python3 conformance/independent/python/dpp_verify.py
-```
-
-The second command is a second reader in standard-library Python that shares no code with the reference: it recomputes every preimage, derived key, digest and script the record, chain, anchor and acceptance fixtures pin and refuses every refusal vector of those files. Its coverage of the publisher policy and evidence package vectors is narrower, and [its README](https://github.com/bsv-blockchain/dpp/blob/main/conformance/independent/python/README.md) says exactly which refusals it re-derives and which it only checks by name. It is engineering evidence that the specification is complete enough to implement from, written within this programme, so it is not the independent implementation `GOVERNANCE.md` requires before 1.0.
-
-## Writer: produce a state without spending anything
-
-```
-node examples/write-passport.mjs --dry-run
-node examples/write-passport.mjs <passportId> [indexUrl] [--wait-proof=<minutes>] [--payload=<json>]
-```
-
-The dry run builds and checks a record with no wallet and no network. The live form needs a funded BRC-100 wallet, follows `spec/writing.md` (check, announce, send, prove, keep) and stops with a named reason at the first step that cannot be completed. Identifier discipline for the payload is `spec/profiles.md` §4 and the GS1 helpers in `@bsv/dpp-profiles`; a syntactically valid GTIN is never proof that it was allocated.
-
-## Attestation issuer: sign a claim without touching the token
-
-```
-node examples/verify-attestation-anchor.mjs
-```
-
-An issuer signs a `dpp-lifecycle-v1` claim with `signLifecycleClaim` from `@bsv/dpp-core` under the claim's BRC-42 derivation and hands the anchoring service the complete secured representation; it never spends a passport output. The fixture `fixtures/attestation-anchor-v1.json` pins a signed claim, its representation bytes and the anchor that commits to them, and the example above verifies each in turn. What an issuer reproduces and what it may leave to a build is the attestation-issuer row of `spec/conformance.md` §2, the claim shape and canonical bytes of `spec/rules.md` §3 and §4, and the identity rules of `spec/identity.md` §2; the requirement ids are in `conformance/baseline-native-2.json`. Signing establishes attribution to a key and nothing about the issuer's authority, which the verifier's policy and the registry's authority evidence decide separately.
-
-## Registry: retain exact bytes and report by check
-
-The registry role stores immutable secured bytes, evaluates the selected representation and trust policy, and returns scoped verification reports (`spec/services.md` §3). Its HTTP surface is [`../contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/main/contracts/registry.yaml), which the reference registry ([bsv-blockchain-demos/uora-bsv](https://github.com/bsv-blockchain-demos/uora-bsv)) holds identical to its own and checks against its router by machine. A registry implementation starts from the shared anchor fixture and the report fixtures: it must produce, for the same evidence and policy, the same `spec/verification.md` report the reference produces, which `fixtures/evidence-v1.json` and `fixtures/evidence-v2.json` pin case by case, and it must refuse to fall through to any legacy intake for an unsupported representation. The registry's evidence package export and its status list publication are its own routes under the same contract; the requirement ids are the registry row of `conformance/baseline-native-2.json`.
-
-## Profile author: freeze, generate, prove no drift
-
-```
-npm run build -w @bsv/dpp-profiles
-npm test -w @bsv/dpp-profiles
-node packages/dpp-profiles/scripts/build.mjs --refreeze
-```
-
-The generator regenerates every payload schema, consumer document and mapping inventory from the frozen manifests and fails on any drift from `frozen.json`. A re-freeze is a reviewed diff of digests, and a changed meaning or rule is a new profile version, never an edit to a frozen one.
-
-## Operator: run the index and say what it supports
-
-The reference index node builds from `packages/overlay-topics/Dockerfile` and follows the defaults `docs/deployment.md` describes; `GET /health` lists the topics and services it serves and `GET /capabilities` serves its capability document in the shape of `contracts/capabilities.schema.json`. Under the reference configuration that document equals `conformance/examples/capabilities-reference-node.json`, which states `single-operator@1` with discovery off and no peers, so the node does not claim to be independently replicated. Publisher keys come from `PUBLISHER_POLICY_FILE` under `contracts/publisher-policy.schema.json`, separate from the operator's own identity; without one the single identity key is the implicit policy. `GET /history` pages a passport's history over a fixed snapshot, `GET /evidence-package` exports its newest 500 states as a signed package once `EXPORT_SIGNING_KEY` is set, `GET /evidence-export` serves the complete export as bounded parts over one snapshot that a reader joins (behind `EXPORT_TOKEN` when set), and `POST /retract` withdraws an admitted output the network refused, behind the submit bearer. A second operator names the first in `SYNC_PEERS` and synchronises both rails through the GASP routes, admitting every offered output through its own topic managers; `deploy/README.md` is the two-node recipe and `packages/overlay-topics/README.md` states what synchronisation carries and what it does not.
-
-## Interoperability: discover, import, verify and project
-
-```
-node examples/resolve-digital-link.mjs          # a GS1 Digital Link parsed, decompressed, resolved through a linkset
-node examples/import-epcis.mjs                   # an EPCIS document retained exactly, validated, digested and mapped with a report
-node examples/verify-external-credential.mjs     # an ecdsa-rdfc-2019 credential checked, and its exact bytes digested apart from its proof
-node examples/project-passport.mjs               # one projection digest from versioned sources, whatever the arrival order
-```
-
-Four optional profiles, each fixed in behaviour when claimed: `gs1-digital-link@1` (`spec/gs1-discovery.md`) resolves primary key 01 with its qualifiers and decompresses the EPC-binary form; `epcis-json@1` and `epcis-vsc@1` (`spec/epcis-interoperability.md`) retain a source document byte for byte and say, event by event, whether it maps into the VSC profile losslessly, with a transformation, not at all, or not without more evidence; `vc-di-ecdsa-rdfc-2019@1` (`spec/external-credential-profile.md`) verifies an externally signed passport credential under its own suite and reports each finding apart; `passport-projection@1` (`spec/passport-projections.md`) derives a passport's values from pinned model, batch and item revisions under a named policy, and the same inputs give the same digest. Nothing in any of them writes a token state: an import is a data operation, and a transfer or a retirement still needs the passport service and the recipient's acceptance. The application's routes for imports, pulls, publication, source export and projections are `contracts/interoperability.yaml`; the registry's hosted resolver and external credential intake are in `contracts/registry.yaml`.
-
-Two readiness statements are deliberately not implementations. An EN 18223 serialisation is not implemented, because the normative text was not accessed and no representation, media type or artefact of it is known; a request framed as EN 18223 is `representation-unsupported`. The Union digital product passport registry is not integrated: a registration reference an operator supplies is preserved verbatim as unverified evidence, and its presence does not mean the passport is registered.
-
-## Choosing capabilities, and what happens on a mismatch
-
-A reader compares a service's capability document with the baseline and profiles it requires. A required protocol version, profile digest, representation or proof suite that the document does not list is a named result, `unsupported` or `unknown` with a shared reason code from `contracts/verification-report.schema.json`, and it blocks the checks that depend on it; it is never a pass by omission and never a silent downgrade to an older version. An extension a reader does not understand leaves the check that needs it at `unknown` with `not-inspected`, while every check that does not need it proceeds. A state decodes under the profile version it declares; nothing reinterprets it under a newer one.
-
-## Custody arrangements and accounts
-
-`spec/custody.md` §5 and §6 name the custody modes, their authority, recovery, fee and operator-dependence boundaries, and distinguish custodian signing from independent signing; the writer example runs unchanged under either arrangement because it only ever asks a BRC-100 wallet to sign. `spec/identity.md` §1 and `spec/conformance.md` §5 fix the vocabulary an application maps its accounts onto: an account is never defined as a person, brand, organisation, wallet, DID or controller, and one account may hold several issuer identities while one identity may span several accounts.
-
-## Conformance commands
-
-```
+```sh
 npm ci
 npm run build
-npm test                         # every workspace, then the ledger checker
-npm run conformance:check        # the ledger, the baseline, the pinned reports, the capability example and every selection
-npm run conformance:independent  # the Python reader over every fixture and vector
-npm run conformance:qualify -- conformance/selections/dpp-release-2026-09-3.json   # the selected-claim gate of one release; exits 1 while a required claim cannot be made
-node examples/verify-passport.mjs --fixture --report
-REGENERATE_FIXTURES=1 npm test   # rewrite every published fixture from its generator, then hold it identical
 ```
 
-`npm run conformance:pin` re-records source digests after a reviewed change to a normative file; the checker refuses a claim whose sources have moved or whose required rows are unassessed.
+These exercises use the reference packages. [Independent implementers](implement/README.md) build their own predicates from the linked sources and fixtures.
+
+## Reader and verifier
+
+```sh
+node examples/verify-passport.mjs --fixture --version=2 --report
+node examples/lifecycle-v2.mjs
+node examples/verify-attestation-anchor.mjs
+```
+
+The [passport example](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/examples/verify-passport.mjs) and [attestation example](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/examples/verify-attestation-anchor.mjs) compare synthetic fixtures with reference results. They do not establish live inclusion, business authority or product truth. The [fixture guide](implement/fixture-runner.md) identifies source gaps.
+
+## Writer
+
+```sh
+node examples/write-passport.mjs --dry-run
+```
+
+The [writer example](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/examples/write-passport.mjs) describes wallet configuration and its live invocation. The dry run creates and checks synthetic data. Continue with [wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md) for service integration.
+
+## Attestation issuer
+
+Sign the fixture's unsigned claim with its published test key.
+
+```sh
+node --input-type=module <<'JS'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { PrivateKey, ProtoWallet } from '@bsv/sdk'
+import { signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-core'
+
+const fixture = JSON.parse(readFileSync('fixtures/attestation-anchor-v1.json', 'utf8'))
+const wallet = new ProtoWallet(PrivateKey.fromHex(fixture.issuerPrivateKey))
+const signed = await signLifecycleClaim(fixture.unsignedClaim, wallet)
+assert.deepEqual(signed, fixture.claim)
+assert.equal(verifyLifecycleClaim(signed).signature, 'verified')
+console.log('The signed claim matches the fixture.')
+JS
+```
+
+Sources: [claim API](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/packages/dpp-core/src/attestation.ts), [fixture](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/fixtures/attestation-anchor-v1.json). The [issuer guide](implement/roles/attestation-issuer.md) links the independent exercise.
+
+## Registry validation
+
+Choose a running registry that implements the [validation contract](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/contracts/registry.yaml#L781-L831). Set `REGISTRY_URL` to its base URL; the example defaults to `http://localhost:4000`. The [reference registry](https://github.com/bsv-blockchain-demos/uora-bsv/blob/07236cf753a238ab7ae3f5dd0c12efe236d6e9f1/README.md) is maintained in a separate repository that requires access. An independent registry can use the [local contract and role guide](implement/roles/registry.md). Run the request from the DPP checkout:
+
+```sh
+node --input-type=module <<'JS'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+
+const fixture = JSON.parse(readFileSync('fixtures/attestation-anchor-v1.json', 'utf8'))
+const url = new URL('/validate', process.env.REGISTRY_URL ?? 'http://localhost:4000')
+url.searchParams.set('subject', fixture.unsignedClaim.passportId)
+const response = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(fixture.claim),
+})
+assert.equal(response.status, 200)
+const result = await response.json()
+console.log(JSON.stringify(result, null, 2))
+JS
+```
+
+This request verifies without storing or anchoring. It supplies no token history or anchor evidence, so the returned report cannot establish those checks. See the [validation contract](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/contracts/registry.yaml#L781-L831) and [registry guide](implement/roles/registry.md) for the next exercise.
+
+## Continue by task
+
+| Task | Guide |
+|---|---|
+| Start the reference index | [Operate](operate/README.md) |
+| Generate a profile | [Author a profile](profiles/authoring.md) |
+| Select an exchange format | [Interoperability](interoperability/README.md) |
+| Inspect the release gate | [Conformance review](reference/conformance.md) |
+
+Brand self-custody: open; see [G-28](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L171).
+
+Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).

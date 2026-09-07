@@ -1,9 +1,0 @@
-# Proposing a profile
-
-**Canonical sources:** [`spec/profiles.md`](https://github.com/bsv-blockchain/dpp/blob/main/spec/profiles.md), [`spec/conformance.md`](https://github.com/bsv-blockchain/dpp/blob/main/spec/conformance.md) §4, [Authoring and governance](../profiles/authoring.md).
-
-A profile is proposed as a manifest, not as prose. Under the manifest schema (version 2 for a new profile) it names its identifier and version, its kind (industry, exchange, operator or interoperability), its use case, the baseline and roles it requires, its dependencies and the combinations it is incompatible with, its sources with their licences and retrieval state, and, for an industry profile, every field with its pointer, semantic reference, value type, unit or code list, constraints, cardinality, granularity, provenance, access tier, obligation, legal basis and applicability, the stamps, the event mappings with their evidence conditions, the access tiers and the identity model.
-
-The proposal is a pull request adding the manifest, the tests the framework requires (validity, uniqueness, freezing, deterministic generation, payload validation with refusals) and, where the profile makes a product or regulatory claim, a withheld claim in the ledger with the rows that would have to be assessed before it could be made. The generator produces the schemas and documents; a proposal that hand-writes them is asked to remove them. A licensed source that could not be read is recorded as unassessed with the reason, and no clause is invented from a summary.
-
-A profile joins the repository as its canonical home from the moment it is accepted, versions independently of the core, and is assessed on its own evidence. It never claims legal adequacy: that is a product claim with its own gate, and a profile that says otherwise is corrected before it is merged.

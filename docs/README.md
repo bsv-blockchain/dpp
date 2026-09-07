@@ -1,31 +1,20 @@
 # The DPP standard
 
-A digital product passport on the BSV blockchain is a chain of signed token states, one output spending the last, beside a separate rail of signed lifecycle claims anchored by digest. Anyone holding the transaction bytes, the proofs and a block header source can verify the history without an account with whoever published it. That is the whole proposition: the passport outlives its provider, and a stranger checks it from bytes.
+A digital product passport (DPP) combines a product's recorded history with evidence about it. This working draft uses the Bitcoin SV (BSV) blockchain for passport records and separate commitments to signed lifecycle claims.
 
-This documentation is for the people who have to build against that: adopters consuming the reference packages, implementers reproducing the rules on their own, operators running the services, and industry contributors defining what a battery or a garment has to say about itself.
+Start with the [model](start/architecture.md), then choose a [journey](start/choose-a-journey.md) and [role](start/choose-a-role.md).
 
-**Status: working draft, pre-1.0.** The record formats, contracts and fixtures are stable enough to implement against and are frozen into release sets, but breaking changes are still expected and recorded. No claim of European conformity, product qualification or version 1.0 readiness is made anywhere here; [where things stand](start/status.md) says what has been demonstrated, what is only implemented, and what is withheld by name.
-
-## Choose where to start
-
-| You want to | Start at |
+| Task | Guide |
 |---|---|
-| Understand what a passport is and how the two rails fit together | [The model in ten minutes](start/architecture.md) |
-| Know which of the six roles you are implementing and what each owes | [Choose a role](start/choose-a-role.md) |
-| Decide between consuming the reference packages and implementing independently | [Choose a journey](start/choose-a-journey.md) |
-| Install and use the reference packages | [Use the reference packages](packages/README.md) |
-| Implement the rules yourself, in any language, from the frozen bundle | [Implement independently](implement/README.md) |
-| Run an index, a registry or a federation | [Operate services](operate/README.md) |
-| Add or use an industry profile | [Industry profiles](profiles/README.md) |
-| Discover passports through GS1, import EPCIS or verify external credentials | [Interoperability profiles](interoperability/README.md) |
-| Find the normative text, a contract or a fixture | [Reference](reference/specifications.md) |
+| Assess delivery and remaining gaps | [Where things stand](start/status.md) |
+| Use the reference implementation | [Install packages](packages/README.md) |
+| Build an independent implementation | [Implementer start](implement/README.md) |
+| Run services | [Operate](operate/README.md) |
+| Select product data | [Industry profiles](profiles/README.md) |
+| Exchange data and credentials | [Interoperability](interoperability/README.md) |
+| Find rules and interfaces | [Specifications](reference/specifications.md), [contracts](reference/contracts.md) |
+| Propose changes | [Contribute](contribute/README.md) |
 
-## What is where
+The guides link to rules, contracts, fixtures and the requirement ledger at a fixed source revision. Repository access is required for those links. [Starting from that revision](packages/README.md#source-access) also supplies a local copy.
 
-The normative material lives in the source repository and nowhere else: `spec/` for the rules, `contracts/` for the HTTP contracts and JSON schemas, `fixtures/` for the bytes every implementation is held to, and `conformance/` for the requirement ledger and the claim gate. These pages explain, sequence and point; they do not restate a rule, and where a page and the normative text disagree the normative text wins. Every link to a normative file names the repository path, and the [reference index](reference/specifications.md) lists them all with the revision the current release set was cut from.
-
-The reference implementation is four npm packages and one container image, released together as a [release set](reference/release-sets.md). The current set is a candidate: its packages are packed and checked but not yet published to a public registry, and the repository is private while the draft is prepared for publication.
-
-## Two journeys, kept apart
-
-An application that imports the reference packages is a **reference consumer**. Its success shows the packages are consumable and that compatible services can be deployed from the reference implementation. An **independent implementation** reproduces the rules from the specification, the contracts and the fixtures without importing, mirroring or calling the reference DPP logic; it may share a generic blockchain, cryptography or wallet library, and it may exchange records with a reference provider under test. Its success shows the standard works beyond its reference implementation, which is the outcome this programme still has to demonstrate. The two are documented separately because their evidence means different things, and a page in one journey never quietly borrows from the other.
+Repository publication: open; see [the release candidate](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/release/dpp-release-2026-09-3.json). The [status page](start/status.md) identifies the other open decisions.

@@ -1,25 +1,16 @@
-# Claims and refusal reporting
+# Requirements and evidence reporting
 
-**Audience:** an implementer preparing a conformance report; a reviewer reading one. **Canonical sources:** [`GOVERNANCE.md`](https://github.com/bsv-blockchain/dpp/blob/main/GOVERNANCE.md) (conformance reporting), [`spec/conformance.md`](https://github.com/bsv-blockchain/dpp/blob/main/spec/conformance.md) §2, §4, §6, [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/main/contracts/capabilities.schema.json), [`conformance/selection.schema.json`](https://github.com/bsv-blockchain/dpp/blob/main/conformance/selection.schema.json).
+Start from the implementation's selected roles, baseline and profiles. Keep the implementation revision, source bundle and shared-dependency record with the results.
 
-## One sentence per check
+## Locate the requirements
 
-Conformance checks answer separately, each in its own sentence, including the zeros. There is no aggregate verdict and no score: a report that says twelve of thirteen invites the argument a conformance suite exists to end. The reference surfaces print `ok:` and `FAIL:` (or `Holds:` and `FAILS:`) followed by the sentence; use whatever prefix you like, and keep the sentence.
+1. Open the selected role in the [baseline](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/baseline-native-2.json).
+2. Follow its requirement identifiers into the [ledger](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/manifest.json).
+3. Follow each row's declared source, implementation, test and evidence references. Record the predicate the implementation actually executed. An absent assertion stays missing; a shared source document is not evidence that one fixture exercises every row.
+4. Use the [conformance source](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/conformance.md) and [governance reporting source](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/GOVERNANCE.md#conformance-reporting) to assemble the claim, capability declaration and results.
 
-A report over the fixtures therefore reads as a list: one line per vector, refusals included, saying what was reproduced or refused and where. A vector the harness did not execute is a line saying so. A check that needs evidence the harness was not given is `unknown` with its reason, never a pass.
+The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/conformance/manifest.schema.json) defines the status vocabulary. A reference ledger status is not the status of the implementation being reported.
 
-## The capability document
+Keep refusals and unresolved cases visible. For a disagreement, retain the input, both outcomes and their source references, then use [the reporting route](../contribute/disagreements.md).
 
-Before a claim, a declaration. A capability document in the shape of `contracts/capabilities.schema.json` names the roles you fill, the protocol versions and exact profile identifiers with their artefact digests, the representations, proof suites and anchor formats you support (current, historical and refused), the topics and services and limits of a service, and by name what you do not support. It is a claim of support checkable against the ledger, never proof of conformance or of authority.
-
-## The claim
-
-A claim names rows of the ledger. For an independent implementer the claim is: this implementation, at this revision, fills these roles under this baseline and these profiles, and its predicates executed these rows' vectors with these results. The [requirements matrix](requirements-matrix.md) is the list to fill in; a row you did not implement stays visible as not implemented, and a role you did not claim is not in the report at all.
-
-## What the ledger will and will not record
-
-The ledger's statuses mean what they say. Your evidence lets the maintainers record the rows you passed as passed by a second implementation; it does not move a row to `independently-tested` unless you are an implementing party other than this programme and imported none of the reference code for the property. Say which you are in the report's provenance section, and the record will say the same.
-
-## Refusals are findings
-
-A refusal your implementation makes that the reference does not, or the reverse, is not a failure to hide: it is the most useful thing a second implementation produces. Report it with the vector, both outcomes and the clause each reading relies on, and raise it through [reporting a disagreement](../contribute/disagreements.md). The governance process settles it with a fixture, and an unresolved one blocks version 1.0 on purpose.
+[Conformance review](../reference/conformance.md) explains the diagnostic and selection gate. [The trial](demonstration.md) supplies the route for fresh-record exchange evidence.

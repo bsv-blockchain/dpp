@@ -1,9 +1,14 @@
 # External credential verification
 
-**Profile:** `vc-di-ecdsa-rdfc-2019@1`. **Canonical sources:** [`spec/external-credential-profile.md`](https://github.com/bsv-blockchain/dpp/blob/main/spec/external-credential-profile.md), [`spec/exchange.md`](https://github.com/bsv-blockchain/dpp/blob/main/spec/exchange.md), [`packages/dpp-profiles/manifests/exchange/vc-di-ecdsa-rdfc-2019@1.json`](https://github.com/bsv-blockchain/dpp/blob/main/packages/dpp-profiles/manifests/exchange/vc-di-ecdsa-rdfc-2019@1.json), [`fixtures/vectors/dpp/interoperability/external-credential/`](https://github.com/bsv-blockchain/dpp/blob/main/fixtures/vectors/dpp/interoperability/external-credential/README.md). **Example:** `node examples/verify-external-credential.mjs`.
+Select the credential profile before choosing a verifier. The World Wide Web Consortium (W3C) Verifiable Credentials data model and the selected proof suite are separate inputs.
 
-A passport credential issued by someone else, in the W3C Verifiable Credentials 2.0 data model, secured with a `DataIntegrityProof` under `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists the key for assertion. The verifier reports parse, context set, payload schema, proof, issuer binding, subject binding, temporal validity, Bitstring status, a named authority policy and availability as separate checks, and adapts them into the verification report's credential checks. A P-384 key, another cryptosuite, an inline context or a second credential subject is `unsupported`, never a pass and never a silent fail. The SEAL verifier of the VSC profile is untouched and keeps refusing every context outside its set.
+| Integration task | Source |
+|---|---|
+| Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/external-credential-profile.md) |
+| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/packages/vsc/src/exchange.ts) |
+| Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/verification.md) |
+| Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/b8434452892b0c22a191c5bc08a7e0fc54717258/fixtures/vectors/dpp/interoperability) |
 
-Exact bytes and proofs are different things, and the profile keeps them apart: a reformatted credential whose RDF proof still verifies is reported apart from the exact bytes an anchor commits to, which differ. The registry stores the exact bytes with their representation and media type and anchors them under the generic anchor. The vectors carry an independently produced positive credential, the reformatted case, and tampered, substituted, expired, revoked and unsupported variants with the check each fails (5 positive, 15 refusal).
+Exact received bytes and proof verification remain separate results. A reformatted credential can require a different exact-byte finding even where its proof evaluates the same way. Use [the attestation verifier guide](../implement/roles/attestation-verifier.md) for the surrounding evidence workflow.
 
-Verifying an external credential says nothing about the passport token: the two rails stay separate, and a credential that references native evidence does so through the native evidence extension without a circular digest.
+Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

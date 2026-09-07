@@ -1,13 +1,14 @@
 # How the standard changes
 
-**Canonical source:** [`GOVERNANCE.md`](https://github.com/bsv-blockchain/dpp/blob/main/GOVERNANCE.md), which is the process; this page points at it.
+Use [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/GOVERNANCE.md) for change acceptance, version declarations and dispute resolution. The [conformance source](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/spec/conformance.md) defines how evidence supports a claim.
 
-Once published, `spec/`, `contracts/` and `fixtures/` are normative; everything else is one way of building what they require. While the draft is pre-1.0 the reference implementation is the tiebreaker, except for a defect the specification names as a defect.
+| Contribution | Guide |
+|---|---|
+| Reuse or licence question | [Licence and reuse](licence.md) |
+| Participate as an implementing party | [Implementing parties](implementing-parties.md) |
+| Propose product or exchange data | [Author a profile](../profiles/authoring.md) |
+| Report a contradictory result | [Disagreements](disagreements.md) |
 
-A change starts as an issue describing the gap or the defect (what an implementer cannot do, or what two conforming implementations would disagree about), lands as a pull request against the normative text carrying its rationale where the rule lives, and, if it touches a wire format, updates the fixtures in both forms and adds the refusal vectors the rule implies in the same request. A change that alters what an already-published record means is a new version identifier, never a change.
+Companion profile submission: open; see [D-CG1](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L184).
 
-Editorial changes need one maintainer. Normative changes need one maintainer and, where a wire shape both implementing parties produce is touched, each party's written acceptance recorded in the request. CI must pass, and a red suite is a veto no reviewer can override. Silence is not acceptance.
-
-Version 1.0 is declared when every wire shape has been accepted in writing by every implementing party, at least two independent implementations neither importing the other pass every fixture including every refusal vector, no open issue names a disagreement between conforming implementations, the specification records no known defect in the reference, and the maintainers say so unanimously.
-
-A security problem (a non-conforming record that verifies, a forged anchor attributed, private content reaching the chain) is reported privately to the maintainers first and fixed with a fixture that refuses it; the report and the fix are published together.
+The [disagreement guide](disagreements.md) supplies the technical and private-contact routes. General participation enquiries can start at the [BSV Association contact page](https://bsvassociation.org/contact/).

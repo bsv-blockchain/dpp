@@ -1,52 +1,44 @@
 # Install the selected release
 
-**Audience:** a team consuming the reference packages. **Release:** `dpp-release-2026-09-3`, a candidate. **Prerequisites:** Node.js 22 or later, npm. **Canonical source:** [`release/dpp-release-2026-09-3.json`](https://github.com/bsv-blockchain/dpp/blob/main/release/dpp-release-2026-09-3.json) and [`release/README.md`](https://github.com/bsv-blockchain/dpp/blob/main/release/README.md).
+The [selected release](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/release/dpp-release-2026-09-3.json) is a candidate. Use its packed artefacts; repository publication remains open. The [support table](support-table.md) identifies entry points and runtimes.
 
-## What you install
+## Source access
 
-| Package | Version | Use it when you |
-|---|---|---|
-| `@bsv/dpp-core` | 0.3.0 | Read, verify or build records of either version, verify claims and anchors, produce the verification report, check publisher policy, or inspect an evidence package |
-| `@bsv/dpp-profiles` | 0.3.0 | Validate product data against an industry profile, map operations to lifecycle events, mint or parse GS1 identifiers, resolve Digital Links, or project a passport from versioned sources |
-| `@bsv/dpp-overlay-topics` | 0.4.0 | Run or embed an index: admission, lookup, capabilities, history, export, retraction and synchronisation. Server only |
-| `@bsv/vsc` | 0.2.0 | Issue or verify VSC credentials under the pinned draft profile, read EPCIS documents, or verify external `ecdsa-rdfc-2019` credentials. Server only |
-
-All four pin `@bsv/sdk` 2.4.2; the index pins `@bsv/overlay` 2.3.1 and uses MongoDB 7 as its replaceable reference persistence. The [support table](support-table.md) states, per entry point, what runs where and what the tarball carries.
-
-## Before publication: the packed candidates
-
-The packages are not yet on a public registry. Until they are, install the exact candidates the release scripts pack. From a checkout of the standard at the revision the release set names:
+These guides reference source revision `b8434452892b0c22a191c5bc08a7e0fc54717258`. A reader with repository access can obtain it with:
 
 ```sh
+git clone https://github.com/bsv-blockchain/dpp.git
+cd dpp
+git checkout --detach b8434452892b0c22a191c5bc08a7e0fc54717258
 npm ci
-node scripts/release-candidates.mjs          # builds and packs the four tarballs into release/candidates/
-node scripts/consumer-check.mjs              # verifies their digests, then installs and exercises them in a clean project
 ```
 
-`release/candidates.json` records each tarball's SHA-256 and npm integrity beside the source revision, the release set's own digest and the selection that qualifies it. Install them into your project by path and let your lockfile record the integrity, so a later `npm ci` holds you to the same bytes:
+With that revision in a local checkout, read a pinned source without opening GitHub:
 
 ```sh
-npm install ./release/candidates/bsv-dpp-core-0.3.0.tgz \
-            ./release/candidates/bsv-dpp-profiles-0.3.0.tgz
+git show b8434452892b0c22a191c5bc08a7e0fc54717258:spec/record-model.md
 ```
 
-A tarball whose SHA-256 differs from the record is not the candidate, whatever its filename says; compare before you install, as the consumer check does.
+Use the path following the commit hash in each source URL. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries; publication remains open.
 
-## After publication
+## Pack and check
 
-Once the set's status is `released`, install the versions it names from npm and pin them exactly. A caret range across a pre-1.0 minor version is not a compatibility promise; the release set is.
+From that checkout:
 
 ```sh
-npm install @bsv/dpp-core@0.3.0 @bsv/dpp-profiles@0.3.0
+node scripts/release-candidates.mjs
+node scripts/consumer-check.mjs
 ```
 
-## What to read next
+The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/b8434452892b0c22a191c5bc08a7e0fc54717258/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
 
-- [Quick starts, by role](../quick-start.md): the commands CI runs for each role, from the checkout.
-- The package pages: [core](dpp-core.md), [overlay](dpp-overlay-topics.md), [profiles](dpp-profiles.md), [VSC](vsc.md).
-- [The application service](application-service.md): the reference application's `PassportService` and durable writer, which consume these packages and are not part of the set.
-- [Versions and compatibility](../learn/versions-and-compatibility.md): which identifier means what.
+Install the tarballs needed by the application, using their paths from the candidate record. Preserve the resulting lockfile. Use [quick starts](../quick-start.md) from the repository checkout, or select a package:
 
-## What installing does not establish
+| Task | Package |
+|---|---|
+| Passport records and shared evidence | [Core](dpp-core.md) |
+| Product profiles and projections | [Profiles](dpp-profiles.md) |
+| Credentials and source events | [VSC](vsc.md) |
+| Index services | [Overlay](dpp-overlay-topics.md) |
 
-Installing the packages and passing the consumer check shows the packages are consumable. It says nothing about the application you build on them: your writer's behaviour, your custody arrangement and your operator's policy are yours to test and to state. And an application built on these packages is a reference consumer, not an independent implementation of the rules, however it is deployed.
+The [application service](application-service.md) is maintained separately from this release set.
