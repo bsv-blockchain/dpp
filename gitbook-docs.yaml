@@ -1,10 +1,3 @@
-# GitBook site configuration for Git Sync. The site is one space read from
-# docs/, whose entry page is docs/README.md and whose navigation is
-# docs/SUMMARY.md (docs/.gitbook.yaml). The normative material under spec/,
-# contracts/, fixtures/ and conformance/ stays canonical in Git and is linked
-# from the pages by pinned repository URL, never synchronised as content. Git
-# Sync needs this file on the branch before a site connects; connecting is a
-# separately approved action and changes nothing about the content.
 $schema: https://api.gitbook.com/gitbook-docs.yaml
 site:
   title: The DPP standard
