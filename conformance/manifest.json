@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-09-06",
+  "updatedAt": "2026-09-07",
   "sources": [
     {
       "id": "spec-record-model",
@@ -232,11 +232,13 @@
     },
     {
       "id": "untp-0.7.0",
-      "uri": "https://untp.unece.org/docs/specification/",
+      "uri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/tree/v0.7.0",
       "version": "0.7.0",
       "kind": "public",
       "attribution": "UN/CEFACT",
-      "notes": "The latest published pilot version in the official repository's version configuration at revision df03d8f87e74f676ccfece87ba77cd8f804fe111; the intended 1.0 is not a release."
+      "notes": "The 0.7.0 release, tagged v0.7.0 on 4 May 2026 at the GitLab home; the GitHub repository uncefact/spec-untp is archived at 0.6.1 and points here; main was last active on 4 September 2026 (df03d8f87e74f676ccfece87ba77cd8f804fe111); no 1.0 release exists. The documentation site refuses non-browser clients. The DigitalProductPassport, DigitalTraceabilityEvent and ConformityCredential schemas and the single UNTP context are pinned by SHA-256 in packages/dpp-profiles/manifests/exchange/untp-0.7.0-jose@1.json.",
+      "retrievedAt": "2026-09-06",
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0; pinned by digest and not copied into this repository pending a licence review"
     },
     {
       "id": "gs1-digital-link",
@@ -2913,7 +2915,7 @@
     {
       "id": "UNTP-0.7.0-dpp",
       "sourceId": "untp-0.7.0",
-      "sourceUri": "https://untp.unece.org/docs/specification/",
+      "sourceUri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/tree/v0.7.0",
       "sourceVersion": "0.7.0",
       "clause": "Digital Product Passport schema and context",
       "summary": "Import and export of UNTP 0.7.0 product passport credentials against the pinned official schema and context, with originals retained and mapping losses visible.",
@@ -2932,14 +2934,14 @@
       ],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-09-07",
       "reviewOwner": "dpp maintainers",
-      "notes": "An envelope-level pilot exists in the application (VC Data Model 2.0 credential of type DigitalProductPassport secured as compact JWS ES256K with the native evidence extension, round trip and refusals tested) but validates nothing against the UNTP schemas or contexts, which have not been retrieved or pinned, and uses no UNTP vocabulary term; the row stays a gap until the artefacts are pinned and the credential validates against them."
+      "notes": "An envelope-level pilot exists in the application (VC Data Model 2.0 credential of type DigitalProductPassport secured as compact JWS ES256K with the native evidence extension, round trip and refusals tested). The official schema and context are now pinned by digest from the v0.7.0 tag in the exchange manifest, but the credential still carries only the VCDM context, no UNTP term and no issuingSoftware block, and validates against nothing; the row stays a gap until the credential names the pinned context and validates against the pinned schema. Independently of this row, UNTP's test suite verifies Ed25519 under did:web only, so passing it is a separate claim."
     },
     {
       "id": "UNTP-0.7.0-dte",
       "sourceId": "untp-0.7.0",
-      "sourceUri": "https://untp.unece.org/docs/specification/",
+      "sourceUri": "https://opensource.unicc.org/un/unece/uncefact/spec-untp/-/tree/v0.7.0",
       "sourceVersion": "0.7.0",
       "clause": "Digital Traceability Event",
       "summary": "A repair or transformation exported as a traceability event only with actual event evidence.",
@@ -2953,8 +2955,9 @@
       "testRefs": [],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-09-07",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The DigitalTraceabilityEvent schema is pinned by digest from the v0.7.0 tag in the exchange manifest; nothing exports a traceability event yet, and the conditional mapping already refuses one without actual event evidence."
     },
     {
       "id": "GS1-digital-link-syntax",

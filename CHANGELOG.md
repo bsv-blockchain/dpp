@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### 2026-09-07, the UNTP 0.7.0 artefacts pinned
+
+- The exchange profile `untp-0.7.0-jose@1` pins the DigitalProductPassport, DigitalTraceabilityEvent and ConformityCredential JSON Schemas and the single UNTP JSON-LD context by SHA-256 from the specification's `v0.7.0` tag (4 May 2026) at its GitLab home, records their GPL-3.0 licence without copying them, and states that no 1.0 release exists and that the GitHub repository is archived at 0.6.1. The ES256K suite entry and a new `unsupported` entry record that UNTP's test suite verifies EdDSA on Ed25519 under `did:web` issuers only, so credentials under this profile are not verifiable by that tooling. The ledger source `untp-0.7.0` carries the retrieval date, licence and provenance; the two UNTP rows stay gaps with their notes corrected, the pilot claim stays withheld with its rationale corrected, and no claim changes.
+
 ### 2026-09-06, prepared for independent implementation
 
 - The adopter documentation is reconciled with the implementation. The root README names the current anchor format, the registry contract, the frozen industry profiles and their framework, the publisher key policy, static-peer synchronisation and the complete export as they exist, and states the two supported journeys (reference package consumer, independent implementer) and what each proves. `release/README.md`, `docs/quick-start.md` and `docs/migration.md` point at `dpp-release-2026-09-3`, the quick start gains the attestation-issuer and registry starts so every one of the six roles has one, the overlay README lists five extension routes, the profiles package names its runtime dependency, the core README says an independent implementation reproduces its rules rather than reusing them, and the Python reader's coverage statement matches its own limits. Package descriptions are current.

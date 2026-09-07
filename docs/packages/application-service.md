@@ -17,7 +17,7 @@ This page is the audit the release plan asked for: what the façade exports toda
 | `@dpp/service/server` | The write side: identities, wallet, offline mode, workspaces, handles, store, DID methods, photos, the journal, the writer, operator, custody, `PassportService` and `dppService` | Supported; needs the injected services |
 | `@dpp/service/*` | Any module by file name | Transitional: exists while the extraction settles, and a consumer should not depend on module names that the two named subpaths do not re-export |
 
-`PassportService` operations: `issue`, `update`, `offer`, `accept`, `decline`, `retire`, `upgrade`, `status`, `operation`, `settle`, `verify` and `exportEvidence`. Every durable one goes through the journal.
+`PassportService` operations: `issue`, `update`, `offer`, `accept`, `decline`, `retire`, `upgrade`, `status`, `operation`, `settle`, `verify` and `exportEvidence`. Every durable one goes through the journal. The UNTP pilot credential is not on `PassportService`: `DppService.exportCredential` and `importCredential` (module `untp.ts`) export a resolved passport as a compact JWS credential under the proposed `untp-0.7.0-jose@1` profile and import one back, at function level and with no route or surface, as the module's own docblock states.
 
 ## The journal and its states
 

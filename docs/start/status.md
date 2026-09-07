@@ -30,7 +30,7 @@ The current release selection withholds these claims, and publishing its package
 |---|---|
 | Federated operation (`federated-operators@1`) | Two nodes under one administration prove the synchronisation mechanism, never independence. Separately administered operators have not run the acceptance exercises, and durable publication is a gap. |
 | Full VSC draft compatibility | The upstream context and executable suite are unavailable at the pinned revision; only the implemented subset is claimed. |
-| The UNTP pilot | The UNTP artefacts are not pinned and nothing is validated against them; the profile is proposed. |
+| The UNTP pilot | The UNTP 0.7.0 schema and context artefacts are pinned by digest from the tagged release, but the application pilot names no UNTP context and validates nothing against them; the profile is proposed. UNTP's own test tooling verifies Ed25519 under `did:web` only, so passing it is a further, separate claim. |
 | European system conformity | No normative EN text has been read; every EN row is unassessed or a gap. A separate selection, `eu-dpp-system-2026-09`, is the gate, and it is refused today. |
 | Compatibility with the draft security and integrity standards | Drafts whose text has not been read. |
 | Battery passport qualification | `battery@3` is a draft profile, the Annex XIII mapping is unassessed, and product-data compliance is a separate qualification from any release. |
