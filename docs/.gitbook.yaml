@@ -1,0 +1,9 @@
+# GitBook space configuration. The site's gitbook-docs.yaml at the repository
+# root maps this directory onto its one space, so the space is read from here:
+# README.md is the entry page and SUMMARY.md the navigation. Nothing outside
+# docs/ is synchronised; the normative material under spec/, contracts/ and
+# fixtures/ is linked from the pages by pinned repository URL, never copied.
+root: ./
+structure:
+  readme: README.md
+  summary: SUMMARY.md
