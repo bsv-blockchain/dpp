@@ -312,7 +312,7 @@ const CAPTURE_CLAIMANT = {
  * needs. Cells this manifest cannot fill say so; no legal conclusion is drawn.
  */
 export function mappingTable(manifest) {
-  const cell = (value) => String(value ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ')
+  const cell = (value) => String(value ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ')
   const v2 = manifest.manifestVersion === '2'
   const rows = manifest.fields.map((f) => {
     const list = f.codeList ? `${f.codeList.closed ? 'closed' : 'open'} list (${f.codeList.options.length})` : ''

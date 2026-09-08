@@ -34,7 +34,7 @@ export function mapEpcisEvent(event: JsonObject, options: EpcisMappingOptions): 
     }
   }
   if (!identifiers.length) throw new Error('Insufficient product identifiers for VSC mapping');
-  const disposition = typeof event.disposition === 'string' ? event.disposition.replace(/^urn:epcglobal:cbv:disp:|^https:\/\/ref.gs1.org\/cbv\/Disp-/, '') : undefined;
+  const disposition = typeof event.disposition === 'string' ? event.disposition.replace(/^urn:epcglobal:cbv:disp:|^https:\/\/ref\.gs1\.org\/cbv\/Disp-/, '') : undefined;
   if (typeof event.eventTime !== 'string' || typeof event.eventTimeZoneOffset !== 'string' || typeof event.bizStep !== 'string' || !disposition) throw new Error('Event time, timezone, business step and disposition are required; they are never fabricated');
   const action = event.type === 'TransformationEvent' ? options.transformationAction : event.action;
   if (!['ADD','OBSERVE','DELETE'].includes(action as string)) throw new Error('An explicit supported action mapping is required');

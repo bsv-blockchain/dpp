@@ -37,6 +37,13 @@ export interface SyncSettings {
 }
 
 /** Comma-separated base URLs. Anything that is not an http or https URL stops the boot; a peer is not a thing to guess. */
+/** A peer URL without its trailing slashes, scanned rather than matched so a long run of slashes costs linear time. */
+function stripTrailingSlashes(value: string): string {
+  let end = value.length
+  while (end > 0 && value[end - 1] === '/') end--
+  return value.slice(0, end)
+}
+
 export function parseSyncPeers(value: string | undefined): string[] {
   const peers: string[] = []
   for (const raw of (value ?? '').split(',')) {
@@ -51,7 +58,7 @@ export function parseSyncPeers(value: string | undefined): string[] {
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       throw new Error(`SYNC_PEERS entry "${candidate}" must be an http or https URL`)
     }
-    const normalised = candidate.replace(/\/+$/, '')
+    const normalised = stripTrailingSlashes(candidate)
     if (!peers.includes(normalised)) peers.push(normalised)
   }
   return peers

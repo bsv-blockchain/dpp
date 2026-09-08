@@ -166,11 +166,15 @@ function normalisedDecimal(text: string): { negative: boolean; digits: string; e
   const integer = match[2] ?? '';
   const fraction = match[3] ?? '';
   let exponent = Number(match[4] ?? '0') - fraction.length;
-  let digits = (integer + fraction).replace(/^0+/, '');
-  if (digits === '') return { negative: false, digits: '0', exponent: 0 };
-  const trailing = digits.length - digits.replace(/0+$/, '').length;
-  digits = digits.slice(0, digits.length - trailing);
-  exponent += trailing;
+  // Scanned rather than matched: a run of zeros against an anchored regex costs quadratic time.
+  const all = integer + fraction;
+  let start = 0;
+  while (start < all.length && all[start] === '0') start++;
+  let end = all.length;
+  while (end > start && all[end - 1] === '0') end--;
+  if (start === all.length) return { negative: false, digits: '0', exponent: 0 };
+  const digits = all.slice(start, end);
+  exponent += all.length - end;
   return { negative: match[1] === '-', digits, exponent };
 }
 

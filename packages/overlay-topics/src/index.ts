@@ -323,9 +323,14 @@ function bearerAccepted(request: IncomingMessage, expected: string): boolean {
   const header = request.headers.authorization
   const raw = Array.isArray(header) ? header[0] : header
   if (raw == null) return false
-  const match = /^bearer\s+(.+)$/i.exec(raw.trim())
-  if (match == null) return false
-  return secretsEqual(match[1], expected)
+  // The scheme is checked by fixed-width prefix and the token is what follows
+  // it, trimmed: no regex over the caller-controlled value, so a header of
+  // many spaces costs linear time.
+  const trimmed = raw.trim()
+  if (trimmed.length < 7 || trimmed.slice(0, 6).toLowerCase() !== 'bearer' || !/\s/.test(trimmed[6])) return false
+  const token = trimmed.slice(7).trim()
+  if (token === '') return false
+  return secretsEqual(token, expected)
 }
 
 function secretsEqual(given: string, expected: string): boolean {
