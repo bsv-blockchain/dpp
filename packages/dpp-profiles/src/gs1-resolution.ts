@@ -74,10 +74,17 @@ const PRIMARY_KEY_AIS = new Set(['00', '01', '253', '255', '401', '402', '414', 
 /** The third-party serialised extension: a GTIN qualifier this profile does not host. */
 const TPX_AI = '235'
 /** The regex the pinned linkset schema applies to an IRI link relation key. */
-const SCHEMA_IRI_KEY = /^https?:\/\/[a-zA-z0-9./]+$/
+const SCHEMA_IRI_KEY = /^https?:\/\/[a-zA-Z0-9./]+$/
 const CHARACTER_SET_39 = /^[#\-/0-9A-Z]+$/
 const MEDIA_TYPE = /^[\w!#$&^.+-]+\/[\w!#$&^.+-]+$/
 const LANGUAGE_TAG = /^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$/
+
+/** A resolver root without its trailing slashes, scanned rather than matched so an adversarial run of slashes costs linear time. */
+function stripTrailingSlashes(value: string): string {
+  let end = value.length
+  while (end > 0 && value[end - 1] === '/') end--
+  return value.slice(0, end)
+}
 
 /* ------------------------------------------------------------------------ */
 /* The URI grammar                                                          */
@@ -372,7 +379,7 @@ export function granularityOf(qualifiers: readonly AiValue[]): KeyGranularity {
 
 /** The uncompressed Digital Link URI of a key under a resolver root (origin plus optional stem, no trailing slash). */
 export function uncompressedUri(resolverRoot: string, key: Gs1Key): string {
-  const root = resolverRoot.replace(/\/+$/, '')
+  const root = stripTrailingSlashes(resolverRoot)
   return `${root}/01/${key.value}${key.qualifiers.map((q) => `/${q.ai}/${encodeURIComponent(q.value)}`).join('')}`
 }
 
@@ -860,7 +867,7 @@ export function describeResolver(config: ResolverDescriptionConfig): ResolverDes
   if (root.search !== '' || root.hash !== '') throw new Error('a resolver root carries no query or fragment')
   return {
     ...(config.name == null ? {} : { name: config.name }),
-    resolverRoot: config.resolverRoot.replace(/\/+$/, ''),
+    resolverRoot: stripTrailingSlashes(config.resolverRoot),
     supportedPrimaryKeys: ['01'],
     supportedLinkType: [
       { namespace: GS1_VOCABULARY, prefix: 'gs1:' },
