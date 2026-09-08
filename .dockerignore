@@ -6,6 +6,7 @@
 *
 !package.json
 !package-lock.json
+!LICENSE
 !tsconfig.base.json
 !packages/
 

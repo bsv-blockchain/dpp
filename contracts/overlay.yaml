@@ -15,8 +15,8 @@ info:
     service concern, not a truth concern: nothing returned here is trusted
     until it verifies as the specification documents describe.
   license:
-    name: Open BSV License version 4
-    identifier: LicenseRef-OpenBSV-4
+    name: Open BSV License Version 6
+    identifier: LicenseRef-OpenBSV-6
 externalDocs:
   description: >-
     The upstream overlay HTTP contract this profile extends: ts-stack

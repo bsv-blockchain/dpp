@@ -31,6 +31,7 @@ FROM node:22-slim
 WORKDIR /repo
 ENV NODE_ENV=production
 
+COPY LICENSE ./
 COPY package.json package-lock.json ./
 COPY packages/dpp-core/package.json packages/dpp-core/
 COPY packages/overlay-topics/package.json packages/overlay-topics/

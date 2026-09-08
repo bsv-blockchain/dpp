@@ -129,4 +129,4 @@ See the [contribution guide](docs/contribute/README.md), [governance](GOVERNANCE
 
 ## Licence
 
-The software, specifications, schemas, fixtures and examples use the [Open BSV License version 4](LICENSE). Use, modification and redistribution are subject to its conditions, including use only on the BSV blockchains it defines. See the [licence guide](docs/contribute/licence.md) for details.
+The software, specifications, schemas, fixtures and examples use the [Open BSV License Version 6](LICENSE). Use, modification and redistribution are subject to its conditions, including use only on the BSV blockchains it defines. See the [licence guide](docs/contribute/licence.md) for details.

@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### 2026-09-08, Open BSV License Version 6
+
+- The repository and all four packages adopt Open BSV License Version 6, using the licence text from `bsv-blockchain/teranode` at `b537438c9bb08d5c2e97770cfe9db175605b244a`. Current documentation, the overlay contract, the licence ledger and its generator, and the implementer bundle metadata name version 6. The runtime image includes the project licence. Third-party terms and notices are unchanged.
+
 ### 2026-09-07, the GitBook site configuration
 
 - `gitbook-docs.yaml` at the repository root describes the documentation site for GitBook Git Sync: one space, read from `docs/`, and nothing else. The space configuration moves from `.gitbook.yaml` to `docs/.gitbook.yaml`, where Git Sync reads it, rooted at that directory with `README.md` and `SUMMARY.md` unchanged. `scripts/docs-check.mjs` holds both files. Git Sync requires the site file on the branch before a site can connect; connecting remains a separately approved action and changes nothing about the content.
