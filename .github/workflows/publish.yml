@@ -1,107 +1,111 @@
-# Publication of one release set, by hand and never on a merge: the packages
-# to npm and the index image to the container registry. One job, in one
-# order: everything is built, tested, packed, checked, qualified and smoked
-# before the first external write, so a failure anywhere leaves both
-# registries untouched. The trigger is workflow_dispatch; the release set
-# defaults to the current candidate (the newest set under release/ whose
-# status is not superseded), the image tag is read from that set, and dry-run
-# is the default. The approval that precedes a run is of the exact content
-# (GOVERNANCE.md): the set file, the candidate digests, the qualification
-# result and the changelog entry. release/README.md documents recovery from
-# a run that wrote to one registry and not the other.
-name: Publish release set
+# Manual npm publication. The dry run prints a deterministic plan digest;
+# execution must reproduce that exact plan from the same committed revision.
+name: Publish npm candidates
 on:
   workflow_dispatch:
     inputs:
       releaseSet:
-        description: The release set file under release/ to publish; empty selects the current candidate
+        description: Candidate filename under release; empty selects the current set
         required: false
         default: ""
       dryRun:
-        description: "true packs, checks, qualifies, smokes and prints what would be published; false publishes"
-        required: true
-        default: "true"
+        description: Prepare and validate without publishing
+        type: boolean
+        default: true
+      approval:
+        description: SHA-256 of the reviewed publication plan, required to publish
+        required: false
+      provenance:
+        description: Provenance requires a public source repository; false must be explicitly reviewed
+        type: boolean
+        default: true
 
 permissions:
   contents: read
-  packages: write
   id-token: write
+
+concurrency:
+  group: dpp-npm-publication
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      RELEASE_SET: ${{ inputs.releaseSet }}
+      APPROVED_PLAN: ${{ inputs.approval }}
+      PROVENANCE: ${{ inputs.provenance }}
+      GITHUB_REPOSITORY_VISIBILITY: ${{ github.event.repository.visibility }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
           registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.19.0
+      - name: Validate publication inputs
+        if: ${{ !inputs.dryRun }}
+        run: |
+          node --input-type=module <<'JS'
+          if (!/^[a-f0-9]{64}$/.test(process.env.APPROVED_PLAN ?? '')) throw new Error('the exact publication plan digest is required')
+          if (process.env.PROVENANCE === 'true' && process.env.GITHUB_REPOSITORY_VISIBILITY !== 'public') throw new Error('npm provenance requires a public source repository')
+          JS
       - run: npm ci
       - run: npm run build
       - run: npm run typecheck
       - run: npm test
-      - run: node scripts/docs-check.mjs
-      - name: Select the release set
+      - name: Select the candidate
         id: set
         run: |
-          set -euo pipefail
-          if [ -n "${{ inputs.releaseSet }}" ]; then SET="release/${{ inputs.releaseSet }}"; else SET="$(node -e 'import("./scripts/lib/candidates.mjs").then(m => console.log(m.currentReleaseSet(process.cwd()).path))')"; fi
-          echo "path=$SET" >> "$GITHUB_OUTPUT"
-          echo "selection=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SET','utf8')).selection)")" >> "$GITHUB_OUTPUT"
-          echo "imageTag=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SET','utf8')).image.tag.split(':').pop())")" >> "$GITHUB_OUTPUT"
-          echo "selected $SET"
-      - run: node scripts/release-candidates.mjs ${{ steps.set.outputs.path }}
-      - run: node scripts/consumer-check.mjs
-      - run: node scripts/implementer-bundle.mjs
-      - run: node conformance/check.mjs
-      - name: Qualify the selected claims
-        run: node conformance/qualify.mjs ${{ steps.set.outputs.selection }}
-      - name: Build the image the set names
-        run: docker build -f packages/overlay-topics/Dockerfile -t ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }} .
-      - name: Smoke the image
+          node --input-type=module <<'JS'
+          import { readFileSync, appendFileSync } from 'node:fs'
+          import { currentReleaseSet } from './scripts/lib/candidates.mjs'
+          const name = process.env.RELEASE_SET
+          if (name && !/^dpp-release-[a-z0-9-]+\.json$/.test(name)) throw new Error('invalid release set filename')
+          const path = name ? `release/${name}` : currentReleaseSet(process.cwd()).path
+          const set = JSON.parse(readFileSync(path, 'utf8'))
+          if (set.status !== 'candidate') throw new Error('select a candidate')
+          if (!/^conformance\/selections\/[a-z0-9-]+\.json$/.test(set.selection)) throw new Error('invalid selection path')
+          appendFileSync(process.env.GITHUB_OUTPUT, `path=${path}\nselection=${set.selection}\n`)
+          JS
+      - name: Pack and qualify
+        env:
+          SET_PATH: ${{ steps.set.outputs.path }}
+          SELECTION: ${{ steps.set.outputs.selection }}
         run: |
           set -euo pipefail
+          node scripts/release-candidates.mjs "$SET_PATH"
+          node scripts/consumer-check.mjs
+          node scripts/implementer-bundle.mjs "$SET_PATH"
+          node conformance/qualify.mjs "$SELECTION"
+      - name: Build and smoke the operator image locally
+        run: |
+          set -euo pipefail
+          docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay:release-check .
+          trap 'docker rm -f smoke >/dev/null 2>&1 || true' EXIT
           docker run -d --name smoke -p 18080:8080 \
             -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
             -e SUBMIT_TOKEN=smoke -e ARC_CALLBACK_TOKEN=smoke -e CHAIN_TRACKER=scripts-only \
-            ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }}
+            dpp-overlay:release-check
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:18080/health && break; sleep 2; done
-          curl -fsS http://127.0.0.1:18080/capabilities | head -c 600
-          docker rm -f smoke
-      - name: Bind the record to this run
-        run: |
-          set -euo pipefail
-          node -e "
-            const r = JSON.parse(require('fs').readFileSync('release/candidates.json', 'utf8'));
-            if (r.sourceState !== 'committed') { console.error('the candidates were packed from a dirty tree'); process.exit(1) }
-            if (r.sourceRevision !== '${{ github.sha }}') { console.error('the candidates were packed from ' + r.sourceRevision + ', not ' + '${{ github.sha }}'); process.exit(1) }
-            console.log('candidates of ' + r.releaseSet + ' packed from ' + r.sourceRevision + ' with set digest ' + r.releaseSetSha256 + ', image tag ' + r.imageTag)
-          "
-      - name: What would be published
-        if: ${{ inputs.dryRun != 'false' }}
-        run: |
-          cat release/candidates.json
-          for tarball in release/candidates/*.tgz; do npm publish "$tarball" --access public --dry-run; done
-          echo "image ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }} would be pushed"
+          curl -fsS http://127.0.0.1:18080/health
+          curl -fsS http://127.0.0.1:18080/capabilities > /tmp/capabilities.json
+          node -e 'const c = require("/tmp/capabilities.json"); if (!c.profiles?.length) process.exit(1)'
+      - name: Prepare the exact publication plan
+        run: node scripts/publish-candidates.mjs --provenance="$PROVENANCE"
       - uses: actions/upload-artifact@v4
         with:
           name: release-candidates
           path: |
             release/candidates/
             release/candidates.json
+            release/publication-plan.json
             release/dpp-implementer-bundle-*.tgz
-      - name: Publish the packages
-        if: ${{ inputs.dryRun == 'false' }}
+      - name: Publish approved packages
+        if: ${{ !inputs.dryRun }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          set -euo pipefail
-          for tarball in release/candidates/*.tgz; do
-            npm publish "$tarball" --access public --provenance
-          done
-      - name: Push the image
-        if: ${{ inputs.dryRun == 'false' }}
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}/dpp-overlay:${{ steps.set.outputs.imageTag }}
+        run: node scripts/publish-candidates.mjs --execute --approval="$APPROVED_PLAN" --provenance="$PROVENANCE"
+      - name: Verify public registry consumption
+        if: ${{ !inputs.dryRun }}
+        run: node scripts/consumer-check.mjs --registry

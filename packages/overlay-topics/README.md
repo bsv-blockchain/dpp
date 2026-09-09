@@ -1,5 +1,17 @@
 # @bsv/dpp-overlay-topics
 
+**Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
+
+## Install
+
+This is a pre-1.0 candidate. After publication, install the selected version from npm:
+
+```sh
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.1
+```
+
+This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.
+
 The package serves native passport history (`tm_dpp`/`ls_dpp`), current complete-representation anchors (`tm_attestation`/`ls_attestation`) and historical UORA-named anchors (`tm_uora_dpp`/`ls_uora_dpp`). Native token admission checks `@bsv/dpp-core` rules. Anchor admission checks its own exact script and service signature; credential proof, authority and status require separate evidence.
 
 The package is two things at once, and which one you get depends on how you

@@ -31,7 +31,7 @@ const runtime = { node: `Node ${set.runtime.node}`, any: 'Any' }
 const lines = []
 lines.push('# Supported entry points')
 lines.push('')
-lines.push(`Generated from the [release declaration](${R}/release/${name}) for \`${set.releaseSet}\` (${set.status}).`)
+lines.push(`Generated from \`release/${name}\` in the documentation build for \`${set.releaseSet}\` (${set.status}). The [release guide](../reference/release-sets.md) explains how a consumer selects and verifies the matching artefacts.`)
 lines.push('')
 lines.push('| Package | Entry point | Kind | Runtime | Browser | Types | Side effects | Node built-ins | Carries |')
 lines.push('|---|---|---|---|---|---|---|---|---|')

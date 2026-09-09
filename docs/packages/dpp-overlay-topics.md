@@ -1,5 +1,15 @@
 # @bsv/dpp-overlay-topics
 
+**Experimental prerelease:** `@bsv/dpp-overlay-topics` 0.4.0-beta.1 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+
+After npm publication is verified, install the exact version:
+
+```sh
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.1
+```
+
+Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+
 Reference topic managers, lookup services and an HTTP host. Use the [support table](support-table.md) for versions and runtime dependencies.
 
 ## Choose library or service use
@@ -16,10 +26,10 @@ Add proof ingestion and [recovery](../operate/export-import-recovery.md) before 
 
 | Integration | Source |
 |---|---|
-| Embed passport and attestation indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/overlay-topics/src/lib.ts) |
-| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/overlay-topics/src/index.ts) |
-| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/overlay.yaml) |
-| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/overlay-topics/README.md) |
+| Embed passport and attestation indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/overlay-topics/src/lib.ts) |
+| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/overlay-topics/src/index.ts) |
+| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/contracts/overlay.yaml) |
+| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/overlay-topics/README.md) |
 
 Importing the library does not start the host. Begin service setup at [Operate](../operate/README.md); use the [overlay role](../implement/roles/overlay.md) when building an independent implementation.
 

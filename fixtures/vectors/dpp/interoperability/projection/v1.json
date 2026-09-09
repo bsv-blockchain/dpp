@@ -4,7 +4,7 @@
   "name": "DPP passport projection v1: deterministic derivation from pinned sources under a named policy",
   "brc": [],
   "version": "1.0.0",
-  "reference_impl": "dpp-profiles@0.3.0",
+  "reference_impl": "dpp-profiles@0.3.0-beta.1",
   "parity_class": "required",
   "shared": {
     "profile": {

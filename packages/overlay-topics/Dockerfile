@@ -24,6 +24,8 @@ RUN npm ci --ignore-scripts \
       -w @bsv/dpp-overlay-topics -w @bsv/dpp-core --include-workspace-root
 
 COPY tsconfig.base.json ./
+COPY scripts/package-schemas.mjs ./scripts/package-schemas.mjs
+COPY contracts ./contracts
 COPY packages ./packages
 RUN npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics
 
@@ -42,6 +44,7 @@ RUN npm ci --omit=dev --ignore-scripts \
     && npm cache clean --force
 
 COPY --from=build /repo/packages/dpp-core/dist packages/dpp-core/dist
+COPY --from=build /repo/packages/dpp-core/schemas packages/dpp-core/schemas
 COPY --from=build /repo/packages/overlay-topics/dist packages/overlay-topics/dist
 
 # Informational: the service binds PORT when the platform injects one.

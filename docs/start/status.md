@@ -17,7 +17,7 @@ Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](.
 
 | Decision | State and source |
 |---|---|
-| Repository publication | open; see [release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) |
+| Repository publication | Public; experimental npm publication is pending. See [release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) |
 | Profile repository home | open; see [D-CR5](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L182). |
 | Object identifier derivation | open; see [D-CR2](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L181). |
 | Historical issuer formats | open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209). |

@@ -29,4 +29,4 @@ Then choose the component to build. Each role guide explains its inputs, first e
 
 The guides explain the working model and implementation routes here. Pinned source links identify the exact rules, schemas and evidence behind them. Running repository examples requires [source access](packages/README.md#source-access); reading this guide does not require opening those links.
 
-Repository publication: open; see [the release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json). The [status page](start/status.md) identifies the other open decisions.
+The source repository is public. Experimental npm publication is pending; see [the release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json). The [status page](start/status.md) identifies the other open decisions.

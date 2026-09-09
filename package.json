@@ -22,6 +22,8 @@
     "docs:render": "node scripts/render-support-table.mjs",
     "release:candidates": "node scripts/release-candidates.mjs",
     "release:consumer": "node scripts/consumer-check.mjs",
+    "release:registry": "node scripts/consumer-check.mjs --registry",
+    "release:publish": "node scripts/publish-candidates.mjs",
     "release:bundle": "node scripts/implementer-bundle.mjs"
   },
   "overrides": {

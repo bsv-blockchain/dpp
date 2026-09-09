@@ -1,8 +1,24 @@
 # Changelog
 
+## Experimental npm prereleases
+
+Mark all four initial npm packages as `beta.1` prereleases under the `next` tag, with explicit experimental status and exact internal package dependencies. Package APIs may change significantly during testing; specification and wire-format versions are unchanged.
+
 **Pre-1.0.** Everything below is the working draft assembling itself. Breaking changes are expected and are recorded here without apology until version 1.0 is declared, as `GOVERNANCE.md` states. Entries name the pull request that landed them; a change to a wire format names the fixture that moved with it, because the two are never allowed to drift apart.
 
 ## Unreleased
+
+### Test dependency security update
+
+- Pin Vitest and its resolved mocker dependency to 4.1.11 across all four workspaces, addressing GHSA-82fw-gwwq-j7x9. Runtime dependencies are unchanged.
+- Align the projection vector reference implementation labels and reference capability example with the experimental package versions.
+
+### 2026-09-08, npm consumer release preparation
+
+- The four reference packages declare public npm access, the `next` tag and Node >=22. `@bsv/dpp-core/schemas/*` carries the normative JSON schemas byte for byte, including the verification report and portable evidence schemas. The current unpublished candidate gains this data entry point; wire formats, profiles and their frozen bytes are unchanged.
+- The dependency licence ledger resolves dependencies from each workspace, correctly recording the profiles package's `canonicalize` 4.0.0 beside the separately hoisted 2.1.0 used by credential dependencies.
+- The clean consumer runs a fresh managed lifecycle and separate attestation rail from packed packages, checks the normative schema bytes and lockfile integrity, and can repeat the checks against exact public registry versions with `--registry`.
+- Manual npm publication uses a reviewed plan digest binding the source revision, package digests, release set, selection, changelog, tag and provenance choice. Dependencies publish before their consumers. A retry skips an existing version only after downloading and verifying its bytes, and any conflict or registry error stops publication. The workflow builds and smokes the operator image locally; publishing an image remains a separate operator release action.
 
 ### 2026-09-08, Open BSV License Version 6
 

@@ -4,7 +4,7 @@
   "name": "DPP passport projection v1 over a packaging relationship graph: container, components and content under general@2",
   "brc": [],
   "version": "1.0.0",
-  "reference_impl": "dpp-profiles@0.3.0",
+  "reference_impl": "dpp-profiles@0.3.0-beta.1",
   "parity_class": "required",
   "shared": {
     "profile": {

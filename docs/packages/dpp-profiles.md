@@ -1,5 +1,15 @@
 # @bsv/dpp-profiles
 
+**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.1 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+
+After npm publication is verified, install the exact version:
+
+```sh
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.1
+```
+
+Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+
 Reference helpers and generated product-profile data. The [support table](support-table.md) separates the Node module from data entry points.
 
 ## Inspect applicable fields
@@ -33,9 +43,9 @@ For draft manifest version 2 profiles, the package provides `readManifestAny`, `
 | `@bsv/dpp-profiles/generated/*` | Generated payload schemas and profile documents |
 | `@bsv/dpp-profiles/frozen.json` | Frozen file digests |
 
-Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/licences.json).
+Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/conformance/licences.json).
 
-A consumer in another language can read the data files. Schema validation covers structure; the [applicability](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/src/applicability.ts) and [mapping sources](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/profiles.md) identify the separate evaluations.
+A consumer in another language can read the data files. Schema validation covers structure; the [applicability](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-profiles/src/applicability.ts) and [mapping sources](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/profiles.md) identify the separate evaluations.
 
 Use [industry profiles](../profiles/README.md), [identifiers](../identifiers.md) or [projections](../interoperability/projections.md) for the corresponding workflow.
 
