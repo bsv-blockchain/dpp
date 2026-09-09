@@ -1,5 +1,15 @@
 # @bsv/vsc
 
+**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.1 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+
+After npm publication is verified, install the exact version:
+
+```sh
+npm install --save-exact @bsv/vsc@0.2.0-beta.1
+```
+
+Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+
 Verifiable Supply Chain (VSC) credential tooling. The [support table](support-table.md) identifies the Node runtime and data entry points.
 
 ## Select the representation first
@@ -16,14 +26,14 @@ The package does not fund a wallet, transfer token control or find records throu
 
 | Entry point | Source |
 |---|---|
-| `@bsv/vsc` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/vsc-profile.md) |
-| `@bsv/vsc/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/epcis-interoperability.md) |
-| `@bsv/vsc/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/external-credential-profile.md) |
-| `@bsv/vsc/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/vsc/artifacts) |
+| `@bsv/vsc` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/vsc-profile.md) |
+| `@bsv/vsc/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/epcis-interoperability.md) |
+| `@bsv/vsc/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/external-credential-profile.md) |
+| `@bsv/vsc/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/vsc/artifacts) |
 
-Use the [package guide](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/vsc/README.md) for issuance, verification and adapter examples. [External credentials](../interoperability/external-credentials.md) and [source exchange](../interoperability/epcis.md) explain where each entry point fits.
+Use the [package guide](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/vsc/README.md) for issuance, verification and adapter examples. [External credentials](../interoperability/external-credentials.md) and [source exchange](../interoperability/epcis.md) explain where each entry point fits.
 
-The [release selection](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/selections/dpp-release-2026-09-3.json) withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
+The [release selection](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/conformance/selections/dpp-release-2026-09-3.json) withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
 
 Companion profile submission: open; see [D-CG1](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L184).
 
