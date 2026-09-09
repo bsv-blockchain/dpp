@@ -22,7 +22,8 @@ import { fileURLToPath } from 'node:url'
 import { currentReleaseSet, sha256 } from './lib/candidates.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const { path: setPath, set } = currentReleaseSet(root)
+const setPath = process.argv[2] ?? currentReleaseSet(root).path
+const set = JSON.parse(readFileSync(join(root, setPath), 'utf8'))
 const out = join(root, 'release', 'implementer-bundle')
 rmSync(out, { recursive: true, force: true })
 mkdirSync(out, { recursive: true })

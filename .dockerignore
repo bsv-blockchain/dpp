@@ -9,10 +9,17 @@
 !LICENSE
 !tsconfig.base.json
 !packages/
+!scripts/
+scripts/*
+!scripts/package-schemas.mjs
+!contracts/
+contracts/*
+!contracts/*.schema.json
 
 # Reinstalled and rebuilt inside the image, never copied.
 **/node_modules/
 **/dist/
+packages/dpp-core/schemas/
 
 # Secrets never enter an image; configuration is environment only.
 **/.env

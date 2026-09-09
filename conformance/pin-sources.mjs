@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { dependencyManifest } from '../scripts/lib/dependency-manifest.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (relative) => JSON.parse(readFileSync(join(root, relative), 'utf8'))
@@ -66,9 +67,8 @@ for (const dir of readdirSync(join(root, 'packages'))) {
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   const dependencies = []
   for (const [name, range] of Object.entries(manifest.dependencies ?? {})) {
-    const installedPath = join(root, 'node_modules', name, 'package.json')
-    if (!existsSync(installedPath)) { dependencies.push({ name, range, version: 'not installed', licence: 'UNKNOWN' }); continue }
-    const installed = JSON.parse(readFileSync(installedPath, 'utf8'))
+    const installed = dependencyManifest(dirname(manifestPath), name)
+    if (installed == null) { dependencies.push({ name, range, version: 'not installed', licence: 'UNKNOWN' }); continue }
     dependencies.push({ name, range, version: installed.version, licence: typeof installed.license === 'string' ? installed.license : JSON.stringify(installed.license ?? 'UNKNOWN') })
   }
   components.push({ name: manifest.name, version: manifest.version, licence: manifest.license, dependencies })

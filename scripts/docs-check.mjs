@@ -100,7 +100,7 @@ for (const page of pages) {
     if (mentions > 0 && !explained) { linkFailures += 1; say(false, `${page} names the superseded set ${s} without saying it is superseded.`) }
   }
   if (/planning\/|AGENTS\.md|docs\/private\//.test(text)) { linkFailures += 1; say(false, `${page} names a private working path.`) }
-  for (const m of text.matchAll(/`@bsv\/(dpp-core|dpp-overlay-topics|dpp-profiles|vsc)`\s+(\d+\.\d+\.\d+)/g)) {
+  for (const m of text.matchAll(/`@bsv\/(dpp-core|dpp-overlay-topics|dpp-profiles|vsc)`\s+(\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)/g)) {
     const pkg = current.packages.find((p) => p.name === `@bsv/${m[1]}`)
     if (pkg.version !== m[2]) { linkFailures += 1; say(false, `${page} names @bsv/${m[1]} ${m[2]}; the current set names ${pkg.version}.`) }
   }

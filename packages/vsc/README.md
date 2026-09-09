@@ -1,5 +1,17 @@
 # VSC draft compatibility profile
 
+**Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
+
+## Install
+
+This is a pre-1.0 candidate. After publication, install the selected version from npm:
+
+```sh
+npm install --save-exact @bsv/vsc@0.2.0-beta.1
+```
+
+The runtime and its exchange and EPCIS subpaths require Node >=22 and ECMAScript modules. Browser runtime use is unsupported; artefact exports are plain data. No repository checkout or package build is needed after installation.
+
 `@bsv/vsc` implements the local `vsc-draft-compat/0.1.0` profile against the VSC Community Group draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It has no BSV runtime dependency. It does not claim W3C certification, completion of upstream conformance tests, or regulatory compliance.
 
 The package includes strict secured SEAL parsing, an owned JSON-LD context and schema, Ed25519Signature2020 issuance and verification, BBS issuance and request-bound selective disclosure, authenticated status and issuer-authority checks, and custody DAG and correction evaluation. It preserves all five EPCIS event types in signed round-trip extensions. Unsupported or insufficient mappings fail instead of inventing event information.

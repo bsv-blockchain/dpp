@@ -32,6 +32,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { dependencyManifest } from '../scripts/lib/dependency-manifest.mjs'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { assessClaims, assessSelection, readRows, readSources } from './assess.mjs'
@@ -304,10 +305,14 @@ if (existsSync(join(root, 'conformance/licences.json'))) {
   const licences = read('conformance/licences.json')
   let drift = 0
   for (const component of licences.components) {
+    const directory = readdirSync(join(root, 'packages')).find((dir) => {
+      const path = join(root, 'packages', dir, 'package.json')
+      return existsSync(path) && JSON.parse(readFileSync(path, 'utf8')).name === component.name
+    })
+    if (!directory) { drift += 1; defect(`no workspace package for ${component.name}`); continue }
     for (const dep of component.dependencies) {
-      const manifestPath = join(root, 'node_modules', dep.name, 'package.json')
-      if (!existsSync(manifestPath)) { drift += 1; defect(`${component.name} depends on ${dep.name}, which is not installed.`); continue }
-      const installed = JSON.parse(readFileSync(manifestPath, 'utf8'))
+      const installed = dependencyManifest(join(root, 'packages', directory), dep.name)
+      if (installed == null) { drift += 1; defect(`${component.name} depends on ${dep.name}, which is not installed.`); continue }
       const licence = typeof installed.license === 'string' ? installed.license : JSON.stringify(installed.license ?? 'UNKNOWN')
       if (licence !== dep.licence || installed.version !== dep.version) { drift += 1; defect(`${component.name} records ${dep.name}@${dep.version} under ${dep.licence}; installed is ${installed.version} under ${licence}. Review and run conformance/pin-sources.mjs.`) }
     }

@@ -1,5 +1,17 @@
 # @bsv/dpp-profiles
 
+**Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
+
+## Install
+
+This is a pre-1.0 candidate. After publication, install the selected version from npm:
+
+```sh
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.1
+```
+
+The runtime requires Node >=22 and ECMAScript modules. The JSON data exports can be read in other runtimes. No repository checkout or package build is needed after installation.
+
 The canonical industry data profiles of the DPP standard, as `spec/profiles.md` defines them: immutable manifests, the artefacts generated from them, the digests they are frozen at, and the GS1 identifier helpers a writer uses to mint an identifier it can stand behind. Data first: the manifests, schemas and generated documents are plain files any language reads, and the one runtime dependency of the code beside them is the RFC 8785 canonicaliser (`canonicalize`) the projection digest uses. The code reads its data files through the Node file system, so the root entry point is a Node module; a browser or another language reads the data files directly through the `./manifests/*`, `./schemas/*`, `./generated/*` and `./frozen.json` entry points.
 
 ## What is in it

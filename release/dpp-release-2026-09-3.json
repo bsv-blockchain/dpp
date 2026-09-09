@@ -1,7 +1,7 @@
 {
   "releaseSet": "dpp-release-2026-09-3",
   "status": "candidate",
-  "description": "The third candidate set of September 2026: the packages of dpp-release-2026-09-2 with the complete export of the index (GET /evidence-export, parts over one snapshot bounded by states and bytes, resumed by cursor, joined by the reader; contracts/evidence-export.schema.json and contracts/overlay.yaml 0.7.0-draft) and the selected-claim qualification of the ledger (conformance/qualify.mjs). @bsv/dpp-overlay-topics moves to 0.4.0; @bsv/dpp-core 0.3.0, @bsv/dpp-profiles 0.3.0 and @bsv/vsc 0.2.0 are unchanged. Wire formats, the custody profile and the runtime baseline are those of the first set. Candidate until the packages are published under the versions named here.",
+  "description": "Experimental prerelease candidate for implementation and interoperability testing. APIs may change significantly before a stable release; pin exact package versions. This set includes complete index export and selected-claim qualification. Package prerelease versions do not change the wire formats, custody profile, frozen profiles or runtime baseline. Publication and live interoperability validation remain separate release gates.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-09-3.json",
   "runtime": {
@@ -31,14 +31,16 @@
   "packages": [
     {
       "name": "@bsv/dpp-core",
-      "version": "0.3.0",
+      "version": "0.3.0-beta.1",
       "directory": "packages/dpp-core",
       "role": "the record model (both versions), signatures, chain verification, the verification report, the native claim, the generic anchor, the managed acceptance record, publisher policy and evidence packages",
       "entryPoints": [
-        "."
+        ".",
+        "./schemas/*"
       ],
       "carries": [
-        "dist"
+        "dist",
+        "schemas"
       ],
       "nodeBuiltins": [],
       "support": [
@@ -50,12 +52,23 @@
           "types": true,
           "sideEffects": false,
           "notes": "Depends on @bsv/sdk only and imports no Node built-in; a browser bundle is not tested and not promised."
+        },
+        {
+          "entryPoint": "./schemas/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "schemas/*.schema.json"
+          ],
+          "notes": "Normative JSON schemas copied byte for byte from contracts; relative schema references remain alongside one another."
         }
       ]
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0",
+      "version": "0.4.0-beta.1",
       "directory": "packages/overlay-topics",
       "role": "the topic managers, lookup services, storage adapters, capabilities, history, bounded export, complete export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
       "entryPoints": [
@@ -85,7 +98,7 @@
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.3.0",
+      "version": "0.3.0-beta.1",
       "directory": "packages/dpp-profiles",
       "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection",
       "entryPoints": [
@@ -171,7 +184,7 @@
     },
     {
       "name": "@bsv/vsc",
-      "version": "0.2.0",
+      "version": "0.2.0-beta.1",
       "directory": "packages/vsc",
       "role": "the VSC draft compatibility profile with its owned context and schema artefacts and the two proof suites; the EPCIS source helpers with the pinned EPCIS 2.0.1 artefacts (./epcis-source) and the external ecdsa-rdfc-2019 credential verifier (./exchange)",
       "entryPoints": [
@@ -374,6 +387,11 @@
     {
       "name": "bsv-blockchain-demos/uora-bsv",
       "consumes": "the four packages as vendored tarballs, to be replaced by the published packages of this set"
+    },
+    {
+      "name": "bsv-blockchain-demos/dpp-app-2",
+      "consumes": "the four packages through public entry points, initially as verified candidate archives; exact public registry versions after publication",
+      "note": "offline Node/TypeScript integration trial with synthetic transactions, separate attestations, negative verification cases and signed evidence export/import; no independent implementation or live deployment claim"
     }
   ],
   "image": {

@@ -1,11 +1,11 @@
 {
   "description": "Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository itself is under the Open BSV License Version 6 (LICENSE), including the packages that declare SEE LICENSE IN LICENSE; a package with no BSV runtime dependency is not thereby unrestricted open source.",
   "repositoryLicence": "Open BSV License Version 6",
-  "pinnedAt": "2026-09-06",
+  "pinnedAt": "2026-09-09",
   "components": [
     {
       "name": "@bsv/dpp-core",
-      "version": "0.3.0",
+      "version": "0.3.0-beta.1",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {
@@ -18,26 +18,26 @@
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.3.0",
+      "version": "0.3.0-beta.1",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {
           "name": "canonicalize",
           "range": "4.0.0",
-          "version": "2.1.0",
+          "version": "4.0.0",
           "licence": "Apache-2.0"
         }
       ]
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0",
+      "version": "0.4.0-beta.1",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {
           "name": "@bsv/dpp-core",
-          "range": "^0.3.0",
-          "version": "0.3.0",
+          "range": "0.3.0-beta.1",
+          "version": "0.3.0-beta.1",
           "licence": "SEE LICENSE IN LICENSE"
         },
         {
@@ -62,7 +62,7 @@
     },
     {
       "name": "@bsv/vsc",
-      "version": "0.2.0",
+      "version": "0.2.0-beta.1",
       "licence": "SEE LICENSE IN LICENSE",
       "dependencies": [
         {

@@ -28,6 +28,17 @@ Expect one decoded passport output. Finding and decoding it is not signature, li
 
 ## Choose an API
 
+The candidate also exports `@bsv/dpp-core/schemas/*`. These are the standard JSON schemas, copied byte for byte into the package. A consumer can validate a verification report, capability document or evidence package without a repository checkout:
+
+```js
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const schema = require('@bsv/dpp-core/schemas/verification-report.schema.json')
+console.log(schema.$id)
+```
+
+Use a validator supporting the schema's declared dialect and asserting formats. Schema validity does not replace signature or evidence verification.
+
 | Task | Entry points | Source |
 |---|---|---|
 | Read or construct a record | `parseDppOutput`, `findDppOutputs`, `buildLockingScript` | [Codec](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-core/src/codec.ts) |

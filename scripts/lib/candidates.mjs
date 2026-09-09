@@ -36,6 +36,10 @@ export function verifyCandidates(record, dir) {
   if (!Array.isArray(record?.candidates) || record.candidates.length === 0) { say(false, 'the candidate record names no candidates.'); return findings }
   const present = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.tgz')) : []
   for (const c of record.candidates) {
+    if (typeof c.filename !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]*\.tgz$/.test(c.filename)) {
+      say(false, `${c.name}: invalid candidate filename.`)
+      continue
+    }
     const path = join(dir, c.filename)
     if (!existsSync(path)) { say(false, `${c.name}@${c.version}: ${c.filename} is missing from ${dir}.`); continue }
     const bytes = readFileSync(path)

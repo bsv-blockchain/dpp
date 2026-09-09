@@ -28,9 +28,11 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { verifyCandidates, verifyRecordAgainstSet } from './lib/candidates.mjs'
+import { publicationActions, NPM_REGISTRY } from './lib/publication.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const record = JSON.parse(readFileSync(join(root, 'release', 'candidates.json'), 'utf8'))
+const fromRegistry = process.argv.includes('--registry')
 let failures = 0
 const say = (ok, sentence) => { if (!ok) failures += 1; console.log(`${ok ? 'ok' : 'FAIL'}: ${sentence}`) }
 const run = (args, cwd, env = {}) => execFileSync(args[0], args.slice(1), { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...env } })
@@ -47,18 +49,24 @@ if (failures > 0) {
   console.log('The candidates are not the recorded bytes; nothing was installed.')
   process.exit(1)
 }
+if (fromRegistry) {
+  const actions = await publicationActions(record.candidates)
+  if (actions.some((a) => a.action !== 'already-published')) throw new Error('the complete candidate set is not published on npm')
+}
 
 const dir = mkdtempSync(join(tmpdir(), 'dpp-consumer-'))
 try {
   // A project of its own: no workspace, no lockfile of ours, no path back here.
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'dpp-consumer-check', private: true, type: 'module', version: '0.0.0' }, null, 2))
-  const tarballs = record.candidates.map((c) => join(candidateDir, c.filename))
+  const tarballs = record.candidates.map((c) => fromRegistry ? `${c.name}@${c.version}` : join(candidateDir, c.filename))
   const cache = join(dir, '.npm-cache')
-  run(['npm', 'install', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, ...tarballs], dir)
+  run(['npm', 'install', '--save-exact', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund', '--registry', NPM_REGISTRY, '--cache', cache, ...tarballs], dir)
   const installed = JSON.parse(run(['npm', 'ls', '--json', '--omit=dev'], dir))
   const deps = installed.dependencies ?? {}
   for (const c of record.candidates) {
-    say(deps[c.name]?.version === c.version, `${c.name}@${c.version} installed from its tarball (resolved ${deps[c.name]?.resolved ?? 'nothing'}).`)
+    say(deps[c.name]?.version === c.version, `${c.name}@${c.version} installed from ${fromRegistry ? 'public npm' : 'its tarball'} (resolved ${deps[c.name]?.resolved ?? 'nothing'}).`)
+    const locked = JSON.parse(readFileSync(join(dir, 'package-lock.json'), 'utf8')).packages[`node_modules/${c.name}`]
+    say(locked.integrity === c.integrity && (!fromRegistry || locked.resolved.startsWith(NPM_REGISTRY)), `${c.name}: the consumer lockfile pins the approved integrity${fromRegistry ? ' from public npm' : ''}.`)
   }
   const sdk = JSON.parse(readFileSync(join(dir, 'node_modules', '@bsv', 'sdk', 'package.json'), 'utf8')).version
   const expectedSdk = set.runtime.dependencies.find((d) => d.name === '@bsv/sdk')?.version
@@ -69,6 +77,9 @@ try {
     return files.filter((f) => /planning|AGENTS\.md|\.env|test\/|\.private|notes\//.test(f)).map((f) => `${c.name}: ${f}`)
   })
   say(unexpected.length === 0, `no private, test or environment file is inside any tarball${unexpected.length === 0 ? '' : `: ${unexpected.join(', ')}`}.`)
+  cpSync(join(root, 'examples/lifecycle-v2.mjs'), join(dir, 'lifecycle-v2.mjs'))
+  run(['node', 'lifecycle-v2.mjs'], dir)
+  say(true, 'the packed core builds and verifies ISSUE, UPDATE, managed TRANSFER, RETIRE and a separate lifecycle claim and anchor; unauthorised, uncommitted, expired and post-retirement actions are refused offline.')
 
   // 2. Every declared entry point, from the record, not from a hand-written list.
   const modules = []
@@ -82,6 +93,7 @@ try {
   }
   // One sample file per data entry point pattern, read through the package's exports map.
   const dataSamples = {
+    '@bsv/dpp-core/schemas/*': 'verification-report.schema.json',
     '@bsv/dpp-profiles/manifests/*': 'battery@2.json',
     '@bsv/dpp-profiles/schemas/*': 'profile-manifest.schema.json',
     '@bsv/dpp-profiles/generated/*': 'payload-schema/battery@2.public.schema.json',
@@ -89,6 +101,11 @@ try {
     '@bsv/vsc/artifacts/*': 'profile-0.1.0.json',
   }
   const dataSpecifiers = data.map((d) => (d.specifier.endsWith('/*') ? d.specifier.slice(0, -1) + (dataSamples[d.specifier] ?? '') : d.specifier))
+  for (const name of readdirSync(join(root, 'contracts')).filter((name) => name.endsWith('.schema.json'))) {
+    const original = readFileSync(join(root, 'contracts', name))
+    const packed = readFileSync(join(dir, 'node_modules/@bsv/dpp-core/schemas', name))
+    say(original.equals(packed), `@bsv/dpp-core/schemas/${name} matches the normative contract bytes.`)
+  }
   for (const d of data) say(dataSamples[d.specifier] != null, `data entry point ${d.specifier} has a sample this check reads (${dataSamples[d.specifier] === '' ? 'the file itself' : dataSamples[d.specifier] ?? 'none named; add one'}).`)
 
   mkdirSync(join(dir, 'fixtures'), { recursive: true })
