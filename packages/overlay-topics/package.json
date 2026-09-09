@@ -33,7 +33,7 @@
     "ajv-formats": "3.0.1",
     "mongodb-memory-server": "^11.2.0",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "4.1.11"
   },
   "repository": {
     "type": "git",

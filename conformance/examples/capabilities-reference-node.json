@@ -2,7 +2,7 @@
   "capabilitiesVersion": "1",
   "implementation": {
     "name": "@bsv/dpp-overlay-topics",
-    "version": "0.4.0",
+    "version": "0.4.0-beta.1",
     "baselineId": "native-baseline@2"
   },
   "roles": [

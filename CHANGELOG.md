@@ -8,6 +8,11 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Unreleased
 
+### Test dependency security update
+
+- Pin Vitest and its resolved mocker dependency to 4.1.11 across all four workspaces, addressing GHSA-82fw-gwwq-j7x9. Runtime dependencies are unchanged.
+- Align the projection vector reference implementation labels and reference capability example with the experimental package versions.
+
 ### 2026-09-08, npm consumer release preparation
 
 - The four reference packages declare public npm access, the `next` tag and Node >=22. `@bsv/dpp-core/schemas/*` carries the normative JSON schemas byte for byte, including the verification report and portable evidence schemas. The current unpublished candidate gains this data entry point; wire formats, profiles and their frozen bytes are unchanged.
