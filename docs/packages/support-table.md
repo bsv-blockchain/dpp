@@ -21,8 +21,8 @@ Generated from `release/dpp-release-2026-09-3.json` in the documentation build f
 
 Source: [dependency ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/licences.json).
 
-- `@bsv/dpp-core` 0.3.0-beta.1: `@bsv/sdk` 2.4.2
-- `@bsv/dpp-overlay-topics` 0.4.0-beta.1: `@bsv/dpp-core` 0.3.0-beta.1, `@bsv/overlay` 2.3.1, `@bsv/sdk` 2.4.2, `mongodb` ^7.0.0
+- `@bsv/dpp-core` 0.3.0-beta.1: `@bsv/sdk` 2.5.0
+- `@bsv/dpp-overlay-topics` 0.4.0-beta.1: `@bsv/dpp-core` 0.3.0-beta.1, `@bsv/overlay` 2.3.1, `@bsv/sdk` 2.5.0, `mongodb` ^7.0.0
 - `@bsv/dpp-profiles` 0.3.0-beta.1: `canonicalize` 4.0.0
 - `@bsv/vsc` 0.2.0-beta.1: `@digitalbazaar/bbs-2023-cryptosuite` 2.0.1, `@digitalbazaar/bls12-381-multikey` 2.2.0, `@digitalbazaar/credentials-context` 3.2.0, `@digitalbazaar/data-integrity` 2.5.0, `@digitalbazaar/data-integrity-context` 2.0.1, `@digitalbazaar/ecdsa-multikey` 1.8.0, `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` 1.3.0, `@digitalbazaar/ed25519-signature-2020` 5.4.0, `@digitalbazaar/ed25519-verification-key-2020` 4.2.0, `@digitalbazaar/multikey-context` 2.0.1, `ajv` 8.20.0, `ajv-formats` 3.0.1, `did-context` 3.1.1, `jsonld-signatures` 11.6.0
 
