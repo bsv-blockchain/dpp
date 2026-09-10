@@ -2,6 +2,8 @@
 
 Select the credential profile before choosing a verifier. The World Wide Web Consortium (W3C) Verifiable Credentials data model and the selected proof suite are separate inputs.
 
+The [verifiable credential guide](../learn/verifiable-credentials.md) explains what a credential carries and which issuance and verification paths exist. [BSV DIDs](../learn/dids.md) explains issuer identity; this external profile specifically selects `did:web`.
+
 ## Prepare the verifier inputs
 
 For the selected external representation, retain the credential's exact received bytes and the expected product identifier. Supply the issuer's identity/key documents, the required contexts, observation time and the policy for status and authority checks.

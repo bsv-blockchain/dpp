@@ -12,6 +12,8 @@ Until then, use the [candidate installation](README.md#pack-and-check). Keep the
 
 Verifiable Supply Chain (VSC) credential tooling. The [support table](support-table.md) identifies the Node runtime and data entry points.
 
+Start with [verifiable credentials](../learn/verifiable-credentials.md) for the model, supported formats and runnable credential exercises.
+
 ## Select the representation first
 
 A SEAL is the credential used by the local VSC profile to carry a signed event, its subjects and supporting references. Use the root entry point for this profile. Use `/exchange` for the separately selected external credential representation and `/epcis-source` to parse and validate EPCIS event documents. Selecting one does not mean the others were evaluated.
