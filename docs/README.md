@@ -8,7 +8,7 @@ A product's passport has a history of signed records. Updating it creates a tran
 
 Attestations hold separate claims about the product, such as a repair or a measurement. The issuer signs the claim. A separate blockchain commitment lets a reader detect changes to the secured claim when it is retrieved. A valid signature does not establish that the physical event happened.
 
-[BSV decentralised identifiers (DIDs)](learn/dids.md) connect an issuer's identity to its verification keys and document history. [Verifiable credentials (VCs)](learn/verifiable-credentials.md) carry signed claims in selected exchange formats. The guides explain Teranode Group's DID method, the implemented credential paths and their remaining gaps.
+[BSV decentralised identifiers (DIDs)](learn/dids.md) connect an issuer's identity to its verification keys and document history. [Verifiable credentials (VCs)](learn/verifiable-credentials.md) carry signed claims in selected exchange formats. The guides explain BSV DID, the implemented credential paths and their remaining gaps.
 
 An overlay indexes the blockchain records so they can be found. A registry retains and serves claims and evidence. A reader checks the returned material and reports missing evidence as well as successful checks. [The model](start/architecture.md) connects these components.
 
