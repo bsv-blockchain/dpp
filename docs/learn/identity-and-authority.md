@@ -2,7 +2,7 @@
 
 The subject identifies what a record concerns. The actor or issuer is associated with the signing key. Authority is the evidence that permits that party to act in a particular role. An application account can associate these things without proving the association.
 
-A decentralised identifier (DID) names an identity under a method. [BSV DIDs](dids.md) explains Teranode Group's method and provides a resolution exercise. Resolving a key and establishing the issuer's authority remain separate steps. The [identity source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/identity.md) defines the terms and method-specific checks.
+A decentralised identifier (DID) names an identity under a method. [BSV DIDs](dids.md) explains the method and provides a resolution exercise. Resolving a key and establishing the issuer's authority remain separate steps. The [identity source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/identity.md) defines the terms and method-specific checks.
 
 ## Keep these identities separate
 

@@ -1,6 +1,6 @@
 # BSV DIDs
 
-A decentralised identifier (DID) names an entity and provides a way to obtain its verification keys. The digital product passport (DPP) reference application adopts the Bitcoin SV (BSV) DID method published by Teranode Group (TNG) for identities whose keys can change while their identifier stays the same. The method explanation here draws on [TNG's specification](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications).
+A decentralised identifier (DID) names an entity and provides a way to obtain its verification keys. The digital product passport (DPP) reference application adopts the Bitcoin SV (BSV) DID method for identities whose keys can change while their identifier stays the same. The method explanation here draws on [BSV DID specification](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications).
 
 The reason is key history. A `did:key` encodes one public key. Changing that key produces a different identifier. A `did:bsv` identifies a blockchain transaction chain, so later documents can record changes under the original identifier. An application still needs evidence of which key was authorised when a claim was signed.
 
@@ -16,11 +16,11 @@ An unspent transaction output (UTXO) is an output available to be spent by a lat
 | Fund | A funding transaction supplies fees for continuing the chain without changing the DID state. |
 | Revoke | A terminal transaction ends the chain and invalidates the DID. |
 
-These are method operations, not a claim that every DPP integration implements them. The [TNG transaction definitions](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications/specification-overview/utxo-did-method-normative-reference) govern their encoding and signatures. A DID controller's spending rights come from those scripts; an application account or a list of controllers does not define them.
+These are method operations, not a claim that every DPP integration implements them. The [BSV DID transaction definitions](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications/specification-overview/utxo-did-method-normative-reference) govern their encoding and signatures. A DID controller's spending rights come from those scripts; an application account or a list of controllers does not define them.
 
 ## Resolve a DID
 
-This reads TNG's published example using the resolver configured by the [reference application](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/src/did-mint.ts#L47). Run it with Node.js 22 or later. It needs network access, but no repository checkout, wallet or funds. Set `DID_RESOLVER_URL` to use another resolver implementing the same interface.
+This reads the published BSV DID example using the resolver configured by the [reference application](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/src/did-mint.ts#L47). Run it with Node.js 22 or later. It needs network access, but no repository checkout, wallet or funds. Set `DID_RESOLVER_URL` to use another resolver implementing the same interface.
 
 ```sh
 node --input-type=module <<'JS'
@@ -52,7 +52,7 @@ Expect HTTP 200 and a document whose `id` matches the requested DID. Inspect `ve
 | HTTP 404 | The resolver did not find the DID. |
 | HTTP 503 | The resolver reports that its service is unavailable. |
 
-The [TNG resolver API](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-universal-resolver/resolver-api) defines the response. Resolution supplies evidence for checking a key relationship. It does not establish the issuer's business authority or verify a credential's proof.
+The [BSV DID resolver API](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-universal-resolver/resolver-api) defines the response. Resolution supplies evidence for checking a key relationship. It does not establish the issuer's business authority or verify a credential's proof.
 
 The reference endpoint returns placeholder block metadata, including `testBlockHash`, for this example. Its block fields cannot establish inclusion or historical authority. The documented API also lacks a request for a past document version. Historical verification needs separately retained or retrieved transaction evidence; a current document cannot settle which key was authorised in the past.
 
@@ -62,7 +62,7 @@ For a native claim, `issuer` names the claiming entity. When that is a resolvabl
 
 | Identifier | Role in DPP |
 |---|---|
-| `did:bsv` | A resolvable identity with a document history under TNG's method. |
+| `did:bsv` | A resolvable identity with a document history under the BSV DID method. |
 | `did:key` | An offline representation of a key; native helpers accept compressed secp256k1 keys. |
 | `did:web` | An identity document retrieved over HTTPS; used by the selected external credential profile. |
 | Passport identifier | The product the claim concerns, independent of the issuer's DID. |
@@ -75,7 +75,7 @@ The companion application supplies [script and document builders](https://github
 
 An integration supplies the subject and controller signing capabilities, the public document and transaction funding. It creates the issuance, publishes the document, retains both transaction identifiers and resolves the result. An issuance without its document needs completion under that same issuance. Minting another identifier does not repair it.
 
-The [implementation notes](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/bsv-did/README.md#2-where-the-prose-and-the-chain-disagree) record differences between the method prose and observed script encodings. Those differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) has no dedicated TNG-method assessment; its tested `ID-2-did-key` row covers the native key helpers.
+The [implementation notes](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/bsv-did/README.md#2-where-the-prose-and-the-chain-disagree) record differences between the method prose and observed script encodings. Those differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) has no dedicated BSV DID method assessment; its tested `ID-2-did-key` row covers the native key helpers.
 
 Physical-object DID derivation: open; see [D-CR2](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L181). Historical anchor issuer widening: open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209). An issuer DID does not implement physical-object binding.
 

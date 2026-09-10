@@ -44,6 +44,6 @@ Check proof, issuer authority, subject binding, time and status separately. Miss
 | UNTP traceability event | `gap`: no event export exists; actual event evidence is required by the mapping. [UNTP-0.7.0-dte](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json#L2942). |
 | Optional ES256 application signer | Unimplemented; the tested ES256K signer does not supply it. [EXCH-4-signer](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json#L3568). |
 
-The [VSC profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/vsc-profile.md) and [external credential profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/external-credential-profile.md) define the selected representations. Teranode Group's `did:bsv` method does not replace a profile's selected DID method, proof purpose or curve.
+The [VSC profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/vsc-profile.md) and [external credential profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/external-credential-profile.md) define the selected representations. The BSV DID method does not replace a profile's selected DID method, proof purpose or curve.
 
 Live identity assurance is Ring 0. Higher rings are absent. A credential or a passing proof does not promote that assurance.
