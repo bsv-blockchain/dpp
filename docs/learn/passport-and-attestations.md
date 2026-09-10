@@ -2,6 +2,8 @@
 
 Passport history and attestations answer different questions. The passport records changes to the product record. An attestation states an issuer's claim about a product or event. Linking them does not establish the truth of the claim. Verifiable Supply Chain (VSC) is a separate credential profile.
 
+[Verifiable credentials](verifiable-credentials.md) explains the available credential formats, their relationship to DIDs and the issuance and verification exercises.
+
 ## Choose which thing to create
 
 Use a passport update when the product record itself changes. Use an attestation when an issuer makes a claim that should be retained and checked independently, such as a repair assessment. One business event can produce both, but they have different signatures and verification paths.

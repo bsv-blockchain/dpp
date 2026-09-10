@@ -12,7 +12,9 @@
 
 * [Passport states and attestations](learn/passport-and-attestations.md)
 * [Identifiers](identifiers.md)
+* [BSV DIDs](learn/dids.md)
 * [Identity and authority](learn/identity-and-authority.md)
+* [Verifiable credentials](learn/verifiable-credentials.md)
 * [Custody](learn/custody.md)
 * [Evidence and its limits](learn/evidence-and-freshness.md)
 * [Versions and compatibility](learn/versions-and-compatibility.md)
