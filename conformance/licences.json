@@ -1,7 +1,7 @@
 {
   "description": "Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository itself is under the Open BSV License Version 6 (LICENSE), including the packages that declare SEE LICENSE IN LICENSE; a package with no BSV runtime dependency is not thereby unrestricted open source.",
   "repositoryLicence": "Open BSV License Version 6",
-  "pinnedAt": "2026-09-09",
+  "pinnedAt": "2026-09-10",
   "components": [
     {
       "name": "@bsv/dpp-core",
@@ -10,8 +10,8 @@
       "dependencies": [
         {
           "name": "@bsv/sdk",
-          "range": "2.4.2",
-          "version": "2.4.2",
+          "range": "2.5.0",
+          "version": "2.5.0",
           "licence": "SEE LICENSE IN LICENSE.txt"
         }
       ]
@@ -48,8 +48,8 @@
         },
         {
           "name": "@bsv/sdk",
-          "range": "2.4.2",
-          "version": "2.4.2",
+          "range": "2.5.0",
+          "version": "2.5.0",
           "licence": "SEE LICENSE IN LICENSE.txt"
         },
         {
