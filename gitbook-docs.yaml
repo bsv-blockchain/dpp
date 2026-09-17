@@ -1,6 +1,6 @@
 $schema: https://api.gitbook.com/gitbook-docs.yaml
 site:
-  title: Open DPP Standard on BSV
+  title: DPP Standard on BSV
   structure:
     - type: space
       key: space-standard
