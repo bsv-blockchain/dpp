@@ -334,7 +334,7 @@
     },
     {
       "path": "packages/dpp-profiles/frozen.json",
-      "sha256": "7138a3cb86615f7fed9b66ead25becb4adf303408080cd0cbe9db835c09eda3e",
+      "sha256": "1a6a4116cd6aeed5bc996b5d111f33d3116a70ccd127ff7c5e647c8ae7ed252d",
       "pins": "the frozen profile manifests"
     },
     {

@@ -23,3 +23,5 @@ Before connecting to a service, obtain its capability document and compare those
 The [conformance source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/conformance.md) defines selection and compatibility requirements. A new package version does not by itself select a new record format or industry profile.
 
 Use [migration](../migration.md) for deployment rollout and rollback.
+
+[Update profiles and consuming applications](../profiles/updating-applications.md) follows a profile change from package release through consumer notification, UI/backend integration and explicit activation.

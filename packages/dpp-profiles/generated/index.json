@@ -24,6 +24,18 @@
     "consumerSha256": "97c9b7819dabee1ab8df44ef90b264a99a7c23ba27413c2d595a61e3408232b1"
   },
   {
+    "profile": "battery@4",
+    "status": "draft",
+    "manifest": "manifests/battery@4.json",
+    "manifestSha256": "0d369f20a017a07ca8d90fab9135023c858c5a877b456d01468a5ca60366d4f0",
+    "publicSchema": "generated/payload-schema/battery@4.public.schema.json",
+    "publicSchemaSha256": "920534b39e4745202dd554c563cfab90be444851686f2e3923188859cabb62ce",
+    "restrictedSchema": "generated/payload-schema/battery@4.restricted.schema.json",
+    "restrictedSchemaSha256": "f5bd415f0430ed7c685c915f8e3dc6f9572da193a06978721ad7afa5b1fb33c4",
+    "consumer": "generated/consumer/battery-v4.json",
+    "consumerSha256": "1d713d73e2a3751c13292f1264b63a728a1987f1a8369c4cdfea9ccbfb522871"
+  },
+  {
     "profile": "general@1",
     "status": "superseded",
     "manifest": "manifests/general@1.json",
@@ -82,5 +94,17 @@
     "restrictedSchemaSha256": "4352d7685bf93e62d9a773b5815086368ab97abe5f5d8887c1bc017ab5f1e164",
     "consumer": "generated/consumer/textile-v3.json",
     "consumerSha256": "330898b5c4fa07e83340f724cc343ff71222dfe666487a3588a39a1f3a790ff8"
+  },
+  {
+    "profile": "textile@4",
+    "status": "draft",
+    "manifest": "manifests/textile@4.json",
+    "manifestSha256": "b6a38689d676474762e0f268c38fc5d61633c933ed7f0ea883c4b67b4f77559d",
+    "publicSchema": "generated/payload-schema/textile@4.public.schema.json",
+    "publicSchemaSha256": "b6d4e29dabcd54e2d748ddfbef5192d00beca6521a239cec274fdad7f9ab2a2d",
+    "restrictedSchema": "generated/payload-schema/textile@4.restricted.schema.json",
+    "restrictedSchemaSha256": "335811f7845bee8a5c4e975080655aeaff9e8ea286a7de2ee5140cc89e9b5881",
+    "consumer": "generated/consumer/textile-v4.json",
+    "consumerSha256": "d5e39333f7308523870881e087eb3a0546bcbb3f6dd77c1bd9f1db060ea880f0"
   }
 ]

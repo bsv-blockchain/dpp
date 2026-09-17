@@ -12,6 +12,8 @@ Build the package to generate payload schemas and mapping material. A freeze err
 
 The proposal should show the field change, generated output, migration effect and retained source uncertainty together. Use [the contribution route](../contribute/README.md) for review.
 
+Include a consumer impact report so application owners can identify changes to their UI, backend, access decisions and retained records. [Update profiles and consuming applications](updating-applications.md) explains notification, adoption evidence and the separate decision to enable new writes.
+
 ## Choose the manifest kind
 
 | Kind | Schema |

@@ -33,6 +33,10 @@ The empty payload deliberately exposes missing fields. This helper checks presen
 
 For draft manifest version 2 profiles, the package provides `readManifestAny`, `fieldsForV2` and `missingRequiredV2` for the richer applicability context. [Authoring](../profiles/authoring.md) covers the generation and freeze workflow.
 
+For an upgrade, follow [updates and consumer adoption](../profiles/updating-applications.md). Generated artefacts do not automatically update application forms, backend policy or the profile selected for new records.
+
+The working checkout adds unreleased version 4 drafts, `compareProfiles` for consumer impact reports and `reviewProfileData` for additional cross-field findings. [The draft integration guide](../profiles/version-4-drafts.md) explains their use and limitations. These additions are not present in the previously published package.
+
 ## Choose an entry point
 
 | Entry point | Use |

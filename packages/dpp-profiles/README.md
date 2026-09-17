@@ -36,6 +36,21 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 
 Five profiles are published: `battery@2`, `textile@2` and `general@2` (current) and `textile@1` and `general@1` (superseded, and served for as long as any state declares them). They were inventoried from the application's attribute registries in full, including the fields captured over life or derived rather than at registration, and frozen. `battery@3` and `textile@3` are draft successors under manifest version 2: opt-in by explicit version, carrying a requirement status per field and a migration outcome per field, and leaving every byte of the two current versions unchanged until a reviewed cutover.
 
+This checkout also includes unreleased `battery@4` and `textile@4` drafts, each succeeding its frozen version 3 draft. Existing versions remain unchanged. Battery adds truthful month-only manufacture capture, postal delivery information, power reference conditions and separate individual performance measurements. Textile corrects source-status mappings and component composition under Article 11. These additions do not change the current profile selection or establish regulatory qualification.
+
+## Review a profile update
+
+After building this checkout, generate a deterministic consumer impact report:
+
+```sh
+npm run changes -w @bsv/dpp-profiles -- battery@3 battery@4
+npm run changes -w @bsv/dpp-profiles -- textile@2 textile@4
+```
+
+The Node API is `compareProfiles(from, to)`. It reports added, changed and removed fields, all changed field properties, top-level metadata changes, source/target status and manifest byte digests. It does not infer safe conversions, send notifications or activate a writer. Include the report in the consumer upgrade proposal, then review the application's UI, backend and export changes.
+
+For the version 4 drafts, run `reviewProfileData(profile, payload)` after generated-schema validation and alongside `missingRequiredV2`. It returns `invalid` or `needs-review` findings for manufacture-date consistency, individual measurement context and component declarations. An empty result is not a qualification result. The helper refuses other versions so a historical record cannot silently acquire version 4 interpretation. See the documentation's version 4 draft guide for migration steps and remaining assessment limits.
+
 ## Working on it
 
 ```

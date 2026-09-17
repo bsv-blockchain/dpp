@@ -20,6 +20,9 @@ Use [projections](../interoperability/projections.md) when the displayed product
 | Battery | [Battery](battery.md) |
 | Textile | [Textile](textile.md) |
 | A new or revised profile | [Authoring](authoring.md) |
+| Adopt a changed profile in an application | [Updates and consumer adoption](updating-applications.md) |
+| Compare requirements, schemas and implementation evidence | [Readiness review](reviewing-readiness.md) |
+| Evaluate the unreleased battery and textile revisions | [Version 4 drafts](version-4-drafts.md) |
 
 The [profile source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/profiles.md) defines the framework. The [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/frozen.json) locates the versioned files, and the [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) records assessment status. Core verification, profile validation and product qualification are separate results.
 

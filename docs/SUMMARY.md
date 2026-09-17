@@ -61,6 +61,9 @@
 * [Battery](profiles/battery.md)
 * [Textile](profiles/textile.md)
 * [Author and propose a profile](profiles/authoring.md)
+* [Update profiles and consuming applications](profiles/updating-applications.md)
+* [Review profile and application readiness](profiles/reviewing-readiness.md)
+* [Evaluate the version 4 drafts](profiles/version-4-drafts.md)
 
 ## Interoperability profiles
 

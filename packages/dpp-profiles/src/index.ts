@@ -20,6 +20,8 @@ export * from './evidence-shapes.js'
 export * from './applicability.js'
 export * from './projections.js'
 export * from './manifest-v2.js'
+export * from './profile-changes.js'
+export * from './profile-data-review.js'
 export * from './gs1-resolution.js'
 
 export type ValueType = 'id' | 'text' | 'enum' | 'multi' | 'decimal' | 'integer' | 'percent' | 'monthYear' | 'date' | 'url' | 'document' | 'graphic' | 'country' | 'record' | 'any'
@@ -96,7 +98,7 @@ export interface ProfileManifest {
  * 1; a draft successor read through it carries version 2 keys the type does
  * not name.
  */
-export const PROFILE_IDS = ['battery@2', 'textile@2', 'general@2', 'battery@3', 'textile@3', 'textile@1', 'general@1'] as const
+export const PROFILE_IDS = ['battery@2', 'textile@2', 'general@2', 'battery@4', 'textile@4', 'battery@3', 'textile@3', 'textile@1', 'general@1'] as const
 export type ProfileId = (typeof PROFILE_IDS)[number]
 
 const packageRoot = new URL('../', import.meta.url)

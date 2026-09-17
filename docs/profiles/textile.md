@@ -1,5 +1,7 @@
 # Textile
 
+Use [the readiness review](reviewing-readiness.md) to compare the selected profile with applicable sources and application evidence. Use [consumer adoption](updating-applications.md) when the resulting changes affect forms, backend rules or new records.
+
 The textile profile organises product information such as composition and the evidence supporting it. A shared schema lets producers and readers use the same declared fields. It does not turn an unassessed declaration into verified evidence.
 
 ## Use the selected version
@@ -19,6 +21,8 @@ JS
 The field list is the start of payload integration. Use its generated schema for structure, evaluate applicability and keep source assessments unresolved where the ledger does. [The profiles package](../packages/dpp-profiles.md) explains why a missing-field check is not a complete assessment.
 
 ## Version and source material
+
+An unreleased `textile@4` draft in the working checkout corrects source-status mappings and component composition. See [the version 4 draft guide](version-4-drafts.md) for migration and assessment limits. The pinned definitions below remain available unchanged.
 
 | Material | Source |
 |---|---|

@@ -215,7 +215,7 @@ describe('battery@3, the draft successor to battery@2', () => {
     for (const profile of ['battery@2', 'textile@2', 'general@2', 'textile@1', 'general@1']) {
       expect(sha256(readFileSync(join(root, 'manifests', `${profile}.json`))), profile).toBe(frozen.manifests[profile])
     }
-    expect(Object.keys(frozen.manifests).sort()).toEqual(['battery@2', 'battery@3', 'general@1', 'general@2', 'textile@1', 'textile@2', 'textile@3'])
+    expect(Object.keys(frozen.manifests).sort()).toEqual(['battery@2', 'battery@3', 'battery@4', 'general@1', 'general@2', 'textile@1', 'textile@2', 'textile@3', 'textile@4'])
   })
 
   it('names its guidance source as guidance and says stationary follows the industrial column by its own reading', () => {

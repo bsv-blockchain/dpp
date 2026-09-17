@@ -8,6 +8,8 @@ Describe the concrete input or workflow the current material cannot handle. For 
 
 Keep edits in the material that owns the change: rules in the specification, interfaces in contracts, expected bytes in fixtures, and evidence in the ledger. Update the guide that explains how the changed behaviour is used. A wording change should not silently select a different implementation rule.
 
+Explain the operational consequences as well as the API change: what triggers the workflow, what the tooling handles, what an application owner must implement, how readiness is demonstrated and which limitations remain. For profile changes, use [the consumer adoption guide](../profiles/updating-applications.md) to cover notification, UI/backend changes, activation and history.
+
 Run the checks relevant to the change. For documentation, `node scripts/docs-check.mjs` checks navigation and references. For implementation evidence, retain the actual test output and use [reporting](../implement/reporting.md). Submit the proposed diff through the repository's review process.
 
 ## Choose the contribution route

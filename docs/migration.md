@@ -12,6 +12,8 @@ Use the fixture reader and a copy of retained deployment data to compare results
 
 ## Rollout
 
+For industry-profile changes, use [the consumer adoption guide](profiles/updating-applications.md) to prepare the change report, notify application owners and track UI/backend readiness. Installing a package and activating a successor are separate steps.
+
 1. Rehearse against a copy of retained data and verify the existing history.
 2. Deploy readers that support the intended record and profile selections.
 3. Check index admission policy and the writer's selected formats.

@@ -1,5 +1,7 @@
 # Battery
 
+For a regulatory, standards or external-validator comparison, use [the readiness review](reviewing-readiness.md). It separates field mappings and export transformations from applicability, evidence and system testing.
+
 The battery profile provides a shared vocabulary for battery product data and lifecycle evidence. Use it to describe and validate a payload; selecting it alone does not establish a product assessment or that every required document has been obtained.
 
 ## Try the current profile
@@ -19,6 +21,8 @@ JS
 The output includes a token transfer with insufficient evidence for physical custody. Changing control of a record does not establish delivery of a battery. Retain that missing-evidence finding when presenting the event.
 
 ## Version and source material
+
+The working checkout also provides an unreleased `battery@4` draft that preserves all earlier versions. [Evaluate the version 4 drafts](version-4-drafts.md) explains the corrections, migration and remaining assessment work. The pinned sources below describe the earlier released definitions.
 
 | Material | Source |
 |---|---|

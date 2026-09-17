@@ -28,6 +28,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/build.mjs",
     "generate": "node scripts/build.mjs",
+    "changes": "node scripts/profile-changes.mjs",
     "refreeze": "node scripts/build.mjs --refreeze",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
