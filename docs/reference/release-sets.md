@@ -14,13 +14,15 @@ Before replacing a service, compare its capability document with the selection t
 |---|---|
 | [dpp-release-2026-09](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09.json) | Superseded |
 | [dpp-release-2026-09-2](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-2.json) | Superseded |
-| [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Candidate |
+| [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Superseded |
+
+The current candidate is `dpp-release-2026-09-4`, declared in `release/dpp-release-2026-09-4.json` in the release checkout. It adds the version 4 profile drafts and updated dependencies through beta.2 versions of all four packages. [Publishing profile updates](publishing-profile-updates.md) walks through preparation, approval and verification.
 
 Each record links package versions, interfaces, profiles and its conformance selection. The [support table](../packages/support-table.md) is generated from the selected record. Historical declarations remain in the earlier records.
 
 The [release tooling](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/README.md) produces a candidate record containing the source revision and artefact digests. A release-set name alone is not that source revision. [Package installation](../packages/README.md#source-access) gives the reviewed source snapshot; [the implementer start](../implement/README.md) identifies the bundle manifest.
 
-The source repository is public; npm publication remains pending. Source links and candidate-generation instructions do not announce a public package release.
+The source repository is public and the initial beta.1 packages are available from npm. Publication of the beta.2 candidate set remains pending. Source links and candidate-generation instructions do not announce that update as published.
 
 ## Experimental package compatibility
 

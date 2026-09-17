@@ -79,6 +79,7 @@
 * [Contracts and schemas](reference/contracts.md)
 * [Conformance and the ledger](reference/conformance.md)
 * [Release sets](reference/release-sets.md)
+* [Publish a profile package update](reference/publishing-profile-updates.md)
 
 ## Contribute
 

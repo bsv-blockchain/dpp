@@ -8,6 +8,17 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Unreleased
 
+### 2026-09-17, beta.2 release candidate and dependency updates
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.2`, `@bsv/dpp-profiles@0.3.0-beta.2`, `@bsv/dpp-overlay-topics@0.4.0-beta.2` and `@bsv/vsc@0.2.0-beta.2` under the `next` tag in `dpp-release-2026-09-4`. All four archives change with this dependency and compiler update. Publication is pending; the candidate does not move the `latest` tag.
+- Update all direct dependencies to their current npm latest versions: SDK 2.7.1, canonicalize 5.0.0, MongoDB 7.6.0, TypeScript 7.0.2, Vitest 5.0.1 and Node types 22.20.3. Overlay 2.3.1 and its GASP 1.3.6 dependency are already current. Align the SDK override, runtime declarations, dependency ledger and strict consumer compiler check.
+- Declare Node types explicitly for server packages under TypeScript 7. The canonicalisation upgrade corrects handling of values outside JSON, including undefined properties, sparse arrays and boxed primitives. Consumers must not recompute historical signatures over such JavaScript values with the new implementation; retained JSON fixtures verify compatibility for the supported data representations.
+- Add `battery@4` and `textile@4` as explicit drafts with generated public and restricted schemas, consumer documents and mapping inventories. All earlier frozen definitions remain unchanged; battery@2 and textile@2 remain current.
+- Battery changes cover manufacturing month and postal delivery address, paired original power measurements, individual status-change measurements, supporting document metadata and corrected requirement provenance. Textile changes distinguish existing labelling duties, anticipated passport requirements and application fields. See `docs/profiles/version-4-drafts.md` for application impact and remaining assessment work.
+- Export `compareProfiles` for deterministic field and metadata change reports and `reviewProfileData` for additional version 4 data findings after schema validation. Neither helper migrates records, establishes compliance or activates a profile.
+- Extend clean consumer checks to cover retained profiles, packaged version 4 schemas and review helpers. Preserve historical release selections in repository checks while refusing to qualify superseded sets for a new release. Projection fixture reference labels and the dependency ledger follow the package version; vector inputs and expected results are unchanged.
+- Consumers retain exact profile versions on stored records and review UI, backend, access and export changes before enabling successor writes. Package installation alone changes no application selection. Automatic owner notifications and consumer upgrade proposals remain future work.
+
 ### Test dependency security update
 
 - Pin Vitest and its resolved mocker dependency to 4.1.11 across all four workspaces, addressing GHSA-82fw-gwwq-j7x9. Runtime dependencies are unchanged.

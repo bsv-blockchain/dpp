@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-core",
-  "version": "0.3.0-beta.1",
+  "version": "0.3.0-beta.2",
   "description": "Experimental prerelease: DPP standard reference implementation: record versions 1 and 2, signature preimages, chain verification with SPV, the verification report, the native lifecycle claim, the generic anchor, the managed acceptance record, publisher key policy and the evidence package manifest",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -24,11 +24,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@bsv/sdk": "2.5.0"
+    "@bsv/sdk": "2.7.1"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vitest": "4.1.11"
+    "typescript": "^7.0.2",
+    "vitest": "5.0.1"
   },
   "repository": {
     "type": "git",

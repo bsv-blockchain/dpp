@@ -13,4 +13,4 @@ Read the applicable source terms before reuse. The absence of a Bitcoin SV (BSV)
 
 Use the [BSV Association contact page](https://bsvassociation.org/contact/) for a reuse question not answered by those sources.
 
-The source repository is public. Experimental npm publication is pending; see [the release candidate](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json).
+The source repository is public. Initial experimental beta packages are available from npm; the beta.2 package update is pending. See [release status](../reference/release-sets.md).

@@ -400,7 +400,7 @@
   "dependencies": [
     {
       "name": "@bsv/sdk",
-      "version": "2.4.2",
+      "version": "2.7.1",
       "usedBy": [
         "@bsv/dpp-core",
         "@bsv/dpp-overlay-topics",

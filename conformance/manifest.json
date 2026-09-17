@@ -136,7 +136,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "1134f19faf1bbd027c6c5f96465ca05749c767f54966cdac92913c4bb08e7e83"
+      "digest": "db8da45895c853faf23351fd8caf342658e5a893bd97bfb6c3aa16a0bad34e42"
     },
     {
       "id": "baseline-native-2",
@@ -144,7 +144,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "54255ec2088287560d4a59f78eefbb076d9e1396e35dd09a33afa451a6f672c4"
+      "digest": "44fd3f44a4179e1fcfd09f0852bcc058d55ebe4f2a2d09feddbfddc7571e003b"
     },
     {
       "id": "spec-profiles",
@@ -650,7 +650,7 @@
       "version": "RFC 8785",
       "kind": "public",
       "attribution": "IETF",
-      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 4.0.0) and the EPCIS event body digest (packages/vsc/src/jcs.ts)."
+      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/vsc/src/jcs.ts)."
     },
     {
       "id": "eu-battery-guidance-2026-08",

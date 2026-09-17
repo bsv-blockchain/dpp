@@ -1,15 +1,15 @@
 {
-  "releaseSet": "dpp-release-2026-09-3",
-  "status": "superseded",
-  "description": "Experimental prerelease candidate for implementation and interoperability testing. APIs may change significantly before a stable release; pin exact package versions. This set includes complete index export and selected-claim qualification. Package prerelease versions do not change the wire formats, custody profile, frozen profiles or runtime baseline. Publication and live interoperability validation remain separate release gates.",
+  "releaseSet": "dpp-release-2026-09-4",
+  "status": "candidate",
+  "description": "Experimental prerelease candidate adding battery@4 and textile@4 draft profiles, generated artefacts, structural change reports and cross-field data review. All four packages use new beta.2 versions with current dependencies, including @bsv/sdk 2.7.1. Existing profile definitions, current version 2 selections and wire contracts are unchanged. Package publication does not activate draft profiles in consumers or establish product qualification.",
   "baseline": "native-baseline@2",
-  "selection": "conformance/selections/dpp-release-2026-09-3.json",
+  "selection": "conformance/selections/dpp-release-2026-09-4.json",
   "runtime": {
     "node": ">=22",
     "dependencies": [
       {
         "name": "@bsv/sdk",
-        "version": "2.5.0"
+        "version": "2.7.1"
       },
       {
         "name": "@bsv/overlay",
@@ -18,7 +18,7 @@
       },
       {
         "name": "mongodb",
-        "version": "7.5.0",
+        "version": "7.6.0",
         "note": "the reference persistence of the index node, replaceable"
       },
       {
@@ -31,7 +31,7 @@
   "packages": [
     {
       "name": "@bsv/dpp-core",
-      "version": "0.3.0-beta.1",
+      "version": "0.3.0-beta.2",
       "directory": "packages/dpp-core",
       "role": "the record model (both versions), signatures, chain verification, the verification report, the native claim, the generic anchor, the managed acceptance record, publisher policy and evidence packages",
       "entryPoints": [
@@ -68,7 +68,7 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0-beta.1",
+      "version": "0.4.0-beta.2",
       "directory": "packages/overlay-topics",
       "role": "the topic managers, lookup services, storage adapters, capabilities, history, bounded export, complete export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
       "entryPoints": [
@@ -98,9 +98,9 @@
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.3.0-beta.1",
+      "version": "0.3.0-beta.2",
       "directory": "packages/dpp-profiles",
-      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports and version 4 cross-field data review",
       "entryPoints": [
         ".",
         "./manifests/*",
@@ -184,7 +184,7 @@
     },
     {
       "name": "@bsv/vsc",
-      "version": "0.2.0-beta.1",
+      "version": "0.2.0-beta.2",
       "directory": "packages/vsc",
       "role": "the VSC draft compatibility profile with its owned context and schema artefacts and the two proof suites; the EPCIS source helpers with the pinned EPCIS 2.0.1 artefacts (./epcis-source) and the external ecdsa-rdfc-2019 credential verifier (./exchange)",
       "entryPoints": [
@@ -314,7 +314,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "54255ec2088287560d4a59f78eefbb076d9e1396e35dd09a33afa451a6f672c4",
+      "sha256": "44fd3f44a4179e1fcfd09f0852bcc058d55ebe4f2a2d09feddbfddc7571e003b",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
@@ -381,8 +381,8 @@
   "consumers": [
     {
       "name": "bsv-blockchain-demos/dpp-app",
-      "consumes": "verbatim mirrors of packages/dpp-core, packages/overlay-topics, packages/dpp-profiles and packages/vsc pinned by blob hash (packages/STANDARD_MIRROR.json), to be replaced by the published packages of this set",
-      "note": "the example consumer with the sector workflows"
+      "consumes": "exact npm dependencies; adoption of @bsv/dpp-profiles 0.3.0-beta.2 and explicit profile activation require a separate application change",
+      "note": "the example consumer with sector workflows; package installation, supported readers and selected writers are separate adoption decisions"
     },
     {
       "name": "bsv-blockchain-demos/uora-bsv",

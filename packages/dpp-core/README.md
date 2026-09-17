@@ -21,7 +21,7 @@ rather than rewritten.
 This is a pre-1.0 candidate. Once the release is published, install exact versions from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.1 @bsv/sdk@2.4.2
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.2 @bsv/sdk@2.7.1
 ```
 
 Node >=22 and ECMAScript modules are supported. Browser use of the runtime is untested. No source checkout or build of this package is needed after installation.

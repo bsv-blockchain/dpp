@@ -272,8 +272,12 @@ test('over the real ledger, the qualification and the checker give every claim t
   }
 
   // The candidate set's selection is qualified; the European selection is refused on the same verdicts.
-  const release = run([qualify, 'conformance/selections/dpp-release-2026-09-3.json'])
+  const release = run([qualify, 'conformance/selections/dpp-release-2026-09-4.json'])
   assert.equal(release.status, 0, release.out)
+  const historical = run([qualify, 'conformance/selections/dpp-release-2026-09-3.json'])
+  assert.equal(historical.status, 1, historical.out)
+  assert.match(historical.out, /which is superseded/)
+  assert.match(run([check]).out, /selection dpp-release-2026-09-3 is retained as history/)
   const eu = run([qualify, 'conformance/selections/eu-dpp-system-2026-09.json'])
   const euVerdict = verdicts.get('eu-dpp-system-conformance')
   assert.equal(eu.status, euVerdict.canBeMade ? 0 : 1, eu.out)

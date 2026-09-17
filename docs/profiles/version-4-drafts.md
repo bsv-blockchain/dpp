@@ -1,6 +1,6 @@
 # Evaluate the version 4 drafts
 
-The working checkout adds `battery@4` and `textile@4` as explicit draft selections. These changes are unreleased; installing the previously published package version does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. A package release and application activation require separate decisions.
+The working checkout adds `battery@4` and `textile@4` as explicit draft selections. They are included in the `@bsv/dpp-profiles@0.3.0-beta.2` release candidate; npm publication is pending. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. A package release and application activation require separate decisions.
 
 ## Battery changes
 
