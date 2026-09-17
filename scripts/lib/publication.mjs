@@ -2,6 +2,14 @@ import { integrityOf, sha256 } from './candidates.mjs'
 
 export const NPM_REGISTRY = 'https://registry.npmjs.org/'
 
+/** Drop token auth so npm uses GitHub OIDC for trusted publishing. */
+export function oidcPublishEnv(env) {
+  const next = { ...env }
+  delete next.NODE_AUTH_TOKEN
+  delete next.NPM_TOKEN
+  return next
+}
+
 /** Dependencies within the release must be available before their consumers. */
 export function publicationOrder(candidates, manifests) {
   const ordered = []

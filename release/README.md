@@ -20,7 +20,7 @@ The bundle is what an independent implementer receives: `spec/`, `contracts/`, `
 
 ## Publication
 
-The four npm candidates are published by `.github/workflows/publish.yml`, run manually with `dryRun` defaulting to `true`. Nothing publishes on merge. The workflow builds, type-checks, tests, packs, checks an external consumer, qualifies the selected claims, and builds and smokes the operator image before preparing publication.
+The four npm candidates are published by `.github/workflows/publish.yaml`, run manually with `dryRun` defaulting to `true`. Nothing publishes on merge. The workflow builds, type-checks, tests, packs, checks an external consumer, qualifies the selected claims, and builds and smokes the operator image before preparing publication.
 
 The workflow publishes npm packages only. The operator image is exercised locally and its registry publication needs a separate reviewed operator release. A successful npm publication alone does not change the release set to `released` or establish deployment readiness.
 
@@ -40,7 +40,7 @@ After explicit approval of that exact plan, rerun the workflow on the same revis
 
 ### Authentication and provenance
 
-The workflow uses Node 22 and npm 11.19.0. Use the same toolchain for local packing: compression differences across Node versions can change archive digests even when every packaged file is identical. Do not weaken the archive comparison to bypass a mismatch. Configure an authorised publisher for the `@bsv` scope. The first publication may require an appropriately scoped `NPM_TOKEN` repository secret; where available, configure npm trusted publishing for the exact repository and `publish.yml` workflow. Do not put credentials in source files, plans or logs.
+The workflow uses Node 22 and npm 11.19.0. Use the same toolchain for local packing: compression differences across Node versions can change archive digests even when every packaged file is identical. Do not weaken the archive comparison to bypass a mismatch. Publication authenticates with GitHub OIDC trusted publishing for organisation `bsv-blockchain`, repository `dpp` and workflow filename `publish.yaml`, with no named deployment environment and no `NPM_TOKEN`. Configure that trusted publisher on each package. Do not put credentials in source files, plans or logs.
 
 Provenance defaults to enabled and requires public source access and a supported hosted CI runner. A private source repository cannot produce npm provenance. Publishing public npm packages without provenance is a distinct choice represented by `--provenance=false` and a different plan digest; it must be reviewed explicitly. See the [npm provenance prerequisites](https://docs.npmjs.com/generating-provenance-statements/) and [trusted publishing guide](https://docs.npmjs.com/trusted-publishers/).
 

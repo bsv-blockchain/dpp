@@ -107,10 +107,13 @@ jobs:
             release/dpp-implementer-bundle-*.tgz
       - name: Publish approved packages
         if: ${{ !inputs.dryRun }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_LOGLEVEL: verbose
-        run: node scripts/publish-candidates.mjs --execute --approval="$APPROVED_PLAN" --provenance="$PROVENANCE"
+        run: |
+          set -euo pipefail
+          npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          if [ -f "$npmrc" ]; then
+            sed -i '/_authToken/d' "$npmrc"
+          fi
+          node scripts/publish-candidates.mjs --execute --approval="$APPROVED_PLAN" --provenance="$PROVENANCE"
       - name: Verify public registry consumption
         if: ${{ !inputs.dryRun }}
         run: node scripts/consumer-check.mjs --registry

@@ -19,7 +19,7 @@ The beta.2 package set is not yet published. Package versions are separate from 
 
 Change the affected package version and workspace lockfile, create a new release-set record and qualification selection, and write the changelog and consumer impact notes. Never overwrite a published npm version or edit an earlier profile's meaning. Retain the other package versions when their contents have not changed.
 
-Use Node 22 and npm 11.19.0, matching `.github/workflows/publish.yml`. Different compression implementations can produce different archive digests from identical files. A digest mismatch requires investigation, not a relaxed publication check.
+Use Node 22 and npm 11.19.0, matching `.github/workflows/publish.yaml`. Different compression implementations can produce different archive digests from identical files. A digest mismatch requires investigation, not a relaxed publication check.
 
 From the candidate checkout:
 
@@ -58,7 +58,7 @@ In the `bsv-blockchain/dpp` repository, open Actions, select **Publish npm candi
 
 The workflow repeats the checks, builds and smokes the operator image locally, and uploads the candidate archives and publication plan. It does not publish an operator image. Review the workflow's actual source revision, package actions and printed **Publication plan SHA-256**. This digest identifies the exact publication proposal, including package bytes, versions, registry, tag and provenance setting.
 
-Trusted publishing must authorise GitHub organisation `bsv-blockchain`, repository `dpp`, and workflow filename `publish.yml` in npm's package settings. The workflow has no named deployment environment. The npm [trusted publishing guide](https://docs.npmjs.com/trusted-publishers/) describes the configuration. Credentials do not belong in source files or release notes.
+Trusted publishing must authorise GitHub organisation `bsv-blockchain`, repository `dpp`, and workflow filename `publish.yaml` in npm's package settings, matching the filename npm already records for `@bsv/dpp-core`. The workflow has no named deployment environment and does not use an `NPM_TOKEN`. Repeat the same trusted publisher on each of the four packages. The npm [trusted publishing guide](https://docs.npmjs.com/trusted-publishers/) describes the configuration. Credentials do not belong in source files or release notes.
 
 ## 4. Publish the approved plan
 
