@@ -41,13 +41,13 @@ copy('packages/dpp-profiles/schemas', 'profiles/schemas')
 copy('packages/dpp-profiles/generated', 'profiles/generated')
 copy('packages/dpp-profiles/frozen.json', 'profiles/frozen.json')
 copy('packages/vsc/artifacts', 'profiles/vsc-artifacts')
-// Carry the complete guide navigation, excluding local review material.
+// Carry the complete guide navigation and archived publication plan, excluding local review material.
 cpSync(join(root, 'docs'), join(out, 'docs'), {
   recursive: true,
   filter: (source) => {
     const path = relative(join(root, 'docs'), source)
     return path !== 'private' && !path.startsWith('private/') &&
-      (statSync(source).isDirectory() || source.endsWith('.md'))
+      (statSync(source).isDirectory() || source.endsWith('.md') || path === 'reference/beta-2-publication-plan.json')
   },
 })
 copy('GOVERNANCE.md')
