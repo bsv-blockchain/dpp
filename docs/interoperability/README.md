@@ -18,3 +18,5 @@ The [interoperability profile schema](https://github.com/bsv-blockchain/dpp/blob
 The [release selection](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/selections/dpp-release-2026-09-3.json) withholds the proposed United Nations Transparency Protocol (UNTP) exchange claim. Its [profile source](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/manifests/exchange) records the proposal.
 
 European Standard (EN) 18223 serialisation and Union DPP Registry integration remain gaps in the [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json). An operator-supplied registration reference is not evidence that registration occurred.
+
+The pinned release links above describe the preceding set. That set is superseded by `dpp-release-2026-09-4`; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.

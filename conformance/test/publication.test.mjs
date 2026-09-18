@@ -1,9 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { assertApproval, publicationActions, publicationOrder, registryVersion } from '../../scripts/lib/publication.mjs'
+import { assertApproval, oidcPublishEnv, publicationActions, publicationOrder, registryVersion } from '../../scripts/lib/publication.mjs'
 import { integrityOf, sha256, verifyCandidates } from '../../scripts/lib/candidates.mjs'
 import { dependencyManifest } from '../../scripts/lib/dependency-manifest.mjs'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -42,6 +42,21 @@ test('a partial publication can resume but a conflict aborts preparation', async
   const fetcher = async (url) => String(url).includes(encodeURIComponent(absent.name)) ? response({}, 404) : response(String(url).endsWith('.tgz') ? bytes : metadata)
   assert.deepEqual((await publicationActions([absent, candidate], fetcher)).map((a) => a.action), ['publish', 'already-published'])
   await assert.rejects(publicationActions([absent, { ...candidate, integrity: 'sha512-conflict' }], fetcher), /integrity differs/)
+})
+
+test('OIDC publication drops leftover npm token environment variables', () => {
+  assert.deepEqual(
+    oidcPublishEnv({ NODE_AUTH_TOKEN: '', NPM_TOKEN: 'x', PATH: '/bin', HOME: '/tmp' }),
+    { PATH: '/bin', HOME: '/tmp' },
+  )
+})
+
+test('the publication workflow uses GitHub OIDC without an npm token', () => {
+  const workflow = readFileSync(new URL('../../.github/workflows/publish.yaml', import.meta.url), 'utf8')
+  assert.match(workflow, /id-token:\s*write/)
+  assert.match(workflow, /registry-url:\s*https:\/\/registry\.npmjs\.org/)
+  assert.match(workflow, /_authToken/)
+  assert.doesNotMatch(workflow, /NODE_AUTH_TOKEN|NPM_TOKEN/)
 })
 
 test('approval binds the source, package bytes, tag, provenance and release notes', () => {

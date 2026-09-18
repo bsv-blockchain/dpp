@@ -1,11 +1,11 @@
 # @bsv/vsc
 
-**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.1 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.2 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 After npm publication is verified, install the exact version:
 
 ```sh
-npm install --save-exact @bsv/vsc@0.2.0-beta.1
+npm install --save-exact @bsv/vsc@0.2.0-beta.2
 ```
 
 Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
@@ -40,3 +40,5 @@ The [release selection](https://github.com/bsv-blockchain/dpp/blob/a85a695e584ea
 Companion profile submission: open; see [D-CG1](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L184).
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
+
+The pinned release links above describe the preceding set. That set is superseded by `dpp-release-2026-09-4`; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.

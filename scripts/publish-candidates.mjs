@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { sha256, verifyCandidates, verifyRecordAgainstSet } from './lib/candidates.mjs'
-import { assertApproval, NPM_REGISTRY, publicationActions, publicationOrder, registryVersion } from './lib/publication.mjs'
+import { assertApproval, NPM_REGISTRY, oidcPublishEnv, publicationActions, publicationOrder, registryVersion } from './lib/publication.mjs'
 
 const { values } = parseArgs({ options: {
   execute: { type: 'boolean', default: false },
@@ -16,7 +16,7 @@ const { values } = parseArgs({ options: {
 if (!['true', 'false'].includes(values.provenance)) throw new Error('provenance must be true or false')
 if (values.execute && values['verify-registry']) throw new Error('choose execution or registry verification')
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const run = (command, args) => execFileSync(command, args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).trim()
+const run = (command, args, env = process.env) => execFileSync(command, args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], env }).trim()
 const record = JSON.parse(readFileSync(join(root, 'release/candidates.json'), 'utf8'))
 if (!/^release\/dpp-release-[a-z0-9-]+\.json$/.test(record.releaseSetPath)) throw new Error('invalid release set path')
 const setBytes = readFileSync(join(root, record.releaseSetPath))
@@ -65,7 +65,7 @@ if (values['verify-registry']) {
   for (const { candidate, action } of actions) {
     if (action === 'already-published') continue
     // Never treat a failed publish as success. A rerun verifies anything that landed.
-    run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', '--tag=next', `--registry=${NPM_REGISTRY}`, `--provenance=${plan.provenance}`])
+    run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', '--tag=next', `--registry=${NPM_REGISTRY}`, `--provenance=${plan.provenance}`], plan.provenance ? oidcPublishEnv(process.env) : process.env)
     if (await registryVersion(candidate) === null) throw new Error(`${candidate.name}: npm has not returned the published version; stop and verify before retrying`)
   }
   console.log('All packages are available with the approved bytes. Run the registry consumer check before announcing the release.')

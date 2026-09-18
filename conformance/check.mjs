@@ -108,6 +108,11 @@ for (const name of existsSync(selectionsDir) ? readdirSync(selectionsDir).filter
   const path = `conformance/selections/${name}`
   const selection = read(path)
   if (!validateWith('conformance/selection.schema.json', selection, path)) continue
+  const historicalSet = selection.releaseSet && `release/${selection.releaseSet}.json`
+  if (historicalSet && existsSync(join(root, historicalSet)) && read(historicalSet).status === 'superseded') {
+    note(`selection ${selection.selectionId} is retained as history for a superseded release set; it is not qualified against the current ledger.`)
+    continue
+  }
   const result = assessSelection(selection, { ledger, rows, sources, verdicts, root })
   for (const sentence of result.invalid) defect(sentence)
   for (const sentence of result.refusals) blocked(`${selection.selectionId}: ${sentence}`)

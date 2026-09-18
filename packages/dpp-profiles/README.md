@@ -7,7 +7,7 @@
 This is a pre-1.0 candidate. After publication, install the selected version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.1
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.2
 ```
 
 The runtime requires Node >=22 and ECMAScript modules. The JSON data exports can be read in other runtimes. No repository checkout or package build is needed after installation.

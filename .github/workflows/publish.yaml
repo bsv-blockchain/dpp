@@ -49,6 +49,10 @@ jobs:
           node --input-type=module <<'JS'
           if (!/^[a-f0-9]{64}$/.test(process.env.APPROVED_PLAN ?? '')) throw new Error('the exact publication plan digest is required')
           if (process.env.PROVENANCE === 'true' && process.env.GITHUB_REPOSITORY_VISIBILITY !== 'public') throw new Error('npm provenance requires a public source repository')
+          for (const name of ['ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN']) {
+            if (!process.env[name]) throw new Error(`GitHub OIDC is unavailable: ${name} is missing; check id-token: write permissions`)
+          }
+          console.log('GitHub OIDC request variables are present; npm will attempt the package-specific token exchange.')
           JS
       - run: npm ci
       - run: npm run build
@@ -103,9 +107,13 @@ jobs:
             release/dpp-implementer-bundle-*.tgz
       - name: Publish approved packages
         if: ${{ !inputs.dryRun }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: node scripts/publish-candidates.mjs --execute --approval="$APPROVED_PLAN" --provenance="$PROVENANCE"
+        run: |
+          set -euo pipefail
+          npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          if [ -f "$npmrc" ]; then
+            sed -i '/_authToken/d' "$npmrc"
+          fi
+          node scripts/publish-candidates.mjs --execute --approval="$APPROVED_PLAN" --provenance="$PROVENANCE"
       - name: Verify public registry consumption
         if: ${{ !inputs.dryRun }}
         run: node scripts/consumer-check.mjs --registry

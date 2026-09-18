@@ -7,7 +7,7 @@
 This is a pre-1.0 candidate. After publication, install the selected version from npm:
 
 ```sh
-npm install --save-exact @bsv/vsc@0.2.0-beta.1
+npm install --save-exact @bsv/vsc@0.2.0-beta.2
 ```
 
 The runtime and its exchange and EPCIS subpaths require Node >=22 and ECMAScript modules. Browser runtime use is unsupported; artefact exports are plain data. No repository checkout or package build is needed after installation.

@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-profiles",
-  "version": "0.3.0-beta.1",
+  "version": "0.3.0-beta.2",
   "description": "Experimental prerelease: Canonical DPP industry, exchange, operator and interoperability profiles: immutable manifests, generated payload schemas and consumer documents, lifecycle mapping, GS1 identifier and discovery helpers, applicability evaluation and deterministic passport projection",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -34,15 +34,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "canonicalize": "4.0.0"
+    "canonicalize": "5.0.0"
   },
   "devDependencies": {
-    "@bsv/dpp-core": "0.3.0-beta.1",
-    "@bsv/sdk": "2.5.0",
+    "@bsv/dpp-core": "0.3.0-beta.2",
+    "@bsv/sdk": "2.7.1",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
-    "typescript": "^5.9.3",
-    "vitest": "4.1.11"
+    "typescript": "^7.0.2",
+    "vitest": "5.0.1",
+    "@types/node": "^22.20.3"
   },
   "repository": {
     "type": "git",

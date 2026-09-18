@@ -2,7 +2,7 @@
   "demonstrationVersion": "1",
   "demonstrationId": "independent-implementation-2026-09",
   "purpose": "The interoperability and portability demonstration of the independent implementation trial: what each scenario must run, what evidence it retains, when it passes, when it must refuse, and which ledger rows and claims its evidence bears on. Defined before the second application exists; nothing here is claimed until it has run.",
-  "releaseSet": "dpp-release-2026-09-3",
+  "releaseSet": "dpp-release-2026-09-4",
   "baseline": "native-baseline@2",
   "custodyProfile": "managed-custody@1",
   "parties": {

@@ -129,7 +129,7 @@ for (const specifier of ${JSON.stringify(dataSpecifiers)}) {
 }
 const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAcceptanceToState, findDppOutputs, STANDARD_VERSION_V2, FIELD_COUNT_V2 } = await import('@bsv/dpp-core')
 const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities, joinEvidenceExport } = await import('@bsv/dpp-overlay-topics')
-const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport } = await import('@bsv/dpp-profiles')
+const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData } = await import('@bsv/dpp-profiles')
 const vsc = await import('@bsv/vsc')
 const exchange = await import('@bsv/vsc/exchange')
 const epcisSource = await import('@bsv/vsc/epcis-source')
@@ -159,6 +159,23 @@ out.push(['profiles: interoperability manifests carried', ['gs1-digital-link@1',
 out.push(['profiles: battery@3 reads as a manifest version 2 draft', readManifestAny('battery@3').manifestVersion === '2' && readManifestAny('battery@3').status === 'draft'])
 out.push(['profiles: applicability evaluator answers unresolved for an unresolved rule', evaluateApplicability({ rule: 'unresolved', reason: 'no criterion' }, {}).outcome === 'unresolved'])
 out.push(['profiles: projectPassport exported', typeof projectPassport === 'function'])
+for (const industry of ['battery', 'textile']) {
+  const current = industry + '@2'
+  const draft = industry + '@4'
+  out.push(['profiles: ' + current + ' remains current beside the draft', readManifestAny(current).status === 'current' && readManifestAny(draft).status === 'draft'])
+  const changes = compareProfiles(current, draft)
+  out.push(['profiles: ' + draft + ' change report requires explicit consumer review', changes.requiresConsumerReview && changes.from.profile === current && changes.to.profile === draft && changes.activation === 'explicit-consumer-selection'])
+  for (const tier of ['public', 'restricted']) {
+    const path = import.meta.resolve('@bsv/dpp-profiles/generated/payload-schema/' + draft + '.' + tier + '.schema.json')
+    out.push(['profiles: ' + draft + ' ' + tier + ' schema is packaged', JSON.parse(readFileSync(new URL(path), 'utf8')).type === 'object'])
+  }
+}
+out.push(['profiles: battery@4 cross-field review rejects mismatched manufacturing dates', reviewProfileData('battery@4', { manufacturingMonth: '2026-09', manufacturingDate: '2026-08-01' }).some(f => f.field === 'manufacturingDate' && f.outcome === 'invalid')])
+out.push(['profiles: textile@4 cross-field review retains unresolved composition', reviewProfileData('textile@4', { components: [{ component: 'shell' }], componentFibres: [{ component: 'shell', percent: 80 }] }).some(f => f.field === 'componentFibres' && f.outcome === 'needs-review')])
+let historicalReviewRefused = false
+try { reviewProfileData('battery@2', {}) } catch { historicalReviewRefused = true }
+out.push(['profiles: version 4 data review refuses to reinterpret a historical profile', historicalReviewRefused])
+
 out.push(['vsc: root exports the SEAL verifier and document loader', typeof vsc.verifySeal === 'function' && typeof vsc.createDocumentLoader === 'function'])
 out.push(['vsc/exchange: verifies the external representation', typeof exchange.verifyExternalCredential === 'function' && exchange.EXTERNAL_REPRESENTATIONS.includes('vc-di-ecdsa-rdfc-2019@1')])
 const parsed = epcisSource.parseEpcisSource(new TextEncoder().encode(JSON.stringify({ '@context': ['https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld'], type: 'EPCISDocument', schemaVersion: '2.0', creationDate: '2026-09-06T00:00:00Z', epcisBody: { eventList: [] } })), { mediaType: 'application/json' })
@@ -190,7 +207,7 @@ console.log(JSON.stringify(out))
   }
 
   // 4. The types: a strict TypeScript project importing every package and every VSC subpath, using a declaration from each.
-  run(['npm', 'install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, 'typescript@5', '@types/node@22'], dir)
+  run(['npm', 'install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, 'typescript@7.0.2', '@types/node@22.20.3'], dir)
   writeFileSync(join(dir, 'types.ts'), `
 import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, EvidencePackageManifest } from '@bsv/dpp-core'
 import { verifyChain } from '@bsv/dpp-core'

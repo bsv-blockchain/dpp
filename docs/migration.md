@@ -30,3 +30,5 @@ Use [export and recovery](operate/export-import-recovery.md) to rehearse provide
 The third release set changes the HTTP/export interface while retaining the on-chain record formats. [Release history](reference/release-sets.md) links the exact declarations.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).
+
+The pinned release links above describe the preceding set. That set is superseded by `dpp-release-2026-09-4`; use the [release guide](reference/release-sets.md) for the current candidate and publication state.
