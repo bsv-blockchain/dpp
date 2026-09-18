@@ -4,16 +4,18 @@ Publishing makes reviewed package contents available from npm. It does not chang
 
 ## This release
 
-The `dpp-release-2026-09-4` candidate contains:
+The packages selected by `dpp-release-2026-09-4` were published on 18 September 2026:
 
-| Package | Selected version | Publication action |
+| Package | Published version | Publication result |
 |---|---|---|
-| `@bsv/dpp-profiles` | `0.3.0-beta.2` | Publish the new profiles and review helpers under `next` |
-| `@bsv/dpp-core` | `0.3.0-beta.2` | Publish updated dependencies and rebuilt artefacts under `next` |
-| `@bsv/dpp-overlay-topics` | `0.4.0-beta.2` | Publish updated dependencies and rebuilt artefacts under `next` |
-| `@bsv/vsc` | `0.2.0-beta.2` | Publish updated dependencies and rebuilt artefacts under `next` |
+| `@bsv/dpp-profiles` | `0.3.0-beta.2` | Available under `next`, with provenance |
+| `@bsv/dpp-core` | `0.3.0-beta.2` | Available under `next`, with provenance |
+| `@bsv/dpp-overlay-topics` | `0.4.0-beta.2` | Available under `next`, with provenance |
+| `@bsv/vsc` | `0.2.0-beta.2` | Available under `next`, with provenance |
 
-The beta.2 package set is not yet published. Package versions are separate from the industry versions inside them: battery@2 and textile@2 remain current, versions 3 and 4 remain drafts, and historical definitions remain available. The publisher uses `next` and does not move `latest`. This candidate also upgrades the SDK to 2.7.1, canonicalize to 5.0.0, MongoDB to 7.6.0, TypeScript to 7.0.2, Vitest to 5.0.1 and Node types to 22.20.3. All four package archives change and therefore receive new versions. The earlier profiles-only publication plan does not authorise this revised set.
+The [publication receipt](beta-2-publication.md) preserves the approved plan, package digests and verification results. Package versions are separate from the industry versions inside them: battery@2 and textile@2 remain current, versions 3 and 4 remain drafts, and historical definitions remain available. The publication left `latest` at beta.1. This release also upgrades the SDK to 2.7.1, canonicalize to 5.0.0, MongoDB to 7.6.0, TypeScript to 7.0.2, Vitest to 5.0.1 and Node types to 22.20.3.
+
+The commands below use this release as a worked example. To reproduce its plan, use its recorded source revision and toolchain. For a new package change, create new versions and a new release set; never reuse the published beta.2 versions for changed bytes.
 
 ## 1. Prepare a candidate
 
@@ -65,6 +67,10 @@ Trusted publishing must authorise GitHub organisation `bsv-blockchain`, reposito
 After approval of the exact plan, run the workflow again on the same source revision with `dryRun` set to `false`, `approval` set to the reviewed SHA-256, and the other inputs unchanged. Confirm the branch still resolves to that revision before dispatching it. A changed revision or archive changes the digest and requires a new dry run and review.
 
 The publisher checks every selected version before making a write. Already-published packages are reused only when their downloaded archives match the approved bytes exactly. A conflicting version stops publication. A partial failure is not a completed release: retain the plan and archives, inspect what reached npm, and retry only the same approved plan.
+
+After a successful upload, the publisher waits up to ten minutes per package, polling every 15 seconds, for npm to expose matching metadata and archive bytes. A metadata or archive 404 during this wait means processing may still be underway. Authentication, network and server errors, unexpected archive hosts, or identity and integrity mismatches still stop the run immediately. The publisher never repeats an upload inside this wait, and does not start the next package until verification succeeds.
+
+If the wait times out, the upload may still complete. Keep the approved plan and archives, check registry availability and digests, then resume the same approved workflow revision. Do not bump a version just to bypass a delay or assume a failed run means nothing was published. The beta.2 release exposed this delay; its original workflow required resumptions before the final public-registry consumer check passed.
 
 ## 5. Verify and hand over to consumers
 

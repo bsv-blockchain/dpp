@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { sha256, verifyCandidates, verifyRecordAgainstSet } from './lib/candidates.mjs'
-import { assertApproval, NPM_REGISTRY, oidcPublishEnv, publicationActions, publicationOrder, registryVersion } from './lib/publication.mjs'
+import { assertApproval, NPM_REGISTRY, oidcPublishEnv, publicationActions, publicationOrder, waitForRegistryVersion } from './lib/publication.mjs'
 
 const { values } = parseArgs({ options: {
   execute: { type: 'boolean', default: false },
@@ -66,7 +66,7 @@ if (values['verify-registry']) {
     if (action === 'already-published') continue
     // Never treat a failed publish as success. A rerun verifies anything that landed.
     run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', '--tag=next', `--registry=${NPM_REGISTRY}`, `--provenance=${plan.provenance}`], plan.provenance ? oidcPublishEnv(process.env) : process.env)
-    if (await registryVersion(candidate) === null) throw new Error(`${candidate.name}: npm has not returned the published version; stop and verify before retrying`)
+    await waitForRegistryVersion(candidate, { onProgress: console.log })
   }
   console.log('All packages are available with the approved bytes. Run the registry consumer check before announcing the release.')
 } else {
