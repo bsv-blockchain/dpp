@@ -6,11 +6,21 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 **Pre-1.0.** Everything below is the working draft assembling itself. Breaking changes are expected and are recorded here without apology until version 1.0 is declared, as `GOVERNANCE.md` states. Entries name the pull request that landed them; a change to a wire format names the fixture that moved with it, because the two are never allowed to drift apart.
 
-## Unreleased
+## Publication status
+
+The four beta.2 packages were published on 18 September 2026. The [publication receipt](docs/reference/beta-2-publication.md) identifies their exact source, approved plan and verification results. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
+
+## Repository history
+
+### 2026-09-18, beta.2 publication and registry availability
+
+- Publish all four beta.2 packages under `next` from `f54e750de4c7731a30563e5f1caad762adbfb737` using GitHub OIDC with provenance. The public-registry archives match the approved plan, and the clean consumer runtime and strict TypeScript checks pass. `latest` remains at beta.1; battery@4 and textile@4 remain drafts.
+- Archive the exact approved plan and publication receipt in `docs/reference/`, and update package installation and release status documentation. Preserve the original candidate release-set JSON and its approved digest; publication does not activate profiles in consuming applications or establish deployment readiness.
+- Wait up to ten minutes per package after a successful upload for npm metadata and matching archive bytes, polling every 15 seconds. Retry only processing-related 404 responses; retain immediate failure on other errors or integrity mismatches and recovery through the same approved plan. This tooling change follows the beta.2 publication and does not change the published package bytes.
 
 ### 2026-09-17, beta.2 release candidate and dependency updates
 
-- Prepare `@bsv/dpp-core@0.3.0-beta.2`, `@bsv/dpp-profiles@0.3.0-beta.2`, `@bsv/dpp-overlay-topics@0.4.0-beta.2` and `@bsv/vsc@0.2.0-beta.2` under the `next` tag in `dpp-release-2026-09-4`. All four archives change with this dependency and compiler update. Publication is pending; the candidate does not move the `latest` tag.
+- Prepare `@bsv/dpp-core@0.3.0-beta.2`, `@bsv/dpp-profiles@0.3.0-beta.2`, `@bsv/dpp-overlay-topics@0.4.0-beta.2` and `@bsv/vsc@0.2.0-beta.2` under the `next` tag in `dpp-release-2026-09-4`. All four archives change with this dependency and compiler update. Publication was pending at preparation; see the 18 September receipt above. The candidate does not move the `latest` tag.
 - Publish through GitHub OIDC trusted publishing: the workflow file is `.github/workflows/publish.yaml` to match the npm trusted publisher filename, `id-token: write` remains, leftover `NPM_TOKEN` / `NODE_AUTH_TOKEN` values are not passed, and `actions/setup-node`'s empty `_authToken` line is stripped before `npm publish`. Provenance stays the default. Package manifests are unchanged.
 - Update all direct dependencies to their current npm latest versions: SDK 2.7.1, canonicalize 5.0.0, MongoDB 7.6.0, TypeScript 7.0.2, Vitest 5.0.1 and Node types 22.20.3. Overlay 2.3.1 and its GASP 1.3.6 dependency are already current. Align the SDK override, runtime declarations, dependency ledger and strict consumer compiler check.
 - Declare Node types explicitly for server packages under TypeScript 7. The canonicalisation upgrade corrects handling of values outside JSON, including undefined properties, sparse arrays and boxed primitives. Consumers must not recompute historical signatures over such JavaScript values with the new implementation; retained JSON fixtures verify compatibility for the supported data representations.

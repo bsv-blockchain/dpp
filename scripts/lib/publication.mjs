@@ -1,4 +1,5 @@
 import { integrityOf, sha256 } from './candidates.mjs'
+import { setTimeout as delay } from 'node:timers/promises'
 
 export const NPM_REGISTRY = 'https://registry.npmjs.org/'
 
@@ -34,8 +35,9 @@ export function publicationOrder(candidates, manifests) {
 }
 
 /** Only a registry 404 means absent. Network, authentication and server errors stop the release. */
-export async function registryVersion(candidate, fetcher = fetch) {
-  const response = await fetcher(`${NPM_REGISTRY}${encodeURIComponent(candidate.name)}/${encodeURIComponent(candidate.version)}`, { signal: AbortSignal.timeout(30_000) })
+export async function registryVersion(candidate, fetcher = fetch, { signal, allowPendingArchive = false } = {}) {
+  const requestSignal = () => signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000)
+  const response = await fetcher(`${NPM_REGISTRY}${encodeURIComponent(candidate.name)}/${encodeURIComponent(candidate.version)}`, { signal: requestSignal() })
   if (response.status === 404) return null
   if (!response.ok) throw new Error(`${candidate.name}@${candidate.version}: registry HTTP ${response.status}`)
   const metadata = await response.json()
@@ -43,11 +45,51 @@ export async function registryVersion(candidate, fetcher = fetch) {
   if (metadata.dist?.integrity !== candidate.integrity) throw new Error(`${candidate.name}@${candidate.version}: published integrity differs; never overwrite or skip different bytes`)
   const url = new URL(metadata.dist.tarball)
   if (url.origin !== new URL(NPM_REGISTRY).origin) throw new Error(`unexpected tarball host for ${candidate.name}`)
-  const archive = await fetcher(url, { signal: AbortSignal.timeout(30_000) })
+  const archive = await fetcher(url, { signal: requestSignal() })
+  // Only the post-upload waiter may treat a missing archive as propagation.
+  // Preparation must never interpret an existing version as safe to republish.
+  if (archive.status === 404 && allowPendingArchive) return null
   if (!archive.ok) throw new Error(`${candidate.name}@${candidate.version}: tarball HTTP ${archive.status}`)
   const bytes = Buffer.from(await archive.arrayBuffer())
   if (sha256(bytes) !== candidate.sha256 || integrityOf(bytes) !== candidate.integrity || bytes.length !== candidate.size) throw new Error(`${candidate.name}@${candidate.version}: downloaded bytes differ`)
   return metadata
+}
+
+/** Wait after a successful upload, without retrying publication or relaxing verification. */
+export async function waitForRegistryVersion(candidate, {
+  timeoutMs = 600_000,
+  pollIntervalMs = 15_000,
+  fetcher = fetch,
+  sleep = delay,
+  now = () => performance.now(),
+  onProgress = () => {},
+} = {}) {
+  for (const [name, value] of Object.entries({ timeoutMs, pollIntervalMs })) {
+    if (!Number.isSafeInteger(value) || value <= 0 || value > 2_147_483_647) throw new Error(`${name} must be a positive timer duration`)
+  }
+  const label = `${candidate.name}@${candidate.version}`
+  const deadline = now() + timeoutMs
+  const signal = AbortSignal.timeout(timeoutMs)
+  const timedOut = () => new Error(`${label}: npm availability was not verified within ${timeoutMs / 1000}s; publication may still be processing. Retain the approved plan and archives, verify npm availability, then resume the same approved plan. Do not change the version or republish blindly.`)
+  onProgress(`${label}: upload accepted; waiting up to ${timeoutMs / 1000}s for npm availability and matching archive bytes.`)
+  while (now() < deadline) {
+    let metadata
+    try {
+      metadata = await registryVersion(candidate, fetcher, { signal, allowPendingArchive: true })
+    } catch (error) {
+      if (signal.aborted) throw timedOut()
+      throw error
+    }
+    if (signal.aborted || now() >= deadline) throw timedOut()
+    if (metadata !== null) {
+      onProgress(`${label}: available; downloaded archive matches the approved bytes.`)
+      return metadata
+    }
+    const remaining = deadline - now()
+    onProgress(`${label}: npm is still processing; checking again in ${Math.min(pollIntervalMs, remaining) / 1000}s.`)
+    await sleep(Math.min(pollIntervalMs, remaining))
+  }
+  throw timedOut()
 }
 
 /** Inspect every version before the first write, so a later conflict cannot cause a partial release. */

@@ -2,13 +2,13 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The selected release is `dpp-release-2026-09-4`, a candidate containing beta.2 versions of all four packages, the version 4 profile drafts and updated dependencies. Publication of this set is pending. See [release status](../reference/release-sets.md) and the [support table](support-table.md).
+The selected release is `dpp-release-2026-09-4`. Its four beta.2 packages were published to npm under `next` on 18 September 2026, including the version 4 profile drafts and updated dependencies. See the [publication receipt](../reference/beta-2-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
 
-The first examples run from a source checkout. Packing is needed when another application will install these local candidate packages. No public package publication is implied.
+Install the published packages directly, or use the source checkout below to build and inspect the release.
 
-## After npm publication
+## Install from npm
 
-Until registry publication is verified, use the candidate installation below. Once published, a Node >=22 application can install the packages it needs without cloning this repository:
+A Node >=22 application can install the packages it needs without cloning this repository:
 
 ```sh
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.2 @bsv/dpp-profiles@0.3.0-beta.2 @bsv/vsc@0.2.0-beta.2
@@ -38,12 +38,12 @@ Node runtime support does not imply browser runtime support. Keep server package
 
 ## Source access
 
-The following historical checkout predates the version 4 profiles and the current release candidate. For the current candidate, use the revision recorded in its reviewed publication plan as described in [publishing profile updates](../reference/publishing-profile-updates.md). The historical experimental package checkout uses source revision `a85a695e584eae6c2b159ccbb542e8ecc7a28f48`. The repository is public:
+The published beta.2 packages were built from source revision `f54e750de4c7731a30563e5f1caad762adbfb737`, recorded in the [publication receipt](../reference/beta-2-publication.md). Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. The repository is public:
 
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
 cd dpp
-git checkout --detach a85a695e584eae6c2b159ccbb542e8ecc7a28f48
+git checkout --detach f54e750de4c7731a30563e5f1caad762adbfb737
 npm ci
 npm run build
 ```
@@ -53,7 +53,7 @@ Once the build succeeds, go directly to the [offline quick start](../quick-start
 For source inspection when needed, a pinned file can also be read locally:
 
 ```sh
-git show a85a695e584eae6c2b159ccbb542e8ecc7a28f48:spec/record-model.md
+git show f54e750de4c7731a30563e5f1caad762adbfb737:spec/record-model.md
 ```
 
 Use the path following the commit hash in each source URL. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
@@ -67,7 +67,7 @@ node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
+The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
 
 To print the produced tarball paths, run:
 

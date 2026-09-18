@@ -1,0 +1,47 @@
+{
+  "releaseSet": "dpp-release-2026-09-4",
+  "releaseSetSha256": "281de6acb4df7d5432172ccfbe58e14ac268389de87b80e86f9423c2a412df6c",
+  "sourceRevision": "f54e750de4c7731a30563e5f1caad762adbfb737",
+  "sourceState": "committed",
+  "selection": "conformance/selections/dpp-release-2026-09-4.json",
+  "selectionSha256": "048eafd0af927931c8f35558ff2238fcac40117861284a8ee2b1b964850a5662",
+  "changelogSha256": "5cfe48eb7f1f687f1e2fdf9eba0dae25577b519ecc5019744c9bb532ee086ddd",
+  "registry": "https://registry.npmjs.org/",
+  "access": "public",
+  "tag": "next",
+  "provenance": true,
+  "candidates": [
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.3.0-beta.2",
+      "filename": "bsv-dpp-core-0.3.0-beta.2.tgz",
+      "sha256": "5c9d6ed8b225fb61eaedd72ca39cab5f4224c108085e15173b1a3d18add3c469",
+      "integrity": "sha512-M14RoXOA8MDKymSHcQUK74EwD19V/KTVvSBv3uPubCcuT9ljKjv+PNZR/6AjFYXWW51pjukp0PhC6z1rG5XOpQ==",
+      "size": 114164
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.4.0-beta.2",
+      "filename": "bsv-dpp-overlay-topics-0.4.0-beta.2.tgz",
+      "sha256": "57a1a6af0e6e010d710063c6d1e2c3befa63152b47f018310ed8601f85c45189",
+      "integrity": "sha512-EWoaMpRPmC7VJpkXoD0rnRVBLM6nDTZzJsK6JzmGgE1SpUmNdnUbQLWffEexYevlz1kngRq3Pyv3whb3aWwrig==",
+      "size": 138711
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.2",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.2.tgz",
+      "sha256": "46fde2cf21631a94ba61829c4c6d634acbab2b7b775f48b79def1a5a59484755",
+      "integrity": "sha512-MigpEa45nlpLCPGPn14ZZFeTy3kq9RXw+JZYecp8xYDQUHMqLkjxgK7o2TMRa9gBIHTuyasRhfNx3CLwfiQjnA==",
+      "size": 355324
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.2.0-beta.2",
+      "filename": "bsv-vsc-0.2.0-beta.2.tgz",
+      "sha256": "7f1d72d52703c9182d1b0d4923232eab9513ff20c1af4639033b89e1cd74a3f8",
+      "integrity": "sha512-0lacE7rNT0o88AEye1DrfKErmcO0YeqEnMwBUwyoZwBk6kkw+zhwi1188pPNbGXRBsQbus1ZcjkCplkIy1JP1Q==",
+      "size": 99489
+    }
+  ]
+}
