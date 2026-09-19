@@ -36,7 +36,7 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 
 Five profiles are published: `battery@2`, `textile@2` and `general@2` (current) and `textile@1` and `general@1` (superseded, and served for as long as any state declares them). They were inventoried from the application's attribute registries in full, including the fields captured over life or derived rather than at registration, and frozen. `battery@3` and `textile@3` are draft successors under manifest version 2: opt-in by explicit version, carrying a requirement status per field and a migration outcome per field, and leaving every byte of the two current versions unchanged until a reviewed cutover.
 
-This checkout also includes unreleased `battery@4` and `textile@4` drafts, each succeeding its frozen version 3 draft. Existing versions remain unchanged. Battery adds truthful month-only manufacture capture, postal delivery information, power reference conditions and separate individual performance measurements. Textile corrects source-status mappings and component composition under Article 11. These additions do not change the current profile selection or establish regulatory qualification.
+The published `@bsv/dpp-profiles@0.3.0-beta.2` package includes `battery@4` and `textile@4` drafts, each succeeding its frozen version 3 draft. Existing versions remain unchanged. Battery adds truthful month-only manufacture capture, postal delivery information, power reference conditions and separate individual performance measurements. Textile corrects source-status mappings and component composition under Article 11. These additions do not change the current profile selection or establish regulatory qualification.
 
 ## Review a profile update
 

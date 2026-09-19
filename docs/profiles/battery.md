@@ -22,7 +22,7 @@ The output includes a token transfer with insufficient evidence for physical cus
 
 ## Version and source material
 
-The working checkout also provides an unreleased `battery@4` draft that preserves all earlier versions. [Evaluate the version 4 drafts](version-4-drafts.md) explains the corrections, migration and remaining assessment work. The pinned sources below describe the earlier released definitions.
+The published `@bsv/dpp-profiles@0.3.0-beta.2` package includes a `battery@4` draft that preserves all earlier versions. [Evaluate the version 4 drafts](version-4-drafts.md) explains the corrections, migration and remaining assessment work. The pinned sources below describe the earlier released definitions.
 
 | Material | Source |
 |---|---|
