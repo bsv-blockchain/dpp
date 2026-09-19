@@ -22,7 +22,7 @@ The field list is the start of payload integration. Use its generated schema for
 
 ## Version and source material
 
-An unreleased `textile@4` draft in the working checkout corrects source-status mappings and component composition. See [the version 4 draft guide](version-4-drafts.md) for migration and assessment limits. The pinned definitions below remain available unchanged.
+The `textile@4` draft included in the published `@bsv/dpp-profiles@0.3.0-beta.2` package corrects source-status mappings and component composition. See [the version 4 draft guide](version-4-drafts.md) for migration and assessment limits. The pinned definitions below remain available unchanged.
 
 | Material | Source |
 |---|---|
