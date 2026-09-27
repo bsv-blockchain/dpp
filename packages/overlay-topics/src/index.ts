@@ -110,6 +110,7 @@ import { buildEvidenceExportPart, buildEvidencePackage } from './evidenceExport.
 import { RetractionRefused, retractOutput } from './retraction.js'
 import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
 import { startPeerSynchronisation, syncConfigurationFor, syncSettingsFromEnvironment, type SyncSettings } from './sync.js'
+import { pacedChainTracker } from './headerSource.js'
 
 export const TOPIC = DPP_TOPIC
 export const SERVICE = DPP_SERVICE
@@ -152,7 +153,7 @@ export interface NodeComponents {
   controlAuthorities?: string[]
   managedAcceptance?: boolean
   /** SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the Engine holds the same peers as its syncConfiguration. */
-  sync?: Pick<SyncSettings, 'peers' | 'intervalMs'>
+  sync?: Pick<SyncSettings, 'peers' | 'intervalMs'> & { legacy?: boolean }
 }
 
 export interface OverlayHttpOptions {
@@ -1212,7 +1213,10 @@ function chainTracker(network: 'main' | 'test'): ChainTracker | 'scripts only' {
     return 'scripts only'
   }
   const apiKey = process.env.WOC_API_KEY
-  return new WhatsOnChain(network, apiKey != null && apiKey !== '' ? { apiKey } : undefined)
+  const keyed = apiKey != null && apiKey !== ''
+  // Paced and remembered (headerSource.ts): anonymous WhatsOnChain answers 429
+  // past a few requests a second, which a synchronisation round exceeds.
+  return pacedChainTracker(new WhatsOnChain(network, keyed ? { apiKey } : undefined), { minIntervalMs: keyed ? 100 : 350 })
 }
 
 /**
@@ -1372,7 +1376,7 @@ async function engineFromEnvironment(
     ownerConsent,
     managedAcceptance: versionTwo.managedAcceptance,
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
-    sync: { peers: sync.peers, intervalMs: sync.intervalMs },
+    sync: { peers: sync.peers, intervalMs: sync.intervalMs, legacy: sync.legacy },
   }
   return { engine, components, close }
 }
@@ -1433,7 +1437,16 @@ async function main(): Promise<void> {
   // peer of ours can answer us; later rounds on the interval. Nothing awaits
   // a round: a peer that is down is a log line, not a stalled node.
   const synchronisation = components.sync != null && components.sync.peers.length > 0
-    ? startPeerSynchronisation(engine, { intervalMs: components.sync.intervalMs, peers: components.sync.peers })
+    ? startPeerSynchronisation(engine, {
+        intervalMs: components.sync.intervalMs,
+        peers: components.sync.peers,
+        // After each round, what the peers offered is checked against what
+        // arrived, and the checkpoint held where something did not (sync.ts).
+        reconcile: {
+          storage: components.engineStorage,
+          topics: [TOPIC, ATTESTATION_TOPIC, ...(components.sync.legacy === true ? [UORA_TOPIC] : [])],
+        },
+      })
     : undefined
   if (synchronisation != null) void synchronisation.runOnce()
 

@@ -4,7 +4,7 @@
 
 First build and run the [initial operator](README.md). The second preset uses the image built by the first, and has a separate database and named volume.
 
-Copy `deploy/operator.env.example` to `deploy/operator-b.env`. Set `OVERLAY_PORT=8081` so the published ports do not collide. Set `SYNC_PEERS=http://host.docker.internal:8080` for the supplied same-machine arrangement; on separate hosts use an address reachable from the second container.
+Copy `deploy/operator.env.example` to `deploy/operator-b.env`. Set `OVERLAY_PORT` to any free port, `8081` in the commands below, so the published ports do not collide; the checks that follow use whichever port you chose. Set `SYNC_PEERS=http://host.docker.internal:8080` for the supplied same-machine arrangement; on separate hosts use an address reachable from the second container. Set `WOC_API_KEY`: a synchronising node asks the header source once per state it admits, and anonymous access is rate limited. Where the host cannot mount a file, `PUBLISHER_POLICY_JSON` carries the policy chain inline instead of `PUBLISHER_POLICY_FILE`.
 
 Use separate submit, callback and export secrets. For the first shared-record exercise, use the same publisher public key as the first instance, or a publisher policy accepting the relevant keys. An operator's own identity and its accepted publisher keys answer different questions.
 
@@ -20,7 +20,7 @@ curl --fail http://localhost:8081/capabilities
 
 Use the [same passport lookup](../reference/contracts.md#find-passport-records) against each operator by changing `INDEX_URL`. After the first has admitted records and synchronisation has run, inspect which records the second holds and verify them independently.
 
-Check an initially empty peer, a restarted peer catching up and a record the second policy refuses. Synchronisation makes candidates available; local admission still evaluates them. Two containers controlled by one administrator demonstrate the mechanism, not separately administered operation.
+Check an initially empty peer, a restarted peer catching up and a record the second policy refuses. Synchronisation makes candidates available; local admission still evaluates them. After each round the node checks what the peer offered against what arrived, holds its checkpoint where something did not so the next round offers it again, and leaves an output behind after five rounds, naming it in the log. Two containers controlled by one administrator demonstrate the mechanism, not separately administered operation.
 
 ## Preset sources
 
