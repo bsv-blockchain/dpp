@@ -8,13 +8,19 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The four beta.2 packages were published on 18 September 2026. The [publication receipt](docs/reference/beta-2-publication.md) identifies their exact source, approved plan and verification results. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.3 candidate set `dpp-release-2026-09-5` is prepared and unpublished.
+The beta.3 packages were published on 27 September 2026, beside the unchanged `@bsv/vsc` 0.2.0-beta.2. The [publication receipt](docs/reference/beta-3-publication.md) identifies their exact source, approved plan and verification results, and the [beta.2 receipt](docs/reference/beta-2-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
 
 ## Repository history
 
+### 2026-09-27, beta.3 publication
+
+- Publish `@bsv/dpp-core@0.3.0-beta.3`, `@bsv/dpp-overlay-topics@0.4.0-beta.3` and `@bsv/dpp-profiles@0.3.0-beta.3` under `next` from `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81` using GitHub OIDC with provenance. `@bsv/vsc@0.2.0-beta.2` was verified in the registry and not uploaded. The public-registry archives match the approved plan, and the clean consumer runtime and strict TypeScript checks pass. `latest` remains at beta.1.
+- Archive the exact approved plan and publication receipt in `docs/reference/`, include the plan in the implementer bundle, and update installation and release status documentation. The release-set JSON keeps `status: candidate` as the approved input.
+- Re-pin the quick start's example links to the published revision, so its passport reader is the one that merges every lookup BEEF.
+
 ### 2026-09-27, beta.3 release candidate
 
-- Prepare `@bsv/dpp-core@0.3.0-beta.3`, `@bsv/dpp-overlay-topics@0.4.0-beta.3` and `@bsv/dpp-profiles@0.3.0-beta.3` under the `next` tag in `dpp-release-2026-09-5`, carrying the synchronisation and publisher policy changes below. `@bsv/vsc@0.2.0-beta.2` is unchanged and its published archive repacks byte for byte, so the publisher reuses it. Publication is pending and needs approval of the exact plan; `latest` stays at beta.1.
+- Prepare `@bsv/dpp-core@0.3.0-beta.3`, `@bsv/dpp-overlay-topics@0.4.0-beta.3` and `@bsv/dpp-profiles@0.3.0-beta.3` under the `next` tag in `dpp-release-2026-09-5`, carrying the synchronisation and publisher policy changes below. `@bsv/vsc@0.2.0-beta.2` is unchanged and its published archive repacks byte for byte, so the publisher reuses it. Publication was pending at preparation; see the 27 September publication entry above. `latest` stays at beta.1.
 - Move `@bsv/sdk` from 2.7.1 to 2.8.10 in every package, the root override, the runtime declaration, the baselines and the dependency ledger. The exact 2.7.1 pin kept a consumer from installing the current wallet toolbox beside the packages: `@bsv/wallet-toolbox` 2.14.3 requires SDK 2.8.0 or later, and some earlier toolbox versions call 2.8.0 methods while declaring an older range. [Choose a wallet](docs/operate/wallet-broadcast-proofs.md#choose-a-wallet) now names the toolbox version that installs. The package tests, conformance vectors and the independent Python reader pass unchanged on 2.8.10.
 - Mark `dpp-release-2026-09-4` superseded. Its approved beta.2 plan is reproduced from its own source revision, as the receipt records; the demonstration definition and the qualification test move to the new set.
 

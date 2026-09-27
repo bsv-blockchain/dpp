@@ -31,4 +31,4 @@ Then choose the component to build. Each role guide explains its inputs, first e
 
 The guides explain the working model and implementation routes here. Pinned source links identify the exact rules, schemas and evidence behind them. Running repository examples requires [source access](packages/README.md#source-access); reading this guide does not require opening those links.
 
-The source repository is public. The experimental beta.2 packages were published to npm on 18 September 2026. See [release status](reference/release-sets.md). The [status page](start/status.md) identifies the other open decisions.
+The source repository is public. The experimental beta.3 packages were published to npm on 27 September 2026. See [release status](reference/release-sets.md). The [status page](start/status.md) identifies the other open decisions.
