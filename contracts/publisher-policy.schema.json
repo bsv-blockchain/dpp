@@ -57,7 +57,8 @@
       }
     },
     "issuedAt": {
-      "$ref": "#/$defs/dateTime"
+      "$ref": "#/$defs/dateTime",
+      "description": "When this version was issued. It is in force from then until a later version is issued. The first version also governs every instant before its issue, through its key windows, so a chain written after publishing began can describe the keys that were active then."
     },
     "supersedes": {
       "type": "object",

@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "fba17a3f229690a7acbb62cc1a4f3853049205b6f9ea93769007431c2b46e701"
+      "digest": "36013a1e23e316b21696ef8a417fe0e33b81d70b1be8d0bfe5198c8672795852"
     },
     {
       "id": "spec-verification",
@@ -474,7 +474,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/publisher-policy.schema.json",
-      "digest": "3d39a42c16ffb61e86ac9b79140ea0f01e14948c2d3541acc795897517ad1504"
+      "digest": "1f919f311f13c795aa8418d5d2e810887fb367340dc1b0f50ed6555fcd905622"
     },
     {
       "id": "docs-quick-start",
@@ -498,7 +498,7 @@
       "version": "1.0.0",
       "kind": "local",
       "path": "fixtures/vectors/dpp/publisher-policy/v1.json",
-      "digest": "a8c6a4ceb0ba13da921a9a621ac81bd68f7bd53df4e2a7569f8319c817a20bba"
+      "digest": "e40256f5e947825a0321198f72e2fe103c1dd7020160e65fddbf719b77236894"
     },
     {
       "id": "vectors-evidence-package",

@@ -76,6 +76,7 @@ export function publisherPolicyVectors(): Record<string, unknown> {
   }
   const chain = [genesis, rotation, handover]
   const { supersedes: _s, ...noSupersedes } = rotation
+  const lateGenesis = signPolicy({ ...genesis, issuedAt: '2026-02-01T00:00:00Z' }, A)
   const alone = signPolicy({ ...handover, policyVersion: 4, issuedAt: '2026-10-01T00:00:00Z', supersedes: { policyVersion: 3, sha256: policyDigest(handover) }, authorisation: { kind: 'rotation', signer: '', suite: 'bsv-ecdsa-der', value: '' } }, K2)
   return {
     $schema: 'https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json',
@@ -93,6 +94,13 @@ export function publisherPolicyVectors(): Record<string, unknown> {
           { at: '2026-06-01T00:00:00Z', keys: publisherKeysAt(chain, '2026-06-01T00:00:00Z') },
           { at: '2026-10-01T00:00:00Z', role: 'anchor-publisher', keys: publisherKeysAt(chain, '2026-10-01T00:00:00Z', 'anchor-publisher') },
           { at: '2026-10-01T00:00:00Z', keys: publisherKeysAt(chain, '2026-10-01T00:00:00Z') },
+        ],
+      }),
+      vector('genesis-after-activation', 'A genesis issued after its key activated: the first version governs every instant before its own issue through its key windows, and the key admits nothing before its activation.', [lateGenesis], ['publisher-policy'], {
+        keys_at: [
+          { at: '2025-12-31T23:59:59Z', keys: publisherKeysAt([lateGenesis], '2025-12-31T23:59:59Z') },
+          { at: '2026-01-15T00:00:00Z', keys: publisherKeysAt([lateGenesis], '2026-01-15T00:00:00Z') },
+          { at: '2026-03-01T00:00:00Z', keys: publisherKeysAt([lateGenesis], '2026-03-01T00:00:00Z') },
         ],
       }),
       vector('federation-rotation-countersigned', 'Under a federation no operator authorises a key alone: the fourth version is signed by an active key and countersigned by the other operator.', [...chain, signPolicy(alone, K2, B)], ['publisher-policy', 'valid']),

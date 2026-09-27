@@ -177,6 +177,76 @@
       ]
     },
     {
+      "id": "genesis-after-activation",
+      "description": "A genesis issued after its key activated: the first version governs every instant before its own issue through its key windows, and the key admits nothing before its activation.",
+      "input": {
+        "chain": [
+          {
+            "policyFormat": "dpp-publisher-policy@1",
+            "policyVersion": 1,
+            "scope": {
+              "operatorProfile": "single-operator@1",
+              "operators": [
+                "did:example:a"
+              ]
+            },
+            "issuedAt": "2026-02-01T00:00:00Z",
+            "publishers": [
+              {
+                "key": "02352bbf4a4cdd12564f93fa332ce333301d9ad40271f8107181340aef25be59d5",
+                "role": "state-publisher",
+                "activeFrom": "2026-01-01T00:00:00Z"
+              }
+            ],
+            "authorisation": {
+              "kind": "genesis",
+              "signer": "03774ae7f858a9411e5ef4246b70c65aac5649980be5c17891bbec17895da008cb",
+              "suite": "bsv-ecdsa-der",
+              "value": "304402205cb780b8cb051084a93ad7d8929e75a1fc9380f5c62f03825a1eb7362b7be9b602205c1fa7c1eb2ebd7f73a470694a546517570701077f174a17f17e0c75c282e12d"
+            }
+          }
+        ],
+        "operator_identity_keys": {
+          "did:example:a": "03774ae7f858a9411e5ef4246b70c65aac5649980be5c17891bbec17895da008cb",
+          "did:example:b": "03d01115d548e7561b15c38f004d734633687cf4419620095bc5b0f47070afe85a"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "versions": [
+          1
+        ],
+        "versions_detail": [
+          {
+            "policyVersion": 1,
+            "preimage_hex": "7b22617574686f7269736174696f6e223a7b226b696e64223a2267656e65736973222c227369676e6572223a22303337373461653766383538613934313165356566343234366237306336356161633536343939383062653563313738393162626563313738393564613030386362222c227375697465223a226273762d65636473612d646572227d2c226973737565644174223a22323032362d30322d30315430303a30303a30305a222c22706f6c696379466f726d6174223a226470702d7075626c69736865722d706f6c6963794031222c22706f6c69637956657273696f6e223a312c227075626c697368657273223a5b7b2261637469766546726f6d223a22323032362d30312d30315430303a30303a30305a222c226b6579223a22303233353262626634613463646431323536346639336661333332636533333333303164396164343032373166383130373138313334306165663235626535396435222c22726f6c65223a2273746174652d7075626c6973686572227d5d2c2273636f7065223a7b226f70657261746f7250726f66696c65223a2273696e676c652d6f70657261746f724031222c226f70657261746f7273223a5b226469643a6578616d706c653a61225d7d7d",
+            "digest_hex": "3ded7f8f32e5c7d5da68578da60a72856d90e5aeabcf06a79309d385ba37f93d"
+          }
+        ],
+        "keys_at": [
+          {
+            "at": "2025-12-31T23:59:59Z",
+            "keys": []
+          },
+          {
+            "at": "2026-01-15T00:00:00Z",
+            "keys": [
+              "02352bbf4a4cdd12564f93fa332ce333301d9ad40271f8107181340aef25be59d5"
+            ]
+          },
+          {
+            "at": "2026-03-01T00:00:00Z",
+            "keys": [
+              "02352bbf4a4cdd12564f93fa332ce333301d9ad40271f8107181340aef25be59d5"
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "publisher-policy"
+      ]
+    },
+    {
       "id": "federation-rotation-countersigned",
       "description": "Under a federation no operator authorises a key alone: the fourth version is signed by an active key and countersigned by the other operator.",
       "input": {

@@ -63,6 +63,20 @@ describe('the publisher key policy chain (services.md §1)', () => {
     expect(publisherKeysAt(chain, '2026-10-01T00:00:00Z')).toEqual([pub(K2), pub(K3)])
   })
 
+  it('lets a genesis issued after its key activated govern the instants before its issue, and nothing before the activation', () => {
+    // A deployment that writes its first policy months into publishing
+    // describes those months in the genesis's key windows. Only the first
+    // version reaches back: the rotation still takes effect from its issue.
+    const late = sign({ ...genesis, issuedAt: '2026-02-01T00:00:00Z' }, A)
+    expect(publisherKeysAt([late], '2025-12-31T23:59:59Z')).toEqual([])
+    expect(publisherKeysAt([late], '2026-01-15T00:00:00Z')).toEqual([pub(K1)])
+    expect(publisherKeysAt([late], '2026-03-01T00:00:00Z')).toEqual([pub(K1)])
+    const lateRotation = sign({ ...rotation, supersedes: { policyVersion: 1, sha256: policyDigest(late) } }, K1)
+    expect(verifyPolicyChain([late, lateRotation], identity).ok).toBe(true)
+    expect(publisherKeysAt([late, lateRotation], '2026-01-15T00:00:00Z')).toEqual([pub(K1)])
+    expect(publisherKeysAt([late, lateRotation], '2026-06-01T00:00:00Z')).toEqual([pub(K2)])
+  })
+
   it('refuses a genesis that an outsider signed, and a tampered body', () => {
     const outsider = sign(genesis, STRANGER)
     expect(verifyPolicyChain([outsider], identity).failure?.reason).toBe('genesis-signer-not-operator')

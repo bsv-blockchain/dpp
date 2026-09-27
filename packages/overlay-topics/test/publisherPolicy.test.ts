@@ -9,7 +9,7 @@ import { AttestationTopicManager } from '../src/tmAttestation.js'
 import { loadPublisherPolicy, parseOperatorIdentityKeys, publisherPolicyFromEnvironment } from '../src/policyConfig.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
 import { bodyOf, eventTx, genesisTx, lockKey, makeData, makerWallet, newNode, SERVER_ID, serverPriv } from './helpers.js'
-import { A1, K1, K2, OPERATORS, policyChain, pub, STRANGER, T1, tamperedChain } from './policy-fixture.js'
+import { A1, K1, K2, OPERATOR, OPERATORS, operatorPriv, policyChain, pub, signPolicy, STRANGER, T0, T1, tamperedChain } from './policy-fixture.js'
 
 /**
  * The publisher key policy at the topic managers (spec/services.md section 1):
@@ -42,13 +42,33 @@ describe('tm_dpp under a publisher key policy', () => {
     expect(String(warn.mock.calls[0][0])).toContain(AFTER_ROTATION)
   })
 
-  it('refuses a state timestamped before the new key activated, and one before any policy version', async () => {
+  it('refuses a state timestamped before the new key activated, and one before the first key activated', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const tm = new DppTopicManager('', { publisherPolicy: chain })
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K2, INSIDE_K1), [])).outputsToAdmit).toEqual([])
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K2, AFTER_ROTATION), [])).outputsToAdmit).toEqual([0])
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K1, BEFORE_POLICY), [])).outputsToAdmit).toEqual([])
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(STRANGER, INSIDE_K1), [])).outputsToAdmit).toEqual([])
+  })
+
+  it('admits a state dated before the genesis was issued when its key was active then: a policy written late describes history', async () => {
+    // The reference deployment wrote its first policy months after it began
+    // publishing; the genesis's key windows describe those months, and only
+    // a later version takes effect from its own issue (dpp-issues#71).
+    const late = signPolicy(
+      {
+        policyFormat: 'dpp-publisher-policy@1',
+        policyVersion: 1,
+        scope: { operatorProfile: 'single-operator@1', operators: [OPERATOR] },
+        issuedAt: T1,
+        publishers: [{ key: pub(K1), role: 'state-publisher', operator: OPERATOR, activeFrom: T0 }],
+        authorisation: { kind: 'genesis', signer: '', suite: 'bsv-ecdsa-der', value: '' },
+      },
+      operatorPriv
+    )
+    const tm = new DppTopicManager('', { publisherPolicy: [late] })
+    expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K1, INSIDE_K1), [])).outputsToAdmit).toEqual([0])
+    expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K1, BEFORE_POLICY), [])).outputsToAdmit).toEqual([])
   })
 
   it('does not consult the positional identity key where the policy covers the topic', async () => {
