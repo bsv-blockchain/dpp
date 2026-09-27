@@ -246,6 +246,29 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     ])
   })
 
+  it.each([['unproven', false], ['proven', true]])('a four-state lineage funded from its own change arrives whole with every state %s', async (_label, proven) => {
+    const policy = writePolicy([federatedChain().genesis])
+    const A = await startOperator('A', policy)
+    // Unproven, the peer's graph reaches each predecessor through both of its
+    // outputs and the overlay's ordering replays one copy ahead of its
+    // ancestors; the refusal of that copy must leave no mark so the copy in
+    // order is admitted. Proven, the peer asks A for each predecessor's change
+    // output. Before either answer the peer kept one state, or none.
+    const { tx: g } = await genesisTx({ timestamp: IN_WINDOW }, K1_WALLET)
+    const { tx: e1 } = await changeFundedEventTx(g, { timestamp: IN_WINDOW, op: 'REPAIRED', eventData: '{"n":1}' }, K1_WALLET)
+    const { tx: e2 } = await changeFundedEventTx(e1, { timestamp: IN_WINDOW, op: 'REPAIRED', eventData: '{"n":2}' }, K1_WALLET)
+    const { tx: e3 } = await changeFundedEventTx(e2, { timestamp: IN_WINDOW, op: 'REPAIRED', eventData: '{"n":3}' }, K1_WALLET)
+    const lineage = [g, e1, e2, e3]
+    for (const tx of lineage) expect(await announce(A, tx)).toBe('tm_dpp=admitted')
+    if (proven) for (const [i, tx] of lineage.entries()) await pushProof(A, tx, 800_500 + i)
+    const B = await startOperator('B', policy, { peers: [A.base] })
+    await syncOnce(B)
+    const statesA = normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID }))
+    expect(statesA).toHaveLength(4)
+    expect(normalise(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(statesA)
+    expect(historyItems(await historyOf(B))).toEqual(historyItems(await historyOf(A)))
+  })
+
   it('a late-starting B catches up, and states admitted during a partition arrive once they are proven', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const { A, states } = await operatorAWithHistory(policy)
