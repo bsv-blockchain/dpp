@@ -9,7 +9,7 @@ One supported preset, on Docker Compose: the index node from this repository's i
 | `overlay` | `packages/overlay-topics/Dockerfile`, built from the repository root: `tm_dpp`, `tm_attestation`, the historical UORA topic, their lookup services, the HTTP routes of `contracts/overlay.yaml` | Nothing on disk of its own. Everything admitted is in MongoDB |
 | `mongo` | MongoDB 7 | The named volume `mongo-data`: the engine's outputs and transactions, the passport and anchor indexes, the sequences |
 | `deploy/operator.env` | The configuration, copied from `operator.env.example` | Local file, never committed (`.gitignore`) |
-| `deploy/config/` | A publisher policy chain, when one is used | Mounted read-only at `/config` |
+| `deploy/config/` | A publisher policy chain, when one is used as a file; `PUBLISHER_POLICY_JSON` carries the same chain inline where a host cannot mount one | Mounted read-only at `/config` |
 
 Two keys and three tokens are the whole secret material: the service identity's public key (the private half stays in the writer's wallet and is never given to the node), the export signing key (a key of its own, for signed evidence packages; leave it empty and both export routes answer 503), the submit bearer, the callback token and the export bearer (`EXPORT_TOKEN`, for the complete export; leave it empty and `GET /evidence-export` is open to anyone). Every one of them reaches the container only through the environment list in the Compose file, so a name the file does not forward is not set by putting it in the env file. The node holds no custody key: it cannot spend a passport, sign a state or countersign one, and a compromised index changes what can be found and never what can be believed.
 

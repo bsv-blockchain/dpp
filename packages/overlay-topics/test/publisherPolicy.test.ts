@@ -140,6 +140,7 @@ describe('the policy from the environment', () => {
   }
   afterEach(() => {
     delete process.env.PUBLISHER_POLICY_FILE
+    delete process.env.PUBLISHER_POLICY_JSON
     delete process.env.OPERATOR_IDENTITY_KEYS
     vi.restoreAllMocks()
   })
@@ -175,6 +176,23 @@ describe('the policy from the environment', () => {
     // One key under two names would sign a federation rotation and countersign it as another operator.
     expect(() => parseOperatorIdentityKeys(`${operators},did:example:b=${Object.values(OPERATORS)[0]}`)).toThrow(/same key as/)
     expect(parseOperatorIdentityKeys(undefined)).toEqual({})
+  })
+
+  it('reads the same chain inline from PUBLISHER_POLICY_JSON, and refuses both sources at once', () => {
+    process.env.PUBLISHER_POLICY_JSON = JSON.stringify(chain)
+    process.env.OPERATOR_IDENTITY_KEYS = operators
+    const config = publisherPolicyFromEnvironment()
+    expect(config?.versions).toEqual([1, 2])
+    expect(config?.source).toBe('PUBLISHER_POLICY_JSON')
+    process.env.PUBLISHER_POLICY_JSON = '{'
+    expect(() => publisherPolicyFromEnvironment()).toThrow(/PUBLISHER_POLICY_JSON is not JSON/)
+    process.env.PUBLISHER_POLICY_JSON = JSON.stringify(tamperedChain())
+    expect(() => publisherPolicyFromEnvironment()).toThrow(/PUBLISHER_POLICY_JSON: policy version 2 refused, signature-invalid/)
+    process.env.PUBLISHER_POLICY_JSON = JSON.stringify(chain)
+    process.env.PUBLISHER_POLICY_FILE = write('both.json', chain)
+    expect(() => publisherPolicyFromEnvironment()).toThrow(/both set/)
+    delete process.env.PUBLISHER_POLICY_JSON
+    delete process.env.PUBLISHER_POLICY_FILE
   })
 
   it('is absent without a file, warning when operator keys are set alone', () => {
