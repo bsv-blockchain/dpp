@@ -9,7 +9,7 @@ import { buildAttestationAnchor, chainFromBeef, verifyChain, type PublisherPolic
 import { loadPublisherPolicy, type PublisherPolicyConfig } from '../src/policyConfig.js'
 import { startPeerSynchronisation } from '../src/sync.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
-import { ANYONE, bodyOf, eventTx, fundingTx, genesisTx, JSON_BODY, newNode, OCTET, PASSPORT_ID, type TestNode, type TestStores } from './helpers.js'
+import { ANYONE, bodyOf, changeFundedEventTx, eventTx, fundingTx, genesisTx, JSON_BODY, newNode, OCTET, PASSPORT_ID, type TestNode, type TestStores } from './helpers.js'
 import { A1, FEDERATION_OPERATORS, federatedChain, K1, K2, pub, STRANGER } from './policy-fixture.js'
 
 /**
@@ -215,6 +215,35 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     expect(capabilitiesB.limits.syncIntervalMs).toBe(0)
     expect(capabilitiesB.unsupported.map((u: { id: string }) => u.id)).not.toContain('gasp-synchronisation')
     expect(capabilitiesB.publisherPolicy).toMatchObject({ policyVersion: '1', publisherKeys: [pub(K1)], anchoringServices: [pub(A1)] })
+  })
+
+  it('a lineage funded from its own change synchronises, which is how a wallet-backed writer funds every state', async () => {
+    const policy = writePolicy([federatedChain().genesis])
+    const A = await startOperator('A', policy)
+    // Each state spends the predecessor's passport output and its change, so
+    // two inputs name the same predecessor, and the two predecessors are
+    // proven, so A holds each as the compact BEEF of that state alone. That
+    // is the shape of every record the reference deployment holds, and until
+    // a node answered for any output of a transaction it holds, a peer asking
+    // for the change was refused and dropped the whole lineage.
+    const { tx: g } = await genesisTx({ timestamp: IN_WINDOW }, K1_WALLET)
+    prove(g, 800_401)
+    const { tx: e1 } = await changeFundedEventTx(g, { timestamp: IN_WINDOW }, K1_WALLET)
+    prove(e1, 800_402)
+    const { tx: e2 } = await changeFundedEventTx(e1, { timestamp: IN_WINDOW, op: 'REPAIRED', eventData: '{"workshop":"north"}' }, K1_WALLET)
+    for (const tx of [g, e1, e2]) expect(await announce(A, tx)).toBe('tm_dpp=admitted')
+
+    const B = await startOperator('B', policy, { peers: [A.base] })
+    await syncOnce(B)
+    const statesA = normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID }))
+    expect(statesA).toHaveLength(3)
+    expect(normalise(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(statesA)
+    expect(historyItems(await historyOf(B))).toEqual(historyItems(await historyOf(A)))
+    expect(historyItems(await historyOf(B))).toEqual([
+      [g.id('hex'), true, e1.id('hex')],
+      [e1.id('hex'), true, e2.id('hex')],
+      [e2.id('hex'), false, ''],
+    ])
   })
 
   it('a late-starting B catches up, and states admitted during a partition arrive once they are proven', async () => {

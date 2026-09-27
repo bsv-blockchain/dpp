@@ -223,8 +223,27 @@ export class InMemoryOverlayStorage implements RetractableStorage {
     if (stored != null) stored.blockHeight = blockHeight
   }
 
+  /*
+   * Recorded only when the topic admitted an output of the transaction. The
+   * Engine records every submission it processed, a refusal included, and a
+   * recorded refusal makes the same bytes a duplicate the Engine never judges
+   * again. The host's submit route already treats such a record as the
+   * refusal it is and clears it (`resubmitRefusedDuplicates`); peer
+   * synchronisation submits straight to the Engine, and the SDK's graph
+   * finalisation can submit a state before its predecessor when one
+   * transaction stands in the graph twice, once per spent output, which a
+   * wallet-funded state always does. Refused out of order, recorded, then
+   * offered again in order as a duplicate, the state was lost for good. So a
+   * refusal leaves no mark here, and a state is judged afresh whenever it is
+   * announced or offered, as `doesAppliedTransactionExist` then reports.
+   */
   async insertAppliedTransaction(tx: AppliedTransaction): Promise<void> {
+    if (!(await this.admittedSomethingOf(tx))) return
     this.applied.add(`${tx.txid}.${tx.topic}`)
+  }
+
+  private async admittedSomethingOf(tx: AppliedTransaction): Promise<boolean> {
+    return (await this.findOutputsForTransaction(tx.txid)).some((output) => output.topic === tx.topic)
   }
 
   async doesAppliedTransactionExist(tx: AppliedTransaction): Promise<boolean> {
@@ -389,7 +408,10 @@ export class MongoOverlayStorage implements RetractableStorage {
     await this.outputs.updateOne({ txid, outputIndex, topic }, { $set: { blockHeight } })
   }
 
+  /** As the in-memory storage: a refusal leaves no applied record, so the same bytes are judged again when announced or offered. */
   async insertAppliedTransaction(tx: AppliedTransaction): Promise<void> {
+    const admitted = await this.outputs.countDocuments({ txid: tx.txid, topic: tx.topic }, { limit: 1 })
+    if (admitted === 0) return
     await this.applied.updateOne(
       { txid: tx.txid, topic: tx.topic },
       { $setOnInsert: { txid: tx.txid, topic: tx.topic } },

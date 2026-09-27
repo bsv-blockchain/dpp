@@ -496,10 +496,13 @@ function txidOf(beef: number[]): string {
  * that has since gone (its predecessor announced after it, a policy version
  * not yet loaded, a stranger announcing a successor before the writer could
  * announce its predecessor) would read as a duplicate for ever and the writer
- * would record success. When this host's storage shows no admitted output of
- * the txid for a topic that read as a duplicate, it clears the applied record
- * and submits the transaction again for those topics, so the answer is what
- * the topic managers say today: admitted, or none. Returns the topics
+ * would record success. This package's own storages record nothing for a
+ * refusal (`engineStorage.ts`, `insertAppliedTransaction`), so with them the
+ * case never arises; a foreign storage that records every submission still
+ * reaches here. When the storage shows no admitted output of the txid for a
+ * topic that read as a duplicate, the applied record is cleared and the
+ * transaction submitted again for those topics, so the answer is what the
+ * topic managers say today: admitted, or none. Returns the topics
  * re-evaluated; `steak` is updated in place for them. Without the storage (a
  * stand-in engine) nothing changes.
  */
@@ -824,9 +827,23 @@ async function handle(
        * outpoint.
        */
       const held = options.components?.engineStorage == null ? undefined : await options.components.engineStorage.findOutput(txid, outputIndex, undefined, undefined, true)
-      if (held?.beef != null) {
+      /*
+       * Any output of a held transaction names the same bytes and the same
+       * proof. A peer assembling an unproven state asks for every input the
+       * state spends, and a wallet-funded writer spends the predecessor's
+       * change beside its passport output; that change is no coin of this
+       * topic, so it is not held by outpoint, and until this was answered from
+       * the transaction it belongs to, no lineage funded that way could be
+       * synchronised from any node, this one included.
+       */
+      const storage = options.components?.engineStorage
+      const sibling = held?.beef == null && storage != null
+        ? (await storage.findOutputsForTransaction(txid, true)).find((output) => output.beef != null)
+        : undefined
+      const beef = held?.beef ?? sibling?.beef
+      if (beef != null) {
         try {
-          const tx = Transaction.fromBEEF(held.beef)
+          const tx = Transaction.fromBEEF(beef)
           if (tx.id('hex') === txid) {
             json(response, 200, { rawTx: tx.toHex(), graphID, outputIndex, ...(tx.merklePath == null ? {} : { proof: tx.merklePath.toHex() }) })
             return
@@ -838,7 +855,7 @@ async function handle(
       try {
         json(response, 200, await engine.provideForeignGASPNode(graphID, txid, outputIndex))
       } catch (cause) {
-        if (cause instanceof Error && /No matching output found|Unable to find output/.test(cause.message)) {
+        if (cause instanceof Error && /No matching output found|Unable to find output|Incomplete SPV data/.test(cause.message)) {
           throw new HttpError(404, 'this index holds no such output in that graph')
         }
         throw cause
