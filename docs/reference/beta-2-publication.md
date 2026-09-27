@@ -1,6 +1,6 @@
 # Beta.2 publication receipt
 
-All four packages selected by `dpp-release-2026-09-4` were published to the public npm registry on **18 September 2026**, using GitHub OIDC trusted publishing with provenance. Their downloaded archives matched the approved bytes, and the final public-registry consumer check passed.
+All four packages selected by `dpp-release-2026-09-4` were published to the public npm registry on **18 September 2026**, using GitHub OIDC trusted publishing with provenance. Their downloaded archives matched the approved bytes, and the final public-registry consumer check passed. The set has since been superseded by `dpp-release-2026-09-5`; this receipt records the beta.2 publication as it happened.
 
 ## Exact source and approval
 

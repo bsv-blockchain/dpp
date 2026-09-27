@@ -31,4 +31,4 @@ The third release set changes the HTTP/export interface while retaining the on-c
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).
 
-The pinned release links above describe the preceding set. That set is superseded by `dpp-release-2026-09-4`; use the [release guide](reference/release-sets.md) for the current candidate and publication state.
+The pinned release links above describe an earlier set, now superseded; use the [release guide](reference/release-sets.md) for the current candidate and publication state.

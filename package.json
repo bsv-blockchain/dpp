@@ -28,7 +28,7 @@
   },
   "overrides": {
     "@bsv/overlay": {
-      "@bsv/sdk": "2.7.1"
+      "@bsv/sdk": "2.8.10"
     }
   },
   "devDependencies": {
