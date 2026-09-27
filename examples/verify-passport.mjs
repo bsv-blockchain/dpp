@@ -11,7 +11,7 @@
  *
  * With a passport identifier, the script asks an index (default: the
  * demonstration deployment) for the record's outputs, rebuilds the chain from
- * the BEEF the index returns, and verifies it: every user signature, every
+ * the BEEFs the index returns, merged into one, and verifies it: every user signature, every
  * link, every merkle proof against WhatsOnChain's headers. The index is only
  * used to find the bytes; nothing it says is trusted, which is the point.
  *
@@ -168,10 +168,21 @@ if (fixtureMode) {
     console.log('The index knows no record with that identifier. That says nothing about whether one exists.')
     process.exit(1)
   }
-  const tip = answer.outputs.reduce((a, b) => (a.beef.length >= b.beef.length ? a : b))
-  chain = chainFromBeef(Beef.fromBinary(tip.beef), passportId)
+  // Every retained state comes back as its own BEEF, and how much each one
+  // carries depends on how it reached the index: a state announced with its
+  // ancestors carries them, a state a peer synchronised or an operator
+  // restored from a package is compact and carries its own proof alone.
+  // Merged, they are one BEEF holding the whole lineage whichever way each
+  // state arrived, which is the one BEEF this check takes (spec/record-model.md
+  // section 8); reading the largest alone worked only on an index that had
+  // been announced to directly.
+  const merged = answer.outputs.slice(1).reduce((all, output) => {
+    all.mergeBeef(output.beef)
+    return all
+  }, Beef.fromBinary(answer.outputs[0].beef))
+  chain = chainFromBeef(merged, passportId)
   tracker = new WhatsOnChain('main')
-  console.log(`The index returned ${answer.outputs.length} outputs; the tip's BEEF reconstructs a chain of ${chain.length} states.`)
+  console.log(`The index returned ${answer.outputs.length} outputs; merged, their BEEFs reconstruct a chain of ${chain.length} states.`)
 }
 
 const ops = chain.map((tx) => findDppOutputs(tx)[0].state.op)
