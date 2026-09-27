@@ -17,6 +17,24 @@ BEEF means Background Evaluation Extended Format, a transaction-evidence encodin
 
 Start with `node examples/write-passport.mjs --dry-run` after [setup](../quick-start.md#prepare-the-checkout). The live example needs a locally available BRC-100 wallet, the intended passport identifier and index URL, plus the index's submission and callback credentials. It performs a version 1 activation; it is not a version 2 transfer recipe.
 
+## Choose a wallet
+
+The writer needs a BRC-100 wallet. The standard names the interface, not a product, and two arrangements satisfy it.
+
+| Arrangement | What it is | What it needs |
+|---|---|---|
+| A wallet application on the developer's machine | The writer example constructs `WalletClient('auto')` from `@bsv/sdk`, which finds a BRC-100 wallet running locally, such as BSV Desktop or BSV Browser, and asks it for the identity key, the passport's owner key, the signatures and the broadcast. The wallet holds the keys and the funds; the example holds nothing. | The wallet installed, unlocked and funded through its own receive flow; the index address and credentials the example takes as arguments |
+| A wallet the service owns | A hosted writer, and a registry that anchors, run `@bsv/wallet-toolbox`, a BRC-100 wallet as a library, with storage the service controls: SQLite or MySQL in process, or `@bsv/wallet-toolbox-client` against a wallet storage server such as the stack's wallet infrastructure reference. | A root key kept as a secret, the storage backend or storage address, the network, funds paid into that wallet, and the toolbox's services layer for an ARC-compatible broadcaster, headers and the monitor that attaches merkle paths |
+
+The reference deployment uses the second arrangement: the client package against a storage server, with the root key supplied from the environment. Nothing in the standard requires that choice, only that the wallet answers the BRC-100 interface and that the writer keeps the retained transaction, its BEEF and its proof. A root key alone is not a wallet backup; the toolbox's recovery guides say what else to keep.
+
+| Source | Use |
+|---|---|
+| [BRC-100 wallet interface](https://bsv-blockchain.github.io/ts-stack/specs/brc-100-wallet/) | The methods the writer calls: `getPublicKey`, `createAction`, `signAction`, `listOutputs` |
+| [Wallet-aware application guide](https://bsv-blockchain.github.io/ts-stack/guides/wallet-aware-app/) | Connecting to a local wallet through `WalletClient` |
+| [Wallet toolbox](https://bsv-blockchain.github.io/ts-stack/packages/wallet/wallet-toolbox/) and its [README](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/packages/wallet/wallet-toolbox/README.md) | Storage backends, services, monitor, funding and recovery |
+| [Wallet infrastructure](https://bsv-blockchain.github.io/ts-stack/infrastructure/wallet-infra/) | The storage server a client-package wallet can use |
+
 ## Handle interruptions
 
 If admission refuses the draft, inspect the record and policy before broadcast. If a transaction was already sent but indexing failed, retry the announcement of that transaction. If the network refuses an admitted draft, retract it under the service contract.

@@ -15,7 +15,7 @@ The first command reproduces a version 1 fixture and refuses an invalid state be
 
 ## Connect the components
 
-Validate the proposed payload under its selected industry profile. Obtain the prior record and confirm the operation is being built against the intended predecessor. Use the wallet to construct and sign, then run the reader's checks on the unsent result.
+Validate the proposed payload under its selected industry profile. Obtain the prior record and confirm the operation is being built against the intended predecessor. Use the wallet to construct and sign, then run the reader's checks on the unsent result. [Choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet) names the wallets that satisfy the interface on a developer's machine and in a hosted service.
 
 Keep admission, broadcast response and inclusion proof as separate entries in the operation journal. If an index is unavailable after a transaction was sent, retry indexing that transaction; creating another transaction would be a different action. If the network refuses an admitted draft, follow the retraction route for that draft.
 

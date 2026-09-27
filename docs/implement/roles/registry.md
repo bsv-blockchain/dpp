@@ -6,25 +6,31 @@ A registry retains signed claims and evidence so another party can retrieve and 
 
 The first interface to implement is `POST /validate`. It accepts a supported secured representation as JSON. For the native exercise, send the signed claim as the body and the independently expected passport identifier in the `subject` query parameter.
 
-Run the [validation request](../../quick-start.md#registry-validation) against that service. The example reads the signed claim from the local fixture, so there is no claim object to transcribe. Expect HTTP 200 and inspect the report's native-signature and subject-binding checks. Missing token or anchor evidence remains unestablished.
+For a native claim the operation is two package calls. `verifyLifecycleClaim(claim, { passportId: subject })` from `@bsv/dpp-core` checks the signature and the subject binding, exactly as the [issuer quick start](../../quick-start.md#attestation-issuer) does. `verifyPassportEvidence` produces the shared verification report when the request carries token history or the registry holds evidence for that passport. Answer under the `attestation-registry/1` contract with the named outcome, the checks and the report, as the [validate operation](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/registry.yaml#L781-L831) defines them, and store nothing.
 
-The DPP checkout does not start a registry process. A separate reference registry exists, or an independent implementation can supply this endpoint. The [HTTP guide](../../reference/contracts.md#validate-a-claim) explains the request, response and error boundary here.
+Run the [validation request](../../quick-start.md#registry-validation) against your service. The example reads the signed claim from the local fixture, so there is no claim object to transcribe. Expect HTTP 200 and inspect the report's native-signature and subject-binding checks. Missing token or anchor evidence remains unestablished. To see the expected answer before writing a line, run the same request against the hosted demonstration registry at `https://dpp-resolver.bsvb.net`, which serves the operation without credentials and stores nothing. The [HTTP guide](../../reference/contracts.md#validate-a-claim) explains the request, response and error boundary.
 
-## Run the separate reference registry locally
+## No public reference registry
 
-With access to the registry repository, use a fresh sibling checkout and Node.js 22 or later:
+The DPP checkout does not start a registry, and no registry package or container image is published. The registry the programme operates is maintained in a separate repository that is not public. Build against the contract: everything it requires of a registry can be implemented with the published packages, and the hosted demonstration registry is available for comparing answers. A registry is a role of its own under [conformance](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/conformance.md); the anchoring and issuer roles it may also perform are declared separately.
 
-```sh
-git clone https://github.com/bsv-blockchain-demos/uora-bsv.git uora-bsv-local
-cd uora-bsv-local
-git checkout --detach 07236cf753a238ab7ae3f5dd0c12efe236d6e9f1
-npm ci
-env -u SERVER_PRIVATE_KEY -u WALLET_STORAGE_URL -u MONGO_URL -u STORE_FILE npm start
-```
+## The minimum a registry serves
 
-For this validation exercise, keep the fresh checkout without `.env` or `.env.local` files. The service uses memory storage and has no configured anchoring wallet. It should report that it is listening on port 4000. Leave it running and return to the DPP checkout in a second terminal to run [the validation request](../../quick-start.md#registry-validation). Stop the local process with Ctrl-C afterwards.
+Implement these operations in this order, testing each with a malformed input, a missing-evidence input and a valid input before starting the next. The [contract](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/registry.yaml) defines every request and response shape.
 
-The command is defined in the [registry package manifest](https://github.com/bsv-blockchain-demos/uora-bsv/blob/07236cf753a238ab7ae3f5dd0c12efe236d6e9f1/package.json); the [entry point](https://github.com/bsv-blockchain-demos/uora-bsv/blob/07236cf753a238ab7ae3f5dd0c12efe236d6e9f1/src/index.ts) selects storage. A clone or package-access error is a repository/dependency access issue, not a reason to create new signing keys. The independent validation interface above remains usable without this reference service.
+| Operation | What it must do | Package support |
+|---|---|---|
+| `GET /capabilities` | Declare the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/capabilities.schema.json) and the contract's [capabilities operation](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/registry.yaml#L576-L584) |
+| `POST /validate` | Verify without storing, as above | `verifyLifecycleClaim`, `verifyPassportEvidence` |
+| `POST /attestations` | Verify the explicit secured representation under the declared policy; store the exact bytes with their media type, representation, digest and scoped report; refuse an invalid or unsupported submission by name; store a duplicate once; report acceptance, anchoring and inclusion as separate fields | `verifyLifecycleClaim`, `lifecycleClaimBytes`, `lifecycleClaimDigest` |
+| `GET /attestations` and `GET /attestations/{id}/report` | Page the held records over a stable snapshot; return the stored report for one record | The contract's cursor and snapshot rules |
+| `GET /attestations/{id}/proof` | Return the canonical bytes with everything a third party needs to check the anchor without this service | `lifecycleClaimBytes` |
+| `GET /history` | The lifecycle history of one passport from the claims held; a lookup, not an export | |
+| `GET /passports/{passportId}/evidence-package` | The signed `dpp-evidence-package@1` envelope for one passport | `signEvidenceManifest`, `inspectEvidencePackage` |
+
+Anchoring is the registry's optional second role. When performed, build the `bsv-attestation-anchor-v1` locking script with `buildAttestationAnchor` over the stored bytes' digest and metadata, broadcast it through the registry's own wallet, announce the transaction to `tm_attestation` on an overlay, and serve the proof route so a reader can check the anchor independently. [Rules](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md) section 5 fixes the script, the [anchor example](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/examples/verify-attestation-anchor.mjs) is the reader a proof must satisfy, and [choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet) covers the wallet. An accepted record can remain unanchored, and the intake response says so.
+
+Status lists, certifications, GS1 resolution and the showcase routes in the contract belong to the hosted demonstration's other roles and are not part of the registry minimum.
 
 ## Add storage and retrieval
 
