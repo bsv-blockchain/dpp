@@ -190,12 +190,24 @@ export function verifyPolicyChain(chain: PublisherPolicy[], operatorIdentityKeys
   return { ok: true, versions }
 }
 
-/** The policy version in force at an instant: the newest issued at or before it. */
+/**
+ * The policy version in force at an instant: the newest issued at or before
+ * it, and, for an instant before any version was issued, the first version.
+ * A genesis describes history as well as the present: a chain written after
+ * publishing began says in its key windows which keys were active then, and
+ * a key still admits nothing before its own activation. Only the first
+ * version reaches back; a later version takes effect from its own issue, so
+ * no rotation or handover can rewrite what came before it.
+ */
 export function policyInForceAt(chain: PublisherPolicy[], at: string | Date): PublisherPolicy | undefined {
   const t = typeof at === 'string' ? instant(at) : at.getTime()
   let inForce: PublisherPolicy | undefined
-  for (const policy of chain) if (instant(policy.issuedAt) <= t && (inForce == null || policy.policyVersion > inForce.policyVersion)) inForce = policy
-  return inForce
+  let first: PublisherPolicy | undefined
+  for (const policy of chain) {
+    if (first == null || policy.policyVersion < first.policyVersion) first = policy
+    if (instant(policy.issuedAt) <= t && (inForce == null || policy.policyVersion > inForce.policyVersion)) inForce = policy
+  }
+  return inForce ?? first
 }
 
 /**

@@ -181,8 +181,9 @@ describe.each(harnesses)('engine storage on %s', (_name, harness) => {
     expect(found?.beef).toEqual([7, 7])
   })
 
-  it('applied transactions are idempotent per (txid, topic)', async () => {
+  it('applied transactions are idempotent per (txid, topic), once the topic admitted an output of the transaction', async () => {
     const storage = await harness.fresh()
+    await storage.insertOutput(output({ txid: TXID_A, topic: 'tm_dpp' }))
     const applied = { txid: TXID_A, topic: 'tm_dpp' }
     await storage.insertAppliedTransaction(applied)
     await storage.insertAppliedTransaction(applied)
@@ -190,6 +191,23 @@ describe.each(harnesses)('engine storage on %s', (_name, harness) => {
     expect(await storage.doesAppliedTransactionExist({ txid: TXID_A, topic: 'tm_uora_dpp' })).toBe(
       false
     )
+  })
+
+  it('a refusal leaves no applied record: a transaction the topic admitted nothing of is judged again when announced or offered', async () => {
+    const storage = await harness.fresh()
+    // The Engine records every processed submission; without an admitted
+    // output the record would make a refused state a duplicate for ever, and
+    // the SDK's graph finalisation submits a state before its predecessor
+    // whenever one transaction stands in the graph twice.
+    await storage.insertAppliedTransaction({ txid: TXID_A, topic: 'tm_dpp' })
+    expect(await storage.doesAppliedTransactionExist({ txid: TXID_A, topic: 'tm_dpp' })).toBe(false)
+    // An output admitted under another topic does not count for this one.
+    await storage.insertOutput(output({ txid: TXID_A, topic: 'tm_uora_dpp' }))
+    await storage.insertAppliedTransaction({ txid: TXID_A, topic: 'tm_dpp' })
+    expect(await storage.doesAppliedTransactionExist({ txid: TXID_A, topic: 'tm_dpp' })).toBe(false)
+    await storage.insertOutput(output({ txid: TXID_A, topic: 'tm_dpp' }))
+    await storage.insertAppliedTransaction({ txid: TXID_A, topic: 'tm_dpp' })
+    expect(await storage.doesAppliedTransactionExist({ txid: TXID_A, topic: 'tm_dpp' })).toBe(true)
   })
 
   it('interactions default to zero and round-trip', async () => {

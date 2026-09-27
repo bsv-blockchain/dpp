@@ -3,10 +3,11 @@
  * (`spec/services.md` section 1, `contracts/publisher-policy.schema.json`).
  *
  * `PUBLISHER_POLICY_FILE` names a JSON file holding the chain of
- * `dpp-publisher-policy@1` versions, oldest first, and `OPERATOR_IDENTITY_KEYS`
- * names each operator's identity key, because the chain's genesis is signed
- * by an operator and the policy itself is never the source of the key that
- * authorises it. The chain is verified once, at boot, with the core's
+ * `dpp-publisher-policy@1` versions, oldest first, or `PUBLISHER_POLICY_JSON`
+ * holds the same chain inline, for a host that cannot mount a file, and
+ * `OPERATOR_IDENTITY_KEYS` names each operator's identity key, because the
+ * chain's genesis is signed by an operator and the policy itself is never
+ * the source of the key that authorises it. The chain is verified once, at boot, with the core's
  * `verifyPolicyChain`; a chain that does not verify stops the boot and names
  * the version and the reason, since admitting under an unverified list would
  * be admitting under whatever a file said.
@@ -73,40 +74,53 @@ export function loadPublisherPolicy(file: string, operators: Record<string, stri
   } catch (cause) {
     throw new Error(`PUBLISHER_POLICY_FILE ${file} could not be read: ${cause instanceof Error ? cause.message : String(cause)}`)
   }
+  return parsePublisherPolicy(text, operators, `PUBLISHER_POLICY_FILE ${file}`)
+}
+
+/** Verify a chain held inline in the environment, the same chain a file would hold. */
+export function loadPublisherPolicyJson(json: string, operators: Record<string, string>): PublisherPolicyConfig {
+  return parsePublisherPolicy(json, operators, 'PUBLISHER_POLICY_JSON')
+}
+
+/** Parse and verify chain text from either source; `source` names it in every failure. */
+function parsePublisherPolicy(text: string, operators: Record<string, string>, source: string): PublisherPolicyConfig {
   let parsed: unknown
   try {
     parsed = JSON.parse(text)
   } catch {
-    throw new Error(`PUBLISHER_POLICY_FILE ${file} is not JSON`)
+    throw new Error(`${source} is not JSON`)
   }
   if (!Array.isArray(parsed) || parsed.some((p) => typeof p !== 'object' || p === null || Array.isArray(p))) {
-    throw new Error(`PUBLISHER_POLICY_FILE ${file} must hold a JSON array of dpp-publisher-policy@1 documents, oldest first`)
+    throw new Error(`${source} must hold a JSON array of dpp-publisher-policy@1 documents, oldest first`)
   }
   const chain = parsed as PublisherPolicy[]
   const result = verifyPolicyChain(chain, operators)
   if (!result.ok || result.failure != null) {
     const failure = result.failure ?? { version: 0, reason: 'format', detail: 'the chain did not verify' }
-    throw new Error(
-      `PUBLISHER_POLICY_FILE ${file}: policy version ${failure.version} refused, ${failure.reason}: ${failure.detail}`
-    )
+    throw new Error(`${source}: policy version ${failure.version} refused, ${failure.reason}: ${failure.detail}`)
   }
-  return { chain, operators, versions: result.versions, source: file }
+  return { chain, operators, versions: result.versions, source }
 }
 
 /** The policy the environment configures, or undefined when it configures none. */
 export function publisherPolicyFromEnvironment(): PublisherPolicyConfig | undefined {
   const file = (process.env.PUBLISHER_POLICY_FILE ?? '').trim()
+  const json = (process.env.PUBLISHER_POLICY_JSON ?? '').trim()
   const operators = process.env.OPERATOR_IDENTITY_KEYS
-  if (file === '') {
+  if (file !== '' && json !== '') {
+    throw new Error('PUBLISHER_POLICY_FILE and PUBLISHER_POLICY_JSON are both set: name the chain one way')
+  }
+  if (file === '' && json === '') {
     if (operators != null && operators.trim() !== '') {
       console.warn(
-        'OPERATOR_IDENTITY_KEYS is set but PUBLISHER_POLICY_FILE is not: the operator keys are ignored, ' +
+        'OPERATOR_IDENTITY_KEYS is set but neither PUBLISHER_POLICY_FILE nor PUBLISHER_POLICY_JSON is: the operator keys are ignored, ' +
           'because there is no policy chain for them to authorise'
       )
     }
     return undefined
   }
-  return loadPublisherPolicy(file, parseOperatorIdentityKeys(operators))
+  const keys = parseOperatorIdentityKeys(operators)
+  return file !== '' ? loadPublisherPolicy(file, keys) : loadPublisherPolicyJson(json, keys)
 }
 
 /**
@@ -116,8 +130,9 @@ export function publisherPolicyFromEnvironment(): PublisherPolicyConfig | undefi
  * may name `scope.topics`, and a topic outside them keeps its static
  * configuration (the identity key, or ANCHOR_SERVICE_KEYS). An empty array
  * means the policy covers the topic and no key is active, which admits
- * nothing, and is also the answer for an instant before the first version was
- * issued: a key admits nothing dated before its activation.
+ * nothing. An instant before the first version was issued is governed by
+ * that first version, whose key windows describe history; a key still admits
+ * nothing dated before its activation.
  */
 export function policyKeysFor(
   chain: PublisherPolicy[],

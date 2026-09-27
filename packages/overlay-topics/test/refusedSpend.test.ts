@@ -73,13 +73,16 @@ describe('a refused spend of the tip', () => {
     expect(await node.storage.findOutput(genesis.id('hex'), 0, 'tm_dpp')).not.toBeNull()
     for (const refused of [wrongKey, wrongPassport]) {
       expect(await node.storage.findOutput(refused.id('hex'), 0, 'tm_dpp')).toBeNull()
-      expect(await node.storage.doesAppliedTransactionExist({ txid: refused.id('hex'), topic: 'tm_dpp' })).toBe(true)
+      // A refusal leaves no applied record in this package's storage, so the
+      // same bytes announced again are judged afresh and answered none, never
+      // duplicate, and the writer records an incident and not success.
+      expect(await node.storage.doesAppliedTransactionExist({ txid: refused.id('hex'), topic: 'tm_dpp' })).toBe(false)
       const again = await submitBeef(base, refused.toBEEF())
       expect(again.headers.get('x-admission')).toBe('tm_dpp=none')
       expect(await bodyOf(again)).toEqual({ tm_dpp: { outputsToAdmit: [], coinsToRetain: [0], coinsRemoved: [] } })
-      expect(await node.storage.doesAppliedTransactionExist({ txid: refused.id('hex'), topic: 'tm_dpp' })).toBe(true)
+      expect(await node.storage.doesAppliedTransactionExist({ txid: refused.id('hex'), topic: 'tm_dpp' })).toBe(false)
     }
-    expect(warn.mock.calls.filter((call) => String(call[0]).includes('was announced and refused before'))).toHaveLength(2)
+    expect(warn.mock.calls.filter((call) => String(call[0]).includes('was announced and refused before'))).toHaveLength(0)
 
     // A valid later state is admitted against the retained tip, which is
     // then spent by it and by nothing else.
@@ -106,10 +109,11 @@ describe('a refused spend of the tip', () => {
 
     // The successor first, as a stranger poisoning the outbox or a writer's
     // announcements arriving out of order would: refused, the predecessor
-    // being unknown, and recorded by the Engine as applied.
+    // being unknown, and left unrecorded, because a refusal is a fact about
+    // what this index knew and not about the transaction.
     const early = await submitBeef(base, event.toBEEF())
     expect(early.headers.get('x-admission')).toBe('tm_dpp=none')
-    expect(await node.storage.doesAppliedTransactionExist({ txid: event.id('hex'), topic: 'tm_dpp' })).toBe(true)
+    expect(await node.storage.doesAppliedTransactionExist({ txid: event.id('hex'), topic: 'tm_dpp' })).toBe(false)
     expect(await lookupPassport(base, { passportId: PASSPORT_ID })).toEqual([])
 
     // The predecessor, then the successor again: re-evaluated, not skipped.
@@ -125,7 +129,6 @@ describe('a refused spend of the tip', () => {
     ])
     // And an admitted transaction announced once more is the genuine duplicate it always was.
     expect((await submitBeef(base, event.toBEEF())).headers.get('x-admission')).toBe('tm_dpp=duplicate')
-    expect(warn.mock.calls.filter((call) => String(call[0]).includes('admitted nothing'))).toHaveLength(1)
   })
 
   it('is the topic manager retaining the offered coins on refusal', async () => {

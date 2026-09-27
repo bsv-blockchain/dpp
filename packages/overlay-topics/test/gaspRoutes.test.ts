@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { Transaction, type LookupAnswer, type STEAK, type TaggedBEEF } from '@bsv/sdk'
+import { MerklePath, Transaction, type LookupAnswer, type STEAK, type TaggedBEEF } from '@bsv/sdk'
 import { startOverlayService, type OverlayEngine, type RunningService } from '../src/index.js'
-import { bodyOf, genesisTx, JSON_BODY, newNode, submitBeef } from './helpers.js'
+import { bodyOf, changeFundedEventTx, genesisTx, JSON_BODY, newNode, submitBeef } from './helpers.js'
 
 /**
  * The two GASP routes a peer synchronises from, as the upstream overlay
@@ -163,5 +163,26 @@ describe('POST /requestForeignGASPNode', () => {
     const parent = await bodyOf(await post(base, '/requestForeignGASPNode', { graphID, txid: funding.id('hex'), outputIndex: 0 }))
     expect(parent).toEqual({ graphID, rawTx: funding.toHex(), outputIndex: 0, proof: funding.merklePath!.toHex() })
     expect(Transaction.fromHex(parent.rawTx).id('hex')).toBe(funding.id('hex'))
+  })
+  it('answers for any output of a held transaction, so a peer can fetch the change a state spends beside its passport output', async () => {
+    const node = newNode()
+    running = await startOverlayService(node.engine, { port: 0, host: HOST, components: node.components })
+    const base = `http://${HOST}:${running.port}`
+    const { tx: g } = await genesisTx()
+    g.merklePath = MerklePath.fromCoinbaseTxidAndHeight(g.id('hex'), 800_100)
+    expect((await submitBeef(base, g.toBEEF())).status).toBe(200)
+    const { tx: e1 } = await changeFundedEventTx(g)
+    expect((await submitBeef(base, e1.toBEEF())).status).toBe(200)
+    const graphID = `${e1.id('hex')}.0`
+    // The passport output, held by outpoint, as before.
+    const passport = await bodyOf(await post(base, '/requestForeignGASPNode', { graphID, txid: g.id('hex'), outputIndex: 0 }))
+    expect(passport).toEqual({ graphID, rawTx: g.toHex(), outputIndex: 0, proof: g.merklePath.toHex() })
+    // The change output is no coin of any topic, so it is not held by
+    // outpoint; it is answered from the transaction it belongs to, with the
+    // same bytes and the same proof, which is all a peer needs of it.
+    const change = await bodyOf(await post(base, '/requestForeignGASPNode', { graphID, txid: g.id('hex'), outputIndex: 1 }))
+    expect(change).toEqual({ graphID, rawTx: g.toHex(), outputIndex: 1, proof: g.merklePath.toHex() })
+    // A transaction this index never held is still a 404.
+    expect((await post(base, '/requestForeignGASPNode', { graphID, txid: 'ff'.repeat(32), outputIndex: 1 })).status).toBe(404)
   })
 })

@@ -136,6 +136,38 @@ export async function eventTx(
   return { tx, state }
 }
 
+/**
+ * A later state funded the way a wallet-backed writer funds one: it spends
+ * the previous transaction's DPP output at index 0 and its change at index 1,
+ * so two inputs name the same predecessor. The reference application writes
+ * every state this way, and the fixtures never did, which is how a
+ * synchronisation defect stayed invisible to every test.
+ */
+export async function changeFundedEventTx(
+  previous: Transaction,
+  overrides: Partial<DppStateData> = {},
+  server: ProtoWallet = serverWallet
+): Promise<{ tx: Transaction; state: DppState }> {
+  const state = await completeState(
+    makeData({
+      op: 'SOLD',
+      timestamp: '2026-07-26T10:00:00Z',
+      eventData: '{"channel":"store"}',
+      previousTxid: previous.id('hex'),
+      ...overrides,
+    }),
+    makerWallet,
+    server
+  )
+  const tx = new Transaction()
+  tx.addInput({ sourceTransaction: previous, sourceOutputIndex: 0, unlockingScript: new UnlockingScript([]) })
+  tx.addInput({ sourceTransaction: previous, sourceOutputIndex: 1, unlockingScript: new UnlockingScript([]) })
+  tx.addOutput({ satoshis: 1, lockingScript: buildLockingScript(state, lockKey) })
+  tx.addOutput({ satoshis: 8_000, lockingScript: ANYONE })
+  tx.inputs[0].unlockingScript = unlockDppOutput(tx, 0)
+  return { tx, state }
+}
+
 export interface TestStores {
   storage: InMemoryOverlayStorage
   records: InMemoryDppStorage

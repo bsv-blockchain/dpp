@@ -9,7 +9,7 @@ import { AttestationTopicManager } from '../src/tmAttestation.js'
 import { loadPublisherPolicy, parseOperatorIdentityKeys, publisherPolicyFromEnvironment } from '../src/policyConfig.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
 import { bodyOf, eventTx, genesisTx, lockKey, makeData, makerWallet, newNode, SERVER_ID, serverPriv } from './helpers.js'
-import { A1, K1, K2, OPERATORS, policyChain, pub, STRANGER, T1, tamperedChain } from './policy-fixture.js'
+import { A1, K1, K2, OPERATOR, OPERATORS, operatorPriv, policyChain, pub, signPolicy, STRANGER, T0, T1, tamperedChain } from './policy-fixture.js'
 
 /**
  * The publisher key policy at the topic managers (spec/services.md section 1):
@@ -42,13 +42,33 @@ describe('tm_dpp under a publisher key policy', () => {
     expect(String(warn.mock.calls[0][0])).toContain(AFTER_ROTATION)
   })
 
-  it('refuses a state timestamped before the new key activated, and one before any policy version', async () => {
+  it('refuses a state timestamped before the new key activated, and one before the first key activated', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const tm = new DppTopicManager('', { publisherPolicy: chain })
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K2, INSIDE_K1), [])).outputsToAdmit).toEqual([])
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K2, AFTER_ROTATION), [])).outputsToAdmit).toEqual([0])
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K1, BEFORE_POLICY), [])).outputsToAdmit).toEqual([])
     expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(STRANGER, INSIDE_K1), [])).outputsToAdmit).toEqual([])
+  })
+
+  it('admits a state dated before the genesis was issued when its key was active then: a policy written late describes history', async () => {
+    // The reference deployment wrote its first policy months after it began
+    // publishing; the genesis's key windows describe those months, and only
+    // a later version takes effect from its own issue (dpp-issues#71).
+    const late = signPolicy(
+      {
+        policyFormat: 'dpp-publisher-policy@1',
+        policyVersion: 1,
+        scope: { operatorProfile: 'single-operator@1', operators: [OPERATOR] },
+        issuedAt: T1,
+        publishers: [{ key: pub(K1), role: 'state-publisher', operator: OPERATOR, activeFrom: T0 }],
+        authorisation: { kind: 'genesis', signer: '', suite: 'bsv-ecdsa-der', value: '' },
+      },
+      operatorPriv
+    )
+    const tm = new DppTopicManager('', { publisherPolicy: [late] })
+    expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K1, INSIDE_K1), [])).outputsToAdmit).toEqual([0])
+    expect((await tm.identifyAdmissibleOutputs(await genesisBeefSignedBy(K1, BEFORE_POLICY), [])).outputsToAdmit).toEqual([])
   })
 
   it('does not consult the positional identity key where the policy covers the topic', async () => {
@@ -140,6 +160,7 @@ describe('the policy from the environment', () => {
   }
   afterEach(() => {
     delete process.env.PUBLISHER_POLICY_FILE
+    delete process.env.PUBLISHER_POLICY_JSON
     delete process.env.OPERATOR_IDENTITY_KEYS
     vi.restoreAllMocks()
   })
@@ -175,6 +196,23 @@ describe('the policy from the environment', () => {
     // One key under two names would sign a federation rotation and countersign it as another operator.
     expect(() => parseOperatorIdentityKeys(`${operators},did:example:b=${Object.values(OPERATORS)[0]}`)).toThrow(/same key as/)
     expect(parseOperatorIdentityKeys(undefined)).toEqual({})
+  })
+
+  it('reads the same chain inline from PUBLISHER_POLICY_JSON, and refuses both sources at once', () => {
+    process.env.PUBLISHER_POLICY_JSON = JSON.stringify(chain)
+    process.env.OPERATOR_IDENTITY_KEYS = operators
+    const config = publisherPolicyFromEnvironment()
+    expect(config?.versions).toEqual([1, 2])
+    expect(config?.source).toBe('PUBLISHER_POLICY_JSON')
+    process.env.PUBLISHER_POLICY_JSON = '{'
+    expect(() => publisherPolicyFromEnvironment()).toThrow(/PUBLISHER_POLICY_JSON is not JSON/)
+    process.env.PUBLISHER_POLICY_JSON = JSON.stringify(tamperedChain())
+    expect(() => publisherPolicyFromEnvironment()).toThrow(/PUBLISHER_POLICY_JSON: policy version 2 refused, signature-invalid/)
+    process.env.PUBLISHER_POLICY_JSON = JSON.stringify(chain)
+    process.env.PUBLISHER_POLICY_FILE = write('both.json', chain)
+    expect(() => publisherPolicyFromEnvironment()).toThrow(/both set/)
+    delete process.env.PUBLISHER_POLICY_JSON
+    delete process.env.PUBLISHER_POLICY_FILE
   })
 
   it('is absent without a file, warning when operator keys are set alone', () => {

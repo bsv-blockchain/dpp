@@ -99,7 +99,7 @@ export interface CapabilityDocument {
 }
 
 export interface CapabilityInput {
-  /** The verified chain, when PUBLISHER_POLICY_FILE is set. */
+  /** The verified chain, when PUBLISHER_POLICY_FILE or PUBLISHER_POLICY_JSON is set. */
   publisherPolicy?: PublisherPolicyConfig
   /** SERVICE_IDENTITY_KEY: the whole policy when no chain is configured. */
   serviceIdentityKey?: string
@@ -187,7 +187,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   if (policy == null) {
     unsupported.push({
       id: 'publisher-key-rotation',
-      reason: 'No PUBLISHER_POLICY_FILE is configured: the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp.',
+      reason: 'No publisher policy is configured (PUBLISHER_POLICY_FILE or PUBLISHER_POLICY_JSON): the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp.',
     })
   }
   if (!input.exportAvailable) {

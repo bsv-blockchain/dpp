@@ -136,7 +136,7 @@
     },
     {
       "id": "publisher-key-rotation",
-      "reason": "No PUBLISHER_POLICY_FILE is configured: the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp."
+      "reason": "No publisher policy is configured (PUBLISHER_POLICY_FILE or PUBLISHER_POLICY_JSON): the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp."
     },
     {
       "id": "evidence-package-export",
