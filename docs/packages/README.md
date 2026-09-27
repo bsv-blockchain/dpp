@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The selected release is `dpp-release-2026-09-5`, a candidate with beta.3 versions of core, overlay topics and profiles on `@bsv/sdk` 2.8.10; the VSC package is unchanged at 0.2.0-beta.2. Publication of this set is pending. The beta.2 packages of the preceding set were published to npm under `next` on 18 September 2026. See the [publication receipt](../reference/beta-2-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
+The selected release is `dpp-release-2026-09-5`. Its beta.3 versions of core, overlay topics and profiles, on `@bsv/sdk` 2.8.10, were published to npm under `next` on 27 September 2026; the VSC package is unchanged at 0.2.0-beta.2. See the [publication receipt](../reference/beta-3-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
 
 Install the published packages directly, or use the source checkout below to build and inspect the release.
 
@@ -38,7 +38,7 @@ Node runtime support does not imply browser runtime support. Keep server package
 
 ## Source access
 
-The published beta.2 packages were built from source revision `f54e750de4c7731a30563e5f1caad762adbfb737`, recorded in the [publication receipt](../reference/beta-2-publication.md). Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. The repository is public:
+The published beta.3 packages were built from source revision `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81`, recorded in the [publication receipt](../reference/beta-3-publication.md); the unchanged VSC package was built from `f54e750de4c7731a30563e5f1caad762adbfb737`, recorded in the [beta.2 receipt](../reference/beta-2-publication.md). Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. The repository is public:
 
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
