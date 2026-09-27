@@ -27,9 +27,9 @@ From the repository root:
 
 ```sh
 node conformance/check.mjs
-node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-4.json
+node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-5.json
 ```
 
 A passing diagnostic and a passing selection answer different questions. Read each command's findings and the selection's withheld claims. Use [evidence reporting](../implement/reporting.md) for a new implementation and [status](../start/status.md) for the delivery overview.
 
-The pinned release links above describe the preceding set. That set is superseded by `dpp-release-2026-09-4`; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.
+The pinned release links above describe an earlier set, now superseded; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.

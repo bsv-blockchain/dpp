@@ -2,9 +2,9 @@
 
 Publishing makes reviewed package contents available from npm. It does not change a consuming application's installed dependencies, forms, backend rules or selected profile versions. The [application update guide](../profiles/updating-applications.md) covers adoption after publication.
 
-## This release
+## The beta.2 release
 
-The packages selected by `dpp-release-2026-09-4` were published on 18 September 2026:
+The packages selected by `dpp-release-2026-09-4`, now superseded, were published on 18 September 2026:
 
 | Package | Published version | Publication result |
 |---|---|---|
@@ -15,7 +15,7 @@ The packages selected by `dpp-release-2026-09-4` were published on 18 September 
 
 The [publication receipt](beta-2-publication.md) preserves the approved plan, package digests and verification results. Package versions are separate from the industry versions inside them: battery@2 and textile@2 remain current, versions 3 and 4 remain drafts, and historical definitions remain available. The publication left `latest` at beta.1. This release also upgrades the SDK to 2.7.1, canonicalize to 5.0.0, MongoDB to 7.6.0, TypeScript to 7.0.2, Vitest to 5.0.1 and Node types to 22.20.3.
 
-The commands below use this release as a worked example. To reproduce its plan, use its recorded source revision and toolchain. For a new package change, create new versions and a new release set; never reuse the published beta.2 versions for changed bytes.
+The current candidate, `dpp-release-2026-09-5`, follows the same steps and its publication is pending. The commands below use the beta.2 release as a worked example. To reproduce its plan, use its recorded source revision and toolchain. For a new package change, create new versions and a new release set; never reuse the published beta.2 versions for changed bytes.
 
 ## 1. Prepare a candidate
 

@@ -8,9 +8,15 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The four beta.2 packages were published on 18 September 2026. The [publication receipt](docs/reference/beta-2-publication.md) identifies their exact source, approved plan and verification results. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
+The four beta.2 packages were published on 18 September 2026. The [publication receipt](docs/reference/beta-2-publication.md) identifies their exact source, approved plan and verification results. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.3 candidate set `dpp-release-2026-09-5` is prepared and unpublished.
 
 ## Repository history
+
+### 2026-09-27, beta.3 release candidate
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.3`, `@bsv/dpp-overlay-topics@0.4.0-beta.3` and `@bsv/dpp-profiles@0.3.0-beta.3` under the `next` tag in `dpp-release-2026-09-5`, carrying the synchronisation and publisher policy changes below. `@bsv/vsc@0.2.0-beta.2` is unchanged and its published archive repacks byte for byte, so the publisher reuses it. Publication is pending and needs approval of the exact plan; `latest` stays at beta.1.
+- Move `@bsv/sdk` from 2.7.1 to 2.8.10 in every package, the root override, the runtime declaration, the baselines and the dependency ledger. The exact 2.7.1 pin kept a consumer from installing the current wallet toolbox beside the packages: `@bsv/wallet-toolbox` 2.14.3 requires SDK 2.8.0 or later, and some earlier toolbox versions call 2.8.0 methods while declaring an older range. [Choose a wallet](docs/operate/wallet-broadcast-proofs.md#choose-a-wallet) now names the toolbox version that installs. The package tests, conformance vectors and the independent Python reader pass unchanged on 2.8.10.
+- Mark `dpp-release-2026-09-4` superseded. Its approved beta.2 plan is reproduced from its own source revision, as the receipt records; the demonstration definition and the qualification test move to the new set.
 
 ### 2026-09-27, synchronisation of wallet-funded lineages and a policy written late
 

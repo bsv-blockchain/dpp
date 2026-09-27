@@ -1,15 +1,15 @@
 {
-  "releaseSet": "dpp-release-2026-09-4",
-  "status": "superseded",
-  "description": "Experimental prerelease candidate adding battery@4 and textile@4 draft profiles, generated artefacts, structural change reports and cross-field data review. All four packages use new beta.2 versions with current dependencies, including @bsv/sdk 2.7.1. Existing profile definitions, current version 2 selections and wire contracts are unchanged. Package publication does not activate draft profiles in consumers or establish product qualification.",
+  "releaseSet": "dpp-release-2026-09-5",
+  "status": "candidate",
+  "description": "Experimental prerelease candidate that synchronises wallet-funded lineages between index nodes, holds the synchronisation checkpoint until every offered output has arrived, carries a publisher policy chain inline and lets the first policy version describe history before its issue. @bsv/dpp-core, @bsv/dpp-overlay-topics and @bsv/dpp-profiles use new beta.3 versions with @bsv/sdk 2.8.10, the version the current wallet toolbox requires; @bsv/vsc is unchanged at 0.2.0-beta.2. Record, claim, anchor and acceptance formats, the overlay contract, frozen profiles and the custody profile are unchanged. Package publication does not establish federated operation or product qualification.",
   "baseline": "native-baseline@2",
-  "selection": "conformance/selections/dpp-release-2026-09-4.json",
+  "selection": "conformance/selections/dpp-release-2026-09-5.json",
   "runtime": {
     "node": ">=22",
     "dependencies": [
       {
         "name": "@bsv/sdk",
-        "version": "2.7.1"
+        "version": "2.8.10"
       },
       {
         "name": "@bsv/overlay",
@@ -31,7 +31,7 @@
   "packages": [
     {
       "name": "@bsv/dpp-core",
-      "version": "0.3.0-beta.2",
+      "version": "0.3.0-beta.3",
       "directory": "packages/dpp-core",
       "role": "the record model (both versions), signatures, chain verification, the verification report, the native claim, the generic anchor, the managed acceptance record, publisher policy and evidence packages",
       "entryPoints": [
@@ -68,7 +68,7 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0-beta.2",
+      "version": "0.4.0-beta.3",
       "directory": "packages/overlay-topics",
       "role": "the topic managers, lookup services, storage adapters, capabilities, history, bounded export, complete export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
       "entryPoints": [
@@ -98,7 +98,7 @@
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.3.0-beta.2",
+      "version": "0.3.0-beta.3",
       "directory": "packages/dpp-profiles",
       "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports and version 4 cross-field data review",
       "entryPoints": [
@@ -314,7 +314,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "44fd3f44a4179e1fcfd09f0852bcc058d55ebe4f2a2d09feddbfddc7571e003b",
+      "sha256": "8ff2d610d6521df5668011889d2bfc5cfec8d0195b45d00823115041dd3a1057",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
@@ -381,7 +381,7 @@
   "consumers": [
     {
       "name": "bsv-blockchain-demos/dpp-app",
-      "consumes": "exact npm dependencies; adoption of @bsv/dpp-profiles 0.3.0-beta.2 and explicit profile activation require a separate application change",
+      "consumes": "exact npm dependencies; adoption of @bsv/dpp-profiles 0.3.0-beta.3 and explicit profile activation require a separate application change",
       "note": "the example consumer with sector workflows; package installation, supported readers and selected writers are separate adoption decisions"
     },
     {
@@ -390,8 +390,8 @@
     },
     {
       "name": "bsv-blockchain-demos/dpp-app-2",
-      "consumes": "the four packages through public entry points, initially as verified candidate archives; exact public registry versions after publication",
-      "note": "offline Node/TypeScript integration trial with synthetic transactions, separate attestations, negative verification cases and signed evidence export/import; no independent implementation or live deployment claim"
+      "consumes": "the packages through public entry points at exact public registry versions",
+      "note": "a second stack (index, registry, writer and reader application) built from the public documentation, repository and packages alone; a reference consumer under the same administration, not an independent implementation, and no federated operation claim"
     }
   ],
   "image": {

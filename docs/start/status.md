@@ -17,7 +17,7 @@ Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](.
 
 | Decision | State and source |
 |---|---|
-| Repository publication | Public; the beta.2 packages were published to npm on 18 September 2026. See [preceding release declaration](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) |
+| Repository publication | Public; the beta.2 packages were published to npm on 18 September 2026 and the beta.3 candidate is pending. See [published release declaration](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/release/dpp-release-2026-09-4.json) |
 | Profile repository home | open; see [D-CR5](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L182). |
 | Object identifier derivation | open; see [D-CR2](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L181). |
 | Historical issuer formats | open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209). |
@@ -27,4 +27,4 @@ Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](.
 
 These decision links require access to the application repository.
 
-The pinned release links above describe the preceding set. That set is superseded by `dpp-release-2026-09-4`; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.
+The pinned release links above describe an earlier set, now superseded; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.
