@@ -41,7 +41,7 @@ node examples/write-passport.mjs --dry-run
 
 Expect the locking script and transaction to match the fixture, followed by the invalid-state refusal. Network steps are described but not executed. The version 2 lifecycle exercise above is separate from this version 1 writer recipe.
 
-The [writer example](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/examples/write-passport.mjs) describes wallet configuration and its live invocation. The dry run creates and checks synthetic data. Continue with [wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md) for service integration.
+The [writer example](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/examples/write-passport.mjs) describes its live invocation. It talks to a BRC-100 wallet application running on the same machine; [choose a wallet](operate/wallet-broadcast-proofs.md#choose-a-wallet) says which wallets satisfy that and what a hosted writer uses instead. The dry run creates and checks synthetic data. Continue with [wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md) for service integration.
 
 ## Attestation issuer
 
@@ -71,7 +71,7 @@ Sources: [claim API](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f542
 
 A registry can evaluate a claim over HTTP. The request below sends the signed fixture and asks about its fixture subject. It does not start a registry.
 
-Choose a running registry that implements the [validation contract](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/registry.yaml#L781-L831). Set `REGISTRY_URL` to its base URL; the example defaults to `http://localhost:4000`. The [local registry setup](implement/roles/registry.md#run-the-separate-reference-registry-locally) gives the clone, install and start commands. The [reference registry](https://github.com/bsv-blockchain-demos/uora-bsv/blob/07236cf753a238ab7ae3f5dd0c12efe236d6e9f1/README.md) is maintained in a separate repository that requires access. An independent registry can use the [local contract and role guide](implement/roles/registry.md). Run the request from the DPP checkout:
+Point `REGISTRY_URL` at a registry that serves the [validation contract](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/registry.yaml#L781-L831): the one you are building from the [registry guide](implement/roles/registry.md), or the hosted demonstration registry at `https://dpp-resolver.bsvb.net`, which answers this request without credentials and stores nothing. The example defaults to `http://localhost:4000`. The DPP checkout does not start a registry and no public reference registry is published; the guide sets out the [minimum to build](implement/roles/registry.md#the-minimum-a-registry-serves).
 
 ```sh
 node --input-type=module <<'JS'
