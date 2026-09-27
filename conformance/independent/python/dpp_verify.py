@@ -976,10 +976,19 @@ def instant(text: str) -> float:
 
 def keys_active_at(chain: list[dict], at: str, role: str | None) -> list[str]:
     t = instant(at)
+    # The latest version issued at or before t governs; before any version was
+    # issued, the first version does, through its key windows (services.md
+    # section 1): a genesis written after publishing began describes history,
+    # and only the first version reaches back.
     in_force = None
+    first = None
     for policy in chain:
+        if first is None or policy["policyVersion"] < first["policyVersion"]:
+            first = policy
         if instant(policy["issuedAt"]) <= t and (in_force is None or policy["policyVersion"] > in_force["policyVersion"]):
             in_force = policy
+    if in_force is None:
+        in_force = first
     if in_force is None:
         return []
     keys: list[str] = []
