@@ -10,7 +10,7 @@ Keep the original expected product identifier through this process. Equivalent d
 
 ## Inspect the fixture identifier
 
-After [setup](../quick-start.md#prepare-the-checkout), run:
+After [setup](../quick-start.md#get-the-code), run:
 
 ```sh
 node --input-type=module <<'JS'

@@ -18,7 +18,7 @@ The reference packages implement selected World Wide Web Consortium (W3C) VC for
 
 ## Run the credential exercises
 
-After [repository setup](../quick-start.md#prepare-the-checkout), run:
+After [repository setup](../quick-start.md#get-the-code), run:
 
 ```sh
 npm run test -w @bsv/vsc -- test/crypto.test.ts test/verification.test.ts

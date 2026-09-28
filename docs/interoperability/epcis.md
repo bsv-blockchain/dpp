@@ -6,7 +6,7 @@ Electronic Product Code Information Services (EPCIS) documents supply source eve
 
 EPCIS carries event observations from systems such as manufacturing and logistics. Parsing establishes what was received and where each event occurs. Schema validation checks the document's structure. Mapping asks whether the event can be expressed in the selected credential profile without losing meaning.
 
-Run this local fixture exercise after [setup](../quick-start.md#prepare-the-checkout):
+Run this local fixture exercise after [setup](../quick-start.md#get-the-code):
 
 ```sh
 node --input-type=module <<'JS'

@@ -12,6 +12,8 @@ Explain the operational consequences as well as the API change: what triggers th
 
 Run the checks relevant to the change. For documentation, `node scripts/docs-check.mjs` checks navigation and references. For implementation evidence, retain the actual test output and use [reporting](../implement/reporting.md). Submit the proposed diff through the repository's review process.
 
+A change to a specification, contract or fixture makes `npm run conformance:check` fail on purpose: the ledger records the digest of every source an assessment was made against, and a moved source stops the check until a reviewer confirms the assessment still holds. Do not re-pin in your own change unless a reviewer asks; the reviewer runs `node conformance/pin-sources.mjs` after review.
+
 ## Choose the contribution route
 
 | Contribution | Guide |

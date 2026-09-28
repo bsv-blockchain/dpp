@@ -2,7 +2,7 @@
 
 The general profile supplies a versioned payload vocabulary when the integration has not selected a sector-specific profile. It does not imply that battery or textile obligations no longer apply to a product.
 
-After [setup](../quick-start.md#prepare-the-checkout), inspect it with:
+After [setup](../quick-start.md#get-the-code), inspect it with:
 
 ```sh
 node --input-type=module <<'JS'

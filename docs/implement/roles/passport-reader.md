@@ -4,7 +4,7 @@ A reader answers what the supplied passport history establishes about the produc
 
 ## Run the reference exercise
 
-After [setup](../../quick-start.md#prepare-the-checkout), run:
+After [setup](../../quick-start.md#get-the-code), run:
 
 ```sh
 node examples/verify-passport.mjs --fixture --version=2 --report

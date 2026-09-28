@@ -15,7 +15,7 @@ A Bitcoin Request for Comments (BRC) identifies an ecosystem protocol. The refer
 
 BEEF means Background Evaluation Extended Format, a transaction-evidence encoding used by these interfaces. A merkle path connects a transaction to a block's merkle root; the header source is needed to evaluate that root in the selected chain.
 
-Start with `node examples/write-passport.mjs --dry-run` after [setup](../quick-start.md#prepare-the-checkout). The live example needs a locally available BRC-100 wallet, the intended passport identifier and index URL, plus the index's submission and callback credentials. It performs a version 1 activation; it is not a version 2 transfer recipe.
+Start with `node examples/write-passport.mjs --dry-run` after [setup](../quick-start.md#get-the-code). The live example needs a locally available BRC-100 wallet, the intended passport identifier and index URL, plus the index's submission and callback credentials. It performs a version 1 activation; it is not a version 2 transfer recipe.
 
 ## Choose a wallet
 
@@ -54,7 +54,7 @@ A later proof arriving at one index does not establish that every peer has it. C
 | Interpret admission, proof ingestion and retraction | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/overlay.yaml) |
 | Interpret inclusion or unavailable headers | [Verification report](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) |
 
-Use the [dry run](../quick-start.md#writer) before a funded operation. Keep the operation journal and the retrieved proof with the transaction evidence. An index accepting a draft does not establish broadcast or mining.
+Use the [dry run](../quick-start.md#write-a-passport-without-spending-anything) before a funded operation. Keep the operation journal and the retrieved proof with the transaction evidence. An index accepting a draft does not establish broadcast or mining.
 
 For a delayed proof, determine which service has the evidence and which operator still needs it. For a refused spend or a reorganisation, follow the contract's retraction and verification behaviour. The guide does not promise a mining window.
 

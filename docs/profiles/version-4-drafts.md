@@ -25,7 +25,7 @@ Sustainability-label metadata records the certification-scheme and public-author
 
 ## Integrate the draft deliberately
 
-Build the working checkout using [the setup instructions](../quick-start.md#prepare-the-checkout). Generate the report for the version the application actually uses:
+Build the working checkout using [the setup instructions](../quick-start.md#get-the-code). Generate the report for the version the application actually uses:
 
 ```sh
 npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4

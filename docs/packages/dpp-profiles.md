@@ -16,7 +16,7 @@ Reference helpers and generated product-profile data. The [support table](suppor
 
 An industry manifest describes the fields of a product payload. Schema validation checks its shape; applicability asks which fields apply to this product. Some applicability questions remain unresolved and need to be shown separately.
 
-After [setup](../quick-start.md#prepare-the-checkout), run:
+After [setup](../quick-start.md#get-the-code), run:
 
 ```sh
 node --input-type=module <<'JS'

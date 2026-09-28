@@ -8,7 +8,7 @@ The textile profile organises product information such as composition and the ev
 
 Start with `textile@2` for the current profile, keeping `textile@1` available when reading data that declares it. `textile@3` is a draft successor. Select it explicitly for draft evaluation rather than silently applying it to existing records.
 
-After [setup](../quick-start.md#prepare-the-checkout), inspect the current field vocabulary:
+After [setup](../quick-start.md#get-the-code), inspect the current field vocabulary:
 
 ```sh
 node --input-type=module <<'JS'
