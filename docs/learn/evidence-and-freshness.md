@@ -36,10 +36,10 @@ Run the [reader quick start](../quick-start.md#reader-and-verifier) to reproduce
 
 | Reader task | Source |
 |---|---|
-| Interpret each check and its reason | [Verification report](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/verification-report.schema.json) |
-| Evaluate supplied passport history | [Record verification](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model.md) |
-| Evaluate claims and commitments | [Attestation verification](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md) |
-| Inspect an export's coverage | [Portable evidence](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/portable-evidence.md), [complete export](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/exchange.md) |
+| Interpret each check and its reason | [Verification report](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/verification-report.schema.json) |
+| Evaluate supplied passport history | [Record verification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md) |
+| Evaluate claims and commitments | [Attestation verification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/rules.md) |
+| Inspect an export's coverage | [Portable evidence](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/portable-evidence.md), [complete export](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/exchange.md) |
 
 Missing evidence stays visible in the report. A verified historical prefix can still omit a later state. A service's answer is evidence from that service, not a view of every provider.
 

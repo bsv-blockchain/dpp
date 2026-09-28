@@ -2,7 +2,7 @@
 
 The subject identifies what a record concerns. The actor or issuer is associated with the signing key. Authority is the evidence that permits that party to act in a particular role. An application account can associate these things without proving the association.
 
-A decentralised identifier (DID) names an identity under a method. [BSV DIDs](dids.md) explains the method and provides a resolution exercise. Resolving a key and establishing the issuer's authority remain separate steps. The [identity source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/identity.md) defines the terms and method-specific checks.
+A decentralised identifier (DID) names an identity under a method. [BSV DIDs](dids.md) explains the method and provides a resolution exercise. Resolving a key and establishing the issuer's authority remain separate steps. The [identity source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/identity.md) defines the terms and method-specific checks.
 
 ## Keep these identities separate
 
@@ -28,10 +28,10 @@ For issuer authority, supply the evidence and policy the intended use requires. 
 
 | Question | Source |
 |---|---|
-| Which key signs a passport state? | [Record signatures](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model.md), [version 2 signatures](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model-v2.md) |
-| How is a native claim attributed? | [Claim verification](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md) |
-| Which publisher keys apply? | [Publisher policy](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/services.md) |
-| Which authority evidence does the verifier need? | [Verification report](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/verification.md) |
+| Which key signs a passport state? | [Record signatures](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md), [version 2 signatures](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) |
+| How is a native claim attributed? | [Claim verification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/rules.md) |
+| Which publisher keys apply? | [Publisher policy](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/services.md) |
+| Which authority evidence does the verifier need? | [Verification report](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) |
 
 Live identity assurance is Ring 0: the platform vouches for the account and brand label. Ring 1 would bind a brand's DID to a legal entity through an external instrument, such as a qualified electronic seal. Ring 2 would certify a party's role for a claim type, such as a notified body for a conformity claim. Neither is live.
 

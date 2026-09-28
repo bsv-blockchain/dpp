@@ -47,9 +47,9 @@ Since 0.3.0-beta.2 the package carries the version 4 drafts, `compareProfiles` f
 | `@bsv/dpp-profiles/generated/*` | Generated payload schemas and profile documents |
 | `@bsv/dpp-profiles/frozen.json` | Frozen file digests |
 
-Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/conformance/licences.json).
+Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/licences.json).
 
-A consumer in another language can read the data files. Schema validation covers structure; the [applicability](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-profiles/src/applicability.ts) and [mapping sources](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/profiles.md) identify the separate evaluations.
+A consumer in another language can read the data files. Schema validation covers structure; the [applicability](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/src/applicability.ts) and [mapping sources](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/profiles.md) identify the separate evaluations.
 
 Use [industry profiles](../profiles/README.md), [identifiers](../identifiers.md) or [projections](../interoperability/projections.md) for the corresponding workflow.
 

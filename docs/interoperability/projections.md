@@ -35,10 +35,10 @@ In an application, retain the selected source revisions with the projection. Rec
 
 | Input or output | Source |
 |---|---|
-| Source revisions | [Source schema](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/passport-source.schema.json) |
-| Projection identity and output | [Projection schema](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/passport-projection.schema.json) |
-| Commitment and precedence rules | [Projection source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/passport-projections.md) |
-| Reference implementation | [Projection helper](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/src/projections.ts) |
-| Test cases | [Projection vectors](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/vectors/dpp/interoperability) |
+| Source revisions | [Source schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/passport-source.schema.json) |
+| Projection identity and output | [Projection schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/passport-projection.schema.json) |
+| Commitment and precedence rules | [Projection source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/passport-projections.md) |
+| Reference implementation | [Projection helper](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/src/projections.ts) |
+| Test cases | [Projection vectors](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/vectors/dpp/interoperability) |
 
 The commitment has an explicit exclusion list in the source. Do not infer it from the projection identifier alone. A projection supplies no missing signature or custody evidence. [Source exchange](epcis.md) covers imported event data.

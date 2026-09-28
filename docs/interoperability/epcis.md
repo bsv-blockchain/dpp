@@ -36,10 +36,10 @@ Keep the source reference and mapping findings with any resulting credential. Do
 
 | Task | Source |
 |---|---|
-| Select parsing, digest and mapping behaviour | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/epcis-interoperability.md) |
-| Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/epcis-import.schema.json) |
-| Integrate the application service | [HTTP contract](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/interoperability.yaml) |
+| Select parsing, digest and mapping behaviour | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/epcis-interoperability.md) |
+| Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/epcis-import.schema.json) |
+| Integrate the application service | [HTTP contract](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/interoperability.yaml) |
 | Use reference parsing and mapping | [VSC package](../packages/vsc.md) |
-| Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/vectors/dpp/interoperability/epcis/v1.json) |
+| Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/vectors/dpp/interoperability/epcis/v1.json) |
 
-Use the source's digest preimage; a digest of the stripped event alone does not reproduce it. Imports do not establish custody or perform a passport transfer. The [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) records which import and pull outcomes have been exercised.
+Use the source's digest preimage; a digest of the stripped event alone does not reproduce it. Imports do not establish custody or perform a passport transfer. The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) records which import and pull outcomes have been exercised.

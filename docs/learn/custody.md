@@ -20,9 +20,9 @@ Use [export and recovery](../operate/export-import-recovery.md) for the evidence
 
 | Design question | Source |
 |---|---|
-| Who holds signing access? | [Custody arrangements](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/custody.md) |
-| How does managed acceptance participate? | [Managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/managed-custody.md) |
-| Which control check applies to a record? | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model-v2.md) |
+| Who holds signing access? | [Custody arrangements](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/custody.md) |
+| How does managed acceptance participate? | [Managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/managed-custody.md) |
+| Which control check applies to a record? | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) |
 | What can a replacement provider restore? | [Export, import and recovery](../operate/export-import-recovery.md) |
 
 An evidence export does not recover a missing private key. A deployment can retain verifiable records while losing the authority needed to update them.

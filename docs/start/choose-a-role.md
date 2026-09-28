@@ -1,6 +1,6 @@
 # Choose a role
 
-Select a guide by the component being built. The [role definitions](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/conformance.md) and [baseline](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/baseline-native-2.json) hold the obligations and test targets.
+Select a guide by the component being built. The [role definitions](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [baseline](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/baseline-native-2.json) hold the obligations and test targets.
 
 | Component | Guide |
 |---|---|

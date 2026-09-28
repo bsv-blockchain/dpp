@@ -19,7 +19,7 @@ Generated from `release/dpp-release-2026-09-5.json` in the documentation build f
 
 ## Runtime dependencies per package
 
-Source: [dependency ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/licences.json).
+Source: [dependency ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/licences.json).
 
 - `@bsv/dpp-core` 0.3.0-beta.3: `@bsv/sdk` 2.8.10
 - `@bsv/dpp-overlay-topics` 0.4.0-beta.3: `@bsv/dpp-core` 0.3.0-beta.3, `@bsv/overlay` 2.3.1, `@bsv/sdk` 2.8.10, `mongodb` ^7.6.0

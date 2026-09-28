@@ -100,8 +100,8 @@ The functions an application calls, what each takes and what it returns. The [wa
 | `policyInForceAt(chain, at)`, `publisherKeysAt(chain, at, role?)` | The chain and an instant | The version in force then, and the keys it admits |
 | `inspectEvidencePackage(manifest, files, { expectedPassportId, expectedSigner })` | A package's manifest and its files by path | Structure, inventory and signature findings; check that `failures` is empty |
 
-The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/dpp/tree/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/packages/dpp-core/src), and the [package guide](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/packages/dpp-core/README.md) lists the remaining exports.
+The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-core/src), and the [package guide](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-core/README.md) lists the remaining exports.
 
-The caller supplies header, credential, status and authority adapters. Read the [report source](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/verification.md) for the distinction between missing evidence and a check that does not apply. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
+The caller supplies header, credential, status and authority adapters. Read the [report source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) for the distinction between missing evidence and a check that does not apply. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

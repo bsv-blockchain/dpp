@@ -28,10 +28,10 @@ When connecting an application, retain exact-byte and proof results separately, 
 
 | Integration task | Source |
 |---|---|
-| Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/external-credential-profile.md) |
-| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/vsc/src/exchange.ts) |
-| Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/verification.md) |
-| Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/vectors/dpp/interoperability) |
+| Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/external-credential-profile.md) |
+| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/vsc/src/exchange.ts) |
+| Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) |
+| Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/vectors/dpp/interoperability) |
 
 Exact received bytes and proof verification remain separate results. A reformatted credential can require a different exact-byte finding even where its proof evaluates the same way. Use [the attestation verifier guide](../implement/roles/attestation-verifier.md) for the surrounding evidence workflow.
 

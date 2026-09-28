@@ -27,10 +27,10 @@ The lifecycle example exercises changes to token records. The attestation exampl
 
 | Implementing | Source |
 |---|---|
-| Passport encoding, signing and transitions | [Record model](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model.md), [record model version 2](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model-v2.md) |
-| Native claims and their commitments | [Attestation rules](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md) |
-| Historical anchor records | [Historical format](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/legacy-uora-anchor-v3.md) |
-| Credential representations | [VSC profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/vsc-profile.md), [external credential profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/external-credential-profile.md) |
+| Passport encoding, signing and transitions | [Record model](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md), [record model version 2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) |
+| Native claims and their commitments | [Attestation rules](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/rules.md) |
+| Historical anchor records | [Historical format](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/legacy-uora-anchor-v3.md) |
+| Credential representations | [VSC profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/vsc-profile.md), [external credential profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/external-credential-profile.md) |
 
 A record's format selects the source to read; the [fixture guide](../implement/fixture-runner.md) names unresolved source differences, including the native payload description.
 

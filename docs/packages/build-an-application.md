@@ -73,7 +73,7 @@ The hosted index admits only states published under the keys its own policy name
 
 ## 3. Write a passport
 
-Every state goes through the same six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/writing.md)):
+Every state goes through the same six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/writing.md)):
 
 1. Build the state and its transaction unsent.
 2. Check it with the reader's own rules.
@@ -96,7 +96,7 @@ const controllerKey = await ownerKeyFor(passportId, wallet)
 const controlLinkage = await decryptOwnerLinkage(await revealOwnerLinkage(passportId, wallet, identityKey), wallet)
 ```
 
-Because the actor's identity key is not the controller key, every state after the genesis proves control by carrying `controlLinkage`, the scalar that links the two ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/record-model-v2.md) section 6). The wallet reveals it to itself and the application decrypts it once; it is public on chain from then on. A state without it is refused.
+Because the actor's identity key is not the controller key, every state after the genesis proves control by carrying `controlLinkage`, the scalar that links the two ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) section 6). The wallet reveals it to itself and the application decrypts it once; it is public on chain from then on. A state without it is refused.
 
 **Issue.** Build the genesis state and ask the wallet for an unsent transaction holding it:
 
@@ -119,7 +119,7 @@ const created = await wallet.createAction({
 
 `payloadPublic` holds the public fields of your industry profile; validate them with `@bsv/dpp-profiles` first. The owner tier is encrypted and stored off chain, and only its hash goes into the state. Then check, announce, send and prove `created.tx` as `examples/write-passport.mjs` does.
 
-**Every later state spends the tip.** Give the wallet the tip's BEEF and outpoint, then unlock the tip with the PushDrop unlock for protocol `[1, 'dpp owner v1']`, key identifier the passport identifier and counterparty `self` ([custody](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/custody.md) section 3). The unlock is 73 bytes:
+**Every later state spends the tip.** Give the wallet the tip's BEEF and outpoint, then unlock the tip with the PushDrop unlock for protocol `[1, 'dpp owner v1']`, key identifier the passport identifier and counterparty `self` ([custody](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/custody.md) section 3). The unlock is 73 bytes:
 
 ```js
 import { PushDrop, Transaction } from '@bsv/sdk'
@@ -144,7 +144,7 @@ const signed = await wallet.signAction({
 
 `nextState` is built as the genesis was, with `op: 'UPDATE'`, `previousTxid` and `previousOutputIndex` naming the tip, `lineageGenesis` naming the genesis outpoint as `{ txid, outputIndex }`, and `controlLinkage` from the keys step. The wallet usually adds its own funding input and change output; the tip keeps the index you find, and the passport output stays first because outputs are not randomised.
 
-**Transfer under managed custody.** The custodian offers the passport against the current tip, the recipient accepts, and the custodian writes the acceptance down as a signed record with `signManagedAcceptance`. The `TRANSFER` moves field 6 to the recipient's controller key and carries `acceptanceCommitment(record)` in `authorisationCommitment`; `bindAcceptanceToState(record, state)` must return no failures before you send. Keep the record: a reader needs it to check the transfer, and no index or registry route serves it yet. `examples/lifecycle-v2.mjs` runs the offer, the acceptance and the transfer, and [managed custody](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/managed-custody.md) holds the rules. Under `managed-custody@1` the record is signed by the custodian's identity key itself, which a BRC-100 wallet does not expose, so a custodian holds that key outside its wallet for now.
+**Transfer under managed custody.** The custodian offers the passport against the current tip, the recipient accepts, and the custodian writes the acceptance down as a signed record with `signManagedAcceptance`. The `TRANSFER` moves field 6 to the recipient's controller key and carries `acceptanceCommitment(record)` in `authorisationCommitment`; `bindAcceptanceToState(record, state)` must return no failures before you send. Keep the record: a reader needs it to check the transfer, and no index or registry route serves it yet. `examples/lifecycle-v2.mjs` runs the offer, the acceptance and the transfer, and [managed custody](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/managed-custody.md) holds the rules. Under `managed-custody@1` the record is signed by the custodian's identity key itself, which a BRC-100 wallet does not expose, so a custodian holds that key outside its wallet for now.
 
 **Retire.** A `RETIRE` spends the tip like any other state, and nothing can follow it.
 
@@ -166,9 +166,9 @@ Record each operation in your journal before you act on it: the state, the unsen
 
 | Question | Page |
 |---|---|
-| What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/record-model-v2.md) |
-| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/writing.md) |
-| Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/custody.md) |
-| What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/verification.md) |
-| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
+| What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) |
+| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/writing.md) |
+| Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/custody.md) |
+| What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) |
+| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
 | Which wallet to use | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |

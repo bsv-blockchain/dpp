@@ -1,6 +1,6 @@
 # Migration
 
-Identify the deployed release, stored record versions and selected profiles before changing a service. Use the [release records](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/release/dpp-release-2026-09-3.json) and [compatibility guide](learn/versions-and-compatibility.md) to separate those changes.
+Identify the deployed release, stored record versions and selected profiles before changing a service. Use the [release records](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/release/dpp-release-2026-09-5.json) and [compatibility guide](learn/versions-and-compatibility.md) to separate those changes.
 
 ## Build an inventory
 
@@ -19,7 +19,7 @@ For industry-profile changes, use [the consumer adoption guide](profiles/updatin
 3. Check index admission policy and the writer's selected formats.
 4. Exercise writing, verification, export and recovery before switching live traffic.
 
-The exact upgrade transition is defined in the [record model](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model-v2.md#L94-L114); acceptance is defined in the [managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/managed-custody.md).
+The exact upgrade transition is defined in the [record model](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md#L94-L114); acceptance is defined in the [managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/managed-custody.md).
 
 ## Rollback and retained evidence
 
@@ -30,5 +30,3 @@ Use [export and recovery](operate/export-import-recovery.md) to rehearse provide
 The third release set changes the HTTP/export interface while retaining the on-chain record formats. [Release history](reference/release-sets.md) links the exact declarations.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).
-
-The pinned release links above describe an earlier set, now superseded; use the [release guide](reference/release-sets.md) for the current candidate and publication state.

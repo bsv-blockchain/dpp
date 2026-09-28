@@ -5,9 +5,9 @@ The repository and its four packages use Open BSV License Version 6, reproduced 
 | Material | Terms and notices |
 |---|---|
 | Repository code and associated documentation | [Open BSV License Version 6](https://github.com/bsv-blockchain/teranode/blob/b537438c9bb08d5c2e97770cfe9db175605b244a/LICENSE) |
-| Package dependencies | [Licence ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/licences.json) |
-| Credential and event artefacts | [Notices beside retained artefacts](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/vsc/artifacts) |
-| GS1 schema material | [Schema notice](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/schemas/gs1/NOTICE.md) |
+| Package dependencies | [Licence ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/licences.json) |
+| Credential and event artefacts | [Notices beside retained artefacts](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/vsc/artifacts) |
+| GS1 schema material | [Schema notice](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/schemas/gs1/NOTICE.md) |
 
 Read the applicable source terms before reuse. The absence of a Bitcoin SV (BSV) runtime dependency does not select a different licence.
 

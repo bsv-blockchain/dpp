@@ -27,10 +27,10 @@ The parser reports the key and qualifiers, or a named parsing problem. This exam
 
 | Integration input | Source |
 |---|---|
-| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/gs1-discovery.md) |
-| Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/src/gs1-resolution.ts) |
-| Hosted resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/contracts/registry.yaml) |
-| Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/vectors/dpp/interoperability/gs1) |
+| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/gs1-discovery.md) |
+| Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/src/gs1-resolution.ts) |
+| Hosted resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/registry.yaml) |
+| Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/vectors/dpp/interoperability/gs1) |
 
 Keep resolution and signed-subject verification separate. Rewriting a discovery host does not rename the signed subject. Continue with the [passport reader](../implement/roles/passport-reader.md).
 
