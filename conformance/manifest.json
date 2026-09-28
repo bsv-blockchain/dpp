@@ -112,7 +112,7 @@
       "version": "0.2.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "c83543a08bddaf0a813837577574d95c509a8d4e6aab520e0de7448c558cdded"
+      "digest": "2afd89a94566977c07366c6770649cfc6ca774b947e5e952632beefe2f557adc"
     },
     {
       "id": "contract-report-schema",
@@ -4766,9 +4766,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-09-28",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "c83543a08bddaf0a813837577574d95c509a8d4e6aab520e0de7448c558cdded",
+      "sourceDigest": "2afd89a94566977c07366c6770649cfc6ca774b947e5e952632beefe2f557adc",
       "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested)."
     },
     {

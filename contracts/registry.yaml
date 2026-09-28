@@ -9,7 +9,7 @@ info:
     credential verification, discovery and confirmed chain inclusion are separate claims.
     VSC support targets vsc-draft-compat/0.1.0, a pinned Community Group draft compatibility
     profile, not W3C certification. Historical UORA representations remain readable and
-    legacy intake is disabled unless LEGACY_INTAKE=1. See docs/ATTESTATION_REGISTRY.md.
+    legacy intake is disabled unless LEGACY_INTAKE=1.
 externalDocs:
   description: Pinned VSC Community Group source
   url: https://github.com/w3c-cg/vsc/tree/c279de3debcd6eab94a77034584d1750f5d65e6a
@@ -75,18 +75,16 @@ tags:
       write operations answer 503 and `GET /status/{listId}` 404s.
 
 # Routes the router serves that this document deliberately does not describe.
-# The contract test (test/openapi-contract.test.ts) checks the document against
-# the router in both directions and accepts only the omissions listed here,
-# each with its reason; an entry that is also documented, or that names a
-# route nobody serves, fails the test.
+# The reference registry's contract test checks its router against this
+# document in both directions and accepts only the omissions listed here, each
+# with its reason. Another registry need not serve them.
 x-intentional-omissions:
   - method: GET
     path: /treasury/balance
     reason: >-
-      Internal to Float, the Association's treasury balance monitor. The
-      route belongs to @bsv-blockchain-demos/float-balance-route, whose own
-      instruction keeps it unpublished; it 404s unless FLOAT_BALANCE_TOKEN is
-      set and is no part of the query contract this layer offers the app.
+      An operator's internal balance monitor for the reference registry's
+      anchoring wallet. It answers 404 unless the operator enables it and is no
+      part of the registry interface.
   - method: GET
     path: /showcase
     reason: >-
@@ -151,7 +149,8 @@ paths:
       description: |
         Keyed by `passportId`, by `objectDid` or by the data carrier `uid`.
         Exactly one must be supplied. Treating them as alternative keys
-        presumes nothing about the derivation rule, which is D-CR2.
+        presumes no derivation between them: a physical-object DID is never
+        derived from a passport identifier.
 
         Without `limit` or `cursor` the answer is the historical unbounded
         one: every event this store holds, with `chainIntegrity` where a check
@@ -164,7 +163,7 @@ paths:
         `chainIntegrity`, which is a statement about the whole history.
 
         Open: whether a repurposed battery returns one history or a chain of
-        successive passports (D-PRD2).
+        successive passports.
       parameters:
         - { name: passportId, in: query, schema: { type: string } }
         - { name: objectDid, in: query, schema: { type: string } }
@@ -301,12 +300,9 @@ paths:
       operationId: getByDigitalLink
       summary: Resolve the GS1 Digital Link path printed on the item.
       description: |
-        Every passport in this programme is identified by a GS1 Digital Link
-        URI. Until 2026-07-29 this service filed attestations under that string
-        while refusing to answer it as an address, so following the one
-        instruction a physical label can carry returned `no such endpoint`.
-        That defeated the reason for printing a standard path: **the path is
-        followable without going through us.**
+        Every passport this registry serves is identified by a GS1 Digital
+        Link URI, and the path printed on the item is answered here as an
+        address, so a label can be followed without an application in between.
 
         Returns the material for an independent check, never a verdict. Per
         event: the digest, the outpoint committing it, and a public explorer URL
@@ -700,24 +696,20 @@ paths:
         The endpoint the whole construction rests on, and the reason this
         layer exists: UORA states that it provides no proof of existence or
         blockchain-style timestamping and assumes an external registry
-        supplies it (`docs/UORA_SPEC_NOTES.md` §1).
+        supplies it.
 
         It returns the **canonical bytes**, not only the digest. Serving the
         digest alone would oblige every verifier to reimplement JCS correctly
         before they could check anything, which in practice means they will
-        not (R14). With the canonical string, the digest and the outpoint, a
+        not. With the canonical string, the digest and the outpoint, a
         verifier fetches the raw transaction from any source, decodes the
-        PushDrop output and compares. `npm run verify` in this repository is
-        one implementation of that check and never calls this endpoint.
-
-        Absent from this document until 2026-07-28, which was the largest gap
-        in it: the operation carrying the independent-verification story was
-        the one operation a consumer could not find here.
+        PushDrop output and compares. A verifier that reads the chain itself
+        never needs this endpoint.
       parameters:
         - name: id
           in: path
           required: true
-          description: The attestationId (`{passportId}/{recordId}`), URL-encoded.
+          description: The attestationId, URL-encoded. For a native claim it is `urn:sha256:` followed by the digest of the claim's complete representation (spec/rules.md section 6).
           schema: { type: string }
       responses:
         '200':
@@ -1112,7 +1104,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: The attestationId (`{passportId}/{recordId}`), URL-encoded.
+          description: The attestationId, URL-encoded. For a native claim it is `urn:sha256:` followed by the digest of the claim's complete representation (spec/rules.md section 6).
           schema: { type: string }
       responses:
         '200':
@@ -1370,7 +1362,7 @@ components:
             externalCredentialPolicy: { enum: [configured, not-configured] }
         unsupported:
           type: array
-          description: What is explicitly not implemented, each with its reason; the two readiness statements are carried verbatim from the programme's readiness records.
+          description: What is explicitly not implemented, each with its reason.
           items:
             type: object
             required: [id, reason]
@@ -1545,7 +1537,7 @@ components:
         contract: { const: attestation-registry/1 }
         outcome: { enum: [verified, invalid, indeterminate] }
         issues: { type: array, items: {} }
-        checks: { description: The registry's named checks with their evidence scope; for VSC, the package's full verification result including custody and corrections. }
+        checks: { description: "The registry's named checks with their evidence scope; for VSC, the package's full verification result including custody and corrections." }
         tokenRecordId: { type: string, pattern: '^[0-9a-f]{64}$' }
         report: { $ref: '#/components/schemas/EvidenceReport' }
         reportOmitted: { type: string, description: Why no report accompanies this answer. }
@@ -1758,11 +1750,7 @@ components:
           type: object
           description: |
             The dependencies this service actually has, each probed rather than
-            asserted. Until 2026-07-29 this block named `overlay`, `storage` and
-            `arc`, all `unknown`: two of those are not dependencies of this
-            service at all (overlay resolution is the app's lane under D-CR7,
-            and broadcasting goes through the wallet storage server rather than
-            ARC directly), and the third was never checked.
+            asserted.
 
             `store` is probed with the cheapest query the store seam offers, so
             a database that has gone away reports `down` here rather than
@@ -1830,7 +1818,7 @@ components:
             `superseded`). Absent on placeholder records, which were never
             validated and carry no claim. A superseded event is retained
             history and must not be used for state computation.
-        actor: { type: string, description: A label or a DID, never a key. }
+        actor: { type: string, description: "A label or a DID, never a key." }
         profile: { type: string, examples: ['battery@2'] }
         anchor: { $ref: '#/components/schemas/AnchorRef' }
         data:
@@ -1838,7 +1826,7 @@ components:
           description: |
             Public payload for this event. Restricted and authority-tier
             content is never returned here: disclosure is cryptographic, not
-            filtered at the API (programme hard rule 4).
+            filtered at the API.
           additionalProperties: true
         lifecycleMapping:
           $ref: '#/components/schemas/LifecycleMapping'
@@ -1859,7 +1847,7 @@ components:
           type: string
           description: |
             Set when this passport was closed and a new one issued for the
-            same physical object (D-PRD2). Null in every other case.
+            same physical object. Null in every other case.
         predecessor: { type: string }
         stub: { type: boolean }
 
@@ -1867,8 +1855,7 @@ components:
       type: object
       description: |
         A reference to the anchoring record. Deliberately opaque at this
-        layer: the consuming app must never surface it, and the programme's
-        banned-word rule forbids showing any such identifier to a user.
+        layer: a consuming application should not show it to a user.
       required: [recordId]
       properties:
         recordId:
