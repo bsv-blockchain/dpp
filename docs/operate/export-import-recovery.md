@@ -10,6 +10,44 @@ Use `GET /evidence-package` for the bounded package and `GET /evidence-export` w
 
 The history listing alone is not an archive of transaction bytes. A bounded lookup can omit earlier history. Do not infer complete retention from either returning a successful response.
 
+## Fetch, check and restore an export
+
+These commands export a passport from an index, check every part and restore it into a replacement index. Set `EXPORT_TOKEN` to the source index's export token and `EXPORT_SIGNER` to the key it signs exports with; the hosted reference's is on [the deployment page](../deployment.md#the-hosted-reference), and for another operator ask them for it. The capability document does not carry the export key yet.
+
+```js
+import { inspectEvidencePackage } from '@bsv/dpp-core'
+
+const source = 'https://dpp-overlay.bsvb.net'
+const replacement = 'http://localhost:8080'
+const passportId = 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+
+const parts = []
+let cursor
+do {
+  const query = new URLSearchParams({ passportId, ...(cursor ? { cursor } : {}) })
+  const part = await (await fetch(`${source}/evidence-export?${query}`, { headers: { Authorization: `Bearer ${process.env.EXPORT_TOKEN}` } })).json()
+  const files = new Map(Object.entries(part.package.files).map(([path, b64]) => [path, [...Buffer.from(b64, 'base64')]]))
+  const inspection = inspectEvidencePackage(part.package.manifest, files, { expectedPassportId: passportId, expectedSigner: process.env.EXPORT_SIGNER })
+  if (inspection.failures.length > 0) throw new Error(`part ${part.part.index}: ${inspection.failures.map((f) => f.reason).join(', ')}`)
+  parts.push(files)
+  cursor = part.nextCursor
+} while (cursor)
+
+for (const files of parts) {
+  for (const [path, bytes] of files) {
+    if (!path.startsWith('proofs/')) continue
+    const response = await fetch(`${replacement}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream', 'X-Topics': '["tm_dpp"]', Authorization: `Bearer ${process.env.SUBMIT_TOKEN}` },
+      body: new Uint8Array(bytes),
+    })
+    console.log(path, response.status, response.headers.get('x-admission'))
+  }
+}
+```
+
+Check `failures`, not only `signatureValid`: `signatureValid` says the manifest was signed by the key it names, and only `failures` reports `signer-unexpected` when that is not the key you expected. Each part lists its states oldest first, so submitting its `proofs/` files in order restores the lineage predecessor first; the replacement must admit the same publisher keys. Then look the passport up on the replacement and run the reader again.
+
 ## Rehearse a replacement
 
 1. Obtain and retain the archive, its manifest and the operator key expected to sign it.

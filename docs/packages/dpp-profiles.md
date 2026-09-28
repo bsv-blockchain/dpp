@@ -8,7 +8,7 @@ Install the exact published version:
 npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.3
 ```
 
-Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+Keep the application lockfile and review compatibility before upgrading.
 
 Reference helpers and generated product-profile data. The [support table](support-table.md) separates the Node module from data entry points.
 

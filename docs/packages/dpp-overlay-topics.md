@@ -8,7 +8,7 @@ Install the exact published version:
 npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.3
 ```
 
-Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+Keep the application lockfile and review compatibility before upgrading.
 
 Reference topic managers, lookup services and an HTTP host. Use the [support table](support-table.md) for versions and runtime dependencies.
 
