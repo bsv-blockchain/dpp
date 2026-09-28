@@ -25,7 +25,7 @@ curl -s http://localhost:8080/capabilities
 
 `/health` names the topics and services; `/capabilities` is the capability document (`contracts/capabilities.schema.json`), which says which custody profiles this node admits (`managed-custody@1` when `ACCEPTANCE_COMMITMENT=required`, otherwise the record model's baseline), whether it exports, and whether it synchronises.
 
-The header source is the trust boundary of the inclusion check. Left empty, `CHAIN_TRACKER` is WhatsOnChain on `NETWORK`, a third party's headers; a node may point at its own header service instead (`docs/deployment.md`, the pieces). `CHAIN_TRACKER=scripts-only` is a local fixture and demonstration setting: it admits unproven ancestry, verifies no merkle path, and every state it serves reads `pending` to a verifier. It never claims inclusion, and a reachable deployment must not run it.
+The header source is the trust boundary of the inclusion check. Left empty, `CHAIN_TRACKER` is WhatsOnChain on `NETWORK`, a third party's headers; the node has no setting for another header service yet, and `WOC_API_KEY` raises WhatsOnChain's rate limit. `CHAIN_TRACKER=scripts-only` is a local fixture and demonstration setting: it admits unproven ancestry, verifies no merkle path, and every state it serves reads `pending` to a verifier. It never claims inclusion, and a reachable deployment must not run it.
 
 ## What the node says at each step
 

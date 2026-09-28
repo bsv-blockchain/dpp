@@ -4,6 +4,26 @@ An identifier tells the reader which product record it is looking for. GS1 Digit
 
 A Global Trade Item Number (GTIN) identifies a trade item. Its allocation, its use in a product identifier and discovery of the corresponding passport are separate tasks.
 
+## Get an identifier
+
+A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gtin>/21/<serial>`, where the GTIN names the trade item and the serial names this instance.
+
+1. **Obtain the GTIN; never choose it.** For a real product, use a GTIN allocated under a GS1 Company Prefix licensed to the brand, or allocated to the brand by its GS1 Member Organisation. The national member organisation licenses prefixes and sets their fees. A number under a prefix the brand does not hold identifies someone else's product, and a state published under it cannot be withdrawn.
+2. **For a demonstration, example or test, use prefix 952.** GS1 reserves it for demonstrations and never licenses it, so a reader can take it as the statement that nothing real stands behind the record.
+3. **Write fourteen digits with a correct check digit.** The helpers in `@bsv/dpp-profiles` compute and check it:
+
+   ```js
+   import { gs1CheckDigit, parseGs1DigitalLink } from '@bsv/dpp-profiles'
+   const data = '0952123456789'
+   const gtin = data + gs1CheckDigit(data)
+   console.log(parseGs1DigitalLink(`https://dpp.example.com/01/${gtin}/21/SN0001`))
+   ```
+
+   This prints `09521234567899` with `checkDigitValid: true` and `demonstration: true`.
+4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1.
+
+The rules are in the [record model](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/record-model.md) section 3. An application account is not a GS1 licensee: who may publish under a GTIN is established outside the account that publishes.
+
 ## Use the identifier throughout the request
 
 Keep the scanned or supplied passport identifier as the reader's expectation. Use discovery to locate a service, retrieve the candidate records, then check that the signed subject matches that expectation. A service URL tells the client where to ask; it does not establish which product the response concerns.
