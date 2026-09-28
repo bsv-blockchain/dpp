@@ -30,7 +30,7 @@ console.log(report.limits)
 JS
 ```
 
-Run the [reader quick start](../quick-start.md#reader-and-verifier) to reproduce those fixture reports through the implementation. For an application decision, name the checks required by its policy and retain their findings. A single success label would hide the missing checks.
+Run the [reader quick start](../quick-start.md#check-the-test-passports-offline) to reproduce those fixture reports through the implementation. For an application decision, name the checks required by its policy and retain their findings. A single success label would hide the missing checks.
 
 ## Source definitions
 

@@ -3,6 +3,8 @@
 ## Start here
 
 * [The DPP standard](README.md)
+* [Quick start](quick-start.md)
+* [Build an application](packages/build-an-application.md)
 * [Where things stand](start/status.md)
 * [The passport model](start/architecture.md)
 * [Choose a journey](start/choose-a-journey.md)
@@ -22,9 +24,7 @@
 ## Use the reference packages
 
 * [Install the selected release](packages/README.md)
-* [Build an application with the packages](packages/build-an-application.md)
 * [Supported entry points](packages/support-table.md)
-* [Reference quick starts](quick-start.md)
 * [@bsv/dpp-core](packages/dpp-core.md)
 * [@bsv/dpp-profiles](packages/dpp-profiles.md)
 * [@bsv/vsc](packages/vsc.md)

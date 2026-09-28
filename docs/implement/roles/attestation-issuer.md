@@ -4,7 +4,7 @@ An issuer signs a lifecycle claim, such as a repair assessment, without changing
 
 ## Sign and check one claim
 
-Run the [issuer quick start](../../quick-start.md#attestation-issuer). It loads an unsigned fixture claim, signs it using a published test key, compares the complete signed result with the fixture and checks the signature.
+Run the [issuer quick start](../../quick-start.md#sign-a-claim). It loads an unsigned fixture claim, signs it using a published test key, compares the complete signed result with the fixture and checks the signature.
 
 Expect the assertion checks to pass and the matching-claim message to print. The resulting object is a signed claim. Registry storage and blockchain commitment are subsequent operations.
 

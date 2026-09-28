@@ -1,34 +1,53 @@
 # The DPP standard
 
-A digital product passport (DPP) combines a product's recorded history with evidence about it. This working draft uses the Bitcoin SV (BSV) blockchain for passport records and separate commitments to signed lifecycle claims.
+A digital product passport (DPP) is a product's history that anyone can check. This open standard keeps each passport as a chain of signed records on the BSV blockchain, so a reader can verify who wrote each change without trusting the service that shows it.
 
-## How a passport works
+## Start here
 
-A product's passport has a history of signed records. Updating it creates a transaction that spends the previous record's output, so a reader can follow the history and check who signed each change. The product data can change while the passport identifier continues to identify the same lineage.
+| I want to | What I need | Start |
+|---|---|---|
+| See a real passport | A browser | Open [a live passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) |
+| Check a passport myself | Node.js 22, npm and git | [Quick start](quick-start.md) |
+| Build an application that issues passports | The quick start, a BRC-100 wallet and a little BSV | [Build an application](packages/build-an-application.md) |
+| Run my own index | Docker | [Operate](operate/README.md) |
+| Write my own implementation of the rules | The specifications and test vectors | [Implementer start](implement/README.md) |
 
-Attestations hold separate claims about the product, such as a repair or a measurement. The issuer signs the claim. A separate blockchain commitment lets a reader detect changes to the secured claim when it is retrieved. A valid signature does not establish that the physical event happened.
+## How it works
 
-[BSV decentralised identifiers (DIDs)](learn/dids.md) connect an issuer's identity to its verification keys and document history. [Verifiable credentials (VCs)](learn/verifiable-credentials.md) carry signed claims in selected exchange formats. The guides explain BSV DID, the implemented credential paths and their remaining gaps.
+- **A passport is a chain of states.** Each state is a small blockchain transaction that spends the one before it, so the history has one order and cannot be quietly rewritten.
+- **Each state is signed twice:** by the party making the change, and by the service that publishes it.
+- **An index finds a passport's states for you.** It only finds them: your reader checks everything it returns, from the transaction bytes and public block headers.
+- **Claims about a product are separate.** A repair or a recycling is a signed claim with its own small anchor on chain, so it can be checked without touching the passport.
+- **A reader's answer is a report.** Each check passes, fails, or says which evidence is missing.
 
-An overlay indexes the blockchain records so they can be found. A registry retains and serves claims and evidence. A reader checks the returned material and reports missing evidence as well as successful checks. [The model](start/architecture.md) connects these components.
+[The passport model](start/architecture.md) shows how the pieces fit together.
 
-## Try it
+## Words you will meet
 
-Start with the [offline quick start](quick-start.md). It installs the reference packages, checks a synthetic passport history and explains the output. No wallet, running service or funds are needed for that first exercise.
+| Word | Meaning |
+|---|---|
+| Passport identifier | The product's web address, usually `https://<host>/01/<GTIN>/21/<serial>` ([identifiers](identifiers.md)) |
+| State | One signed record in a passport's history: an issue, update, transfer or retirement |
+| Index, or overlay | The service that admits states and answers lookups |
+| Publisher key | The key of the service that countersigns each state; an index admits only the keys its policy names |
+| Registry | The service that validates and stores claims |
+| Anchor | A small transaction committing to a claim's exact bytes |
+| Wallet | Holds your keys and funds, signs and broadcasts; any BRC-100 wallet |
+| Proof | The merkle path showing a transaction is in a block |
 
-Then choose the component to build. Each role guide explains its inputs, first exercise and integration work.
+## Where things stand
+
+This is a working draft, before version 1.0. The beta.3 packages were published to npm on 27 September 2026 under the `next` tag; pin exact versions. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open.
+
+## Everything else
 
 | Task | Guide |
 |---|---|
-| Assess delivery and remaining gaps | [Where things stand](start/status.md) |
-| Use the reference implementation | [Install packages](packages/README.md) |
-| Build an independent implementation | [Implementer start](implement/README.md) |
-| Run services | [Operate](operate/README.md) |
-| Select product data | [Industry profiles](profiles/README.md) |
-| Exchange data and credentials | [Interoperability](interoperability/README.md) |
-| Find rules and interfaces | [Specifications](reference/specifications.md), [contracts](reference/contracts.md) |
-| Propose changes | [Contribute](contribute/README.md) |
+| Use the packages | [Install packages](packages/README.md) |
+| Choose which product data a passport carries | [Industry profiles](profiles/README.md) |
+| Exchange data and credentials with other systems | [Interoperability](interoperability/README.md) |
+| Find the exact rules and interfaces | [Specifications](reference/specifications.md), [contracts](reference/contracts.md) |
+| Understand identity, custody and evidence | [Identity and authority](learn/identity-and-authority.md), [custody](learn/custody.md), [evidence and its limits](learn/evidence-and-freshness.md) |
+| Propose a change | [Contribute](contribute/README.md) |
 
-The guides explain the working model and implementation routes here. Pinned source links identify the exact rules, schemas and evidence behind them. Running repository examples requires [source access](packages/README.md#source-access); reading this guide does not require opening those links.
-
-The source repository is public. The experimental beta.3 packages were published to npm on 27 September 2026. See [release status](reference/release-sets.md). The [status page](start/status.md) identifies the other open decisions.
+The source repository is public at [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp). Links to source files are pinned to a commit, so the text you read is the text that was reviewed.

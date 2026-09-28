@@ -29,7 +29,7 @@ for (const item of fixture.cases) console.log(item.id, item.description)
 JS
 ```
 
-Run the [reference reader exercise](../quick-start.md#reader-and-verifier) to see the reference's results. Use the fixture's expected report in the independent harness. A field mismatch should identify the case, JSON path and both values, with unknown checks retained.
+Run the [reference reader exercise](../quick-start.md#check-the-test-passports-offline) to see the reference's results. Use the fixture's expected report in the independent harness. A field mismatch should identify the case, JSON path and both values, with unknown checks retained.
 
 Add historical, mixed-version and selected interoperability cases after the native path works. Keep the fixture time fixed; it is synthetic test input, not a delivery date.
 

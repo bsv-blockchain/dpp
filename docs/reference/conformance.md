@@ -12,7 +12,7 @@ For example, a selected release gate can pass while independent operation remain
 
 ## Run the checks
 
-Use the commands below from the [prepared checkout](../quick-start.md#prepare-the-checkout). Each exits non-zero when its checks fail and prints the affected findings. Fix or explain those findings before reporting the selected claim. Keep the command, source revision and output with the [implementation evidence](../implement/reporting.md).
+Use the commands below from the [prepared checkout](../quick-start.md#get-the-code). Each exits non-zero when its checks fail and prints the affected findings. Fix or explain those findings before reporting the selected claim. Keep the command, source revision and output with the [implementation evidence](../implement/reporting.md).
 
 ## Source material
 

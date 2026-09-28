@@ -10,7 +10,7 @@ Supply the subject, selected profile, source revisions and relationships, plus t
 
 ## Reproduce a projection
 
-After [setup](../quick-start.md#prepare-the-checkout), run:
+After [setup](../quick-start.md#get-the-code), run:
 
 ```sh
 node --input-type=module <<'JS'

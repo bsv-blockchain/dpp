@@ -4,7 +4,7 @@ An attestation verifier checks a signed claim about a product and, when supplied
 
 ## Run the reference exercise
 
-After [setup](../../quick-start.md#prepare-the-checkout), run:
+After [setup](../../quick-start.md#get-the-code), run:
 
 ```sh
 node examples/verify-attestation-anchor.mjs

@@ -1,12 +1,14 @@
 # Choose a journey
 
-| Task | Route | Start |
+There are two ways to build with the standard.
+
+| You want to | Route | Start |
 |---|---|---|
-| Build with the reference packages | Reference consumer | [Install the selected release](../packages/README.md), then [build an application](../packages/build-an-application.md) |
-| Reproduce the DPP rules in another implementation | Independent implementer | [Implementer start](../implement/README.md) |
+| Build an application or service, using the published packages | Use the packages. Most builders start here. | [Quick start](../quick-start.md), then [build an application](../packages/build-an-application.md) |
+| Show that the rules can be implemented without our code | Write your own implementation from the specifications and test vectors | [Implementer start](../implement/README.md) |
 
-The second route tests whether separately written logic agrees on the supplied evidence. Another user interface over the reference service still uses the reference logic.
+Using the packages is the fast route: the packages already implement the rules, and your work is the wallet, the storage and the screens. Writing your own implementation is how the standard proves it does not depend on one codebase; your code must agree with the test vectors on every case, and a user interface built on top of the packages does not count as a separate implementation.
 
-The [independence criteria](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [governance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) determine which shared dependencies and evidence support an independence claim. [Reporting](../implement/reporting.md) explains how to present that evidence.
+The [conformance specification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) say what an independence claim needs, and [reporting](../implement/reporting.md) explains how to present the evidence.
 
-Choose the [roles](choose-a-role.md) the component will fill. Deployment and organisational independence have separate evidence in the [ledger](../reference/conformance.md).
+Whichever route you take, [choose a role](choose-a-role.md) next: reader, writer, issuer, registry or index.

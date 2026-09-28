@@ -50,7 +50,7 @@ npm ci
 npm run build
 ```
 
-Once the build succeeds, go directly to the [offline quick start](../quick-start.md). Keep the terminal at the repository root.
+Once the build succeeds, go directly to the [quick start](../quick-start.md). Keep the terminal at the repository root.
 
 For source inspection when needed, a pinned file can also be read locally:
 

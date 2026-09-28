@@ -41,7 +41,7 @@ An empty index returns an empty `outputs` array. A populated answer identifies o
 
 ## Validate a claim
 
-Send the secured native claim as JSON to `POST /validate?subject=...` on a registry. The query value is the product identifier expected by the caller. The [runnable request](../quick-start.md#registry-validation) reads the claim from the fixture and handles URL encoding.
+Send the secured native claim as JSON to `POST /validate?subject=...` on a registry. The query value is the product identifier expected by the caller. The [runnable request](../quick-start.md#ask-a-registry-to-check-the-claim) reads the claim from the fixture and handles URL encoding.
 
 The current response identifies its contract and contains named checks; a shared `report` is included when a subject can be determined. Inspect that report's checks and limits. A transport success or a registry-level outcome is not a substitute for evidence about each check. Historical representations have a different response contract.
 

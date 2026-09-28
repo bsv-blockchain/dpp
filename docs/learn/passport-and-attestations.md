@@ -14,7 +14,7 @@ For example, a repair can update the product's recorded condition and produce a 
 
 ## See the distinction
 
-After [setup](../quick-start.md#prepare-the-checkout), run:
+After [setup](../quick-start.md#get-the-code), run:
 
 ```sh
 node examples/lifecycle-v2.mjs

@@ -4,7 +4,7 @@ A writer creates the next passport state, obtains wallet signatures, checks the 
 
 ## Run without a wallet
 
-After [setup](../../quick-start.md#prepare-the-checkout), run:
+After [setup](../../quick-start.md#get-the-code), run:
 
 ```sh
 node examples/write-passport.mjs --dry-run

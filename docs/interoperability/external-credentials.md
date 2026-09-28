@@ -14,7 +14,7 @@ The reference profile uses a Data Integrity proof with the `ecdsa-rdfc-2019` sui
 
 ## Run the selected cases
 
-After [setup](../quick-start.md#prepare-the-checkout), run:
+After [setup](../quick-start.md#get-the-code), run:
 
 ```sh
 npm run test -w @bsv/vsc -- test/exchange.test.ts test/exchange-vectors.test.ts
