@@ -4,11 +4,11 @@ An independent implementation reproduces the record and evidence behaviour in se
 
 Start with a reader or verifier before adding a writer or service. This gives the implementation a way to inspect the records it later creates or receives. The [model](../start/architecture.md) explains the components; the [reader guide](roles/passport-reader.md) supplies the first exercise.
 
-Start with the [native baseline](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/baseline-native-2.json), then [choose a role](../start/choose-a-role.md). A baseline selects the requirements and fixtures for that role. The [independence source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/conformance.md) and [governance source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/GOVERNANCE.md) determine what may be shared with the reference implementation.
+Start with the [native baseline](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/baseline-native-2.json), then [choose a role](../start/choose-a-role.md). A baseline selects the requirements and fixtures for that role. The [independence source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [governance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) determine what may be shared with the reference implementation.
 
 ## Obtain the source material
 
-Use the [pinned checkout](../packages/README.md#source-access) for source material. To assemble a data-only bundle, run the [bundle assembler](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/scripts/implementer-bundle.mjs) from a repository checkout:
+Use the [pinned checkout](../packages/README.md#source-access) for source material. To assemble a data-only bundle, run the [bundle assembler](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/scripts/implementer-bundle.mjs) from a repository checkout:
 
 ```sh
 node scripts/implementer-bundle.mjs
@@ -18,11 +18,11 @@ The output is `release/implementer-bundle/`, with an archive beside it. `bundle-
 
 | Material | Source |
 |---|---|
-| Rules and participation | [Specification index](../reference/specifications.md), [governance](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/GOVERNANCE.md) |
+| Rules and participation | [Specification index](../reference/specifications.md), [governance](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) |
 | Interfaces | [Contracts](../reference/contracts.md) |
-| Bytes and test cases | [Fixtures](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/README.md) |
-| Selected requirements and evidence | [Ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) |
-| Profile data | [Frozen profiles](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/frozen.json) |
+| Bytes and test cases | [Fixtures](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/README.md) |
+| Selected requirements and evidence | [Ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) |
+| Profile data | [Frozen profiles](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/frozen.json) |
 
 ## First milestone
 

@@ -14,6 +14,6 @@ JS
 
 Keep the selected version with the payload and validate against its generated schema. The [profile workflow](README.md) explains the additional applicability and evidence questions.
 
-Use the [general manifest](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/manifests/general@2.json) and its [generated schema inventory](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/generated) for general product data. The [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/frozen.json) records the selected version's digests.
+Use the [general manifest](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/general@2.json) and its [generated schema inventory](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated) for general product data. The [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/frozen.json) records the selected version's digests.
 
 Read [profile selection](README.md) before choosing between general and sector data.

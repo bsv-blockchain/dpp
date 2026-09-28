@@ -58,7 +58,7 @@ The reference endpoint returns placeholder block metadata, including `testBlockH
 
 ## Connect the DID to a claim
 
-For a native claim, `issuer` names the claiming entity. When that is a resolvable DID, `issuerKeyDid` carries the native signing root as a `did:key`. The verifier checks the native signature and separately establishes that the resolved issuer authorised that key. A key supplied by the claim cannot authenticate its own issuer relationship. The [native claim source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md#L46-L55) defines this binding.
+For a native claim, `issuer` names the claiming entity. When that is a resolvable DID, `issuerKeyDid` carries the native signing root as a `did:key`. The verifier checks the native signature and separately establishes that the resolved issuer authorised that key. A key supplied by the claim cannot authenticate its own issuer relationship. The [native claim source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/rules.md#L46-L55) defines this binding.
 
 | Identifier | Role in DPP |
 |---|---|
@@ -67,15 +67,15 @@ For a native claim, `issuer` names the claiming entity. When that is a resolvabl
 | `did:web` | An identity document retrieved over HTTPS; used by the selected external credential profile. |
 | Passport identifier | The product the claim concerns, independent of the issuer's DID. |
 
-A native passport's actor key and its derived signing key also differ. Use the [core DID helpers](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-core/src/did.ts) to obtain each. A `did:bsv` document does not automatically meet a credential profile that selects `did:web`, another curve or an assertion purpose. Continue with [verifiable credentials](verifiable-credentials.md) for those choices.
+A native passport's actor key and its derived signing key also differ. Use the [core DID helpers](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-core/src/did.ts) to obtain each. A `did:bsv` document does not automatically meet a credential profile that selects `did:web`, another curve or an assertion purpose. Continue with [verifiable credentials](verifiable-credentials.md) for those choices.
 
 ## Create or integrate identities
 
-The reference application has its own script and document builders and its own issuance, completion and update operations. They are application components, not exports of `@bsv/dpp-core`, and their source is not public. A native build at Ring 0 needs no `did:bsv`: passport states are signed with identity keys, and a lifecycle claim can name its issuer as a `did:key` of the issuer's identity key ([rules](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/rules.md) section 3).
+The reference application has its own script and document builders and its own issuance, completion and update operations. They are application components, not exports of `@bsv/dpp-core`, and their source is not public. A native build at Ring 0 needs no `did:bsv`: passport states are signed with identity keys, and a lifecycle claim can name its issuer as a `did:key` of the issuer's identity key ([rules](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/rules.md) section 3).
 
 An integration supplies the subject and controller signing capabilities, the public document and transaction funding. It creates the issuance, publishes the document, retains both transaction identifiers and resolves the result. An issuance without its document needs completion under that same issuance. Minting another identifier does not repair it.
 
-The reference application has recorded differences between the method prose and the script encodings it observed on chain. Those notes are not public yet, and the differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) has no dedicated BSV DID method assessment; its tested `ID-2-did-key` row covers the native key helpers.
+The reference application has recorded differences between the method prose and the script encodings it observed on chain. Those notes are not public yet, and the differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) has no dedicated BSV DID method assessment; its tested `ID-2-did-key` row covers the native key helpers.
 
 Physical-object DID derivation: declined for now; a physical-object DID stays optional and is never derived from the passport identifier. Historical anchor issuer widening: open; the historical anchor admits `did:key` issuers only, while the current `bsv-attestation-anchor-v1` carries any issuer identifier. An issuer DID does not implement physical-object binding.
 

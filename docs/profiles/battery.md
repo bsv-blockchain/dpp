@@ -26,13 +26,13 @@ The published `@bsv/dpp-profiles@0.3.0-beta.2` package includes a `battery@4` dr
 
 | Material | Source |
 |---|---|
-| Current profile | [battery@2](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/manifests/battery@2.json) |
-| Draft successor | [battery@3](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/manifests/battery@3.json) |
-| Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/generated/mapping/battery@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/generated) |
-| Synthetic lifecycle | [Battery fixture](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/fixtures/battery-lifecycle-v1.json) |
+| Current profile | [battery@2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/battery@2.json) |
+| Draft successor | [battery@3](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/battery@3.json) |
+| Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated/mapping/battery@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated) |
+| Synthetic lifecycle | [Battery fixture](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/battery-lifecycle-v1.json) |
 
 The fixture uses invented product data; no product exists. Its mapping results illustrate missing evidence as well as supported cases.
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) records the profile's source assessments and withheld product claim. Some field metadata remains absent from the current manifest. The draft successor does not close those assessments or establish legal adequacy.
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) records the profile's source assessments and withheld product claim. Some field metadata remains absent from the current manifest. The draft successor does not close those assessments or establish legal adequacy.
 
 Use [the profiles package](../packages/dpp-profiles.md) to read the data and [authoring](authoring.md) to propose a revision.

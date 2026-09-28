@@ -22,7 +22,7 @@ A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gti
    This prints `09521234567899` with `checkDigitValid: true` and `demonstration: true`.
 4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1.
 
-The rules are in the [record model](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/record-model.md) section 3. An application account is not a GS1 licensee: who may publish under a GTIN is established outside the account that publishes.
+The rules are in the [record model](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md) section 3. An application account is not a GS1 licensee: who may publish under a GTIN is established outside the account that publishes.
 
 ## Use the identifier throughout the request
 
@@ -36,11 +36,11 @@ For the first exercise, use the identifier already supplied by the fixture. Keep
 
 | Task | Source or guide |
 |---|---|
-| Choose a passport identifier | [Record identifier requirements](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model.md#L35-L52) |
-| Use GS1 Digital Link or a demonstration identifier | [GS1 allocation and demonstration scope](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model.md#L46-L52) |
+| Choose a passport identifier | [Record identifier requirements](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md#L35-L52) |
+| Use GS1 Digital Link or a demonstration identifier | [GS1 allocation and demonstration scope](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md#L46-L52) |
 | Locate a passport from that identifier | [GS1 discovery](interoperability/gs1-discovery.md) |
 | Use the reference parsing and validation helpers | [Profiles package](packages/dpp-profiles.md) |
 
-The [GS1-952-demonstration ledger row](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json#L3037-L3045) is implemented. It records the demonstration fixture change; it does not establish that the live demonstration moved. Frozen historical fixtures remain available.
+The [GS1-952-demonstration ledger row](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json#L3037-L3045) is implemented. It records the demonstration fixture change; it does not establish that the live demonstration moved. Frozen historical fixtures remain available.
 
-Host rewriting during discovery does not establish a signed subject binding. Use the [discovery source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/gs1-discovery.md) and the [reader exercise](implement/roles/passport-reader.md) for those separate checks.
+Host rewriting during discovery does not establish a signed subject binding. Use the [discovery source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/gs1-discovery.md) and the [reader exercise](implement/roles/passport-reader.md) for those separate checks.

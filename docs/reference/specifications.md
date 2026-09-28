@@ -14,25 +14,25 @@ If a fixture disagrees with the text, retain the failing input and both readings
 
 | Source | Subject |
 |---|---|
-| [conformance.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/conformance.md) | Conformance: layers, roles, the baseline and the ledger |
-| [custody.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/custody.md) | Custody arrangements |
-| [design-rationale.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/design-rationale.md) | Design rationale |
-| [epcis-interoperability.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/epcis-interoperability.md) | Electronic Product Code Information Services (EPCIS) exchange |
-| [exchange.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/exchange.md) | Exchange profiles: credential representations beside the native record |
-| [external-credential-profile.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/external-credential-profile.md) | External credential profile: vc-di-ecdsa-rdfc-2019@1 |
-| [gs1-discovery.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/gs1-discovery.md) | GS1 discovery |
-| [identity.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/identity.md) | Identity, control and application boundaries |
-| [legacy-uora-anchor-v3.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/legacy-uora-anchor-v3.md) | Historical native claims and anchor format |
-| [managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/managed-custody.md) | Managed acceptance |
-| [passport-projections.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/passport-projections.md) | Passport sources, projections and publication |
-| [portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/portable-evidence.md) | Portable evidence |
-| [profiles.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/profiles.md) | Profiles and identifiers |
-| [record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model-v2.md) | The record model, version 2 |
-| [record-model.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/record-model.md) | The record model |
-| [rules.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/rules.md) | Attestations and complete-representation anchors |
-| [services.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/services.md) | Service roles and verification boundaries |
-| [verification.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/verification.md) | One verification contract |
-| [vsc-profile.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/vsc-profile.md) | Verifiable Supply Chain (VSC) draft profile |
-| [writing.md](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/writing.md) | Writing a state: the writer's lifecycle |
+| [conformance.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) | Conformance: layers, roles, the baseline and the ledger |
+| [custody.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/custody.md) | Custody arrangements |
+| [design-rationale.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/design-rationale.md) | Design rationale |
+| [epcis-interoperability.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/epcis-interoperability.md) | Electronic Product Code Information Services (EPCIS) exchange |
+| [exchange.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/exchange.md) | Exchange profiles: credential representations beside the native record |
+| [external-credential-profile.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/external-credential-profile.md) | External credential profile: vc-di-ecdsa-rdfc-2019@1 |
+| [gs1-discovery.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/gs1-discovery.md) | GS1 discovery |
+| [identity.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/identity.md) | Identity, control and application boundaries |
+| [legacy-uora-anchor-v3.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/legacy-uora-anchor-v3.md) | Historical native claims and anchor format |
+| [managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/managed-custody.md) | Managed acceptance |
+| [passport-projections.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/passport-projections.md) | Passport sources, projections and publication |
+| [portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/portable-evidence.md) | Portable evidence |
+| [profiles.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/profiles.md) | Profiles and identifiers |
+| [record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) | The record model, version 2 |
+| [record-model.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md) | The record model |
+| [rules.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/rules.md) | Attestations and complete-representation anchors |
+| [services.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/services.md) | Service roles and verification boundaries |
+| [verification.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) | One verification contract |
+| [vsc-profile.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/vsc-profile.md) | Verifiable Supply Chain (VSC) draft profile |
+| [writing.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/writing.md) | Writing a state: the writer's lifecycle |
 
 Use [contracts](contracts.md) for machine-readable interfaces and [conformance](conformance.md) for the requirement ledger.

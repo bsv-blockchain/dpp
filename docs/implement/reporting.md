@@ -12,12 +12,12 @@ Keep authored code and shared dependencies visible. Distinguish local fixture re
 
 ## Locate the requirements
 
-1. Open the selected role in the [baseline](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/baseline-native-2.json).
-2. Follow its requirement identifiers into the [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json).
+1. Open the selected role in the [baseline](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/baseline-native-2.json).
+2. Follow its requirement identifiers into the [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json).
 3. Follow each row's declared source, implementation, test and evidence references. Record the predicate the implementation actually executed. An absent assertion stays missing; a shared source document is not evidence that one fixture exercises every row.
-4. Use the [conformance source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/conformance.md) and [governance reporting source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/GOVERNANCE.md#conformance-reporting) to assemble the claim, capability declaration and results.
+4. Use the [conformance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [governance reporting source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md#conformance-reporting) to assemble the claim, capability declaration and results.
 
-The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.schema.json) defines the status vocabulary. A reference ledger status is not the status of the implementation being reported.
+The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.schema.json) defines the status vocabulary. A reference ledger status is not the status of the implementation being reported.
 
 Keep refusals and unresolved cases visible. For a disagreement, retain the input, both outcomes and their source references, then use [the reporting route](../contribute/disagreements.md).
 

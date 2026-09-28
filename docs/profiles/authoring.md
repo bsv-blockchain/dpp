@@ -1,6 +1,6 @@
 # Author and propose a profile
 
-Start from the [profile source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/profiles.md) and the schema for the profile kind:
+Start from the [profile source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/profiles.md) and the schema for the profile kind:
 
 ## Start from the data question
 
@@ -18,10 +18,10 @@ Include a consumer impact report so application owners can identify changes to t
 
 | Kind | Schema |
 |---|---|
-| Industry | [Industry manifest](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/schemas/profile-manifest-v2.schema.json) |
-| Exchange | [Exchange profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/schemas/exchange-profile.schema.json) |
-| Operator | [Operator profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/schemas/operator-profile.schema.json) |
-| Interoperability | [Interoperability profile](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/schemas/interoperability-profile.schema.json) |
+| Industry | [Industry manifest](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/schemas/profile-manifest-v2.schema.json) |
+| Exchange | [Exchange profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/schemas/exchange-profile.schema.json) |
+| Operator | [Operator profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/schemas/operator-profile.schema.json) |
+| Interoperability | [Interoperability profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/schemas/interoperability-profile.schema.json) |
 
 From the repository root, run the existing generation and test commands:
 
@@ -30,8 +30,8 @@ npm run build -w @bsv/dpp-profiles
 npm run test -w @bsv/dpp-profiles
 ```
 
-The [package guide](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/README.md) describes the manifest workflow. For a reviewed freeze change, its workspace command is `npm run refreeze -w @bsv/dpp-profiles`; the [workspace manifest](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/package.json) defines it.
+The [package guide](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/README.md) describes the manifest workflow. For a reviewed freeze change, its workspace command is `npm run refreeze -w @bsv/dpp-profiles`; the [workspace manifest](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/package.json) defines it.
 
-Submit the manifest and its tests through the [governance process](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/GOVERNANCE.md). Keep source assessment and product claims in the [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json). [Report disagreements](../contribute/disagreements.md) instead of inventing missing source requirements.
+Submit the manifest and its tests through the [governance process](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md). Keep source assessment and product claims in the [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json). [Report disagreements](../contribute/disagreements.md) instead of inventing missing source requirements.
 
 Profile governance: open. Who versions a profile and where its canonical definition lives is undecided; until it is settled, the frozen manifests in `@bsv/dpp-profiles` are the definitions.

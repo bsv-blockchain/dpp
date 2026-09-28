@@ -28,17 +28,15 @@ The package does not fund a wallet, transfer token control or find records throu
 
 | Entry point | Source |
 |---|---|
-| `@bsv/vsc` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/vsc-profile.md) |
-| `@bsv/vsc/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/epcis-interoperability.md) |
-| `@bsv/vsc/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/external-credential-profile.md) |
-| `@bsv/vsc/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/vsc/artifacts) |
+| `@bsv/vsc` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/vsc-profile.md) |
+| `@bsv/vsc/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/epcis-interoperability.md) |
+| `@bsv/vsc/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/external-credential-profile.md) |
+| `@bsv/vsc/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/vsc/artifacts) |
 
-Use the [package guide](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/vsc/README.md) for issuance, verification and adapter examples. [External credentials](../interoperability/external-credentials.md) and [source exchange](../interoperability/epcis.md) explain where each entry point fits.
+Use the [package guide](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/vsc/README.md) for issuance, verification and adapter examples. [External credentials](../interoperability/external-credentials.md) and [source exchange](../interoperability/epcis.md) explain where each entry point fits.
 
-The [release selection](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/conformance/selections/dpp-release-2026-09-3.json) withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
+The [release selection](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/selections/dpp-release-2026-09-5.json) withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
 
 Companion profile submission: open. Whether to propose the anchoring profile as a formal companion document is undecided; it does not affect implementations.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
-
-The pinned release links above describe an earlier set, now superseded; use the [release guide](../reference/release-sets.md) for the current candidate and publication state.
