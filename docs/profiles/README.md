@@ -26,4 +26,4 @@ Use [projections](../interoperability/projections.md) when the displayed product
 
 The [profile source](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/profiles.md) defines the framework. The [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/packages/dpp-profiles/frozen.json) locates the versioned files, and the [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) records assessment status. Core verification, profile validation and product qualification are separate results.
 
-Profile repository home: open; see [D-CR5](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L182).
+Profile governance: open. Who versions a profile and where its canonical definition lives is undecided; until it is settled, the frozen manifests in `@bsv/dpp-profiles` are the definitions.

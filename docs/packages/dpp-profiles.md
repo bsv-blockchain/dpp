@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.3 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
-After npm publication is verified, install the exact version:
+Install the exact published version:
 
 ```sh
 npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.3
@@ -35,7 +35,7 @@ For draft manifest version 2 profiles, the package provides `readManifestAny`, `
 
 For an upgrade, follow [updates and consumer adoption](../profiles/updating-applications.md). Generated artefacts do not automatically update application forms, backend policy or the profile selected for new records.
 
-The working checkout adds unreleased version 4 drafts, `compareProfiles` for consumer impact reports and `reviewProfileData` for additional cross-field findings. [The draft integration guide](../profiles/version-4-drafts.md) explains their use and limitations. These additions are not present in the previously published package.
+Since 0.3.0-beta.2 the package carries the version 4 drafts, `compareProfiles` for consumer impact reports and `reviewProfileData` for additional cross-field findings. [The draft integration guide](../profiles/version-4-drafts.md) explains their use and limitations.
 
 ## Choose an entry point
 
@@ -53,4 +53,4 @@ A consumer in another language can read the data files. Schema validation covers
 
 Use [industry profiles](../profiles/README.md), [identifiers](../identifiers.md) or [projections](../interoperability/projections.md) for the corresponding workflow.
 
-The profile repository-home decision is open; see [D-CR5](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L182).
+Profile governance: open. Who versions a profile and where its canonical definition lives is undecided; until it is settled, the frozen manifests in `@bsv/dpp-profiles` are the definitions.

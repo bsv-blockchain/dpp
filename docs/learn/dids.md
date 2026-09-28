@@ -20,7 +20,7 @@ These are method operations, not a claim that every DPP integration implements t
 
 ## Resolve a DID
 
-This reads the published BSV DID example using the resolver configured by the [reference application](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/src/did-mint.ts#L47). Run it with Node.js 22 or later. It needs network access, but no repository checkout, wallet or funds. Set `DID_RESOLVER_URL` to use another resolver implementing the same interface.
+This reads the published BSV DID example using the resolver the reference application uses, `https://bsvdid-universal-resolver.nchain.systems`. Run it with Node.js 22 or later. It needs network access, but no repository checkout, wallet or funds. Set `DID_RESOLVER_URL` to use another resolver implementing the same interface.
 
 ```sh
 node --input-type=module <<'JS'
@@ -71,12 +71,12 @@ A native passport's actor key and its derived signing key also differ. Use the [
 
 ## Create or integrate identities
 
-The companion application supplies [script and document builders](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/src/did-bsv.ts) and [issuance, completion and update operations](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/packages/dpp-service/src/did-mint.ts). They are application components, not exports of `@bsv/dpp-core`.
+The reference application has its own script and document builders and its own issuance, completion and update operations. They are application components, not exports of `@bsv/dpp-core`, and their source is not public. A native build at Ring 0 needs no `did:bsv`: passport states are signed with identity keys, and a lifecycle claim can name its issuer as a `did:key` of the issuer's identity key ([rules](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/rules.md) section 3).
 
 An integration supplies the subject and controller signing capabilities, the public document and transaction funding. It creates the issuance, publishes the document, retains both transaction identifiers and resolves the result. An issuance without its document needs completion under that same issuance. Minting another identifier does not repair it.
 
-The [implementation notes](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/bsv-did/README.md#2-where-the-prose-and-the-chain-disagree) record differences between the method prose and observed script encodings. Those differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) has no dedicated BSV DID method assessment; its tested `ID-2-did-key` row covers the native key helpers.
+The reference application has recorded differences between the method prose and the script encodings it observed on chain. Those notes are not public yet, and the differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json) has no dedicated BSV DID method assessment; its tested `ID-2-did-key` row covers the native key helpers.
 
-Physical-object DID derivation: open; see [D-CR2](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L181). Historical anchor issuer widening: open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209). An issuer DID does not implement physical-object binding.
+Physical-object DID derivation: declined for now; a physical-object DID stays optional and is never derived from the passport identifier. Historical anchor issuer widening: open; the historical anchor admits `did:key` issuers only, while the current `bsv-attestation-anchor-v1` carries any issuer identifier. An issuer DID does not implement physical-object binding.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Identity and authority](identity-and-authority.md) explains the distinction between identifying a signer and accepting its claims.

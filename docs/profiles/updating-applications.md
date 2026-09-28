@@ -49,20 +49,13 @@ A change from public to restricted does not remove already published bytes. Incl
 
 Generated definitions can supply field labels, help text and validation rules. Rich measurements, document evidence, conditional sections, access decisions and lifecycle actions still require application support. Review both server validation and the UI: hiding a field in a form does not enforce an access rule.
 
-## Example: adopting a release in dpp-app
+## Example: how the reference application adopts a release
 
-At [application revision `460664b`](https://github.com/bsv-blockchain-demos/dpp-app/tree/460664b9cbd347af759d9636c5a880723566d18a), the web application and service declare exact package dependencies. Its [profile mirror script](https://github.com/bsv-blockchain-demos/dpp-app/blob/460664b9cbd347af759d9636c5a880723566d18a/apps/web/scripts/mirror-profiles.ts) reads installed package artefacts and generates application profile documents and reference content. From that application's repository root:
+The reference application, whose source is not public, declares exact package dependencies in its web application and its service. A mirror script reads the installed package artefacts and generates the application's own profile documents and reference content; a check compares those generated copies with the installed package. It runs the mirror after updating the reviewed package selection and lockfile, then inspects the generated diff. Neither step establishes UI support or changes the active writer selection.
 
-```sh
-npm run profiles:mirror -w web
-npm run profiles:check -w web
-```
+Its service selects the version 2 battery and textile definitions, and its profile adapter has explicit limits on the richer value shapes it can translate. Mirroring a draft therefore makes its documentation available without making every application workflow compatible with it.
 
-Run the mirror after updating the reviewed package selection and lockfile, then inspect the generated diff. The check compares the application's generated copies with the installed package. Neither command establishes UI support or changes the active writer selection.
-
-At this revision, the [service profile registry](https://github.com/bsv-blockchain-demos/dpp-app/blob/460664b9cbd347af759d9636c5a880723566d18a/packages/dpp-service/src/profiles.ts) selects version 2 battery and textile definitions. The [profile adapter](https://github.com/bsv-blockchain-demos/dpp-app/blob/460664b9cbd347af759d9636c5a880723566d18a/packages/dpp-service/src/profile-document.ts) also has explicit limits on the richer value shapes it can translate. Mirroring a draft therefore makes its documentation available without making every application workflow compatible with it.
-
-The consumer change should include the adapters, forms, backend rules and tests needed for the selected successor. The package's generic consumer check verifies package integration in its own harness; it does not exercise dpp-app's actual forms, persistence or authorisation.
+The consumer change should include the adapters, forms, backend rules and tests needed for the selected successor. The package's generic consumer check verifies package integration in its own harness; it does not exercise an application's actual forms, persistence or authorisation.
 
 ## Demonstrate readiness before enabling writes
 

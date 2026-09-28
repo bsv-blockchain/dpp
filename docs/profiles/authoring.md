@@ -34,4 +34,4 @@ The [package guide](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f5421
 
 Submit the manifest and its tests through the [governance process](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/GOVERNANCE.md). Keep source assessment and product claims in the [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json). [Report disagreements](../contribute/disagreements.md) instead of inventing missing source requirements.
 
-Profile repository home: open; see [D-CR5](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L182).
+Profile governance: open. Who versions a profile and where its canonical definition lives is undecided; until it is settled, the frozen manifests in `@bsv/dpp-profiles` are the definitions.

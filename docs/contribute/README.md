@@ -21,6 +21,6 @@ Run the checks relevant to the change. For documentation, `node scripts/docs-che
 | Propose product or exchange data | [Author a profile](../profiles/authoring.md) |
 | Report a contradictory result | [Disagreements](disagreements.md) |
 
-Companion profile submission: open; see [D-CG1](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L184).
+Companion profile submission: open. Whether to propose the anchoring profile as a formal companion document is undecided; it does not affect implementations.
 
 The [disagreement guide](disagreements.md) supplies the technical and private-contact routes. General participation enquiries can start at the [BSV Association contact page](https://bsvassociation.org/contact/).

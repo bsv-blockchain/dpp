@@ -16,7 +16,7 @@ npm install --save-exact @bsv/dpp-core@0.3.0-beta.3 @bsv/dpp-profiles@0.3.0-beta
 
 Add `@bsv/sdk@2.8.10` if the application directly imports wallet or transaction types; a hosted writer's wallet toolbox must accept that version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. Add `@bsv/dpp-overlay-topics@0.4.0-beta.3` only for an application that embeds index components or operates an overlay. All four packages use ECMAScript modules. The release uses the `next` tag while the standard is a working draft; exact versions and the consumer lockfile define the tested installation.
 
-The first trial consumer is [bsv-blockchain-demos/dpp-app-2](https://github.com/bsv-blockchain-demos/dpp-app-2), maintained in a separate repository that currently requires access. Its initial integration is an offline Node/TypeScript programme using the public package entry points, with synthetic transactions and temporary keys. It demonstrates package integration, not a deployed writer, independent implementation or product qualification.
+A trial consumer is building a second stack, an index, a registry and an application, from this documentation and the published packages alone, and what it finds is fixed here. It is a reference consumer under the same administration, not an independent implementation.
 
 ## Application responsibilities and package boundaries
 
