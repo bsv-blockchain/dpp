@@ -16,6 +16,37 @@ curl --fail http://localhost:8081/health
 curl --fail http://localhost:8081/capabilities
 ```
 
+## Sign a publisher policy
+
+An index that admits states from more than its own publisher key needs a publisher policy chain: which keys may publish, from when, authorised by the operator. Write the first version unsigned:
+
+```json
+{
+  "policyFormat": "dpp-publisher-policy@1",
+  "policyVersion": 1,
+  "scope": { "operatorProfile": "single-operator@1", "operators": ["Example operator"], "topics": ["tm_dpp"] },
+  "publishers": [
+    { "key": "<writer identity key, 66 hex>", "role": "state-publisher", "activeFrom": "2026-07-26T14:20:00Z" }
+  ]
+}
+```
+
+Then sign it with the operator's identity key, which never goes into the index:
+
+```sh
+OPERATOR_PRIVATE_KEY=<64 hex> node examples/sign-publisher-policy.mjs policy.unsigned.json policy.json
+```
+
+The script checks the chain the way an index does at boot and writes it only if it verifies; `node examples/sign-publisher-policy.mjs --dry-run` shows the check and its refusals with a key made for the run. Give the index the written file as `PUBLISHER_POLICY_FILE`, or its text as `PUBLISHER_POLICY_JSON`, and the `OPERATOR_IDENTITY_KEYS` line the script prints.
+
+Three rules decide what the policy admits:
+
+- A key admits only states dated at or after its `activeFrom`. The first version governs the time before its own `issuedAt`, so a policy written late still admits earlier states inside each key's window ([services](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/spec/services.md) section 1).
+- Keep `topics` at `["tm_dpp"]` unless the policy also names `anchor-publisher` keys: a policy whose scope covers `tm_attestation` admits anchors only from those keys.
+- A later version names the digest of the one before in `supersedes` and is authorised by a key the chain already trusts; `policyDigest` computes the digest.
+
+A node claims `federated-operators@1` only when it synchronises with peers and the newest version of its policy names two or more operators. Peers under a single-operator policy stay `single-operator@1`, and two nodes under one administration demonstrate the mechanism, not separately administered operation.
+
 ## Observe the exchange
 
 Use the [same passport lookup](../reference/contracts.md#find-passport-records) against each operator by changing `INDEX_URL`. After the first has admitted records and synchronisation has run, inspect which records the second holds and verify them independently.

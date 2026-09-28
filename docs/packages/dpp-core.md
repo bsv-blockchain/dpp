@@ -8,7 +8,7 @@ Install the exact published version:
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.3
 ```
 
-Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+Keep the application lockfile and review compatibility before upgrading.
 
 Reference functions for passport records and shared evidence. Use the [support table](support-table.md) for the selected version and runtime; browser use is untested.
 
@@ -49,15 +49,58 @@ console.log(schema.$id)
 
 Use a validator supporting the schema's declared dialect and asserting formats. Schema validity does not replace signature or evidence verification.
 
-| Task | Entry points | Source |
-|---|---|---|
-| Read or construct a record | `parseDppOutput`, `findDppOutputs`, `buildLockingScript` | [Codec](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-core/src/codec.ts) |
-| Evaluate history | `verifyChain`, `inspectChain`, `chainFromBeef` | [Chain verification](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-core/src/verifyChain.ts) |
-| Produce a report | `verifyPassportEvidence` | [Evidence API](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-core/src/evidence.ts) |
-| Sign or inspect a native claim | `signLifecycleClaim`, `verifyLifecycleClaim` | [Claim API](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-core/src/attestation.ts) |
-| Inspect managed acceptance or exports | Acceptance and portable-evidence helpers | [Exports](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-core/src/index.ts) |
+The functions an application calls, what each takes and what it returns. The [walkthrough](build-an-application.md) shows them in order.
 
-Start with the [reader and issuer examples](../quick-start.md). The [package guide](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/packages/dpp-core/README.md) lists the remaining exports.
+**Read and verify**
+
+| Function | Takes | Returns |
+|---|---|---|
+| `findDppOutputs(tx)` | A `Transaction` | The passport outputs it carries, each with its output index and decoded state |
+| `chainFromBeef(beef, passportId?)` | A `Beef` holding a lineage, and the passport to follow | The lineage's transactions, genesis first |
+| `verifyChain(txs, options?)` | The lineage; `chainTracker`, `serverIdentityKey`, `managedAcceptance`, `controlAuthorities`, `ownerConsent` | `{ valid, spv, states, error? }`: whether the lineage holds, whether inclusion is proved, and one finding per state |
+| `verifyPassportEvidence(evidence, expected, policy?)` | `evidence`: `tokenHistory`, `nativeClaims`, `anchors`, `acceptanceRecords`, `externalCredentials`; `expected`: `passportId` and `source`; `policy`: `chainTracker`, `publisherKeys` or `publisherPolicy`, `authority`, `managedAcceptance`, `checkedAt` | The verification report: sixteen named checks, each `pass`, `fail`, `unknown` or `not-applicable` with a reason |
+
+**Write**
+
+| Function | Takes | Returns |
+|---|---|---|
+| `ownerKeyFor(passportId, wallet)` | The passport and a BRC-100 wallet | The controller key, field 6, derived for `[1, 'dpp owner v1']` |
+| `revealOwnerLinkage(passportId, wallet, verifierIdentityKey)`, then `decryptOwnerLinkage(revelation, wallet)` | The same wallet, revealing to itself | The control linkage, 64 hex characters, for every state after the genesis |
+| `ownerBlobHash(ciphertext)` | The encrypted owner tier as bytes | The hash a state carries |
+| `completeState(data, actorWallet, publisherWallet)` | The state's fields, and the wallets that sign as actor and as publisher | The signed state |
+| `buildLockingScript(state, lockKey)` | The signed state and the key that locks it | The output's `LockingScript` |
+
+**Transfer under managed custody**
+
+| Function | Takes | Returns |
+|---|---|---|
+| `signManagedAcceptance(claim, signer)` | The offer and acceptance, and the custodian's signer | The signed acceptance record |
+| `inspectManagedAcceptance(record, { custodians })` | A record and the custodians you accept | Structure, signature and time-order findings, and the commitment |
+| `acceptanceCommitment(record)` | The record | The digest the `TRANSFER` carries in `authorisationCommitment` |
+| `bindAcceptanceToState(record, state)` | The record and the `TRANSFER` state | The mismatches; empty when they agree |
+
+**Claims and anchors**
+
+| Function | Takes | Returns |
+|---|---|---|
+| `didKeyFromIdentityKey(identityKey)` | A compressed public key | Its `did:key` |
+| `signLifecycleClaim(claim, signer)` | An unsigned native claim and the issuer's signer | The signed claim |
+| `verifyLifecycleClaim(claim, { passportId, recordId })` | A signed claim and what it should be about | Its signature and subject findings |
+| `lifecycleClaimDigest(claim)` | A signed claim | The digest an anchor commits to |
+| `buildAttestationAnchor(metadata, signer)` | The digest, `attestationId`, issuer, subject and type, and the anchoring service's signer | The anchor's `LockingScript` |
+| `inspectAttestationAnchor(script)` | An anchor output's script | Its metadata, key derivation and signature findings |
+
+**Publisher policy and evidence packages**
+
+| Function | Takes | Returns |
+|---|---|---|
+| `policySigningPreimage(policy)` | A policy version | The bytes its authorisation signs |
+| `policyDigest(policy)` | A signed policy version | The digest the next version names in `supersedes` |
+| `verifyPolicyChain(chain, operatorIdentityKeys)` | The chain, oldest first, and each operator's identity key | `{ ok, versions, failure? }`, the same check an index makes at boot |
+| `policyInForceAt(chain, at)`, `publisherKeysAt(chain, at, role?)` | The chain and an instant | The version in force then, and the keys it admits |
+| `inspectEvidencePackage(manifest, files, { expectedPassportId, expectedSigner })` | A package's manifest and its files by path | Structure, inventory and signature findings; check that `failures` is empty |
+
+The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/dpp/tree/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/packages/dpp-core/src), and the [package guide](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/packages/dpp-core/README.md) lists the remaining exports.
 
 The caller supplies header, credential, status and authority adapters. Read the [report source](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/spec/verification.md) for the distinction between missing evidence and a check that does not apply. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
 

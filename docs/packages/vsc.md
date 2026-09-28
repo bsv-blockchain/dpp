@@ -8,7 +8,7 @@ Install the exact published version:
 npm install --save-exact @bsv/vsc@0.2.0-beta.2
 ```
 
-Until then, use the [candidate installation](README.md#pack-and-check). Keep the application lockfile and review compatibility before upgrading.
+Keep the application lockfile and review compatibility before upgrading.
 
 Verifiable Supply Chain (VSC) credential tooling. The [support table](support-table.md) identifies the Node runtime and data entry points.
 
