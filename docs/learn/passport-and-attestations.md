@@ -34,6 +34,6 @@ The lifecycle example exercises changes to token records. The attestation exampl
 
 A record's format selects the source to read; the [fixture guide](../implement/fixture-runner.md) names unresolved source differences, including the native payload description.
 
-Historical issuer widening: open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209).
+Historical issuer widening: open. The historical anchor admits `did:key` issuers only; the current `bsv-attestation-anchor-v1` carries any issuer identifier.
 
 Continue with [identifiers](../identifiers.md) and [evidence limits](evidence-and-freshness.md).

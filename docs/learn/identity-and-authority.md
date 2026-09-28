@@ -33,6 +33,6 @@ For issuer authority, supply the evidence and policy the intended use requires. 
 | Which publisher keys apply? | [Publisher policy](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/services.md) |
 | Which authority evidence does the verifier need? | [Verification report](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/spec/verification.md) |
 
-Live identity assurance is Ring 0: the platform vouches for the account and brand label. Higher rings are absent. [Ring definitions](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/TRUST_DESIGN.md#L54-L91).
+Live identity assurance is Ring 0: the platform vouches for the account and brand label. Ring 1 would bind a brand's DID to a legal entity through an external instrument, such as a qualified electronic seal. Ring 2 would certify a party's role for a claim type, such as a notified body for a conformity claim. Neither is live.
 
 Continue with [custody](custody.md) or the [attestation verifier](../implement/roles/attestation-verifier.md).

@@ -1,6 +1,26 @@
 # Reference deployment
 
-The [operator start](operate/README.md) runs the supplied Compose preset. It is a reference arrangement. Shared deployment remains open; see [D-CR7](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L183).
+The [operator start](operate/README.md) runs the supplied Compose preset. It is a reference arrangement. Where the hosted index runs in the long term is still open: today it is a standalone container, and an implementer reaches it by its URL either way.
+
+## The hosted reference
+
+The programme runs one instance of each service. Use them to look up and verify live records, to test a reader, or as a peer. Each service's `/capabilities` answer is authoritative; the table records what they ran on 28 September 2026.
+
+| Host | Serves | Runs |
+|---|---|---|
+| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.2 packages |
+| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp` and `tm_attestation`, their lookups, `/history`, the bounded and complete exports, proof ingestion and the two synchronisation routes | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` under publisher policy version 1 |
+| `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
+
+On the index, `POST /submit` and `POST /retract` need the operator's submit token, `POST /arc-ingest` needs the broadcaster's callback token and `GET /evidence-export` needs the export token. Lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open. On the registry, storing a claim and changing a status list need its write token; validation and reads are open.
+
+Three live passports to look up with the [passport lookup](reference/contracts.md#find-passport-records):
+
+| Passport | What it shows |
+|---|---|
+| `https://id.gs1.org/01/09506000134352/21/7AC18477503A` | A version 1 lineage of five states, repairs and a transfer |
+| `https://id.gs1.org/01/09506000134352/21/345A8EAF501F` | A version 2 lineage: issue, update and a managed transfer, with three anchored claims |
+| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host answers with the passport page |
 
 ## Place each component
 

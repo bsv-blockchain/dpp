@@ -14,6 +14,9 @@
  * the BEEFs the index returns, merged into one, and verifies it: every user signature, every
  * link, every merkle proof against WhatsOnChain's headers. The index is only
  * used to find the bytes; nothing it says is trusted, which is the point.
+ * WhatsOnChain answers an anonymous caller 429 past a few requests a second,
+ * so headers are asked one at a time and each answer is kept for the rest of
+ * the run, and WOC_API_KEY, when set, is sent as the key.
  *
  * With --fixture, it verifies fixtures/chain-v1.json offline instead, so the
  * recipe runs in CI without a network. Inclusion then reports pending, because
@@ -58,6 +61,24 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Beef, LockingScript, MerklePath, Transaction, WhatsOnChain } from '@bsv/sdk'
 import { EVIDENCE_CHECK_LABELS, chainFromBeef, findDppOutputs, verifyChain, verifyPassportEvidence } from '@bsv/dpp-core'
+
+// One question at a time, each answer kept for the run: the chain check and
+// the report ask about the same blocks, and a second round of anonymous
+// questions is what the rate limit refuses.
+function rememberedTracker(inner) {
+  const roots = new Map()
+  let height
+  let queue = Promise.resolve()
+  const serial = (ask) => (queue = queue.then(ask, ask))
+  return {
+    isValidRootForHeight: (root, at) => {
+      const key = `${at}:${root}`
+      if (!roots.has(key)) roots.set(key, serial(() => inner.isValidRootForHeight(root, at)).catch((error) => { roots.delete(key); throw error }))
+      return roots.get(key)
+    },
+    currentHeight: () => (height ??= serial(() => inner.currentHeight()).catch((error) => { height = undefined; throw error })),
+  }
+}
 
 const here = dirname(fileURLToPath(import.meta.url))
 const args = process.argv.slice(2)
@@ -181,7 +202,7 @@ if (fixtureMode) {
     return all
   }, Beef.fromBinary(answer.outputs[0].beef))
   chain = chainFromBeef(merged, passportId)
-  tracker = new WhatsOnChain('main')
+  tracker = rememberedTracker(new WhatsOnChain('main', process.env.WOC_API_KEY ? { apiKey: process.env.WOC_API_KEY } : {}))
   console.log(`The index returned ${answer.outputs.length} outputs; merged, their BEEFs reconstruct a chain of ${chain.length} states.`)
 }
 

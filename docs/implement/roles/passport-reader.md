@@ -22,7 +22,7 @@ Expect the valid history to pass, the refusal cases to be rejected and the expec
 
 Use `record-v2.json` for one output, `chain-v2.json` for history and refusals, and `evidence-v2.json` for reports. [The fixture harness](../fixture-runner.md) explains how to load them. Add version 1 and upgrade cases for mixed histories.
 
-For live retrieval, use [the overlay request](../../reference/contracts.md#find-passport-records). The index supplies candidates; the reader still verifies what it receives.
+For live retrieval, use [the overlay request](../../reference/contracts.md#find-passport-records). The index supplies candidates; the reader still verifies what it receives. The header source answers the inclusion checks: WhatsOnChain limits anonymous callers to a few requests a second, so ask one question at a time, keep each answer for the rest of the check, and use an API key for more than a handful of passports. An answer that could not be obtained reports inclusion `unknown` with `header-source-unavailable`, never a failure.
 
 ## Exact implementation sources
 

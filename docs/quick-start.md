@@ -31,6 +31,8 @@ The lifecycle command shows the steps of a version 2 record history. The attesta
 
 The [passport example](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/examples/verify-passport.mjs) and [attestation example](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/examples/verify-attestation-anchor.mjs) compare synthetic fixtures with reference results. They do not establish live inclusion, business authority or product truth. The [fixture guide](implement/fixture-runner.md) identifies source gaps.
 
+To read a live passport instead, pass its identifier and an index, for example one of the [hosted reference's passports](deployment.md#the-hosted-reference): `node examples/verify-passport.mjs <passportId> https://dpp-overlay.bsvb.net --report`. The reader then checks every proof against block headers from WhatsOnChain. Anonymous WhatsOnChain access is limited to a few requests a second, so the example asks one question at a time and keeps each answer for the run; set `WOC_API_KEY` to raise the limit. Under Node 26 the SDK prints `ExperimentalWarning: localStorage is not available` when it loads; it is harmless.
+
 ## Writer
 
 A writer constructs a signed state before it attempts admission or broadcast. This dry run reproduces a version 1 fixture and demonstrates refusal of an invalid state:
@@ -105,6 +107,6 @@ This request verifies without storing or anchoring. It supplies no token history
 | Select an exchange format | [Interoperability](interoperability/README.md) |
 | Inspect the release gate | [Conformance review](reference/conformance.md) |
 
-Brand self-custody: open; see [G-28](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L171).
+Brand self-custody: open. In the reference application the platform controls each brand's identity, so a brand cannot yet update or move it; nothing in the standard requires this.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).

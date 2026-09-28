@@ -23,4 +23,4 @@ An application account system can sit above these layers, but it does not establ
 
 Use the [stack source index](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/README.md) to locate the selected component's documentation. An upstream capability does not establish that a DPP deployment uses it. The [operating limitations](operate/limitations.md) identify the reference host's discovery and proof-refresh gaps.
 
-Object identifier derivation: open; see [D-CR2](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L181). Historical issuer formats: open; see [TD-12](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L209).
+Object identifier derivation: declined for now; a physical-object DID stays optional and is never derived from the passport identifier. Historical issuer formats: open; the historical anchor admits `did:key` issuers only, while the current anchor carries any issuer identifier.

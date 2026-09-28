@@ -14,6 +14,6 @@ Read these before deploying the reference service. Sources: [conformance/manifes
 | Durable independent publication has ledger status `gap` | No independently administered replica is demonstrated; [ledger](https://github.com/bsv-blockchain/dpp/blob/8691c12c6e81f54216ec30fe4c688f5d1b82b644/conformance/manifest.json#L3769). |
 | Registry export is a scoped archive | It has no token history, restricted evidence or keys; [registry guide](../implement/roles/registry.md). |
 
-Shared deployment: open; see [D-CR7](https://github.com/bsv-blockchain-demos/dpp-app/blob/43e79676341b3a5c12e6cb43f837e7f901c3020b/docs/STATUS.md#L183). Local peer tests do not establish independent operation.
+Hosting of the reference index: open; today it is a standalone container reached by its URL. Local peer tests do not establish independent operation.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.3 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
-After npm publication is verified, install the exact version:
+Install the exact published version:
 
 ```sh
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.3
