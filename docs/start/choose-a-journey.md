@@ -2,7 +2,7 @@
 
 | Task | Route | Start |
 |---|---|---|
-| Build with the reference packages | Reference consumer | [Install the selected release](../packages/README.md) |
+| Build with the reference packages | Reference consumer | [Install the selected release](../packages/README.md), then [build an application](../packages/build-an-application.md) |
 | Reproduce the DPP rules in another implementation | Independent implementer | [Implementer start](../implement/README.md) |
 
 The second route tests whether separately written logic agrees on the supplied evidence. Another user interface over the reference service still uses the reference logic.

@@ -22,6 +22,7 @@
 ## Use the reference packages
 
 * [Install the selected release](packages/README.md)
+* [Build an application with the packages](packages/build-an-application.md)
 * [Supported entry points](packages/support-table.md)
 * [Reference quick starts](quick-start.md)
 * [@bsv/dpp-core](packages/dpp-core.md)

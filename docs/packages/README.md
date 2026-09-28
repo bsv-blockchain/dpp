@@ -20,6 +20,8 @@ A trial consumer is building a second stack, an index, a registry and an applica
 
 ## Application responsibilities and package boundaries
 
+The table maps each workflow to the package functions it uses. For the order to call them in, from a first read to a published passport, follow [build an application](build-an-application.md).
+
 | Workflow | Public package API | Application responsibility | Specification |
 |---|---|---|---|
 | Issue, update and retire a passport | Core `completeState`, `buildLockingScript`, `verifyChain` | Supply authorised signers and a funded BRC-100 wallet; verify before sending; serialise writes, retain evidence and obtain proofs | Record models and writing lifecycle |
