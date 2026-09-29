@@ -24,6 +24,7 @@
 ## Use the reference packages
 
 * [Install the selected release](packages/README.md)
+* [What a passport application offers](packages/what-an-application-offers.md)
 * [Supported entry points](packages/support-table.md)
 * [@bsv/dpp-core](packages/dpp-core.md)
 * [@bsv/dpp-profiles](packages/dpp-profiles.md)
