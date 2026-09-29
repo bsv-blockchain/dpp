@@ -1,6 +1,6 @@
 # Build an application with the packages
 
-This page takes you from the [quick start](../quick-start.md) to an application that reads, writes and anchors passports with the published packages. Each step says what to call, which example already runs it, and which page holds the rules. Run the quick start first; it reads a live passport and checks your installation.
+This page takes you from the [quick start](../quick-start.md) to an application that reads, writes and anchors passports with the published packages. Each step says what to call, which example already runs it, and which page holds the rules. Run the quick start first; it reads a live passport and checks your installation. To plan the screens first, see [what a passport application offers](what-an-application-offers.md).
 
 ## What you are building
 
