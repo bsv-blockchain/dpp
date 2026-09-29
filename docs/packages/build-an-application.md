@@ -117,7 +117,7 @@ const created = await wallet.createAction({
 })
 ```
 
-`payloadPublic` holds the public fields of your industry profile; validate them with `@bsv/dpp-profiles` first. The owner tier is encrypted and stored off chain, and only its hash goes into the state. Then check, announce, send and prove `created.tx` as `examples/write-passport.mjs` does.
+`payloadPublic` holds the public fields of your industry profile. Start from `node examples/sample-payload.mjs general@2`, or the profile you use, and check your payload with `--check` before you write ([industry profiles](../profiles/README.md)). The owner tier is encrypted and stored off chain, and only its hash goes into the state. Then check, announce, send and prove `created.tx` as `examples/write-passport.mjs` does.
 
 **Every later state spends the tip.** Give the wallet the tip's BEEF and outpoint, then unlock the tip with the PushDrop unlock for protocol `[1, 'dpp owner v1']`, key identifier the passport identifier and counterparty `self` ([custody](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/custody.md) section 3). The unlock is 73 bytes:
 

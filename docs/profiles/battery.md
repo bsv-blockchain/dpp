@@ -4,6 +4,17 @@ For a regulatory, standards or external-validator comparison, use [the readiness
 
 The battery profile provides a shared vocabulary for battery product data and lifecycle evidence. Use it to describe and validate a payload; selecting it alone does not establish a product assessment or that every required document has been obtained.
 
+## Start from a sample payload
+
+Print a minimal valid public payload, edit it, then check it before you write:
+
+```sh
+node examples/sample-payload.mjs battery@2 > payload.json
+node examples/sample-payload.mjs --check battery@2 payload.json
+```
+
+The sample fills the 53 required fields, and nothing else, with placeholders of the right shape; replace every value with the product's own data. The profile defines 69 public fields in all, and the field inspection below lists them. The check names each problem, such as a missing field or a country that is not a two-letter code, and prints `ok:` when the payload is valid.
+
 ## Try the current profile
 
 Run [the field inspection example](../packages/dpp-profiles.md#inspect-applicable-fields), which selects `battery@2` and the `industrial` category. It lists applicable fields, missing captured fields and questions requiring review. Replace the empty payload with application data only after choosing the relevant product category.

@@ -4,6 +4,17 @@ Use [the readiness review](reviewing-readiness.md) to compare the selected profi
 
 The textile profile organises product information such as composition and the evidence supporting it. A shared schema lets producers and readers use the same declared fields. It does not turn an unassessed declaration into verified evidence.
 
+## Start from a sample payload
+
+Print a minimal valid public payload, edit it, then check it before you write:
+
+```sh
+node examples/sample-payload.mjs textile@2 > payload.json
+node examples/sample-payload.mjs --check textile@2 payload.json
+```
+
+The sample fills the 12 required fields, and nothing else, with placeholders of the right shape; replace every value with the product's own data. The profile defines 46 public fields in all, and the field inspection below lists them. The check names each problem, such as a missing field or a country that is not a two-letter code, and prints `ok:` when the payload is valid.
+
 ## Use the selected version
 
 Start with `textile@2` for the current profile, keeping `textile@1` available when reading data that declares it. `textile@3` is a draft successor. Select it explicitly for draft evaluation rather than silently applying it to existing records.
