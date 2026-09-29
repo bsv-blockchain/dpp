@@ -2,7 +2,40 @@
 
 The general profile supplies a versioned payload vocabulary when the integration has not selected a sector-specific profile. It does not imply that battery or textile obligations no longer apply to a product.
 
-After [setup](../quick-start.md#get-the-code), inspect it with:
+## Start from a sample payload
+
+Print a minimal valid public payload, edit it, then check it before you write:
+
+```sh
+node examples/sample-payload.mjs general@2 > payload.json
+node examples/sample-payload.mjs --check general@2 payload.json
+```
+
+The sample fills the 8 required fields, and nothing else, with placeholders of the right shape; replace every value with the product's own data. The profile defines 39 public fields in all, and the field inspection below lists them. The check names each problem, such as a missing field or a country that is not a two-letter code, and prints `ok:` when the payload is valid.
+
+For `general@2` the sample is:
+
+```json
+{
+  "careNote": "Example careNote",
+  "category": "Example category",
+  "manufacturer": "Example manufacturer",
+  "manufacturerContact": "Example manufacturerContact",
+  "materials": [
+    {
+      "part": "Example part",
+      "material": "Example material"
+    }
+  ],
+  "name": "Example name",
+  "profile": "general",
+  "profile_version": 2
+}
+```
+
+## Inspect the fields
+
+After [setup](../quick-start.md#get-the-code), inspect them with:
 
 ```sh
 node --input-type=module <<'JS'

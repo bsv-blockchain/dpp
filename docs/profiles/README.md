@@ -6,7 +6,7 @@ An industry profile describes product data separately from the passport record f
 
 Choose the product family and declared profile version before validating data. Keep public product fields separate from restricted documents or evidence. A field being present does not establish that its value is supported by evidence or that every applicability question is settled.
 
-Use [the profiles example](../packages/dpp-profiles.md#inspect-applicable-fields) to load a battery manifest, inspect the fields applying to an industrial battery and list missing captured fields. Then validate the intended payload against that profile's generated public or restricted schema.
+Use [the profiles example](../packages/dpp-profiles.md#inspect-applicable-fields) to load a battery manifest, inspect the fields applying to an industrial battery and list missing captured fields. Then validate the intended payload against that profile's generated public or restricted schema: `node examples/sample-payload.mjs <profile@version>` prints a minimal valid public payload to start from, and `--check` checks yours.
 
 Review unresolved applicability separately. Preserve the selected profile identifier with stored data so another reader can use the same definition. A draft successor is an explicit selection, not an automatic reinterpretation of existing payloads.
 
