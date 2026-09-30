@@ -22,7 +22,9 @@ Three live passports to look up with the [passport lookup](reference/contracts.m
 |---|---|
 | `https://id.gs1.org/01/09506000134352/21/7AC18477503A` | A version 1 lineage of five states, repairs and a transfer |
 | `https://id.gs1.org/01/09506000134352/21/345A8EAF501F` | A version 2 lineage: issue, update and a managed transfer, with three anchored claims |
-| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host answers with the passport page |
+| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host answers with the passport page. Its payload declares the draft `battery@4` |
+
+Use these to test reading and verifying, not as payload examples. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. They still verify because the report does not check a payload against its profile; check payloads yourself, as the [profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile) shows, and start your own from `node examples/sample-payload.mjs`.
 
 ## Place each component
 

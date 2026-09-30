@@ -40,36 +40,41 @@ Node runtime support does not imply browser runtime support. Keep server package
 
 ## Source access
 
-The published beta.3 packages were built from source revision `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81`, recorded in the [publication receipt](../reference/beta-3-publication.md); the unchanged VSC package was built from `f54e750de4c7731a30563e5f1caad762adbfb737`, recorded in the [beta.2 receipt](../reference/beta-2-publication.md). Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. The repository is public:
+The repository is public. To follow these docs and run the examples, clone its default branch, as the [quick start](../quick-start.md) does:
 
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
 cd dpp
-git checkout --detach f54e750de4c7731a30563e5f1caad762adbfb737
 npm ci
 npm run build
 ```
 
-Once the build succeeds, go directly to the [quick start](../quick-start.md). Keep the terminal at the repository root.
-
-For source inspection when needed, a pinned file can also be read locally:
+To inspect or repack the exact source the published packages were built from, check out their revision instead. All four, the beta.3 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and the unchanged `@bsv/vsc` 0.2.0-beta.2, repack byte for byte from `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81`, the revision the [publication receipt](../reference/beta-3-publication.md) records. Its examples are older than the ones these docs describe, so run the quick start from the default branch.
 
 ```sh
-git show f54e750de4c7731a30563e5f1caad762adbfb737:spec/record-model.md
+git checkout --detach 921a1d36e6a1888ef0d1b08aaf2cf7df54525d81
+npm ci
+npm run build
 ```
 
-Use the path following the commit hash in each source URL. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
+Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. A single file at a revision can be read without a checkout:
+
+```sh
+git show 921a1d36e6a1888ef0d1b08aaf2cf7df54525d81:spec/record-model.md
+```
+
+Source links in these docs are pinned to the revision a page was written against, `a29f713` for most, which can differ from both; use the path following the commit hash in each link. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
 
 ## Pack and check
 
-From that checkout:
+From the package revision's checkout:
 
 ```sh
 node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
+The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
 
 To print the produced tarball paths, run:
 

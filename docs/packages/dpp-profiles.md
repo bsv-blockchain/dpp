@@ -72,6 +72,8 @@ if (!validate({ name: 'Example chair' })) {
 
 It prints one line for each required property the payload lacks: `careNote`, `category`, `manufacturer`, `manufacturerContact`, `materials`, `profile` and `profile_version`. The last two name the profile, and every public payload carries them. `node examples/sample-payload.mjs general@2` prints a payload that passes, and `--check <profile@version> <file>` explains each problem in a payload file in a sentence.
 
+Compile each profile's schema once and reuse the validator. `readPublicPayloadSchema` returns a fresh copy on every call, Ajv refuses to compile a second copy of a schema whose `$id` it already holds, and every state of a lineage declares the same profile, so a reader that checks each state uses `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`.
+
 ## Read a field
 
 Every current profile uses manifest version 1. Each field in `manifest.fields` describes one value:

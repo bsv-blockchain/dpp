@@ -92,7 +92,7 @@ inclusion pass
 
 The claim checks read `unknown` with `no-evidence` and `issuerAuthority` reads `unknown` with `policy-missing`, because this passport carries no claim. If `inclusion` reads `unknown` with `header-source-unavailable`, the header source refused a question: wait a few seconds and run it again, or set `WOC_API_KEY`. The paced tracker is what keeps a reader under that limit; the report asks about every state's block, and a tracker that asks as fast as it can is refused under load.
 
-The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason, and [reading the report](../learn/evidence-and-freshness.md) explains them. `examples/verify-passport.mjs` is the same reader with every option, and the [reader guide](../implement/roles/passport-reader.md) holds the rules.
+The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason, and [reading the report](../learn/evidence-and-freshness.md) explains them. `examples/verify-passport.mjs` is the same reader with every option, and the [reader guide](../implement/roles/passport-reader.md) holds the rules. To add the passport's claims, their anchors, a check for a later state and the parties you accept, see [gather a passport's evidence](dpp-core.md#gather-a-passports-evidence).
 
 ## 2. Run your own index
 
