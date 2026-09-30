@@ -12,6 +12,10 @@ The beta.3 packages were published on 27 September 2026, beside the unchanged `@
 
 ## Repository history
 
+### 2026-09-30, profile readers refuse identifiers they do not publish
+
+- `readManifest`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readExchangeProfile`, `readOperatorProfile` and `readInteroperabilityProfile` in `@bsv/dpp-profiles` refuse an identifier outside the package's published lists before it becomes part of a file path. Unchecked, `readManifest('../package')` returned the package's own `package.json`, so an application that labelled a record by the profile the record declares could be made to read any JSON file the package could reach. Found by the second stack built from the public standard alone. No wire format or published file changes; the next release carries it.
+
 ### 2026-09-27, beta.3 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.3`, `@bsv/dpp-overlay-topics@0.4.0-beta.3` and `@bsv/dpp-profiles@0.3.0-beta.3` under `next` from `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81` using GitHub OIDC with provenance. `@bsv/vsc@0.2.0-beta.2` was verified in the registry and not uploaded. The public-registry archives match the approved plan, and the clean consumer runtime and strict TypeScript checks pass. `latest` remains at beta.1.

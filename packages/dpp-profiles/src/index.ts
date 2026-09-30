@@ -107,24 +107,39 @@ function readJson<T>(relative: string): T {
   return JSON.parse(readFileSync(new URL(relative, packageRoot), 'utf8')) as T
 }
 
+/**
+ * The identifier, once it is known to be one this package publishes. The
+ * types already say which identifiers are valid, but a reader that labels a
+ * record by the profile the record declares holds only a string, and a URL
+ * resolves `..` like any other segment: unchecked, `readManifest('../package')`
+ * answered with this package's own package.json. So every reader refuses an
+ * identifier outside its list before the identifier becomes part of a path.
+ */
+function published<T extends string>(ids: readonly T[], profile: string, kind: string): T {
+  if (!(ids as readonly string[]).includes(profile)) {
+    throw new Error(`${JSON.stringify(profile)} is not a published ${kind} profile; expected one of ${ids.join(', ')}`)
+  }
+  return profile as T
+}
+
 /** The immutable manifest of one published profile. */
 export function readManifest(profile: ProfileId): ProfileManifest {
-  return readJson<ProfileManifest>(`manifests/${profile}.json`)
+  return readJson<ProfileManifest>(`manifests/${published(PROFILE_IDS, profile, 'industry')}.json`)
 }
 
 /** The generated JSON Schema (2020-12) for the profile's public payload. */
 export function readPublicPayloadSchema(profile: ProfileId): Record<string, unknown> {
-  return readJson(`generated/payload-schema/${profile}.public.schema.json`)
+  return readJson(`generated/payload-schema/${published(PROFILE_IDS, profile, 'industry')}.public.schema.json`)
 }
 
 /** The generated JSON Schema (2020-12) for the profile's restricted tiers. */
 export function readRestrictedPayloadSchema(profile: ProfileId): Record<string, unknown> {
-  return readJson(`generated/payload-schema/${profile}.restricted.schema.json`)
+  return readJson(`generated/payload-schema/${published(PROFILE_IDS, profile, 'industry')}.restricted.schema.json`)
 }
 
 /** The generated consumer document in the legacy registry and application shape. */
 export function readConsumerDocument(profile: ProfileId): Record<string, unknown> {
-  return readJson(`generated/consumer/${profile.replace('@', '-v')}.json`)
+  return readJson(`generated/consumer/${published(PROFILE_IDS, profile, 'industry').replace('@', '-v')}.json`)
 }
 
 /** Exchange profiles this package catalogues (spec/exchange.md section 2). */
@@ -137,12 +152,12 @@ export type OperatorProfileId = (typeof OPERATOR_PROFILE_IDS)[number]
 
 /** The manifest of one exchange profile: representation, artefacts with their retrieval state, proof suites, anchoring, mappings. */
 export function readExchangeProfile(profile: ExchangeProfileId): Record<string, unknown> {
-  return readJson(`manifests/exchange/${profile}.json`)
+  return readJson(`manifests/exchange/${published(EXCHANGE_PROFILE_IDS, profile, 'exchange')}.json`)
 }
 
 /** The manifest of one operator profile: admission, publisher policy, discovery, synchronisation, retention and acceptance exercises. */
 export function readOperatorProfile(profile: OperatorProfileId): Record<string, unknown> {
-  return readJson(`manifests/operator/${profile}.json`)
+  return readJson(`manifests/operator/${published(OPERATOR_PROFILE_IDS, profile, 'operator')}.json`)
 }
 
 /**
@@ -158,7 +173,7 @@ export type InteroperabilityProfileId = (typeof INTEROPERABILITY_PROFILE_IDS)[nu
 
 /** The manifest of one interoperability profile: role, pinned standards and artefacts, formats, dependencies, limits and what it cannot map. */
 export function readInteroperabilityProfile(profile: InteroperabilityProfileId): Record<string, unknown> {
-  return readJson(`manifests/interoperability/${profile}.json`)
+  return readJson(`manifests/interoperability/${published(INTEROPERABILITY_PROFILE_IDS, profile, 'interoperability')}.json`)
 }
 
 /** The frozen digests every published manifest and generated file is held to. */
