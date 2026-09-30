@@ -47,6 +47,8 @@ A passport identifier names the enduring product record and never changes across
 
 Where the identifier is a GS1 Digital Link, the rules of the record model and the GS1 general specifications apply: the GTIN under application identifier 01 is written at fourteen digits with a correct check digit, allocated under a prefix the writer holds or, for a record describing no real object, under the demonstration prefix 952, and the serial under application identifier 21 identifies the item. `packages/dpp-profiles` provides the check-digit and grammar helpers a writer uses to keep that promise. Syntax and a correct check digit never prove allocation authority, which GS1 settles at allocation and a reader cannot see from the digits.
 
+The digits tell software that a record is a demonstration; the `notice` stamp every manifest declares tells a person. A record that describes no real product, such as one whose GTIN is under the demonstration prefix 952, SHOULD carry `notice` as the first property of its public payload: one sentence, in the language of the record, saying that it is a demonstration and that no real product stands behind it. A record about a real product MUST NOT carry `notice`, because a reader takes it as the statement that the product is not real. A reader SHOULD show `notice` wherever it shows the record's product data, before that data, and never as a finding of its own checks.
+
 The resolver location, the host a Digital Link is minted under and any link set a resolver answers are mutable service metadata. A provider change alters where the identifier is answered, never the identifier, the genesis or the history; a profile's data-carrier tests exercise persistent identity across such a change.
 
 ## 6. Generated consumers
