@@ -17,6 +17,8 @@ Generated from `release/dpp-release-2026-09-5.json` in the documentation build f
 | `@bsv/vsc` 0.2.0-beta.2 | `./epcis-source` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:zlib` | `dist/`, `artifacts/` |
 | `@bsv/vsc` 0.2.0-beta.2 | `./artifacts/*` | data | Any | Plain data | No | None | none | `artifacts/context-0.1.0.jsonld`, `artifacts/seal-0.1.0.schema.json`, `artifacts/disclosure-0.1.0.schema.json`, `artifacts/profile-0.1.0.json`, `artifacts/epcis/*`, `artifacts/external/*`, `artifacts/w3c/*` |
 
+`@bsv/dpp-profiles` reads its manifests and schemas from its own directory at run time, by a path computed from the profile identifier. A bundler or file tracer cannot see those reads, so a bundled deployment must include the data files, as [deploy it with a bundler](dpp-profiles.md#deploy-it-with-a-bundler) shows.
+
 ## Runtime dependencies per package
 
 Source: [dependency ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/licences.json).

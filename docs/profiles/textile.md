@@ -33,12 +33,12 @@ The field list is the start of payload integration. Use its generated schema for
 
 ## Version and source material
 
-The `textile@4` draft included in the published `@bsv/dpp-profiles@0.3.0-beta.2` package corrects source-status mappings and component composition. See [the version 4 draft guide](version-4-drafts.md) for migration and assessment limits. The pinned definitions below remain available unchanged.
+`textile@2` is the current version and `textile@1` is superseded but still readable. `@bsv/dpp-profiles` 0.3.0-beta.3 also carries two drafts, `textile@3` and `textile@4`; the version 4 draft corrects source-status mappings and component composition, and [the version 4 draft guide](version-4-drafts.md) covers migration and assessment limits. Each manifest's `status` field says which version is which, `current`, `draft` or `superseded`, and is the answer to trust in code: `readManifestAny('textile@4').status` is `draft`. The pinned definitions below remain available unchanged.
 
 | Material | Source |
 |---|---|
 | Current profile | [textile@2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/textile@2.json) |
-| Draft successor | [textile@3](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/textile@3.json) |
+| Draft successors | [textile@3](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/textile@3.json), [textile@4](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/textile@4.json) |
 | Earlier profile, still available | [textile@1](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/textile@1.json) |
 | Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated/mapping/textile@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated) |
 

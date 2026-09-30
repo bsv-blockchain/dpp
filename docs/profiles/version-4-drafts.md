@@ -49,6 +49,33 @@ Here `payload` is the application's data, already validated against the selected
 
 Update the consumer's capture forms, adapters, backend checks and exports before enabling draft writes. [Consumer adoption](updating-applications.md) describes the rollout and history requirements. These changes do not automatically activate dpp-app or any other consumer.
 
+## Read a payload that declares a draft
+
+A reader meets drafts in records other applications wrote. Read the profile a state declares, check that the package publishes it, and read its manifest with `readManifestAny`, which reads manifest versions 1 and 2 and says whether the profile is current:
+
+```js
+import { Beef } from '@bsv/sdk'
+import { chainFromBeef, findDppOutputs } from '@bsv/dpp-core'
+import { PROFILE_IDS, readManifestAny } from '@bsv/dpp-profiles'
+
+const index = 'https://dpp-overlay.bsvb.net'
+const passportId = 'https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8'
+
+const { outputs } = await (await fetch(`${index}/lookup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'ls_dpp', query: { passportId } }) })).json()
+const merged = Beef.fromBinary(outputs[0].beef)
+for (const output of outputs.slice(1)) merged.mergeBeef(output.beef)
+const tip = chainFromBeef(merged, passportId).at(-1)
+const payload = JSON.parse(findDppOutputs(tip)[0].state.payloadPublic)
+
+// The profile the record declares is the record's word: check it is one this package publishes first.
+const declared = `${payload.profile}@${payload.profile_version}`
+if (!PROFILE_IDS.includes(declared)) throw new Error(`${declared} is not a profile this package publishes`)
+const manifest = readManifestAny(declared)
+console.log(declared, manifest.status, manifest.title)
+```
+
+It prints `battery@4 draft Battery passport`. Show a draft's fields under the draft's own labels and say it is a draft; never read the payload under the current version instead.
+
 ## Assessment work still open
 
 The drafts do not include a complete external-format export adapter, hosted readiness-test result, full current-law reconciliation, licensed-standard assessment or deployed actor/access evidence. Additional identity context, category classification, evidence qualification and measurement semantics still need review. [Readiness review](reviewing-readiness.md) explains how to collect that evidence before considering promotion.

@@ -42,6 +42,9 @@ for (const pkg of set.packages) {
   }
 }
 lines.push('')
+// Not in the release set: a property of how one package reads its data, which a table row cannot say.
+lines.push('`@bsv/dpp-profiles` reads its manifests and schemas from its own directory at run time, by a path computed from the profile identifier. A bundler or file tracer cannot see those reads, so a bundled deployment must include the data files, as [deploy it with a bundler](dpp-profiles.md#deploy-it-with-a-bundler) shows.')
+lines.push('')
 lines.push('## Runtime dependencies per package')
 lines.push('')
 lines.push(`Source: [dependency ledger](${R}/conformance/licences.json).`)

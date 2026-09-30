@@ -25,6 +25,12 @@ The standard fixes the records, the checks and the services. An application is w
 | Passport page | Opens the identifier's address, or scans the label | Looks the passport up on an index, verifies it and shows the report beside the product data | `chainFromBeef`, `verifyPassportEvidence` | [Reading the report](../learn/evidence-and-freshness.md) |
 | Operations | Staff see what is still pending | Shows the journal: operations the network has not answered, proofs not yet delivered, incidents | None; this is the application's own journal | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/writing.md) sections 6 to 8 |
 
+## After a hand on
+
+Under `managed-custody@1` the recipient becomes the passport's holder, and the custodian keeps its keys for them ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/managed-custody.md) section 2). Everything the holder does next goes through the custodian: to hand the passport on, the holder asks the custodian for a new offer, and the same offer, acceptance and `TRANSFER` follow (section 4). Which requests the application accepts from a holder, and how it knows a request is theirs, is the application's to decide: a sign-in, a claim code or a message all work.
+
+The standard does not yet say whether a custodian may write a state for a holder without the holder's request, or how such a request would be recorded. Until it does, an application that lets its own team update or retire a passport it has handed on makes that decision itself, and should tell the holder.
+
 ## Duties that run on their own
 
 Some of a writer's duties come after the screen that caused them: announcing again when an index could not be reached, fetching each state's merkle proof once it is mined, and pushing that proof to every index that admitted the state. Keep them in the journal as pending tasks and run them on a schedule. An application with no scheduler, such as a front end with no background worker, accumulates states that every reader sees as unproven.

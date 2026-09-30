@@ -49,4 +49,6 @@ Keep the selected version with the payload and validate against its generated sc
 
 Use the [general manifest](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/general@2.json) and its [generated schema inventory](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated) for general product data. The [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/frozen.json) records the selected version's digests.
 
+`general@2` is the current version and `general@1` is superseded but still readable; each manifest's `status` field says so.
+
 Read [profile selection](README.md) before choosing between general and sector data.
