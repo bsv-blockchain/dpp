@@ -15,8 +15,8 @@
  * link, every merkle proof against WhatsOnChain's headers. The index is only
  * used to find the bytes; nothing it says is trusted, which is the point.
  * WhatsOnChain answers an anonymous caller 429 past a few requests a second,
- * so headers are asked one at a time and each answer is kept for the rest of
- * the run, and WOC_API_KEY, when set, is sent as the key.
+ * so headers are asked one at a time, a little apart, and each answer is kept
+ * for the rest of the run, and WOC_API_KEY, when set, is sent as the key.
  *
  * With --fixture, it verifies fixtures/chain-v1.json offline instead, so the
  * recipe runs in CI without a network. Inclusion then reports pending, because
@@ -62,21 +62,24 @@ import { fileURLToPath } from 'node:url'
 import { Beef, LockingScript, MerklePath, Transaction, WhatsOnChain } from '@bsv/sdk'
 import { EVIDENCE_CHECK_LABELS, chainFromBeef, findDppOutputs, verifyChain, verifyPassportEvidence } from '@bsv/dpp-core'
 
-// One question at a time, each answer kept for the run: the chain check and
-// the report ask about the same blocks, and a second round of anonymous
-// questions is what the rate limit refuses.
-function rememberedTracker(inner) {
-  const roots = new Map()
-  let height
+// One question at a time, a little apart, each answer kept for the run: the
+// chain check and the report ask about the same blocks, and questions asked
+// as fast as they come are what the rate limit refuses. The same tracker as
+// docs/packages/build-an-application.md step 1.
+function pacedTracker(inner, gapMs = 400) {
+  const answers = new Map()
   let queue = Promise.resolve()
-  const serial = (ask) => (queue = queue.then(ask, ask))
+  const ask = (key, question) => {
+    if (!answers.has(key)) {
+      const answer = queue.then(() => new Promise((wait) => setTimeout(wait, gapMs))).then(question)
+      queue = answer.catch(() => {})
+      answers.set(key, answer.catch((error) => { answers.delete(key); throw error }))
+    }
+    return answers.get(key)
+  }
   return {
-    isValidRootForHeight: (root, at) => {
-      const key = `${at}:${root}`
-      if (!roots.has(key)) roots.set(key, serial(() => inner.isValidRootForHeight(root, at)).catch((error) => { roots.delete(key); throw error }))
-      return roots.get(key)
-    },
-    currentHeight: () => (height ??= serial(() => inner.currentHeight()).catch((error) => { height = undefined; throw error })),
+    isValidRootForHeight: (root, height) => ask(`${height}:${root}`, () => inner.isValidRootForHeight(root, height)),
+    currentHeight: () => ask('height', () => inner.currentHeight()),
   }
 }
 
@@ -202,7 +205,7 @@ if (fixtureMode) {
     return all
   }, Beef.fromBinary(answer.outputs[0].beef))
   chain = chainFromBeef(merged, passportId)
-  tracker = rememberedTracker(new WhatsOnChain('main', process.env.WOC_API_KEY ? { apiKey: process.env.WOC_API_KEY } : {}))
+  tracker = pacedTracker(new WhatsOnChain('main', process.env.WOC_API_KEY ? { apiKey: process.env.WOC_API_KEY } : {}))
   console.log(`The index returned ${answer.outputs.length} outputs; merged, their BEEFs reconstruct a chain of ${chain.length} states.`)
 }
 
