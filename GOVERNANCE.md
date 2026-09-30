@@ -45,7 +45,7 @@ After 1.0, a breaking change to a wire format is a new version identifier and a 
 
 ## Reporting a security problem
 
-A defect that lets a non-conforming record verify, a forged anchor be attributed, or private content reach the chain is reported privately to the maintainers before it is filed publicly, and is fixed with a fixture that refuses it. The report and the fix are made public together.
+A security problem is a defect in the standard, a published package or a hosted reference service that lets a non-conforming record verify, a forged anchor be attributed or private content reach the chain, that lets someone read or change data they are not entitled to, or that lets an attacker change what a reader concludes. It is reported privately, as [SECURITY.md](SECURITY.md) describes, before anything is filed publicly, and a report that might be one is treated as one. It is fixed with a fixture or test that refuses it, and the report and the fix are made public together.
 
 ## Conformance reporting
 

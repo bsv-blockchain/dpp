@@ -125,7 +125,7 @@ The test command runs the workspace suites, conformance checks and documentation
 
 Contributions should identify the rule, interface or behaviour being changed and include reproducible evidence. Format changes need updated fixtures, including invalid cases. Passing fixtures alone does not demonstrate operational independence or portability between providers.
 
-See the [contribution guide](docs/contribute/README.md), [governance](GOVERNANCE.md) and [changelog](CHANGELOG.md). The next adoption milestone is independent implementations exchanging and verifying records, followed by provider migration tests that preserve history and authorised updates.
+See the [contribution guide](docs/contribute/README.md), [governance](GOVERNANCE.md) and [changelog](CHANGELOG.md). Report a security problem privately, as [SECURITY.md](SECURITY.md) describes, never in an issue. The next adoption milestone is independent implementations exchanging and verifying records, followed by provider migration tests that preserve history and authorised updates.
 
 ## Licence
 

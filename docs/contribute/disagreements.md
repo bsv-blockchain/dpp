@@ -10,6 +10,6 @@ State what the result affects: decoding, signatures, subject binding, a transiti
 
 Use the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues) for a non-sensitive technical report. Repository access may be required. The [BSV Association contact page](https://bsvassociation.org/contact/) provides technical support links and a general contact form if repository access is unavailable.
 
-For a security-sensitive disagreement, the [governance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md#reporting-a-security-problem) calls for private reporting. Use the contact form to request a private security-reporting channel without including exploit details. A dedicated DPP security address is not supplied by the repository.
+For a security problem, or anything you are unsure about, report privately and never in an issue. The [security policy](https://github.com/bsv-blockchain/dpp/security/policy) names the two private routes, a GitHub security advisory and the security email address, and says what to include.
 
 The [fixture guide](../implement/fixture-runner.md#source-gaps) lists source questions still open. The [pre-1.0 governance text](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) and [record-model status](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md#L3) remain the references for precedence. Their interpretation remains open.
