@@ -6,6 +6,8 @@ First build and run the [initial operator](README.md). The second preset uses th
 
 Copy `deploy/operator.env.example` to `deploy/operator-b.env`. Set `OVERLAY_PORT` to any free port, `8081` in the commands below, so the published ports do not collide; the checks that follow use whichever port you chose. Set `SYNC_PEERS=http://host.docker.internal:8080` for the supplied same-machine arrangement; on separate hosts use an address reachable from the second container. Set `WOC_API_KEY`: a synchronising node asks the header source once per state it admits, and anonymous access is rate limited. Where the host cannot mount a file, `PUBLISHER_POLICY_JSON` carries the policy chain inline instead of `PUBLISHER_POLICY_FILE`.
 
+`SYNC_PEERS` is the complete list of the other nodes this node reads from, and it is set on the node that reads: setting it replaces the list the node had, and it never names the node's own address, since a node given only itself learns nothing. For records to flow both ways, each node names the other. After a change, check the node's `GET /capabilities`: `synchronisation.peers` lists the peers it now reads from.
+
 Use separate submit, callback and export secrets. For the first shared-record exercise, use the same publisher public key as the first instance, or a publisher policy accepting the relevant keys. An operator's own identity and its accepted publisher keys answer different questions.
 
 After filling in the second file, start and inspect it:

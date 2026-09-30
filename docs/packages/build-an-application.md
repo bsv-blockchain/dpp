@@ -111,7 +111,7 @@ Every state goes through the same six steps, in this order ([writing lifecycle](
 2. Check it with the reader's own rules.
 3. Announce it to your index with `POST /submit`, and send it only if the index admits it. If the index refuses it, abort the unsent action. If the index cannot be reached, that is not a refusal: send anyway, and announce the same bytes again after the send.
 4. Send it, and report only the network's answer. If the network refuses a state your index admitted, withdraw it from the index with `POST /retract`, behind the same token as `/submit`.
-5. When the wallet has the merkle path, push it to the index's `POST /arc-ingest`.
+5. When the wallet has the merkle path, push it to the index's `POST /arc-ingest`, with that index's own callback token.
 6. Keep the transaction, its BEEF and its proof in your journal for the passport's life.
 
 **A refused draft is aborted.** An unsent action holds the wallet's inputs until it is sent or aborted, so a draft that fails your own check or that the index refuses must be given to `abortAction`, or its inputs stay out of use. Pass the action's reference: a state that spends the tip has one, `created.signableTransaction.reference`. An issue that needed no signature from you comes back signed with no reference, and `@bsv/wallet-toolbox` then accepts the transaction identifier in its place: `wallet.abortAction({ reference: created.txid })`.
