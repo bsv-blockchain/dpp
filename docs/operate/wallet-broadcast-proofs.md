@@ -10,10 +10,12 @@ A Bitcoin Request for Comments (BRC) identifies an ecosystem protocol. The refer
 | Announce | The index evaluates the draft and returns its admission result. |
 | Broadcast | The wallet or its configured broadcaster sends the transaction and reports the network response. |
 | Obtain a proof | The writer retrieves the mined transaction's merkle path, or arranges the broadcaster callback. |
-| Ingest the proof | `POST /arc-ingest` lets the index validate and associate the proof with its retained transaction. |
+| Ingest the proof | `POST /arc-ingest` lets the index validate and associate the proof with its retained transaction. Each index guards the route with its own callback token. |
 | Read again | The reader evaluates the supplied evidence against its header source. |
 
 BEEF means Background Evaluation Extended Format, a transaction-evidence encoding used by these interfaces. A merkle path connects a transaction to a block's merkle root; the header source is needed to evaluate that root in the selected chain.
+
+A writer that offers its proofs to more than one index keeps one callback token per index, the one that index's operator gave it, and sends each index only its own. A token sent to a different index is refused, and it hands that index's operator a secret they were never meant to hold.
 
 Start with `node examples/write-passport.mjs --dry-run` after [setup](../quick-start.md#get-the-code). The live example needs a locally available BRC-100 wallet, the intended passport identifier and index URL, plus the index's submission and callback credentials. It performs a version 1 activation; it is not a version 2 transfer recipe.
 
