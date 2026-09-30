@@ -1,7 +1,27 @@
-# Security
+# Security policy
 
-Report a security problem privately through [private vulnerability reporting](https://github.com/bsv-blockchain/dpp/security/advisories/new), not in an issue or a pull request. [GOVERNANCE.md](GOVERNANCE.md#reporting-a-security-problem) says what counts; if you are unsure whether something does, report it privately.
+## Supported versions
 
-Name the package and version, or the service, and give the smallest reproduction you have. The problem is fixed with a fixture or test that refuses it, and the report and the fix are published together.
+The latest published prerelease of each package in this repository is supported, and so are the hosted reference services named on the [deployment page](docs/deployment.md#the-hosted-reference). Older versions stay available without a promise of backported fixes.
 
-Without a GitHub account, use the [BSV Association contact form](https://bsvassociation.org/contact/) to ask for a private channel, and leave the details out of the form.
+## Report a vulnerability privately
+
+**Do not open a public issue or pull request for a suspected vulnerability.**
+
+Use a [private GitHub security advisory](https://github.com/bsv-blockchain/dpp/security/advisories/new) or email **security@bsvassociation.org**. Include:
+
+- the affected package and version, source revision or service;
+- the practical impact, and what a deployment has to do for it to apply;
+- reproduction steps or a proof of concept;
+- whether you believe it is being exploited; and
+- a proposed fix or mitigation, if you have one.
+
+Do not include real private keys, production credentials, personal data or other secrets. Use synthetic data, or ask for a private handoff.
+
+## What counts
+
+[GOVERNANCE.md](GOVERNANCE.md#reporting-a-security-problem) defines a security problem. If you are unsure whether something counts, report it privately.
+
+## Disclosure
+
+Disclosure is coordinated with the reporter. A fix comes with a fixture or test that refuses the problem, and the report and the fix are published together.
