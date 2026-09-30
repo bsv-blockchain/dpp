@@ -152,7 +152,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "7495f64a8d1cffa93e7ca22a68afd56dfe43276b9d6881cfe6b74b33f1c80f92"
+      "digest": "d88e8469e1daf6948fb0d57e657c4c42f1d86e72c001b5c82cf423321d710d50"
     },
     {
       "id": "profiles-manifest-schema",
@@ -3454,6 +3454,31 @@
       "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row."
     },
     {
+      "id": "PROF-5-demonstration-notice",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "A record that describes no real product, such as one under prefix 952, SHOULD carry notice as the first property of its public payload; a record about a real product MUST NOT carry it; a reader SHOULD show it before the product data and never as a finding of its own checks.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when a record describes no real product, or a reader shows a record's product data",
+      "profileId": "core",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [
+        "docs/identifiers.md",
+        "docs/packages/what-an-application-offers.md"
+      ],
+      "status": "unassessed",
+      "reviewedAt": "2026-09-30",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet."
+    },
+    {
       "id": "PROF-6-generated-consumers",
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
@@ -5048,9 +5073,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-09-30",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "7495f64a8d1cffa93e7ca22a68afd56dfe43276b9d6881cfe6b74b33f1c80f92"
+      "sourceDigest": "d88e8469e1daf6948fb0d57e657c4c42f1d86e72c001b5c82cf423321d710d50"
     },
     {
       "id": "PROF-4-frozen-unchanged",

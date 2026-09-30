@@ -37,7 +37,7 @@ Some of a writer's duties come after the screen that caused them: announcing aga
 
 ## Demonstration and live spaces
 
-Keep a demonstration space apart from live products. A demonstration's identifiers use GS1 prefix 952, which GS1 reserves for examples, so a reader knows nothing real stands behind them; live products use the brand's own prefix. A state, once written, is permanent, so a test written under a live prefix is a permanent claim about a real product.
+Keep a demonstration space apart from live products. A demonstration's identifiers use GS1 prefix 952, which GS1 reserves for examples, so software knows nothing real stands behind them; live products use the brand's own prefix. Every demonstration payload also starts with a `notice`, a sentence saying so to the person reading it, and the passport page shows it before the product data. A live product never carries one. Label only what your application wrote: a passport another publisher wrote, which your reader may also show, carries its own `notice` or none. A state, once written, is permanent, so a test written under a live prefix is a permanent claim about a real product.
 
 ## What the standard leaves to you
 
