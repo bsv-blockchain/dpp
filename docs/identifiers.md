@@ -20,7 +20,7 @@ A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gti
    ```
 
    This prints `09521234567899` with `checkDigitValid: true` and `demonstration: true`.
-4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1.
+4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. That is all the host must do: it does not have to be a GS1-Conformant Resolver. A resolver, with linksets, negotiated redirects and a description file, is the optional `gs1-digital-link@1` profile on an origin of its own ([GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver)). `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1.
 
 The rules are in the [record model](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md) section 3. An application account is not a GS1 licensee: who may publish under a GTIN is established outside the account that publishes.
 

@@ -36,6 +36,25 @@ Ask an index for the passport's outputs, merge their BEEFs into one, rebuild the
 import { Beef, WhatsOnChain } from '@bsv/sdk'
 import { chainFromBeef, verifyPassportEvidence } from '@bsv/dpp-core'
 
+// Ask the header source one question at a time, a little apart, and keep each
+// answer for the run: WhatsOnChain answers only a few requests a second.
+function pacedTracker(inner, gapMs = 400) {
+  const answers = new Map()
+  let queue = Promise.resolve()
+  const ask = (key, question) => {
+    if (!answers.has(key)) {
+      const answer = queue.then(() => new Promise((wait) => setTimeout(wait, gapMs))).then(question)
+      queue = answer.catch(() => {})
+      answers.set(key, answer.catch((error) => { answers.delete(key); throw error }))
+    }
+    return answers.get(key)
+  }
+  return {
+    isValidRootForHeight: (root, height) => ask(`${height}:${root}`, () => inner.isValidRootForHeight(root, height)),
+    currentHeight: () => ask('height', () => inner.currentHeight()),
+  }
+}
+
 const index = 'https://dpp-overlay.bsvb.net'
 const passportId = 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
 
@@ -46,6 +65,7 @@ const response = await fetch(`${index}/lookup`, {
   body: JSON.stringify({ service: 'ls_dpp', query: { passportId } }),
 })
 const { outputs } = await response.json()
+if (outputs.length === 0) throw new Error(`the index holds nothing for ${passportId}`)
 const merged = Beef.fromBinary(outputs[0].beef)
 for (const output of outputs.slice(1)) merged.mergeBeef(output.beef)
 
@@ -53,12 +73,24 @@ const report = await verifyPassportEvidence(
   { tokenHistory: chainFromBeef(merged, passportId) },
   { passportId, source: 'request-context' },
   {
-    chainTracker: new WhatsOnChain('main', { apiKey: process.env.WOC_API_KEY }),
+    chainTracker: pacedTracker(new WhatsOnChain('main', { apiKey: process.env.WOC_API_KEY })),
     publisherKeys: publisherPolicy.publisherKeys,
   }
 )
 for (const check of report.checks) console.log(check.name, check.status, check.reasonCode ?? '')
 ```
+
+It prints one line per check and takes about four seconds. The first five lines and `subjectBinding` and `evidenceAvailability` read `pass`:
+
+```
+recordEncoding pass
+actorSignatures pass
+publisherSignatures pass
+linkage pass
+inclusion pass
+```
+
+The claim checks read `unknown` with `no-evidence` and `issuerAuthority` reads `unknown` with `policy-missing`, because this passport carries no claim. If `inclusion` reads `unknown` with `header-source-unavailable`, the header source refused a question: wait a few seconds and run it again, or set `WOC_API_KEY`. The paced tracker is what keeps a reader under that limit; the report asks about every state's block, and a tracker that asks as fast as it can is refused under load.
 
 The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason, and [reading the report](../learn/evidence-and-freshness.md) explains them. `examples/verify-passport.mjs` is the same reader with every option, and the [reader guide](../implement/roles/passport-reader.md) holds the rules.
 
@@ -77,10 +109,12 @@ Every state goes through the same six steps, in this order ([writing lifecycle](
 
 1. Build the state and its transaction unsent.
 2. Check it with the reader's own rules.
-3. Announce it to your index with `POST /submit`, and send it only if the index admits it.
-4. Send it, and report only the network's answer.
+3. Announce it to your index with `POST /submit`, and send it only if the index admits it. If the index refuses it, abort the unsent action. If the index cannot be reached, that is not a refusal: send anyway, and announce the same bytes again after the send.
+4. Send it, and report only the network's answer. If the network refuses a state your index admitted, withdraw it from the index with `POST /retract`, behind the same token as `/submit`.
 5. When the wallet has the merkle path, push it to the index's `POST /arc-ingest`.
 6. Keep the transaction, its BEEF and its proof in your journal for the passport's life.
+
+**A refused draft is aborted.** An unsent action holds the wallet's inputs until it is sent or aborted, so a draft that fails your own check or that the index refuses must be given to `abortAction`, or its inputs stay out of use. Pass the action's reference: a state that spends the tip has one, `created.signableTransaction.reference`. An issue that needed no signature from you comes back signed with no reference, and `@bsv/wallet-toolbox` then accepts the transaction identifier in its place: `wallet.abortAction({ reference: created.txid })`.
 
 `examples/write-passport.mjs` runs all six steps against a local wallet for a version 1 activation, and `examples/lifecycle-v2.mjs` builds a whole version 2 lifecycle without a network. The steps below join the two.
 
@@ -90,11 +124,13 @@ Every state goes through the same six steps, in this order ([writing lifecycle](
 import { WalletClient } from '@bsv/sdk'
 import { buildLockingScript, completeState, decryptOwnerLinkage, ownerBlobHash, ownerKeyFor, revealOwnerLinkage } from '@bsv/dpp-core'
 
-const wallet = new WalletClient('auto')
+const wallet = new WalletClient('auto', 'localhost')
 const { publicKey: identityKey } = await wallet.getPublicKey({ identityKey: true })
 const controllerKey = await ownerKeyFor(passportId, wallet)
 const controlLinkage = await decryptOwnerLinkage(await revealOwnerLinkage(passportId, wallet, identityKey), wallet)
 ```
+
+The second argument is the originator, the hostname your wallet knows your application by: `localhost` while you develop, your application's own domain once it is hosted. In Node, `@bsv/sdk` 2.8.10 reaches a local wallet only when it is given one; without it the client reports `No wallet available over any communication substrate` even while a wallet is running.
 
 Because the actor's identity key is not the controller key, every state after the genesis proves control by carrying `controlLinkage`, the scalar that links the two ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) section 6). The wallet reveals it to itself and the application decrypts it once; it is public on chain from then on. A state without it is refused.
 

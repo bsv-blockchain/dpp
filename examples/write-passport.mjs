@@ -20,8 +20,12 @@
  * the state is still a draft (section 3); the send, reported only in the
  * network's own words (sections 4 and 5); the wait for the wallet's merkle
  * path and its push to the index's proof route (section 7); and where the
- * bytes now live (section 8). A refused admission stops before anything is
- * sent. The wallet is whatever BRC-100 wallet answers on this machine.
+ * bytes now live (section 8). A draft its own check or the index refuses is
+ * aborted, so the wallet has its inputs back, and nothing is sent; an index
+ * that cannot be reached refuses nothing, so the state is sent and announced
+ * again afterwards; a state the index admitted and the network refused is
+ * withdrawn from the index with POST /retract. The wallet is whatever BRC-100
+ * wallet answers on this machine.
  *
  * With --dry-run, what CI runs, there is no wallet and no network: the
  * fixture's keys stand in, the script rebuilds the chain fixture's first state
@@ -203,7 +207,8 @@ async function announce(beef, txid) {
 /**
  * Sections 4 and 5. Send with a send-only action and report nothing but the
  * network's answer: `unproven` is accepted and pending, `sending` is not yet
- * an answer, `failed` never existed.
+ * an answer, `failed` never existed. Answers `accepted`, `refused` when the
+ * network's answer is that the state never existed, or `unanswered`.
  */
 async function send(wallet, txid) {
   let result
@@ -216,19 +221,65 @@ async function send(wallet, txid) {
     const reviews = cause?.reviewActionResults ?? []
     const detail = reviews.length > 0 ? reviews.map((r) => `${short(r.txid)} ${r.status}`).join(', ') : cause.message
     say(false, `the network did not accept ${short(txid)}: ${detail}. The state never existed and nothing was spent; rebuild only after learning why (section 4).`)
-    return false
+    return reviews.some((r) => r.txid === txid && r.status === 'invalidTx') ? 'refused' : 'unanswered'
   }
   const status = result.sendWithResults?.find((r) => r.txid === txid)?.status
   if (status === 'unproven') {
     say(true, `the network accepted ${txid}: the state exists and is pending until mined (sections 4 and 5).`)
-    return true
+    return 'accepted'
   }
   if (status === 'sending') {
     say(false, `the wallet is still sending ${short(txid)}; that is not yet the network's answer, so the state is not yet written. Wait for the wallet, and do not rebuild (section 4).`)
-    return false
+    return 'unanswered'
   }
   say(false, `the network answered ${status ?? 'nothing the wallet reported'} for ${short(txid)}: the state never existed and nothing was spent (section 4).`)
-  return false
+  return status === 'failed' ? 'refused' : 'unanswered'
+}
+
+/**
+ * Section 3, the other way round. An unsent action holds the wallet's inputs
+ * until it is sent or aborted, so a draft that will not be sent is aborted.
+ * This one needed no signature from the application, so the wallet returned
+ * no signable reference; @bsv/wallet-toolbox then finds the action by its
+ * transaction identifier.
+ */
+async function discard(wallet, txid) {
+  try {
+    await wallet.abortAction({ reference: txid })
+    console.log(`The unsent action ${short(txid)} is aborted, and the wallet has its inputs back.`)
+  } catch (cause) {
+    say(false, `the wallet did not abort ${short(txid)} (${cause.message}); abort it before building again, or its inputs stay out of use.`)
+  }
+}
+
+/**
+ * Section 3's second qualification. The index admitted the draft and the
+ * network then refused it, so the index holds a tip that never existed. The
+ * writer, who alone knows the network's answer, withdraws it
+ * (contracts/overlay.yaml, POST /retract), behind the /submit token.
+ */
+async function retract(txid, reason) {
+  let response
+  try {
+    response = await fetch(`${indexUrl}/retract`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(submitToken != null ? { Authorization: `Bearer ${submitToken}` } : {}),
+      },
+      body: JSON.stringify({ txid, outputIndex: 0, reason }),
+    })
+  } catch (cause) {
+    say(false, `the index at ${indexUrl} could not be reached to withdraw ${short(txid)} (${cause.message}); withdraw it before writing this passport again, or the index keeps a tip that never existed.`)
+    return
+  }
+  const body = await response.json().catch(() => ({}))
+  say(
+    response.ok && body.status === 'retracted',
+    response.ok
+      ? `the index withdrew ${short(txid)}, the state the network refused${body.networkChecked === false ? ', without asking the network' : ''}.`
+      : `the index did not withdraw ${short(txid)}: HTTP ${response.status}${body.error != null ? ` ${body.error}` : ''}${body.description != null ? `, ${body.description}` : ''}.`
+  )
 }
 
 /** The merkle path the wallet has attached, if any, read the way a client can. */
@@ -277,7 +328,9 @@ async function proveAndPush(wallet, txid) {
 }
 
 async function live() {
-  const wallet = new WalletClient('auto')
+  // The originator names this application to the wallet. In Node the SDK's
+  // local substrates need one, and without it no wallet is found at all.
+  const wallet = new WalletClient('auto', 'localhost')
   const { publicKey: identityKey } = await wallet.getPublicKey({ identityKey: true })
   const ownerKey = await ownerKeyFor(passportId, wallet)
   console.log(
@@ -331,19 +384,24 @@ async function live() {
     `the writer's own check ${checked.valid ? 'accepts' : 'refuses'} the unsent state (spec/writing.md section 2)${checked.error != null ? `: ${checked.error}` : ''}.`
   )
   if (!checked.valid) {
-    console.log('Nothing was sent. The unsent action stays in the wallet and spends nothing.')
+    console.log('Nothing was sent.')
+    await discard(wallet, txid)
     process.exit(1)
   }
 
-  // Section 3: announce first, send only on admission.
+  // Section 3: announce first, send only on admission. An unreachable index
+  // refuses nothing: the state is sent and announced again afterwards.
   let announced = await announce(created.tx, txid)
   if (announced === 'refused') {
-    console.log('Nothing was sent: the state was refused while it was still a draft, and the unsent action spends nothing (section 3).')
+    console.log('Nothing was sent: the state was refused while it was still a draft (section 3).')
+    await discard(wallet, txid)
     process.exit(1)
   }
 
   // Sections 4 and 5: send, and report only the network's answer.
-  if (!(await send(wallet, txid))) process.exit(1)
+  const sent = await send(wallet, txid)
+  if (sent === 'refused' && announced === 'admitted') await retract(txid, 'the network refused the transaction after the index admitted it')
+  if (sent !== 'accepted') process.exit(1)
 
   // Section 6: an announcement that could not be made is retried, and is never
   // a reason to spend again.
