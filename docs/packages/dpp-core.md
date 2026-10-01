@@ -149,12 +149,18 @@ const lineage = async () => {
   return chainFromBeef(merged, passportId)
 }
 
-// Claims: the registry lists them by subject, and each proof carries the claim and its exact bytes.
-const { items } = await (await fetch(`${registry}/attestations?subject=${encodeURIComponent(passportId)}`)).json()
+// Claims: the registry lists them by subject, a page at a time, and each proof carries the claim and its exact bytes.
+const items = []
+for (let cursor = null; ; ) {
+  const query = new URLSearchParams({ subject: passportId, ...(cursor != null ? { cursor } : {}) })
+  const page = await (await fetch(`${registry}/attestations?${query}`)).json()
+  items.push(...page.items)
+  if ((cursor = page.nextCursor) == null) break
+}
 const proofs = await Promise.all(items.map(async ({ attestationId }) => (await fetch(`${registry}/attestations/${encodeURIComponent(attestationId)}/proof`)).json()))
 
 // Anchors: the index finds them by subject; each is given the bytes of the claim it anchors.
-const anchors = (await lookup('ls_attestation', { subject: passportId })).map(({ beef, outputIndex }) => {
+const anchors = (await lookup('ls_attestation', { subject: passportId, limit: 500 })).map(({ beef, outputIndex }) => {
   const tx = Beef.fromBinary(beef).txs.at(-1).tx
   const txid = tx.id('hex')
   const claim = proofs.find((proof) => proof.anchor?.recordId === txid)
@@ -166,8 +172,10 @@ const indexObserver = {
   id: index,
   kind: 'overlay-lookup',
   observe: async ({ tip }) => {
-    const newest = (await lineage()).at(-1)
-    return newest.id('hex') === tip?.txid ? { result: 'unspent' } : { result: 'spent', spendingTxid: newest.id('hex') }
+    const history = await lineage()
+    const at = history.findIndex((tx) => tx.id('hex') === tip?.txid)
+    if (at === -1) return { result: 'conflicting', detail: 'the index holds a history without the checked tip' }
+    return at === history.length - 1 ? { result: 'unspent' } : { result: 'spent', spendingTxid: history[at + 1].id('hex') }
   },
 }
 
@@ -207,6 +215,8 @@ credentialStatus not-applicable format-defines-no-status
 evidenceAvailability unknown referenced-artefact-unavailable
 latest state observed
 ```
+
+The registry answers 100 claims a page, and the loop follows its `nextCursor`. An `ls_attestation` answer holds at most 500 anchors: for more, ask again with `after` set to the last outpoint returned, until an answer is empty. The observer names the state that spent the checked tip, and answers `conflicting` if the index's history does not contain it at all.
 
 Two checks stay `unknown`, and both are honest. `schema` has no payload to check, because a native claim carries none. `evidenceAvailability` names the managed acceptance record the passport's `TRANSFER` commits to: the custodian keeps it, and no index or registry route serves it yet. The report also does not check a state's `payload_public` against the profile it declares; check that yourself with `node examples/sample-payload.mjs --check <profile@version> <file>`.
 
