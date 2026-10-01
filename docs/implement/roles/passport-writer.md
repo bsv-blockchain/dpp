@@ -21,7 +21,7 @@ Keep admission, broadcast response and inclusion proof as separate entries in th
 
 Retain the transaction and the evidence needed to read it later. [Wallet, broadcast and proofs](../../operate/wallet-broadcast-proofs.md) explains the service sequence. [Custody](../../learn/custody.md) explains signing access and managed acceptance.
 
-An independent writer implements its own construction and checks; a reference consumer uses the core package. In both cases, passing the fixture recipe leaves live wallet and service integration to exercise.
+An independent writer implements its own construction and checks; a reference consumer uses the core package. In both cases, passing the fixture recipe leaves live wallet and service integration to exercise. [Build an application](../../packages/build-an-application.md#3-write-a-passport) writes each version 2 state with a BRC-100 wallet, from the issue to a managed transfer and a retirement, and [what a passport application offers](../../packages/what-an-application-offers.md) describes the screens and scheduled duties around the writer.
 
 ## Exact implementation sources
 
