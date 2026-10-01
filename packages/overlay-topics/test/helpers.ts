@@ -168,6 +168,24 @@ export async function changeFundedEventTx(
   return { tx, state }
 }
 
+/**
+ * The genesis of another passport funded from `funder`'s change at index 1,
+ * the way a wallet-backed writer funds a new passport from whatever change it
+ * holds, including the change of a different lineage's latest state.
+ */
+export async function crossFundedGenesisTx(
+  funder: Transaction,
+  overrides: Partial<DppStateData> = {},
+  server: ProtoWallet = serverWallet
+): Promise<{ tx: Transaction; state: DppState }> {
+  const state = await completeState(makeData(overrides), makerWallet, server)
+  const tx = new Transaction()
+  tx.addInput({ sourceTransaction: funder, sourceOutputIndex: 1, unlockingScript: new UnlockingScript([]) })
+  tx.addOutput({ satoshis: 1, lockingScript: buildLockingScript(state, lockKey) })
+  tx.addOutput({ satoshis: 7_000, lockingScript: ANYONE })
+  return { tx, state }
+}
+
 export interface TestStores {
   storage: InMemoryOverlayStorage
   records: InMemoryDppStorage

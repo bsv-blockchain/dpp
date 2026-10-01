@@ -4,12 +4,14 @@ import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest'
+import { OverlayGASPStorage } from '@bsv/overlay/GASP/OverlayGASPStorage.ts'
 import { Beef, MerklePath, PrivateKey, ProtoWallet, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
 import { buildAttestationAnchor, chainFromBeef, verifyChain, type PublisherPolicy } from '@bsv/dpp-core'
 import { loadPublisherPolicy, type PublisherPolicyConfig } from '../src/policyConfig.js'
 import { startPeerSynchronisation } from '../src/sync.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
-import { ANYONE, bodyOf, changeFundedEventTx, eventTx, fundingTx, genesisTx, JSON_BODY, newNode, OCTET, PASSPORT_ID, type TestNode, type TestStores } from './helpers.js'
+import type { DppTopicManager } from '../src/tmDpp.js'
+import { ANYONE, bodyOf, changeFundedEventTx, crossFundedGenesisTx, eventTx, fundingTx, genesisTx, JSON_BODY, newNode, OCTET, PASSPORT_ID, type TestNode, type TestStores } from './helpers.js'
 import { A1, FEDERATION_OPERATORS, federatedChain, K1, K2, pub, STRANGER } from './policy-fixture.js'
 
 /**
@@ -267,6 +269,81 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     expect(statesA).toHaveLength(4)
     expect(normalise(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(statesA)
     expect(historyItems(await historyOf(B))).toEqual(historyItems(await historyOf(A)))
+  })
+
+  describe('a passport funded from another lineage\'s change', () => {
+    const OTHER_ID = 'https://id.gs1.org/01/09506000134352/21/EXT-2'
+
+    /**
+     * A holds a new passport whose unproven genesis spends the change of a
+     * proven state of another lineage, and A holds none of that lineage. B,
+     * assembling the genesis, asks for every input it spends, reaches the
+     * funding state through its change output and, the state being proven,
+     * asks the topic what else it needs.
+     */
+    async function crossFunded(policy: PublisherPolicyConfig): Promise<{ A: Operator; genesis: Transaction; funder: Transaction }> {
+      const A = await startOperator('A', policy)
+      const { tx: g } = await genesisTx({ timestamp: IN_WINDOW }, K1_WALLET)
+      const { tx: funder } = await changeFundedEventTx(g, { timestamp: IN_WINDOW }, K1_WALLET)
+      prove(funder, 800_601)
+      const { tx: genesis } = await crossFundedGenesisTx(
+        funder,
+        { passportId: OTHER_ID, timestamp: IN_WINDOW, payloadPublic: JSON.stringify({ name: 'Hearth 12', dataCarrier: 'EXT-UID-2' }) },
+        K1_WALLET
+      )
+      expect(await announce(A, genesis)).toBe('tm_dpp=admitted')
+      expect(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID })).toEqual([])
+      return { A, genesis, funder }
+    }
+
+    it('is left behind while the overlay does not say which output the graph reached (the known limit)', async () => {
+      // `@bsv/overlay` up to 2.6.2 asks the topic for needed inputs without
+      // the reached output, so the topic answers for the funding state's
+      // passport output and asks for its predecessor, which A does not
+      // hold: A answers 404 and B drops the graph. When the overlay passes
+      // the index, this expectation fails and the case below is the
+      // behaviour.
+      const policy = writePolicy([federatedChain().genesis])
+      const { A } = await crossFunded(policy)
+      const B = await startOperator('B', policy, { peers: [A.base] })
+      await syncOnce(B)
+      expect(await lookup(B, 'ls_dpp', { passportId: OTHER_ID })).toEqual([])
+    })
+
+    it('arrives whole once the overlay passes the reached output, and nothing of the other lineage is asked for', async () => {
+      // The overlay's own step, with the one change proposed upstream: the
+      // reached output index goes to the topic as a third argument.
+      const asked: string[] = []
+      vi.spyOn(OverlayGASPStorage.prototype, 'findNeededInputs').mockImplementation(async function (this: OverlayGASPStorage, node) {
+        const strip = async (response: { requestedInputs: Record<string, { metadata: boolean }> }) =>
+          await (this as unknown as { stripAlreadyKnownInputs: (r: typeof response) => Promise<typeof response | undefined> }).stripAlreadyKnownInputs(response)
+        const tx = Transaction.fromHex(node.rawTx)
+        const requestedInputs: Record<string, { metadata: boolean }> = {}
+        if (node.proof === undefined) {
+          for (const input of tx.inputs) requestedInputs[`${input.sourceTXID ?? ''}.${input.sourceOutputIndex}`] = { metadata: false }
+          return await strip({ requestedInputs })
+        }
+        tx.merklePath = MerklePath.fromHex(node.proof)
+        const manager = this.engine.managers[this.topic]
+        const admitted = await manager.identifyAdmissibleOutputs(tx.toBEEF(), [], undefined, 'historical-tx', { dryRun: true })
+        if (admitted.outputsToAdmit.includes(node.outputIndex)) return undefined
+        for (const input of await (manager as DppTopicManager).identifyNeededInputs(tx.toBEEF(), undefined, node.outputIndex)) {
+          asked.push(`${input.txid}.${input.outputIndex}`)
+          requestedInputs[`${input.txid}.${input.outputIndex}`] = { metadata: false }
+        }
+        return await strip({ requestedInputs })
+      })
+      const policy = writePolicy([federatedChain().genesis])
+      const { A, funder } = await crossFunded(policy)
+      const B = await startOperator('B', policy, { peers: [A.base] })
+      await syncOnce(B)
+      const statesA = normalise(await lookup(A, 'ls_dpp', { passportId: OTHER_ID }))
+      expect(statesA).toHaveLength(1)
+      expect(normalise(await lookup(B, 'ls_dpp', { passportId: OTHER_ID }))).toEqual(statesA)
+      expect(asked).toEqual([])
+      // The funding state is in the genesis's proof of funds, not in B's index.
+      expect(await B.node.storage.findOutputsForTransaction(funder.id('hex'))).toEqual([])
+    })
   })
 
   it('a late-starting B catches up, and states admitted during a partition arrive once they are proven', async () => {

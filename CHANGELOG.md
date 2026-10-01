@@ -12,6 +12,10 @@ The beta.3 packages were published on 27 September 2026, beside the unchanged `@
 
 ## Repository history
 
+### 2026-10-01, the topic asks for a predecessor only through the passport output
+
+- `tm_dpp`'s `identifyNeededInputs` takes the output a synchronising peer's graph reached as an optional third argument, and asks for the predecessor only when that output is the passport output. A writer may fund a new passport from another lineage's change; reached through that change, the funding state needs nothing more, and asking for its predecessor sent the peer after a lineage the serving node may not hold, so the new passport was left behind until it was mined. `@bsv/overlay` up to 2.6.2 does not pass the index, so nothing changes until it does; `test/federation.test.ts` carries the case both ways. No wire format changes; the next release carries it.
+
 ### 2026-09-30, profile readers refuse identifiers they do not publish
 
 - `readManifest`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readExchangeProfile`, `readOperatorProfile` and `readInteroperabilityProfile` in `@bsv/dpp-profiles` accept only identifiers the package publishes and refuse any other before reading a file. No wire format or published file changes; the next release carries it.
