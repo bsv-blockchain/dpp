@@ -14,7 +14,7 @@ Then exchange newly created records. One participant produces evidence; the othe
 
 Exercise missing evidence and an unavailable provider as well as the successful path. A recovery exercise needs retained exports and a replacement service, not merely a second view of the first service's database.
 
-The trial definition supplies the formal scenario selection. Its completion is still open. A successful local rehearsal is useful preparation and is reported as that.
+The trial definition supplies the formal scenario selection. Its completion is still open. Some scenarios, such as `exchange-reference-writes`, need records that the hosted reference writes or admits for you; arrange those through the [BSV Association contact form](https://bsvassociation.org/contact/). A successful local rehearsal is useful preparation and is reported as that.
 
 | Preparation | Guide |
 |---|---|

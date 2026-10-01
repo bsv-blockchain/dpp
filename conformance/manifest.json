@@ -774,10 +774,10 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-profiles/src/identifiers.ts",
-        "dpp-app packages/dpp-service/src/gs1.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/gs1.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [
         "docs/identifiers.md"
@@ -1630,11 +1630,11 @@
       "implementationRefs": [
         "packages/dpp-core/src/evidence.ts (authority from policy lists and verifiers only)",
         "spec/conformance.md#5-identity-vocabulary",
-        "dpp-app packages/dpp-service/src/operator.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
         "packages/dpp-core/test/evidence.test.ts (authority never inferred from evidence)",
-        "dpp-app packages/dpp-service/test/identity-adapters.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.anchor-and-claim (issuerAuthority unknown without policy)"
@@ -2071,14 +2071,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/credentials/secured.ts",
-        "uora-bsv src/routes/secured.ts",
-        "uora-bsv src/store/attestations.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/secured.test.ts",
-        "uora-bsv test/vsc-intake.test.ts",
-        "uora-bsv test/contract.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "contracts/registry.yaml",
@@ -2103,10 +2099,10 @@
       "applicability": "when an operator enables historical intake",
       "profileId": "legacy-intake (historical)",
       "implementationRefs": [
-        "uora-bsv src/routes/index.ts (LEGACY_INTAKE)"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/contract.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "contracts/registry.yaml#info.description"
@@ -2312,8 +2308,8 @@
       ],
       "testRefs": [
         ".github/workflows/ci.yml (verify-passport.mjs --fixture --report)",
-        "dpp-app apps/web/test/verify-report-route.test.ts",
-        "uora-bsv test/evidence-report.test.ts"
+        "the reference application (not published)",
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json"
@@ -2735,10 +2731,10 @@
       "applicability": "for historical UORA-shaped attestations only",
       "profileId": "historical",
       "implementationRefs": [
-        "uora-bsv src/validation/phases.ts (decide)"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/validation.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "spec/vsc-profile.md#1"
@@ -2764,11 +2760,11 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/vsc/src/verification.ts#verifyCredentialStatus",
-        "uora-bsv src/credentials/status.ts (checkRevocation, verifier-gated)"
+        "the reference registry (not published)"
       ],
       "testRefs": [
         "packages/vsc/test/verification.test.ts",
-        "uora-bsv test/status.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2791,10 +2787,10 @@
       "applicability": "whenever a credential carries a status entry",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/credentials/status.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/status.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2816,15 +2812,13 @@
       "applicability": "when a registry operates a status service",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/credentials/status-publication.ts",
-        "uora-bsv src/store/status-lists.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/status-publication.test.ts",
-        "uora-bsv test/status.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
-        "uora-bsv src/credentials/status.ts (unsigned constructor)"
+        "the reference registry (not published)"
       ],
       "status": "tested",
       "reviewedAt": "2026-09-05",
@@ -2846,13 +2840,11 @@
       "applicability": "whenever a verifier fetches remote evidence",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/credentials/status-fetch.ts",
-        "uora-bsv src/credentials/status-hosts.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
         "packages/vsc/test/did-web.test.ts",
-        "uora-bsv test/ssrf.test.ts",
-        "uora-bsv test/status-fetch.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2901,10 +2893,10 @@
       "applicability": "when the JOSE exchange profile is selected",
       "profileId": "untp-0.7.0-jose@1 (proposed)",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/jws.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/jws.test.ts (jose@5.10.0 verify-only)"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2927,10 +2919,10 @@
       "applicability": "when untp-0.7.0-jose@1 is selected",
       "profileId": "untp-0.7.0-jose@1 (proposed)",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/untp.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/untp.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "gap",
@@ -3001,11 +2993,11 @@
       "profileId": "core (when selected)",
       "implementationRefs": [
         "packages/dpp-profiles/src/identifiers.ts",
-        "dpp-app packages/dpp-service/src/gs1.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
         "packages/dpp-profiles/test/identifiers.test.ts",
-        "dpp-app packages/dpp-service/test/gs1.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3246,7 +3238,7 @@
       "applicability": "when the battery industry profile is selected for a covered battery category",
       "profileId": "battery@2 (existing) and battery@3 (proposed)",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/battery-attributes.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
@@ -3294,12 +3286,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/router.ts",
-        "uora-bsv src/routes/index.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/openapi-contract.test.ts",
-        "uora-bsv test/contract.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3498,7 +3488,7 @@
       ],
       "testRefs": [
         "packages/dpp-profiles/test/manifests.test.ts",
-        "uora-bsv test/profiles.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3578,10 +3568,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/store/attestations.ts (securedBytes, representation, mediaType, verification)"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/secured.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "implemented",
@@ -3603,13 +3593,10 @@
       "applicability": "when a JOSE exchange profile is selected",
       "profileId": "untp-0.7.0-jose@1 (proposed)",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/jws.ts (injected signer, ES256K)",
-        "dpp-app packages/dpp-service/src/untp.ts",
-        "dpp-app packages/dpp-service/src/identities.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/jws.test.ts",
-        "dpp-app packages/dpp-service/test/untp.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3633,11 +3620,11 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/native-evidence-extension.schema.json",
-        "dpp-app packages/dpp-service/src/untp.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
         "packages/dpp-profiles/test/catalogue.test.ts",
-        "dpp-app packages/dpp-service/test/untp.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3661,11 +3648,11 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-core/src/anchor.ts",
-        "uora-bsv src/anchoring/secured.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
         "packages/dpp-core/test/evidence.test.ts (anchor-tampered-bytes)",
-        "uora-bsv test/vsc-intake.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.anchor-tampered-bytes"
@@ -3715,11 +3702,11 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/paginated-history.schema.json",
-        "uora-bsv src/routes/pagination.ts",
+        "the reference registry (not published)",
         "packages/overlay-topics/src/history.ts"
       ],
       "testRefs": [
-        "uora-bsv test/pagination.test.ts",
+        "the reference registry (not published)",
         "packages/overlay-topics/test/history.test.ts"
       ],
       "evidenceRefs": [],
@@ -3746,12 +3733,12 @@
       "implementationRefs": [
         "contracts/evidence-package.schema.json",
         "packages/dpp-core/src/evidencePackage.ts",
-        "uora-bsv src/credentials/evidence-package.ts",
+        "the reference registry (not published)",
         "packages/overlay-topics/src/evidenceExport.ts"
       ],
       "testRefs": [
         "packages/dpp-core/test/evidencePackage.test.ts",
-        "uora-bsv test/evidence-package.test.ts",
+        "the reference registry (not published)",
         "packages/overlay-topics/test/evidenceExport.test.ts"
       ],
       "evidenceRefs": [],
@@ -3826,11 +3813,10 @@
       "applicability": "when a registry stores more than one claim about a subject",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/store/relations.ts",
-        "uora-bsv src/credentials/relations.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/claim-relations.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3854,7 +3840,7 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-profiles/src/mapping.ts",
-        "uora-bsv src/credentials/lifecycle-mapping.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
         "packages/dpp-profiles/test/mapping.test.ts"
@@ -3992,13 +3978,10 @@
       "applicability": "when a registry accepts submissions",
       "profileId": "core",
       "implementationRefs": [
-        "uora-bsv src/routes/secured.ts",
-        "uora-bsv src/store/mongo.ts",
-        "uora-bsv src/store/file.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/evidence-report.test.ts",
-        "uora-bsv test/mongo.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4351,14 +4334,10 @@
       "applicability": "when the discovery profile is selected",
       "profileId": "gs1-digital-link@1",
       "implementationRefs": [
-        "uora-bsv src/routes/gs1-resolver.ts",
-        "uora-bsv src/store/resolution.ts",
-        "uora-bsv src/router.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/gs1-resolver.test.ts",
-        "uora-bsv test/resolution-store.test.ts",
-        "uora-bsv test/openapi-contract.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "contracts/registry.yaml#/paths/~1.well-known~1gs1resolver"
@@ -4383,11 +4362,10 @@
       "applicability": "when the discovery profile is selected",
       "profileId": "gs1-digital-link@1",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/gs1-discovery.ts",
-        "dpp-app packages/dpp-service/src/network-policy.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/gs1-discovery.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4582,13 +4560,11 @@
       "profileId": "epcis-json@1",
       "implementationRefs": [
         "contracts/epcis-import.schema.json",
-        "dpp-app packages/dpp-service/src/epcis-import.ts",
-        "dpp-app apps/web/src/server/store-mongo-epcis.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
         "packages/vsc/test/epcis-artefacts.test.ts",
-        "dpp-app packages/dpp-service/test/epcis-import.test.ts",
-        "dpp-app apps/web/test/epcis-mongo.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4612,10 +4588,10 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/epcis-import.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/epcis-import.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4638,11 +4614,10 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/epcis-client.ts",
-        "dpp-app packages/dpp-service/src/network-policy.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/epcis-client.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4779,13 +4754,10 @@
       "applicability": "when the exchange profile is selected",
       "profileId": "vc-di-ecdsa-rdfc-2019@1",
       "implementationRefs": [
-        "uora-bsv src/credentials/external.ts",
-        "uora-bsv src/credentials/secured.ts",
-        "uora-bsv src/anchoring/secured.ts",
-        "uora-bsv src/anchoring/resume.ts"
+        "the reference registry (not published)"
       ],
       "testRefs": [
-        "uora-bsv test/external-credentials.test.ts"
+        "the reference registry (not published)"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
@@ -4812,13 +4784,11 @@
       "implementationRefs": [
         "contracts/passport-source.schema.json",
         "packages/dpp-profiles/src/projections.ts",
-        "dpp-app packages/dpp-service/src/passport-sources.ts",
-        "dpp-app apps/web/src/server/store-mongo-sources.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
         "packages/dpp-profiles/test/projections.test.ts",
-        "dpp-app packages/dpp-service/test/passport-sources.test.ts",
-        "dpp-app apps/web/test/source-revisions-mongo.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/projection/v1.json"
@@ -4985,10 +4955,10 @@
       "applicability": "when the projection profile is selected",
       "profileId": "passport-projection@1",
       "implementationRefs": [
-        "dpp-app packages/dpp-service/src/publication-policy.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app packages/dpp-service/test/publication-policy.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -5011,12 +4981,10 @@
       "applicability": "when the projection profile is selected",
       "profileId": "passport-projection@1",
       "implementationRefs": [
-        "dpp-app apps/web/src/components/surfaces/product/profile-view.tsx",
-        "dpp-app packages/dpp-service/src/passport-projection.ts"
+        "the reference application (not published)"
       ],
       "testRefs": [
-        "dpp-app apps/web/test/profile-view.test.tsx",
-        "dpp-app packages/dpp-service/test/passport-projection.test.ts"
+        "the reference application (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",

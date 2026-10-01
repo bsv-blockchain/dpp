@@ -12,4 +12,4 @@ Use [the trial guide](../implement/demonstration.md) to prepare endpoint address
 
 Start with the [implementation route](../implement/README.md), then retain [authorship and test evidence](../implement/reporting.md). The [trial definition](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/demonstrations/independent-implementation-2026-09.json) identifies the proposed exchange work.
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) keeps the independent-implementation gate open. Use the [contact route](disagreements.md) to submit results or arrange participation.
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) keeps the independent-implementation gate open. To take part in the trial or arrange an exchange with the hosted reference, use the [BSV Association contact form](https://bsvassociation.org/contact/). Report results and disagreements by the [contact route](disagreements.md).
