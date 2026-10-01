@@ -239,6 +239,8 @@ Two checks stay `unknown`, and both are honest. `schema` has no payload to check
 | `externalCredentials` | `{ representation, mediaType, bytes }`, the exact bytes of a credential in another format | Whoever issued the credential |
 | `alternativeHistories` | Other lineages under the same identifier, such as a second genesis | The index, when it answers with more than one lineage |
 
+The registry in the reader above is the one that holds this passport's claims. Registries do not exchange claims, and an anchor does not name the registry that holds its claim, so a reader asks the registries it knows ([the registry guide](../implement/roles/registry.md#the-minimum-a-registry-serves)). An anchor passed without `securedBytes` still has its signature and key derivation checked, and `anchorDigestAndMetadataBinding` stays `unknown` with `secured-bytes-absent`.
+
 **What the policy selects**
 
 | Field | Selects | Check or finding it settles |
