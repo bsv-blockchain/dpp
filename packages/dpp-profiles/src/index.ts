@@ -110,10 +110,8 @@ function readJson<T>(relative: string): T {
 /**
  * The identifier, once it is known to be one this package publishes. The
  * types already say which identifiers are valid, but a reader that labels a
- * record by the profile the record declares holds only a string, and a URL
- * resolves `..` like any other segment: unchecked, `readManifest('../package')`
- * answered with this package's own package.json. So every reader refuses an
- * identifier outside its list before the identifier becomes part of a path.
+ * record by the profile the record declares holds only a string, so every
+ * reader checks it against its list before it becomes part of a path.
  */
 function published<T extends string>(ids: readonly T[], profile: string, kind: string): T {
   if (!(ids as readonly string[]).includes(profile)) {

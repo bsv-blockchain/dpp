@@ -54,7 +54,7 @@ describe('tm_dpp under a publisher key policy', () => {
   it('admits a state dated before the genesis was issued when its key was active then: a policy written late describes history', async () => {
     // The reference deployment wrote its first policy months after it began
     // publishing; the genesis's key windows describe those months, and only
-    // a later version takes effect from its own issue (dpp-issues#71).
+    // a later version takes effect from its own issue.
     const late = signPolicy(
       {
         policyFormat: 'dpp-publisher-policy@1',
