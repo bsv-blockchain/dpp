@@ -4,7 +4,7 @@
 
 ## Install
 
-This is a pre-1.0 candidate. After publication, install the selected version from npm:
+This is a pre-1.0 candidate. Install the exact published version from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.3
