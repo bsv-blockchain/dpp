@@ -76,14 +76,7 @@ A left-behind output is not offered again once the checkpoint has moved past it,
 
 Only the synchronising node knows why. Its log says, round by round, how many offered outputs did not arrive and names each one it leaves behind; the offering node logs only the answer it gave, such as a 404 for a transaction it does not hold. No route serves either log, so a writer whose state has not reached a peer asks that peer's operator.
 
-Once the node leaves an output behind, the checkpoint can move past it, and from then on the output is not asked for again, not even after a restart: a restart resumes from the stored checkpoint. When the cause is fixed, for example the peer has pushed a missing proof or been upgraded, move the checkpoint back. The node keeps one checkpoint per peer and topic, a document with `host`, `topic` and `since` in the `overlayInteractions` collection of its `MONGO_DB` database. Delete it, and the next round asks the peer for everything it holds and fetches only what this node lacks; no restart is needed. For the second instance above, with `MONGO_DB=dpp`:
-
-```sh
-docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env exec mongo-b \
-  mongosh --quiet dpp --eval 'db.overlayInteractions.deleteOne({ host: "http://host.docker.internal:8080", topic: "tm_dpp" })'
-```
-
-`host` is the peer's URL as `SYNC_PEERS` names it, without a trailing slash, and `topic` is `tm_dpp` or `tm_attestation`; `db.overlayInteractions.find({}, { _id: 0 })` lists them. Emptying the database does the same for every peer, at the cost of admitting everything again.
+Once the node leaves an output behind, it does not ask for it again, not even after a restart, because a restart resumes from the stored checkpoint. When the cause is fixed, move that peer's checkpoint back as [observe the exchange](#observe-the-exchange) describes.
 
 A proof that arrives after a peer synchronised the state does not follow it (see [preset sources](#preset-sources)), and no one is named to deliver it yet: a writer offers each proof to the indexes it announced the state to ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/writing.md) section 7), and a peer's `/arc-ingest` answers 404 until the state has arrived there. The [overlay package](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/README.md#running-two-operators-locally) expects a writer or a gateway to push the proof to every operator it knows. A writer that knows its index's peers can therefore offer each proof to them too, retrying a 404 until the state has arrived, but only with each peer's own callback token, which that peer's operator has to give it ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). Until someone delivers it, readers of the peer see `inclusion` pending.
 
