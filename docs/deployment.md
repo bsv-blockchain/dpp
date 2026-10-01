@@ -4,12 +4,12 @@ The [operator start](operate/README.md) runs the supplied Compose preset. It is 
 
 ## The hosted reference
 
-The programme runs one instance of each service. Use them to look up and verify live records, to test a reader, or as a peer. Each service's `/capabilities` answer is authoritative; the table records what they ran on 28 September 2026.
+The programme runs one instance of each service. Use them to look up and verify live records, to test a reader, or as a peer. Each service's `/capabilities` answer is authoritative; the table records what they ran on 30 September 2026.
 
 | Host | Serves | Runs |
 |---|---|---|
 | `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.2 packages |
-| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp` and `tm_attestation`, their lookups, `/history`, the bounded and complete exports, proof ingestion and the two synchronisation routes | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` under publisher policy version 1 |
+| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp` and `tm_attestation`, their lookups, `/history`, the bounded and complete exports, proof ingestion and the two synchronisation routes | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` under publisher policy version 1, pulling from `https://dpp-overlay.eblabs.tech` |
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 
 On the index, `POST /submit` and `POST /retract` need the operator's submit token, `POST /arc-ingest` needs the broadcaster's callback token and `GET /evidence-export` needs the export token. The index signs its evidence packages and export parts with `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass it as `expectedSigner` when you check one. Lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open. On the registry, storing a claim and changing a status list need its write token; validation and reads are open.
@@ -24,7 +24,18 @@ Three live passports to look up with the [passport lookup](reference/contracts.m
 | `https://id.gs1.org/01/09506000134352/21/345A8EAF501F` | A version 2 lineage: issue, update and a managed transfer, with three anchored claims |
 | `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host answers with the passport page. Its payload declares the draft `battery@4` |
 
-Use these to test reading and verifying, not as payload examples. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. They still verify because the report does not check a payload against its profile; check payloads yourself, as the [profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile) shows, and start your own from `node examples/sample-payload.mjs`.
+Use these to test reading and verifying, not as payload examples. The first, a version 1 lineage under GS1's example GTIN, predates the demonstration `notice` rule and carries none; the other two carry one. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. They still verify because the report does not check a payload against its profile; check payloads yourself, as the [profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile) shows, and start your own from `node examples/sample-payload.mjs`.
+
+## Overlays running now
+
+Every index below serves the same topics. Records move between two of them only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)). Each index's `/capabilities` answer is authoritative; the table records what they ran on 30 September 2026.
+
+| Index | Operator | Pulls from | Admits states from | Runs |
+|---|---|---|---|---|
+| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | `https://dpp-overlay.eblabs.tech` | `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application; `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, DPP by EB Labs | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
+| `https://dpp-overlay.eblabs.tech` | EB Labs | `https://dpp-overlay.bsvb.net` | The same two keys | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
+
+Both are run by one administration, so together they demonstrate the mechanism, not separately administered operation.
 
 ## Place each component
 

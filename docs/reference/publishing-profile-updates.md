@@ -37,7 +37,7 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-4.json
 node scripts/publish-candidates.mjs
 ```
 
-The consumer check installs the archives into a separate temporary project. It checks runtime imports, types, retained profiles, new draft schemas and review helpers. It does not exercise dpp-app's UI or persistence.
+The consumer check installs the archives into a separate temporary project. It checks runtime imports, types, retained profiles, new draft schemas and review helpers. It does not exercise the reference application's UI or persistence.
 
 The last command checks npm without publishing and writes `release/publication-plan.json`. A working-tree plan is useful for review but cannot authorise publication: the publisher requires a clean, committed source revision.
 
@@ -85,4 +85,4 @@ npm view @bsv/dpp-profiles dist-tags --json
 
 Record the source revision, successful publication run, plan digest, package integrities and registry verification result. Update release documentation to distinguish verified npm availability from application adoption. The workflow does not automatically mark the release-set record as released or notify consumer owners.
 
-The handover to dpp-app includes the exact package selection, release notes and a field-change report for each proposed profile transition. That separate application change must preserve readers for existing versions, implement and test the new field shapes, and explicitly select any successor writes. See [version 4 changes](../profiles/version-4-drafts.md) and [consumer adoption](../profiles/updating-applications.md).
+The handover to the reference application, whose source is not public, includes the exact package selection, release notes and a field-change report for each proposed profile transition. That separate application change must preserve readers for existing versions, implement and test the new field shapes, and explicitly select any successor writes. See [version 4 changes](../profiles/version-4-drafts.md) and [consumer adoption](../profiles/updating-applications.md).

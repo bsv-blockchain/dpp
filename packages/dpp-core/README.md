@@ -18,7 +18,7 @@ rather than rewritten.
 
 ## Install and consume
 
-This is a pre-1.0 candidate. Once the release is published, install exact versions from npm:
+This is a pre-1.0 candidate. Install the exact published versions from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.3 @bsv/sdk@2.8.10

@@ -20,7 +20,7 @@ A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gti
    ```
 
    This prints `09521234567899` with `checkDigitValid: true` and `demonstration: true`.
-4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. That is all the host must do: it does not have to be a GS1-Conformant Resolver. A resolver, with linksets, negotiated redirects and a description file, is the optional `gs1-digital-link@1` profile on an origin of its own ([GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver)). `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1.
+4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. That is all the host must do: it does not have to be a GS1-Conformant Resolver. A resolver, with linksets, negotiated redirects and a description file, is the optional `gs1-digital-link@1` profile on an origin of its own ([GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver)). `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1. Choose one you expect to keep, a name under a domain the brand controls: the host is part of the identifier, and the identifier cannot change after the first state.
 5. **Give each item its own serial.** The serial, GS1 application identifier 21, names one physical item: 1 to 20 characters from GS1 character set 82 (letters, digits and `!"%&'()*+,-./:;<=>?_`), unique within its GTIN and never reused. Upper-case letters and digits read and print cleanly; `/`, `?` and the like are allowed but are percent-encoded in the URI. `buildGs1DigitalLink` checks the GTIN and the serial, then builds the identifier:
 
    ```js
@@ -43,6 +43,12 @@ Keep the scanned or supplied passport identifier as the reader's expectation. Us
 A GS1 Digital Link combines an identifier with a web address. A GTIN identifies the trade item; qualifiers such as a serial number can identify an individual instance. A correct check digit tests the number's structure, not whether a party is entitled to use it.
 
 For the first exercise, use the identifier already supplied by the fixture. Keep its original spelling through signing and verification. The [reader example](quick-start.md#check-the-test-passports-offline) handles the fixture identifier automatically. For a live input, [GS1 discovery](interoperability/gs1-discovery.md) explains parsing and service selection before verification.
+
+## When a host changes
+
+The host is written into every state of the passport, so a passport keeps the host it was minted under. A writer that moves to another domain keeps its existing passports under the old host and mints new ones under the new host.
+
+To keep the old links working, keep the old host answering: redirect each `/01/<gtin>/21/<serial>` path to the same path on the new host, for as long as the passports matter. If the old host goes, the links lapse and nothing about the passports changes: the identifier is still the subject every signature binds to, and an index still finds the passport by it.
 
 ## Source definitions
 
