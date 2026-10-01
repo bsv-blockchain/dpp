@@ -6,7 +6,7 @@ First build and run the [initial operator](README.md). The second preset uses th
 
 Copy `deploy/operator.env.example` to `deploy/operator-b.env`. Set `OVERLAY_PORT` to any free port, `8081` in the commands below, so the published ports do not collide; the checks that follow use whichever port you chose. Set `SYNC_PEERS=http://host.docker.internal:8080` for the supplied same-machine arrangement; on separate hosts use an address reachable from the second container. Set `WOC_API_KEY`: a synchronising node asks the header source once per state it admits, and anonymous access is rate limited. Where the host cannot mount a file, `PUBLISHER_POLICY_JSON` carries the policy chain inline instead of `PUBLISHER_POLICY_FILE`.
 
-`SYNC_PEERS` is the complete list of the other nodes this node reads from, and it is set on the node that reads: setting it replaces the list the node had, and it never names the node's own address, since a node given only itself learns nothing. For records to flow both ways, each node names the other. After a change, check the node's `GET /capabilities`: `synchronisation.peers` lists the peers it now reads from.
+`SYNC_PEERS` is the complete list of the other nodes this node reads from, and it is set on the node that reads: setting it replaces the list the node had, and it never names the node's own address, since a node given only itself learns nothing. For records to flow both ways, each node names the other. The node reads it when it starts, so a change takes effect after a restart or a redeploy. Then check the node's `GET /capabilities`: `synchronisation.peers` lists the peers it now reads from.
 
 Use separate submit, callback and export secrets. For the first shared-record exercise, use the same publisher public key as the first instance, or a publisher policy accepting the relevant keys. An operator's own identity and its accepted publisher keys answer different questions.
 
@@ -17,6 +17,21 @@ docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-
 curl --fail http://localhost:8081/health
 curl --fail http://localhost:8081/capabilities
 ```
+
+## Which way records flow
+
+A node synchronises by pulling. Each round it asks the peers its own `SYNC_PEERS` names for what they hold, and admits what passes its topic managers and its publisher policy. Naming a peer gives that peer nothing: after the steps above the second instance holds what the first admitted, and the first holds nothing the second admitted.
+
+For two operators to exchange records both ways:
+
+1. Each sets `SYNC_PEERS` to the other's base URL.
+2. Each publisher policy names the other's state-publisher keys, with an `activeFrom` that covers the states to exchange ([sign a publisher policy](#sign-a-publisher-policy)).
+3. Each reads the other's `GET /capabilities`: `synchronisation.discovery` is `static-peers` and `synchronisation.peers` lists its own URL.
+4. Each writes a state and looks it up on the other after the next round, a minute later by default (`SYNC_INTERVAL_MS`).
+
+Nodes do not find each other. The [specification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/services.md) asks a public overlay to advertise through SHIP/SLAP in section 1, and the overlay package does not yet, so a node's only peers are the ones its operator names. To exchange records with the hosted reference, its operator has to name your node and your publisher keys; [the running overlays](../deployment.md#overlays-running-now) lists who runs what.
+
+One known limit in `@bsv/dpp-overlay-topics` 0.4.0-beta.3: a passport state the writer's wallet funded from another passport's transaction does not reach a peer that lacks that other passport's history until the new state is mined. Walking back from the unproven state, the peer reaches the other passport's state through its change output and asks for that state's predecessor, which it cannot get, so it leaves the new state behind. Once the new state is mined, the next round takes it.
 
 ## Sign a publisher policy
 
@@ -51,9 +66,11 @@ A node claims `federated-operators@1` only when it synchronises with peers and t
 
 ## Observe the exchange
 
-Use the [same passport lookup](../reference/contracts.md#find-passport-records) against each operator by changing `INDEX_URL`. After the first has admitted records and synchronisation has run, inspect which records the second holds and verify them independently.
+Use the [same passport lookup](../reference/contracts.md#find-passport-records) against each operator by changing `INDEX_URL`. After the first has admitted records and synchronisation has run, inspect which records the second holds and verify them independently. Where each names the other, check the reverse direction too: a record written to the second arrives on the first.
 
-Check an initially empty peer, a restarted peer catching up and a record the second policy refuses. Synchronisation makes candidates available; local admission still evaluates them. After each round the node checks what the peer offered against what arrived, holds its checkpoint where something did not so the next round offers it again, and leaves an output behind after five rounds, naming it in the log. Two containers controlled by one administrator demonstrate the mechanism, not separately administered operation.
+Check an initially empty peer, a restarted peer catching up and a record the second policy refuses. Synchronisation makes candidates available; local admission still evaluates them. After each round the node checks what the peer offered against what arrived, holds its checkpoint where something did not so the next round offers it again, and leaves an output behind after five rounds, naming it in the log.
+
+A left-behind output is not offered again once the checkpoint has moved past it, and no setting re-synchronises from a chosen point. Once its cause is fixed, clear that peer's checkpoint: the node keeps one document per peer and topic in the `overlayInteractions` collection, `{ host, topic, since }`, with `host` the peer's URL as `SYNC_PEERS` names it, without a trailing slash. Delete that peer's documents, for example `db.overlayInteractions.deleteMany({ host: "https://peer.example" })` in `mongosh`, and the next round asks the peer for everything it holds again; outputs the node already holds are admitted as no-ops. Two containers controlled by one administrator demonstrate the mechanism, not separately administered operation.
 
 ## Preset sources
 
