@@ -50,4 +50,4 @@ This is a working draft, before version 1.0. The beta.3 packages were published 
 | Understand identity, custody and evidence | [Identity and authority](learn/identity-and-authority.md), [custody](learn/custody.md), [evidence and its limits](learn/evidence-and-freshness.md) |
 | Propose a change | [Contribute](contribute/README.md) |
 
-The source repository is public at [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp). Links to source files are pinned to a commit, so the text you read is the text that was reviewed.
+The source repository is public at [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp). Links to source files are pinned to a commit, so the text you read is the text that was reviewed. The site itself is published from the repository's `main` branch: the newest commit in the [history of `docs/`](https://github.com/bsv-blockchain/dpp/commits/main/docs) is the revision you are reading.
