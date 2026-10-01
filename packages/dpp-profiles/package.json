@@ -30,6 +30,7 @@
     "generate": "node scripts/build.mjs",
     "changes": "node scripts/profile-changes.mjs",
     "refreeze": "node scripts/build.mjs --refreeze",
+    "freeze-new": "node scripts/build.mjs --freeze-new",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },

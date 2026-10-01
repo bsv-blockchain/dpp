@@ -129,7 +129,7 @@ describe('the profile manifests (spec/profiles.md)', () => {
       const doc = readConsumerDocument(profile) as Record<string, unknown>
       expect(doc.profile).toBe(profile)
       expect(Array.isArray(doc.fields)).toBe(true)
-      expect(String(doc.status)).toMatch(/^(in use|superseded by |candidate successor to )/)
+      expect(String(doc.status)).toMatch(/^(in use|superseded by |candidate successor to |draft: declared, not installed$)/)
       expect(String(doc.regulatoryLine)).not.toMatch(/\bcompliant\b/i)
     }
     // The consumer document describes the registry in full, every capture

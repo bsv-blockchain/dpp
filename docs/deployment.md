@@ -16,6 +16,8 @@ On the index, `POST /submit` and `POST /retract` need the operator's submit toke
 
 None of the three runs a GS1 resolver. No host serves `/.well-known/gs1resolver`, the registry's capability document reads `"discovery": "not-configured"`, and `dpp.bsvb.net` answers an identifier's path with its passport page whatever the `Accept` header asks for. The registry contract's `https://id.example.org` is a placeholder for the resolver origin a deployment configures, not a hosted service.
 
+The application's check at `https://dpp.bsvb.net/verify` reads only identifiers under `dpp.bsvb.net` and `id.gs1.org` for now: it drops the host from the identifier it is given and looks the path up under those two. A passport minted under another host, which the [identifiers page](identifiers.md) tells a second writer to use, reads as not found there even when the index holds it. Check such a passport with a reader of your own, as step 1 of [build an application](packages/build-an-application.md) shows.
+
 Three live passports to look up with the [passport lookup](reference/contracts.md#find-passport-records):
 
 | Passport | What it shows |

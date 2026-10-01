@@ -1,6 +1,6 @@
 # Author and propose a profile
 
-Start from the [profile source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/profiles.md) and the schema for the profile kind:
+Start from the [profile source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/profiles.md). [Choose the manifest kind](#choose-the-manifest-kind) names the schema for each kind of profile.
 
 ## Start from the data question
 
@@ -29,6 +29,14 @@ From the repository root, run the existing generation and test commands:
 npm run build -w @bsv/dpp-profiles
 npm run test -w @bsv/dpp-profiles
 ```
+
+To add an industry profile:
+
+1. Write the manifest as `packages/dpp-profiles/manifests/<id>@<version>.json`, with `status: "draft"`, `profile`, `id` and `version` naming it, and `schemaUri` and `restrictedSchemaUri` naming its own generated schemas, `generated/payload-schema/<id>@<version>.public.schema.json` and `.restricted.schema.json`. Leave out `schemaDigest` and `restrictedSchemaDigest`; the generator computes them.
+2. Run `npm run build -w @bsv/dpp-profiles`. It reports the manifest as new and not yet frozen.
+3. Review the manifest and the generated files, then run `npm run freeze-new -w @bsv/dpp-profiles`. It records the new digests and refuses to move any existing one.
+4. Add the identifier to `PROFILE_IDS` in `packages/dpp-profiles/src/index.ts`. The readers refuse any identifier outside that list, so until it is there `readManifest` refuses the new profile; `readManifestAny` reads it meanwhile.
+5. Add the identifier to the frozen inventory that `test/successors.test.ts` checks, then run `npm run build -w @bsv/dpp-profiles` and `npm run test -w @bsv/dpp-profiles` again.
 
 The [package guide](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/README.md) describes the manifest workflow. For a reviewed freeze change, its workspace command is `npm run refreeze -w @bsv/dpp-profiles`; the [workspace manifest](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/package.json) defines it.
 

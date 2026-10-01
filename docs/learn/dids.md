@@ -1,6 +1,6 @@
 # BSV DIDs
 
-A decentralised identifier (DID) names an entity and provides a way to obtain its verification keys. The digital product passport (DPP) reference application adopts the Bitcoin SV (BSV) DID method for identities whose keys can change while their identifier stays the same. The method explanation here draws on [BSV DID specification](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications).
+A decentralised identifier (DID) names an entity and provides a way to obtain its verification keys. The digital product passport (DPP) reference application adopts the Bitcoin SV (BSV) DID method for identities whose keys can change while their identifier stays the same. The method explanation here draws on the [BSV DID specification](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications). The publisher's pages redirect in a loop at the time of writing; archived copies of the [specification](https://web.archive.org/web/20260516084819/https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications), the [transaction definitions](https://web.archive.org/web/20250916170103/https://docs.teranode.group/tng-identity-documentation/did/bsv-did-method-specifications/specification-overview/utxo-did-method-normative-reference) and the [resolver API](https://web.archive.org/web/20260211224122/https://docs.teranode.group/tng-identity-documentation/did/bsv-did-universal-resolver/resolver-api) can be read meanwhile.
 
 The reason is key history. A `did:key` encodes one public key. Changing that key produces a different identifier. A `did:bsv` identifies a blockchain transaction chain, so later documents can record changes under the original identifier. An application still needs evidence of which key was authorised when a claim was signed.
 
@@ -54,7 +54,7 @@ Expect HTTP 200 and a document whose `id` matches the requested DID. Inspect `ve
 
 The [BSV DID resolver API](https://docs.teranode.group/tng-identity-documentation/did/bsv-did-universal-resolver/resolver-api) defines the response. Resolution supplies evidence for checking a key relationship. It does not establish the issuer's business authority or verify a credential's proof.
 
-The reference endpoint returns placeholder block metadata, including `testBlockHash`, for this example. Its block fields cannot establish inclusion or historical authority. The documented API also lacks a request for a past document version. Historical verification needs separately retained or retrieved transaction evidence; a current document cannot settle which key was authorised in the past.
+The resolver's `didDocumentMetadata.method.block` carries a height and a time that match the chain for this example, but its `hash` field holds the transaction identifier, not the block hash, and no merkle path is returned. Its block fields cannot establish inclusion or historical authority. The documented API also lacks a request for a past document version. Historical verification needs separately retained or retrieved transaction evidence; a current document cannot settle which key was authorised in the past.
 
 ## Connect the DID to a claim
 
@@ -77,6 +77,6 @@ An integration supplies the subject and controller signing capabilities, the pub
 
 The reference application has recorded differences between the method prose and the script encodings it observed on chain. Those notes are not public yet, and the differences need resolution before an independent encoder can rely on the prose alone. The [core ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) has no dedicated BSV DID method assessment; its tested `ID-2-did-key` row covers the native key helpers.
 
-Physical-object DID derivation: declined for now; a physical-object DID stays optional and is never derived from the passport identifier. Historical anchor issuer widening: open; the historical anchor admits `did:key` issuers only, while the current `bsv-attestation-anchor-v1` carries any issuer identifier. An issuer DID does not implement physical-object binding.
+Physical-object DID derivation: declined for now; a physical-object DID stays optional and is never derived from the passport identifier. Historical anchor issuer widening: open; the [historical anchor](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/legacy-uora-anchor-v3.md) admits `did:key` issuers only, while the current `bsv-attestation-anchor-v1` carries any issuer identifier. An issuer DID does not implement physical-object binding.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Identity and authority](identity-and-authority.md) explains the distinction between identifying a signer and accepting its claims.

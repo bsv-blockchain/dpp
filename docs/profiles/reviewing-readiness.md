@@ -14,7 +14,7 @@ For batteries, review the relevant product classification and use case before se
 
 ## Build a cross-reference in both directions
 
-Create a row for each external requirement or data attribute, including fields nested inside records. Record:
+Start the profile side of the table from the generated mapping inventory, one row per field with its semantic field, legal basis, applicability and access tier, for example [battery@2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated/mapping/battery@2.md). Then create a row for each external requirement or data attribute, including fields nested inside records. Record:
 
 | Review dimension | Question to resolve |
 |---|---|

@@ -12,6 +12,39 @@ The reference profile uses a Data Integrity proof with the `ecdsa-rdfc-2019` sui
 
 `verifyExternalCredential` evaluates the credential checks; `externalCredentialVerifierFor` adapts them to the shared passport report. Missing status or authority sources can leave those findings unknown even when the proof itself verifies.
 
+This call verifies the `positive` case of the vector file with the published package, from the repository root after [setup](../quick-start.md#get-the-code). The entry point is `@bsv/vsc/exchange`:
+
+```js
+import { readFileSync } from 'node:fs'
+import { createExternalDocumentLoader, verifyExternalCredential } from '@bsv/vsc/exchange'
+
+const { vectors } = JSON.parse(readFileSync('fixtures/vectors/dpp/interoperability/external-credential/v1.json', 'utf8'))
+const { credential, documents, policy, representation } = vectors.find((v) => v.id === 'positive').input
+const retrieved = new Map(Object.entries(documents))
+
+const result = await verifyExternalCredential({
+  bytes: new TextEncoder().encode(credential),
+  representation,
+  policy: {
+    documentLoader: createExternalDocumentLoader(retrieved),
+    evaluationTime: policy.evaluationTime,
+    expectedSubject: policy.expectedSubject,
+    authorityPolicy: policy.authority,
+    statusPolicy: policy.status && {
+      ...policy.status,
+      // Throw when a status list cannot be fetched: returning nothing is not the same answer.
+      resolve: async (url) => {
+        if (!retrieved.has(url)) throw new Error(`status list ${url} is unavailable`)
+        return retrieved.get(url)
+      },
+    },
+  },
+})
+for (const [name, check] of Object.entries(result.checks)) console.log(name, check.outcome)
+```
+
+It prints ten checks, from `parse` to `availability`, each `verified`. The vector file names its policy differently from the API: its `authority`, `status` and `subjectBinding` are the call's `authorityPolicy`, `statusPolicy` and `subjectBindingPolicy`, and its `status` carries no `resolve`. Give `statusPolicy` one that throws when a list cannot be fetched, so an unavailable list reads `indeterminate`. Mapped that way, every case in the file gives its expected checks.
+
 ## Run the selected cases
 
 After [setup](../quick-start.md#get-the-code), run:

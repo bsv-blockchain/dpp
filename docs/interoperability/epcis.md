@@ -30,6 +30,8 @@ Expect the document to pass schema validation and its event locations and types 
 
 `lossless` means the selected mapping preserved the event's information under its rules. `transformed` carries an account of changed or unmapped semantics. `unsupported` means the selected event form cannot be expressed. `insufficient-data` names missing inputs. A valid source document can therefore remain retained evidence without producing a credential.
 
+`mapEpcisEvent` and `mapEpcisEventWithReport` do the mapping. They are exported from the root `@bsv/vsc`, not from `@bsv/vsc/epcis-source`, which carries the parsing constants and artefacts. The package's own tests run the mapping vectors: `cd packages/vsc && npx vitest run test/epcis.test.ts test/epcis-source.test.ts test/epcis-report.test.ts`.
+
 Keep the source reference and mapping findings with any resulting credential. Do not invent a custody event or a measurement to complete the output. Publication and ingestion checkpoints belong to the application workflow.
 
 ## Source definitions
