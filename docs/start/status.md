@@ -1,6 +1,6 @@
 # Where things stand
 
-Working draft. The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) was last updated on 2026-09-27. The [release selection](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/conformance/selections/dpp-release-2026-09-5.json) names the claims required for the published beta.3 set and those withheld.
+Working draft. The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) was last updated on 2026-09-27. The [release selection](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/conformance/selections/dpp-release-2026-09-5.json) names the claims required for the published beta.3 set and those withheld; that set is now superseded by the beta.4 candidate, which selects the same claims.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|
@@ -19,7 +19,7 @@ Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](.
 
 | Decision | State, and what it means for an implementer |
 |---|---|
-| Repository publication | Public; the beta.3 packages were published to npm on 27 September 2026. See [published release declaration](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/release/dpp-release-2026-09-5.json) |
+| Repository publication | Public; the beta.3 packages were published to npm on 27 September 2026 and the beta.4 candidate is pending. See [published release declaration](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/release/dpp-release-2026-09-5.json) |
 | Profile governance | Open: who versions a profile and where its canonical definition lives. Until settled, the frozen manifests in `@bsv/dpp-profiles` are the definitions. |
 | Object identifier derivation | Declined for now: a physical-object DID stays optional and is never derived from the passport identifier ([identity](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/identity.md) section 3). |
 | Historical issuer formats | Open: whether the historical anchor's issuer field admits `did:web` as well as `did:key`. Today it admits `did:key` only; new anchors use `bsv-attestation-anchor-v1`, which this does not affect. |

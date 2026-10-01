@@ -8,9 +8,15 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The beta.3 packages were published on 27 September 2026, beside the unchanged `@bsv/vsc` 0.2.0-beta.2. The [publication receipt](docs/reference/beta-3-publication.md) identifies their exact source, approved plan and verification results, and the [beta.2 receipt](docs/reference/beta-2-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
+The beta.3 packages were published on 27 September 2026, beside the unchanged `@bsv/vsc` 0.2.0-beta.2. The [publication receipt](docs/reference/beta-3-publication.md) identifies their exact source, approved plan and verification results, and the [beta.2 receipt](docs/reference/beta-2-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.4 candidate, `dpp-release-2026-10`, is prepared and its publication is pending.
 
 ## Repository history
+
+### 2026-10-01, beta.4 release candidate
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3` under the `next` tag in `dpp-release-2026-10`, carrying the topic change and the profile reader guard below. Every package's documentation changed since beta.3, so none of the published archives repacks byte for byte and all four take new versions; core and VSC change nothing else. Publication is pending. `latest` stays at beta.1.
+- The new set names its consumers by role, not by repository, and the service interface no longer names the repository of the reference application, whose source is not public.
+- Mark `dpp-release-2026-09-5` superseded. Its approved beta.3 plan is reproduced from its own source revision, as the receipt records; the demonstration definition and the qualification test move to the new set, and the two projection vectors record the new profiles version.
 
 ### 2026-10-01, the topic asks for a predecessor only through the passport output
 

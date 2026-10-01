@@ -1,6 +1,6 @@
 # Evaluate the version 4 drafts
 
-`battery@4` and `textile@4` are explicit draft selections, included in `@bsv/dpp-profiles` since 0.3.0-beta.2 and in the current `@bsv/dpp-profiles` 0.3.0-beta.3. The [beta.2 publication receipt](../reference/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
+`battery@4` and `textile@4` are explicit draft selections, included in `@bsv/dpp-profiles` since 0.3.0-beta.2 and in the current `@bsv/dpp-profiles` 0.3.0-beta.4. The [beta.2 publication receipt](../reference/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
 
 ## Battery changes
 

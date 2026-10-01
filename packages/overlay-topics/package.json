@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-overlay-topics",
-  "version": "0.4.0-beta.3",
+  "version": "0.4.0-beta.4",
   "description": "Experimental prerelease: DPP overlay index components as a library: tm_dpp and tm_attestation topic managers, ls_dpp and ls_attestation lookup services, storage adapters, capabilities, history pages, bounded and complete evidence export, retraction and static-peer synchronisation; the HTTP node ships as the image",
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
@@ -22,7 +22,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@bsv/dpp-core": "0.3.0-beta.3",
+    "@bsv/dpp-core": "0.3.0-beta.4",
     "@bsv/overlay": "2.3.1",
     "@bsv/sdk": "2.8.10",
     "mongodb": "^7.6.0"
