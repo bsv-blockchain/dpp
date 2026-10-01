@@ -20,7 +20,7 @@ Before connecting to a service, obtain its capability document and compare those
 | Package entry points and runtimes | [Support table](../packages/support-table.md) |
 | A complete release selection | [Release sets](../reference/release-sets.md) |
 
-The [conformance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) defines selection and compatibility requirements. A new package version does not by itself select a new record format or industry profile.
+The [conformance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) defines selection and compatibility requirements. A new package version does not by itself select a new record format or industry profile.
 
 Use [migration](../migration.md) for deployment rollout and rollback.
 

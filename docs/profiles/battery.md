@@ -37,13 +37,13 @@ The output includes a token transfer with insufficient evidence for physical cus
 
 | Material | Source |
 |---|---|
-| Current profile | [battery@2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/battery@2.json) |
-| Draft successors | [battery@3](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/battery@3.json), [battery@4](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/manifests/battery@4.json) |
-| Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated/mapping/battery@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/generated) |
-| Synthetic lifecycle | [Battery fixture](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/battery-lifecycle-v1.json) |
+| Current profile | [battery@2](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/manifests/battery@2.json) |
+| Draft successors | [battery@3](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/manifests/battery@3.json), [battery@4](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/manifests/battery@4.json) |
+| Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/generated/mapping/battery@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/generated) |
+| Synthetic lifecycle | [Battery fixture](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/fixtures/battery-lifecycle-v1.json) |
 
 The fixture uses invented product data; no product exists. Its mapping results illustrate missing evidence as well as supported cases.
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) records the profile's source assessments and withheld product claim. Some field metadata remains absent from the current manifest. The draft successor does not close those assessments or establish legal adequacy.
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) records the profile's source assessments and withheld product claim. Some field metadata remains absent from the current manifest. The draft successor does not close those assessments or establish legal adequacy.
 
 Use [the profiles package](../packages/dpp-profiles.md) to read the data and [authoring](authoring.md) to propose a revision.
