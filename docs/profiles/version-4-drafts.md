@@ -1,6 +1,6 @@
 # Evaluate the version 4 drafts
 
-`battery@4` and `textile@4` are explicit draft selections included in the published `@bsv/dpp-profiles@0.3.0-beta.2` package. See the [publication receipt](../reference/beta-2-publication.md) for the verified source and package bytes. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
+`battery@4` and `textile@4` are explicit draft selections, included in `@bsv/dpp-profiles` since 0.3.0-beta.2 and in the current `@bsv/dpp-profiles` 0.3.0-beta.3. The [beta.2 publication receipt](../reference/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
 
 ## Battery changes
 
@@ -47,7 +47,7 @@ const dataFindings = reviewProfileData('battery@4', payload)
 
 Here `payload` is the application's data, already validated against the selected schema. Treat `invalid` findings as rejected data and retain `needs-review` findings for evidence review. Registration, applicability and cross-field results are separate. An empty findings list does not certify readiness; unsupported profile versions are refused by this helper.
 
-Update the consumer's capture forms, adapters, backend checks and exports before enabling draft writes. [Consumer adoption](updating-applications.md) describes the rollout and history requirements. These changes do not automatically activate dpp-app or any other consumer.
+Update the consumer's capture forms, adapters, backend checks and exports before enabling draft writes. [Consumer adoption](updating-applications.md) describes the rollout and history requirements. These changes do not automatically activate the reference application or any other consumer.
 
 ## Read a payload that declares a draft
 
