@@ -212,6 +212,23 @@ describe('tm_dpp admission', () => {
     )
     expect(result.outputsToAdmit).toEqual([])
   })
+
+  it('asks a synchronising peer for the predecessor only when its graph reached the passport output', async () => {
+    const { tx: g } = await genesis()
+    const event = await completeState(
+      makeData({ op: 'SOLD', eventData: '{"channel":"store"}', previousTxid: g.id('hex') }),
+      makerWallet,
+      serverWallet
+    )
+    const tx = stateTx(event, { tx: g, outputIndex: 0 })
+    tx.addOutput({ satoshis: 9_000, lockingScript: new LockingScript([{ op: 0x51 }]) })
+    const tm = new DppTopicManager(SERVER_ID)
+    const predecessor = [{ txid: g.id('hex'), outputIndex: 0 }]
+    expect(await tm.identifyNeededInputs(tx.toBEEF(true))).toEqual(predecessor)
+    expect(await tm.identifyNeededInputs(tx.toBEEF(true), undefined, 0)).toEqual(predecessor)
+    // Reached through its change, the state only funded the graph's tip.
+    expect(await tm.identifyNeededInputs(tx.toBEEF(true), undefined, 1)).toEqual([])
+  })
 })
 
 /**

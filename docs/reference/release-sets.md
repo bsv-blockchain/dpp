@@ -23,7 +23,7 @@ The four beta.2 packages of the preceding set, `dpp-release-2026-09-4`, were pub
 
 Each record links package versions, interfaces, profiles and its conformance selection. The [support table](../packages/support-table.md) is generated from the selected record. Historical declarations remain in the earlier records.
 
-The [release tooling](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/release/README.md) produces a candidate record containing the source revision and artefact digests. A release-set name alone is not that source revision. [Package installation](../packages/README.md#source-access) gives the reviewed source snapshot; [the implementer start](../implement/README.md) identifies the bundle manifest.
+The [release tooling](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/release/README.md) produces a candidate record containing the source revision and artefact digests. A release-set name alone is not that source revision. [Package installation](../packages/README.md#source-access) gives the reviewed source snapshot; [the implementer start](../implement/README.md) identifies the bundle manifest.
 
 The source repository and the npm packages are public. The beta.3 publication moved `next` to beta.3 for core, overlay topics and profiles, left the VSC package at beta.2 and left `latest` at beta.1. Consumer applications must adopt the packages and activate any successor profiles separately.
 

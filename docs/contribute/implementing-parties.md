@@ -1,6 +1,6 @@
 # Implementing parties
 
-The [governance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) defines participation and the evidence needed for independent implementation. Participation alone does not establish a tested implementation.
+The [governance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/GOVERNANCE.md) defines participation and the evidence needed for independent implementation. Participation alone does not establish a tested implementation.
 
 ## Prepare to participate
 
@@ -10,6 +10,6 @@ The first useful contribution is a reproducible difference: an input both implem
 
 Use [the trial guide](../implement/demonstration.md) to prepare endpoint addresses, policies and retained evidence with another participant. Participation, code independence and separately administered operation are different facts; record which have actually been demonstrated.
 
-Start with the [implementation route](../implement/README.md), then retain [authorship and test evidence](../implement/reporting.md). The [trial definition](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/demonstrations/independent-implementation-2026-09.json) identifies the proposed exchange work.
+Start with the [implementation route](../implement/README.md), then retain [authorship and test evidence](../implement/reporting.md). The [trial definition](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/demonstrations/independent-implementation-2026-09.json) identifies the proposed exchange work.
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) keeps the independent-implementation gate open. To take part in the trial or arrange an exchange with the hosted reference, use the [BSV Association contact form](https://bsvassociation.org/contact/). Report results and disagreements by the [contact route](disagreements.md).
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) keeps the independent-implementation gate open. To take part in the trial or arrange an exchange with the hosted reference, use the [BSV Association contact form](https://bsvassociation.org/contact/). Report results and disagreements by the [contact route](disagreements.md).

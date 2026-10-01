@@ -1,6 +1,6 @@
 # Migration
 
-Identify the deployed release, stored record versions and selected profiles before changing a service. Use the [release records](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/release/dpp-release-2026-09-5.json) and [compatibility guide](learn/versions-and-compatibility.md) to separate those changes.
+Identify the deployed release, stored record versions and selected profiles before changing a service. Use the [release records](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/release/dpp-release-2026-09-5.json) and [compatibility guide](learn/versions-and-compatibility.md) to separate those changes.
 
 ## Build an inventory
 
@@ -19,7 +19,7 @@ For industry-profile changes, use [the consumer adoption guide](profiles/updatin
 3. Check index admission policy and the writer's selected formats.
 4. Exercise writing, verification, export and recovery before switching live traffic.
 
-The exact upgrade transition is defined in the [record model](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md#L94-L114); acceptance is defined in the [managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/managed-custody.md).
+The exact upgrade transition is defined in the [record model](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model-v2.md#L94-L114); acceptance is defined in the [managed-custody profile](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/managed-custody.md).
 
 ## Rollback and retained evidence
 
@@ -27,6 +27,6 @@ Keep the pre-change deployment and a recoverable data copy. A software rollback 
 
 Use [export and recovery](operate/export-import-recovery.md) to rehearse provider replacement. Industry-profile successors remain separate selections; [battery](profiles/battery.md) and [textile](profiles/textile.md) link their current and draft manifests.
 
-The third release set changes the HTTP/export interface while retaining the on-chain record formats. The fifth, the beta.3 packages, keeps every wire format and changes what an operator checks: the first version of a publisher policy now governs the history before its own issue, synchronisation holds its checkpoint where an offered output did not arrive and leaves an output behind after five rounds, and `PUBLISHER_POLICY_JSON` carries a policy inline ([changelog](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/CHANGELOG.md), 27 September 2026). [Release history](reference/release-sets.md) links the exact declarations.
+The third release set changes the HTTP/export interface while retaining the on-chain record formats. The fifth, the beta.3 packages, keeps every wire format and changes what an operator checks: the first version of a publisher policy now governs the history before its own issue, synchronisation holds its checkpoint where an offered output did not arrive and leaves an output behind after five rounds, and `PUBLISHER_POLICY_JSON` carries a policy inline ([changelog](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/CHANGELOG.md), 27 September 2026). [Release history](reference/release-sets.md) links the exact declarations.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).

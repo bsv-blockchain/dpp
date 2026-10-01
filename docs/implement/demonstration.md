@@ -1,6 +1,6 @@
 # Run the interoperability trial
 
-The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/demonstrations/independent-implementation-2026-09.json) is defined; it has not been completed. Its scenario conditions and required evidence stay in that source.
+The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/demonstrations/independent-implementation-2026-09.json) is defined; it has not been completed. Its scenario conditions and required evidence stay in that source.
 
 Prepare the [selected components](README.md), their [fixture results](fixture-runner.md) and [provenance record](reporting.md). Then work through the source scenarios, retaining the inputs, responses and evidence each identifies.
 
@@ -23,4 +23,4 @@ The trial definition supplies the formal scenario selection. Its completion is s
 | Wallet and proof handling | [Broadcast and proofs](../operate/wallet-broadcast-proofs.md) |
 | Current delivery evidence | [Status](../start/status.md) |
 
-Local synthetic exchanges do not establish separately administered operation or mined inclusion. The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) records the remaining evidence gaps.
+Local synthetic exchanges do not establish separately administered operation or mined inclusion. The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) records the remaining evidence gaps.

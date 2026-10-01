@@ -239,6 +239,8 @@ Two checks stay `unknown`, and both are honest. `schema` has no payload to check
 | `externalCredentials` | `{ representation, mediaType, bytes }`, the exact bytes of a credential in another format | Whoever issued the credential |
 | `alternativeHistories` | Other lineages under the same identifier, such as a second genesis | The index, when it answers with more than one lineage |
 
+The registry in the reader above is the one that holds this passport's claims. Registries do not exchange claims, and an anchor does not name the registry that holds its claim, so a reader asks the registries it knows ([the registry guide](../implement/roles/registry.md#the-minimum-a-registry-serves)). An anchor passed without `securedBytes` still has its signature and key derivation checked, and `anchorDigestAndMetadataBinding` stays `unknown` with `secured-bytes-absent`.
+
 **What the policy selects**
 
 | Field | Selects | Check or finding it settles |
@@ -253,8 +255,8 @@ Two checks stay `unknown`, and both are honest. `schema` has no payload to check
 
 `EVIDENCE_CHECK_NAMES` lists the sixteen checks in report order, and `EVIDENCE_CHECK_LABELS` gives each a short sentence a surface can show beside it, such as "Every entry is in a block" for `inclusion`.
 
-The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-core/src), and the [package guide](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-core/README.md) lists the remaining exports.
+The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-core/src), and the [package guide](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-core/README.md) lists the remaining exports.
 
-The caller supplies header, credential, status and authority adapters. Read the [report source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/verification.md) for the distinction between missing evidence and a check that does not apply. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
+The caller supplies header, credential, status and authority adapters. Read the [report source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/verification.md) for the distinction between missing evidence and a check that does not apply. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
