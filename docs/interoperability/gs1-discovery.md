@@ -4,7 +4,7 @@ Start with [identifiers](../identifiers.md). Discovery locates a passport or evi
 
 ## Do you need a resolver?
 
-Usually not. The host you mint identifiers under must answer each identifier's path with the passport page, and your own application does that. A GS1-Conformant Resolver is more: a linkset for every identifier, redirects negotiated by link type, media type and language, and a description file at `/.well-known/gs1resolver`. That is the optional `gs1-digital-link@1` profile. A deployment that adopts it gives the resolver an origin of its own, separate from its API, and either runs the reference registry's resolver there or names an external GS1-Conformant Resolver ([GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/gs1-discovery.md) section 1).
+Usually not. The host you mint identifiers under must answer each identifier's path with the passport page, and your own application does that. A GS1-Conformant Resolver is more: a linkset for every identifier, redirects negotiated by link type, media type and language, and a description file at `/.well-known/gs1resolver`. That is the optional `gs1-digital-link@1` profile. A deployment that adopts it gives the resolver an origin of its own, separate from its API, and either runs the reference registry's resolver there or names an external GS1-Conformant Resolver ([GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/gs1-discovery.md) section 1).
 
 Adopt it when scanners or trading partners expect GS1 resolution: several destinations per product, or links chosen by language or link type. The [hosted reference](../deployment.md#the-hosted-reference) runs no resolver, so there is no hosted resolver origin to point at.
 
@@ -33,10 +33,10 @@ The parser reports the key and qualifiers, or a named parsing problem. This exam
 
 | Integration input | Source |
 |---|---|
-| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/gs1-discovery.md) |
-| Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/src/gs1-resolution.ts) |
-| Hosted resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/registry.yaml) |
-| Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/fixtures/vectors/dpp/interoperability/gs1) |
+| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/gs1-discovery.md) |
+| Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/src/gs1-resolution.ts) |
+| Hosted resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/registry.yaml) |
+| Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/fixtures/vectors/dpp/interoperability/gs1) |
 
 Keep resolution and signed-subject verification separate. Rewriting a discovery host does not rename the signed subject. Continue with the [passport reader](../implement/roles/passport-reader.md).
 

@@ -1,6 +1,6 @@
 # Conformance and the ledger
 
-Use the [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) to trace a claim to its source, implementation, tests and retained evidence. The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.schema.json) defines its fields and statuses. The [conformance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [governance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) define the assessment rules.
+Use the [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) to trace a claim to its source, implementation, tests and retained evidence. The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.schema.json) defines its fields and statuses. The [conformance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) and [governance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/GOVERNANCE.md) define the assessment rules.
 
 ## What each check answers
 
@@ -25,10 +25,10 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-5.json
 
 | Review task | Source |
 |---|---|
-| Find a role's selected requirements | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/baseline-native-2.json) |
-| Inspect claims required or withheld by the release | [Release selection](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/selections/dpp-release-2026-09-5.json) |
-| Check material consistency | [Diagnostic](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/check.mjs) |
-| Evaluate a selection | [Qualification gate](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/qualify.mjs) |
+| Find a role's selected requirements | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/baseline-native-2.json) |
+| Inspect claims required or withheld by the release | [Release selection](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/selections/dpp-release-2026-09-5.json) |
+| Check material consistency | [Diagnostic](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/check.mjs) |
+| Evaluate a selection | [Qualification gate](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/qualify.mjs) |
 
 
 A passing diagnostic and a passing selection answer different questions. Read each command's findings and the selection's withheld claims. Use [evidence reporting](../implement/reporting.md) for a new implementation and [status](../start/status.md) for the delivery overview.

@@ -40,7 +40,7 @@ for (const state of chain.states) {
 }
 ```
 
-It prints the five states admitting outputs `0`, `0`, `1`, `0` and `0`, the pinned indexes. The custodian's key is the publisher key the topic accepts. An `Engine` from `@bsv/overlay` wires the topic manager, `DppLookupService` and a store together, as the package's [engine test](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/test/engine.test.ts) does with `InMemoryOverlayStorage` and `InMemoryDppStorage`. The engine checks every input against its source transaction, so it needs a BEEF that carries the whole ancestry, which the fixtures' raw transactions alone do not. Keep topic admission and lookup responsibilities separate: admission decides which offered outputs the policy accepts; lookup retrieves retained candidates for a reader to verify. An in-memory store is useful for a test but does not retain records across process loss.
+It prints the five states admitting outputs `0`, `0`, `1`, `0` and `0`, the pinned indexes. The custodian's key is the publisher key the topic accepts. An `Engine` from `@bsv/overlay` wires the topic manager, `DppLookupService` and a store together, as the package's [engine test](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/test/engine.test.ts) does with `InMemoryOverlayStorage` and `InMemoryDppStorage`. The engine checks every input against its source transaction, so it needs a BEEF that carries the whole ancestry, which the fixtures' raw transactions alone do not. Keep topic admission and lookup responsibilities separate: admission decides which offered outputs the policy accepts; lookup retrieves retained candidates for a reader to verify. An in-memory store is useful for a test but does not retain records across process loss.
 
 Add proof ingestion and [recovery](../operate/export-import-recovery.md) before treating an embedded index as a retained evidence source. [The overlay role](../implement/roles/overlay.md) gives the implementation order and failure cases.
 
@@ -48,10 +48,10 @@ Add proof ingestion and [recovery](../operate/export-import-recovery.md) before 
 
 | Integration | Source |
 |---|---|
-| Embed passport and attestation indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/src/lib.ts) |
-| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/src/index.ts) |
-| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/overlay.yaml) |
-| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/README.md) |
+| Embed passport and attestation indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/lib.ts) |
+| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) |
+| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/overlay.yaml) |
+| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/README.md) |
 
 Importing the library does not start the host. Begin service setup at [Operate](../operate/README.md); use the [overlay role](../implement/roles/overlay.md) when building an independent implementation.
 

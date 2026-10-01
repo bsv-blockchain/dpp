@@ -2,7 +2,7 @@
 
 A package release makes new profile definitions available. Each consuming application still needs to adopt them, demonstrate that its readers and writers support them, and select when new records use them. Installing a package does not update forms, migrate stored data or activate a successor profile.
 
-This guide describes a recommended release and adoption process. The existing tooling supplies versioned manifests, generated schemas, frozen digests, succession metadata and package consumer checks. Cross-application notifications, a consumer ownership register and automated adoption tracking are proposed workflow additions, not services currently supplied by these packages. See the [release tooling](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/release/README.md) and [consumer check](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/scripts/consumer-check.mjs) for the implemented boundary.
+This guide describes a recommended release and adoption process. The existing tooling supplies versioned manifests, generated schemas, frozen digests, succession metadata and package consumer checks. Cross-application notifications, a consumer ownership register and automated adoption tracking are proposed workflow additions, not services currently supplied by these packages. See the [release tooling](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/release/README.md) and [consumer check](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/scripts/consumer-check.mjs) for the implemented boundary.
 
 ## Keep the versions and dates separate
 
@@ -15,7 +15,7 @@ This guide describes a recommended release and adoption process. The existing to
 
 Record the package release date, profile status, applicable regulatory dates and application deployment date separately. A published draft is available for explicit evaluation. It does not become suitable for a conformance claim merely because a consumer has installed it. A future legal date does not automatically switch an application's profile selection.
 
-The [profile specification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/profiles.md) defines freezing and succession. Preserve frozen historical definitions. Change their meaning through a reviewed successor, retaining a migration outcome for each predecessor field. Succession metadata describes the change; it is not an executable data migration.
+The [profile specification](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/profiles.md) defines freezing and succession. Preserve frozen historical definitions. Change their meaning through a reviewed successor, retaining a migration outcome for each predecessor field. Succession metadata describes the change; it is not an executable data migration.
 
 ## Notify consumers with an actionable change report
 
