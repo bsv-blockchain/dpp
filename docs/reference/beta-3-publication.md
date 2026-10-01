@@ -48,6 +48,6 @@ Compare the `release/publication-plan.json` that the second command writes with 
 
 The release-set JSON retains `status: candidate` because it is an input whose exact digest was approved. This receipt records completed npm publication without rewriting that evidence.
 
-The packages carry the index synchronisation and publisher policy changes of 27 September 2026 and move to `@bsv/sdk` 2.8.10. Publication does not upgrade dpp-app or the registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
+The packages carry the index synchronisation and publisher policy changes of 27 September 2026 and move to `@bsv/sdk` 2.8.10. Publication does not upgrade the reference application or registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
 The [publication guide](publishing-profile-updates.md) describes the process for future releases and recovery from delays. The [beta.2 receipt](beta-2-publication.md) records the preceding publication.

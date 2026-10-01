@@ -37,7 +37,7 @@ A digital product passport (DPP) is a product's history that anyone can check. T
 
 ## Where things stand
 
-This is a working draft, before version 1.0. The beta.3 packages were published to npm on 27 September 2026 under the `next` tag; pin exact versions. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open.
+This is a working draft, before version 1.0. The beta.4 packages were published to npm on 1 October 2026 under the `next` tag; pin exact versions. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open.
 
 ## Everything else
 
