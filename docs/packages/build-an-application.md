@@ -116,6 +116,8 @@ Every state goes through the same six steps, in this order ([writing lifecycle](
 
 **A refused draft is aborted.** An unsent action holds the wallet's inputs until it is sent or aborted, so a draft that fails your own check or that the index refuses must be given to `abortAction`, or its inputs stay out of use. Pass the action's reference: a state that spends the tip has one, `created.signableTransaction.reference`. An issue that needed no signature from you comes back signed with no reference, and `@bsv/wallet-toolbox` then accepts the transaction identifier in its place: `wallet.abortAction({ reference: created.txid })`.
 
+**A refusal carries no reason.** The index answers a state it refuses with 200, `X-Admission: tm_dpp=none` and nothing admitted; why is in its operator's log, not in the answer. Before you announce, check the causes you can see yourself: the state's `server_signature` comes from a key listed under `publisherPolicy.publisherKeys` in the index's `GET /capabilities` and active at the state's own timestamp, and a state after the genesis spends the tip that the index's `ls_dpp` lookup returns for the passport. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes.
+
 `examples/write-passport.mjs` runs all six steps against a local wallet for a version 1 activation, and `examples/lifecycle-v2.mjs` builds a whole version 2 lifecycle without a network. The steps below join the two.
 
 **Keys.** The wallet's identity key signs each state as actor and as publisher. The passport's controller key, field 6, is one derivation from the same wallet, and each state is locked to it:
