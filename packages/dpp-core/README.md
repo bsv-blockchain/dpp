@@ -93,3 +93,7 @@ defines the rules, `fixtures/` pins the bytes, and an independent
 implementation reproduces both without this code. Where this package and the
 specification disagree before version 1.0, `GOVERNANCE.md` names the
 tiebreaker.
+
+## Licence
+
+[Apache License 2.0](LICENSE). Third-party dependencies and artefacts retain their own terms and notices.

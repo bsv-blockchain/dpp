@@ -104,7 +104,7 @@
       "version": "0.7.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "98bae2233be6bedeb4418ff0905c4969f7c6bb3bb104bda8d5022baaeeeb658d"
+      "digest": "70e739bed901ba4f9c9178127f31cad82f907f93c0fd357f811a367e805c611c"
     },
     {
       "id": "contract-registry",

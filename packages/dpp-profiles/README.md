@@ -78,3 +78,7 @@ const { projection } = projectPassport(input)        // one digest for one set o
 ```
 
 A consumer validates a public payload against the generated schema with a validator that asserts formats and refuses an unknown dialect, and reads `needs-review` as a list to show a person, never as satisfied and never as universally required. Syntax and a correct check digit never prove that GS1 allocated a number to the brand a record describes.
+
+## Licence
+
+[Apache License 2.0](LICENSE). Third-party dependencies and artefacts retain their own terms and notices.

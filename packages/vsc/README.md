@@ -107,3 +107,7 @@ Both are exported from the root `@bsv/vsc`, not from `@bsv/vsc/epcis-source`. `m
 `@bsv/vsc/exchange` is a separate entry point for the `vc-di-ecdsa-rdfc-2019@1` representation of `spec/external-credential-profile.md`: a W3C Verifiable Credentials 2.0 credential secured with a `DataIntegrityProof` under `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists the key for assertion. `verifyExternalCredential` reports parse, context set, payload schema, proof, issuer binding, subject binding, temporal, status, authority and availability as separate checks; a P-384 key, another cryptosuite, an inline context or a second credential subject is `unsupported`, never a pass and never a silent fail. The proof primitives are the maintained `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` and `@digitalbazaar/ecdsa-multikey`; no signature or canonicalisation code is written here. The main entry point's `verifySeal` and `verifyCredentialProof` are untouched and keep refusing every context outside the SEAL set. `externalCredentialVerifierFor` adapts the result to the verification report's credential checks, and a reformatted credential whose RDF proof still verifies is reported apart from the exact bytes an anchor commits to, which differ.
 
 A worked call, with the policy mapped from the vector file, is on the [external credentials page](../../docs/interoperability/external-credentials.md).
+
+## Licence
+
+[Apache License 2.0](LICENSE). Third-party dependencies and artefacts retain their own terms and notices.

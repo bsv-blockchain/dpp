@@ -88,7 +88,7 @@ const manifest = {
   sourceRevision: revision,
   sourceState: dirty ? 'working-tree' : 'committed',
   assembledAt: new Date().toISOString(),
-  licence: 'Open BSV License Version 6 (LICENSE); third-party artefacts carry their own notices beside them',
+  licence: 'Apache License 2.0 (Apache-2.0; LICENSE); third-party artefacts carry their own notices beside them',
   carries: 'specifications, contracts, fixtures in both forms, conformance baselines, ledger, schemas, selections, example capability document, licence record and demonstration definition, frozen profile data and VSC artefacts, implementer documentation; no reference runtime code',
   files: Object.fromEntries(files.map((f) => [f, { sha256: sha256(readFileSync(join(out, f))), bytes: statSync(join(out, f)).size }])),
 }

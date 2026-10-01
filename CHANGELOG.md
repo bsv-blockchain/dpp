@@ -12,6 +12,10 @@ The beta.4 packages were published on 1 October 2026. The [publication receipt](
 
 ## Repository history
 
+### 2026-10-01, Apache License 2.0
+
+- The repository and all four packages adopt Apache License 2.0 (`Apache-2.0`). Update the licence files, package metadata and lockfile, documentation, overlay contract, licence ledger and implementer bundle metadata. Third-party terms and notices are unchanged. Existing published npm archives retain their original licence files; this change applies to the current source tree.
+
 ### 2026-10-01, beta.4 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3` under `next` from `f9d8e98658c7cf406702d49194ec5a8480cbca73` using GitHub OIDC with provenance. The public-registry archives match the approved plan. The workflow's final clean install ran before the registry listed the VSC version; the same registry checks passed from a clean checkout a minute later. `latest` remains at beta.1.

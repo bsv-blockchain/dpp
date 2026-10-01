@@ -2,7 +2,7 @@
   "name": "dpp",
   "private": true,
   "description": "Digital Product Passport standard: specification, reference implementation, conformance fixtures",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "workspaces": [
     "packages/*"
   ],

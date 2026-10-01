@@ -169,3 +169,7 @@ The current lookup requires an exact issuer, subject, attestationId, digest or a
 The current format includes representation and mediaType and commits to the complete signed representation. The historical decoder retains the original `uora-anchor-v3` digest contract. A service name or format prefix is never silently aliased between these contracts. See [the rules](../../spec/rules.md) and [registry contract](../../contracts/registry.yaml) for credential verification and exact-byte retrieval.
 
 The HTTP host exposes documentation, submission, lookup, proof ingestion, the extension routes above and the two GASP routes. SHIP/SLAP advertising is not enabled by this host; peer synchronisation is, from the static peers `SYNC_PEERS` names and from nowhere else.
+
+## Licence
+
+[Apache License 2.0](LICENSE). Third-party dependencies and artefacts retain their own terms and notices.
