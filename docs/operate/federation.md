@@ -18,6 +18,19 @@ curl --fail http://localhost:8081/health
 curl --fail http://localhost:8081/capabilities
 ```
 
+## Which way records flow
+
+A node takes records only from the peers its own `SYNC_PEERS` names, and admits only what passes its topic managers and its publisher policy. After the steps above, the second instance holds what the first admitted, and the first holds nothing the second admitted.
+
+For two operators to exchange records in both directions:
+
+1. Each sets `SYNC_PEERS` to the other's base URL and restarts: a node reads its environment at start.
+2. Each publisher policy names the other's state-publisher keys, with an `activeFrom` that covers the states to exchange ([sign a publisher policy](#sign-a-publisher-policy)).
+3. Each reads the other's `GET /capabilities`: `synchronisation.discovery` is `static-peers` and `synchronisation.peers` lists its own URL.
+4. Each writes a state and looks it up on the other after the next round, a minute later by default (`SYNC_INTERVAL_MS`).
+
+Nodes do not find each other. GASP moves records between nodes that already know each other; SHIP/SLAP advertising would let them find each other, and the [specification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/services.md) asks public overlays for it in section 1, but the reference host does not advertise. A node's only peers are the ones its operator names. To exchange records with the hosted reference, its operator has to name your node and your publisher keys: [the running overlays](../deployment.md#overlays-running-now) lists who runs what and how to ask.
+
 ## Sign a publisher policy
 
 An index that admits states from more than its own publisher key needs a publisher policy chain: which keys may publish, from when, authorised by the operator. Write the first version unsigned:
@@ -51,7 +64,7 @@ A node claims `federated-operators@1` only when it synchronises with peers and t
 
 ## Observe the exchange
 
-Use the [same passport lookup](../reference/contracts.md#find-passport-records) against each operator by changing `INDEX_URL`. After the first has admitted records and synchronisation has run, inspect which records the second holds and verify them independently.
+Use the [same passport lookup](../reference/contracts.md#find-passport-records) against each operator by changing `INDEX_URL`. After the first has admitted records and synchronisation has run, inspect which records the second holds and verify them independently. If each names the other, check the reverse direction too: a record written to the second arrives on the first.
 
 Check an initially empty peer, a restarted peer catching up and a record the second policy refuses. Synchronisation makes candidates available; local admission still evaluates them. After each round the node checks what the peer offered against what arrived, holds its checkpoint where something did not so the next round offers it again, and leaves an output behind after five rounds, naming it in the log. Two containers controlled by one administrator demonstrate the mechanism, not separately administered operation.
 

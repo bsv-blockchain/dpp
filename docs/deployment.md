@@ -26,6 +26,19 @@ Three live passports to look up with the [passport lookup](reference/contracts.m
 
 Use these to test reading and verifying, not as payload examples. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. They still verify because the report does not check a payload against its profile; check payloads yourself, as the [profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile) shows, and start your own from `node examples/sample-payload.mjs`.
 
+## Overlays running now
+
+Every index below serves the same topics. Records move between two of them only in the direction a node pulls, from the peers its operator names ([federation](operate/federation.md#which-way-records-flow)). Each index's `/capabilities` answer is authoritative; the table records what they ran on 30 September 2026.
+
+| Index | Operator | Pulls from | Admits states from | Runs |
+|---|---|---|---|---|
+| `https://dpp-overlay.bsvb.net` | The programme (the hosted reference) | `https://dpp-overlay.eblabs.tech` | `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24` (the reference application), `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f` (EB Labs' application) | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
+| `https://dpp-overlay.eblabs.tech` | EB Labs | `https://dpp-overlay.bsvb.net` | The same two keys | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
+
+Both are run by one administration, so together they demonstrate the mechanism, not separately administered operation.
+
+To add an index to this list, or to have the hosted reference pull from yours, send the programme your index's base URL, your state-publisher keys with the time from which each should be admitted, and your operator's name and identity key. The reference operator names your URL in its `SYNC_PEERS` and your keys in a new version of its publisher policy; name the reference in your own `SYNC_PEERS` to receive its records.
+
 ## Place each component
 
 The reference deployment contains an index and MongoDB. A client or application service supplies wallet operations, submits records and asks the index for evidence. An attestation registry is a separate service. A header source supplies the block-header evidence used for inclusion checks.
