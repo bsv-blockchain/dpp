@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The selected release is `dpp-release-2026-10`, a candidate with beta.4 versions of core, overlay topics and profiles and beta.3 of the VSC package, on `@bsv/sdk` 2.8.10. Publication of this set is pending. The beta.3 packages of the preceding set were published to npm under `next` on 27 September 2026. See the [publication receipt](../reference/beta-3-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
+The selected release is `dpp-release-2026-10`. Its beta.4 versions of core, overlay topics and profiles and beta.3 of the VSC package, on `@bsv/sdk` 2.8.10, were published to npm under `next` on 1 October 2026. See the [publication receipt](../reference/beta-4-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
 
 Install the published packages directly, or use the source checkout below to build and inspect the release.
 
@@ -49,10 +49,10 @@ npm ci
 npm run build
 ```
 
-To inspect or repack the exact source the published packages were built from, check out their revision instead. All four, the beta.3 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and `@bsv/vsc@0.2.0-beta.2`, repack byte for byte from `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81`, the revision the [publication receipt](../reference/beta-3-publication.md) records. Its examples are older than the ones these docs describe, so run the quick start from the default branch.
+To inspect or repack the exact source the published packages were built from, check out their revision instead. All four, the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and `@bsv/vsc@0.2.0-beta.3`, repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, the revision the [publication receipt](../reference/beta-4-publication.md) records. Its examples are older than the ones these docs describe, so run the quick start from the default branch.
 
 ```sh
-git checkout --detach 921a1d36e6a1888ef0d1b08aaf2cf7df54525d81
+git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73
 npm ci
 npm run build
 ```
@@ -60,7 +60,7 @@ npm run build
 Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. A single file at a revision can be read without a checkout:
 
 ```sh
-git show 921a1d36e6a1888ef0d1b08aaf2cf7df54525d81:spec/record-model.md
+git show f9d8e98658c7cf406702d49194ec5a8480cbca73:spec/record-model.md
 ```
 
 Source links in these docs are pinned to the revision a page was written against, `e65498a` for most, which can differ from both; use the path following the commit hash in each link. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
@@ -74,7 +74,7 @@ node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
+The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
 
 To print the produced tarball paths, run:
 

@@ -1,0 +1,47 @@
+{
+  "releaseSet": "dpp-release-2026-10",
+  "releaseSetSha256": "7e8f12f0bc805b1adfcdaa15eb0c9127d0f329ee9f4b445c457574bf9867cf14",
+  "sourceRevision": "f9d8e98658c7cf406702d49194ec5a8480cbca73",
+  "sourceState": "committed",
+  "selection": "conformance/selections/dpp-release-2026-10.json",
+  "selectionSha256": "ce07532631f7c7eb26bd3fc9d43821feaa43e797f62f1b8fc4a99795b67b7133",
+  "changelogSha256": "17843757fd122ad46fbeff6e5ef7b621600deb8d95e01799de9355b2cde3d354",
+  "registry": "https://registry.npmjs.org/",
+  "access": "public",
+  "tag": "next",
+  "provenance": true,
+  "candidates": [
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.3.0-beta.4",
+      "filename": "bsv-dpp-core-0.3.0-beta.4.tgz",
+      "sha256": "7328f2f854d04a16ac08a08ac1e102a4d6bd769b7026018356c23732f0ff9859",
+      "integrity": "sha512-bSOxqRghWrxsrPY7cqLBGqZtqWkTzkOmldzKRiH5DZTltZxKp67qgqYEd74GVXTSW07Ta4/NjpDMZy7zdndm2g==",
+      "size": 114636
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.4.0-beta.4",
+      "filename": "bsv-dpp-overlay-topics-0.4.0-beta.4.tgz",
+      "sha256": "b35f6540690abb3483fd0f8bf5b5b14748176aaeeffac8ca0ec3f4af13e8942f",
+      "integrity": "sha512-LLi0C6moLyF5S4ADWsXiZPCm4cEzQyoMIgbieaajDmjCxnx3vXvvZdnbhMaDmi6AkcOW2rDYFreWMujjQd7rhQ==",
+      "size": 147569
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.4",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.4.tgz",
+      "sha256": "7476d3963578020b74c93f6d21f0644bc7d9dd44ffd3015f844f3a627c0059f4",
+      "integrity": "sha512-IY7OAi6u/tmajZH+GJ5yEdwg9Ew1CiFIziLXllM5blsLILkhqSWqRKnQcgXn11OuoK0CD0XKHH00jtVA0lYA3A==",
+      "size": 355665
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.2.0-beta.3",
+      "filename": "bsv-vsc-0.2.0-beta.3.tgz",
+      "sha256": "1e618c410c2a60b8877a8a47270ab4a3ee38d8ec2145b9d713407288db050b41",
+      "integrity": "sha512-O+6XH3RT0uFR0NNVToDvk8jtWFdrj+EzpajXcwLxSPii/qR/gpyLifo0bVWrX/3+n5KJZpgWM7kis/8jcyzkow==",
+      "size": 99568
+    }
+  ]
+}

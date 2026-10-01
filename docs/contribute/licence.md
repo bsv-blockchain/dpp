@@ -13,4 +13,4 @@ Read the applicable source terms before reuse. The absence of a Bitcoin SV (BSV)
 
 Use the [BSV Association contact page](https://bsvassociation.org/contact/) for a reuse question not answered by those sources.
 
-The source repository is public. The experimental beta.3 packages were published to npm on 27 September 2026. See [release status](../reference/release-sets.md).
+The source repository is public. The experimental beta.4 packages were published to npm on 1 October 2026. See [release status](../reference/release-sets.md).
