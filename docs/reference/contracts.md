@@ -62,24 +62,24 @@ The operation does not store or anchor the claim. Optional `tokenHistory` suppli
 
 | Source |
 |---|
-| [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/overlay.yaml) |
-| [contracts/registry.yaml](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/registry.yaml) |
-| [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/interoperability.yaml) |
-| [contracts/verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/verification-report.schema.json) |
-| [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/capabilities.schema.json) |
-| [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/publisher-policy.schema.json) |
-| [contracts/paginated-history.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/paginated-history.schema.json) |
-| [contracts/evidence-package.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/evidence-package.schema.json) |
-| [contracts/evidence-export.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/evidence-export.schema.json) |
-| [contracts/native-evidence-extension.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/native-evidence-extension.schema.json) |
-| [contracts/epcis-import.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/epcis-import.schema.json) |
-| [contracts/passport-source.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/passport-source.schema.json) |
-| [contracts/passport-projection.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/passport-projection.schema.json) |
-| [contracts/profile-evidence.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/profile-evidence.schema.json) |
-| [release/release-set.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/release/release-set.schema.json) |
-| [conformance/manifest.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.schema.json) |
-| [conformance/baseline.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/baseline.schema.json) |
-| [conformance/selection.schema.json](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/selection.schema.json) |
-| [packages/dpp-profiles/schemas](https://github.com/bsv-blockchain/dpp/tree/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/dpp-profiles/schemas) |
+| [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/overlay.yaml) |
+| [contracts/registry.yaml](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/registry.yaml) |
+| [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/interoperability.yaml) |
+| [contracts/verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/verification-report.schema.json) |
+| [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/capabilities.schema.json) |
+| [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/publisher-policy.schema.json) |
+| [contracts/paginated-history.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/paginated-history.schema.json) |
+| [contracts/evidence-package.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/evidence-package.schema.json) |
+| [contracts/evidence-export.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/evidence-export.schema.json) |
+| [contracts/native-evidence-extension.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/native-evidence-extension.schema.json) |
+| [contracts/epcis-import.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/epcis-import.schema.json) |
+| [contracts/passport-source.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/passport-source.schema.json) |
+| [contracts/passport-projection.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/passport-projection.schema.json) |
+| [contracts/profile-evidence.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/profile-evidence.schema.json) |
+| [release/release-set.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/release/release-set.schema.json) |
+| [conformance/manifest.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.schema.json) |
+| [conformance/baseline.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/baseline.schema.json) |
+| [conformance/selection.schema.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/selection.schema.json) |
+| [packages/dpp-profiles/schemas](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/schemas) |
 
-For implementation workflow, see [registry](../implement/roles/registry.md), [overlay](../implement/roles/overlay.md) and [interoperability](../interoperability/README.md). [Native validation](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/registry.yaml#L773-L823) defines the request-context option and supplied token history.
+For implementation workflow, see [registry](../implement/roles/registry.md), [overlay](../implement/roles/overlay.md) and [interoperability](../interoperability/README.md). [Native validation](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/registry.yaml#L773-L823) defines the request-context option and supplied token history.

@@ -63,15 +63,15 @@ Keep registry claims, restricted documents and signing access in the recovery pl
 
 | Recovering | Source |
 |---|---|
-| Index evidence within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/evidence-package.schema.json) |
-| Longer index history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/overlay.yaml), [part schema](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/evidence-export.schema.json) |
-| Registry-held claims and associated evidence | [Registry export contract](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/contracts/registry.yaml) |
-| Reference inspection and restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/test/evidenceExportParts.test.ts) |
+| Index evidence within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/evidence-package.schema.json) |
+| Longer index history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/overlay.yaml), [part schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/evidence-export.schema.json) |
+| Registry-held claims and associated evidence | [Registry export contract](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/registry.yaml) |
+| Reference inspection and restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/test/evidenceExportParts.test.ts) |
 
-Follow the [portable-evidence requirements](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/portable-evidence.md) and [exchange requirements](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/exchange.md) when validating and joining the archive. Re-import through the replacement service's normal intake, then compare the retained history and reports.
+Follow the [portable-evidence requirements](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/portable-evidence.md) and [exchange requirements](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/exchange.md) when validating and joining the archive. Re-import through the replacement service's normal intake, then compare the retained history and reports.
 
 An export cannot recover a missing private key or evidence the source did not retain. The registry package has no token history or restricted material. A provider replacement can therefore need both archives and separately retained custody access.
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) marks complete index export tested and durable independent publication gap. Its evidence is local and synthetic. [Migration](../migration.md) covers rollout and rollback.
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) marks complete index export tested and durable independent publication gap. Its evidence is local and synthetic. [Migration](../migration.md) covers rollout and rollback.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

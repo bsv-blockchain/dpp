@@ -63,7 +63,7 @@ Use Node 22 and npm 11.19.0 when reproducing archives; different compression imp
 git show 921a1d36e6a1888ef0d1b08aaf2cf7df54525d81:spec/record-model.md
 ```
 
-Source links in these docs are pinned to the revision a page was written against, `a29f713` for most, which can differ from both; use the path following the commit hash in each link. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
+Source links in these docs are pinned to the revision a page was written against, `e65498a` for most, which can differ from both; use the path following the commit hash in each link. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
 
 ## Pack and check
 

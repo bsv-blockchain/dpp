@@ -1,6 +1,6 @@
 # How the standard changes
 
-Use [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) for change acceptance, version declarations and dispute resolution. The [conformance source](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) defines how evidence supports a claim.
+Use [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/GOVERNANCE.md) for change acceptance, version declarations and dispute resolution. The [conformance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) defines how evidence supports a claim.
 
 ## Prepare a reviewable change
 

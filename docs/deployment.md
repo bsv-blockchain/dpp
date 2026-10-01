@@ -9,7 +9,7 @@ The programme runs one instance of each service. Use them to look up and verify 
 | Host | Serves | Runs |
 |---|---|---|
 | `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.2 packages |
-| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp` and `tm_attestation`, their lookups, `/history`, the bounded and complete exports, proof ingestion and the two synchronisation routes | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` under publisher policy version 1, pulling from `https://dpp-overlay.eblabs.tech` |
+| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp` and `tm_attestation`, their lookups, `/history`, the bounded and complete exports, proof ingestion and the two synchronisation routes | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` under publisher policy version 1, pulling from one peer run under the same administration |
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 
 On the index, `POST /submit` and `POST /retract` need the operator's submit token, `POST /arc-ingest` needs the broadcaster's callback token and `GET /evidence-export` needs the export token. The index signs its evidence packages and export parts with `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass it as `expectedSigner` when you check one. Lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open. On the registry, storing a claim and changing a status list need its write token; validation and reads are open.
@@ -30,14 +30,13 @@ Use these to test reading and verifying, not as payload examples. The first, a v
 
 ## Overlays running now
 
-Every index below serves the same topics. Records move between two of them only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)). Each index's `/capabilities` answer is authoritative; the table records what they ran on 30 September 2026.
+The index below serves `tm_dpp` and `tm_attestation`. Records move between two indexes only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)). Its `/capabilities` answer is authoritative; the table records what it ran on 30 September 2026.
 
 | Index | Operator | Pulls from | Admits states from | Runs |
 |---|---|---|---|---|
-| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | `https://dpp-overlay.eblabs.tech` | `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application; `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, DPP by EB Labs | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
-| `https://dpp-overlay.eblabs.tech` | EB Labs | `https://dpp-overlay.bsvb.net` | The same two keys | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
+| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | One peer run under the same administration | `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application; `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, a second application under the same administration | `@bsv/dpp-overlay-topics` 0.4.0-beta.3, `single-operator@1` |
 
-Both are run by one administration, so together they demonstrate the mechanism, not separately administered operation.
+Its one peer is run by the same administration, so the exchange between them demonstrates the mechanism, not separately administered operation.
 
 ## Place each component
 
@@ -57,14 +56,14 @@ The MongoDB volume is service storage; it is not itself an independently adminis
 
 | Configure | Source |
 |---|---|
-| Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/deploy/compose.yml) |
-| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/packages/overlay-topics/src/index.ts) |
+| Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) |
+| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) |
 | Wallet, broadcast and proof retrieval | [Integration guide](operate/wallet-broadcast-proofs.md) |
 | Another operator | [Federation](operate/federation.md) |
 | Retention and replacement provider | [Recovery](operate/export-import-recovery.md) |
 
 Check health and capabilities after starting the service, then exercise submission and retrieval under the selected contract. Keep the observed results separate from the deployment's configuration.
 
-Header-storage size, mining delay and synchronisation latency are unmeasured here. The [ledger](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json) records local tests and the remaining deployment evidence gaps. [Durable publication](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/manifest.json#L3769) has ledger status `gap`.
+Header-storage size, mining delay and synchronisation latency are unmeasured here. The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) records local tests and the remaining deployment evidence gaps. [Durable publication](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json#L3794) has ledger status `gap`.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).
