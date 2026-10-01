@@ -7,7 +7,7 @@ There are two ways to build with the standard.
 | Build an application or service, using the published packages | Use the packages. Most builders start here. | [Quick start](../quick-start.md), then [build an application](../packages/build-an-application.md) |
 | Show that the rules can be implemented without our code | Write your own implementation from the specifications and test vectors | [Implementer start](../implement/README.md) |
 
-Using the packages is the fast route: the packages already implement the rules, and your work is the wallet, the storage and the screens. Writing your own implementation is how the standard proves it does not depend on one codebase; your code must agree with the test vectors on every case, and a user interface built on top of the packages does not count as a separate implementation.
+Using the packages is the fast route: the packages already implement the rules, and your work is the wallet, the storage and the screens. [What a passport application offers](../packages/what-an-application-offers.md) lists those screens, who uses each and the package calls beneath it. Writing your own implementation is how the standard proves it does not depend on one codebase; your code must agree with the test vectors on every case, and a user interface built on top of the packages does not count as a separate implementation.
 
 The [conformance specification](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/GOVERNANCE.md) say what an independence claim needs, and [reporting](../implement/reporting.md) explains how to present the evidence.
 
