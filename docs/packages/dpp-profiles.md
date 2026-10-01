@@ -49,7 +49,7 @@ Each profile publishes two JSON Schemas (2020-12), generated from its manifest:
 | `readPublicPayloadSchema(profile)` | The same identifier | The schema for a state's `payload_public`: every field whose tier is `public` |
 | `readRestrictedPayloadSchema(profile)` | The same identifier | The schema for the other tiers, `owner`, `legitimate` and `authority`, together in one object |
 
-Pass these readers only an identifier from `PROFILE_IDS`. In 0.3.0-beta.3 they build a file path from the identifier without checking it, so check the `profile` a record declares against the list before you pass it.
+Pass these readers only an identifier from `PROFILE_IDS`: check the `profile` a record declares against the list before you pass it.
 
 Validate with a JSON Schema 2020-12 validator that asserts formats. Ajv's 2020 build with `ajv-formats` does, with `strict: false` because the schemas carry annotations Ajv does not know. The package does not install them for you:
 

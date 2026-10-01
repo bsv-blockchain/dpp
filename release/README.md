@@ -59,12 +59,12 @@ node scripts/publish-candidates.mjs --verify-registry
 node scripts/consumer-check.mjs --registry
 ```
 
-The second command installs exact versions from public npm in a fresh directory with a fresh cache and checks lockfile integrity, runtime entry points, declaration resolution, carried artefacts and the offline lifecycle. It does not substitute local tarballs when a registry version is missing. The first trial consumer, `bsv-blockchain-demos/dpp-app-2`, additionally runs its own `npm run setup:registry`, `npm test` and `npm start` against those same versions and digests.
+The second command installs exact versions from public npm in a fresh directory with a fresh cache and checks lockfile integrity, runtime entry points, declaration resolution, carried artefacts and the offline lifecycle. It does not substitute local tarballs when a registry version is missing. A trial consumer can additionally run its own setup, tests and start against those same versions and digests.
 
 A partial publication is not announced as a complete release. Qualification still withholds European conformity, battery product qualification, federated operation and version 1.0 readiness. Package publication changes none of those claims.
 
 ## What a consumer does with it
 
-The example consumer with sector workflows is the application ([bsv-blockchain-demos/dpp-app](https://github.com/bsv-blockchain-demos/dpp-app)), which consumes exact npm package versions and separately mirrors profile data into its application documentation; the registry ([bsv-blockchain-demos/uora-bsv](https://github.com/bsv-blockchain-demos/uora-bsv)) consumes the four as vendored tarballs packed from a named revision and will do the same. Both name the set they are aligned to and the revision it was packed from. The generic example with no brand, wallet or account prerequisite is `examples/lifecycle-v2.mjs` in this repository; the recommended journey through the set is in [`../docs/quick-start.md`](../docs/quick-start.md), and the support declaration of every entry point is in [`../docs/packages/support-table.md`](../docs/packages/support-table.md).
+The hosted reference application consumes exact npm package versions, and the hosted registry consumes the packages as vendored tarballs packed from a named revision; each names the set it is aligned to and the revision it was packed from. The generic example with no brand, wallet or account prerequisite is `examples/lifecycle-v2.mjs` in this repository; the recommended journey through the set is in [`../docs/quick-start.md`](../docs/quick-start.md), and the support declaration of every entry point is in [`../docs/packages/support-table.md`](../docs/packages/support-table.md).
 
 For a step-by-step walkthrough of this profile release, see [publishing a profile package update](../docs/reference/publishing-profile-updates.md).

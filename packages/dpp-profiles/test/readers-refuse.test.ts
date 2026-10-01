@@ -14,7 +14,7 @@ import {
 } from '../src/index.js'
 
 // A reader that labels a record by the profile the record declares passes a
-// string it did not choose. Each of these once resolved it as a path.
+// string it did not choose; every reader checks it against its own list.
 const readers: Array<[string, (profile: string) => unknown, readonly string[]]> = [
   ['readManifest', (p) => readManifest(p as never), PROFILE_IDS],
   ['readPublicPayloadSchema', (p) => readPublicPayloadSchema(p as never), PROFILE_IDS],
