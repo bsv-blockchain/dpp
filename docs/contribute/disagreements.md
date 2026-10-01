@@ -8,7 +8,7 @@ Include the command needed to reproduce the result and the smallest input that s
 
 State what the result affects: decoding, signatures, subject binding, a transition, a service response or an evidence claim. Distinguish an implementation failure from an ambiguity in the source. An unresolved ambiguity stays open even if one implementation currently accepts the input.
 
-Use the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues) for a non-sensitive technical report. Repository access may be required. The [BSV Association contact page](https://bsvassociation.org/contact/) provides technical support links and a general contact form if repository access is unavailable.
+Use the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues) for a non-sensitive technical report. A GitHub account is enough: the repository is public and its issues are open. The [BSV Association contact page](https://bsvassociation.org/contact/) provides technical support links and a general contact form if repository access is unavailable.
 
 For a security problem, or anything you are unsure about, report privately and never in an issue. The [security policy](https://github.com/bsv-blockchain/dpp/security/policy) names the two private routes, a GitHub security advisory and the security email address, and says what to include.
 

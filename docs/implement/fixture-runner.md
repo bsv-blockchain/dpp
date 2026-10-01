@@ -6,14 +6,16 @@ A fixture records inputs and expected results. Load the selected files through a
 
 A signing preimage is the exact byte sequence supplied to the signing operation. Reproducing it catches errors that decoding fields alone cannot reveal.
 
-Start with the JSON fixtures at the repository root. The harness reads an input, calls the implementation under test and compares its output with the fixture expectation. It does not call the reference verifier to decide what the answer should be.
+Start with the JSON fixtures in `fixtures/`. The harness reads an input, calls the implementation under test and compares its output with the fixture expectation. It does not call the reference verifier to decide what the answer should be.
 
 | Fixture | First comparison |
 |---|---|
-| `record-v2.json` | Decode the locking script, reproduce the actor and publisher preimages, and verify the signatures. |
-| `chain-v2.json` | Read `states[].rawTx`, construct the history and evaluate each refusal with the prefix and policy it names. |
-| `attestation-anchor-v1.json` | Compare the signed claim, exact secured bytes, digest and anchor checks. |
-| `evidence-v2.json` | Materialise each case's evidence, subject and policy, inject the fixture's `checkedAt`, then compare the report. |
+| `fixtures/record-v2.json` | Decode the locking script, reproduce the actor and publisher preimages, and verify the signatures. |
+| `fixtures/chain-v2.json` | Read `states[].rawTx`, construct the history and evaluate each refusal with the prefix and policy it names. |
+| `fixtures/attestation-anchor-v1.json` | Compare the signed claim, exact secured bytes, digest and anchor checks. |
+| `fixtures/evidence-v2.json` | Materialise each case's evidence, subject and policy, inject the fixture's `checkedAt`, then compare the report. |
+
+For a worked example, see the [independent Python reader](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/independent/python/README.md): a standard-library reader written from the specification that reads these fixtures and prints one sentence per check. Run it with `npm run conformance:independent`. Its README says what it covers and why it is not the organisational independence version 1.0 needs.
 
 For chain refusals, `appendAfter` identifies the last retained valid state before the refusal transaction. Preserve each case's policy options; some inputs are accepted under a different profile or authority selection. Include those control cases so the harness does not merely reject everything.
 

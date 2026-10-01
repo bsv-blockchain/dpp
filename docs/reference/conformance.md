@@ -14,6 +14,13 @@ For example, a selected release gate can pass while independent operation remain
 
 Use the commands below from the [prepared checkout](../quick-start.md#get-the-code). Each exits non-zero when its checks fail and prints the affected findings. Fix or explain those findings before reporting the selected claim. Keep the command, source revision and output with the [implementation evidence](../implement/reporting.md).
 
+From the repository root:
+
+```sh
+node conformance/check.mjs
+node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-5.json
+```
+
 ## Source material
 
 | Review task | Source |
@@ -23,11 +30,5 @@ Use the commands below from the [prepared checkout](../quick-start.md#get-the-co
 | Check material consistency | [Diagnostic](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/check.mjs) |
 | Evaluate a selection | [Qualification gate](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/conformance/qualify.mjs) |
 
-From the repository root:
-
-```sh
-node conformance/check.mjs
-node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-5.json
-```
 
 A passing diagnostic and a passing selection answer different questions. Read each command's findings and the selection's withheld claims. Use [evidence reporting](../implement/reporting.md) for a new implementation and [status](../start/status.md) for the delivery overview.

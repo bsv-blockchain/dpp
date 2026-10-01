@@ -384,9 +384,14 @@ function main() {
         m.restrictedSchemaDigest = restrictedDigest
         writeFileSync(join(root, 'manifests', `${m.profile}.json`), stable(m))
         console.log(`refroze ${m.profile}: schema digests recorded in its manifest.`)
+      } else if (isNew(m.profile)) {
+        // A new manifest carries no schema digests: its author cannot know
+        // them before the generator runs. That is not a changed digest.
+        problems += 1
+        console.log(`DEFECT: ${m.profile} is a new manifest that frozen.json does not list yet; review it and run node scripts/build.mjs --freeze-new, which records its schema digests and refuses to move any existing digest.`)
       } else {
         problems += 1
-        console.log(`DEFECT: ${m.profile} records schema digest ${m.schemaDigest.slice(0, 12)}… but the generator produces ${publicDigest.slice(0, 12)}…; a frozen profile changes only by a new version, or by an explicit --refreeze that is reviewed.`)
+        console.log(`DEFECT: ${m.profile} records schema digest ${(m.schemaDigest ?? 'none').slice(0, 12)}… but the generator produces ${publicDigest.slice(0, 12)}…; a frozen profile changes only by a new version, or by an explicit --refreeze that is reviewed.`)
       }
     }
   }

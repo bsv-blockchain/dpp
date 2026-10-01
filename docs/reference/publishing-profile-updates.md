@@ -2,6 +2,8 @@
 
 Publishing makes reviewed package contents available from npm. It does not change a consuming application's installed dependencies, forms, backend rules or selected profile versions. The [application update guide](../profiles/updating-applications.md) covers adoption after publication.
 
+Steps 2 to 5 need maintainer rights on the repository and on the npm packages. An outside contributor runs step 1 and then opens a pull request, as [authoring a profile](../profiles/authoring.md) describes.
+
 ## The beta.2 release
 
 The packages selected by `dpp-release-2026-09-4`, now superseded, were published on 18 September 2026:

@@ -33,15 +33,16 @@ These tags record the outcome of this publication, not a promise that tags never
 
 The workflow passed build, type checks, tests, candidate consumer checks, selected-claim qualification and the local operator-image smoke test. After the three uploads became available, it installed the exact public npm versions into a clean consumer and checked archive integrity, runtime entry points, packaged schemas and artefacts, and strict TypeScript declaration resolution with `skipLibCheck` disabled. Each upload was verified before the next began, and no resumption was needed.
 
-To reproduce verification, check out the recorded source revision with the same toolchain, then run:
+To reproduce verification, check out the recorded source revision with the same toolchain, then run the commands below. Keep the checkout clean: any file written inside it, a log included, makes the candidates record `sourceState: working-tree` and changes the plan's digest.
 
 ```sh
+npm ci
 node scripts/release-candidates.mjs release/dpp-release-2026-09-5.json
 node scripts/publish-candidates.mjs --verify-registry
 node scripts/consumer-check.mjs --registry
 ```
 
-Compare the generated `release/publication-plan.json` with the archived plan. These commands check existing registry packages and do not publish or change tags.
+Compare the `release/publication-plan.json` that the second command writes with the [archived plan](beta-3-publication-plan.json) on the default branch; it is not in the source revision's tree. These commands check existing registry packages and do not publish or change tags.
 
 ## What publication does and does not change
 

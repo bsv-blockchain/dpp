@@ -84,6 +84,8 @@ The functions an application calls, what each takes and what it returns. The [wa
 | Function | Takes | Returns |
 |---|---|---|
 | `didKeyFromIdentityKey(identityKey)` | A compressed public key | Its `did:key` |
+| `identityKeyFromDidKey(did)` | A `did:key` | The compressed public key it names |
+| `signingPublicKeyFor(state)`, `signingDidFor(state)` | A state's `actorIdentityKey` and `actorKeyId` | The derived key that verifies the actor signature, and its `did:key`; it differs from the actor's identity key |
 | `signLifecycleClaim(claim, signer)` | An unsigned native claim and the issuer's signer | The signed claim |
 | `verifyLifecycleClaim(claim, { passportId, recordId })` | A signed claim and what it should be about | Its signature and subject findings |
 | `lifecycleClaimDigest(claim)` | A signed claim | The digest an anchor commits to |
@@ -149,25 +151,41 @@ const lineage = async () => {
   return chainFromBeef(merged, passportId)
 }
 
-// Claims: the registry lists them by subject, and each proof carries the claim and its exact bytes.
-const { items } = await (await fetch(`${registry}/attestations?subject=${encodeURIComponent(passportId)}`)).json()
+// Claims: the registry lists them by subject, a page at a time, and each proof carries the claim and its exact bytes.
+const items = []
+for (let cursor; ; ) {
+  const page = await (await fetch(`${registry}/attestations?subject=${encodeURIComponent(passportId)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`)).json()
+  items.push(...page.items)
+  if (page.nextCursor == null) break
+  cursor = page.nextCursor
+}
 const proofs = await Promise.all(items.map(async ({ attestationId }) => (await fetch(`${registry}/attestations/${encodeURIComponent(attestationId)}/proof`)).json()))
 
-// Anchors: the index finds them by subject; each is given the bytes of the claim it anchors.
-const anchors = (await lookup('ls_attestation', { subject: passportId })).map(({ beef, outputIndex }) => {
-  const tx = Beef.fromBinary(beef).txs.at(-1).tx
-  const txid = tx.id('hex')
-  const claim = proofs.find((proof) => proof.anchor?.recordId === txid)
-  return { lockingScript: tx.outputs[outputIndex].lockingScript, txid, outputIndex, securedBytes: claim?.securedBytes }
-})
+// Anchors: the index finds them by subject, continuing after the last outpoint until a page is empty;
+// each anchor is given the bytes of the claim it anchors.
+const anchors = []
+for (let after; ; ) {
+  const page = await lookup('ls_attestation', { subject: passportId, ...(after ? { after } : {}) })
+  if (page.length === 0) break
+  for (const { beef, outputIndex } of page) {
+    const tx = Beef.fromBinary(beef).txs.at(-1).tx
+    const txid = tx.id('hex')
+    const claim = proofs.find((proof) => proof.anchor?.recordId === txid)
+    anchors.push({ lockingScript: tx.outputs[outputIndex].lockingScript, txid, outputIndex, securedBytes: claim?.securedBytes })
+    after = { txid, outputIndex }
+  }
+}
 
 // The latest state: ask the index again whether it holds a state after the tip checked here.
 const indexObserver = {
   id: index,
   kind: 'overlay-lookup',
   observe: async ({ tip }) => {
-    const newest = (await lineage()).at(-1)
-    return newest.id('hex') === tip?.txid ? { result: 'unspent' } : { result: 'spent', spendingTxid: newest.id('hex') }
+    const states = await lineage()
+    const at = states.findIndex((tx) => tx.id('hex') === tip?.txid)
+    if (at === -1) return { result: 'not-found' }
+    const next = states[at + 1]
+    return next == null ? { result: 'unspent' } : { result: 'spent', spendingTxid: next.id('hex') }
   },
 }
 

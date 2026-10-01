@@ -8,7 +8,7 @@ For each running component, record its package or application revision, service 
 
 For example, a service may need to read old version 1 records while a writer begins version 2 records. Updating the reader first allows it to inspect both existing and newly created evidence. Changing a profile selection is a separate migration because the payload is interpreted under the declared profile version.
 
-Use the fixture reader and a copy of retained deployment data to compare results before and after the change. An unchanged transaction should not silently acquire a different subject or a stronger assurance claim because the software changed.
+Run the reader, `node examples/verify-passport.mjs <passportId> <indexUrl>`, against a copy of the retained data restored into a scratch index ([export and recovery](operate/export-import-recovery.md)) with the old packages and then the new, and compare the results. An unchanged transaction should not silently acquire a different subject or a stronger assurance claim because the software changed.
 
 ## Rollout
 
@@ -27,6 +27,6 @@ Keep the pre-change deployment and a recoverable data copy. A software rollback 
 
 Use [export and recovery](operate/export-import-recovery.md) to rehearse provider replacement. Industry-profile successors remain separate selections; [battery](profiles/battery.md) and [textile](profiles/textile.md) link their current and draft manifests.
 
-The third release set changes the HTTP/export interface while retaining the on-chain record formats. [Release history](reference/release-sets.md) links the exact declarations.
+The third release set changes the HTTP/export interface while retaining the on-chain record formats. The fifth, the beta.3 packages, keeps every wire format and changes what an operator checks: the first version of a publisher policy now governs the history before its own issue, synchronisation holds its checkpoint where an offered output did not arrive and leaves an output behind after five rounds, and `PUBLISHER_POLICY_JSON` carries a policy inline ([changelog](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/CHANGELOG.md), 27 September 2026). [Release history](reference/release-sets.md) links the exact declarations.
 
 Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](learn/identity-and-authority.md).

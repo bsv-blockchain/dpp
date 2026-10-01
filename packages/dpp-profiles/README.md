@@ -56,6 +56,7 @@ For the version 4 drafts, run `reviewProfileData(profile, payload)` after genera
 ```
 npm run build      # tsc, then the generator: regenerates generated/ and refuses drift from frozen.json
 npm run generate   # the generator alone
+npm run freeze-new # records a new manifest's digests and generated files; refuses to move any existing digest
 npm run refreeze   # writes the current digests into the manifests and frozen.json; review that diff
 npm test           # schema validity, uniqueness, freezing, deterministic generation, payload validation, identifiers, lifecycle mapping
 ```
