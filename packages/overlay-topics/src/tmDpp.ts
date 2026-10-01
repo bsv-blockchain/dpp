@@ -428,8 +428,20 @@ export class DppTopicManager implements TopicManager {
    * SDK asks this only for a proven state it could not admit alone, and drops
    * any input this index already holds, so the answer is the predecessor and
    * nothing else. Anything that does not decode as one DPP state needs nothing.
+   *
+   * `outputIndex` is the output the peer's graph reached. A writer may fund a
+   * new passport from another lineage's change, and a peer assembling that
+   * passport reaches the funding state through its change output, where only
+   * the transaction itself is needed: asking for its predecessor sends the
+   * peer after a lineage the serving node may not hold, and the graph is
+   * dropped. `@bsv/overlay` up to 2.6.2 does not pass the index, and without
+   * it the answer is the predecessor, as before.
    */
-  async identifyNeededInputs(beef: number[]): Promise<Array<{ txid: string; outputIndex: number }>> {
+  async identifyNeededInputs(
+    beef: number[],
+    _offChainValues?: number[],
+    outputIndex?: number
+  ): Promise<Array<{ txid: string; outputIndex: number }>> {
     let tx: Transaction
     try {
       tx = Transaction.fromBEEF(beef)
@@ -438,6 +450,7 @@ export class DppTopicManager implements TopicManager {
     }
     const refs = findDppOutputs(tx)
     if (refs.length !== 1 || refs[0].state.previousTxid === '') return []
+    if (outputIndex != null && outputIndex !== refs[0].outputIndex) return []
     const prevTxid = refs[0].state.previousTxid
     return tx.inputs
       .filter((input) => (input.sourceTransaction?.id('hex') ?? input.sourceTXID) === prevTxid)
