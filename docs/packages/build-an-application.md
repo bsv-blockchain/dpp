@@ -134,6 +134,19 @@ The second argument is the originator, the hostname your wallet knows your appli
 
 Because the actor's identity key is not the controller key, every state after the genesis proves control by carrying `controlLinkage`, the scalar that links the two ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model-v2.md) section 6). The wallet reveals it to itself and the application decrypts it once; it is public on chain from then on. A state without it is refused.
 
+**Owner tier.** Your profile's restricted fields, every tier but `public`, never go on chain. Check them against the profile's restricted schema, as [check a payload against its profile](dpp-profiles.md#check-a-payload-against-its-profile) shows with `readRestrictedPayloadSchema`, encrypt them with the wallet under protocol `[2, 'dpp owner data v1']`, key identifier the passport identifier and counterparty `self`, and keep the ciphertext off chain; only its hash goes into the state ([record model](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/record-model.md) section 7):
+
+```js
+const { ciphertext: ownerTierCiphertext } = await wallet.encrypt({
+  plaintext: Array.from(new TextEncoder().encode(JSON.stringify(restrictedFields))),
+  protocolID: [2, 'dpp owner data v1'],
+  keyID: passportId,
+  counterparty: 'self',
+})
+```
+
+To read the tier back, check the ciphertext with `verifyOwnerBlob(ciphertext, state.payloadOwnerHash)` from `@bsv/dpp-core` before calling `wallet.decrypt` with the same protocol, key identifier and counterparty. On a `TRANSFER`, encrypt the tier again with the recipient's identity key as counterparty and put that ciphertext's hash in the `TRANSFER`; the recipient decrypts it with your identity key as counterparty. A passport with no restricted fields leaves `payloadOwnerHash` empty. How the `owner`, `legitimate` and `authority` tiers are each disclosed is not settled yet: one ciphertext reaches whoever holds its key.
+
 **Issue.** Build the genesis state and ask the wallet for an unsent transaction holding it:
 
 ```js
@@ -153,7 +166,7 @@ const created = await wallet.createAction({
 })
 ```
 
-`payloadPublic` holds the public fields of your industry profile. Start from `node examples/sample-payload.mjs general@2`, or the profile you use, and check your payload with `--check` before you write ([industry profiles](../profiles/README.md)). The owner tier is encrypted and stored off chain, and only its hash goes into the state. Then check, announce, send and prove `created.tx` as `examples/write-passport.mjs` does.
+`payloadPublic` holds the public fields of your industry profile. Start from `node examples/sample-payload.mjs general@2`, or the profile you use, and check your payload with `--check` before you write ([industry profiles](../profiles/README.md)). `payloadOwnerHash` commits to the owner-tier ciphertext from the step above. Then check, announce, send and prove `created.tx` as `examples/write-passport.mjs` does.
 
 **Every later state spends the tip.** Give the wallet the tip's BEEF and outpoint, then unlock the tip with the PushDrop unlock for protocol `[1, 'dpp owner v1']`, key identifier the passport identifier and counterparty `self` ([custody](https://github.com/bsv-blockchain/dpp/blob/a29f713045d501c595fec05ce03e5b5d3798ba62/spec/custody.md) section 3). The unlock is 73 bytes:
 
