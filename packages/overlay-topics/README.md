@@ -7,7 +7,7 @@
 This is a pre-1.0 candidate. Install the exact published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.3
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.4
 ```
 
 This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.

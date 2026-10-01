@@ -1,6 +1,6 @@
 # Beta.3 publication receipt
 
-Three packages selected by `dpp-release-2026-09-5` were published to the public npm registry on **27 September 2026**, using GitHub OIDC trusted publishing with provenance. The fourth, `@bsv/vsc` 0.2.0-beta.2, is unchanged: its archive repacked byte for byte and the publisher verified the existing registry version instead of uploading it. Every downloaded archive matched the approved bytes, and the final public-registry consumer check passed.
+Three packages selected by `dpp-release-2026-09-5` were published to the public npm registry on **27 September 2026**, using GitHub OIDC trusted publishing with provenance. The fourth, `@bsv/vsc@0.2.0-beta.2`, is unchanged: its archive repacked byte for byte and the publisher verified the existing registry version instead of uploading it. Every downloaded archive matched the approved bytes, and the final public-registry consumer check passed. The set has since been superseded by `dpp-release-2026-10`; this receipt records the beta.3 publication as it happened.
 
 ## Exact source and approval
 

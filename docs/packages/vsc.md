@@ -1,11 +1,11 @@
 # @bsv/vsc
 
-**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.2 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.3 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 Install the exact published version:
 
 ```sh
-npm install --save-exact @bsv/vsc@0.2.0-beta.2
+npm install --save-exact @bsv/vsc@0.2.0-beta.3
 ```
 
 Keep the application lockfile and review compatibility before upgrading.
@@ -35,7 +35,7 @@ The package does not fund a wallet, transfer token control or find records throu
 
 Use the [package guide](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/vsc/README.md) for issuance, verification and adapter examples. [External credentials](../interoperability/external-credentials.md) and [source exchange](../interoperability/epcis.md) explain where each entry point fits.
 
-The [release selection](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/selections/dpp-release-2026-09-5.json) withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
+The [release selection](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/selections/dpp-release-2026-09-5.json) of the published beta.3 set, now superseded by a candidate that selects the same claims, withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
 
 Companion profile submission: open. Whether to propose the anchoring profile as a formal companion document is undecided; it does not affect implementations.
 

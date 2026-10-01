@@ -33,7 +33,7 @@ The output includes a token transfer with insufficient evidence for physical cus
 
 ## Version and source material
 
-`battery@2` is the current version. `@bsv/dpp-profiles` 0.3.0-beta.3 also carries two drafts, `battery@3` and `battery@4`, which an application uses only when it names one; [evaluate the version 4 drafts](version-4-drafts.md) explains the corrections, migration and remaining assessment work. Each manifest's `status` field says which version is which, `current`, `draft` or `superseded`, and is the answer to trust in code: `readManifestAny('battery@4').status` is `draft`. The pinned sources below describe the earlier released definitions.
+`battery@2` is the current version. `@bsv/dpp-profiles` 0.3.0-beta.4 also carries two drafts, `battery@3` and `battery@4`, which an application uses only when it names one; [evaluate the version 4 drafts](version-4-drafts.md) explains the corrections, migration and remaining assessment work. Each manifest's `status` field says which version is which, `current`, `draft` or `superseded`, and is the answer to trust in code: `readManifestAny('battery@4').status` is `draft`. The pinned sources below describe the earlier released definitions.
 
 | Material | Source |
 |---|---|

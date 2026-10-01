@@ -21,7 +21,7 @@ Write record version 2 under `managed-custody@1`, the custody profile the curren
 - The packages at exact versions:
 
   ```sh
-  npm install --save-exact @bsv/dpp-core@0.3.0-beta.3 @bsv/dpp-profiles@0.3.0-beta.3 @bsv/sdk@2.8.10
+  npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/sdk@2.8.10
   ```
 
 - A BRC-100 wallet: a wallet application on your machine while you develop, or `@bsv/wallet-toolbox` in a hosted service. [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) names the versions that work with this release.

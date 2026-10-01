@@ -18,7 +18,7 @@ From the repository root:
 
 ```sh
 node conformance/check.mjs
-node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-5.json
+node conformance/qualify.mjs conformance/selections/dpp-release-2026-10.json
 ```
 
 ## Source material
@@ -26,7 +26,7 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-09-5.json
 | Review task | Source |
 |---|---|
 | Find a role's selected requirements | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/baseline-native-2.json) |
-| Inspect claims required or withheld by the release | [Release selection](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/selections/dpp-release-2026-09-5.json) |
+| Inspect claims required or withheld by the release | The candidate selects the same claims as the [selection of the published beta.3 set, now superseded](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/selections/dpp-release-2026-09-5.json) |
 | Check material consistency | [Diagnostic](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/check.mjs) |
 | Evaluate a selection | [Qualification gate](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/qualify.mjs) |
 

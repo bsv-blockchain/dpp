@@ -33,7 +33,7 @@ The field list is the start of payload integration. Use its generated schema for
 
 ## Version and source material
 
-`textile@2` is the current version and `textile@1` is superseded but still readable. `@bsv/dpp-profiles` 0.3.0-beta.3 also carries two drafts, `textile@3` and `textile@4`; the version 4 draft corrects source-status mappings and component composition, and [the version 4 draft guide](version-4-drafts.md) covers migration and assessment limits. Each manifest's `status` field says which version is which, `current`, `draft` or `superseded`, and is the answer to trust in code: `readManifestAny('textile@4').status` is `draft`. The pinned definitions below remain available unchanged.
+`textile@2` is the current version and `textile@1` is superseded but still readable. `@bsv/dpp-profiles` 0.3.0-beta.4 also carries two drafts, `textile@3` and `textile@4`; the version 4 draft corrects source-status mappings and component composition, and [the version 4 draft guide](version-4-drafts.md) covers migration and assessment limits. Each manifest's `status` field says which version is which, `current`, `draft` or `superseded`, and is the answer to trust in code: `readManifestAny('textile@4').status` is `draft`. The pinned definitions below remain available unchanged.
 
 | Material | Source |
 |---|---|

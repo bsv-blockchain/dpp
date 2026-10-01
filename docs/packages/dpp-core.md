@@ -1,11 +1,11 @@
 # @bsv/dpp-core
 
-**Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.3 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.4 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 Install the exact published version:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.3
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.4
 ```
 
 Keep the application lockfile and review compatibility before upgrading.
