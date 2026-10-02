@@ -55,7 +55,7 @@ The manifest marks six more public fields `required` than the schema requires. F
 
 ## Inspect the fields
 
-Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.4` installed, or in the root of a checkout after `npm run build`:
+Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.5` installed, or in the root of a checkout after `npm run build`:
 
 ```sh
 node --input-type=module <<'JS'

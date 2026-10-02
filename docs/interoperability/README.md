@@ -24,7 +24,7 @@ Keep the original source and the mapping result, so another participant can see 
 
 ## Not available in this release
 
-The United Nations Transparency Protocol (UNTP) exchange profile is proposed but not part of this release: the [release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json) lists its claim, `untp-0.7.0-pilot`, as withheld with the reason, and its [profile source](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/exchange) records the proposal.
+The United Nations Transparency Protocol (UNTP) exchange profile is proposed but not part of this release: the [release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json) of the published beta.4 set, now superseded by a candidate that selects the same claims, lists its claim, `untp-0.7.0-pilot`, as withheld with the reason, and its [profile source](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/exchange) records the proposal.
 
 European Standard (EN) 18223 serialisation and Union DPP Registry integration remain gaps in the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json). An operator-supplied registration reference is not evidence that registration occurred.
 

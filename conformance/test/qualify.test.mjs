@@ -272,7 +272,7 @@ test('over the real ledger, the qualification and the checker give every claim t
   }
 
   // The candidate set's selection is qualified; the European selection is refused on the same verdicts.
-  const release = run([qualify, 'conformance/selections/dpp-release-2026-10.json'])
+  const release = run([qualify, 'conformance/selections/dpp-release-2026-10-2.json'])
   assert.equal(release.status, 0, release.out)
   const historical = run([qualify, 'conformance/selections/dpp-release-2026-09-4.json'])
   assert.equal(historical.status, 1, historical.out)
