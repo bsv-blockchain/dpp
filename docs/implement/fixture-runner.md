@@ -59,5 +59,3 @@ Read each fixture's own inventory. The top-level and vector forms do not have a 
 | Expected-subject prose forbids evidence-derived identifiers; its table includes a `none` fallback | [Report source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/verification.md#L27-L34); when a request names no subject, the reference registry uses the evidence's own identifier with `source: none` |
 
 These gaps remain open. Record an affected case as unresolved and use [the disagreement route](../contribute/disagreements.md); a passing reference result does not close the question.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

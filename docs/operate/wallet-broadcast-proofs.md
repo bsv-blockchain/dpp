@@ -59,5 +59,3 @@ A later proof arriving at one index does not establish that every peer has it. C
 Use the [dry run](../quick-start.md#write-a-passport-without-spending-anything) before a funded operation. Keep the operation journal and the retrieved proof with the transaction evidence. An index accepting a draft does not establish broadcast or mining.
 
 For a delayed proof, determine which service has the evidence and which operator still needs it. For a refused spend or a reorganisation, follow the contract's retraction and verification behaviour. The guide does not promise a mining window.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

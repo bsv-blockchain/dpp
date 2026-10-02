@@ -2,15 +2,24 @@
 
 A digital product passport (DPP) is a product's history that anyone can check. This open standard keeps each passport as a chain of signed records on the BSV blockchain, so a reader can verify who wrote each change without trusting the service that shows it.
 
+These pages are for anyone bringing the standard into a new platform, an existing application or a service they run. [Choose your path](start/choose-your-path.md) routes every journey, from a ten-minute evaluation to an independent implementation, and an AI agent starts [here](start/for-agents.md).
+
 ## Start here
 
 | I want to | What I need | Start |
 |---|---|---|
 | See a real passport | A browser | Open [a live passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) |
 | Check a passport myself | Node.js 22, npm and git | [Quick start](quick-start.md) |
-| Build an application that issues passports | The quick start, a BRC-100 wallet and a little BSV | [Build an application](packages/build-an-application.md) |
-| Run my own index | Docker | [Operate](operate/README.md) |
-| Write my own implementation of the rules | The specifications and test vectors | [Implementer start](implement/README.md) |
+| Issue passports from my own system | Your own index (Docker and a checkout), a funded BRC-100 wallet and an identifier | [Issue passports](start/choose-your-path.md#issue-passports) |
+| Run my own index | Docker and a checkout | [Run an index](start/choose-your-path.md#run-an-index) |
+| Write my own implementation of the rules | The specifications and test vectors | [Implement independently](start/choose-your-path.md#implement-independently) |
+| Something else | | [Choose your path](start/choose-your-path.md) |
+
+## Try the hosted demonstration
+
+[dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify its passports, and anyone who signs up can issue and update passports there for its sample brands. Every passport it writes is a real transaction on the BSV mainnet, but the brands, products and data are mock demonstration data. The demonstration behaves exactly as the standard specifies, so it shows what an integration does.
+
+Open [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8), then check it yourself on the [verifier](https://dpp.bsvb.net/verify). A brand with real products issues them from its own deployment, built with the packages or its own implementation.
 
 ## How it works
 
@@ -21,6 +30,10 @@ A digital product passport (DPP) is a product's history that anyone can check. T
 - **A reader's answer is a report.** Each check passes, fails, or says which evidence is missing.
 
 [The passport model](start/architecture.md) shows how the pieces fit together.
+
+## What it does not claim
+
+The battery and textile profiles map their fields to what the EU Batteries Regulation (EU) 2023/1542 and the Ecodesign for Sustainable Products Regulation (EU) 2024/1781 ask a passport to carry. The standard claims no conformity with either regulation, and using it does not qualify a product. A reader's report shows who signed which bytes and whether the evidence checks out; it does not show that a product or a claim is genuine, or that an issuer is authorised.
 
 ## Words you will meet
 
@@ -34,10 +47,14 @@ A digital product passport (DPP) is a product's history that anyone can check. T
 | Anchor | A small transaction committing to a claim's exact bytes |
 | Wallet | Holds your keys and funds, signs and broadcasts; any BRC-100 wallet |
 | Proof | The merkle path showing a transaction is in a block |
+| Tip | A passport's latest state, the one the next change spends |
+| Claim | A signed statement about a product, such as a repair, kept apart from the passport; also called an attestation |
+
+[Words used here](start/glossary.md) defines every other term.
 
 ## Where things stand
 
-This is a working draft, before version 1.0. The beta.4 packages were published to npm on 1 October 2026 under the `next` tag; pin exact versions. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open.
+This is a working draft, before version 1.0. The beta.4 packages were published to npm on 1 October 2026 under the `next` tag. Pin exact versions: installing without a version still gets the older beta.1. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open, and [known limitations](operate/limitations.md) lists what does not work yet.
 
 ## Everything else
 
@@ -50,4 +67,4 @@ This is a working draft, before version 1.0. The beta.4 packages were published 
 | Understand identity, custody and evidence | [Identity and authority](learn/identity-and-authority.md), [custody](learn/custody.md), [evidence and its limits](learn/evidence-and-freshness.md) |
 | Propose a change | [Contribute](contribute/README.md) |
 
-The source repository is public at [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp). Links to source files are pinned to a commit, so the text you read is the text that was reviewed. The site itself is published from the repository's `main` branch: the newest commit in the [history of `docs/`](https://github.com/bsv-blockchain/dpp/commits/main/docs) is the revision you are reading.
+The source repository is public at [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp). Links to source files are pinned to a commit, so the text you read is the text that was reviewed. The site is built from the repository's `main` branch; the [history of `docs/`](https://github.com/bsv-blockchain/dpp/commits/main/docs) shows the latest change.

@@ -54,5 +54,3 @@ Treat a registry archive as one recovery input. The reference archive does not c
 - [spec/portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/portable-evidence.md)
 
 Use [evidence reporting](../reporting.md) for results. [Source gaps](../fixture-runner.md#source-gaps) remain open.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../../learn/identity-and-authority.md).

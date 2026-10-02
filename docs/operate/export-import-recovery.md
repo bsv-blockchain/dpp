@@ -73,5 +73,3 @@ Follow the [portable-evidence requirements](https://github.com/bsv-blockchain/dp
 An export cannot recover a missing private key or evidence the source did not retain. The registry package has no token history or restricted material. A provider replacement can therefore need both archives and separately retained custody access.
 
 The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) marks complete index export tested and durable independent publication gap. Its evidence is local and synthetic. [Migration](../migration.md) covers rollout and rollback.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

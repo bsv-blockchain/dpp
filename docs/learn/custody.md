@@ -28,5 +28,3 @@ Use [export and recovery](../operate/export-import-recovery.md) for the evidence
 An evidence export does not recover a missing private key. A deployment can retain verifiable records while losing the authority needed to update them.
 
 Brand self-custody: open. In the reference application the platform controls each brand's identity, so a brand cannot yet update or move it; nothing in the standard requires this.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](identity-and-authority.md).

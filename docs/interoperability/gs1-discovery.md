@@ -39,5 +39,3 @@ The parser reports the key and qualifiers, or a named parsing problem. This exam
 | Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/fixtures/vectors/dpp/interoperability/gs1) |
 
 Keep resolution and signed-subject verification separate. Rewriting a discovery host does not rename the signed subject. Continue with the [passport reader](../implement/roles/passport-reader.md).
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
