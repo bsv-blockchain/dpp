@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Attestation registry API
-  version: 0.2.0
+  version: 0.3.0
   summary: Verified native lifecycle claims and VSC SEAL credentials with independent BSV anchors.
   description: |
     Current intake uses explicit signed native or VSC representations. Missing proof,
@@ -1370,6 +1370,15 @@ components:
               id: { type: string }
               reason: { type: string }
         legacyIntake: { type: boolean }
+        anchoredBy:
+          type: string
+          pattern: '^0[23][0-9a-f]{64}$'
+          description: >-
+            The compressed identity key that every anchor this registry writes
+            names as anchoredBy, so a verifier can tell this registry's anchors
+            from anyone else's without asking. Optional. Naming the key does not
+            make the registry trusted: which anchoring services to accept stays
+            the verifier's policy.
     ResolverRefusal:
       type: object
       required: [error, reason, detail]

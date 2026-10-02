@@ -16,7 +16,8 @@
  *   3. anchor             the anchor output, read from the chain, decodes and its signature verifies
  *   4. binding            the anchor commits to this digest and names this claim
  *   5. inclusion          the anchor transaction's merkle path matches a block header
- *   6. anchoring service  the key that wrote the anchor is one you accept
+ *   6. anchoring service  the key that wrote the anchor is one you accept, or else the one
+ *                         the registry's capability document names (anchoredBy)
  *
  * The registry hands over the stored bytes and says which transaction holds
  * the anchor. Everything else comes from the chain: the transaction
@@ -39,7 +40,7 @@ const short = (hex) => `${String(hex).slice(0, 12)}...`
 
 // ------------------------------------------------------------- the sources
 
-/** The registry's two routes (contracts/registry.yaml): the record list and one record's proof. */
+/** The registry's routes (contracts/registry.yaml): the record list, one record's proof, and its capability document. */
 function liveRegistry(base) {
   const get = async (path) => {
     const response = await fetch(`${base}${path}`)
@@ -61,6 +62,7 @@ function liveRegistry(base) {
       return records.slice(0, limit)
     },
     proof: (attestationId) => get(`/attestations/${encodeURIComponent(attestationId)}/proof`),
+    capabilities: () => get('/capabilities').catch(() => ({})),
   }
 }
 
@@ -150,13 +152,14 @@ function fixtureSources() {
     registry: {
       records: async () => [...proofs.values()].map(({ attestationId, representation }) => ({ attestationId, representation })),
       proof: async (attestationId) => proofs.get(attestationId),
+      // The test registry names its anchoring key, as a registry under the contract may.
+      capabilities: async () => ({ anchoredBy: native.anchor.anchoredBy }),
     },
     chain: {
       transaction: async (txid) => transactions.get(txid) ?? null,
       merklePath: async (txid) => paths.get(txid) ?? null,
       headers: { isValidRootForHeight: async (root, height) => roots.get(height) === root, currentHeight: async () => 900100 },
     },
-    accepted: [native.anchor.anchoredBy, legacy.anchoredBy],
   }
 }
 
@@ -199,7 +202,7 @@ function readAnchor(script) {
 
 // ------------------------------------------------------- checking a record
 
-async function checkRecord(record, { registry, chain, accepted }) {
+async function checkRecord(record, { registry, chain, accepted, registryKey }) {
   const lines = []
   const say = (status, check, sentence) => lines.push({ status, check, sentence })
   const proof = await registry.proof(record.attestationId)
@@ -291,11 +294,16 @@ async function checkRecord(record, { registry, chain, accepted }) {
     }
   }
 
-  // 6. The key that wrote the anchor is one you accept.
+  // 6. The key that wrote the anchor is one you accept; without a list of
+  // your own, the key the registry's capability document names, which shows
+  // the anchor is this registry's and not that the registry is trusted.
   if (anchor.anchoredBy == null) {
     say('unknown', 'anchoring service', `a ${anchor.format} output names no anchoring service`)
+  } else if (accepted == null && registryKey != null) {
+    say(anchor.anchoredBy === registryKey ? 'pass' : 'fail', 'anchoring service',
+      `written by ${short(anchor.anchoredBy)}, ${anchor.anchoredBy === registryKey ? 'the anchoring key the registry names in its capability document' : `not ${short(registryKey)}, the anchoring key the registry names`}`)
   } else if (accepted == null) {
-    say('unknown', 'anchoring service', `written by ${short(anchor.anchoredBy)}; pass --anchoring-services=<key>,... to compare it with the services you accept`)
+    say('unknown', 'anchoring service', `written by ${short(anchor.anchoredBy)}; the registry names no anchoring key, so pass --anchoring-services=<key>,... to compare it with the services you accept`)
   } else {
     say(accepted.includes(anchor.anchoredBy) ? 'pass' : 'fail', 'anchoring service',
       `written by ${short(anchor.anchoredBy)}, ${accepted.includes(anchor.anchoredBy) ? 'a service you accept' : 'which is not among the services you accept'}`)
@@ -308,6 +316,8 @@ async function checkRecord(record, { registry, chain, accepted }) {
 const sources = fixtureMode
   ? fixtureSources()
   : { registry: liveRegistry(registryUrl), chain: liveChain(), accepted: option('anchoring-services')?.split(',').filter(Boolean) }
+const named = (await sources.registry.capabilities()).anchoredBy
+sources.registryKey = typeof named === 'string' && /^0[23][0-9a-f]{64}$/.test(named) ? named : undefined
 console.log(fixtureMode ? 'Checking the repository\'s test registry, offline.' : `Checking ${registryUrl}${subject == null ? '' : ` for ${subject}`}, at most ${limit} records.`)
 
 const counts = { pass: 0, fail: 0, unknown: 0, 'not-applicable': 0 }
