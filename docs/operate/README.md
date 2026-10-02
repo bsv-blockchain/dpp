@@ -1,6 +1,6 @@
 # Run a service
 
-Begin with the [limitations](limitations.md) and [reference deployment](../deployment.md). The preset runs an index and MongoDB. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists its configuration.
+Begin with the [limitations](limitations.md) and [the hosted reference](../deployment.md). The preset runs an index and MongoDB. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists its configuration.
 
 ## What to prepare
 
@@ -65,3 +65,31 @@ The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e
 Follow [broadcast and proofs](wallet-broadcast-proofs.md), [peer synchronisation](federation.md), then [export and recovery](export-import-recovery.md).
 
 Stored records and resumable cursors have different lifetimes. Cursor secrets are per process; restarting invalidates existing cursors. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
+
+## Place each component
+
+The reference deployment contains an index and MongoDB. A client or application service supplies wallet operations, submits records and asks the index for evidence. An attestation registry is a separate service. A header source supplies the block-header evidence used for inclusion checks.
+
+The index holds the publisher's public identity key. A writer's wallet holds signing access. An optional export key signs the archive produced by this operator; it does not sign passport states. Keep those roles separate when configuring a deployment.
+
+## Deploy in steps
+
+Start the index as [start and inspect](#start-and-inspect) shows, check its capabilities and make a lookup. Next connect a writer on the same network and under the expected publisher policy. Exercise admission, broadcast response and later proof ingestion before relying on the record being retrievable with inclusion evidence.
+
+Add a registry only when the workflow needs stored claims. Add peers after one operator can admit, retrieve and export the intended records. [Federation](federation.md) covers the second instance and [recovery](export-import-recovery.md) covers the retained evidence needed to replace one.
+
+The MongoDB volume is service storage; it is not itself an independently administered replica.
+
+## Configuration sources
+
+| Configure | Source |
+|---|---|
+| Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) |
+| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) |
+| Wallet, broadcast and proof retrieval | [Integration guide](wallet-broadcast-proofs.md) |
+| Another operator | [Federation](federation.md) |
+| Retention and replacement provider | [Recovery](export-import-recovery.md) |
+
+Check health and capabilities after starting the service, then exercise submission and retrieval under the selected contract. Keep the observed results separate from the deployment's configuration.
+
+Header-storage size, mining delay and synchronisation latency are unmeasured here. The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) records local tests and the remaining deployment evidence gaps. [Durable publication](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json#L3794) has ledger status `gap`.

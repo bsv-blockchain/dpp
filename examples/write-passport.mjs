@@ -245,7 +245,12 @@ async function send(wallet, txid) {
  */
 async function discard(wallet, txid) {
   try {
-    await wallet.abortAction({ reference: txid })
+    // The wallet answers { aborted: false } rather than throwing when the network already knows the transaction.
+    const result = await wallet.abortAction({ reference: txid })
+    if (result.aborted === false) {
+      say(false, `the wallet did not abort ${short(txid)}, because the network already knows it; do not build again.`)
+      return
+    }
     console.log(`The unsent action ${short(txid)} is aborted, and the wallet has its inputs back.`)
   } catch (cause) {
     say(false, `the wallet did not abort ${short(txid)} (${cause.message}); abort it before building again, or its inputs stay out of use.`)
@@ -282,11 +287,31 @@ async function retract(txid, reason) {
   )
 }
 
-/** The merkle path the wallet has attached, if any, read the way a client can. */
+/** Whether a merkle path contains the transaction, which is all a path can show before a header source is asked. */
+function pathContains(path, txid) {
+  try {
+    path.computeRoot(txid)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The merkle path the wallet has attached, if any, read the way a client can.
+ * A parsed BEEF keeps a proven transaction's path in its bumps and not on the
+ * transaction, so `tx.merklePath` is always undefined here; the path is read
+ * through the transaction's bump index, and only returned if it contains the
+ * transaction. A wallet lists spendable outputs only, so this finds the path
+ * of the tip and of nothing a later state has spent.
+ */
 async function merklePathFromWallet(wallet, txid) {
   const outputs = await wallet.listOutputs({ basket: 'dpp', include: 'entire transactions', limit: 10000 })
   if (outputs.BEEF == null) return undefined
-  return Beef.fromBinary(outputs.BEEF).findTxid(txid)?.tx?.merklePath
+  const beef = Beef.fromBinary(outputs.BEEF)
+  const held = beef.findTxid(txid)
+  const path = held?.bumpIndex == null ? held?.tx?.merklePath : beef.bumps[held.bumpIndex]
+  return path != null && pathContains(path, txid) ? path : undefined
 }
 
 /**

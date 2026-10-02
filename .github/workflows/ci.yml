@@ -33,6 +33,7 @@ jobs:
       - run: node examples/verify-passport.mjs --fixture --version=2 --report
       - run: node examples/lifecycle-v2.mjs
       - run: node examples/write-passport.mjs --dry-run
+      - run: node examples/write-passport-v2.mjs --dry-run
       - run: node examples/sign-publisher-policy.mjs --dry-run
       - run: node examples/sample-payload.mjs --all
       - run: node examples/verify-anchor.mjs
