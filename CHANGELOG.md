@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, take a record from the chain
+
+- The federation page says how an index takes a mined record from a chain source when a peer cannot serve it: the merkle proof as a BUMP from WhatsOnChain to its own `/arc-ingest`, or an anchor's or a state's BEEF to its own `/submit`. The find-the-cause table and the limitations page point to it.
+- `examples/check-registry.mjs` reads the anchor's merkle proof as a BUMP and drops its own conversion from WhatsOnChain's TSC form; the verifier guide says so.
+
 ### 2026-10-02, beta.8 release candidate
 
 - Prepare `@bsv/dpp-overlay-topics@0.4.0-beta.8` in `dpp-release-2026-10-5`, which publishes to `latest`, beside the unchanged `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5`. Publication was pending at preparation.
