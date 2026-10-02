@@ -36,7 +36,7 @@ It refuses nothing; the refusal cases are in [the cases to run](#the-cases-to-ru
 ## Build the verifier
 
 1. **Keep the bytes** ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 4). Store the received bytes before decoding, and refuse duplicate JSON keys.
-2. **Dispatch on the representation.** A native claim is `dpp-lifecycle-json-v1` (rules section 3); a SEAL credential, the event credential of the Verifiable Supply Chain (VSC) profile, is `vsc-seal-json-v1`; an external W3C credential is `vc-di-ecdsa-rdfc-2019@1` ([external credentials](../../interoperability/external-credentials.md)). They use different proof rules. A representation you do not implement reads `unknown` with `representation-unsupported`, never a pass.
+2. **Dispatch on the representation.** A native claim is `dpp-lifecycle-json-v1` (rules section 3); a SEAL credential, the event credential of the Verifiable Supply Chain (VSC) profile, is `vsc-seal-json-v1`; an external W3C credential is `vc-di-ecdsa-rdfc-2019@1` ([external credentials](../../interoperability/external-credentials.md)); a record written before the native format is `legacy-uora-json` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) sections 3 to 5). They use different proof rules. A representation you do not implement reads `unknown` with `representation-unsupported`, never a pass.
 3. **Verify a native claim** (rules section 3). Accept exactly the allowed properties. Serialise every property except `signature` as restricted canonical JSON, hash it with SHA-256, and verify the DER signature under the BRC-42 child of the issuer's key for protocol `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. A `did:key` issuer names the key itself; otherwise `issuerKeyDid` names the key that signed, and its relationship to the issuer needs separate evidence.
 4. **Decode the anchor** (rules section 5). The script is exactly a 33-byte key, `OP_CHECKSIG`, ten fields and five `OP_2DROP`, with nothing after. Field 1 is `bsv-attestation-anchor-v1`, fields 1 to 9 are printable UTF-8 within their bounds, and field 10 is the service's DER signature over the SHA-256 of fields 1 to 9, each prefixed with its length as a Bitcoin VarInt. Verify it under the BRC-42 child of field 9 (`anchoredBy`) for protocol `[1, 'bsv attestation anchor v1']`, key identifier field 3 (`attestationId`), counterparty `anyone`. The locking key must equal that same child.
 5. **Bind the anchor to the claim** (rules section 6). Field 2 must equal the SHA-256 of the complete secured bytes, which for a native claim is the restricted canonical JSON including `signature`. The issuer, subject, type, representation and media type the anchor carries must equal the verified claim's.
@@ -72,15 +72,32 @@ No fixture case alters the native claim's own signature; add one to your own tes
 
 ## Run an anchor proof page
 
-A proof page lets anyone check a registry's claims without trusting the registry: for each record it fetches the evidence, runs the checks of [build the verifier](#build-the-verifier), and shows each result on its own line. The hosted reference serves one over the hosted registry ([the hosted reference](../../deployment.md#the-hosted-reference)). To run one over your own registry, or anyone's, use only these routes of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml):
+A proof page checks a registry's claims without trusting the registry: the registry hands over each record's stored bytes and names its anchor transaction, and everything else comes from the chain. The hosted reference serves one over the hosted registry ([the hosted reference](../../deployment.md#the-hosted-reference)). One command does the same, and its source, `examples/check-registry.mjs`, is the recipe to copy:
 
-1. **List the records.** `GET /attestations`, page by page with `cursor`; filter by `subject` for one passport.
-2. **Fetch each record's evidence.** `GET /attestations/{id}/proof` answers the stored bytes (`securedBytes`, or `canonical` on historical records), their `digest` and, in `anchor`, the anchoring transaction (`recordId`), the output index, the `format` and the `lockingScript` where the registry kept it. Without the script, fetch the transaction by `recordId` from any source and take the output at `outputIndex`.
-3. **Check it.** Steps 3 to 6 above: `verifyLifecycleClaim` and `inspectAttestationAnchor` from `@bsv/dpp-core` ([add a claim](../../packages/add-a-claim.md)). The proof route carries no merkle path, so for inclusion fetch the anchor transaction's path and check it against block headers from a source you trust.
-4. **Check the anchoring service.** Compare the key that anchored with the anchoring services you accept.
-5. **Show each check on its own**, with its status and reason, and no overall verdict (verification section 4).
+```sh
+node examples/check-registry.mjs --fixture
+node examples/check-registry.mjs https://dpp-resolver.bsvb.net
+```
 
-Records in the historical formats need their own readers. A `uora-anchor-v3` output is read with `tryParseUoraAnchor` from `@bsv/dpp-overlay-topics`, as `examples/verify-anchor.mjs` shows. A `uora-anchor-v1` output names no issuer and no anchoring service ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) section 5), so a page can compare its digest with the stored bytes and cannot establish who anchored it.
+The first runs offline on the repository's test data and ends `Every sentence above holds.` The second checks a live registry's first 10 records. Add `--subject=<passportId>` for one passport, `--limit=<n>` for more records and `--anchoring-services=<key>,<key>` to name the anchoring services you accept, and set `WOC_API_KEY` to raise WhatsOnChain's rate limit. For each record it prints one line per check, each `pass`, `fail`, `unknown` or `not-applicable`, and no overall verdict (verification section 4). It exits 1 when any check fails.
+
+| Check | What it does | Where the evidence comes from |
+|---|---|---|
+| `digest` | Hashes the stored bytes with SHA-256 and compares the result with the registry's `digest` | `GET /attestations/{id}/proof`: `securedBytes`, or `canonical` on a `legacy-uora-json` record |
+| `claim signature` | Verifies a native claim with `verifyLifecycleClaim` from `@bsv/dpp-core` | The stored bytes |
+| `anchor` | Decodes the output under the format its first field names, and verifies its signature and locking key | The transaction from WhatsOnChain (`/tx/<txid>/hex`), by the proof's `anchor.recordId` and `anchor.outputIndex`; a script the registry also sends must equal it |
+| `binding` | The anchor commits to the digest and names the claim's identifier, issuer, subject and type | The decoded anchor and the claim |
+| `inclusion` | Verifies the transaction's merkle path against block headers | WhatsOnChain's `/tx/<txid>/proof/tsc`, which the example's `merklePathFromTsc` turns into an `@bsv/sdk` `MerklePath`, and its headers |
+| `anchoring service` | Compares the key that wrote the anchor with the services you accept | The decoded anchor and your `--anchoring-services` |
+
+What each kind of record can establish:
+
+| Record | Anchor | What can be established |
+|---|---|---|
+| `dpp-lifecycle-json-v1`, a native claim | `bsv-attestation-anchor-v1`, read with `inspectAttestationAnchor` from `@bsv/dpp-core` | Every check |
+| `legacy-uora-json` | `uora-anchor-v3`, read with `tryParseUoraAnchor` from `@bsv/dpp-overlay-topics` | Every check but the claim signature, which the example does not check |
+| `legacy-uora-json` | `uora-anchor-v1` | The digest, inclusion, and that the output is signed by its own locking key. A v1 anchor names no issuer and no anchoring service, so who anchored it cannot be established |
+| `vsc-seal-json-v1`, a SEAL credential | `bsv-attestation-anchor-v1` | The digest, anchor and inclusion; verify the credential itself with [`@bsv/vsc`](../../packages/vsc.md) |
 
 ## Known gaps
 

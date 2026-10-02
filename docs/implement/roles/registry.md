@@ -53,4 +53,4 @@ Treat a registry archive as one recovery input. The reference archive does not c
 - [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/verification.md)
 - [spec/portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/portable-evidence.md)
 
-Use [evidence reporting](../reporting.md) for results. [Source gaps](../fixture-runner.md#source-gaps) remain open.
+To see your registry the way a stranger will, run `node examples/check-registry.mjs <your registry>`: it checks every record against the chain ([run an anchor proof page](attestation-verifier.md#run-an-anchor-proof-page)). Use [evidence reporting](../reporting.md) for results. [Source gaps](../fixture-runner.md#source-gaps) remain open.

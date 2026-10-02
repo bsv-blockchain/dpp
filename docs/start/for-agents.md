@@ -14,6 +14,7 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 | Demonstration application | `https://dpp.bsvb.net`, with the verifier at `https://dpp.bsvb.net/verify`: sample brands, mock data, real mainnet transactions |
 | Hosted index | `https://dpp-overlay.bsvb.net`: lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open; `/submit`, `/retract`, `/arc-ingest` and `/evidence-export` need its operator's tokens |
 | Hosted registry | `https://dpp-resolver.bsvb.net`: validation and reads are open; storing a claim needs its write token |
+| Hosted proof page | `https://dpp-proof.bsvb.net`: the hosted registry's claims checked against their anchors. `node examples/check-registry.mjs <registry>` does the same for any registry ([run an anchor proof page](../implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) |
 | These pages as text | [`llms.txt`](https://dpp.bsvb.net/docs/llms.txt) lists every page; [`llms-full.txt`](https://dpp.bsvb.net/docs/llms-full.txt) holds them all in one file |
 | Source | [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp), default branch `main` |
 | Words | [Words used here](glossary.md) defines every term |
@@ -25,7 +26,7 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 - **A block marked as a fragment** shows one step and does not run alone; the page links the complete example.
 - **Success** reads the same everywhere: one sentence per check, never a score. A line starting `ok:` or `Holds:` held; `FAIL:` did not, and the command exits non-zero. An example that checks itself ends with `Every sentence above holds.`
 - **A report** gives each check `pass`, `fail`, `unknown` or `not-applicable` with a reason code. `unknown` means the evidence was missing, not that the check failed.
-- **Dry runs** come first. `node examples/write-passport.mjs --dry-run` and `node examples/lifecycle-v2.mjs` write passports without a wallet, funds or network.
+- **Dry runs** come first. `node examples/write-passport.mjs --dry-run` and `node examples/lifecycle-v2.mjs` write passports without a wallet, funds or network, and `node examples/check-registry.mjs --fixture` checks a registry's claims without one.
 
 ## Steps a human must take
 
