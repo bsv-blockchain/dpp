@@ -314,7 +314,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "8ff2d610d6521df5668011889d2bfc5cfec8d0195b45d00823115041dd3a1057",
+      "sha256": "97bea6f5dcceb2702708c21e8854bdf07ec05a230b3378b5ddf1a136bacf04a7",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {

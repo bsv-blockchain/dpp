@@ -146,7 +146,9 @@ export async function evidenceV1Fixture(): Promise<{ fixtureVersion: 1; descript
   const twoOutputs = CHAIN.refusals.find((r) => r.name === 'twoDppOutputs')!
   const stranger = CHAIN.refusals.find((r) => r.name === 'transferByStranger')!
   const opaque = Utils.toArray('opaque bytes of a format this verifier does not know', 'utf8')
-  const opaqueAnchor = await buildAttestationAnchor({ ...ANCHOR.anchor, digest: Utils.toHex(Hash.sha256(opaque)), representation: 'x-unknown-format-v9', mediaType: 'application/octet-stream', attestationType: 'Unknown' }, anchoring)
+  // Its own identifier too: the fixture anchor's names the native claim's digest, not these bytes.
+  const opaqueDigest = Utils.toHex(Hash.sha256(opaque))
+  const opaqueAnchor = await buildAttestationAnchor({ ...ANCHOR.anchor, digest: opaqueDigest, attestationId: `urn:sha256:${opaqueDigest}`, representation: 'x-unknown-format-v9', mediaType: 'application/octet-stream', attestationType: 'Unknown' }, anchoring)
 
   const declared: Array<Omit<EvidenceCase, 'report'>> = [
     {

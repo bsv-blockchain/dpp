@@ -136,7 +136,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "0111c492fdc7a1e67efa7dbee81a2aefd9cede95ab823f2f5ff2759fb66de117"
+      "digest": "8f3c2066904df71cae776ea6fc75c73ddefa1775c5b938c1b97a71f4ce6afa05"
     },
     {
       "id": "baseline-native-2",
@@ -144,7 +144,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "8ff2d610d6521df5668011889d2bfc5cfec8d0195b45d00823115041dd3a1057"
+      "digest": "97bea6f5dcceb2702708c21e8854bdf07ec05a230b3378b5ddf1a136bacf04a7"
     },
     {
       "id": "spec-profiles",

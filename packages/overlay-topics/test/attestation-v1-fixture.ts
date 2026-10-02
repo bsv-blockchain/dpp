@@ -17,7 +17,7 @@ export async function attestationV1Fixture() {
   const representationBytes = Utils.toUTF8(lifecycleClaimBytes(claim))
   const digest = lifecycleClaimDigest(claim)
   const anchor = {
-    digest, attestationId: 'urn:uuid:11111111-1111-4111-8111-111111111111', issuer,
+    digest, attestationId: `urn:sha256:${digest}`, issuer,
     subject: unsignedClaim.passportId, attestationType: unsignedClaim.eventType,
     representation: 'dpp-lifecycle-json-v1', mediaType: 'application/json',
     anchoredBy: PrivateKey.fromHex(anchoringPrivateKey).toPublicKey().toString(),
