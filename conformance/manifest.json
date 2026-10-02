@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "28842b84f7103de5ac16bc9dd3b336f668797cf1758b748a8c11eb761d507daa"
+      "digest": "a9690538049ad9111fb187d57251c209df98dcf1c566c05c78628b286eecc458"
     },
     {
       "id": "spec-conformance",
@@ -2176,7 +2176,7 @@
       "sourceUri": "spec/verification.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "The expected subject comes from the request context or an established binding, never from the evidence; two genesis records under one identifier stay candidates.",
+      "summary": "The expected subject comes from the request context or an established binding, never from the evidence; a verifier with none declares source none and only subjectBinding reads unknown; two genesis records under one identifier stay candidates.",
       "layer": "core",
       "roles": [
         "passport-reader",
@@ -2197,7 +2197,7 @@
         "fixtures/evidence-v1.json#cases.subject-not-independent"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers"
     },
     {

@@ -26,6 +26,14 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 - `POST /submit` answers a refused `tm_dpp` state with `X-Admission-Refusal: tm_dpp=<code>` beside `X-Admission`, in the overlay contract `0.8.0-draft`, which lists the thirteen codes under `x-refusal-codes`. Where a verification report names the same failure the code is the report's word, so a writer and a reader see one vocabulary. The STEAK body is unchanged, since a client reads every key of it as a topic. `DppTopicManager` records the reason (`refusalFor`), `@bsv/dpp-overlay-topics` exports `DPP_REFUSAL_CODES`, and `@bsv/dpp-core` exports `linkageReasonCode`. Refused anchors on `tm_attestation` still carry no reason.
 - The writer pages, the contracts reference and the limitations page list what each code asks of a writer, and the v2 writer example prints the reason for the refused state its dry run shows.
 
+### 2026-10-02, a later state synchronises once proven
+
+- The limitations page and the federation troubleshooting table say that an unproven later state of a passport a peer already holds reaches that peer only once its proof reaches the node the peer pulls from, while a new passport arrives unproven. The package README and the federation test already recorded it; no code changes.
+
+### 2026-10-02, the expected subject under source none
+
+- `spec/verification.md` section 3 says that under `source: none` only `subjectBinding`, the check that compares the evidence with the expectation, reads `unknown` with `subject-not-independent`, and every other check runs as usual. This is what `@bsv/dpp-core` already does; the text said every subject-dependent check. It also says a verifier given no expectation takes the identifier from the evidence and declares it with `none`, which settles the source gap between the section's prose and its table. No package or fixture changes; the ledger row citing the section was re-reviewed.
+
 ### 2026-10-02, beta.6 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6` and `@bsv/vsc@0.2.0-beta.5` under `latest` from `77d53611d884f7d9aa058fe063acb187f77ec9c7` using GitHub OIDC with provenance, the first release to move `latest`; `next` stays at the beta.5 set. The public-registry archives match the approved plan and the workflow's registry consumer check passed.
