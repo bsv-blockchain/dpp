@@ -1,11 +1,18 @@
 # The passport model
 
-A transaction output is a record another transaction can spend. A signature attributes bytes to a key. A digest is a fingerprint used to detect changed bytes. An outpoint identifies one output by its transaction identifier and output index. These are the building blocks of the passport and its separate attestations.
+How a passport, the claims about it and the services around it fit together. Read this before the code if you want the model first; the [words used here](glossary.md) page defines every term.
 
-A secured claim is the claim together with its signature or proof. An anchor is a separate blockchain output committing to that secured representation. The word secured does not mean the contents are encrypted.
+## Two rails
+
+A passport is kept on two separate chains of transactions, called rails:
+
+- **The passport rail** holds the passport's own states. Each state is one transaction output, and each new state spends the one before it, so the history has one order and cannot be quietly rewritten.
+- **The claim rail** holds anchors for claims. A claim, such as a repair or a recycling, is signed off chain; its anchor is a small output that commits to the claim's exact bytes by their digest.
+
+Each rail can be checked without the other, and a party can make a claim without controlling the passport.
 
 ```
-  Passport rail (token states)                    Attestation rail (anchors)
+  Passport rail (states)                          Claim rail (anchors)
 
   ISSUE ──spend──▶ UPDATE ──spend──▶ TRANSFER ──▶ …     claim ──digest──▶ anchor output
   one output each, the next spends the last            signed off chain, committed on chain
@@ -15,22 +22,33 @@ A secured claim is the claim together with its signature or proof. An anchor is 
 
 ## Follow one product
 
-1. A writer creates the product's first passport record with its identifier and public payload. A wallet supplies signatures and transaction handling.
-2. The writer submits the transaction to an overlay for admission and sends it through the wallet's broadcast path. Those are separate operations: an index accepting a record does not mean it was mined.
-3. A later update spends the preceding passport output. The resulting chain is the product's recorded history, also called its lineage.
-4. An issuer can sign a separate lifecycle claim. A registry retains that secured claim; a separate service commits to its complete secured bytes in a separate output.
-5. A reader obtains history from an overlay and claim evidence from a registry. It evaluates the signatures, links, subject binding and available inclusion evidence separately.
+1. A writer creates the product's first state, its genesis, with the passport identifier and public data. A wallet signs and builds the transaction.
+2. The writer announces the transaction to an index, which admits or refuses it, and sends it through the wallet. These are separate steps: an index admitting a state does not mean it was mined.
+3. Each later state spends the passport's tip, its latest state. The chain from genesis to tip is the passport's lineage.
+4. An issuer signs a claim about the product. A registry keeps the signed claim, and an anchoring service commits to its exact bytes on the claim rail.
+5. A reader gets the lineage from an index and the claim from a registry, and checks the signatures, the links, the subject and the proofs of inclusion itself.
 
-The separation lets a repairer provide evidence without taking control of the passport. It also lets another reader recheck retained evidence without depending on the original application's account database.
+The index and the registry only find and keep records. A reader believes nothing because a service said it: it checks the transaction bytes against public block headers.
 
-The [offline example](../quick-start.md) exercises the record and report parts. [Run a service](../operate/README.md) adds index lookup and storage after those checks are understood.
+## The building blocks
 
-[Choose a role](choose-a-role.md) for the implementation route matching the component being built.
+| Term | Meaning |
+|---|---|
+| Output | A record in a transaction that a later transaction can spend |
+| Outpoint | One output, named by its transaction identifier and output index |
+| Signature | Attributes bytes to a key |
+| Digest | A fingerprint of bytes, used to detect any change |
+| Secured claim | The claim together with its signature or proof, the exact bytes an anchor commits to. Secured does not mean encrypted |
+| Anchor | A separate output committing to a secured claim's exact bytes |
 
-An index can help a reader find evidence. Verification also needs the relevant bytes, proofs and header source. Recovery depends on what was retained; [durable independent publication remains a gap](status.md).
+## Where next
 
-Application accounts are outside the record model. The [identity guide](../learn/identity-and-authority.md) separates accounts, keys and authority.
+| To | Read |
+|---|---|
+| See it run | [Quick start](../quick-start.md) |
+| Find the path for your task | [Choose your path](choose-your-path.md) |
+| Learn what a state and a claim each carry | [Passport states and attestations](../learn/passport-and-attestations.md) |
+| See how accounts, keys and authority differ | [Identity and authority](../learn/identity-and-authority.md) |
+| Know what is not settled | [Known limitations](../operate/limitations.md) |
 
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
-
-Continue with [passport states and attestations](../learn/passport-and-attestations.md). Sources: [spec/record-model.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md), [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model-v2.md), [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/rules.md).
+Sources: [record model version 1](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), [record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md), [rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md).

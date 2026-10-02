@@ -65,5 +65,3 @@ The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e
 Follow [broadcast and proofs](wallet-broadcast-proofs.md), [peer synchronisation](federation.md), then [export and recovery](export-import-recovery.md).
 
 Stored records and resumable cursors have different lifetimes. Cursor secrets are per process; restarting invalidates existing cursors. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

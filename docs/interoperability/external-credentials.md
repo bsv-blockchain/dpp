@@ -67,5 +67,3 @@ When connecting an application, retain exact-byte and proof results separately, 
 | Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/fixtures/vectors/dpp/interoperability) |
 
 Exact received bytes and proof verification remain separate results. A reformatted credential can require a different exact-byte finding even where its proof evaluates the same way. Use [the attestation verifier guide](../implement/roles/attestation-verifier.md) for the surrounding evidence workflow.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

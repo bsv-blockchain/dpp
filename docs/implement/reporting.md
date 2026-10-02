@@ -22,5 +22,3 @@ The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e8
 Keep refusals and unresolved cases visible. For a disagreement, retain the input, both outcomes and their source references, then use [the reporting route](../contribute/disagreements.md).
 
 [Conformance review](../reference/conformance.md) explains the diagnostic and selection gate. [The trial](demonstration.md) supplies the route for fresh-record exchange evidence.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

@@ -38,5 +38,3 @@ Use the [package guide](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fb
 The [release selection](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/conformance/selections/dpp-release-2026-10.json) withholds full upstream draft conformance. The package's selected subset does not establish product qualification or completion of the upstream suite.
 
 Companion profile submission: open. Whether to propose the anchoring profile as a formal companion document is undecided; it does not affect implementations.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).

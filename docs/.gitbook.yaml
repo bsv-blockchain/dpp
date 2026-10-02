@@ -7,3 +7,42 @@ root: ./
 structure:
   readme: README.md
   summary: SUMMARY.md
+
+# Redirects keep the addresses of pages that moved between sidebar groups,
+# and of pages that were merged, working. GitBook builds a page address from
+# its group title and file name, so regrouping changes the address.
+redirects:
+  interoperability-profiles/epcis: interoperability/epcis.md
+  interoperability-profiles/external-credentials: interoperability/external-credentials.md
+  interoperability-profiles/gs1-discovery: interoperability/gs1-discovery.md
+  interoperability-profiles/interoperability: interoperability/README.md
+  interoperability-profiles/projections: interoperability/projections.md
+  learn-the-model/evidence-and-freshness: learn/evidence-and-freshness.md
+  learn-the-model/identifiers: identifiers.md
+  operate-services/deployment: deployment.md
+  operate-services/export-import-recovery: operate/export-import-recovery.md
+  operate-services/federation: operate/federation.md
+  operate-services/limitations: operate/limitations.md
+  operate-services/migration: migration.md
+  operate-services/operate: operate/README.md
+  operate-services/wallet-broadcast-proofs: operate/wallet-broadcast-proofs.md
+  reference/beta-2-publication: reference/beta-2-publication.md
+  reference/beta-3-publication: reference/beta-3-publication.md
+  reference/beta-4-publication: reference/beta-4-publication.md
+  reference/conformance: reference/conformance.md
+  reference/contracts: reference/contracts.md
+  reference/publishing-profile-updates: reference/publishing-profile-updates.md
+  reference/release-sets: reference/release-sets.md
+  reference/specifications: reference/specifications.md
+  start-here/build-an-application: packages/build-an-application.md
+  start-here/choose-a-journey: start/choose-your-path.md
+  start-here/choose-a-role: start/choose-a-role.md
+  use-the-reference-packages/application-service: packages/application-service.md
+  use-the-reference-packages/dpp-core: packages/dpp-core.md
+  use-the-reference-packages/dpp-overlay-topics: packages/dpp-overlay-topics.md
+  use-the-reference-packages/dpp-profiles: packages/dpp-profiles.md
+  use-the-reference-packages/packages: packages/README.md
+  use-the-reference-packages/stack: stack.md
+  use-the-reference-packages/support-table: packages/support-table.md
+  use-the-reference-packages/vsc: packages/vsc.md
+  use-the-reference-packages/what-an-application-offers: packages/what-an-application-offers.md

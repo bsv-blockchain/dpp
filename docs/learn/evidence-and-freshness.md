@@ -43,6 +43,4 @@ Run the [reader quick start](../quick-start.md#check-the-test-passports-offline)
 
 Missing evidence stays visible in the report. A verified historical prefix can still omit a later state. A service's answer is evidence from that service, not a view of every provider.
 
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](identity-and-authority.md).
-
 Use [the reader exercise](../implement/roles/passport-reader.md) to produce a report and [recovery](../operate/export-import-recovery.md) to inspect an export.

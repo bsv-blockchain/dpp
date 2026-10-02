@@ -36,6 +36,8 @@ The script asked the [hosted index](deployment.md#the-hosted-reference) for the 
 
 If a state says `inclusion pending`, WhatsOnChain limited the header check: run the command again, or set `WOC_API_KEY` to a WhatsOnChain API key. Under Node 26 you may see `ExperimentalWarning: localStorage is not available`; it is harmless.
 
+This passport is an older record version 1 lineage under GS1's own example number on `id.gs1.org`. New passports are record version 2, with the operations `ISSUE`, `UPDATE`, `TRANSFER` and `RETIRE`, minted under a host the writer controls ([identifiers](identifiers.md)).
+
 ## Check the test passports offline
 
 ```sh
@@ -110,4 +112,4 @@ You should see HTTP 200 and a report in which the claim's signature, subject, va
 | Choose the product data a passport carries | [Industry profiles](profiles/README.md) |
 | Write your own implementation instead of using the packages | [Implementer start](implement/README.md) |
 
-These exercises check signatures, history and block proofs. They do not show that a product is what its record says, that an issuer is accredited, or who holds the product today; [evidence and its limits](learn/evidence-and-freshness.md) explains why. Live identity assurance is Ring 0: the platform vouches for the account and brand label ([identity and authority](learn/identity-and-authority.md)).
+These exercises check signatures, history and block proofs. They do not show that a product is what its record says, that an issuer is accredited, or who holds the product today; [evidence and its limits](learn/evidence-and-freshness.md) explains why. Nobody checks a brand's legal identity yet: the platform that hosts an account vouches for it and its brand name, the level these pages call Ring 0 ([identity and authority](learn/identity-and-authority.md)).

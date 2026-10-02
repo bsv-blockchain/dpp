@@ -1,20 +1,100 @@
-# Known limitations
+# Known limitations and open questions
 
-Read these before deploying the reference service. Sources: [conformance/manifest.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json), [conformance/examples/capabilities-reference-node.json](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/examples/capabilities-reference-node.json).
+Everything that does not work yet, or is not settled, in one place, for writers, readers and operators alike. Skim it before you start, and come back when something does not arrive or a check reads `unknown`. Other pages link here instead of restating a limit.
 
-| Limit | Consequence and source |
+## Writing
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| A refused announcement carries no reason | `POST /submit` answers 200 with `X-Admission: tm_dpp=none` and nothing admitted; only the index operator's log says why | Check the causes you can see before announcing, as [write a passport](../packages/build-an-application.md#3-write-a-passport) lists, and ask the operator for the log line |
+| The capability document lists publisher keys without their activation windows | A key that `GET /capabilities` lists can still be refused for a state timestamped outside its window | Take the windows from the operator's signed publisher policy ([federation](federation.md#sign-a-publisher-policy)) |
+| The hosted services run on mainnet | Every write on them, and on the demonstration, is a real transaction that costs satoshis | Use the examples' dry runs, a local index with `NETWORK=test`, and GS1 demonstration prefix 952 for test identifiers |
+| A managed-custody custodian signs acceptance records with its identity key directly | A BRC-100 wallet cannot sign with its root key, so the custodian holds that key outside its wallet for now | Keep the custodian's key in secure storage outside the wallet |
+| No route serves acceptance records | A stranger's report on a managed `TRANSFER` reads `evidenceAvailability` `unknown` with `referenced-artefact-unavailable` | Hand the record to the reader with the evidence; the custodian keeps it |
+| Where the owner tier's ciphertext lives is not fixed | The state carries only the hash; a holder or later recipient must get the ciphertext from somewhere | Serve it by its UHRP content address, as the [record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7 recommends; the hash in the state is already that address |
+
+## Index host
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| Nodes find no peers by themselves | The host does not advertise itself through SHIP/SLAP, so nobody discovers your index | Name each peer in `SYNC_PEERS`, and ask other operators to name you ([federation](federation.md)) |
+| The header source is WhatsOnChain only | Inclusion checks trust its headers, and anonymous use is limited to a few requests a second | Set `WOC_API_KEY`; there is no setting for another header service yet |
+| No operator image is published | You build the index from a checkout | Use the Compose preset in [run a service](README.md) |
+| History and export snapshots expire after ten minutes | A paging client that pauses longer must start again | Page promptly; a cursor is also lost when the process restarts or another replica answers |
+| `GET /evidence-package` carries at most the newest 500 states | Longer histories are cut short in that route | Use `GET /evidence-export` ([export, import and recovery](export-import-recovery.md)) |
+| `CHAIN_TRACKER=scripts-only` skips header checks | The index would admit unproven ancestry | Use it for local development only |
+| A refused announcement that spends a tip still marks that tip spent in the engine | Lookups and history answer as before, but synchronising peers are no longer offered that tip | Announce a valid next state; peers are then offered it with its lineage |
+
+## Synchronisation
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| Synchronisation only pulls | A node receives records only from the peers its operator names; naming a peer gives that peer nothing | Each side names the other ([which way records flow](federation.md#which-way-records-flow)) |
+| A state funded from another passport's change waits until mined | A peer that lacks that other passport's history leaves the new state behind until it is mined; `@bsv/overlay` up to 2.6.2 does not tell the topic which output it reached | Wait for the first round after the state is mined |
+| An output left behind is not asked for again | After five rounds the checkpoint moves past it | Fix the cause, then move the checkpoint back ([when a record does not arrive](federation.md#when-a-record-does-not-arrive)) |
+| Why an output did not arrive is only in the receiving node's log | A peer cannot ask why | Read the receiving node's log |
+| Synchronisation covers current outputs and their lineages | Separately retained evidence does not travel | Use [exports](export-import-recovery.md) |
+| Lookup BEEF differs in form by how a state arrived | Comparing two operators' answers byte for byte fails even when they hold the same states | Compare transactions and their proofs, not the BEEF bytes |
+
+## Proofs and retraction
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| A later proof does not follow synchronisation | A node keeps the bytes it first received, so a peer that synchronised an unproven state stays unproven | Push each proof to every index that holds the state, through its own `POST /arc-ingest` with that index's own callback token ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)) |
+| Nobody is named to deliver later proofs to peers | No writer or gateway duty covers it yet | Agree it with the peers' operators |
+| How a retraction reaches peers is not specified | A peer that synchronised a withdrawn state may keep it | Tell the peers' operators |
+
+## Capability documents
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| The export signing key is not in the capability document | A reader checking an export has no published key to compare with | The [hosted reference](../deployment.md#the-hosted-reference) lists its key; ask other operators for theirs |
+| An operator's name is bound to no key | Two documents can carry the same name | Tell operators apart by their keys ([federation](federation.md#tell-operators-apart)) |
+| A registry has two capability documents | The capabilities schema and the registry contract define different documents, and which one `GET /capabilities` answers with is not settled | Serve the schema's document to conform ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)) |
+
+## Finding records
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| Nothing names a publisher's index | A reader holding only a passport identifier cannot discover where its states are held | Learn the index from the publisher, for example from its passport page |
+| An anchor does not name the registry that holds its claim | Registries do not exchange claims, so a reader finds the anchor on any index that holds it but must already know which registry to ask for the claim's bytes | Learn the registry from the publisher; without the bytes the claim's checks read `unknown` ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)) |
+| No directory maps a brand to its keys | A reader must take a brand's issuer and publisher keys from the brand or its application | Keep your own list of the keys you accept, as the trusted parties in [gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence) show |
+
+## Registry
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| No registry package, image or public reference code exists | You build a registry against the contract | Follow [the registry guide](../implement/roles/registry.md) and compare answers with the hosted registry |
+| A registry export is a scoped archive | It has no token history, restricted evidence or keys | Keep those yourself ([export, import and recovery](export-import-recovery.md)) |
+| The hosted registry serves no complete export | Its claims cannot be exported in one step | Page `GET /attestations` |
+
+## The verification report
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| The report does not check a payload against its declared profile | A state with an invalid payload can pass every check | Run `node examples/sample-payload.mjs <profile> --check <file>`, or validate with the profile's schema ([profiles](../packages/dpp-profiles.md)) |
+| Identity assurance is Ring 0 | The platform vouches for an account and its brand name; nobody checks a brand's legal identity | Treat the brand name as the platform's statement ([identity and authority](../learn/identity-and-authority.md)) |
+
+## The hosted reference
+
+| Limit | What it means for you | What to do now |
+|---|---|---|
+| Writing needs the operator's tokens | You cannot announce to the hosted index or store on the hosted registry | Run your own index, or [contact the programme](../start/choose-your-path.md#contact-the-programme) |
+| The verifier reads only identifiers minted on `dpp.bsvb.net` or `id.gs1.org` | A passport minted under your own host is not shown there | Verify with your own reader ([quick start](../quick-start.md#read-a-live-passport)) |
+| Some older states are held without their merkle paths | A peer synchronising from the hosted index leaves those tips behind until their proofs are supplied | Expect a partial copy; see [overlays running now](../deployment.md#overlays-running-now) |
+| The hosted index runs the release before the current one | It reports `@bsv/dpp-overlay-topics@0.4.0-beta.3` | Read its `GET /capabilities` before depending on a feature |
+
+## Open questions in the standard
+
+These are not settled. Do not invent an answer: build so that the answer can change.
+
+| Question | Where it stands |
 |---|---|
-| Later proofs for already-held outputs are not refreshed by peer synchronisation | Supply the proof to each affected operator; [federation tests](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/test/federation.test.ts#L292-L337) distinguish this from new states carrying proofs. |
-| Synchronisation covers current outputs and their lineages | Use [exports](export-import-recovery.md) for the separately retained evidence. |
-| An output a synchronising node left behind is not asked for again | The checkpoint has moved past it; once the cause is fixed, move the checkpoint back ([federation](federation.md#when-a-record-does-not-arrive)). Why an output did not arrive is only in the synchronising node's log. |
-| Cursors are per process | A restart or a different replica can invalidate a cursor; [history implementation](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/history.ts). |
-| The package route is bounded | Use the complete-export route for longer histories; [capability limits](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/examples/capabilities-reference-node.json). |
-| A refused tip spend affects peer availability | The record store retains the lineage, but engine tip availability has a separate limit; [retraction tests](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/test/retract.test.ts). |
-| The local scripts-only setting skips header verification | It cannot supply verified inclusion; [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts). |
-| The host does not advertise service discovery | Configure discovery separately; [capability exclusions](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/examples/capabilities-reference-node.json). |
-| Durable independent publication has ledger status `gap` | No independently administered replica is demonstrated; [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json#L3794). |
-| Registry export is a scoped archive | It has no token history, restricted evidence or keys; [registry guide](../implement/roles/registry.md). |
-
-Hosting of the reference index: open; today it is a standalone container reached by its URL. Local peer tests do not establish independent operation.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
+| How the `legitimate` and `authority` tiers are disclosed to the readers entitled to them | Not settled; the owner tier's encryption is defined, the others are not |
+| Whether a custodian may write for a holder after a hand on | Not settled ([after a hand on](../packages/what-an-application-offers.md#after-a-hand-on)) |
+| Which fields `event_data` carries for each operation | No profile defines them yet |
+| Which key locks the output of a version 2 `TRANSFER` under managed custody | Not settled; check with the custodian's application before you rely on a lock |
+| Whether a lifecycle claim may carry structured data beyond its event type and subject | Not settled; today a claim carries no further fields |
+| How to create or update a `did:bsv` from the public material | Not shown yet; a writer at Ring 0 needs no `did:bsv` ([BSV DIDs](../learn/dids.md)) |
+| Who versions a profile and where its canonical definition lives | Until settled, the frozen manifests in `@bsv/dpp-profiles` are the definitions ([where things stand](../start/status.md)) |
+| The rest of the open decisions | [Where things stand](../start/status.md#open-decisions) and the fixture runner's [source gaps](../implement/fixture-runner.md#source-gaps) |

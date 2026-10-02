@@ -17,5 +17,3 @@ The reference application's service pins exact DPP package versions, as any appl
 Application account associations do not establish signing authority. Read [identity](../learn/identity-and-authority.md) and [custody](../learn/custody.md) before building those adapters.
 
 Object identifier derivation: declined for now; a physical-object DID stays optional and is never derived from the passport identifier.
-
-Live identity assurance is Ring 0. Higher rings are absent. [Ring 0 explained](../learn/identity-and-authority.md).
