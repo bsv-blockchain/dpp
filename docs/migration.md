@@ -19,7 +19,7 @@ Write down what each running component uses now, and keep the old configuration 
 
 ### From beta.7 to beta.8
 
-The current set, `dpp-release-2026-10-5`, a candidate pending publication, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC. An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+The current set, `dpp-release-2026-10-5`, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 2 October 2026 from source revision `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)). An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
 
 ### From beta.6 to beta.7
 
@@ -90,6 +90,7 @@ Compare what your reader reports on the same evidence under the old release and 
 
 | Release set | Packages | Source revision |
 |---|---|---|
+| `dpp-release-2026-10-5` | beta.8 of overlay topics, beta.7 of core and profiles (VSC beta.5) | `a8db9b6018c61d933596e21797ce2d67ddb5a33e` |
 | `dpp-release-2026-10-4` | beta.7 (VSC beta.5) | `25fabf755090442b98c6714abfae54ec48fee029` |
 | `dpp-release-2026-10-3` | beta.6 (VSC beta.5) | `77d53611d884f7d9aa058fe063acb187f77ec9c7` |
 | `dpp-release-2026-10-2` | beta.5 (VSC beta.4) | `7292237376b8308ed67b11194fd7a00cbe313d82` |

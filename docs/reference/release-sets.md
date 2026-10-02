@@ -6,11 +6,13 @@ A release set is a declared combination of package versions, the wire and contra
 
 | | `dpp-release-2026-10-5` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-5.json` |
-| Status | Candidate; publication of the overlay package is pending |
+| Declaration | [`release/dpp-release-2026-10-5.json`](https://github.com/bsv-blockchain/dpp/blob/a8db9b6018c61d933596e21797ce2d67ddb5a33e/release/dpp-release-2026-10-5.json), as the approved publication plan bound it |
+| Status | Published to npm under the `latest` tag on 2 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
 | Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
-| npm tag | `latest`, so once it is published a plain install gets these versions; `next` stays at the beta.5 set. Install exact versions all the same |
+| npm tag | `latest`, so a plain install gets these versions; `next` stays at the beta.5 set. Install exact versions all the same |
+| Source revision | `a8db9b6018c61d933596e21797ce2d67ddb5a33e` |
+| Receipt | [Beta.8 publication receipt](beta-8-publication.md): the approved plan, archive digests and registry verification |
 | Selection | `conformance/selections/dpp-release-2026-10-5.json`, the claims this release requires and withholds ([conformance](conformance.md)) |
 
 Compared with the published beta.7 set `dpp-release-2026-10-4`, an index finds a passport from a GS1 key without a host: `ls_dpp` answers `gs1Key` with every passport whose identifier names that key under any host, under index contract `0.9.0-draft`, and the overlay package now depends on the profiles package for the GS1 parse. Only the overlay package takes a new version. No record, claim, anchor or acceptance format, frozen profile or custody profile changed.
