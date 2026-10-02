@@ -12,7 +12,7 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.6 @bsv/sdk@2.8.10
 ```
 
-Name the exact versions: a bare `npm install @bsv/dpp-core` installs the `latest` tag, which is still 0.3.0-beta.1. Every example below also imports `@bsv/sdk`. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) says which entry points run where; browser use is untested.
+A bare `npm install @bsv/dpp-core` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Every example below also imports `@bsv/sdk`. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) says which entry points run where; browser use is untested.
 
 The examples on this page are complete files. Save each one under the name given, as an `.mjs` file because they use top-level `await`, and run it with `node <name>.mjs` in that project.
 

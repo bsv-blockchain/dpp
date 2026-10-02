@@ -19,7 +19,7 @@ Write down what each running component uses now, and keep the old configuration 
 
 ### From beta.5 to beta.6
 
-The current set, `dpp-release-2026-10-3`, a candidate whose publication is pending, carries the beta.6 packages (VSC beta.5). The only change is the npm tag the packages publish to, `latest` instead of `next`; nothing in the code, the record formats or the index changed, so an application needs only the new versions.
+The current set, `dpp-release-2026-10-3`, carries the beta.6 packages (VSC beta.5), published under `latest` on 2 October 2026 from source revision `77d53611d884f7d9aa058fe063acb187f77ec9c7` ([receipt](reference/beta-6-publication.md)). The only change is the npm tag the packages publish to, `latest` instead of `next`; nothing in the code, the record formats or the index changed, so an application needs only the new versions.
 
 ### From beta.4 to beta.5
 
@@ -43,7 +43,7 @@ To upgrade an application:
    npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/sdk@2.8.10
    ```
 
-   Add `@bsv/vsc@0.2.0-beta.3` or `@bsv/dpp-overlay-topics@0.4.0-beta.4` if you use them. npm's `latest` tag still points at beta.1, so always name the version.
+   Add `@bsv/vsc@0.2.0-beta.3` or `@bsv/dpp-overlay-topics@0.4.0-beta.4` if you use them. Always name the version.
 2. Find every place that passes a profile identifier to a profile reader, typically one built from the `profile` and `profile_version` a record declares, such as `general@2`. Check the identifier against `PROFILE_IDS` from `@bsv/dpp-profiles` before you pass it, and handle the error the reader now throws for any other.
 3. Rehearse against retained data ([below](#rehearse-against-retained-data)), then deploy.
 
@@ -56,7 +56,7 @@ Apply each step in turn from the release you run. All of these sets are supersed
 | From and to | What changes for an application | What changes for an index operator |
 |---|---|---|
 | beta.2 to beta.3: `dpp-release-2026-09-4` to `dpp-release-2026-09-5` | Every package now needs `@bsv/sdk` 2.8.10, the version the current wallet toolbox requires. The first version of a publisher policy now governs the history dated before its own issue, through its key windows, so a beta.2 reader can refuse states that beta.3 admits. `@bsv/vsc` stays at 0.2.0-beta.2. No wire format changes | Synchronisation carries wallet-funded lineages: the index answers `POST /requestForeignGASPNode` for any output of a transaction it holds. Synchronisation holds its checkpoint where an offered output did not arrive, and leaves an output behind after five rounds, naming it once in the log. `PUBLISHER_POLICY_JSON` carries a policy inline. A synchronising node needs `WOC_API_KEY` |
-| beta.1 to beta.2: `dpp-release-2026-09-3` to `dpp-release-2026-09-4`. npm's `latest` tag still installs beta.1 | `@bsv/sdk` moves to 2.7.1, and to 2.8.10 with beta.3. The draft profiles `battery@4` and `textile@4` arrive beside the unchanged current ones, with `compareProfiles` and `reviewProfileData`. The canonicaliser upgrade changes how values outside JSON are handled, so do not recompute historical signatures over such JavaScript values. No wire format changes | Rebuild with the updated dependencies |
+| beta.1 to beta.2: `dpp-release-2026-09-3` to `dpp-release-2026-09-4`. npm's `latest` tag installed beta.1 until beta.6 | `@bsv/sdk` moves to 2.7.1, and to 2.8.10 with beta.3. The draft profiles `battery@4` and `textile@4` arrive beside the unchanged current ones, with `compareProfiles` and `reviewProfileData`. The canonicaliser upgrade changes how values outside JSON are handled, so do not recompute historical signatures over such JavaScript values. No wire format changes | Rebuild with the updated dependencies |
 | The second set to the third: `dpp-release-2026-09-2` to `dpp-release-2026-09-3`, the first beta | A client of the index follows the new contract version; the on-chain record formats are unchanged | The HTTP and export interface changes: the index contract moves from `0.6.0-draft` to `0.7.0-draft`, and the index gains the complete export, `GET /evidence-export` |
 
 The [changelog](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/CHANGELOG.md) records each change in full.
@@ -82,7 +82,7 @@ Compare what your reader reports on the same evidence under the old release and 
 
 | Release set | Packages | Source revision |
 |---|---|---|
-| `dpp-release-2026-10-3` | beta.6 (VSC beta.5), pending publication | Recorded in its receipt once published |
+| `dpp-release-2026-10-3` | beta.6 (VSC beta.5) | `77d53611d884f7d9aa058fe063acb187f77ec9c7` |
 | `dpp-release-2026-10-2` | beta.5 (VSC beta.4) | `7292237376b8308ed67b11194fd7a00cbe313d82` |
 | `dpp-release-2026-10` | beta.4 (VSC beta.3) | `f9d8e98658c7cf406702d49194ec5a8480cbca73` |
 | `dpp-release-2026-09-5` | beta.3 (VSC beta.2) | `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81` |

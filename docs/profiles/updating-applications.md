@@ -8,7 +8,7 @@ A profile version is the number after `@` in a profile identifier, such as `batt
 
 ### 1. Know when a new profile version lands
 
-- **The package.** `npm view @bsv/dpp-profiles dist-tags` shows the newest prerelease under `next` (0.3.0-beta.4 today). The `latest` tag is still beta.1, so always install an exact version.
+- **The package.** `npm view @bsv/dpp-profiles dist-tags` shows the newest prerelease under `latest` (0.3.0-beta.6 today). Install an exact version all the same.
 - **The release.** [Release sets](../reference/release-sets.md) names the current set and its packages, and the repository's `CHANGELOG.md` says what each release changed.
 - **The profile.** Each manifest's `status` says whether a version is `current`, `draft` or `superseded`. A new version arrives as a `draft`; it becomes `current` only at a later, reviewed cutover.
 

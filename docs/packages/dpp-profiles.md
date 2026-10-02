@@ -12,7 +12,7 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.6
 ```
 
-Use 0.3.0-beta.4 or later. Before 0.3.0-beta.4, `readManifest` and the schema readers did not check the identifier they were given; from 0.3.0-beta.4 they refuse any identifier the package does not publish. Name the exact version: a bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still 0.3.0-beta.1. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) separates the Node module from the data entry points.
+Use 0.3.0-beta.4 or later. Before 0.3.0-beta.4, `readManifest` and the schema readers did not check the identifier they were given; from 0.3.0-beta.4 they refuse any identifier the package does not publish. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) separates the Node module from the data entry points.
 
 The JavaScript examples on this page are complete files: save each under the name given and run it with `node <name>.mjs` in that project. Only the commands that name `examples/` need a checkout of the repository.
 

@@ -6,7 +6,7 @@ A version on this page is the profile version, the number after `@`; it is not t
 
 **Do you need them?** To write new records, no: write under `battery@2` or `textile@2`. Evaluate a draft to prepare your application for the cutover, the later, reviewed step that makes a successor current.
 
-**Install the exact version.** `npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.6`. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still beta.1 and does not carry the drafts.
+**Install the exact version.** `npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.6`. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta, which carries the drafts; name the exact version all the same.
 
 ## Try a draft in your application
 

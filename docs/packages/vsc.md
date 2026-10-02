@@ -27,7 +27,7 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/vsc@0.2.0-beta.5
 ```
 
-Each package numbers its own prereleases, so `@bsv/vsc` 0.2.0-beta.5 is the version in the current release set, `dpp-release-2026-10-3`, beside the other packages' beta.6. Name the exact version: a bare `npm install @bsv/vsc` installs the `latest` tag, which is still 0.2.0-beta.1. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
+Each package numbers its own prereleases, so `@bsv/vsc` 0.2.0-beta.5 is the version in the current release set, `dpp-release-2026-10-3`, beside the other packages' beta.6. A bare `npm install @bsv/vsc` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
 
 ## Entry points and their main functions
 

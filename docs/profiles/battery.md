@@ -110,7 +110,7 @@ The fixture uses record version 1 operations. Record version 2 operations, which
 
 - `Cannot find module '@bsv/dpp-profiles'`: in a checkout, run `npm run build` again and read its first error; in your own project, install the package at the exact version above.
 - `FAIL:` lines from `--check`: each names one field; fix it and check again.
-- A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still beta.1 and lacks the drafts. Name the exact version.
+- A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta. Name the exact version.
 
 ## Assessment status
 
