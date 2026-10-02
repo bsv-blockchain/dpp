@@ -1,34 +1,47 @@
 # Conformance and the ledger
 
-Use the [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) to trace a claim to its source, implementation, tests and retained evidence. The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.schema.json) defines its fields and statuses. The [conformance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) and [governance source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/GOVERNANCE.md) define the assessment rules.
+This page explains the requirement ledger, which records what the reference implementation claims and on what evidence, and the two commands that check it. It is for reviewers and auditors checking the reference's claims, and for implementers who want to see how a claim is traced; to report on your own implementation, go to [requirements and evidence reporting](../implement/reporting.md).
 
-## What each check answers
+## Words used here
 
-The ledger connects a requirement to the source, code, tests and retained evidence supporting it. A baseline selects requirements for a role. A release selection chooses which claims the candidate requires and which it withholds.
+| Word | Meaning |
+|---|---|
+| Requirement | One rule from a specification, with its layer and the roles it binds. |
+| Ledger | [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json): every requirement with its source, the code and tests behind it, retained evidence and a status such as `tested`, `implemented`, `gap` or `unassessed`. Each source is pinned by its digest. |
+| Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json). |
+| Claim | A statement a release makes, such as "a passport reader conforms to `native-baseline@1`", which is true only if every requirement row it needs is tested or better. |
+| Selection | The claims one release requires and the claims it withholds, for example [`conformance/selections/dpp-release-2026-10.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json) for the current release. |
+| Withheld | A claim the release deliberately does not make, with the reason. Withheld claims are part of the result, not a failure. |
 
-`conformance/check.mjs` checks consistency of that material, including recorded source digests. `conformance/qualify.mjs` evaluates a named selection against the ledger. Neither command substitutes for running a new implementation's tests.
-
-For example, a selected release gate can pass while independent operation remains withheld. Read the withheld list as part of the result. A source digest mismatch means the ledger and file differ; it does not by itself establish that the changed file is right or wrong.
+The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the fields and statuses; the [conformance specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) define how a claim is made and reported.
 
 ## Run the checks
 
-Use the commands below from the [prepared checkout](../quick-start.md#get-the-code). Each exits non-zero when its checks fail and prints the affected findings. Fix or explain those findings before reporting the selected claim. Keep the command, source revision and output with the [implementation evidence](../implement/reporting.md).
-
-From the repository root:
+From the root of a checkout on `main`, after `npm ci` and `npm run build` ([get the code](../quick-start.md#get-the-code)):
 
 ```sh
 node conformance/check.mjs
 node conformance/qualify.mjs conformance/selections/dpp-release-2026-10.json
 ```
 
-## Source material
+The first, the diagnostic, checks that the ledger, the baseline, the reports and the capability example are consistent with each other and with the sources they pin. It prints about 170 lines, one finding each, and ends:
 
-| Review task | Source |
-|---|---|
-| Find a role's selected requirements | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/baseline-native-2.json) |
-| Inspect claims required or withheld by the release | [Release selection](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/conformance/selections/dpp-release-2026-10.json) |
-| Check material consistency | [Diagnostic](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/check.mjs) |
-| Evaluate a selection | [Qualification gate](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/qualify.mjs) |
+```
+The ledger, baseline, reports and capability example are consistent.
+```
 
+The second, the qualification gate, checks the named selection against the ledger. It prints one line per required claim, seven `withheld:` lines with their reasons (among them federated operation, European conformity, battery product qualification and version 1.0 readiness), and ends:
 
-A passing diagnostic and a passing selection answer different questions. Read each command's findings and the selection's withheld claims. Use [evidence reporting](../implement/reporting.md) for a new implementation and [status](../start/status.md) for the delivery overview.
+```
+Selection dpp-release-2026-10 is qualified: every required claim can be made on the ledger's evidence. This is the ledger's answer, not a conformity certificate.
+```
+
+Both exit 0 on `main`. Each exits non-zero and names the finding when a check fails.
+
+## Read the result
+
+- The two commands answer different questions. A consistent ledger says the evidence records agree with their sources; a qualified selection says the release's required claims can be made on that evidence. Neither says anything about an implementation other than the reference, and neither replaces running that implementation's own tests against the fixtures.
+- Read the withheld list as part of the result: a release can qualify while independent operation stays withheld.
+- A source digest mismatch from the diagnostic means a pinned source changed after it was assessed. It does not by itself say the changed file is right or wrong; a reviewer confirms the assessment still holds and re-pins, as [how the standard changes](../contribute/README.md) describes.
+
+Keep the command, the source revision and the output with any report that cites them. Next: [requirements and evidence reporting](../implement/reporting.md) for your own implementation, or [where things stand](../start/status.md) for the delivery overview.

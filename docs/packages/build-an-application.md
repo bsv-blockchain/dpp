@@ -176,7 +176,7 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects `managed-custody@1`: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
-`SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys, or to retire one, give the index a signed publisher policy instead ([sign a publisher policy](../operate/federation.md#sign-a-publisher-policy)). [Run a service](../operate/README.md) explains the other settings.
+`SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys, or to retire one, give the index a signed publisher policy instead ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run a service](../operate/README.md) explains the other settings.
 
 ### 2.4 Start the index
 

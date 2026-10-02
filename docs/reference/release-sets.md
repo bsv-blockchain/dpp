@@ -1,37 +1,86 @@
 # Release sets
 
-A release set is a declared combination of packages, interfaces, profiles and conformance selection. It gives an integrator a reproducible compatibility target. It is separate from a particular application's deployment or a public package publication.
+A release set is a declared combination of package versions, the wire and contract versions they implement, the profiles they carry and a conformance selection: one compatibility target you can pin and check. This page names the current set, shows how to use it and how to verify that the published packages are the approved ones, and lists the earlier sets.
 
-## Install and record a candidate
+## The current set
 
-Follow [package installation](../packages/README.md) to build candidate tarballs and exercise them in a clean consumer. Keep `release/candidates.json`, the produced artefact digests and the consuming application's lockfile. Together they identify the actual bytes installed.
-
-Before replacing a service, compare its capability document with the selection the client expects. Use [migration](../migration.md) to rehearse the change against retained data. A successful package build does not establish that a running operator has upgraded.
-
-## Declared sets
-
-| Set | Source state |
+| | `dpp-release-2026-10` |
 |---|---|
-| [dpp-release-2026-09](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09.json) | Superseded |
-| [dpp-release-2026-09-2](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-2.json) | Superseded |
-| [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Superseded |
-| [dpp-release-2026-09-4](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/release/dpp-release-2026-09-4.json) | Superseded; its beta.2 packages are published |
-| [dpp-release-2026-09-5](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/release/dpp-release-2026-09-5.json) | Superseded; its beta.3 packages are published |
+| Declaration | [`release/dpp-release-2026-10.json`](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/release/dpp-release-2026-10.json), as the approved publication plan bound it |
+| Status | Published to npm under the `next` tag on 1 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
+| Packages | `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4`, `@bsv/vsc@0.2.0-beta.3`, on `@bsv/sdk@2.8.10` and Node 22 |
+| npm tags | `next` names these versions; `latest` still names beta.1, so install exact versions |
+| Source revision | `f9d8e98658c7cf406702d49194ec5a8480cbca73` |
+| Receipt | [Beta.4 publication receipt](beta-4-publication.md): the approved plan, archive digests and registry verification |
+| Selection | [`conformance/selections/dpp-release-2026-10.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json), the claims this release requires and withholds ([conformance](conformance.md)) |
 
-The current set is `dpp-release-2026-10`, declared in `release/dpp-release-2026-10.json`, whose packages were published under `next` on 1 October 2026. The [publication receipt](beta-4-publication.md) records the exact approved plan, source revision, archive digests and registry verification. Its overlay topics package asks a synchronising peer for a predecessor only through the passport output, once the overlay names the output its graph reached, and its profiles package refuses identifiers it does not publish; all four packages take new versions because each package's documentation changed. [Publishing profile updates](publishing-profile-updates.md) walks through preparation, approval and verification.
+Compared with the earlier set `dpp-release-2026-09-5`, every wire format is unchanged. The overlay topics package asks a synchronising peer for a predecessor only through the passport output, once the `@bsv/overlay` library names the output its graph reached, and the profiles package refuses identifiers it does not publish; all four packages took new versions because each package's documentation changed.
 
-The beta.3 packages of the preceding set, `dpp-release-2026-09-5`, were published under `next` on 27 September 2026, with the VSC package unchanged at beta.2. The [publication receipt](beta-3-publication.md) records the exact approved plan, source revision, archive digests and successful registry consumer check. That set is now marked superseded; the approved plan bound its JSON as it stood at source revision `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81`, and the plan is reproduced from that revision.
+## Use the current set
 
-The four beta.2 packages of `dpp-release-2026-09-4` were published under `next` on 18 September 2026. The [publication receipt](beta-2-publication.md) records the exact approved plan, source revision, archive digests and successful registry consumer check. That set is now marked superseded; the approved plan bound its JSON as it stood at source revision `f54e750de4c7731a30563e5f1caad762adbfb737`, and the plan is reproduced from that revision. No transition to broader release readiness or promotion of the draft industry profiles is made here.
+1. Install the exact versions, as [install from npm](../packages/README.md#install-from-npm) shows, and keep your lockfile. Together they identify the bytes you installed.
+2. Before pointing a client at a running service, compare the service's `GET /capabilities` with what the client expects: `implementation.version`, the protocol versions and the profiles. Installing a release does not upgrade any running service, the hosted ones included; each service's capability document says what it runs.
+3. To move from an earlier set, rehearse against retained data as [migration](../migration.md) describes, and adopt successor industry profiles separately ([update profiles and consuming applications](../profiles/updating-applications.md)).
 
-Each record links package versions, interfaces, profiles and its conformance selection. The [support table](../packages/support-table.md) is generated from the selected record. Historical declarations remain in the earlier records.
+These are experimental prereleases: APIs may change significantly during testing, so read the changelog before upgrading. Published versions are immutable, so every change takes a new version. Package versions are separate from the specification, wire-format and frozen profile versions they implement, and installing them establishes neither live interoperability nor production readiness.
 
-The [release tooling](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/release/README.md) produces a candidate record containing the source revision and artefact digests. A release-set name alone is not that source revision. [Package installation](../packages/README.md#source-access) gives the reviewed source snapshot; [the implementer start](../implement/README.md) identifies the bundle manifest.
+## Verify a published release
 
-The source repository and the npm packages are public. The beta.4 publication moved `next` to beta.4 for core, overlay topics and profiles and to beta.3 for the VSC package, and left `latest` at beta.1. Consumer applications must adopt the packages and activate any successor profiles separately.
+These steps check that the packages on npm are the bytes the approved plan names, built from a public source revision, and what the ledger claims for them. They need Node 22, npm 11.19.0 and git; each step can be run alone.
 
-## Experimental package compatibility
+1. **Check registry signatures and provenance.** In an empty directory:
 
-The current experimental npm releases use `-beta.4` versions for core, overlay topics and profiles and `-beta.3` for the VSC package, under the `next` tag. Pin exact versions and retain the consuming application lockfile. APIs may change significantly during testing; review release notes before upgrading. Published package versions are immutable, so each change requires a new version.
+   ```sh
+   npm init -y
+   npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3
+   npm audit signatures
+   ```
 
-Package prerelease versions are separate from specification, wire-format and frozen profile versions. Compare the selected release declaration and operator capabilities before testing interoperability. Installing these packages establishes neither live interoperability nor production readiness.
+   It printed `87 packages have verified registry signatures` and `17 packages have verified attestations`; the four DPP packages are among the attested ones, and nothing was reported invalid or missing.
+
+2. **Compare each archive with the approved plan.** From the root of a checkout on `main`, print the registry's integrity for each package and the integrity the [approved plan](beta-4-publication-plan.json) recorded:
+
+   ```sh
+   for p in @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3; do echo "$p $(npm view "$p" dist.integrity)"; done
+   node -e "for (const c of require('./docs/reference/beta-4-publication-plan.json').candidates) console.log(c.name + '@' + c.version, c.integrity)"
+   ```
+
+   The two lists must match line for line, starting `@bsv/dpp-core@0.3.0-beta.4 sha512-bSOxqRghWrxsrPY7…`.
+
+3. **Rebuild the plan from the source revision.** Repack from the recorded revision, never from `main`: the packages on `main` have changed since publication, so their archives differ from the published ones. In a fresh clone, and keeping the checkout clean, since any file written inside it changes the plan:
+
+   ```sh
+   git clone https://github.com/bsv-blockchain/dpp.git dpp-beta-4
+   cd dpp-beta-4
+   git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73
+   npm ci
+   node scripts/release-candidates.mjs release/dpp-release-2026-10.json
+   node scripts/publish-candidates.mjs --verify-registry
+   node scripts/consumer-check.mjs --registry
+   ```
+
+   `publish-candidates.mjs --verify-registry` writes `release/publication-plan.json` and prints `Publication plan SHA-256: ecf6151b4f4dfaba47f9579426fcc3dcb58324b3517cbd36cc4be52c6dff3b51`, the digest the receipt records, then `already-published` for each package and `Every npm tarball matches the candidate bytes.` The written plan is byte-identical to the archived one. `consumer-check.mjs --registry` installs the public versions into a separate project and ends `Every sentence above holds.` None of these commands publishes anything or moves a tag.
+
+4. **Read what the ledger claims.** Run the two checks on [conformance](conformance.md). The selection qualifies and withholds seven claims, among them federated operation, European conformity, battery product qualification and version 1.0 readiness.
+
+The receipts of earlier publications have their own verification sections with the same commands at their own revisions.
+
+## Earlier sets
+
+Each earlier set is superseded, and each link opens its JSON at a recorded revision. For the beta.2 and beta.3 sets that is the source revision their approved plans bound, the revision to reproduce those plans from.
+
+| Set | State | Receipt |
+|---|---|---|
+| [dpp-release-2026-09-5](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/release/dpp-release-2026-09-5.json) | Superseded; its beta.3 packages were published under `next` on 27 September 2026, with the VSC package unchanged at beta.2 | [Beta.3 publication receipt](beta-3-publication.md) |
+| [dpp-release-2026-09-4](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/release/dpp-release-2026-09-4.json) | Superseded; its four beta.2 packages were published under `next` on 18 September 2026 | [Beta.2 publication receipt](beta-2-publication.md) |
+| [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Superseded; its beta.1 versions are on npm, published on 10 September 2026, and are the ones the `latest` tag still names | |
+| [dpp-release-2026-09-2](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-2.json) | Superseded; its versions were never published | |
+| [dpp-release-2026-09](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09.json) | Superseded; its versions were never published | |
+
+The later publications all went to `next` and left `latest` at beta.1; none promoted the draft industry profiles or declared broader release readiness. Each set's record links its package versions, interfaces, profiles and conformance selection, and keeps its own historical declarations; the [support table](../packages/support-table.md) is generated from the current record.
+
+## How a set is made
+
+The [release tooling](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
+
+Next: install the current set with [install the selected release](../packages/README.md), or check what it claims on [conformance](conformance.md).

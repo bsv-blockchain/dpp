@@ -44,7 +44,7 @@ The [HTTP guide](../../reference/contracts.md) gives the request sequence.
 
 ## Publisher policy
 
-An index admits a passport state only when its publisher signature verifies under a key the index's policy names. The keys enter in one of two ways: `SERVICE_IDENTITY_KEY`, one key, or a signed publisher policy chain that names several keys, each with an `activeFrom` time and authorised by the operator's identity key ([sign a publisher policy](../../operate/federation.md#sign-a-publisher-policy); [schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json); vectors in `fixtures/vectors/dpp/publisher-policy/v1.json`). The capability document's `publisherPolicy` lists the keys but not their windows, so a writer can see that a key is listed but not that it is active at a state's time; the windows are in the operator's signed chain.
+An index admits a passport state only when its publisher signature verifies under a key the index's policy names. The keys enter in one of two ways: `SERVICE_IDENTITY_KEY`, one key, or a signed publisher policy chain that names several keys, each with an `activeFrom` time and authorised by the operator's identity key ([sign a publisher policy](../../operate/federation.md#3-sign-a-publisher-policy); [schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json); vectors in `fixtures/vectors/dpp/publisher-policy/v1.json`). The capability document's `publisherPolicy` lists the keys but not their windows, so a writer can see that a key is listed but not that it is active at a state's time; the windows are in the operator's signed chain.
 
 ## Known gaps for a new operator
 

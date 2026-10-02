@@ -4,7 +4,7 @@ Use this page when you move a running application or index to a new package rele
 
 ## Before you start
 
-Write down what each running component uses now, and keep the old configuration and a recoverable copy of the data before you change anything ([fetch, check and restore an export](operate/export-import-recovery.md#fetch-check-and-restore-an-export)).
+Write down what each running component uses now, and keep the old configuration and a recoverable copy of the data before you change anything ([fetch, check and restore an export](operate/export-import-recovery.md#restore-a-passport-from-the-complete-export)).
 
 | What | Where to read it |
 |---|---|
@@ -57,7 +57,7 @@ The [changelog](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50
 
 Compare what your reader reports on the same evidence under the old release and the new one. An unchanged transaction must not acquire a different subject or a stronger finding because the software changed.
 
-1. **Restore a copy into a scratch index.** Start a local index with the Compose preset ([run a service](operate/README.md)), admitting the same publisher keys as the live one, and restore your export into it ([fetch, check and restore an export](operate/export-import-recovery.md#fetch-check-and-restore-an-export)). It answers at `http://localhost:8080`.
+1. **Restore a copy into a scratch index.** Start a local index with the Compose preset ([run a service](operate/README.md)), admitting the same publisher keys as the live one, and restore your export into it ([fetch, check and restore an export](operate/export-import-recovery.md#restore-a-passport-from-the-complete-export)). It answers at `http://localhost:8080`.
 2. **Run the reader at the old release.** `examples/verify-passport.mjs` uses the packages built in its own checkout, not packages installed in your project, so run it from a checkout at the old set's source revision. In an empty working directory:
 
    ```sh
@@ -100,7 +100,7 @@ Installing a package and activating a successor profile are separate steps. A pa
 
 ## Roll back
 
-Keep the pre-change deployment and a recoverable copy of the data until the new release has run cleanly. A software rollback does not undo published transactions: states written under the new release stay on chain. Before you point an older reader at newer records, check that it supports their formats. Use [export and recovery](operate/export-import-recovery.md#rehearse-a-replacement) to rehearse replacing a provider.
+Keep the pre-change deployment and a recoverable copy of the data until the new release has run cleanly. A software rollback does not undo published transactions: states written under the new release stay on chain. Before you point an older reader at newer records, check that it supports their formats. Use [export and recovery](operate/export-import-recovery.md#back-up-and-restore-a-whole-index) to rehearse replacing a provider.
 
 ## Next
 
