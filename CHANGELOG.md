@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, the registry names its anchoring key
+
+- The registry contract (`0.3.0`) adds an optional `anchoredBy` to the capability document: the identity key every anchor the registry writes names, so a verifier can tell its anchors from others' without asking. Naming the key does not make a registry trusted. The three ledger rows citing the contract were re-reviewed.
+- `examples/check-registry.mjs` compares each anchor with that key when no `--anchoring-services` list is given; the verifier and registry guides say so.
+
 ### 2026-10-02, beta.8 publication
 
 - Publish `@bsv/dpp-overlay-topics@0.4.0-beta.8` under `latest` from `a8db9b6018c61d933596e21797ce2d67ddb5a33e` using GitHub OIDC with provenance, with `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5` already published; `next` stays at the beta.5 set. The public-registry archives match the approved plan and the workflow's registry consumer check passed.
