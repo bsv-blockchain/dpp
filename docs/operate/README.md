@@ -32,7 +32,7 @@ console.log(fixture.custodianKey)
 JS
 ```
 
-That key belongs to synthetic data; choose the actual publisher key for a deployment. Generate each bearer token separately, for example with `openssl rand -hex 32`, and put the values in the local environment file. Leave `SERVER_PRIVATE_KEY` empty.
+That key belongs to synthetic data; choose the actual publisher key for a deployment. Generate each bearer token separately, for example with `openssl rand -hex 32`, and put the values in the local environment file. Each of `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN` and `EXPORT_TOKEN` is one shared secret: everyone you give it to holds the same value, the index cannot tell them apart, and taking access away from one means replacing the value for all ([known limitations](limitations.md#index-host)). Leave `SERVER_PRIVATE_KEY` empty.
 
 ## Start and inspect
 

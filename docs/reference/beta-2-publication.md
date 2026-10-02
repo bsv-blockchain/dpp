@@ -49,6 +49,6 @@ Compare the generated `release/publication-plan.json` with the archived plan. Th
 
 The original release-set JSON retains `status: candidate` because it is an input whose exact digest was approved. This receipt records completed npm publication without rewriting that evidence or changing the broader release-set lifecycle state.
 
-`battery@2` and `textile@2` remain current. Versions 3 and 4 remain drafts, and existing frozen definitions remain unchanged. Publication does not upgrade dpp-app, activate new writers, publish an operator image, establish a deployed service's readiness or qualify a battery product. The release selection continues to withhold European conformity and version 1.0 readiness claims.
+`battery@2` and `textile@2` remain current. Versions 3 and 4 remain drafts, and existing frozen definitions remain unchanged. Publication does not upgrade the reference application, activate new writers, publish an operator image, establish a deployed service's readiness or qualify a battery product. The release selection continues to withhold European conformity and version 1.0 readiness claims.
 
 Continue with [consumer adoption](../profiles/updating-applications.md) and [version 4 review](../profiles/version-4-drafts.md). The [publication guide](publishing-profile-updates.md) describes the process for future releases and recovery from delays.

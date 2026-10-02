@@ -12,6 +12,12 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, resolver wording and shared tokens
+
+- `spec/gs1-discovery.md` describes a resolver under the profile rather than the reference registry's, since no hosted deployment serves one: an adopter runs a resolver built with the `@bsv/dpp-profiles` helpers or names an external GS1-Conformant Resolver. No rule changes; the four rows citing it were re-reviewed.
+- `spec/record-model.md` section 3 says the host a writer mints under need not be a GS1-Conformant Resolver, as the identifiers page does. No rule changes.
+- The operator start and the limitations page say that each index token is one shared secret.
+
 ### 2026-10-02, beta.5 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` under `next` from `7292237376b8308ed67b11194fd7a00cbe313d82` using GitHub OIDC with provenance, the first under the Apache 2.0 licence. The public-registry archives match the approved plan. The workflow's final clean install ran before the registry listed the VSC version; the same registry checks passed from a clean checkout under a minute later. `latest` remains at beta.1.
