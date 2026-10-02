@@ -46,7 +46,7 @@ describe('the query guard', () => {
     for (const query of probes) {
       await expect(
         service.lookup({ service: 'ls_dpp', query: query as unknown as object })
-      ).rejects.toThrow(/passportId or uid/)
+      ).rejects.toThrow(/passportId, uid or gs1Key/)
     }
   })
 
@@ -54,7 +54,7 @@ describe('the query guard', () => {
     const service = await seeded(3)
     for (const query of [{ uid: '' }, { passportId: '' }, {}]) {
       await expect(service.lookup({ service: 'ls_dpp', query })).rejects.toThrow(
-        /passportId or uid/
+        /passportId, uid or gs1Key/
       )
     }
   })
@@ -65,6 +65,47 @@ describe('the query guard', () => {
     expect(
       await service.lookup({ service: 'ls_dpp', query: { passportId: PASSPORT_ID } })
     ).toHaveLength(3)
+  })
+})
+
+describe('the GS1 key, for a caller holding a GTIN and serial but no host', () => {
+  // One product, two passports issued under two hosts, and the GTIN spelt as
+  // the 13 digits a barcode carries under one of them: one key tuple.
+  const A = 'https://dpp.example.com/01/09529990001039/21/EBL-1'
+  const B = 'https://passports.example.org/01/9529990001039/21/EBL-1'
+  const OTHER = 'https://dpp.example.com/01/09529990001039/21/EBL-2'
+
+  async function twoHosts(): Promise<DppLookupService> {
+    const storage = new InMemoryDppStorage()
+    await storage.insert(record(0, { passportId: A, uid: '' }))
+    await storage.insert(record(1, { passportId: A, uid: '' }))
+    await storage.insert(record(2, { passportId: B, uid: '', previousTxid: '' }))
+    await storage.insert(record(3, { passportId: OTHER, uid: '', previousTxid: '' }))
+    return new DppLookupService(storage)
+  }
+  const txids = (formula: unknown) => (formula as Array<{ txid: string }>).map((o) => o.txid.replace(/^0+/, '') || '0')
+
+  it('answers every passport that names the key, under any host, in all three spellings', async () => {
+    const service = await twoHosts()
+    for (const gs1Key of ['01:09529990001039|21:EBL-1', '01/09529990001039/21/EBL-1', '/01/9529990001039/21/EBL-1', 'https://elsewhere.example/01/09529990001039/21/EBL-1']) {
+      expect(txids(await service.lookup({ service: 'ls_dpp', query: { gs1Key } }))).toEqual(['0', '1', '2'])
+    }
+    expect(txids(await service.lookup({ service: 'ls_dpp', query: { gs1Key: '01/09529990001039/21/EBL-2' } }))).toEqual(['3'])
+    expect(await service.lookup({ service: 'ls_dpp', query: { gs1Key: '01/09529990001039/21/NONE' } })).toEqual([])
+  })
+
+  it('refuses a value that names no GS1 key', async () => {
+    const service = await twoHosts()
+    for (const gs1Key of ['EBL-1', '01:', 'https://dpp.example.com/passport/EBL-1', '21/EBL-1']) {
+      await expect(service.lookup({ service: 'ls_dpp', query: { gs1Key } })).rejects.toThrow(/gs1Key must be/)
+    }
+  })
+
+  it('stores no key for an identifier that is not a GS1 Digital Link', async () => {
+    const storage = new InMemoryDppStorage()
+    await storage.insert(record(0, { passportId: 'urn:example:passport:1', uid: '' }))
+    expect((await storage.findByPassport('urn:example:passport:1'))[0].gs1Key).toBe('')
+    expect(await storage.findByGs1Key('')).toEqual([])
   })
 })
 

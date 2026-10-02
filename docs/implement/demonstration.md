@@ -2,7 +2,7 @@
 
 The trial is a defined exchange between the reference implementation, which the programme operates, and a second implementation written from the bundle: each writes fresh records, the other verifies them, and every scenario records what passes and what must be refused. This page is for an implementer whose components already pass the fixtures and who wants to run the trial, alone where a scenario allows and with the programme where it needs the reference to act.
 
-The trial is defined in [`independent-implementation-2026-09`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) for release set `dpp-release-2026-10-4`, baseline `native-baseline@2` and custody profile `managed-custody@1`. It has not been completed. Evidence the programme produces itself is engineering evidence; the organisational independence that version 1.0 needs is recorded only when another implementing party runs the same scenarios.
+The trial is defined in [`independent-implementation-2026-09`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) for release set `dpp-release-2026-10-5`, baseline `native-baseline@2` and custody profile `managed-custody@1`. It has not been completed. Evidence the programme produces itself is engineering evidence; the organisational independence that version 1.0 needs is recorded only when another implementing party runs the same scenarios.
 
 ## Take part
 

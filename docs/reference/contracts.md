@@ -55,6 +55,8 @@ output-list with 5 outputs from https://dpp-overlay.bsvb.net
 
 Set `INDEX_URL` to ask another index, such as `INDEX_URL=http://localhost:8080 node lookup.mjs`, and `PASSPORT_ID` to ask for another passport; [the hosted reference page](../deployment.md) lists three live ones. An index that holds nothing for the passport, such as a new index, prints `output-list with 0 outputs`. Each output carries its transaction evidence as BEEF, the encoding that bundles a transaction with its ancestors and merkle proofs. A 200 answer does not establish a valid history or inclusion: pass the outputs to a [reader](../implement/roles/passport-reader.md), or run `node examples/verify-passport.mjs <passportId> <indexUrl>`, which verifies them.
 
+Holding only a GTIN and serial, ask by GS1 key instead: `query: { gs1Key: '01/09506000134352/21/7AC18477503A' }`, or the tuple `01:09506000134352|21:7AC18477503A`, answers the states of every passport the index holds for that key under any host, each under its exact identifier, which you then verify ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)). An index on an earlier release refuses the query.
+
 To compare two indexes, compare transaction identifiers and proofs, not bytes. The contract does not fix the form of a lookup's BEEF, so two indexes can serve the same states differently: for the passport above, the hosted index and a local index restored from its package returned the same five transactions, each 36 bytes apart.
 
 ## Index routes

@@ -467,10 +467,10 @@ describe('ls_dpp indexing', () => {
     ).resolves.toEqual([])
   })
 
-  it('rejects queries without passportId or uid', async () => {
+  it('rejects queries without passportId, uid or gs1Key', async () => {
     const ls = new DppLookupService(new InMemoryDppStorage())
     await expect(ls.lookup({ service: 'ls_dpp', query: {} })).rejects.toThrow(
-      /passportId or uid/
+      /passportId, uid or gs1Key/
     )
   })
 })

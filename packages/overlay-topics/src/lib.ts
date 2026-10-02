@@ -15,6 +15,7 @@ export * from './attestationStorage.js'
 export * from './tmAttestation.js'
 export * from './lsAttestation.js'
 export { DppLookupService, DPP_SERVICE, MAX_LOOKUP_RESULTS, type DppLookupQuery } from './lsDpp.js'
+export { normaliseGs1Key, passportGs1Key } from './gs1Key.js'
 export {
   InMemoryDppStorage,
   MongoDppStorage,

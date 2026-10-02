@@ -88,6 +88,17 @@ describe.each(harnesses)('the record store, %s', (_name, fresh) => {
     await expect(store.findPage({ passportId: PASSPORT, uid: 'x' }, { after: 0, upTo: 10 }, 100)).rejects.toThrow(/exactly one/)
   })
 
+  it('derives the GS1 key from the passport identifier and finds by it, under any host', async () => {
+    const store = fresh()
+    await store.insert(input(0))
+    await store.insert(input(1, { passportId: 'https://dpp.example.com/01/9506000134352/21/STORE-1' }))
+    await store.insert(input(2, { passportId: OTHER }))
+    const rows = await store.findByGs1Key('01:09506000134352|21:STORE-1')
+    expect(rows.map((r) => r.passportId)).toEqual([PASSPORT, 'https://dpp.example.com/01/9506000134352/21/STORE-1'])
+    expect(rows.every((r) => r.gs1Key === '01:09506000134352|21:STORE-1')).toBe(true)
+    expect(await store.findByGs1Key('')).toEqual([])
+  })
+
   it('marks spent and unspent', async () => {
     const store = fresh()
     await store.insert(input(0))
@@ -127,6 +138,17 @@ describe('the record store, mongodb, rows older than the field', () => {
     const again = new MongoDppStorage(db)
     expect((await again.findByPassport(PASSPORT)).map((r) => r.sequence)).toEqual([1, 2, 3, 4, 5, 6])
     expect(await again.highestSequence()).toBe(6)
+  })
+})
+
+describe('the record store, mongodb, rows older than the GS1 key', () => {
+  it('gives each its key once, before serving', async () => {
+    const db = client!.db(`records_gs1_${count++}`)
+    await db.collection('dppRecords').insertOne({ ...input(0), sequence: 1 })
+    await db.collection('dppCounters').insertOne({ _id: 'dppRecords', value: 1 } as never)
+    const store = new MongoDppStorage(db)
+    expect((await store.findByGs1Key('01:09506000134352|21:STORE-1')).map((r) => r.sequence)).toEqual([1])
+    expect((await db.collection('dppRecords').findOne({ sequence: 1 }))?.gs1Key).toBe('01:09506000134352|21:STORE-1')
   })
 })
 

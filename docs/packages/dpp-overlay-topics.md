@@ -2,7 +2,7 @@
 
 `@bsv/dpp-overlay-topics` is the index as a library: the components that decide which passport states and claim anchors to keep, and answer lookups for them. Use it to embed an index in your own application or tests; to run the index as a network service, use the HTTP host from a checkout or the Compose setup, as this page explains.
 
-**Experimental prerelease:** `@bsv/dpp-overlay-topics` 0.4.0-beta.7 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-overlay-topics` 0.4.0-beta.8 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Words on this page
 
@@ -10,7 +10,7 @@
 |---|---|
 | Index | The service that admits passport states and claim anchors and answers lookups for them. BSV software calls it an overlay, hence the package's name |
 | Topic manager | The admission rule: offered a transaction, it says which outputs to keep. `DppTopicManager` (topic `tm_dpp`) admits passport states countersigned by a publisher key it accepts; `AttestationTopicManager` (`tm_attestation`) admits claim anchors |
-| Lookup service | Answers queries over what was admitted: `DppLookupService` (`ls_dpp`) finds a passport's states by identifier or data carrier, and `AttestationLookupService` (`ls_attestation`) finds anchors by subject, issuer, digest or anchoring service |
+| Lookup service | Answers queries over what was admitted: `DppLookupService` (`ls_dpp`) finds a passport's states by identifier, data carrier or GS1 key, and `AttestationLookupService` (`ls_attestation`) finds anchors by subject, issuer, digest or anchoring service |
 | Store | Where admitted outputs are kept: `InMemoryOverlayStorage` and `InMemoryDppStorage` for tests, their `Mongo` counterparts for a service |
 | Engine | The `Engine` from `@bsv/overlay`, the BSV overlay software, which wires topic managers, lookup services and a store together |
 
@@ -28,7 +28,7 @@ The npm package exports only the library, `@bsv/dpp-overlay-topics`. Importing i
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.7 @bsv/dpp-core@0.3.0-beta.7 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.8 @bsv/dpp-core@0.3.0-beta.7 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
 The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay-topics` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.

@@ -6,8 +6,8 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 
 | Fact | Value |
 |---|---|
-| Current release set | `dpp-release-2026-10-4`, published on npm under `latest` on 2 October 2026 |
-| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
+| Current release set | `dpp-release-2026-10-5`, which publishes to `latest`; its overlay package is pending publication, and until it is published the newest on npm is the earlier set `dpp-release-2026-10-4`, with `@bsv/dpp-overlay-topics@0.4.0-beta.7` |
+| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.8`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
 | Install | Always name the exact version, even though npm's `latest` tag names the current set |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |
@@ -26,6 +26,7 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 - **A block marked as a fragment** shows one step and does not run alone; the page links the complete example.
 - **Success** reads the same everywhere: one sentence per check, never a score. A line starting `ok:` or `Holds:` held; `FAIL:` did not, and the command exits non-zero. An example that checks itself ends with `Every sentence above holds.`
 - **A report** gives each check `pass`, `fail`, `unknown` or `not-applicable` with a reason code. `unknown` means the evidence was missing, not that the check failed.
+- **A bare `01/<gtin>/21/<serial>` is not a passport identifier.** Resolve it with `node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>`, which lists every passport the index holds for that GS1 key by its exact identifier; never add a host yourself ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)).
 - **Dry runs** come first. `node examples/write-passport.mjs --dry-run` and `node examples/lifecycle-v2.mjs` write passports without a wallet, funds or network, and `node examples/check-registry.mjs --fixture` checks a registry's claims without one.
 
 ## Steps a human must take
