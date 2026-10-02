@@ -23,6 +23,10 @@
 * [How the writer example works](packages/how-the-writer-works.md)
 * [Wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md)
 
+## Add claims
+
+* [Add a claim as a repairer, certifier or recycler](packages/add-a-claim.md)
+
 ## Run an index
 
 * [Run a service](operate/README.md)
