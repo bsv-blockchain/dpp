@@ -43,8 +43,8 @@ node examples/lifecycle-v2.mjs
 # Verify a signed lifecycle claim and its blockchain anchor
 node examples/verify-attestation-anchor.mjs
 
-# Build and validate a passport state without submitting a transaction
-node examples/write-passport.mjs --dry-run
+# Build, check and announce version 2 passport states to an in-process index, with nothing sent
+node examples/write-passport-v2.mjs --dry-run
 ```
 
 The [quick-start guide](docs/quick-start.md) covers live reads and writes, version 1 records, interoperability examples and conformance checks. Live writes require a funded BRC-100 wallet and a configured index.

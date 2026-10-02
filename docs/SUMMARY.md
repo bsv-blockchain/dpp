@@ -7,7 +7,7 @@
 * [Quick start](quick-start.md)
 * [The passport model](start/architecture.md)
 * [Where things stand](start/status.md)
-* [Reference deployment](deployment.md)
+* [The hosted reference](deployment.md)
 * [Words used here](start/glossary.md)
 * [For AI agents](start/for-agents.md)
 
@@ -20,6 +20,7 @@
 * [What a passport application offers](packages/what-an-application-offers.md)
 * [Identifiers](identifiers.md)
 * [Build an application with the packages](packages/build-an-application.md)
+* [How the writer example works](packages/how-the-writer-works.md)
 * [Wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md)
 
 ## Run an index
