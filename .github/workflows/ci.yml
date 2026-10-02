@@ -38,6 +38,7 @@ jobs:
       - run: node examples/sample-payload.mjs --all
       - run: node examples/verify-anchor.mjs
       - run: node examples/verify-attestation-anchor.mjs
+      - run: node examples/check-registry.mjs --fixture
       # The interoperability profiles, each from the built packages alone.
       - run: node examples/resolve-digital-link.mjs
       - run: node examples/import-epcis.mjs

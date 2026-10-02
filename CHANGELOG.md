@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, check a registry's claims in one command
+
+- `examples/check-registry.mjs` checks every record a registry holds against the chain: the digest, the claim signature, the anchor read from the transaction, its binding to the claim, inclusion against block headers and the anchoring service, one line per check and no verdict. It reads native claims and legacy UORA records under `uora-anchor-v3` and `uora-anchor-v1`, takes the transaction and merkle proof from WhatsOnChain, and runs offline on the repository's test data with `--fixture`, which CI runs.
+- The attestation verifier guide's proof page section is rebuilt around the command, with where each piece of evidence comes from and what each record format can establish; its dispatch step names `legacy-uora-json`, and the agents page and the registry guide point to the command.
+
 ### 2026-10-02, the anchor proof page and the earlier UORA prefixes
 
 - The attestation verifier guide says how to run an anchor proof page over any registry, from the registry routes, the verifier's checks and the package functions, and the hosted reference's host table names its proof page.
