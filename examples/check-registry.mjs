@@ -19,9 +19,10 @@
  *   6. anchoring service  the key that wrote the anchor is one you accept
  *
  * The registry hands over the stored bytes and says which transaction holds
- * the anchor. Everything else comes from the chain: the transaction and its
- * merkle proof from WhatsOnChain (set WOC_API_KEY to raise its rate limit),
- * checked against block headers. The exit code is 1 when any check fails.
+ * the anchor. Everything else comes from the chain: the transaction
+ * (/tx/<txid>/hex) and its merkle proof as a BUMP (/tx/<txid>/proof/bump)
+ * from WhatsOnChain (set WOC_API_KEY to raise its rate limit), checked against
+ * block headers. The exit code is 1 when any check fails.
  */
 import { readFileSync } from 'node:fs'
 import { Hash, LockingScript, MerklePath, PushDrop, Signature, Transaction, Utils, WhatsOnChain } from '@bsv/sdk'
@@ -63,22 +64,6 @@ function liveRegistry(base) {
   }
 }
 
-/**
- * A TSC merkle proof, the form WhatsOnChain serves, as the SDK's MerklePath:
- * the transaction and its sibling on the bottom level, then one sibling per
- * level up, where '*' pairs a node with itself.
- */
-function merklePathFromTsc(txid, tsc, blockHeight) {
-  const path = [[{ offset: tsc.index, hash: txid, txid: true }]]
-  tsc.nodes.forEach((node, level) => {
-    const offset = (tsc.index >> level) ^ 1
-    const leaf = node === '*' ? { offset, duplicate: true } : { offset, hash: node }
-    if (level === 0) path[0].push(leaf)
-    else path.push([leaf])
-  })
-  return new MerklePath(blockHeight, path)
-}
-
 /** The chain, through WhatsOnChain: transactions, merkle proofs and block headers, one request at a time. */
 function liveChain() {
   const woc = 'https://api.whatsonchain.com/v1/bsv/main'
@@ -104,12 +89,15 @@ function liveChain() {
       const hex = await get(`/tx/${txid}/hex`, (r) => r.text())
       return hex == null ? null : Transaction.fromHex(hex)
     },
+    // The merkle proof as a BUMP (BRC-74), which the SDK reads as it is; an
+    // unmined transaction has none yet.
     async merklePath(txid) {
-      const proofs = await get(`/tx/${txid}/proof/tsc`, (r) => r.json())
-      const tsc = Array.isArray(proofs) ? proofs[0] : proofs
-      if (tsc == null) return null
-      const info = await get(`/tx/hash/${txid}`, (r) => r.json())
-      return info?.blockheight == null ? null : merklePathFromTsc(txid, tsc, info.blockheight)
+      const bump = await get(`/tx/${txid}/proof/bump`, (r) => r.text())
+      try {
+        return bump == null || bump.trim() === '' ? null : MerklePath.fromHex(bump.trim())
+      } catch {
+        return null
+      }
     },
     headers: {
       isValidRootForHeight: (root, height) => paced(() => headers.isValidRootForHeight(root, height)),
