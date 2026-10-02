@@ -105,9 +105,7 @@ Take the passport identifier you expect from the scan, the label or the request,
 const report = await verifyPassportEvidence(evidence, { passportId, source: 'request-context' }, policy)
 ```
 
-`subjectBinding` then compares every state, claim, anchor and credential with that identifier. If you took the identifier from the evidence instead, a valid record for another product would verify against its own identifier and look convincing. Use `source: 'established-binding'` when the expectation comes from something you verified earlier, such as a first state you checked before. With `source: 'none'`, every check that depends on the subject reads `unknown` with `subject-not-independent`. Optional `expectedGenesisOutpoint`, `expectedStateOutpoint`, `expectedIssuer` and `productIdentifier` narrow the expectation further.
-
-One gap in the sources is open: the specification forbids taking the subject from the evidence, yet its table allows `source: none`, and when a request names no subject the reference registry uses the evidence's own identifier with `source: none` ([source gaps](../implement/fixture-runner.md#source-gaps)).
+`subjectBinding` then compares every state, claim, anchor and credential with that identifier. If you took the identifier from the evidence instead, a valid record for another product would verify against its own identifier and look convincing. Use `source: 'established-binding'` when the expectation comes from something you verified earlier, such as a first state you checked before. With `source: 'none'`, which says you had no expectation and took the identifier from the evidence, `subjectBinding` reads `unknown` with `subject-not-independent` and every other check runs as usual: the report still says whether the evidence is valid, though not that it concerns the passport you meant. Optional `expectedGenesisOutpoint`, `expectedStateOutpoint`, `expectedIssuer` and `productIdentifier` narrow the expectation further.
 
 ## Inspect a stored report
 
