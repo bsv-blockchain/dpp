@@ -1,20 +1,22 @@
 # Review profile and application readiness
 
-A profile review should answer which product information the application can represent, which obligations apply, what evidence supports the values and whether the deployed system handles the required interactions. A green schema check answers only part of that question.
+This page is for compliance reviewers, profile maintainers and application owners who compare a profile and an application with the regulations, standards or external validators that apply to a product. It sets out a review in five parts: fix the baseline, cross-reference in both directions, separate representation from missing information, gather four kinds of evidence, and turn the findings into a reviewed successor.
+
+A review should answer which product information the application can represent, which obligations apply, what evidence supports the values and whether the deployed system handles the required interactions. A passing schema check answers only part of that question. Nothing on this page runs code; it is a process, and the commands it relies on are on the pages it links.
 
 Use this process when an industry profile changes, a source is revised or an application adopts a new release. Keep unresolved findings visible until the relevant evidence is available.
 
 ## Establish the comparison baseline
 
-Record the exact profile and package versions, generated schema digests, application revision and evaluation date. For each external source, record its edition, retrieval date and role: legislation, standard, guidance, proposal or test-tool implementation. Publication, legal application and software deployment dates can differ.
+Record the exact profile version (such as `battery@2`), package version, generated schema digests, application revision and evaluation date. Each manifest records its schema digests, and the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records them for every version. For each external source, record its edition, retrieval date and role: legislation, standard, guidance, proposal or test-tool implementation. Publication, legal application and software deployment dates can differ.
 
-Check the source artefacts as well as their documentation. A hosted validator's help page can describe a different schema revision from its downloadable repository. Pin the files actually compared and record the schema selected for each hosted run. If that selection cannot be verified, leave equivalence with the local check unconfirmed.
+Check the source artefacts as well as their documentation. For example, a hosted validator's help page can describe a different schema revision from its downloadable repository. Pin the files actually compared and record the schema selected for each hosted run. If that selection cannot be verified, leave equivalence with the local check unconfirmed.
 
 For batteries, review the relevant product classification and use case before selecting a category-specific schema. Do not assume every industrial battery has the same capacity, management system or reporting duties. For textiles, review the sources applicable to the selected product and market; do not transfer battery-specific obligations into a textile profile.
 
 ## Build a cross-reference in both directions
 
-Start the profile side of the table from the generated mapping inventory, one row per field with its semantic field, legal basis, applicability and access tier, for example [battery@2](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/generated/mapping/battery@2.md). Then create a row for each external requirement or data attribute, including fields nested inside records. Record:
+Start the profile side of the table from the generated mapping inventory, one row per field with its semantic field, legal basis, applicability and access tier, for example [battery@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/battery@2.md). When the review is about a changed profile, start from its change report as well: `npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4` in a checkout lists every added, changed and removed field ([evaluate the version 4 drafts](version-4-drafts.md#try-a-draft-in-your-application) shows it). Then create a row for each external requirement or data attribute, including fields nested inside records. Record:
 
 | Review dimension | Question to resolve |
 |---|---|
