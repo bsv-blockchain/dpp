@@ -50,4 +50,18 @@ The index below serves `tm_dpp` and `tm_attestation`. Records move between two i
 
 Its one peer is run by the same administration, so the exchange between them demonstrates the mechanism, not separately administered operation.
 
-To exchange records with the hosted reference, name it in your index's `SYNC_PEERS` and ask the programme to name yours ([federation](operate/federation.md), [contact the programme](start/choose-your-path.md#contact-the-programme)).
+## Join the hosted reference
+
+Without its operator, anyone can read and verify every passport and anchor the hosted reference holds, take a passport's signed evidence package from `GET /evidence-package` and restore it into their own index ([restore from the bounded package](operate/export-import-recovery.md#restore-a-passport-from-the-bounded-package)), and pull the reference's records into their own index by naming it in `SYNC_PEERS` ([federation](operate/federation.md)).
+
+Everything else is a setting only the reference's operator holds. Ask for it through the [contact form](start/choose-your-path.md#contact-the-programme), with what the table says to send:
+
+| You want | The operator changes | Send |
+|---|---|---|
+| The reference to receive your records | Names your index in its `SYNC_PEERS` | Your index's public URL |
+| The reference to admit your states | Adds your publisher key to its signed publisher policy, with an activation window | Your publisher key, and the timestamp of your oldest state, so the window covers it |
+| The reference to hold the proofs of states it took from you | Gives you a callback token for its `POST /arc-ingest` | The address your proofs come from |
+| A complete export of the reference's records | Gives you an export token for the time you need it | What you need it for and for how long |
+| To know why one of your records did not arrive | Reads its log for that output | The transaction identifier and output index |
+
+The programme decides each request as the reference's operator: it is an arrangement with one operator, not something the standard grants. Each token is one shared secret, so a token given to you is replaced once you no longer need it ([known limitations](operate/limitations.md#index-host)). Until indexes can advertise themselves and accept proofs without a token, joining any other operator takes the same arrangements ([known limitations](operate/limitations.md#synchronisation)).
