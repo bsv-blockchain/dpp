@@ -6,7 +6,7 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 
 | Fact | Value |
 |---|---|
-| Current release set | `dpp-release-2026-10-2`, the packages under the Apache 2.0 licence, pending publication; until it is published, the newest on npm is `dpp-release-2026-10` (beta.4 for core, overlay topics and profiles, beta.3 for VSC), published on 1 October 2026 |
+| Current release set | `dpp-release-2026-10-2`, published on npm on 2 October 2026 under the Apache 2.0 licence |
 | Packages | `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/vsc@0.2.0-beta.4`, with `@bsv/sdk@2.8.10` |
 | Install | Always name the exact version: npm's `latest` tag still points at the older beta.1 |
 | Runtime | Node.js 22 or later, ECMAScript modules |
