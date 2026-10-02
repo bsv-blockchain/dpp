@@ -1,38 +1,36 @@
 # Specification index
 
-The linked source revision holds the rules. Source disagreements remain listed in [the fixture guide](../implement/fixture-runner.md#source-gaps).
+This page lists the specification documents, grouped by subject, with when to read each. It is for implementers who need the exact rules behind a guide; the guides themselves start from the [passport model](../start/architecture.md), the [quick start](../quick-start.md) and the [implementer start](../implement/README.md).
 
-## Use the guides to start a task
+## What is normative
 
-The [model](../start/architecture.md) explains how passport records, claims and evidence services fit together. The [quick start](../quick-start.md) runs the reference implementation. The role guides then explain the inputs and work needed for an independent component.
+Once published, the contents of `spec/`, `contracts/` and `fixtures/` are normative: an implementation conforms to them or it does not ([governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#what-is-normative)). Every document below is a working draft before version 1.0 unless its status says otherwise. While the draft is before 1.0, the reference implementation breaks ties between the text and the code, except where the specification names a defect. The [contracts page](contracts.md) maps the machine-readable interfaces, and [conformance](conformance.md) explains the requirement ledger.
 
-The specification is the source for exact encoding and verification behaviour when implementing those components. Use the record model for state layout and transitions, the attestation rules for claims and anchors, and verification for the shared report. Custody and profiles add the selected policy and data requirements; service contracts define the HTTP exchange.
+If a fixture disagrees with the text, keep the failing input and both readings, and report it as [report a disagreement](../contribute/disagreements.md) describes. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists the known conflicts; the documentation does not silently choose a new rule.
 
-If a fixture disagrees with the text, retain the failing input and both readings. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists the known conflicts; the documentation does not silently choose a new rule.
+## The documents
 
-## Exact source documents
+| Group | Document | Read when |
+|---|---|---|
+| Records | [record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md), the record model, version 2 | You write new passports: version 2 is the seventeen-field layout new states use. |
+| Records | [record-model.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), the record model, version 1 | You read existing passports: readers still verify version 1, and version 2 builds on it. |
+| Records | [writing.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md), the writer's lifecycle | You write states: the order of check, announce and send, and the duties to prove and keep. |
+| Records | [verification.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md), one verification contract | You read passports: the report's checks and the four answers each can give. |
+| Records | [services.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md), service roles and verification boundaries | You run or call an index or registry: publisher policy, admission and synchronisation. |
+| Claims | [rules.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md), attestations and complete-representation anchors | You sign, anchor or verify a lifecycle claim. |
+| Claims | [legacy-uora-anchor-v3.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md), historical native claims and anchor v3 | You read claims written in the historical format. Status: historical; new writes use the current rules. |
+| Custody | [custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md), where the keys may live | You decide who holds a passport's keys, or support the owner-signed transfer. |
+| Custody | [managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md), the `managed-custody@1` profile | A custodian holds the keys for the parties and a recipient accepts without a wallet. |
+| Identity | [identity.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/identity.md), identity, control and application boundaries | You separate product identity, signing keys and control authority. |
+| Profiles | [profiles.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md), profiles and identifiers | You choose, check or publish an industry profile, or relate model, batch and item identifiers. |
+| Profiles | [passport-projections.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/passport-projections.md), sources, projections and publication | You derive a passport's facts from source records under a named policy. |
+| Interoperability | [gs1-discovery.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/gs1-discovery.md), the `gs1-digital-link@1` profile | You resolve a GS1 Digital Link to a passport. Status: proposed. |
+| Interoperability | [exchange.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md), exchange profiles | You carry passport evidence in a credential format beside the native record. |
+| Interoperability | [external-credential-profile.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md), `vc-di-ecdsa-rdfc-2019@1` | You verify a W3C credential another party issued and committed on chain. |
+| Interoperability | [epcis-interoperability.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md), EPCIS source exchange and mapping | You take in or map GS1 EPCIS 2.0.1 event data. |
+| Interoperability | [vsc-profile.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md), the VSC draft compatibility profile | You use the Verifiable Supply Chain (VSC) credential subset. Status: implementation draft, not a W3C standard. |
+| Evidence | [portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md), complete pages and packages | You page through a history, export a passport or restore it elsewhere. |
+| Conformance | [conformance.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md), layers, roles, the baseline and the ledger | You declare what an implementation supports or make a conformance claim. |
+| Background | [design-rationale.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/design-rationale.md), design rationale | You want the reasons behind a settled design before proposing a change. Status: informative. |
 
-| Source | Subject |
-|---|---|
-| [conformance.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/conformance.md) | Conformance: layers, roles, the baseline and the ledger |
-| [custody.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/custody.md) | Custody arrangements |
-| [design-rationale.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/design-rationale.md) | Design rationale |
-| [epcis-interoperability.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/epcis-interoperability.md) | Electronic Product Code Information Services (EPCIS) exchange |
-| [exchange.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/exchange.md) | Exchange profiles: credential representations beside the native record |
-| [external-credential-profile.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/external-credential-profile.md) | External credential profile: vc-di-ecdsa-rdfc-2019@1 |
-| [gs1-discovery.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/gs1-discovery.md) | GS1 discovery |
-| [identity.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/identity.md) | Identity, control and application boundaries |
-| [legacy-uora-anchor-v3.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/legacy-uora-anchor-v3.md) | Historical native claims and anchor format |
-| [managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/managed-custody.md) | Managed acceptance |
-| [passport-projections.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/passport-projections.md) | Passport sources, projections and publication |
-| [portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/portable-evidence.md) | Portable evidence |
-| [profiles.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/profiles.md) | Profiles and identifiers |
-| [record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model-v2.md) | The record model, version 2 |
-| [record-model.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md) | The record model |
-| [rules.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/rules.md) | Attestations and complete-representation anchors |
-| [services.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/services.md) | Service roles and verification boundaries |
-| [verification.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/verification.md) | One verification contract |
-| [vsc-profile.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/vsc-profile.md) | Verifiable Supply Chain (VSC) draft profile |
-| [writing.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md) | Writing a state: the writer's lifecycle |
-
-Use [contracts](contracts.md) for machine-readable interfaces and [conformance](conformance.md) for the requirement ledger.
+Next: open the [contracts and schemas](contracts.md) for the interfaces these rules use, or [run the fixtures](../implement/fixture-runner.md) against your own implementation.

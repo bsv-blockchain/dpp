@@ -42,7 +42,7 @@ node scripts/publish-candidates.mjs --verify-registry
 node scripts/consumer-check.mjs --registry
 ```
 
-Compare the `release/publication-plan.json` that the second command writes with the [archived plan](beta-4-publication-plan.json) on the default branch; it is not in the source revision's tree. These commands check existing registry packages and do not publish or change tags.
+Compare the `release/publication-plan.json` that `publish-candidates.mjs --verify-registry`, the third command, writes with the [archived plan](beta-4-publication-plan.json) on the default branch; it is not in the source revision's tree. These commands check existing registry packages and do not publish or change tags.
 
 ## What publication does and does not change
 

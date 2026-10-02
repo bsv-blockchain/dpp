@@ -1,16 +1,27 @@
 # Licence and reuse
 
-The repository's software, specifications, schemas, fixtures, examples and documentation, including its four packages, use the Apache License, Version 2.0 (`Apache-2.0`). The full text is in the root `LICENSE` and each package's `LICENSE`. Third-party dependencies and artefacts retain their own terms and notices.
+This page says under which terms you may reuse the repository, its four packages and the third-party material inside them. It is for anyone copying, modifying or redistributing the code, specifications or documentation.
+
+## The repository and its packages
+
+The repository's software, specifications, schemas, fixtures, examples and documentation, its four packages included, use the Apache License, Version 2.0 (`Apache-2.0`), copyright BSV Association. The full text is in the root [`LICENSE`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/LICENSE), and each package carries the same text in its own `LICENSE`, for example [`packages/dpp-core/LICENSE`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/LICENSE).
+
+In short, and the licence text governs: Apache 2.0 lets you use, modify and redistribute the material, and grants a patent licence from its contributors. When you redistribute it, give recipients a copy of the licence, keep the copyright and attribution notices, and mark the files you changed. It grants no trademark rights and comes without warranty.
+
+## Versions already on npm
+
+The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. Every version published to npm so far, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3`, was published before it. Published archives cannot change, so each keeps the licence file it contains: the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. Read the `LICENSE` file inside the version you install. Packages packed from the current source carry the Apache 2.0 files.
+
+## Third-party material
+
+Third-party dependencies and artefacts keep their own terms and notices; the repository's licence does not replace them.
 
 | Material | Terms and notices |
 |---|---|
-| Repository code and associated documentation | [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) |
-| Package dependencies | `conformance/licences.json` in the source checkout records each dependency's declared licence |
-| Credential and event artefacts | [Notices beside retained artefacts](https://github.com/bsv-blockchain/dpp/tree/e65498a9570fbb5e859021225875fe7197a06f34/packages/vsc/artifacts) |
-| GS1 schema material | [Schema notice](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-profiles/schemas/gs1/NOTICE.md) |
+| Package dependencies | The [licence ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json) records the licence each direct dependency declares, and `conformance/check.mjs` notices when one changes |
+| Credential and event artefacts | The [notices beside the retained artefacts](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/artifacts) |
+| GS1 schema material | The [GS1 schema notice](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/schemas/gs1/NOTICE.md) |
 
-Read the applicable source terms before reuse. The repository's Apache 2.0 licence does not replace the licences of its dependencies or third-party artefacts.
+Read the applicable terms before reuse. For a reuse question these sources do not answer, use the [BSV Association contact page](https://bsvassociation.org/contact/).
 
-Use the [BSV Association contact page](https://bsvassociation.org/contact/) for a reuse question not answered by those sources.
-
-The source repository is public. The experimental beta.4 packages were published to npm on 1 October 2026, before this licence change. This change applies to the current source tree; existing published archives retain the licence files they contain. See [release status](../reference/release-sets.md).
+Next: [how the standard changes](README.md) if you want to contribute your changes back.
