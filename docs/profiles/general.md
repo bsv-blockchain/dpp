@@ -104,7 +104,7 @@ Put your own category in place of `'furniture'`. In the table, `label` is what t
 
 - `Cannot find module '@bsv/dpp-profiles'`: in a checkout, run `npm run build` again and read its first error; in your own project, install the package at the exact version above.
 - `"general@3" is not a published industry profile`: the identifier is not in the package's `PROFILE_IDS` list. Check its spelling.
-- A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still beta.1. Name the exact version.
+- A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta. Name the exact version.
 
 ## Sources
 

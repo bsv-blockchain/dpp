@@ -119,7 +119,7 @@ Put your own category in place of `'apparel'`. In the table, `label` is what to 
 
 - `Cannot find module '@bsv/dpp-profiles'`: in a checkout, run `npm run build` again and read its first error; in your own project, install the package at the exact version above.
 - `FAIL:` lines from `--check`: each names one field; fix it and check again.
-- A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still beta.1 and lacks the drafts. Name the exact version.
+- A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta. Name the exact version.
 
 ## Sources
 

@@ -31,7 +31,7 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.6 @bsv/dpp-core@0.3.0-beta.6 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
-The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. Name the exact versions: a bare `npm install @bsv/dpp-overlay-topics` installs the `latest` tag, which is still 0.4.0-beta.1. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
+The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay-topics` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
 
 ## Embed an index
 

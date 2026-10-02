@@ -6,11 +6,13 @@ A release set is a declared combination of package versions, the wire and contra
 
 | | `dpp-release-2026-10-3` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-3.json` |
-| Status | Candidate; publication is pending |
+| Declaration | [`release/dpp-release-2026-10-3.json`](https://github.com/bsv-blockchain/dpp/blob/77d53611d884f7d9aa058fe063acb187f77ec9c7/release/dpp-release-2026-10-3.json), as the approved publication plan bound it |
+| Status | Published to npm under the `latest` tag on 2 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
 | Packages | `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
-| npm tag | `latest`, so once it is published a plain install gets these versions; install exact versions all the same |
+| npm tag | `latest`, so a plain install gets these versions; `next` stays at the beta.5 set. Install exact versions all the same |
+| Source revision | `77d53611d884f7d9aa058fe063acb187f77ec9c7` |
+| Receipt | [Beta.6 publication receipt](beta-6-publication.md): the approved plan, archive digests and registry verification |
 | Selection | `conformance/selections/dpp-release-2026-10-3.json`, the claims this release requires and withholds ([conformance](conformance.md)) |
 
 Compared with the published beta.5 set `dpp-release-2026-10-2`, the only change is the npm tag: every package's publish setting moves from `next` to `latest`, which takes new versions. No code, wire format, contract or frozen profile changed.
@@ -74,11 +76,11 @@ Each earlier set is superseded, and each link opens its JSON at a recorded revis
 | [dpp-release-2026-10](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/release/dpp-release-2026-10.json) | Superseded; its beta.4 packages (VSC beta.3) were published under `next` on 1 October 2026 | [Beta.4 publication receipt](beta-4-publication.md) |
 | [dpp-release-2026-09-5](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/release/dpp-release-2026-09-5.json) | Superseded; its beta.3 packages were published under `next` on 27 September 2026, with the VSC package unchanged at beta.2 | [Beta.3 publication receipt](beta-3-publication.md) |
 | [dpp-release-2026-09-4](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/release/dpp-release-2026-09-4.json) | Superseded; its four beta.2 packages were published under `next` on 18 September 2026 | [Beta.2 publication receipt](beta-2-publication.md) |
-| [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Superseded; its beta.1 versions are on npm, published on 10 September 2026, and are the ones the `latest` tag still names | |
+| [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Superseded; its beta.1 versions are on npm, published on 10 September 2026; the `latest` tag named them until beta.6 | |
 | [dpp-release-2026-09-2](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-2.json) | Superseded; its versions were never published | |
 | [dpp-release-2026-09](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09.json) | Superseded; its versions were never published | |
 
-The publications up to beta.5 went to `next` and left `latest` at beta.1; from the next set, a set's `distTag` names its tag, `latest` before version 1.0; none promoted the draft industry profiles or declared broader release readiness. Each set's record links its package versions, interfaces, profiles and conformance selection, and keeps its own historical declarations; the [support table](../packages/support-table.md) is generated from the current record.
+The publications up to beta.5 went to `next` and left `latest` at beta.1; beta.6 was the first to publish to `latest`, as each set's `distTag` now names, `latest` before version 1.0; none promoted the draft industry profiles or declared broader release readiness. Each set's record links its package versions, interfaces, profiles and conformance selection, and keeps its own historical declarations; the [support table](../packages/support-table.md) is generated from the current record.
 
 ## How a set is made
 
