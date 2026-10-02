@@ -6,11 +6,13 @@ A release set is a declared combination of package versions, the wire and contra
 
 | | `dpp-release-2026-10-2` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-2.json` |
-| Status | Candidate; publication is pending |
+| Declaration | [`release/dpp-release-2026-10-2.json`](https://github.com/bsv-blockchain/dpp/blob/7292237376b8308ed67b11194fd7a00cbe313d82/release/dpp-release-2026-10-2.json), as the approved publication plan bound it |
+| Status | Published to npm under the `next` tag on 2 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
 | Packages | `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5`, `@bsv/vsc@0.2.0-beta.4`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
-| npm tags | Until this set is published, `next` names the beta.4 set; `latest` still names beta.1, so install exact versions |
+| npm tags | `next` names these versions; `latest` still names beta.1, so install exact versions |
+| Source revision | `7292237376b8308ed67b11194fd7a00cbe313d82` |
+| Receipt | [Beta.5 publication receipt](beta-5-publication.md): the approved plan, archive digests and registry verification |
 | Selection | `conformance/selections/dpp-release-2026-10-2.json`, the claims this release requires and withholds ([conformance](conformance.md)) |
 
 Compared with the published beta.4 set `dpp-release-2026-10`, the only change is the licence: the repository adopted Apache 2.0 after beta.4 was published, so every package takes a new version to carry it, with its current documentation. No code, wire format, contract or frozen profile changed.

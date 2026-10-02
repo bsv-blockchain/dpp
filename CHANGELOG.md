@@ -8,13 +8,18 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The beta.4 packages were published on 1 October 2026. The [publication receipt](docs/reference/beta-4-publication.md) identifies their exact source, approved plan and verification results, and the [beta.3 receipt](docs/reference/beta-3-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.5 candidate, `dpp-release-2026-10-2`, carries the packages under the Apache 2.0 licence and its publication is pending.
+The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
 
 ## Repository history
 
+### 2026-10-02, beta.5 publication
+
+- Publish `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` under `next` from `7292237376b8308ed67b11194fd7a00cbe313d82` using GitHub OIDC with provenance, the first under the Apache 2.0 licence. The public-registry archives match the approved plan. The workflow's final clean install ran before the registry listed the VSC version; the same registry checks passed from a clean checkout under a minute later. `latest` remains at beta.1.
+- Archive the exact approved plan and publication receipt in `docs/reference/`, and update installation, licence and release status documentation. The release-set JSON keeps `status: candidate` as the approved input.
+
 ### 2026-10-02, beta.5 release candidate
 
-- Prepare `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` under the `next` tag in `dpp-release-2026-10-2`. They carry the Apache 2.0 licence the repository adopted after beta.4 was published, and their current package documentation; no code changed. Publication is pending. `latest` stays at beta.1.
+- Prepare `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` under the `next` tag in `dpp-release-2026-10-2`. They carry the Apache 2.0 licence the repository adopted after beta.4 was published, and their current package documentation; no code changed. Publication was pending at preparation; see the 2 October publication entry above. `latest` stays at beta.1.
 - The profiles package README says five frozen profiles are published beside the drafts, and its change report example compares `battery@2` with `battery@4`, as it does for textile.
 - Mark `dpp-release-2026-10` superseded. Its approved beta.4 plan is reproduced from its own source revision, as the receipt records; the demonstration definition and the qualification test move to the new set, and the two projection vectors record the new profiles version.
 

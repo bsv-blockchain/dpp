@@ -1,6 +1,6 @@
 # Where things stand
 
-The standard is a working draft before version 1.0. Its beta.4 packages were published to npm under the `next` tag on 1 October 2026, the beta.5 packages under the Apache 2.0 licence are prepared and pending publication, and you can build readers, writers, an index and a registry with them today. This page says what works, what does not yet, and which decisions are still open.
+The standard is a working draft before version 1.0. Its beta.5 packages, the first under the Apache 2.0 licence, were published to npm under the `next` tag on 2 October 2026, and you can build readers, writers, an index and a registry with them today. This page says what works, what does not yet, and which decisions are still open.
 
 ## Works today
 

@@ -10,7 +10,7 @@ In short, and the licence text governs: Apache 2.0 lets you use, modify and redi
 
 ## Versions already on npm
 
-The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. Every version published to npm so far, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3`, was published before it. Published archives cannot change, so each keeps the licence file it contains: the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. Read the `LICENSE` file inside the version you install. Packages packed from the current source carry the Apache 2.0 files.
+The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4`, is the first under Apache 2.0 ([receipt](../reference/beta-5-publication.md)). Every earlier version, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3`, was published before the change. Published archives cannot change, so each keeps the licence file it contains: the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. Read the `LICENSE` file inside the version you install.
 
 ## Third-party material
 
