@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, a later state synchronises once proven
+
+- The limitations page and the federation troubleshooting table say that an unproven later state of a passport a peer already holds reaches that peer only once its proof reaches the node the peer pulls from, while a new passport arrives unproven. The package README and the federation test already recorded it; no code changes.
+
 ### 2026-10-02, the expected subject under source none
 
 - `spec/verification.md` section 3 says that under `source: none` only `subjectBinding`, the check that compares the evidence with the expectation, reads `unknown` with `subject-not-independent`, and every other check runs as usual. This is what `@bsv/dpp-core` already does; the text said every subject-dependent check. It also says a verifier given no expectation takes the identifier from the evidence and declares it with `none`, which settles the source gap between the section's prose and its table. No package or fixture changes; the ledger row citing the section was re-reviewed.
