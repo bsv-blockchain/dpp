@@ -10,7 +10,7 @@ A release set is a declared combination of package versions, the wire and contra
 | Status | Published to npm under the `next` tag on 2 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
 | Packages | `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5`, `@bsv/vsc@0.2.0-beta.4`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
-| npm tags | `next` names these versions; `latest` still names beta.1, so install exact versions |
+| npm tags | `next` names these versions; `latest` still names beta.1 until it is moved, so install exact versions. From the next set, each release publishes to `latest` itself |
 | Source revision | `7292237376b8308ed67b11194fd7a00cbe313d82` |
 | Receipt | [Beta.5 publication receipt](beta-5-publication.md): the approved plan, archive digests and registry verification |
 | Selection | `conformance/selections/dpp-release-2026-10-2.json`, the claims this release requires and withholds ([conformance](conformance.md)) |
@@ -79,7 +79,7 @@ Each earlier set is superseded, and each link opens its JSON at a recorded revis
 | [dpp-release-2026-09-2](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-2.json) | Superseded; its versions were never published | |
 | [dpp-release-2026-09](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09.json) | Superseded; its versions were never published | |
 
-The later publications all went to `next` and left `latest` at beta.1; none promoted the draft industry profiles or declared broader release readiness. Each set's record links its package versions, interfaces, profiles and conformance selection, and keeps its own historical declarations; the [support table](../packages/support-table.md) is generated from the current record.
+The publications up to beta.5 went to `next` and left `latest` at beta.1; from the next set, a set's `distTag` names its tag, `latest` before version 1.0; none promoted the draft industry profiles or declared broader release readiness. Each set's record links its package versions, interfaces, profiles and conformance selection, and keeps its own historical declarations; the [support table](../packages/support-table.md) is generated from the current record.
 
 ## How a set is made
 

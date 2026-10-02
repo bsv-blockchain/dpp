@@ -24,12 +24,16 @@ const set = JSON.parse(setBytes)
 const candidateDir = join(root, 'release/candidates')
 const failures = [...verifyRecordAgainstSet(record, set, setBytes), ...verifyCandidates(record, candidateDir)].filter((f) => !f.ok)
 if (failures.length) throw new Error(failures.map((f) => f.sentence).join('\n'))
+// The npm tag the set publishes under: `latest` until 1.0, then `next` for
+// prereleases. A set that names none keeps the earlier behaviour, `next`.
+const distTag = set.distTag ?? 'next'
+if (!['latest', 'next'].includes(distTag)) throw new Error(`distTag must be latest or next, not ${distTag}`)
 const manifests = Object.fromEntries(set.packages.map((p) => [p.name, JSON.parse(readFileSync(join(root, p.directory, 'package.json'), 'utf8'))]))
 for (const candidate of record.candidates) {
   const manifest = manifests[candidate.name]
   const packed = JSON.parse(run('tar', ['xOzf', join(candidateDir, candidate.filename), 'package/package.json']))
   if (JSON.stringify(packed) !== JSON.stringify(manifest)) throw new Error(`${candidate.name}: packed manifest differs from the checkout`)
-  if (manifest.private || manifest.publishConfig?.access !== 'public' || manifest.publishConfig?.tag !== 'next' || manifest.publishConfig?.registry !== NPM_REGISTRY) throw new Error(`${candidate.name}: publication settings must be public npm, tag next`)
+  if (manifest.private || manifest.publishConfig?.access !== 'public' || manifest.publishConfig?.tag !== distTag || manifest.publishConfig?.registry !== NPM_REGISTRY) throw new Error(`${candidate.name}: publication settings must be public npm, tag ${distTag}`)
 }
 const candidates = publicationOrder(record.candidates, manifests)
 const plan = {
@@ -42,7 +46,7 @@ const plan = {
   changelogSha256: sha256(readFileSync(join(root, 'CHANGELOG.md'))),
   registry: NPM_REGISTRY,
   access: 'public',
-  tag: 'next',
+  tag: distTag,
   provenance: values.provenance === 'true',
   candidates: candidates.map(({ name, version, filename, sha256, integrity, size }) => ({ name, version, filename, sha256, integrity, size })),
 }
@@ -65,7 +69,7 @@ if (values['verify-registry']) {
   for (const { candidate, action } of actions) {
     if (action === 'already-published') continue
     // Never treat a failed publish as success. A rerun verifies anything that landed.
-    run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', '--tag=next', `--registry=${NPM_REGISTRY}`, `--provenance=${plan.provenance}`], plan.provenance ? oidcPublishEnv(process.env) : process.env)
+    run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', `--tag=${plan.tag}`, `--registry=${NPM_REGISTRY}`, `--provenance=${plan.provenance}`], plan.provenance ? oidcPublishEnv(process.env) : process.env)
     await waitForRegistryVersion(candidate, { onProgress: console.log })
   }
   console.log('All packages are available with the approved bytes. Run the registry consumer check before announcing the release.')
