@@ -6,8 +6,8 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 
 | Fact | Value |
 |---|---|
-| Current release set | `dpp-release-2026-10-3`, published on npm under `latest` on 2 October 2026 |
-| Packages | `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
+| Current release set | `dpp-release-2026-10-4`, which publishes to `latest`, pending publication; until it is published, the newest on npm is the earlier set `dpp-release-2026-10-3` (beta.6 for core, overlay topics and profiles, beta.5 for VSC) under `latest`, published on 2 October 2026 |
+| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
 | Install | Always name the exact version, even though npm's `latest` tag names the current set |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |

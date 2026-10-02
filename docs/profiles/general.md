@@ -76,7 +76,7 @@ Replace every placeholder with the product's own data and set `category` to one 
 
 ## Inspect the fields
 
-Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.6` installed, or in the root of a checkout after `npm run build`:
+Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.7` installed, or in the root of a checkout after `npm run build`:
 
 ```sh
 node --input-type=module <<'JS'

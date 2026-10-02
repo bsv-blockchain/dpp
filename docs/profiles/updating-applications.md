@@ -20,7 +20,7 @@ In a checkout of this repository on `main`, after `npm ci` and `npm run build`, 
 npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
 ```
 
-In your own project, with `@bsv/dpp-profiles@0.3.0-beta.6` installed, `compareProfiles(from, to)` returns the same report:
+In your own project, with `@bsv/dpp-profiles@0.3.0-beta.7` installed, `compareProfiles(from, to)` returns the same report:
 
 ```sh
 node --input-type=module <<'JS'
