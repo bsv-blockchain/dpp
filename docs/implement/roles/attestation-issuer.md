@@ -72,7 +72,7 @@ The fixture's values are test values. Do not copy these into a live claim:
 
 - **`recordId`** must be the "exact native state reference" (rules section 3), and its spelling is not settled: the fixture's `state-1` is no live form, and the repository's own examples use two others, the transaction identifier alone in `examples/lifecycle-v2.mjs` and `txid:outputIndex` in `fixtures/battery-lifecycle-v1.json`. Record which form you use.
 - **`profile`** names the passport's product data profile and **`profile_version`** its version, such as `battery` and `2` for a `battery@2` passport. The fixture's `generic` is no live profile.
-- **The registry identifier** of a native claim is `urn:sha256:` followed by `digest` (rules section 6), not the fixture anchor's `urn:uuid:` value.
+- **The registry identifier** of a native claim is `urn:sha256:` followed by your claim's own `digest` (rules section 6); the fixture anchor's `attestationId` is the fixture claim's.
 - **A native claim has no payload**: it carries the event type and time, not what was done, so a mapping that needs evidence facets cannot find them in it.
 
 These are open questions in the standard; [known limitations](../../operate/limitations.md) lists the reference service's limits. An issuer's identity and its authority to make the claim remain separate evidence questions for the verifier.

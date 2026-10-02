@@ -12,6 +12,13 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, the anchor proof page and the earlier UORA prefixes
+
+- The attestation verifier guide says how to run an anchor proof page over any registry, from the registry routes, the verifier's checks and the package functions, and the hosted reference's host table names its proof page.
+- `spec/legacy-uora-anchor-v3.md` section 5 says what a `uora-anchor-v1` output carries and why no third party can establish who anchored it; the overlay package page lists the historical reader. No rule changes; the ledger row citing the section was re-reviewed.
+- The federation and limitations pages say that a failing header source drops proven states during synchronisation, and how to recover them.
+- Three pages no longer say the anchor fixture uses a `urn:uuid:` identifier, which beta.7 changed.
+
 ### 2026-10-02, beta.7 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7` and `@bsv/dpp-profiles@0.3.0-beta.7` under `latest` from `25fabf755090442b98c6714abfae54ec48fee029` using GitHub OIDC with provenance, with `@bsv/vsc@0.2.0-beta.5` already published; `next` stays at the beta.5 set. The public-registry archives match the approved plan. The workflow's final clean install ran before the registry listed the profiles version; the same registry checks passed from a clean checkout about a minute later.

@@ -96,7 +96,7 @@
       "version": "historical",
       "kind": "local",
       "path": "spec/legacy-uora-anchor-v3.md",
-      "digest": "a64a649dd692d066c87b8206e8b63bd726d40c1a046b25057c82b89f510564fb"
+      "digest": "5dd07c7720a4ea3aba2aa517fe4d3b6b399686eeadc0940de450d24c97b17c10"
     },
     {
       "id": "contract-overlay",
@@ -1611,7 +1611,7 @@
         "fixtures/anchor-v3.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers"
     },
     {
