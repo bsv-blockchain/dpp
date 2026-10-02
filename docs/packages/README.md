@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The selected release is `dpp-release-2026-10-4`. Its beta.7 versions of core, overlay topics and profiles and beta.5 of the VSC package, on `@bsv/sdk` 2.8.10 and under the Apache 2.0 licence, were published to npm under `latest` on 2 October 2026. See the [publication receipt](../reference/beta-7-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
+The selected release is `dpp-release-2026-10-5`, a candidate with beta.8 of overlay topics, beta.7 of core and profiles and beta.5 of the VSC package, on `@bsv/sdk` 2.8.10 and under the Apache 2.0 licence, which publish to the `latest` tag. Publication of the overlay package is pending; the others are the published beta.7 set's. See the [beta.7 publication receipt](../reference/beta-7-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
 
 Install the published packages directly, or use the source checkout below to build and inspect the release.
 
@@ -14,7 +14,7 @@ A Node >=22 application can install the packages it needs without cloning this r
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/vsc@0.2.0-beta.5
 ```
 
-Add `@bsv/sdk@2.8.10` if the application directly imports wallet or transaction types; a hosted writer's wallet toolbox must accept that version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. Add `@bsv/dpp-overlay-topics@0.4.0-beta.7` only for an application that embeds index components or operates an overlay. All four packages use ECMAScript modules. Releases publish to the `latest` tag until version 1.0; exact versions and the consumer lockfile define the tested installation.
+Add `@bsv/sdk@2.8.10` if the application directly imports wallet or transaction types; a hosted writer's wallet toolbox must accept that version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. Add `@bsv/dpp-overlay-topics@0.4.0-beta.8` only for an application that embeds index components or operates an overlay. All four packages use ECMAScript modules. Releases publish to the `latest` tag until version 1.0; exact versions and the consumer lockfile define the tested installation.
 
 A trial consumer is building a second stack, an index, a registry and an application, from this documentation and the published packages alone, and what it finds is fixed here. It is a reference consumer under the same administration, not an independent implementation.
 

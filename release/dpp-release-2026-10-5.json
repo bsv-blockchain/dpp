@@ -1,10 +1,10 @@
 {
-  "releaseSet": "dpp-release-2026-10-4",
-  "status": "superseded",
+  "releaseSet": "dpp-release-2026-10-5",
+  "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate in which an index says why it refused a passport state. @bsv/dpp-core 0.3.0-beta.7 exports the linkage reason codes of the verification report, and @bsv/dpp-overlay-topics 0.4.0-beta.7 answers a refused tm_dpp state with an X-Admission-Refusal header in those codes, under overlay contract 0.8.0-draft. @bsv/dpp-profiles 0.3.0-beta.7 changes only its version, and @bsv/vsc 0.2.0-beta.5 is unchanged; all are on @bsv/sdk 2.8.10 under the Apache License 2.0. The anchor fixture's attestationId takes the urn:sha256 form a native claim's identifier has. Record, claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged. Package publication does not establish federated operation or product qualification.",
+  "description": "Experimental prerelease candidate in which an index finds a passport from a GS1 key without a host. @bsv/dpp-overlay-topics 0.4.0-beta.8 answers an ls_dpp lookup by gs1Key, the key tuple, a Digital Link path or a Digital Link URI, with every passport whose identifier names that key under any host, under overlay contract 0.9.0-draft, and now depends on @bsv/dpp-profiles for the GS1 parse. @bsv/dpp-core 0.3.0-beta.7, @bsv/dpp-profiles 0.3.0-beta.7 and @bsv/vsc 0.2.0-beta.5 are unchanged, on @bsv/sdk 2.8.10 under the Apache License 2.0. Record, claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged. Package publication does not establish federated operation or product qualification.",
   "baseline": "native-baseline@2",
-  "selection": "conformance/selections/dpp-release-2026-10-4.json",
+  "selection": "conformance/selections/dpp-release-2026-10-5.json",
   "runtime": {
     "node": ">=22",
     "dependencies": [
@@ -69,7 +69,7 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0-beta.7",
+      "version": "0.4.0-beta.8",
       "directory": "packages/overlay-topics",
       "role": "the topic managers, lookup services, storage adapters, capabilities, history, bounded export, complete export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
       "entryPoints": [

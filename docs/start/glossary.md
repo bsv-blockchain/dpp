@@ -41,7 +41,7 @@ Every term these pages use, in plain words. Where the docs use two names for one
 | PushDrop | The BSV script template every passport state uses: the state's fields are pushed and dropped, and the output is locked to a key (BRC-48). Spending the tip means unlocking its PushDrop output. |
 | Record version | The shape of a state: version 1 (fourteen fields, seven operations) or version 2 (seventeen fields, `ISSUE`, `UPDATE`, `TRANSFER`, `RETIRE`). New passports use version 2; version 1 passports still verify. |
 | Registry | The service that validates and stores signed claims and their exact bytes, so a reader can fetch and check them. |
-| Release set | One tested combination of package versions, contracts and fixtures, such as `dpp-release-2026-10-4`. |
+| Release set | One tested combination of package versions, contracts and fixtures, such as `dpp-release-2026-10-5`. |
 | Report | What a reader produces: one line per check, never a single score. |
 | Ring 0 | Today's level of identity assurance: the platform that hosts an account vouches for it and its brand name, and nobody checks a brand's legal identity. Higher rings, which would bind a key to a legal entity or certify a role, are not live ([Ring 0](../learn/identity-and-authority.md#ring-0)). |
 | State | One signed record in a passport's history: an issue, an update, a transfer or a retirement. Each is one blockchain transaction output. |

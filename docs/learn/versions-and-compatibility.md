@@ -4,11 +4,11 @@ Several parts of a DPP deployment carry their own version: the packages, the rec
 
 ## What carries a version
 
-A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-4`, a candidate declared in `release/dpp-release-2026-10-4.json`; the published beta.6 set before it, [`dpp-release-2026-10-3`](https://github.com/bsv-blockchain/dpp/blob/77d53611d884f7d9aa058fe063acb187f77ec9c7/release/dpp-release-2026-10-3.json), is now superseded. The table gives each part's value in that set, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The two spell some names differently, so the last column gives the exact spelling to look for.
+A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-5`, a candidate declared in `release/dpp-release-2026-10-5.json`; the published beta.7 set before it, [`dpp-release-2026-10-4`](https://github.com/bsv-blockchain/dpp/blob/25fabf755090442b98c6714abfae54ec48fee029/release/dpp-release-2026-10-4.json), is now superseded. The table gives each part's value in that set, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The two spell some names differently, so the last column gives the exact spelling to look for.
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
-| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7`, `@bsv/vsc@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
+| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.8`, `@bsv/vsc@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
 | Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
 | Passport records | Version 1 (14 fields) and version 2 (17 fields) | `wire.records` | `protocols`: `dpp-record` version `1` and version `2` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
@@ -51,7 +51,7 @@ JS
 Against an index on the current release, deployed for managed custody (`ACCEPTANCE_COMMITMENT=required`), it prints:
 
 ```
-implementation @bsv/dpp-overlay-topics 0.4.0-beta.7
+implementation @bsv/dpp-overlay-topics 0.4.0-beta.8
 protocol dpp-record 1
 protocol dpp-record 2
 protocol bsv-attestation-anchor 1

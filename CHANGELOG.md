@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, beta.8 release candidate
+
+- Prepare `@bsv/dpp-overlay-topics@0.4.0-beta.8` in `dpp-release-2026-10-5`, which publishes to `latest`, beside the unchanged `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5`. Publication was pending at preparation.
+- Mark `dpp-release-2026-10-4` superseded with its recorded digests left as published; the demonstration definition and the qualification test move to the new set.
+
 ### 2026-10-02, the hosted proof page and identifiers without a host
 
 - The proof page section, the hosted reference's host table and the registry guide say that the hosted proof page reads any registry that serves the contract's two showcase routes, and how to serve them.

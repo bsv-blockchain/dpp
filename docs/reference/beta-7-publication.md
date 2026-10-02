@@ -2,6 +2,8 @@
 
 The three packages that changed in `dpp-release-2026-10-4` were published to the public npm registry on **2 October 2026**, using GitHub OIDC trusted publishing with provenance, under the `latest` tag; the fourth, `@bsv/vsc@0.2.0-beta.5`, was already published and its archive matched the approved bytes. With them an index says why it refused a passport state, in an `X-Admission-Refusal` header. Every downloaded archive matched the approved bytes. The workflow's final clean install from the public registry could not yet resolve `@bsv/dpp-profiles@0.3.0-beta.7`, uploaded seconds earlier; the same registry checks, run from a clean checkout of the source revision about a minute later, passed.
 
+The set is now superseded by a later one, which [release sets](release-sets.md) names; this receipt stays the record of what beta.7 published.
+
 ## Exact source and approval
 
 | Evidence | Recorded value |

@@ -17,9 +17,13 @@ Write down what each running component uses now, and keep the old configuration 
 
 ## Upgrade the packages
 
+### From beta.7 to beta.8
+
+The current set, `dpp-release-2026-10-5`, a candidate pending publication, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC. An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+
 ### From beta.6 to beta.7
 
-The current set, `dpp-release-2026-10-4`, carries the beta.7 packages of core, overlay topics and profiles, with VSC unchanged at beta.5, published under `latest` on 2 October 2026 from source revision `25fabf755090442b98c6714abfae54ec48fee029` ([receipt](reference/beta-7-publication.md)). An index on beta.7 says why it refused a passport state, in an `X-Admission-Refusal` header beside `X-Admission`, and speaks index contract `0.8.0-draft`. A writer needs no change, and one that reads the new header can report the reason ([when the index refuses a state](packages/build-an-application.md#when-the-index-refuses-a-state)). `@bsv/dpp-core` adds `linkageReasonCode`, and the profiles package changes only its version. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles. The anchor fixture's `attestationId` now has the `urn:sha256:` form of a native claim's identifier, so a harness that pinned the fixture's bytes or its anchor script reads them again.
+The set `dpp-release-2026-10-4`, now superseded, carries the beta.7 packages of core, overlay topics and profiles, with VSC unchanged at beta.5, published under `latest` on 2 October 2026 from source revision `25fabf755090442b98c6714abfae54ec48fee029` ([receipt](reference/beta-7-publication.md)). An index on beta.7 says why it refused a passport state, in an `X-Admission-Refusal` header beside `X-Admission`, and speaks index contract `0.8.0-draft`. A writer needs no change, and one that reads the new header can report the reason ([when the index refuses a state](packages/build-an-application.md#when-the-index-refuses-a-state)). `@bsv/dpp-core` adds `linkageReasonCode`, and the profiles package changes only its version. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles. The anchor fixture's `attestationId` now has the `urn:sha256:` form of a native claim's identifier, so a harness that pinned the fixture's bytes or its anchor script reads them again.
 
 ### From beta.5 to beta.6
 

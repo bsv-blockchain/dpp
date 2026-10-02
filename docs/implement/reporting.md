@@ -15,7 +15,7 @@ This page is for implementers who have run the fixtures and now need to report w
 |---|---|
 | Implementation | Its name, the commit it was built from, and the language |
 | Authorship and dependencies | Who wrote it, and every third-party library with its version. Say that no `@bsv/dpp-*` code is used for the properties you claim ([what you may reuse](README.md#what-you-may-reuse)). |
-| Release and baseline | The release set and baseline you implemented, such as `dpp-release-2026-10-4` and `native-baseline@2`, and the revision of the fixtures you ran |
+| Release and baseline | The release set and baseline you implemented, such as `dpp-release-2026-10-5` and `native-baseline@2`, and the revision of the fixtures you ran |
 | Roles and profiles | The roles you claim, such as `passport-reader`, and the profiles you select, such as `managed-custody@1` |
 | Per case | The requirement identifier (a ledger row), the fixture file and case identifier or the digest of a fresh input, the policy applied (publisher keys, profile options, authority lists, header source or none), the command that ran it, the expected result and your result |
 | Open questions | For a source conflict, both readings and the input that makes the difference observable ([source gaps](fixture-runner.md#source-gaps)) |
