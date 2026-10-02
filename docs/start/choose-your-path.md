@@ -52,7 +52,7 @@ Done when you have watched a passport's history grow and verified it. The [hoste
 1. [Quick start](../quick-start.md#read-a-live-passport): read a live passport from the command line.
 2. [Build an application, step 1](../packages/build-an-application.md#1-read-a-passport): read and verify a passport in your own code.
 3. [Gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence): add its claims and anchors to the report.
-4. [Evidence and its limits](../learn/evidence-and-freshness.md): read the report.
+4. [Evidence and its limits](../learn/evidence-and-freshness.md#the-sixteen-checks): what each of the report's sixteen checks means.
 
 Done when your code prints a report whose signature and linkage checks pass for a live passport. Not settled yet: finding a publisher's index or registry from the passport alone ([limitations](../operate/limitations.md#finding-records)).
 
@@ -62,7 +62,7 @@ Done when your code prints a report whose signature and linkage checks pass for 
 2. [Get an identifier](../identifiers.md#get-an-identifier): a GTIN, a host you control, or demonstration prefix 952 until you have both.
 3. [Choose a profile](../profiles/README.md): the product data your passports carry.
 4. [Run your own index](../operate/README.md): your writer announces every state to it.
-5. [Build an application, step 3](../packages/build-an-application.md#3-write-a-passport): issue and update passports with a wallet.
+5. [Build an application, step 3](../packages/build-an-application.md#3-write-a-passport): issue and update passports with a wallet; [how the writer example works](../packages/how-the-writer-works.md) takes it apart step by step.
 6. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): send, prove and recover from interruptions.
 7. [Export, import and recovery](../operate/export-import-recovery.md): keep what you wrote.
 
@@ -81,7 +81,7 @@ Done when a passport and a claim written on your platform verify from a stranger
 ## Add a claim
 
 1. [Quick start](../quick-start.md#sign-a-claim): sign a claim and have a registry check it.
-2. [Build an application, step 4](../packages/build-an-application.md#4-sign-and-anchor-a-lifecycle-claim): sign, store and anchor a claim.
+2. [Add a claim as a repairer, certifier or recycler](../packages/add-a-claim.md): fill in, sign, store and anchor a claim about a passport you do not control.
 3. [Passport states and attestations](../learn/passport-and-attestations.md): why a claim never needs control of the passport.
 4. [Attestation issuer](../implement/roles/attestation-issuer.md): the issuer's exact rules.
 
@@ -89,8 +89,8 @@ Done when a registry validates your claim and its anchor is found by the passpor
 
 ## Hand on or receive
 
-1. [Custody](../learn/custody.md): who holds which key.
-2. [After a hand on](../packages/what-an-application-offers.md#after-a-hand-on): what a recipient can do.
+1. [Custody](../learn/custody.md#the-four-keys): who holds which key, and [how a managed transfer works](../learn/custody.md#how-a-managed-transfer-works).
+2. [After a hand on](../learn/custody.md#after-a-hand-on-the-holders-side): what a holder can do next, and what the [application offers](../packages/what-an-application-offers.md#after-a-hand-on).
 3. [Build an application, step 3](../packages/build-an-application.md#3-write-a-passport): the `TRANSFER` under managed custody.
 
 Done when the recipient's acceptance is committed in the `TRANSFER` and a reader's `linkage` check passes.

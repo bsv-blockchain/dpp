@@ -12,7 +12,7 @@ Every term these pages use, in plain words. Where the docs use two names for one
 | BRC | A numbered BSV technical standard, such as BRC-42 (key derivation) or BRC-100 (the wallet interface). |
 | BRC-100 wallet | A wallet that holds keys and funds and answers the standard wallet interface: it signs, builds and broadcasts transactions for an application without handing over its keys. Desktop wallet applications and `@bsv/wallet-toolbox` both qualify. |
 | Capability document | What a service answers at `GET /capabilities`: the profiles, keys, limits and features it offers. Check it before you depend on a service. |
-| Check | One line of a verification report, such as `actorSignatures` or `inclusion`. Each reads `pass`, `fail`, `unknown` or `not-applicable`, with a reason code. |
+| Check | One line of a verification report, such as `actorSignatures` or `inclusion`. Each reads `pass`, `fail`, `unknown` or `not-applicable`, with a reason code ([the sixteen checks](../learn/evidence-and-freshness.md#the-sixteen-checks)). |
 | Claim | A signed statement about a passport, such as a repair, a test or a recycling. It travels separately from the passport, so the party making it does not need control of the passport. Also called an attestation or a lifecycle claim. |
 | Claim code | A one-time code a custodian gives a recipient out of band to accept a hand on, under managed custody. It is not a lifecycle claim. |
 | Controller key | The key that currently controls a passport, written in every version 2 state (field 6). It is normally one BRC-42 derivation below the controlling party's identity key. Version 1 called it the owner identity key. |
@@ -43,7 +43,7 @@ Every term these pages use, in plain words. Where the docs use two names for one
 | Registry | The service that validates and stores signed claims and their exact bytes, so a reader can fetch and check them. |
 | Release set | One tested combination of package versions, contracts and fixtures, such as `dpp-release-2026-10`. |
 | Report | What a reader produces: one line per check, never a single score. |
-| Ring 0 | Today's level of identity assurance: the platform that hosts an account vouches for it and its brand name, and nobody checks a brand's legal identity. Higher rings, which would bind a key to a legal entity or certify a role, are not live. |
+| Ring 0 | Today's level of identity assurance: the platform that hosts an account vouches for it and its brand name, and nobody checks a brand's legal identity. Higher rings, which would bind a key to a legal entity or certify a role, are not live ([Ring 0](../learn/identity-and-authority.md#ring-0)). |
 | State | One signed record in a passport's history: an issue, an update, a transfer or a retirement. Each is one blockchain transaction output. |
 | Tip | A passport's latest state, the one the next change must spend. |
 | Topic | The admission rules an index applies to one kind of record: `tm_dpp` for passport states, `tm_attestation` for claim anchors. |
