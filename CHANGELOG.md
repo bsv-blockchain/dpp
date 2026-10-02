@@ -8,7 +8,7 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.6 packages were published under `latest` on 2 October 2026 ([receipt](docs/reference/beta-6-publication.md)).
+The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.6 packages were published under `latest` on 2 October 2026 ([receipt](docs/reference/beta-6-publication.md)), and the beta.7 packages the same day ([receipt](docs/reference/beta-7-publication.md)).
 
 ## Repository history
 
@@ -19,9 +19,14 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 - The federation and limitations pages say that a failing header source drops proven states during synchronisation, and how to recover them.
 - Three pages no longer say the anchor fixture uses a `urn:uuid:` identifier, which beta.7 changed.
 
+### 2026-10-02, beta.7 publication
+
+- Publish `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7` and `@bsv/dpp-profiles@0.3.0-beta.7` under `latest` from `25fabf755090442b98c6714abfae54ec48fee029` using GitHub OIDC with provenance, with `@bsv/vsc@0.2.0-beta.5` already published; `next` stays at the beta.5 set. The public-registry archives match the approved plan. The workflow's final clean install ran before the registry listed the profiles version; the same registry checks passed from a clean checkout about a minute later.
+- Archive the exact approved plan and publication receipt in `docs/reference/`, and update the pages that said beta.7 was pending. The release-set JSON keeps `status: candidate` as the approved input.
+
 ### 2026-10-02, beta.7 release candidate
 
-- Prepare `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7` and `@bsv/dpp-profiles@0.3.0-beta.7` in `dpp-release-2026-10-4`, which publishes to `latest`, with `@bsv/vsc@0.2.0-beta.5` unchanged. The profiles package changes only its version. Publication was pending at preparation.
+- Prepare `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7` and `@bsv/dpp-profiles@0.3.0-beta.7` in `dpp-release-2026-10-4`, which publishes to `latest`, with `@bsv/vsc@0.2.0-beta.5` unchanged. The profiles package changes only its version. Publication was pending at preparation; see the publication entry above.
 - Mark `dpp-release-2026-10-3` superseded with its recorded digests left as published; the demonstration definition, the qualification test and the two projection vectors move to the new set and versions.
 
 ### 2026-10-02, the anchor fixture names its claim by digest
