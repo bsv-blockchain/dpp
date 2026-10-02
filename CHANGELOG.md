@@ -12,6 +12,20 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, beta.7 release candidate
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7` and `@bsv/dpp-profiles@0.3.0-beta.7` in `dpp-release-2026-10-4`, which publishes to `latest`, with `@bsv/vsc@0.2.0-beta.5` unchanged. The profiles package changes only its version. Publication was pending at preparation.
+- Mark `dpp-release-2026-10-3` superseded with its recorded digests left as published; the demonstration definition, the qualification test and the two projection vectors move to the new set and versions.
+
+### 2026-10-02, the anchor fixture names its claim by digest
+
+- `fixtures/attestation-anchor-v1.json` and its vector file give the anchor's `attestationId` the `urn:sha256:` form of a native claim's identifier (`spec/rules.md` section 6) in place of a `urn:uuid:`, so the fixture matches what the contract and the rules fix. The derived key, signature and script move with it, as do the evidence-report fixture's anchors, whose unknown-format anchor now names its own digest.
+
+### 2026-10-02, an index says why it refused a state
+
+- `POST /submit` answers a refused `tm_dpp` state with `X-Admission-Refusal: tm_dpp=<code>` beside `X-Admission`, in the overlay contract `0.8.0-draft`, which lists the thirteen codes under `x-refusal-codes`. Where a verification report names the same failure the code is the report's word, so a writer and a reader see one vocabulary. The STEAK body is unchanged, since a client reads every key of it as a topic. `DppTopicManager` records the reason (`refusalFor`), `@bsv/dpp-overlay-topics` exports `DPP_REFUSAL_CODES`, and `@bsv/dpp-core` exports `linkageReasonCode`. Refused anchors on `tm_attestation` still carry no reason.
+- The writer pages, the contracts reference and the limitations page list what each code asks of a writer, and the v2 writer example prints the reason for the refused state its dry run shows.
+
 ### 2026-10-02, a later state synchronises once proven
 
 - The limitations page and the federation troubleshooting table say that an unproven later state of a passport a peer already holds reaches that peer only once its proof reaches the node the peer pulls from, while a new passport arrives unproven. The package README and the federation test already recorded it; no code changes.

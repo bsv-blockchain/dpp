@@ -101,10 +101,10 @@
     {
       "id": "contract-overlay",
       "uri": "contracts/overlay.yaml",
-      "version": "0.7.0-draft",
+      "version": "0.8.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "70e739bed901ba4f9c9178127f31cad82f907f93c0fd357f811a367e805c611c"
+      "digest": "27c00db5cbbc5fda61d70e8255f8992479d727d0029894c52c4fe9f0f692ba98"
     },
     {
       "id": "contract-registry",
@@ -136,7 +136,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "0111c492fdc7a1e67efa7dbee81a2aefd9cede95ab823f2f5ff2759fb66de117"
+      "digest": "8f3c2066904df71cae776ea6fc75c73ddefa1775c5b938c1b97a71f4ce6afa05"
     },
     {
       "id": "baseline-native-2",
@@ -144,7 +144,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "8ff2d610d6521df5668011889d2bfc5cfec8d0195b45d00823115041dd3a1057"
+      "digest": "97bea6f5dcceb2702708c21e8854bdf07ec05a230b3378b5ddf1a136bacf04a7"
     },
     {
       "id": "spec-profiles",
@@ -3251,7 +3251,7 @@
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.7.0-draft",
+      "sourceVersion": "0.8.0-draft",
       "clause": "x-dpp-profile.must",
       "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
       "layer": "role",
@@ -3269,7 +3269,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -4133,7 +4133,7 @@
       "id": "OVL-2-retraction",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.7.0-draft",
+      "sourceVersion": "0.8.0-draft",
       "clause": "POST /retract",
       "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
       "layer": "role",
@@ -4151,9 +4151,37 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers",
       "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so."
+    },
+    {
+      "id": "OVL-2-refusal-reason",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.8.0-draft",
+      "clause": "POST /submit X-Admission-Refusal",
+      "summary": "A refused announcement names the check that failed: X-Admission-Refusal carries topic=code for each refused topic whose manager recorded a reason, from the tm_dpp codes the contract lists and in the verification report's word where it names the same failure, and the STEAK body is unchanged.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-writer"
+      ],
+      "applicability": "when an index refuses a passport state announced on /submit",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmDpp.ts (DPP_REFUSAL_CODES)",
+        "packages/overlay-topics/src/index.ts (refusalReasons)"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/tmDpp.test.ts",
+        "packages/overlay-topics/test/http.test.ts",
+        "packages/overlay-topics/test/refusedSpend.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-10-02",
+      "reviewOwner": "dpp maintainers"
     },
     {
       "id": "GS1D-1-grammar",

@@ -7,7 +7,7 @@
 This is a pre-1.0 candidate. Install the exact published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.6
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.7
 ```
 
 This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.
@@ -79,7 +79,7 @@ Everything is environment. An unset variable switches its feature off or falls b
 
 ## The extension routes
 
-Five routes the reference deployment serves beside the ecosystem's wire, each in the shape a contract under `contracts/` fixes and each documented in `contracts/overlay.yaml`, followed by the two GASP routes. None replaces the bounded lookup, which stays exactly what it is.
+Five routes the reference deployment serves beside the ecosystem's wire, each in the shape a contract under `contracts/` fixes and each documented in `contracts/overlay.yaml`, followed by the two GASP routes. None replaces the bounded lookup, which stays exactly what it is. `POST /submit` also answers two headers beside the STEAK: `X-Admission`, the outcome per topic, and, for a refused passport state, `X-Admission-Refusal`, the check that failed as one of the codes `DPP_REFUSAL_CODES` exports (`tm_dpp=predecessor-not-admitted`, for instance). An engine you build yourself and hand to `startOverlayService` gets the same answer when its `tm_dpp` is the package's `DppTopicManager`.
 
 | Route | What it serves | Access |
 |---|---|---|

@@ -9,7 +9,7 @@
  * and depend on nothing of ours: they are written to be dropped into a shared
  * overlay instance that has never heard of this programme's token core.
  */
-export { DppTopicManager, DPP_TOPIC, type DppAdmissionOptions } from './tmDpp.js'
+export { DppTopicManager, DPP_TOPIC, DPP_REFUSAL_CODES, type AdmissionRefusals, type DppAdmissionOptions, type DppRefusal } from './tmDpp.js'
 export * from './attestationAnchor.js'
 export * from './attestationStorage.js'
 export * from './tmAttestation.js'

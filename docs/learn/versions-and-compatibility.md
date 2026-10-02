@@ -4,18 +4,18 @@ Several parts of a DPP deployment carry their own version: the packages, the rec
 
 ## What carries a version
 
-A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-3`, a candidate declared in `release/dpp-release-2026-10-3.json`; the published beta.5 set before it, [`dpp-release-2026-10-2`](https://github.com/bsv-blockchain/dpp/blob/7292237376b8308ed67b11194fd7a00cbe313d82/release/dpp-release-2026-10-2.json), is now superseded. The table gives each part's value in that set, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The two spell some names differently, so the last column gives the exact spelling to look for.
+A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-4`, a candidate declared in `release/dpp-release-2026-10-4.json`; the published beta.6 set before it, [`dpp-release-2026-10-3`](https://github.com/bsv-blockchain/dpp/blob/77d53611d884f7d9aa058fe063acb187f77ec9c7/release/dpp-release-2026-10-3.json), is now superseded. The table gives each part's value in that set, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The two spell some names differently, so the last column gives the exact spelling to look for.
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
-| Packages | `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/vsc@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
+| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.7`, `@bsv/vsc@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
 | Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
 | Passport records | Version 1 (14 fields) and version 2 (17 fields) | `wire.records` | `protocols`: `dpp-record` version `1` and version `2` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
 | Anchor | `bsv-attestation-anchor-v1` | `wire.anchor` | `protocols`: `bsv-attestation-anchor` version `1`; `anchorFormats` lists it as `current` |
 | Acceptance record | `dpp-managed-acceptance@1` | `wire.acceptanceRecord` | Implied by the custody profile |
 | Verification report | Version `1` | `wire.verificationReport` | Not advertised; each report carries `reportVersion` |
-| Index contract | `0.7.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.7.0-draft` |
+| Index contract | `0.8.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.8.0-draft` |
 | Custody profile | `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `1`, with its options |
 | Industry profiles | Current: `general@2`, `battery@2`, `textile@2`. Drafts: `battery@3`, `battery@4`, `textile@3`, `textile@4` | The frozen manifests in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
 
@@ -48,14 +48,14 @@ for (const p of capabilities.profiles.filter((p) => p.kind === 'custody')) conso
 JS
 ```
 
-Against the hosted index on 2 October 2026 it printed:
+Against an index on the current release, deployed for managed custody (`ACCEPTANCE_COMMITMENT=required`), it prints:
 
 ```
-implementation @bsv/dpp-overlay-topics 0.4.0-beta.3
+implementation @bsv/dpp-overlay-topics 0.4.0-beta.7
 protocol dpp-record 1
 protocol dpp-record 2
 protocol bsv-attestation-anchor 1
-protocol overlay-http 0.7.0-draft
+protocol overlay-http 0.8.0-draft
 custody managed-custody 1 {"acceptanceCommitment":"required","controlAuthorities":[]}
 ```
 
@@ -63,7 +63,7 @@ Read it this way:
 
 - **Record versions and index contract.** The protocols must include every record version you write and the `overlay-http` version your client speaks.
 - **Custody.** `managed-custody` with `acceptanceCommitment: required` refuses a version 2 `TRANSFER` without an acceptance commitment. An index that admits version 2 without one declares `record-model-baseline@2` instead.
-- **Implementation.** A service can run an older package release than the current set while speaking the same formats: the hosted index above runs `@bsv/dpp-overlay-topics@0.4.0-beta.3`, one release behind. Compare what a service advertises, not the release set's name.
+- **Implementation.** A service can run an older package release than the current set. The hosted index ran `@bsv/dpp-overlay-topics@0.4.0-beta.3` on 2 October 2026: it reads and writes the same record formats, but it speaks the index contract before this one, so it does not say why it refused a state. Compare what a service advertises, not the release set's name.
 - **Publisher keys.** Before you write, check that `publisherPolicy.publisherKeys` names the key your states are countersigned with.
 
 A reachable server can still lack the history, export or profile operation your client needs. [Contracts](../reference/contracts.md) describes the capability request and the operations behind it.

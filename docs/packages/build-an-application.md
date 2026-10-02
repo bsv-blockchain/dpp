@@ -34,7 +34,7 @@ The steps run one program, `examples/write-passport-v2.mjs`, from the checkout. 
 To build your own application beside the checkout, install the packages at exact versions. They are published under npm's `next` tag, so an install without a version does not give you these:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.6 @bsv/dpp-profiles@0.3.0-beta.6 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/sdk@2.8.10
 ```
 
 The checkout already links these packages, so the commands on this page need no install of their own.
@@ -231,7 +231,7 @@ The index admitted 37a258343c26... while it was still a draft (X-Admission: tm_d
 ok: the index's lookup returns the lineage as written: ISSUE 3228f527837d... -> UPDATE 37a258343c26....
 ok: the token rail passes: encoding, both signatures on both states, and linkage with control proven on the UPDATE.
 ...
-ok: the index refuses it too, and its answer carries no reason.
+ok: the index refuses it too, and says why: control-not-proven, the code a verification report gives the same failure.
 ...
 Every sentence above holds.
 ```
@@ -296,16 +296,34 @@ Record each operation in your journal before you act on it: the state, the unsen
 | The index's publisher keys do not include yours | The index would refuse every state | Fix `SERVICE_IDENTITY_KEY` or the policy and restart the index; the example builds nothing |
 | The index already holds states for the identifier | A second genesis would be a rival record | Use a serial you have not written |
 | HTTP 401 or 403 on `/submit` | The submit token or the address is wrong | Fix it and run again; the example aborts the draft and sends nothing |
-| `X-Admission: tm_dpp=none` | The index refused the state | The draft is aborted; see "A refusal carries no reason" below |
+| `X-Admission: tm_dpp=none` | The index refused the state | The draft is aborted; `X-Admission-Refusal` says why, and [when the index refuses a state](#when-the-index-refuses-a-state) says what to do |
 | The index could not be reached | An unreachable index refuses nothing | The state is sent and then announced again, and never rebuilt |
 | The wallet answers `sending` | Not yet an answer from the network | Wait for the wallet. Do not rebuild |
 | The network refuses a state the index admitted | The index holds a tip that never existed | `POST /retract` withdraws it, and the example does so |
 | No merkle path yet | Not mined, or the wallet has not attached it | Run with `--wait-proof`, or push it later; readers see the state as pending until then |
 | `inclusion` reads `pending` in a report | No proof has reached the index, or the header source could not be asked | Push the proof, and set `WOC_API_KEY` |
 
-### A refusal carries no reason
+### When the index refuses a state
 
-The index answers a state it refuses with 200, `X-Admission: tm_dpp=none` and nothing admitted; why is in its operator's log, not in the answer. Before you announce, check the causes you can see yourself. The state's `server_signature` comes from a key listed under `publisherPolicy.publisherKeys` in the index's `GET /capabilities`, and that key is active at the state's own timestamp. `GET /capabilities` lists the keys but not when each is active, so you can check that your key is listed and take its window from the operator's signed publisher policy ([tell operators apart](../operate/federation.md#tell-operators-apart)); an index with only `SERVICE_IDENTITY_KEY` has no windows. A state after the genesis spends the tip that the index's `ls_dpp` lookup, its passport lookup, returns for the passport. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes. The dry run shows the operator's log line for a refused state.
+The index answers a state it refuses with 200, `X-Admission: tm_dpp=none` and nothing admitted, and names the check that failed in `X-Admission-Refusal`, for example `X-Admission-Refusal: tm_dpp=predecessor-not-admitted`. Where a verification report names the same failure, the code is the report's own word. The dry run shows one.
+
+| Code | What failed | What to do |
+|---|---|---|
+| `decode-failed` | The transaction has no well-formed DPP output, or more than one | Build exactly one DPP output per transaction with `buildLockingScript` |
+| `actor-signature-invalid` | The actor signature does not verify against `actor_identity_key` and `actor_keyID` | Sign with the key and key identifier the state names |
+| `publisher-not-authorised` | The server signature is not from a publisher key the index accepts at the state's own timestamp | Check that your key is listed under `publisherPolicy.publisherKeys` in the index's `GET /capabilities`, and take its window from the operator's signed publisher policy ([tell operators apart](../operate/federation.md#tell-operators-apart)); an index with only `SERVICE_IDENTITY_KEY` has no windows |
+| `link-broken` | A genesis rule or a chain rule does not hold | Run `verifyChain` from `@bsv/dpp-core` over your states and this one: its error names the rule |
+| `control-not-proven` | A version 2 `UPDATE`, `TRANSFER` or `RETIRE` does not prove control of the predecessor | Act as the controller, or carry `control_linkage` |
+| `lineage-retired` | The passport ended with a `RETIRE` | Nothing may follow it |
+| `version-transition-invalid` | The version changed other than by the one upgrade, a version 2 `UPDATE` that spends a version 1 tip | Keep the predecessor's version, or upgrade with that `UPDATE` |
+| `consent-not-proven` | The index runs the owner-signed transfer, and the `TRANSFER`'s actor does not prove it is the previous owner | Act as the previous owner, or carry `owner_linkage` |
+| `acceptance-commitment-absent` | The index runs managed custody, and the version 2 `TRANSFER` has no `authorisation_commitment` | Commit to the acceptance record the custodian keeps |
+| `genesis-spends-passport-output` | A genesis spends a passport state's DPP output | Fund the genesis from other outputs; change from another passport's transaction is fine |
+| `predecessor-not-admitted` | The state does not spend the tip the index holds | Announce the predecessor first, oldest state first, and compare your tip with the one the index's `ls_dpp` lookup returns |
+| `predecessor-unavailable` | The state spends the tip, but neither the BEEF nor the index holds the predecessor's bytes | Put the predecessor's transaction in the same BEEF |
+| `lineage-untraceable` | The index cannot trace a version 2 state's lineage back to its genesis | Announce the lineage from its genesis, oldest state first |
+
+An index on an earlier release, or another implementation, may answer `none` without `X-Admission-Refusal`. The reason is then only in its operator's log, so check the two causes you can see yourself, the publisher key and the tip, as the `publisher-not-authorised` and `predecessor-not-admitted` rows say. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes.
 
 ## What is not settled
 

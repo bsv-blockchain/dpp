@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.7.0-draft
+  version: 0.8.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -110,7 +110,7 @@ x-dpp-profile:
       control authorities of spec/record-model-v2.md section 6 in the topic
       documentation and the capability document.
   extensions:
-    - X-Admission response header on /submit.
+    - X-Admission and X-Admission-Refusal response headers on /submit.
     - Extra fields on /health (topic, service, topics, services, network, startedAt).
     - GET /capabilities, the capability document (contracts/capabilities.schema.json).
     - >-
@@ -138,7 +138,7 @@ x-dpp-profile:
 paths:
   /submit:
     post:
-      summary: Announce a transaction to the index (as upstream, plus the X-Admission header)
+      summary: Announce a transaction to the index (as upstream, plus the X-Admission and X-Admission-Refusal headers)
       description: >-
         BRC-22, exactly as the upstream contract defines it: a BEEF body, an
         X-Topics header naming the topics that should consider it, an optional
@@ -187,7 +187,8 @@ paths:
         '200':
           description: >-
             The STEAK, as upstream. The X-Admission response header summarises
-            it per topic and is exposed to browser callers.
+            it per topic, X-Admission-Refusal says why a topic refused it, and
+            both are exposed to browser callers.
           headers:
             X-Admission:
               schema:
@@ -197,6 +198,36 @@ paths:
                 topic=duplicate or topic=none. A duplicate is told from a
                 refusal by whether the topic ran its mutation phase, which the
                 STEAK shows as the presence of coinsRemoved.
+            X-Admission-Refusal:
+              schema:
+                type: string
+              description: >-
+                Sent only when a topic refused the transaction (topic=none in
+                X-Admission) and its manager recorded why: comma-separated
+                topic=code, for example tm_dpp=predecessor-not-admitted. A
+                refused topic left out recorded no reason, and an admitted or
+                duplicate topic is never named. Codes are lower-case words
+                joined by hyphens. Where a verification report names the same
+                failure (spec/verification.md section 4), the code is the
+                report's own word. x-refusal-codes lists the tm_dpp codes and
+                what each asks of the writer. An index MAY send further codes
+                under the prefix x-, and a client reads a code it does not know
+                as a refusal without a stated reason.
+              x-refusal-codes:
+                tm_dpp:
+                  decode-failed: 'The transaction carries no well-formed DPP output, or more than one.'
+                  actor-signature-invalid: 'The actor signature does not verify against actor_identity_key and actor_keyID.'
+                  publisher-not-authorised: 'The server signature is not from a publisher key this index accepts at the state''s own timestamp; GET /capabilities lists the keys.'
+                  link-broken: 'A genesis rule or a chain invariant does not hold; checkTransition in @bsv/dpp-core names the rule.'
+                  lineage-retired: 'The lineage is retired, and nothing follows a RETIRE.'
+                  control-not-proven: 'A version 2 UPDATE, TRANSFER or RETIRE does not prove control of the predecessor.'
+                  version-transition-invalid: 'The version change is not the one upgrade transition, a version 2 UPDATE that spends a version 1 tip.'
+                  consent-not-proven: 'The index runs the owner-signed transfer, and the TRANSFER''s actor does not prove it is the previous owner.'
+                  acceptance-commitment-absent: 'The index runs managed-custody@1, and the version 2 TRANSFER carries no authorisation_commitment.'
+                  genesis-spends-passport-output: 'A genesis state spends a passport output this index admitted.'
+                  predecessor-not-admitted: 'The state does not spend the tip this index holds. Announce the predecessor first, oldest state first.'
+                  predecessor-unavailable: 'The state spends the tip, but neither the BEEF nor this index holds the predecessor''s bytes. Include them in the BEEF.'
+                  lineage-untraceable: 'The lineage genesis of a version 2 state cannot be traced from the history this index holds.'
         '400':
           $ref: '#/components/responses/error'
         '401':

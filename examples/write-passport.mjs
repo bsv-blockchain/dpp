@@ -195,7 +195,8 @@ async function announce(beef, txid) {
   }
   const admission = response.headers.get('x-admission') ?? ''
   if (admission.includes('tm_dpp=none')) {
-    console.log(`The index refused ${short(txid)} on admission; its log names the reason.`)
+    const refusal = response.headers.get('x-admission-refusal')
+    console.log(`The index refused ${short(txid)} on admission; ${refusal == null ? 'its log names the reason' : `it says why: ${refusal}`}.`)
     return 'refused'
   }
   console.log(

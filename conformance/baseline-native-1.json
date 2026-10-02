@@ -266,12 +266,12 @@
     },
     {
       "path": "fixtures/attestation-anchor-v1.json",
-      "sha256": "9e7a88f5faa7c11eeb544a7ccce1fd3b17eea39b11bfdfaf7caf497cf8f36370",
+      "sha256": "5779692240113cb9fb08086ac76802cd98985ccab4495e283a53a4d00bddf2f3",
       "pins": "the current signed native claim, its complete representation, digest and ten-field anchor"
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "f4207b5d26d67b6c4ea5140d12461c16aa54193a84ad9759da730111d6a70605",
+      "sha256": "f4a8bcf9f584a0bf3d361251978f815111796eea83a262bbb71b446195c1847a",
       "pins": "the verification report for twenty-one evidence cases"
     },
     {
@@ -291,7 +291,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
-      "sha256": "3d235db28b5fa7edf8ebcf5981201e8032382d8e6a425e9154f8e329c5df9e55",
+      "sha256": "f3884bebba3474754298c7a482703342be73deb983eef50fe63efbbf39fe209a",
       "pins": "the current anchor in the stack's vector format"
     }
   ],

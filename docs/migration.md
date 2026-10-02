@@ -17,9 +17,13 @@ Write down what each running component uses now, and keep the old configuration 
 
 ## Upgrade the packages
 
+### From beta.6 to beta.7
+
+The current set, `dpp-release-2026-10-4`, a candidate pending publication, carries the beta.7 packages of core, overlay topics and profiles, with VSC unchanged at beta.5. An index on beta.7 says why it refused a passport state, in an `X-Admission-Refusal` header beside `X-Admission`, and speaks index contract `0.8.0-draft`. A writer needs no change, and one that reads the new header can report the reason ([when the index refuses a state](packages/build-an-application.md#when-the-index-refuses-a-state)). `@bsv/dpp-core` adds `linkageReasonCode`, and the profiles package changes only its version. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles. The anchor fixture's `attestationId` now has the `urn:sha256:` form of a native claim's identifier, so a harness that pinned the fixture's bytes or its anchor script reads them again.
+
 ### From beta.5 to beta.6
 
-The current set, `dpp-release-2026-10-3`, carries the beta.6 packages (VSC beta.5), published under `latest` on 2 October 2026 from source revision `77d53611d884f7d9aa058fe063acb187f77ec9c7` ([receipt](reference/beta-6-publication.md)). The only change is the npm tag the packages publish to, `latest` instead of `next`; nothing in the code, the record formats or the index changed, so an application needs only the new versions.
+The set `dpp-release-2026-10-3`, now superseded, carries the beta.6 packages (VSC beta.5), published under `latest` on 2 October 2026 from source revision `77d53611d884f7d9aa058fe063acb187f77ec9c7` ([receipt](reference/beta-6-publication.md)). The only change is the npm tag the packages publish to, `latest` instead of `next`; nothing in the code, the record formats or the index changed, so an application needs only the new versions.
 
 ### From beta.4 to beta.5
 

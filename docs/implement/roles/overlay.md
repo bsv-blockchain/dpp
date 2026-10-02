@@ -26,7 +26,7 @@ The contract's `x-dpp-profile` sorts every route into must, should and may. The 
 | Should | `POST /arc-ingest`, accepting a merkle proof only after checking it contains the transaction and validating it against the index's header source | `SVC-2-proof-ingest` |
 | Should | HTTPS; advertising through SHIP and SLAP, the ecosystem's protocols for announcing which topics and lookup services an index hosts, when public; `GET /health/live` and `GET /health/ready` | |
 | May | The binary aggregated lookup; synchronisation with peers through GASP, the Graph Aware Synchronisation Protocol (`POST /requestSyncResponse`, `POST /requestForeignGASPNode`); a bearer token on `/submit`; treating a missing `X-Topics` header as `tm_dpp`; the owner-signed transfer; the acceptance commitment under `managed-custody@1` | |
-| Extension the reference serves | The `X-Admission` header on `/submit`; `GET /capabilities`; `GET /history`; `GET /evidence-package`; `GET /evidence-export`; `POST /retract` | |
+| Extension the reference serves | The `X-Admission` and `X-Admission-Refusal` headers on `/submit`; `GET /capabilities`; `GET /history`; `GET /evidence-package`; `GET /evidence-export`; `POST /retract` | |
 
 The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay role although the contract lists it as should, so an index claiming the role under the baseline serves it.
 
@@ -50,7 +50,7 @@ An index admits a passport state only when its publisher signature verifies unde
 
 Each applies to any new index, whatever its code. [Known limitations](../../operate/limitations.md) and [federation](../../operate/federation.md#when-a-record-does-not-arrive) give the detail.
 
-- A refused state gets HTTP 200 with `X-Admission: tm_dpp=none` and no reason; the reason is only in your own log.
+- Only `tm_dpp` says why it refused: `X-Admission-Refusal` names the check for a passport state, and a refused anchor on `tm_attestation` answers `none` with the reason only in your own log.
 - No one is named to deliver a later proof to a peer that synchronised a state; its readers see `inclusion` pending until someone does.
 - An output your node left behind while synchronising is visible only in its log, and it is not asked for again until you move that peer's checkpoint back; no setting re-synchronises from a chosen point.
 - A state funded from another passport's transaction does not reach a peer that lacks that other passport's history until the new state is mined.

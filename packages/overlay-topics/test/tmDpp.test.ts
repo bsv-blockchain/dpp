@@ -21,7 +21,8 @@ import {
   type DppStateData,
 } from '@bsv/dpp-core'
 import { atomicOver } from './helpers.js'
-import { DppTopicManager } from '../src/tmDpp.js'
+import { readFileSync } from 'node:fs'
+import { DPP_REFUSAL_CODES, DppTopicManager } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { InMemoryDppStorage } from '../src/storage.js'
 
@@ -236,6 +237,69 @@ describe('tm_dpp admission', () => {
  * chain here is genesis (owner: owner 1's identity key), then a TRANSFER by
  * owner 1 to owner 3's per-passport owner key, then whatever each test appends.
  */
+describe('tm_dpp refusal codes, the reason /submit sends as X-Admission-Refusal', () => {
+  const event = async (g: Transaction, overrides: Partial<DppStateData> = {}) =>
+    stateTx(
+      await completeState(makeData({ op: 'SOLD', eventData: '{"channel":"store"}', previousTxid: g.id('hex'), ...overrides }), makerWallet, serverWallet),
+      { tx: g, outputIndex: 0 }
+    )
+
+  it('names the publisher check when the service signature is from a key the index does not accept', async () => {
+    const tm = new DppTopicManager(SERVER_ID)
+    const tx = stateTx(await completeState(makeData(), makerWallet, new ProtoWallet(PrivateKey.fromHex('44'.repeat(32)))))
+    await tm.identifyAdmissibleOutputs(tx.toBEEF(true), [])
+    expect(tm.refusalFor(tx.id('hex'))).toBe('publisher-not-authorised')
+  })
+
+  it('tells a state announced before its predecessor from one whose predecessor bytes are missing', async () => {
+    const tm = new DppTopicManager(SERVER_ID)
+    const { tx: g } = await genesis()
+    const early = await event(g)
+    await tm.identifyAdmissibleOutputs(early.toBEEF(true), [])
+    expect(tm.refusalFor(early.id('hex'))).toBe('predecessor-not-admitted')
+
+    g.merklePath = MerklePath.fromCoinbaseTxidAndHeight(g.id('hex'), 800_000)
+    await tm.identifyAdmissibleOutputs(g.toBEEF(true), [])
+    const proven = await event(g)
+    proven.merklePath = MerklePath.fromCoinbaseTxidAndHeight(proven.id('hex'), 800_001)
+    await tm.identifyAdmissibleOutputs(proven.toBEEF(), [0])
+    expect(tm.refusalFor(proven.id('hex'))).toBe('predecessor-unavailable')
+  })
+
+  it('uses the report word for a broken link and for a transaction without exactly one DPP output', async () => {
+    const tm = new DppTopicManager(SERVER_ID)
+    const { tx: g } = await genesis()
+    await tm.identifyAdmissibleOutputs(g.toBEEF(true), [])
+    const moved = await event(g, { passportId: 'https://id.gs1.org/01/09506000134352/21/OTHER-1' })
+    await tm.identifyAdmissibleOutputs(moved.toBEEF(true), [0])
+    expect(tm.refusalFor(moved.id('hex'))).toBe('link-broken')
+
+    const { tx: doubled } = await genesis()
+    doubled.addOutput(doubled.outputs[0])
+    await tm.identifyAdmissibleOutputs(doubled.toBEEF(true), [])
+    expect(tm.refusalFor(doubled.id('hex'))).toBe('decode-failed')
+  })
+
+  it('forgets a refusal once the same transaction is admitted', async () => {
+    const tm = new DppTopicManager(SERVER_ID)
+    const { tx: g } = await genesis()
+    const next = await event(g)
+    await tm.identifyAdmissibleOutputs(next.toBEEF(true), [])
+    expect(tm.refusalFor(next.id('hex'))).toBe('predecessor-not-admitted')
+    await tm.identifyAdmissibleOutputs(g.toBEEF(true), [])
+    expect((await tm.identifyAdmissibleOutputs(next.toBEEF(true), [0])).outputsToAdmit).toEqual([0])
+    expect(tm.refusalFor(next.id('hex'))).toBeUndefined()
+  })
+
+  it('lists exactly the codes the overlay contract names', () => {
+    const contract = readFileSync(new URL('../../../contracts/overlay.yaml', import.meta.url), 'utf8')
+    const marker = '                tm_dpp:\n'
+    const lines = contract.slice(contract.indexOf(marker, contract.indexOf('x-refusal-codes:')) + marker.length).split('\n')
+    const block = lines.slice(0, lines.findIndex((line) => !line.startsWith(' '.repeat(18))))
+    expect(block.map((line) => /^ {18}([a-z0-9-]+): /.exec(line)?.[1])).toEqual([...DPP_REFUSAL_CODES])
+  })
+})
+
 describe('tm_dpp admission, the owner-signed transfer (a profile option)', () => {
   const owner1Wallet = new ProtoWallet(ownerPriv)
   const owner3Priv = PrivateKey.fromHex('55'.repeat(32))
@@ -313,6 +377,7 @@ describe('tm_dpp admission, the owner-signed transfer (a profile option)', () =>
     })
     expect(warn).toHaveBeenCalledOnce()
     expect(warn.mock.calls[0][0]).toContain(OWNER_CONSENT_REFUSALS.noLinkage)
+    expect(tm.refusalFor(stranger.id('hex'))).toBe('consent-not-proven')
   })
 
   it('admits the owner acting under their root with owner_linkage in event_data', async () => {

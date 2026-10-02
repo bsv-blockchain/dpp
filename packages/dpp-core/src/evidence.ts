@@ -378,9 +378,10 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
  * Which shared reason code a linkage failure carries. The message is the
  * verifier's own sentence (`transition.ts`, `owner.ts`); the code is the
  * contract's word for the rule it names, so a consumer branches on the code
- * and a person reads the sentence.
+ * and a person reads the sentence. Exported so an index refusing the same
+ * link says the same word a verifier would.
  */
-function linkageReasonCode(message: string): string {
+export function linkageReasonCode(message: string): 'lineage-retired' | 'control-not-proven' | 'version-transition-invalid' | 'link-broken' {
   if (message.includes('retired')) return 'lineage-retired'
   if (message.includes('control_linkage') || message.includes('not the controller')) return 'control-not-proven'
   if (message.includes('version 1') || message.includes('version 2') || message.includes('upgrade transition')) return 'version-transition-invalid'
