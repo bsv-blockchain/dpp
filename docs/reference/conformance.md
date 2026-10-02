@@ -10,7 +10,7 @@ This page explains the requirement ledger, which records what the reference impl
 | Ledger | [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json): every requirement with its source, the code and tests behind it, retained evidence and a status such as `tested`, `implemented`, `gap` or `unassessed`. Each source is pinned by its digest. |
 | Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json). |
 | Claim | A statement a release makes, such as "a passport reader conforms to `native-baseline@1`", which is true only if every requirement row it needs is tested or better. |
-| Selection | The claims one release requires and the claims it withholds, for example `conformance/selections/dpp-release-2026-10-2.json` for the current release. |
+| Selection | The claims one release requires and the claims it withholds, for example `conformance/selections/dpp-release-2026-10-3.json` for the current release. |
 | Withheld | A claim the release deliberately does not make, with the reason. Withheld claims are part of the result, not a failure. |
 
 The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the fields and statuses; the [conformance specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) define how a claim is made and reported.
@@ -21,7 +21,7 @@ From the root of a checkout on `main`, after `npm ci` and `npm run build` ([get 
 
 ```sh
 node conformance/check.mjs
-node conformance/qualify.mjs conformance/selections/dpp-release-2026-10-2.json
+node conformance/qualify.mjs conformance/selections/dpp-release-2026-10-3.json
 ```
 
 The first, the diagnostic, checks that the ledger, the baseline, the reports and the capability example are consistent with each other and with the sources they pin. It prints about 170 lines, one finding each, and ends:
@@ -33,7 +33,7 @@ The ledger, baseline, reports and capability example are consistent.
 The second, the qualification gate, checks the named selection against the ledger. It prints one line per required claim, seven `withheld:` lines with their reasons (among them federated operation, European conformity, battery product qualification and version 1.0 readiness), and ends:
 
 ```
-Selection dpp-release-2026-10-2 is qualified: every required claim can be made on the ledger's evidence. This is the ledger's answer, not a conformity certificate.
+Selection dpp-release-2026-10-3 is qualified: every required claim can be made on the ledger's evidence. This is the ledger's answer, not a conformity certificate.
 ```
 
 Both exit 0 on `main`. Each exits non-zero and names the finding when a check fails.

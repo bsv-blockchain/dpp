@@ -34,7 +34,7 @@ The steps run one program, `examples/write-passport-v2.mjs`, from the checkout. 
 To build your own application beside the checkout, install the packages at exact versions. They are published under npm's `next` tag, so an install without a version does not give you these:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.5 @bsv/dpp-profiles@0.3.0-beta.5 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.6 @bsv/dpp-profiles@0.3.0-beta.6 @bsv/sdk@2.8.10
 ```
 
 The checkout already links these packages, so the commands on this page need no install of their own.

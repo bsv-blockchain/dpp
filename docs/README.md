@@ -54,7 +54,7 @@ The battery and textile profiles map their fields to what the EU Batteries Regul
 
 ## Where things stand
 
-This is a working draft, before version 1.0. The beta.5 packages, under the Apache 2.0 licence, were published to npm on 2 October 2026 under the `next` tag. Pin exact versions: installing without a version still gets the older beta.1. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open, and [known limitations](operate/limitations.md) lists what does not work yet.
+This is a working draft, before version 1.0. The beta.5 packages, under the Apache 2.0 licence, were published to npm on 2 October 2026 under the `next` tag, and the beta.6 packages, which publish to `latest`, are pending publication. Pin exact versions: installing without a version still gets the older beta.1. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open, and [known limitations](operate/limitations.md) lists what does not work yet.
 
 ## Everything else
 

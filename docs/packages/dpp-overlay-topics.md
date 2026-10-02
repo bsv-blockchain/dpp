@@ -2,7 +2,7 @@
 
 `@bsv/dpp-overlay-topics` is the index as a library: the components that decide which passport states and claim anchors to keep, and answer lookups for them. Use it to embed an index in your own application or tests; to run the index as a network service, use the HTTP host from a checkout or the Compose setup, as this page explains.
 
-**Experimental prerelease:** `@bsv/dpp-overlay-topics` 0.4.0-beta.5 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-overlay-topics` 0.4.0-beta.6 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Words on this page
 
@@ -28,7 +28,7 @@ The npm package exports only the library, `@bsv/dpp-overlay-topics`. Importing i
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.5 @bsv/dpp-core@0.3.0-beta.5 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.6 @bsv/dpp-core@0.3.0-beta.6 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
 The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. Name the exact versions: a bare `npm install @bsv/dpp-overlay-topics` installs the `latest` tag, which is still 0.4.0-beta.1. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.

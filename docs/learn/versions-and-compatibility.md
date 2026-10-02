@@ -4,11 +4,11 @@ Several parts of a DPP deployment carry their own version: the packages, the rec
 
 ## What carries a version
 
-A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-2`, a candidate declared in `release/dpp-release-2026-10-2.json`; the published beta.4 set before it, [`dpp-release-2026-10`](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/release/dpp-release-2026-10.json), is now superseded. The table gives each part's value in that set, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The two spell some names differently, so the last column gives the exact spelling to look for.
+A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-3`, a candidate declared in `release/dpp-release-2026-10-3.json`; the published beta.5 set before it, [`dpp-release-2026-10-2`](https://github.com/bsv-blockchain/dpp/blob/7292237376b8308ed67b11194fd7a00cbe313d82/release/dpp-release-2026-10-2.json), is now superseded. The table gives each part's value in that set, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The two spell some names differently, so the last column gives the exact spelling to look for.
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
-| Packages | `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/vsc@0.2.0-beta.4` | `packages` | `implementation`: the index's own package and version |
+| Packages | `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/vsc@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
 | Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
 | Passport records | Version 1 (14 fields) and version 2 (17 fields) | `wire.records` | `protocols`: `dpp-record` version `1` and version `2` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |

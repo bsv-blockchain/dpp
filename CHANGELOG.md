@@ -8,9 +8,14 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
+The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.6 candidate, `dpp-release-2026-10-3`, publishes to `latest` and its publication is pending.
 
 ## Repository history
+
+### 2026-10-02, beta.6 release candidate
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6` and `@bsv/vsc@0.2.0-beta.5` in `dpp-release-2026-10-3`, the first set with `distTag: latest`: each package's `publishConfig.tag` moves from `next` to `latest`, so publishing moves `latest` with no other step, and a plain install gets the newest beta. No code changed. Publication is pending.
+- Mark `dpp-release-2026-10-2` superseded. Its approved beta.5 plan is reproduced from its own source revision, as the receipt records; the demonstration definition and the qualification test move to the new set, and the two projection vectors record the new profiles version.
 
 ### 2026-10-02, releases publish to latest
 

@@ -42,7 +42,7 @@ Give the export signer, the second line, to anyone who will check your packages:
 
 Use this when the passport has no more than 500 states. It works against any index with an export key, the hosted reference included, and needs no token from the source. The replacement index must admit the passport's publisher keys, through `SERVICE_IDENTITY_KEY` or a publisher policy that names them ([sign a publisher policy](federation.md#3-sign-a-publisher-policy)); for the hosted reference's passports, those are `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24` and `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`.
 
-Save this as `restore-package.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.5` installed:
+Save this as `restore-package.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.6` installed:
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.
@@ -101,7 +101,7 @@ The package lists its states oldest first, so its `proofs/` files restore the li
 
 Use this for a passport with more than 500 states, or whenever you want the coverage check: the parts of a complete export must be joined before they are trusted, because each part on its own is a genuine signed package that could be handed over as if it were the whole history. `joinEvidenceExport` from `@bsv/dpp-overlay-topics` does that check. It verifies each part's coverage signature under the exporter's key and the binding of its package, then requires one passport and one snapshot, part indexes with no repeat, sequence ranges that tile the snapshot with no gap or overlap, and the signed final flag on the last part. Only then does it report `complete: true`.
 
-You need the source index's `EXPORT_TOKEN` and its export signer. On your own index those are the values from [enable exports](#enable-exports-on-your-index). The hosted reference's export token is not public: anyone can restore a single passport from its open [bounded package](#restore-a-passport-from-the-bounded-package), and a complete export goes to the parties its operator names, on request ([join the hosted reference](../deployment.md#join-the-hosted-reference)). Save this as `restore-export.mjs` at the root of the checkout, or in a project with `@bsv/dpp-overlay-topics@0.4.0-beta.5` installed:
+You need the source index's `EXPORT_TOKEN` and its export signer. On your own index those are the values from [enable exports](#enable-exports-on-your-index). The hosted reference's export token is not public: anyone can restore a single passport from its open [bounded package](#restore-a-passport-from-the-bounded-package), and a complete export goes to the parties its operator names, on request ([join the hosted reference](../deployment.md#join-the-hosted-reference)). Save this as `restore-export.mjs` at the root of the checkout, or in a project with `@bsv/dpp-overlay-topics@0.4.0-beta.6` installed:
 
 ```js
 // Fetch a passport's complete export from one index, check that the parts join, and restore it into another index.

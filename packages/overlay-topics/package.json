@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-overlay-topics",
-  "version": "0.4.0-beta.5",
+  "version": "0.4.0-beta.6",
   "description": "Experimental prerelease: DPP overlay index components as a library: tm_dpp and tm_attestation topic managers, ls_dpp and ls_attestation lookup services, storage adapters, capabilities, history pages, bounded and complete evidence export, retraction and static-peer synchronisation; the HTTP node ships as the image",
   "license": "Apache-2.0",
   "type": "module",
@@ -22,7 +22,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@bsv/dpp-core": "0.3.0-beta.5",
+    "@bsv/dpp-core": "0.3.0-beta.6",
     "@bsv/overlay": "2.3.1",
     "@bsv/sdk": "2.8.10",
     "mongodb": "^7.6.0"
@@ -43,7 +43,7 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/",
-    "tag": "next"
+    "tag": "latest"
   },
   "engines": {
     "node": ">=22"

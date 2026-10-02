@@ -45,7 +45,7 @@ The first command exercises SEAL issuance, proof verification and the evidence c
 
 ## Connect an issuer or verifier
 
-1. Install the package at its exact version: `npm install --save-exact @bsv/vsc@0.2.0-beta.4`. It runs on Node 22 or later, server side only ([@bsv/vsc](../packages/vsc.md)).
+1. Install the package at its exact version: `npm install --save-exact @bsv/vsc@0.2.0-beta.5`. It runs on Node 22 or later, server side only ([@bsv/vsc](../packages/vsc.md)).
 2. **To issue a SEAL**, prepare the event, the product subject, the issuer's DID document, a status entry and a signing key the DID document authorises for assertion. Call `issueSealEd25519` or `issueSealBbs` from `@bsv/vsc`. These suites use their own keys: your wallet's BSV key is not an interchangeable input. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/README.md#issuance-and-verification) shows the call with its document loader and policies.
 3. **To verify a SEAL**, call `verifySeal` from `@bsv/vsc` with the credential, a document loader for the contexts and the issuer's documents, the observation time, a status policy and an authority policy.
 4. **To verify an external credential**, keep the exact bytes you received and call `verifyExternalCredential` from `@bsv/vsc/exchange`. [External credential verification](../interoperability/external-credentials.md) has the complete call with its policy, and how to map the vector file onto it.

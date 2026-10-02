@@ -2,14 +2,14 @@
 
 `@bsv/dpp-core` holds the rules every passport application shares: it decodes, builds and signs passport states and claims, and checks a passport's evidence into a verification report. Use it when you build a reader, a writer or a registry in JavaScript or TypeScript; it does not run an index, hold a wallet or decide whom your application trusts.
 
-**Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.5 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.6 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Install
 
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.5 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.6 @bsv/sdk@2.8.10
 ```
 
 Name the exact versions: a bare `npm install @bsv/dpp-core` installs the `latest` tag, which is still 0.3.0-beta.1. Every example below also imports `@bsv/sdk`. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) says which entry points run where; browser use is untested.
