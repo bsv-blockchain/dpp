@@ -397,6 +397,5 @@
     "dockerfile": "packages/overlay-topics/Dockerfile",
     "preset": "deploy/compose.yml",
     "tag": "dpp-overlay:0.4.0"
-  },
-  "distTag": "latest"
+  }
 }
