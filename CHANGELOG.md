@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, the hosted proof page and identifiers without a host
+
+- The proof page section, the hosted reference's host table and the registry guide say that the hosted proof page reads any registry that serves the contract's two showcase routes, and how to serve them.
+- The identifiers page, the reader guide and the limitations page say that `01/<gtin>/21/<serial>` without its host names a product, not a passport, because an index finds a passport only by its exact identifier or a chip `uid`, and what a verifier given only a path should do.
+
 ### 2026-10-02, check a registry's claims in one command
 
 - `examples/check-registry.mjs` checks every record a registry holds against the chain: the digest, the claim signature, the anchor read from the transaction, its binding to the claim, inclusion against block headers and the anchoring service, one line per check and no verdict. It reads native claims and legacy UORA records under `uora-anchor-v3` and `uora-anchor-v1`, takes the transaction and merkle proof from WhatsOnChain, and runs offline on the repository's test data with `--fixture`, which CI runs.
