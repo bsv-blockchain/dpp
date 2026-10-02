@@ -101,10 +101,10 @@
     {
       "id": "contract-overlay",
       "uri": "contracts/overlay.yaml",
-      "version": "0.7.0-draft",
+      "version": "0.8.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "70e739bed901ba4f9c9178127f31cad82f907f93c0fd357f811a367e805c611c"
+      "digest": "27c00db5cbbc5fda61d70e8255f8992479d727d0029894c52c4fe9f0f692ba98"
     },
     {
       "id": "contract-registry",
@@ -3251,7 +3251,7 @@
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.7.0-draft",
+      "sourceVersion": "0.8.0-draft",
       "clause": "x-dpp-profile.must",
       "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
       "layer": "role",
@@ -3269,7 +3269,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -4133,7 +4133,7 @@
       "id": "OVL-2-retraction",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.7.0-draft",
+      "sourceVersion": "0.8.0-draft",
       "clause": "POST /retract",
       "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
       "layer": "role",
@@ -4151,9 +4151,37 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers",
       "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so."
+    },
+    {
+      "id": "OVL-2-refusal-reason",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.8.0-draft",
+      "clause": "POST /submit X-Admission-Refusal",
+      "summary": "A refused announcement names the check that failed: X-Admission-Refusal carries topic=code for each refused topic whose manager recorded a reason, from the tm_dpp codes the contract lists and in the verification report's word where it names the same failure, and the STEAK body is unchanged.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-writer"
+      ],
+      "applicability": "when an index refuses a passport state announced on /submit",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmDpp.ts (DPP_REFUSAL_CODES)",
+        "packages/overlay-topics/src/index.ts (refusalReasons)"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/tmDpp.test.ts",
+        "packages/overlay-topics/test/http.test.ts",
+        "packages/overlay-topics/test/refusedSpend.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-10-02",
+      "reviewOwner": "dpp maintainers"
     },
     {
       "id": "GS1D-1-grammar",

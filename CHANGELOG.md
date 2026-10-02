@@ -21,6 +21,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 - `fixtures/attestation-anchor-v1.json` and its vector file give the anchor's `attestationId` the `urn:sha256:` form of a native claim's identifier (`spec/rules.md` section 6) in place of a `urn:uuid:`, so the fixture matches what the contract and the rules fix. The derived key, signature and script move with it, as do the evidence-report fixture's anchors, whose unknown-format anchor now names its own digest.
 
+### 2026-10-02, an index says why it refused a state
+
+- `POST /submit` answers a refused `tm_dpp` state with `X-Admission-Refusal: tm_dpp=<code>` beside `X-Admission`, in the overlay contract `0.8.0-draft`, which lists the thirteen codes under `x-refusal-codes`. Where a verification report names the same failure the code is the report's word, so a writer and a reader see one vocabulary. The STEAK body is unchanged, since a client reads every key of it as a topic. `DppTopicManager` records the reason (`refusalFor`), `@bsv/dpp-overlay-topics` exports `DPP_REFUSAL_CODES`, and `@bsv/dpp-core` exports `linkageReasonCode`. Refused anchors on `tm_attestation` still carry no reason.
+- The writer pages, the contracts reference and the limitations page list what each code asks of a writer, and the v2 writer example prints the reason for the refused state its dry run shows.
+
 ### 2026-10-02, beta.6 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.6`, `@bsv/dpp-overlay-topics@0.4.0-beta.6`, `@bsv/dpp-profiles@0.3.0-beta.6` and `@bsv/vsc@0.2.0-beta.5` under `latest` from `77d53611d884f7d9aa058fe063acb187f77ec9c7` using GitHub OIDC with provenance, the first release to move `latest`; `next` stays at the beta.5 set. The public-registry archives match the approved plan and the workflow's registry consumer check passed.

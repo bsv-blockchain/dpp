@@ -16,7 +16,6 @@ The standard is a working draft before version 1.0. Its beta.6 packages, under t
 
 [Known limitations and open questions](../operate/limitations.md) lists every gap, with what it means for you and what to do now. The ones most newcomers meet first:
 
-- a refused announcement carries no reason;
 - nothing tells a reader which index or registry holds a publisher's records;
 - a later proof does not follow synchronisation;
 - the report does not check a payload against its profile;

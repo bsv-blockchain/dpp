@@ -13,6 +13,8 @@
  *   POST /submit   application/octet-stream body = BEEF bytes
  *                  X-Topics: ["tm_dpp"]            -> STEAK as JSON, plus an
  *                  X-Admission answer header (topic=admitted|duplicate|none)
+ *                  and, for a refused state, X-Admission-Refusal naming why
+ *                  (topic=code, the codes in tmDpp.ts)
  *                  Authorization: Bearer <token>   when SUBMIT_TOKEN is set
  *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid": "..."}}
  *                  {"service":"ls_uora_dpp","query":{"issuer":"did:key:z..."}}
@@ -89,7 +91,7 @@ import {
   type STEAK,
 } from '@bsv/sdk'
 import { Engine, type LookupService } from '@bsv/overlay'
-import { DppTopicManager, DPP_TOPIC } from './tmDpp.js'
+import { DppTopicManager, DPP_TOPIC, type AdmissionRefusals } from './tmDpp.js'
 import { DppLookupService, DPP_SERVICE } from './lsDpp.js'
 import { InMemoryDppStorage, MongoDppStorage, type DppRecordStore } from './storage.js'
 import { InMemoryOverlayStorage, MongoOverlayStorage, type RetractableStorage } from './engineStorage.js'
@@ -131,7 +133,10 @@ export type OverlayEngine = Pick<
   | 'getDocumentationForLookupServiceProvider'
   | 'provideForeignSyncResponse'
   | 'provideForeignGASPNode'
->
+> & {
+  /** The Engine's topic managers, read for the refusal reason a manager recorded (`AdmissionRefusals`); a stand-in engine may omit them. */
+  managers?: Engine['managers']
+}
 
 /**
  * The stores, services and policy the extension routes work on, which the
@@ -481,6 +486,23 @@ function admissionOutcome(instructions: STEAK[string]): AdmissionOutcome {
   return 'none'
 }
 
+/**
+ * Why each refused topic refused this transaction, from the managers that
+ * record it (`AdmissionRefusals`, which tm_dpp implements). A topic whose
+ * manager records nothing, or a stand-in engine without managers, is left out
+ * rather than guessed at. A code is a lower-case word list, so it is safe in
+ * a header as it stands.
+ */
+function refusalReasons(engine: OverlayEngine, topics: string[], txid: string): Array<[string, string]> {
+  const reasons: Array<[string, string]> = []
+  for (const topic of topics) {
+    const manager = engine.managers?.[topic] as Partial<AdmissionRefusals> | undefined
+    const code = typeof manager?.refusalFor === 'function' ? manager.refusalFor(txid) : undefined
+    if (code != null && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(code)) reasons.push([topic, code])
+  }
+  return reasons
+}
+
 /** Only wanted when a warning fires, so junk bytes on a happy path cost nothing. */
 function txidOf(beef: number[]): string {
   try {
@@ -707,10 +729,12 @@ async function handle(
           .map((topic) => [topic, admissionOutcome(steak[topic])] as const)
       }
       const refused = outcomes.filter(([, outcome]) => outcome === 'none').map(([topic]) => topic)
+      const reasons = refused.length === 0 ? [] : refusalReasons(engine, refused, txidOf(beef))
       if (refused.length > 0) {
         const again = refused.filter((topic) => refusedEarlier.includes(topic))
         console.warn(
           `POST /submit admitted nothing on ${refused.join(', ')} for ${txidOf(beef)}: ` +
+            (reasons.length === 0 ? '' : `${reasons.map(([topic, code]) => `${topic} says ${code}`).join(', ')}; `) +
             'not a duplicate, so the submission was refused (wrong identity key, a ' +
             'predecessor this instance never admitted, or, when OWNER_CONSENT is set, a ' +
             'TRANSFER whose actor did not prove they are the previous owner). Re-announce after repair, ' +
@@ -720,11 +744,13 @@ async function handle(
         )
       }
       // The STEAK body stays exactly what the engine returned, because that is
-      // the protocol's shape; the header is where the outcome is allowed to be
-      // plainer than the body.
+      // the protocol's shape (a client reads every key of it as a topic); the
+      // headers are where the outcome, and why a state was refused, are
+      // allowed to be plainer than the body.
       json(response, 200, steak, {
         'X-Admission': outcomes.map(([topic, outcome]) => `${topic}=${outcome}`).join(', '),
-        'Access-Control-Expose-Headers': 'X-Admission',
+        ...(reasons.length === 0 ? {} : { 'X-Admission-Refusal': reasons.map(([topic, code]) => `${topic}=${code}`).join(', ') }),
+        'Access-Control-Expose-Headers': 'X-Admission, X-Admission-Refusal',
       })
       return
     }

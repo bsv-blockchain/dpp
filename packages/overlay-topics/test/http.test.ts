@@ -528,11 +528,14 @@ describe('a real record, over HTTP', () => {
       expect(response.status).toBe(200)
       expect((await bodyOf(response)).tm_dpp.outputsToAdmit).toEqual([])
       expect(response.headers.get('x-admission')).toBe('tm_dpp=none')
+      // Why, in the word a verification report would use for the same check.
+      expect(response.headers.get('x-admission-refusal')).toBe('tm_dpp=publisher-not-authorised')
+      expect(response.headers.get('access-control-expose-headers')).toBe('X-Admission, X-Admission-Refusal')
 
       const warned = warn.mock.calls.filter((call) => String(call[0]).includes('admitted nothing'))
       expect(warned).toHaveLength(1)
       expect(String(warned[0][0])).toContain(Transaction.fromBEEF(beef).id('hex'))
-      expect(String(warned[0][0])).toContain('tm_dpp')
+      expect(String(warned[0][0])).toContain('tm_dpp says publisher-not-authorised')
     } finally {
       warn.mockRestore()
     }
@@ -548,11 +551,13 @@ describe('a real record, over HTTP', () => {
 
       const first = await send()
       expect(first.headers.get('x-admission')).toBe('tm_dpp=admitted')
+      expect(first.headers.get('x-admission-refusal')).toBeNull()
 
       const again = await send()
       expect(again.status).toBe(200)
       expect((await bodyOf(again)).tm_dpp.outputsToAdmit).toEqual([])
       expect(again.headers.get('x-admission')).toBe('tm_dpp=duplicate')
+      expect(again.headers.get('x-admission-refusal')).toBeNull()
 
       const warned = warn.mock.calls.filter((call) => String(call[0]).includes('admitted nothing'))
       expect(warned).toHaveLength(0)

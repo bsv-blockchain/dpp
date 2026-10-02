@@ -33,7 +33,7 @@ import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
  * test holds the two equal, so the document cannot claim a contract version
  * the file does not carry.
  */
-export const OVERLAY_HTTP_CONTRACT_VERSION = '0.7.0-draft'
+export const OVERLAY_HTTP_CONTRACT_VERSION = '0.8.0-draft'
 
 /** The recommended baseline this node claims (`conformance/baseline-native-1.json`). */
 export const BASELINE_ID = 'native-baseline@2'

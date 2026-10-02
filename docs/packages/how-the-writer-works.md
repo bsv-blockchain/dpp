@@ -126,12 +126,12 @@ async function announce(indexUrl, submitToken, beef) {
   if (response.status === 401 || response.status === 403) return 'unauthorised' // the token or the address is wrong
   if (response.status === 400) return 'refused'
   const admission = response.headers.get('x-admission') ?? ''
-  if (admission.includes('tm_dpp=none')) return 'refused'
+  if (admission.includes('tm_dpp=none')) return 'refused' // X-Admission-Refusal says why
   return admission.includes('duplicate') ? 'duplicate' : 'admitted'
 }
 ```
 
-Send when the answer is `admitted` or `duplicate`, and also when it is `unreachable`, which refuses nothing. On `refused` or `unauthorised`, abort the unsent action and stop. A 401 or 403 means the address or the token is wrong, which announcing after the send would not mend, so the example stops while the state is still a draft and has cost nothing. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes.
+Send when the answer is `admitted` or `duplicate`, and also when it is `unreachable`, which refuses nothing. On `refused` or `unauthorised`, abort the unsent action and stop. A refusal's `X-Admission-Refusal` header names the check that failed ([what a refusal code means](build-an-application.md#when-the-index-refuses-a-state)). A 401 or 403 means the address or the token is wrong, which announcing after the send would not mend, so the example stops while the state is still a draft and has cost nothing. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes.
 
 **A refused draft is aborted.** An unsent action holds the wallet's inputs until it is sent or aborted, so a draft that fails your own check or that the index refuses must be given to `abortAction`, or its inputs stay out of use. Pass the action's reference: a state that spends the tip has one, `created.signableTransaction.reference`. An issue that needed no signature from you comes back signed with no reference, and `@bsv/wallet-toolbox` then accepts the transaction identifier in its place: `wallet.abortAction({ reference: created.txid })`. Read the result. The wallet answers `{ aborted: false }`, and does not throw, when the network already knows the transaction, and then you must not build again.
 

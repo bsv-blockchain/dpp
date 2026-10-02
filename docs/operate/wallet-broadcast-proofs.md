@@ -43,7 +43,7 @@ The reference deployment uses the second arrangement: the client package against
 
 ## Handle interruptions
 
-If admission refuses the draft, inspect the record and policy before broadcast. The answer does not say why; [a refusal carries no reason](../packages/build-an-application.md#a-refusal-carries-no-reason) lists the checks a writer can make itself, and the index's operator has the reason in its log. If a transaction was already sent but indexing failed, retry the announcement of that transaction. If the network refuses an admitted draft, retract it under the service contract.
+If admission refuses the draft, do not broadcast it. The answer's `X-Admission-Refusal` header names the check that failed, and [when the index refuses a state](../packages/build-an-application.md#when-the-index-refuses-a-state) says what each code asks of you. If a transaction was already sent but indexing failed, retry the announcement of that transaction. If the network refuses an admitted draft, retract it under the service contract.
 
 A later proof arriving at one index does not establish that every peer has it. Check the operator the reader actually queries. A scripts-only development setting skips header verification and cannot establish inclusion.
 

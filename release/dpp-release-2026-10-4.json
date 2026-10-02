@@ -276,7 +276,7 @@
     "anchor": "bsv-attestation-anchor-v1",
     "acceptanceRecord": "dpp-managed-acceptance@1",
     "verificationReport": "1",
-    "overlayContract": "0.7.0-draft"
+    "overlayContract": "0.8.0-draft"
   },
   "custody": {
     "selected": "managed-custody@1",
@@ -319,7 +319,7 @@
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "70e739bed901ba4f9c9178127f31cad82f907f93c0fd357f811a367e805c611c",
+      "sha256": "27c00db5cbbc5fda61d70e8255f8992479d727d0029894c52c4fe9f0f692ba98",
       "pins": "the index's HTTP contract"
     },
     {

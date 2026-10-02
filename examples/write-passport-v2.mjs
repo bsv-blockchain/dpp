@@ -199,6 +199,9 @@ function demonstrationPayload() {
 /** What a dry run's in-process index logs, kept so that a refusal's reason can be read from it as an operator would. */
 const indexLog = []
 
+/** The last refusal's X-Admission-Refusal header, the reason the index gave in its answer; null when it gave none. */
+let lastRefusal = null
+
 /** A request to the index. In a dry run the in-process index's own log lines are taken, not printed. */
 async function indexFetch(path, init) {
   if (!dryRun) return await fetch(`${indexUrl}${path}`, init)
@@ -301,7 +304,12 @@ async function announce(beef, txid) {
   }
   const admission = response.headers.get('x-admission') ?? ''
   if (admission.includes('tm_dpp=none')) {
-    console.log(`The index refused ${short(txid)} on admission (X-Admission: ${admission}); the answer carries no reason, and its operator's log names it.`)
+    // An index on an earlier release sends no reason; then only its operator's log has one.
+    lastRefusal = response.headers.get('x-admission-refusal')
+    console.log(
+      `The index refused ${short(txid)} on admission (X-Admission: ${admission}); ` +
+        (lastRefusal == null ? `the answer carries no reason, and its operator's log names it.` : `it says why in X-Admission-Refusal: ${lastRefusal}.`)
+    )
     return 'refused'
   }
   if (admission.includes('duplicate')) {
@@ -841,7 +849,10 @@ async function showRefusal(adapter, ctx) {
   say(!checked.valid, `the writer's own check refuses it before anything is sent: ${checked.error ?? 'no reason given'}.`)
   // Announced anyway, to show what the index does with what the writer's own check already refused.
   const announced = await announce(built.beef, built.txid)
-  say(announced === 'refused', 'the index refuses it too, and its answer carries no reason.')
+  say(
+    announced === 'refused' && lastRefusal === 'tm_dpp=control-not-proven',
+    'the index refuses it too, and says why: control-not-proven, the code a verification report gives the same failure.'
+  )
   const reason = indexLog.filter((line) => line.includes('tm_dpp refused')).at(-1)
   if (reason != null) console.log(`Its operator's log reads: ${reason}`)
   await adapter.discard(built)

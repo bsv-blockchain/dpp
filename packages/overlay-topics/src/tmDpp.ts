@@ -7,6 +7,7 @@ import {
   checkOwnerConsent,
   checkTransition,
   findDppOutputs,
+  linkageReasonCode,
   normaliseTransferAuthorities,
   tryParseDppOutput,
   verifyServerSignature,
@@ -18,6 +19,35 @@ import {
 import { policyKeysFor } from './policyConfig.js'
 
 export const DPP_TOPIC = 'tm_dpp'
+
+/**
+ * Why tm_dpp refused a state, one code per refusal, which the node sends on
+ * `POST /submit` as `X-Admission-Refusal` (`contracts/overlay.yaml`). Where a
+ * verification report names the same failure, the code is the report's own
+ * word (`spec/verification.md` section 4); the last four name what only
+ * admission checks: whether the state spends the tip this index holds.
+ */
+export const DPP_REFUSAL_CODES = [
+  'decode-failed',
+  'actor-signature-invalid',
+  'publisher-not-authorised',
+  'link-broken',
+  'lineage-retired',
+  'control-not-proven',
+  'version-transition-invalid',
+  'consent-not-proven',
+  'acceptance-commitment-absent',
+  'genesis-spends-passport-output',
+  'predecessor-not-admitted',
+  'predecessor-unavailable',
+  'lineage-untraceable',
+] as const
+export type DppRefusal = (typeof DPP_REFUSAL_CODES)[number]
+
+/** A topic manager that remembers why it last refused a transaction, which the node's `/submit` reads. */
+export interface AdmissionRefusals {
+  refusalFor(txid: string): string | undefined
+}
 
 /**
  * A fresh object each time, never a shared constant: the Engine writes
@@ -113,7 +143,7 @@ export interface DppAdmissionOptions {
   admittedOutputs?: Pick<Storage, 'findOutput'> & Partial<Pick<Storage, 'findOutputsForTransaction'>>
 }
 
-export class DppTopicManager implements TopicManager {
+export class DppTopicManager implements TopicManager, AdmissionRefusals {
   private readonly consentSelected: boolean
   private readonly authorities: string[]
   private readonly controlAuthorities: string[]
@@ -122,6 +152,8 @@ export class DppTopicManager implements TopicManager {
   private readonly admitted?: Pick<Storage, 'findOutput'> & Partial<Pick<Storage, 'findOutputsForTransaction'>>
   /** States inspected recently, by txid: the predecessor a synchronisation pass showed one call ago. */
   private readonly recent = new Map<string, Transaction>()
+  /** Why recent transactions were refused, by txid, until they are admitted. */
+  private readonly refusals = new Map<string, DppRefusal>()
 
   constructor(
     private readonly serverIdentityKey: string,
@@ -151,6 +183,20 @@ export class DppTopicManager implements TopicManager {
       if (keys != null) return keys
     }
     return this.serverIdentityKey === '' ? [] : [this.serverIdentityKey]
+  }
+
+  /** Why this manager last refused the transaction, when it did and has not admitted it since. */
+  refusalFor(txid: string): DppRefusal | undefined {
+    return this.refusals.get(txid)
+  }
+
+  private noteRefusal(txid: string, reason: DppRefusal): void {
+    this.refusals.delete(txid)
+    if (this.refusals.size >= RECENT_STATES) {
+      const oldest = this.refusals.keys().next().value
+      if (oldest != null) this.refusals.delete(oldest)
+    }
+    this.refusals.set(txid, reason)
   }
 
   private remember(tx: Transaction): void {
@@ -292,6 +338,7 @@ export class DppTopicManager implements TopicManager {
     } catch {
       return none()
     }
+    const txid = tx.id('hex')
 
     /*
      * A refusal keeps the coins the Engine offered. Without this the Engine
@@ -306,39 +353,45 @@ export class DppTopicManager implements TopicManager {
      * spent in its own storage, tells the lookup services of the spend, and
      * records the transaction as applied to the topic.
      */
-    const refuse = (): AdmittanceInstructions =>
-      previousCoins.length === 0 ? none() : { outputsToAdmit: [], coinsToRetain: [...previousCoins] }
+    const refuse = (reason: DppRefusal): AdmittanceInstructions => {
+      this.noteRefusal(txid, reason)
+      return previousCoins.length === 0 ? none() : { outputsToAdmit: [], coinsToRetain: [...previousCoins] }
+    }
+    const admit = (instructions: AdmittanceInstructions): AdmittanceInstructions => {
+      this.refusals.delete(txid)
+      this.remember(tx)
+      return instructions
+    }
 
     const refs = findDppOutputs(tx)
-    if (refs.length !== 1) return refuse()
+    if (refs.length !== 1) return refuse('decode-failed')
     const { state, outputIndex } = refs[0]
 
-    if (!verifyUserSignature(state)) return refuse()
+    if (!verifyUserSignature(state)) return refuse('actor-signature-invalid')
     if (!this.publisherKeysFor(state).some((key) => verifyServerSignature(state, key))) {
       if (this.policy != null) {
         // Under a policy the refusal can be a matter of time rather than of
         // key: a writer signing with a key that has since retired, or that
         // was not yet active at the state's timestamp, learns which from the
-        // operator's log, since the wire says only that nothing was admitted.
+        // operator's log; the wire's refusal code says only which check failed.
         console.warn(
-          `${DPP_TOPIC} refused ${tx.id('hex')}: server_signature is not from a state-publisher key active at ${state.timestamp}`
+          `${DPP_TOPIC} refused ${txid}: server_signature is not from a state-publisher key active at ${state.timestamp}`
         )
       }
-      return refuse()
+      return refuse('publisher-not-authorised')
     }
 
     if (state.previousTxid === '') {
-      if (checkGenesisState(state) != null) return refuse()
+      if (checkGenesisState(state) != null) return refuse('link-broken')
       if (previousCoins.length > 0) {
         // A genesis spends no passport state. One that consumes an admitted
         // coin would end the lineage it spends without a RETIRE and without
         // naming it, which the chain rules refuse as a second genesis
         // (record-model-v2.md section 6, invariant 3); the coin stays.
-        console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: a genesis state must not spend an admitted passport output`)
-        return refuse()
+        console.warn(`${DPP_TOPIC} refused ${txid}: a genesis state must not spend an admitted passport output`)
+        return refuse('genesis-spends-passport-output')
       }
-      this.remember(tx)
-      return { outputsToAdmit: [outputIndex], coinsToRetain: [] }
+      return admit({ outputsToAdmit: [outputIndex], coinsToRetain: [] })
     }
 
     /*
@@ -371,13 +424,19 @@ export class DppTopicManager implements TopicManager {
       parsedBeef = undefined
     }
     const coins = await this.previousCoinsFor(tx, state, previousCoins)
+    // A coin that spends the predecessor but whose bytes no source holds is a
+    // different repair from a state that spends no admitted coin at all.
+    let predecessorUnavailable = false
     for (const inputIndex of coins) {
       const input = tx.inputs[inputIndex]
       if (input == null) continue
       const prevTxid = input.sourceTransaction?.id('hex') ?? input.sourceTXID
       if (prevTxid !== state.previousTxid) continue
       const prevScript = await this.predecessorScript(input, prevTxid, parsedBeef, historical)
-      if (prevScript == null) continue
+      if (prevScript == null) {
+        predecessorUnavailable = true
+        continue
+      }
       const prev = tryParseDppOutput(prevScript)
       if (prev == null) continue
       const lineageGenesis =
@@ -385,8 +444,8 @@ export class DppTopicManager implements TopicManager {
           ? await this.lineageGenesisFor(prev.state, prevTxid, input.sourceOutputIndex, parsedBeef, historical)
           : undefined
       if (state.version === '2' && lineageGenesis == null) {
-        console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: the lineage genesis could not be traced from the admitted history`)
-        return refuse()
+        console.warn(`${DPP_TOPIC} refused ${txid}: the lineage genesis could not be traced from the admitted history`)
+        return refuse('lineage-untraceable')
       }
       const link = checkTransition(prev.state, state, prevTxid, {
         prevOutputIndex: input.sourceOutputIndex,
@@ -397,8 +456,8 @@ export class DppTopicManager implements TopicManager {
         // A version 2 refusal names a rule the writer may not know this
         // instance applies (a named authority, the upgrade path), so the
         // operator's log names it; version 1 refusals stay silent as before.
-        if (state.version === '2') console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: ${link}`)
-        return refuse()
+        if (state.version === '2') console.warn(`${DPP_TOPIC} refused ${txid}: ${link}`)
+        return refuse(linkageReasonCode(link))
       }
       if (state.version === '1' && this.consentSelected) {
         const reason = checkOwnerConsent(prev.state, state, this.authorities)
@@ -406,20 +465,19 @@ export class DppTopicManager implements TopicManager {
           // The other refusals are silent because the wire says everything a
           // writer needs. This one is a policy the writer may not know this
           // instance runs, so the operator's log names it.
-          console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: ${reason}`)
-          return refuse()
+          console.warn(`${DPP_TOPIC} refused ${txid}: ${reason}`)
+          return refuse('consent-not-proven')
         }
       }
       if (state.version === '2' && state.op === 'TRANSFER' && this.managedAcceptance && state.authorisationCommitment === '') {
-        console.warn(`${DPP_TOPIC} refused ${tx.id('hex')}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
-        return refuse()
+        console.warn(`${DPP_TOPIC} refused ${txid}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
+        return refuse('acceptance-commitment-absent')
       }
-      this.remember(tx)
-      return { outputsToAdmit: [outputIndex], coinsToRetain: [inputIndex] }
+      return admit({ outputsToAdmit: [outputIndex], coinsToRetain: [inputIndex] })
     }
 
     // No previously admitted coin matches previous_txid: not the admitted tip.
-    return refuse()
+    return refuse(predecessorUnavailable ? 'predecessor-unavailable' : 'predecessor-not-admitted')
   }
 
   /**

@@ -46,10 +46,11 @@ describe('a refused spend of the tip', () => {
     // breaking a chain invariant (passport_id changes).
     const { tx: wrongKey } = await eventTx(tip, { timestamp: '2026-07-26T11:00:00Z' }, new ProtoWallet(PrivateKey.fromHex('44'.repeat(32))))
     const { tx: wrongPassport } = await eventTx(tip, { timestamp: '2026-07-26T11:00:00Z', passportId: 'https://id.gs1.org/01/09506000134352/21/OTHER-1' })
-    for (const refused of [wrongKey, wrongPassport]) {
+    for (const [refused, reason] of [[wrongKey, 'publisher-not-authorised'], [wrongPassport, 'link-broken']] as const) {
       const response = await submitBeef(base, refused.toBEEF())
       expect(response.status).toBe(200)
       expect(response.headers.get('x-admission')).toBe('tm_dpp=none')
+      expect(response.headers.get('x-admission-refusal')).toBe(`tm_dpp=${reason}`)
       expect(await bodyOf(response)).toEqual({ tm_dpp: { outputsToAdmit: [], coinsToRetain: [0], coinsRemoved: [] } })
     }
     expect(warn.mock.calls.filter((call) => String(call[0]).includes('admitted nothing'))).toHaveLength(2)
@@ -113,6 +114,7 @@ describe('a refused spend of the tip', () => {
     // what this index knew and not about the transaction.
     const early = await submitBeef(base, event.toBEEF())
     expect(early.headers.get('x-admission')).toBe('tm_dpp=none')
+    expect(early.headers.get('x-admission-refusal')).toBe('tm_dpp=predecessor-not-admitted')
     expect(await node.storage.doesAppliedTransactionExist({ txid: event.id('hex'), topic: 'tm_dpp' })).toBe(false)
     expect(await lookupPassport(base, { passportId: PASSPORT_ID })).toEqual([])
 
@@ -120,6 +122,7 @@ describe('a refused spend of the tip', () => {
     expect((await submitBeef(base, genesis.toBEEF())).headers.get('x-admission')).toBe('tm_dpp=admitted')
     const again = await submitBeef(base, event.toBEEF())
     expect(again.headers.get('x-admission')).toBe('tm_dpp=admitted')
+    expect(again.headers.get('x-admission-refusal')).toBeNull()
     expect(await bodyOf(again)).toEqual({ tm_dpp: { outputsToAdmit: [0], coinsToRetain: [0], coinsRemoved: [] } })
     expect(await lookupPassport(base, { passportId: PASSPORT_ID })).toHaveLength(2)
     const history = await bodyOf(await fetch(`${base}/history?passportId=${encodeURIComponent(PASSPORT_ID)}`))
