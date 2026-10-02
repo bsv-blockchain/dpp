@@ -8,9 +8,15 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The beta.4 packages were published on 1 October 2026. The [publication receipt](docs/reference/beta-4-publication.md) identifies their exact source, approved plan and verification results, and the [beta.3 receipt](docs/reference/beta-3-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives.
+The beta.4 packages were published on 1 October 2026. The [publication receipt](docs/reference/beta-4-publication.md) identifies their exact source, approved plan and verification results, and the [beta.3 receipt](docs/reference/beta-3-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.5 candidate, `dpp-release-2026-10-2`, carries the packages under the Apache 2.0 licence and its publication is pending.
 
 ## Repository history
+
+### 2026-10-02, beta.5 release candidate
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` under the `next` tag in `dpp-release-2026-10-2`. They carry the Apache 2.0 licence the repository adopted after beta.4 was published, and their current package documentation; no code changed. Publication is pending. `latest` stays at beta.1.
+- The profiles package README says five frozen profiles are published beside the drafts, and its change report example compares `battery@2` with `battery@4`, as it does for textile.
+- Mark `dpp-release-2026-10` superseded. Its approved beta.4 plan is reproduced from its own source revision, as the receipt records; the demonstration definition and the qualification test move to the new set, and the two projection vectors record the new profiles version.
 
 ### 2026-10-01, Apache License 2.0
 

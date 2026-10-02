@@ -2,7 +2,7 @@
 
 `@bsv/vsc` issues and verifies supply-chain credentials in W3C formats, and reads supply-chain event documents in the GS1 EPCIS format. Use it if your application exchanges SEALs or other W3C verifiable credentials with partners, or imports EPCIS events; a passport reader or writer that uses only passports and native claims does not need it.
 
-**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.3 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.4 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## What it is and whether you need it
 
@@ -24,10 +24,10 @@ The package does not fund a wallet, move a passport or find records through an i
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/vsc@0.2.0-beta.3
+npm install --save-exact @bsv/vsc@0.2.0-beta.4
 ```
 
-Each package numbers its own prereleases, so `@bsv/vsc` 0.2.0-beta.3 is the version in the current release set, `dpp-release-2026-10`, beside the other packages' beta.4. Name the exact version: a bare `npm install @bsv/vsc` installs the `latest` tag, which is still 0.2.0-beta.1. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
+Each package numbers its own prereleases, so `@bsv/vsc` 0.2.0-beta.4 is the version in the current release set, `dpp-release-2026-10-2`, beside the other packages' beta.5. Name the exact version: a bare `npm install @bsv/vsc` installs the `latest` tag, which is still 0.2.0-beta.1. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
 
 ## Entry points and their main functions
 

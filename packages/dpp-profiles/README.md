@@ -7,7 +7,7 @@
 This is a pre-1.0 candidate. Install the exact published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.4
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.5
 ```
 
 The runtime requires Node >=22 and ECMAScript modules. The JSON data exports can be read in other runtimes. No repository checkout or package build is needed after installation.
@@ -34,7 +34,7 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 | `manifests/interoperability/*.json`, `schemas/interoperability-profile.schema.json` | The interoperability profiles: discovery (`gs1-digital-link@1`), source exchange (`epcis-json@1`) and mapping (`epcis-vsc@1`), each recording its standards, pinned artefacts, formats, limits and what it cannot map. |
 | `src/evidence-shapes.ts`, `src/applicability.ts`, `src/projections.ts` | The shared evidence, measurement, certification, document and language shapes of `contracts/profile-evidence.schema.json`, the declarative applicability evaluator of manifest version 2 (`schemas/profile-manifest-v2.schema.json`) whose `unresolved` outcome is never a pass, and `projectPassport`, the pure deterministic `passport-projection@1` of `spec/passport-projections.md` over versioned model, batch and item sources, digested under RFC 8785. |
 
-Five profiles are published: `battery@2`, `textile@2` and `general@2` (current) and `textile@1` and `general@1` (superseded, and served for as long as any state declares them). They were inventoried from the application's attribute registries in full, including the fields captured over life or derived rather than at registration, and frozen. `battery@3` and `textile@3` are draft successors under manifest version 2: opt-in by explicit version, carrying a requirement status per field and a migration outcome per field, and leaving every byte of the two current versions unchanged until a reviewed cutover.
+Five frozen profiles, current or superseded, are published: `battery@2`, `textile@2` and `general@2` (current) and `textile@1` and `general@1` (superseded, and served for as long as any state declares them). They were inventoried from the application's attribute registries in full, including the fields captured over life or derived rather than at registration, and frozen. `battery@3` and `textile@3` are draft successors under manifest version 2: opt-in by explicit version, carrying a requirement status per field and a migration outcome per field, and leaving every byte of the two current versions unchanged until a reviewed cutover.
 
 Since `@bsv/dpp-profiles@0.3.0-beta.2` the package includes `battery@4` and `textile@4` drafts, each succeeding its frozen version 3 draft. Existing versions remain unchanged. Battery adds truthful month-only manufacture capture, postal delivery information, power reference conditions and separate individual performance measurements. Textile corrects source-status mappings and component composition under Article 11. These additions do not change the current profile selection or establish regulatory qualification.
 
@@ -43,7 +43,7 @@ Since `@bsv/dpp-profiles@0.3.0-beta.2` the package includes `battery@4` and `tex
 After building this checkout, generate a deterministic consumer impact report:
 
 ```sh
-npm run changes -w @bsv/dpp-profiles -- battery@3 battery@4
+npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
 npm run changes -w @bsv/dpp-profiles -- textile@2 textile@4
 ```
 

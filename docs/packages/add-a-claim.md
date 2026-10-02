@@ -8,7 +8,7 @@ A claim, in full a lifecycle claim, is a signed statement about one passport, su
 
 | You need | For | Where it comes from |
 |---|---|---|
-| Node 22 and the packages: `npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/sdk@2.8.10` in your project | Signing and checking | npm; name the exact versions, because the `latest` tag is still beta.1 |
+| Node 22 and the packages: `npm install --save-exact @bsv/dpp-core@0.3.0-beta.5 @bsv/sdk@2.8.10` in your project | Signing and checking | npm; name the exact versions, because the `latest` tag is still beta.1 |
 | The passport identifier | The claim's subject | The product's label or data carrier, never a lookup result |
 | An identity key in a BRC-100 wallet | Signing; its `did:key` is your name as issuer | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |
 | A registry that will hold the claim | Readers get the claim from it | The hosted registry stores a claim only with its write token. To ask the programme for one, use the contact route on the Choose your path page (`start/choose-your-path.md`). Otherwise run your own, as the [registry guide](../implement/roles/registry.md) describes |

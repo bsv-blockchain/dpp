@@ -30,7 +30,7 @@ node scripts/publish-candidates.mjs
 
 Each command exits 0. The last prints the plan, `Publication plan SHA-256: ecf6151b4f4dfaba47f9579426fcc3dcb58324b3517cbd36cc4be52c6dff3b51`, `already-published` for each of the four packages and `Read-only preparation. No package or dist-tag was written.` Return to `main` afterwards with `git checkout main`, then run `npm ci` and `npm run build` again.
 
-On `main` itself the same commands pack the set, but the last one stops with `@bsv/dpp-core@0.3.0-beta.4: published integrity differs; never overwrite or skip different bytes`. The packages on `main` have changed since beta.4 was published (they now carry the Apache 2.0 licence files), so the next release needs new versions and a new set, which step 1 prepares.
+On `main`, `dpp-release-2026-10` is superseded and the packer refuses it. The packages on `main` changed after beta.4 was published (they carry the Apache 2.0 licence files), so the current set is the beta.5 candidate `dpp-release-2026-10-2`, which step 1 below prepared.
 
 ## 1. Prepare a candidate
 

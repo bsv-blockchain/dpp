@@ -4,17 +4,16 @@ A release set is a declared combination of package versions, the wire and contra
 
 ## The current set
 
-| | `dpp-release-2026-10` |
+| | `dpp-release-2026-10-2` |
 |---|---|
-| Declaration | [`release/dpp-release-2026-10.json`](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/release/dpp-release-2026-10.json), as the approved publication plan bound it |
-| Status | Published to npm under the `next` tag on 1 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
-| Packages | `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4`, `@bsv/vsc@0.2.0-beta.3`, on `@bsv/sdk@2.8.10` and Node 22 |
-| npm tags | `next` names these versions; `latest` still names beta.1, so install exact versions |
-| Source revision | `f9d8e98658c7cf406702d49194ec5a8480cbca73` |
-| Receipt | [Beta.4 publication receipt](beta-4-publication.md): the approved plan, archive digests and registry verification |
-| Selection | [`conformance/selections/dpp-release-2026-10.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json), the claims this release requires and withholds ([conformance](conformance.md)) |
+| Declaration | `release/dpp-release-2026-10-2.json` |
+| Status | Candidate; publication is pending |
+| Packages | `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5`, `@bsv/vsc@0.2.0-beta.4`, on `@bsv/sdk@2.8.10` and Node 22 |
+| Licence | Apache 2.0 |
+| npm tags | Until this set is published, `next` names the beta.4 set; `latest` still names beta.1, so install exact versions |
+| Selection | `conformance/selections/dpp-release-2026-10-2.json`, the claims this release requires and withholds ([conformance](conformance.md)) |
 
-Compared with the earlier set `dpp-release-2026-09-5`, every wire format is unchanged. The overlay topics package asks a synchronising peer for a predecessor only through the passport output, once the `@bsv/overlay` library names the output its graph reached, and the profiles package refuses identifiers it does not publish; all four packages took new versions because each package's documentation changed.
+Compared with the published beta.4 set `dpp-release-2026-10`, the only change is the licence: the repository adopted Apache 2.0 after beta.4 was published, so every package takes a new version to carry it, with its current documentation. No code, wire format, contract or frozen profile changed.
 
 ## Use the current set
 
@@ -63,14 +62,15 @@ These steps check that the packages on npm are the bytes the approved plan names
 
 4. **Read what the ledger claims.** Run the two checks on [conformance](conformance.md). The selection qualifies and withholds seven claims, among them federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
-The receipts of earlier publications have their own verification sections with the same commands at their own revisions.
+The steps above use the values of the published beta.4 set, `dpp-release-2026-10`; to verify another published set, use its receipt, plan and source revision. The receipts of earlier publications have their own verification sections with the same commands at their own revisions.
 
 ## Earlier sets
 
-Each earlier set is superseded, and each link opens its JSON at a recorded revision. For the beta.2 and beta.3 sets that is the source revision their approved plans bound, the revision to reproduce those plans from.
+Each earlier set is superseded, and each link opens its JSON at a recorded revision. For the beta.2, beta.3 and beta.4 sets that is the source revision their approved plans bound, the revision to reproduce those plans from.
 
 | Set | State | Receipt |
 |---|---|---|
+| [dpp-release-2026-10](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/release/dpp-release-2026-10.json) | Superseded; its beta.4 packages (VSC beta.3) were published under `next` on 1 October 2026 | [Beta.4 publication receipt](beta-4-publication.md) |
 | [dpp-release-2026-09-5](https://github.com/bsv-blockchain/dpp/blob/921a1d36e6a1888ef0d1b08aaf2cf7df54525d81/release/dpp-release-2026-09-5.json) | Superseded; its beta.3 packages were published under `next` on 27 September 2026, with the VSC package unchanged at beta.2 | [Beta.3 publication receipt](beta-3-publication.md) |
 | [dpp-release-2026-09-4](https://github.com/bsv-blockchain/dpp/blob/f54e750de4c7731a30563e5f1caad762adbfb737/release/dpp-release-2026-09-4.json) | Superseded; its four beta.2 packages were published under `next` on 18 September 2026 | [Beta.2 publication receipt](beta-2-publication.md) |
 | [dpp-release-2026-09-3](https://github.com/bsv-blockchain/dpp/blob/a85a695e584eae6c2b159ccbb542e8ecc7a28f48/release/dpp-release-2026-09-3.json) | Superseded; its beta.1 versions are on npm, published on 10 September 2026, and are the ones the `latest` tag still names | |

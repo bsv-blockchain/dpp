@@ -2,14 +2,14 @@
 
 `@bsv/dpp-profiles` carries the industry profiles, the published lists of product fields a passport's payload holds, with the code to read them, find the fields that apply to a product and check a payload against its profile. Use it when your application builds the product data for a passport, or shows the product data of a passport someone else wrote.
 
-**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.4 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.5 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Install
 
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.4
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.5
 ```
 
 Use 0.3.0-beta.4 or later. Before 0.3.0-beta.4, `readManifest` and the schema readers did not check the identifier they were given; from 0.3.0-beta.4 they refuse any identifier the package does not publish. Name the exact version: a bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still 0.3.0-beta.1. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) separates the Node module from the data entry points.
@@ -111,7 +111,7 @@ In a checkout of the repository, `node examples/sample-payload.mjs general@2` pr
 
 ## Show a stored payload under its profile
 
-A reader shows a passport's product data under the profile the record declares, which may be a draft or a superseded version, never under a newer one. Check the declared identifier against `PROFILE_IDS`, read the manifest with `readManifestAny`, say when the profile is a draft, and label each value with its field's label. This also needs `@bsv/dpp-core@0.3.0-beta.4` and `@bsv/sdk@2.8.10`, and network access to the hosted index. Save this as `show-payload.mjs`:
+A reader shows a passport's product data under the profile the record declares, which may be a draft or a superseded version, never under a newer one. Check the declared identifier against `PROFILE_IDS`, read the manifest with `readManifestAny`, say when the profile is a draft, and label each value with its field's label. This also needs `@bsv/dpp-core@0.3.0-beta.5` and `@bsv/sdk@2.8.10`, and network access to the hosted index. Save this as `show-payload.mjs`:
 
 ```js
 import { Beef } from '@bsv/sdk'
