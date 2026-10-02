@@ -1,0 +1,47 @@
+{
+  "releaseSet": "dpp-release-2026-10-4",
+  "releaseSetSha256": "251374f602a521fc1499b7a639275964cd3cf32c1cea74f2958a9d2f74bd1ae5",
+  "sourceRevision": "25fabf755090442b98c6714abfae54ec48fee029",
+  "sourceState": "committed",
+  "selection": "conformance/selections/dpp-release-2026-10-4.json",
+  "selectionSha256": "fe1a012f0f94486dcc6e18923bc7e57447554c706749f10875cfa8dc83e0f1f9",
+  "changelogSha256": "cb3b591adde55f88a57ccd89e53476783abbefa607497526f17aa893aa9c4fe2",
+  "registry": "https://registry.npmjs.org/",
+  "access": "public",
+  "tag": "latest",
+  "provenance": true,
+  "candidates": [
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.3.0-beta.7",
+      "filename": "bsv-dpp-core-0.3.0-beta.7.tgz",
+      "sha256": "2d90bbf2187751a73a5a18e043caa88db372a504e3d0ce0b615ca11f1c875039",
+      "integrity": "sha512-BI8Bi/BNaNrJeQO36yS0eCkjr8UPZtAWXg+ZUoQ266oVW6eg+PE+z3UEHQabXqpUAS6oJ4zwbu2quONvEQrDjQ==",
+      "size": 117410
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.4.0-beta.7",
+      "filename": "bsv-dpp-overlay-topics-0.4.0-beta.7.tgz",
+      "sha256": "1a0261bff7d471dd10593097bf5ee6e1895ee7e781610826eda1454938ce7d90",
+      "integrity": "sha512-jFkbnydQ5pDs/1wfimLfwfJ3Elpt2IbzMCBxeWRny7ARIqb7nizLjUhDU1Q5vzFCpAKaPKL/lHMlNw1rXMmy6w==",
+      "size": 152199
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.7",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.7.tgz",
+      "sha256": "10580e983bf170be5b843fdf9e9127967797fd0e0043d01fcaaf896410d9763d",
+      "integrity": "sha512-TVUt8PKTU0j+e4jl7ZOhYqOGHoICrEeypXicT0S8oO/bzGEqfMHw/EtzluVpr4YZsuvvaGG52VI/M/FqufbQTA==",
+      "size": 357954
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.2.0-beta.5",
+      "filename": "bsv-vsc-0.2.0-beta.5.tgz",
+      "sha256": "bde2bbfe40b2ee2c562060039935acc2843e5e9f94c0ad037d9ea8246ff60d65",
+      "integrity": "sha512-+E5vgAj8DwuWetNMxPZih8rIO2vlU3Qtqs42vujtXq1tH/P7n+I9w+V/7ZC9UOD22EoMe4hAL3hBZpwCUCTaiQ==",
+      "size": 101846
+    }
+  ]
+}

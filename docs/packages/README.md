@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The selected release is `dpp-release-2026-10-4`, a candidate with beta.7 versions of core, overlay topics and profiles and beta.5 of the VSC package, on `@bsv/sdk` 2.8.10 and under the Apache 2.0 licence, which publish to the `latest` tag. Publication of this set is pending. The beta.6 packages of the preceding set were published to npm under `latest` on 2 October 2026. See the [publication receipt](../reference/beta-6-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
+The selected release is `dpp-release-2026-10-4`. Its beta.7 versions of core, overlay topics and profiles and beta.5 of the VSC package, on `@bsv/sdk` 2.8.10 and under the Apache 2.0 licence, were published to npm under `latest` on 2 October 2026. See the [publication receipt](../reference/beta-7-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
 
 Install the published packages directly, or use the source checkout below to build and inspect the release.
 

@@ -84,7 +84,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 | Writing needs the operator's tokens | You cannot announce to the hosted index or store on the hosted registry | Run your own index, or [contact the programme](../start/choose-your-path.md#contact-the-programme) |
 | The verifier reads only identifiers minted on `dpp.bsvb.net` or `id.gs1.org` | A passport minted under your own host is not shown there | Verify with your own reader ([quick start](../quick-start.md#read-a-live-passport)) |
 | Some older states are held without their merkle paths | A peer synchronising from the hosted index leaves those tips behind until their proofs are supplied | Expect a partial copy; see [overlays running now](../deployment.md#overlays-running-now) |
-| The hosted index runs the release before the current one | It reports `@bsv/dpp-overlay-topics@0.4.0-beta.3` | Read its `GET /capabilities` before depending on a feature |
+| The hosted index runs an earlier release | It reports `@bsv/dpp-overlay-topics@0.4.0-beta.3`, so it speaks the index contract before this one and sends no refusal reasons | Read its `GET /capabilities` before depending on a feature |
 
 ## Open questions in the standard
 
