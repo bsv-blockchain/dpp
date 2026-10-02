@@ -17,9 +17,13 @@ Write down what each running component uses now, and keep the old configuration 
 
 ## Upgrade the packages
 
+### From beta.5 to beta.6
+
+The current set, `dpp-release-2026-10-3`, a candidate whose publication is pending, carries the beta.6 packages (VSC beta.5). The only change is the npm tag the packages publish to, `latest` instead of `next`; nothing in the code, the record formats or the index changed, so an application needs only the new versions.
+
 ### From beta.4 to beta.5
 
-The current set, `dpp-release-2026-10-2`, carries the beta.5 packages (VSC beta.4), published on 2 October 2026 from source revision `7292237376b8308ed67b11194fd7a00cbe313d82` ([receipt](reference/beta-5-publication.md)). The only change is the licence: the packages move from the Open BSV License Version 6 to Apache 2.0. No code, record, claim, anchor or acceptance format changed, so an application needs only the new versions and an index needs no change.
+The set `dpp-release-2026-10-2`, now superseded, carries the beta.5 packages (VSC beta.4), published on 2 October 2026 from source revision `7292237376b8308ed67b11194fd7a00cbe313d82` ([receipt](reference/beta-5-publication.md)). The only change is the licence: the packages move from the Open BSV License Version 6 to Apache 2.0. No code, record, claim, anchor or acceptance format changed, so an application needs only the new versions and an index needs no change.
 
 ### From beta.3 to beta.4
 
@@ -78,6 +82,7 @@ Compare what your reader reports on the same evidence under the old release and 
 
 | Release set | Packages | Source revision |
 |---|---|---|
+| `dpp-release-2026-10-3` | beta.6 (VSC beta.5), pending publication | Recorded in its receipt once published |
 | `dpp-release-2026-10-2` | beta.5 (VSC beta.4) | `7292237376b8308ed67b11194fd7a00cbe313d82` |
 | `dpp-release-2026-10` | beta.4 (VSC beta.3) | `f9d8e98658c7cf406702d49194ec5a8480cbca73` |
 | `dpp-release-2026-09-5` | beta.3 (VSC beta.2) | `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81` |

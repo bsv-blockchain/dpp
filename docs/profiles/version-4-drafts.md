@@ -1,12 +1,12 @@
 # Evaluate the version 4 drafts
 
-`battery@4` and `textile@4` are draft successors to the current `battery@2` and `textile@2`, carried in `@bsv/dpp-profiles` 0.3.0-beta.5. This page is for application owners who want to try a draft before it becomes current, readers who meet records that declare one, and reviewers checking what the drafts change; each has its own section.
+`battery@4` and `textile@4` are draft successors to the current `battery@2` and `textile@2`, carried in `@bsv/dpp-profiles` 0.3.0-beta.6. This page is for application owners who want to try a draft before it becomes current, readers who meet records that declare one, and reviewers checking what the drafts change; each has its own section.
 
 A version on this page is the profile version, the number after `@`; it is not the record version of the passport format or the manifest format ([choose an industry profile](README.md) explains all three). A draft is published but never selected by default: an application uses one only by naming it, a conformance claim cannot rest on it, and publishing it changed nothing in the current versions, whose bytes stay frozen. Each version 4 draft succeeds a version 3 draft (`battery@3`, `textile@3`), which stays published and frozen; evaluate version 4.
 
 **Do you need them?** To write new records, no: write under `battery@2` or `textile@2`. Evaluate a draft to prepare your application for the cutover, the later, reviewed step that makes a successor current.
 
-**Install the exact version.** `npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.5`. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still beta.1 and does not carry the drafts.
+**Install the exact version.** `npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.6`. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, which is still beta.1 and does not carry the drafts.
 
 ## Try a draft in your application
 
@@ -67,7 +67,7 @@ Update its capture forms, adapters, backend checks and exports. [Update profiles
 
 A reader meets drafts in records other applications wrote. Read the profile a state declares, check that the package publishes it, then read its manifest with `readManifestAny`, which types both manifest formats and says whether the profile is current. The same steps work for any declared profile.
 
-Save this as `read-declared.mjs` in a project with `@bsv/sdk@2.8.10`, `@bsv/dpp-core@0.3.0-beta.5` and `@bsv/dpp-profiles@0.3.0-beta.5` installed, or in the root of a checkout, and run `node read-declared.mjs`. It reads a live passport from the hosted reference index, so it needs network access.
+Save this as `read-declared.mjs` in a project with `@bsv/sdk@2.8.10`, `@bsv/dpp-core@0.3.0-beta.6` and `@bsv/dpp-profiles@0.3.0-beta.6` installed, or in the root of a checkout, and run `node read-declared.mjs`. It reads a live passport from the hosted reference index, so it needs network access.
 
 ```js
 import { Beef } from '@bsv/sdk'
