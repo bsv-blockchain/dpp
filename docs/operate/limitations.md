@@ -58,6 +58,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 
 | Limit | What it means for you | What to do now |
 |---|---|---|
+| A GTIN and serial alone do not find a passport | An index looks a passport up by its exact identifier, host included, or by a chip `uid`, so a verifier given only `01/<gtin>/21/<serial>` cannot find a passport minted under a host it does not know | Ask for the full address, or look the path up under each host you trust ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)) |
 | Nothing names a publisher's index | A reader holding only a passport identifier cannot discover where its states are held | Learn the index from the publisher, for example from its passport page |
 | An anchor does not name the registry that holds its claim | Registries do not exchange claims, so a reader finds the anchor on any index that holds it but must already know which registry to ask for the claim's bytes | Learn the registry from the publisher; without the bytes the claim's checks read `unknown` ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)) |
 | No directory maps a brand to its keys | A reader must take a brand's issuer and publisher keys from the brand or its application | Keep your own list of the keys you accept, as the trusted parties in [gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence) show |

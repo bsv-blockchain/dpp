@@ -40,6 +40,8 @@ The rules are in the [record model](https://github.com/bsv-blockchain/dpp/blob/e
 
 Keep the scanned or supplied passport identifier as the reader's expectation. Use discovery to locate a service, retrieve the candidate records, then check that the signed subject matches that expectation. A service URL tells the client where to ask; it does not establish which product the response concerns.
 
+**A path alone is not a passport identifier.** `01/<gtin>/21/<serial>` without its host names a product instance, not a passport: two hosts can each carry a passport for the same GTIN and serial, and an index finds a passport only by its exact identifier, host included, or by a chip's `uid`. Given only a path, ask for the full address, or look the path up under each host you trust, one exact identifier at a time, and say which host it was found under. Never assume your own host is the only one.
+
 A GS1 Digital Link combines an identifier with a web address. A GTIN identifies the trade item; qualifiers such as a serial number can identify an individual instance. A correct check digit tests the number's structure, not whether a party is entitled to use it.
 
 For the first exercise, use the identifier already supplied by the fixture. Keep its original spelling through signing and verification. The [reader example](quick-start.md#check-the-test-passports-offline) handles the fixture identifier automatically. For a live input, [GS1 discovery](interoperability/gs1-discovery.md) explains parsing and service selection before verification.

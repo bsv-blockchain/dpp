@@ -4,7 +4,7 @@ A passport reader rebuilds a passport's history from transaction bytes and repor
 
 A reader needs:
 
-- the passport identifier the caller expects, from the request or the item itself, never from the evidence being tested;
+- the passport identifier the caller expects, host included, from the request or the item itself, never from the evidence being tested ([a path alone is not a passport identifier](../../identifiers.md#use-the-identifier-throughout-the-request));
 - the passport's transactions, as BEEF from an index or a wallet, or as raw transactions (BEEF, Background Evaluation Extended Format, carries transactions with their ancestors and merkle proofs);
 - the publisher keys it accepts and the profile options it applies, such as `managed-custody@1`;
 - for the inclusion check, merkle proofs and a header source.
