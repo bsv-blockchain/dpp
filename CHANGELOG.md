@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-02, releases publish to latest
+
+- A release set names the npm tag it publishes under in a new optional `distTag` field, which the publication plan binds and the publisher passes to `npm publish`. Before version 1.0 a set publishes to `latest`, so a plain install gets the newest beta; from 1.0, `latest` carries stable releases only and prereleases publish to `next`. A set without the field publishes to `next`, as every set before it did.
+
 ### 2026-10-02, resolver wording and shared tokens
 
 - `spec/gs1-discovery.md` describes a resolver under the profile rather than the reference registry's, since no hosted deployment serves one: an adopter runs a resolver built with the `@bsv/dpp-profiles` helpers or names an external GS1-Conformant Resolver. No rule changes; the four rows citing it were re-reviewed.

@@ -370,6 +370,13 @@
       "type": "string",
       "pattern": "^conformance/selections/[A-Za-z0-9.-]+\\.json$",
       "description": "The selection under conformance/selections/ that qualifies this set: the claims it requires and the claims it withholds by name. The checker holds the selection to the set and the publication workflow runs its qualification before it writes anything."
+    },
+    "distTag": {
+      "enum": [
+        "latest",
+        "next"
+      ],
+      "description": "The npm tag the set publishes under. Before version 1.0 every set publishes to latest; from 1.0, latest carries stable releases only and prereleases publish to next. A set that names none publishes to next."
     }
   }
 }
