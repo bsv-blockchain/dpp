@@ -16,7 +16,7 @@
  *                  and, for a refused state, X-Admission-Refusal naming why
  *                  (topic=code, the codes in tmDpp.ts)
  *                  Authorization: Bearer <token>   when SUBMIT_TOKEN is set
- *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid": "..."}}
+ *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid"|"gs1Key": "..."}}
  *                  {"service":"ls_uora_dpp","query":{"issuer":"did:key:z..."}}
  *                                                  -> {type:"output-list",
  *                                                      outputs:[{beef,outputIndex}]}

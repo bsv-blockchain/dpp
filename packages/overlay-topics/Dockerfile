@@ -2,7 +2,7 @@
 # any platform, so the same image hands to any container host unchanged.
 #
 # Build context is the REPOSITORY ROOT, not this directory, because the
-# service depends on the @bsv/dpp-core workspace:
+# service depends on the @bsv/dpp-core and @bsv/dpp-profiles workspaces:
 #
 #   docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
 #
@@ -21,13 +21,13 @@ COPY packages/overlay-topics/package.json packages/overlay-topics/
 COPY packages/vsc/package.json packages/vsc/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 RUN npm ci --ignore-scripts \
-      -w @bsv/dpp-overlay-topics -w @bsv/dpp-core --include-workspace-root
+      -w @bsv/dpp-overlay-topics -w @bsv/dpp-core -w @bsv/dpp-profiles --include-workspace-root
 
 COPY tsconfig.base.json ./
 COPY scripts/package-schemas.mjs ./scripts/package-schemas.mjs
 COPY contracts ./contracts
 COPY packages ./packages
-RUN npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics
+RUN npm run build -w @bsv/dpp-core -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics
 
 FROM node:22-slim
 WORKDIR /repo
@@ -40,12 +40,19 @@ COPY packages/overlay-topics/package.json packages/overlay-topics/
 COPY packages/vsc/package.json packages/vsc/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 RUN npm ci --omit=dev --ignore-scripts \
-      -w @bsv/dpp-overlay-topics -w @bsv/dpp-core --include-workspace-root \
+      -w @bsv/dpp-overlay-topics -w @bsv/dpp-core -w @bsv/dpp-profiles --include-workspace-root \
     && npm cache clean --force
 
 COPY --from=build /repo/packages/dpp-core/dist packages/dpp-core/dist
 COPY --from=build /repo/packages/dpp-core/schemas packages/dpp-core/schemas
 COPY --from=build /repo/packages/overlay-topics/dist packages/overlay-topics/dist
+# The GS1 key lookup reads the profiles package, whose entry point loads its
+# manifests and generated schemas at import.
+COPY --from=build /repo/packages/dpp-profiles/dist packages/dpp-profiles/dist
+COPY --from=build /repo/packages/dpp-profiles/manifests packages/dpp-profiles/manifests
+COPY --from=build /repo/packages/dpp-profiles/schemas packages/dpp-profiles/schemas
+COPY --from=build /repo/packages/dpp-profiles/generated packages/dpp-profiles/generated
+COPY --from=build /repo/packages/dpp-profiles/frozen.json packages/dpp-profiles/frozen.json
 
 # Informational: the service binds PORT when the platform injects one.
 EXPOSE 8080

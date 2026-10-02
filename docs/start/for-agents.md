@@ -26,6 +26,7 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 - **A block marked as a fragment** shows one step and does not run alone; the page links the complete example.
 - **Success** reads the same everywhere: one sentence per check, never a score. A line starting `ok:` or `Holds:` held; `FAIL:` did not, and the command exits non-zero. An example that checks itself ends with `Every sentence above holds.`
 - **A report** gives each check `pass`, `fail`, `unknown` or `not-applicable` with a reason code. `unknown` means the evidence was missing, not that the check failed.
+- **A bare `01/<gtin>/21/<serial>` is not a passport identifier.** Resolve it with `node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>`, which lists every passport the index holds for that GS1 key by its exact identifier; never add a host yourself ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)).
 - **Dry runs** come first. `node examples/write-passport.mjs --dry-run` and `node examples/lifecycle-v2.mjs` write passports without a wallet, funds or network, and `node examples/check-registry.mjs --fixture` checks a registry's claims without one.
 
 ## Steps a human must take

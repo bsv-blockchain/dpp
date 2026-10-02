@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.8.0-draft
+  version: 0.9.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -858,9 +858,9 @@ components:
       type: object
       required: [service, query]
       description: >-
-        The passport rail. Resolves a record's chain by its passport identifier
-        or by its data-carrier identifier. At least one of the two must be
-        provided; the service refuses an empty query. The answer holds the tip
+        The passport rail. Resolves a record's chain by its passport identifier,
+        by its data-carrier identifier or by its GS1 key. At least one of the
+        three must be provided; the service refuses an empty query. The answer holds the tip
         and every retained earlier state, bounded to 500 outputs with the
         newest kept, so a truncated history fails verification rather than
         presenting a stale tip.
@@ -875,6 +875,19 @@ components:
             uid:
               type: string
               description: The data-carrier identifier carried in the record's public payload.
+            gs1Key:
+              type: string
+              description: >-
+                A GS1 key without a host, for a caller holding a GTIN and serial
+                but not the host a passport was issued under: the key tuple of
+                spec/gs1-discovery.md section 1 (01:09529990001039|21:SERIAL),
+                a Digital Link path (01/09529990001039/21/SERIAL) or a whole
+                Digital Link URI under any host. The answer holds the states of
+                every passport whose identifier names that key, each under its
+                own exact identifier, which the caller verifies as it would any
+                lookup's answer. A shared key is not evidence that a passport
+                concerns the caller's product (spec/gs1-discovery.md section 1).
+                A value that names no GS1 key is refused.
     legacyAnchorLookup:
       type: object
       required: [service, query]

@@ -7,6 +7,7 @@ import type {
 } from '@bsv/overlay'
 import { PAYLOAD_DATA_CARRIER_KEY, tryParseDppOutput } from '@bsv/dpp-core'
 import { DPP_TOPIC } from './tmDpp.js'
+import { normaliseGs1Key } from './gs1Key.js'
 import type { DppRecordInput, DppRecordStore } from './storage.js'
 
 export const DPP_SERVICE = 'ls_dpp'
@@ -14,6 +15,13 @@ export const DPP_SERVICE = 'ls_dpp'
 export interface DppLookupQuery {
   passportId?: string
   uid?: string
+  /**
+   * A GS1 key with no host: the tuple `01:{gtin}|21:{serial}`, the path
+   * `01/{gtin}/21/{serial}`, or any Digital Link URI. Answers the states of
+   * every passport whose identifier names that key, under whatever host it was
+   * issued, so the caller learns each exact identifier and verifies it.
+   */
+  gs1Key?: string
 }
 
 /**
@@ -29,8 +37,8 @@ const PENDING_SPENDS = 1000
 /**
  * ls_dpp - passport lookup (`spec/services.md` §2).
  *
- * Indexed on passport_id and chip UID (the data-carrier property inside
- * payload_public). Returns the tip plus the ordered history: spent states are
+ * Indexed on passport_id, chip UID (the data-carrier property inside
+ * payload_public) and the GS1 key tuple the passport identifier names. Returns the tip plus the ordered history: spent states are
  * kept (the engine retains them via tm_dpp's coinsToRetain) so a fresh device
  * can resolve and verify the full lifecycle. Clients order the result with
  * dpp-core's chainFromBeef; record order here is best-effort.
@@ -128,13 +136,18 @@ export class DppLookupService implements LookupService {
     const passportId =
       typeof query.passportId === 'string' && query.passportId !== '' ? query.passportId : undefined
     const uid = typeof query.uid === 'string' && query.uid !== '' ? query.uid : undefined
-    if (passportId == null && uid == null) {
-      throw new Error('Query must provide passportId or uid')
+    const gs1Key = typeof query.gs1Key === 'string' && query.gs1Key !== '' ? query.gs1Key : undefined
+    if (passportId == null && uid == null && gs1Key == null) {
+      throw new Error('Query must provide passportId, uid or gs1Key')
     }
-    const records =
-      passportId != null
-        ? await this.storage.findByPassport(passportId)
-        : await this.storage.findByUid(uid as string)
+    let records
+    if (passportId != null) records = await this.storage.findByPassport(passportId)
+    else if (uid != null) records = await this.storage.findByUid(uid)
+    else {
+      const tuple = normaliseGs1Key(gs1Key as string)
+      if (tuple == null) throw new Error('gs1Key must be a GS1 key tuple such as 01:09529990001039|21:SERIAL, a Digital Link path such as 01/09529990001039/21/SERIAL, or a Digital Link URI')
+      records = await this.storage.findByGs1Key(tuple)
+    }
     // The newest states survive the cap so the tip stays resolvable; a caller
     // holding a truncated history sees verification fail, not a stale tip.
     return records

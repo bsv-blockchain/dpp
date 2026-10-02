@@ -4,6 +4,7 @@
  * bytes and public block headers, with no account and no operator's word.
  *
  *   node examples/verify-passport.mjs <passportId> [indexUrl] [--report]
+ *   node examples/verify-passport.mjs 01/<gtin>/21/<serial> [indexUrl] [--report]
  *   node examples/verify-passport.mjs --fixture
  *   node examples/verify-passport.mjs --fixture --owner-consent [--authorities=<hex,hex>]
  *   node examples/verify-passport.mjs --fixture --report
@@ -14,6 +15,12 @@
  * the BEEFs the index returns, merged into one, and verifies it: every user signature, every
  * link, every merkle proof against WhatsOnChain's headers. The index is only
  * used to find the bytes; nothing it says is trusted, which is the point.
+ *
+ * A bare `01/<gtin>/21/<serial>` (or the key tuple `01:<gtin>|21:<serial>`) is
+ * a GS1 key, not a passport identifier: two hosts can each issue a passport
+ * for it. The index is asked by key, every passport it holds for that key is
+ * named under its exact identifier, and when there is exactly one it is
+ * verified, with its host marked as taken from the index's answer.
  * WhatsOnChain answers an anonymous caller 429 past a few requests a second,
  * so headers are asked one at a time, a little apart, and each answer is kept
  * for the rest of the run, and WOC_API_KEY, when set, is sent as the key.
@@ -100,7 +107,7 @@ const authorities = args
   .map((k) => k.trim())
   .filter((k) => k !== '')
 const ownerConsent = consentFlag ? (authorities.length > 0 ? { authorities } : true) : undefined
-const passportId = args.find((a) => !a.startsWith('--'))
+let passportId = args.find((a) => !a.startsWith('--'))
 const indexUrl = (args.filter((a) => !a.startsWith('--'))[1] ?? 'https://dpp-overlay.bsvb.net').replace(/\/+$/, '')
 
 if (!fixtureMode && passportId == null) {
@@ -172,22 +179,48 @@ let FIXTURE_CHECKED_AT
 let chain
 let tracker
 let fixture
+/** True when the identifier came from the index's answer to a GS1 key, not from the caller. */
+let resolvedFromKey = false
 if (fixtureMode) {
   fixture = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionTwo ? 'chain-v2.json' : 'chain-v1.json'), 'utf8'))
   chain = fixture.states.map((s) => Transaction.fromHex(s.rawTx))
   tracker = 'scripts only'
   console.log(`Fixture chain (record version ${versionFlag}): ${chain.length} states, verified from raw transaction hex, no header source.`)
 } else {
-  const response = await fetch(`${indexUrl}/lookup`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ service: 'ls_dpp', query: { passportId } }),
-  })
-  if (!response.ok) {
-    console.error(`The index answered HTTP ${response.status}.`)
-    process.exit(1)
+  const lookup = async (query) => {
+    const response = await fetch(`${indexUrl}/lookup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ service: 'ls_dpp', query }),
+    })
+    if (!response.ok) {
+      console.error(`The index answered HTTP ${response.status}${query.gs1Key != null ? '; an index on an earlier release does not look passports up by GS1 key' : ''}.`)
+      process.exit(1)
+    }
+    return await response.json()
   }
-  const answer = await response.json()
+  if (!/^https?:\/\//.test(passportId)) {
+    // A GS1 key: find every passport the index holds for it, by exact identifier.
+    const found = new Map()
+    for (const output of (await lookup({ gs1Key: passportId })).outputs) {
+      const id = findDppOutputs(Transaction.fromBEEF(output.beef))[0]?.state.passportId
+      if (id != null) found.set(id, (found.get(id) ?? 0) + 1)
+    }
+    if (found.size === 0) {
+      console.log(`The index holds no passport for the GS1 key ${passportId}. That says nothing about whether one exists.`)
+      process.exit(1)
+    }
+    console.log(`${passportId} is a GS1 key, not a passport identifier. The index holds ${found.size} passport${found.size === 1 ? '' : 's'} for it:`)
+    for (const [id, states] of found) console.log(`  ${id} (${states} state${states === 1 ? '' : 's'})`)
+    if (found.size > 1) {
+      console.log('Verify each by its full identifier, and choose by the host you trust.')
+      process.exit(0)
+    }
+    passportId = [...found.keys()][0]
+    resolvedFromKey = true
+    console.log(`Verifying ${passportId}. Its host came from the index's answer, not from you: check it is a host you trust.`)
+  }
+  const answer = await lookup({ passportId })
   if (answer.outputs.length === 0) {
     console.log('The index knows no record with that identifier. That says nothing about whether one exists.')
     process.exit(1)
@@ -285,7 +318,7 @@ if (fixtureMode && versionTwo) {
 if (reportFlag && !fixtureMode) {
   const report = await verifyPassportEvidence(
     { tokenHistory: chain },
-    { passportId, source: 'request-context' },
+    { passportId, source: resolvedFromKey ? 'none' : 'request-context' },
     { chainTracker: tracker, ownerConsent }
   )
   printReport(report)

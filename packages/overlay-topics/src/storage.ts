@@ -1,4 +1,5 @@
 import type { Collection, Db, Filter } from 'mongodb'
+import { passportGs1Key } from './gs1Key.js'
 
 /** One indexed DPP state (admitted output, kept after spend as history). */
 export interface DppRecord {
@@ -23,10 +24,17 @@ export interface DppRecord {
    * which is the order the bounded lookup has always answered them in.
    */
   sequence: number
+  /**
+   * The GS1 key tuple the passport identifier names (`gs1Key.ts`), '' when it
+   * names none: what a caller holding a GTIN and serial but no host looks the
+   * passport up by. Derived by the store from `passportId`, never handed in;
+   * rows written before the field existed are given it at boot.
+   */
+  gs1Key: string
 }
 
-/** What the lookup service hands the store; the store assigns `sequence`. */
-export type DppRecordInput = Omit<DppRecord, 'sequence'>
+/** What the lookup service hands the store; the store assigns `sequence` and derives `gs1Key`. */
+export type DppRecordInput = Omit<DppRecord, 'sequence' | 'gs1Key'>
 
 /** Which records a page or an export is about: one of the two keys, non-empty. */
 export interface RecordSelector {
@@ -57,6 +65,8 @@ export interface DppRecordStore {
   delete: (txid: string, outputIndex: number) => Promise<void>
   findByPassport: (passportId: string) => Promise<DppRecord[]>
   findByUid: (uid: string) => Promise<DppRecord[]>
+  /** The records of every passport whose identifier names this GS1 key tuple, under any host. */
+  findByGs1Key: (gs1Key: string) => Promise<DppRecord[]>
   /**
    * The highest sequence assigned so far, 0 when nothing was ever inserted:
    * what a snapshot pins. A deleted row's sequence stays assigned, so the
@@ -102,18 +112,20 @@ export class MongoDppStorage implements DppRecordStore {
   }
 
   /**
-   * Indexes, and the one migration this store has ever needed: rows written
+   * Indexes, and the two migrations this store has needed. Rows written
    * before `sequence` existed are numbered in createdAt, txid, outputIndex
    * order, so every row has a position before the first page is served and the
-   * pages of an old deployment read in the order its lookups always answered.
-   * Runs once per process on first use, and `main()` awaits it at boot so the
-   * numbering never races a request. Idempotent: a second boot finds nothing
-   * to number.
+   * pages of an old deployment read in the order its lookups always answered;
+   * rows written before `gs1Key` existed are given the key their passport
+   * identifier names. Runs once per process on first use, and `main()` awaits
+   * it at boot so neither races a request. Idempotent: a second boot finds
+   * nothing to do.
    */
   async ensureReady(): Promise<void> {
     this.ready ??= (async () => {
       await this.records.createIndex({ passportId: 1, sequence: 1 })
       await this.records.createIndex({ uid: 1, sequence: 1 })
+      await this.records.createIndex({ gs1Key: 1, sequence: 1 })
       await this.records.createIndex({ txid: 1, outputIndex: 1 }, { unique: true })
       const legacy = this.records
         .find({ sequence: { $exists: false } })
@@ -126,6 +138,9 @@ export class MongoDppStorage implements DppRecordStore {
           { txid: row.txid, outputIndex: row.outputIndex, sequence: { $exists: false } },
           { $set: { sequence } }
         )
+      }
+      for await (const row of this.records.find({ gs1Key: { $exists: false } })) {
+        await this.records.updateOne({ txid: row.txid, outputIndex: row.outputIndex }, { $set: { gs1Key: passportGs1Key(row.passportId) } })
       }
     })().catch((error: unknown) => {
       this.ready = undefined
@@ -157,7 +172,7 @@ export class MongoDppStorage implements DppRecordStore {
       { txid: record.txid, outputIndex: record.outputIndex },
       // $setOnInsert: a re-admitted output keeps the position it was first
       // given, and only its other fields are refreshed.
-      { $set: record, $setOnInsert: { sequence } },
+      { $set: { ...record, gs1Key: passportGs1Key(record.passportId) }, $setOnInsert: { sequence } },
       { upsert: true }
     )
   }
@@ -190,6 +205,12 @@ export class MongoDppStorage implements DppRecordStore {
     return await this.records.find({ uid }).sort({ sequence: 1 }).toArray()
   }
 
+  async findByGs1Key(gs1Key: string): Promise<DppRecord[]> {
+    await this.ensureReady()
+    if (gs1Key === '') return []
+    return await this.records.find({ gs1Key }).sort({ sequence: 1 }).toArray()
+  }
+
   async highestSequence(): Promise<number> {
     await this.ensureReady()
     const counter = await this.counters.findOne({ _id: COUNTER_ID })
@@ -218,7 +239,7 @@ export class InMemoryDppStorage implements DppRecordStore {
     const key = this.key(record.txid, record.outputIndex)
     // As the Mongo store: a re-admitted output keeps its first position.
     const sequence = this.records.get(key)?.sequence ?? ++this.assigned
-    this.records.set(key, { ...record, sequence })
+    this.records.set(key, { ...record, sequence, gs1Key: passportGs1Key(record.passportId) })
   }
 
   async markSpent(txid: string, outputIndex: number, spendingTxid: string): Promise<void> {
@@ -250,6 +271,13 @@ export class InMemoryDppStorage implements DppRecordStore {
   async findByUid(uid: string): Promise<DppRecord[]> {
     return [...this.records.values()]
       .filter((r) => r.uid === uid)
+      .sort((a, b) => a.sequence - b.sequence)
+  }
+
+  async findByGs1Key(gs1Key: string): Promise<DppRecord[]> {
+    if (gs1Key === '') return []
+    return [...this.records.values()]
+      .filter((r) => r.gs1Key === gs1Key)
       .sort((a, b) => a.sequence - b.sequence)
   }
 

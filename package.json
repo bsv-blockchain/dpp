@@ -10,7 +10,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics -w @bsv/vsc -w @bsv/dpp-profiles",
+    "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics -w @bsv/vsc",
     "test": "npm run test --workspaces --if-present && npm run conformance:test && npm run conformance:check && npm run docs:check",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "conformance:check": "node conformance/check.mjs",

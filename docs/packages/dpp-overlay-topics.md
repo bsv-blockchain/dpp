@@ -10,7 +10,7 @@
 |---|---|
 | Index | The service that admits passport states and claim anchors and answers lookups for them. BSV software calls it an overlay, hence the package's name |
 | Topic manager | The admission rule: offered a transaction, it says which outputs to keep. `DppTopicManager` (topic `tm_dpp`) admits passport states countersigned by a publisher key it accepts; `AttestationTopicManager` (`tm_attestation`) admits claim anchors |
-| Lookup service | Answers queries over what was admitted: `DppLookupService` (`ls_dpp`) finds a passport's states by identifier or data carrier, and `AttestationLookupService` (`ls_attestation`) finds anchors by subject, issuer, digest or anchoring service |
+| Lookup service | Answers queries over what was admitted: `DppLookupService` (`ls_dpp`) finds a passport's states by identifier, data carrier or GS1 key, and `AttestationLookupService` (`ls_attestation`) finds anchors by subject, issuer, digest or anchoring service |
 | Store | Where admitted outputs are kept: `InMemoryOverlayStorage` and `InMemoryDppStorage` for tests, their `Mongo` counterparts for a service |
 | Engine | The `Engine` from `@bsv/overlay`, the BSV overlay software, which wires topic managers, lookup services and a store together |
 

@@ -101,10 +101,10 @@
     {
       "id": "contract-overlay",
       "uri": "contracts/overlay.yaml",
-      "version": "0.8.0-draft",
+      "version": "0.9.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "27c00db5cbbc5fda61d70e8255f8992479d727d0029894c52c4fe9f0f692ba98"
+      "digest": "de4a79acc76e09a8593f45013285da82f37a753a64a6ab4ef30fe2c3b05fd76d"
     },
     {
       "id": "contract-registry",
@@ -3251,7 +3251,7 @@
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.8.0-draft",
+      "sourceVersion": "0.9.0-draft",
       "clause": "x-dpp-profile.must",
       "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
       "layer": "role",
@@ -4133,7 +4133,7 @@
       "id": "OVL-2-retraction",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.8.0-draft",
+      "sourceVersion": "0.9.0-draft",
       "clause": "POST /retract",
       "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
       "layer": "role",
@@ -4159,7 +4159,7 @@
       "id": "OVL-2-refusal-reason",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.8.0-draft",
+      "sourceVersion": "0.9.0-draft",
       "clause": "POST /submit X-Admission-Refusal",
       "summary": "A refused announcement names the check that failed: X-Admission-Refusal carries topic=code for each refused topic whose manager recorded a reason, from the tm_dpp codes the contract lists and in the verification report's word where it names the same failure, and the STEAK body is unchanged.",
       "layer": "role",
@@ -4177,6 +4177,35 @@
         "packages/overlay-topics/test/tmDpp.test.ts",
         "packages/overlay-topics/test/http.test.ts",
         "packages/overlay-topics/test/refusedSpend.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-10-02",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "OVL-2-gs1-key-lookup",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.9.0-draft",
+      "clause": "components.schemas.passportLookup gs1Key",
+      "summary": "ls_dpp answers a GS1 key without a host, as a key tuple, a Digital Link path or a Digital Link URI under any host, with the states of every passport whose identifier names that key, each under its exact identifier; a value naming no GS1 key is refused.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-reader"
+      ],
+      "applicability": "when a reader holds a GTIN and serial but not the host a passport was issued under",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/gs1Key.ts",
+        "packages/overlay-topics/src/lsDpp.ts (gs1Key)",
+        "packages/overlay-topics/src/storage.ts (findByGs1Key)"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/lsDpp.test.ts",
+        "packages/overlay-topics/test/storage.test.ts",
+        "packages/overlay-topics/test/gs1KeyLookup.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",

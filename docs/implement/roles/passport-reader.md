@@ -51,7 +51,7 @@ Each step names the rule it implements and the fixture that tests it.
 4. Ask the header source about each mined state's merkle root and height.
 5. Return the report.
 
-Step 1 of [build an application](../../packages/build-an-application.md#1-read-a-passport) does all five in JavaScript, and `node examples/verify-passport.mjs <passport identifier> <index URL>` is the reference reader with every option ([quick start](../../quick-start.md#read-a-live-passport)).
+Step 1 of [build an application](../../packages/build-an-application.md#1-read-a-passport) does all five in JavaScript, and `node examples/verify-passport.mjs <passport identifier> <index URL>` is the reference reader with every option ([quick start](../../quick-start.md#read-a-live-passport)). Given a bare `01/<gtin>/21/<serial>` instead, it asks the index by GS1 key, names every passport found, and verifies the one it finds.
 
 **The header source.** A header source answers one question, whether a merkle root is the one at a block height, with yes, no or no answer, and it may be asked the current height. WhatsOnChain limits anonymous callers to a few requests a second, so ask one question at a time and a little apart, keep each answer for the rest of the check, and use an API key for more than a handful of passports. An answer that could not be obtained reports inclusion `unknown` with `header-source-unavailable`, never a failure.
 
