@@ -17,6 +17,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 
 | Limit | What it means for you | What to do now |
 |---|---|---|
+| Each token is one shared secret | The index accepts one `SUBMIT_TOKEN`, one `ARC_CALLBACK_TOKEN` and one `EXPORT_TOKEN`, so everyone given a token holds the same value and requests cannot be told apart | Give each outside party a value only for as long as it needs one, and replace the value afterwards |
 | Nodes find no peers by themselves | The host does not advertise itself through SHIP/SLAP, so nobody discovers your index | Name each peer in `SYNC_PEERS`, and ask other operators to name you ([federation](federation.md)) |
 | The header source is WhatsOnChain only | Inclusion checks trust its headers, and anonymous use is limited to a few requests a second | Set `WOC_API_KEY`; there is no setting for another header service yet |
 | No operator image is published | You build the index from a checkout | Use the Compose preset in [run a service](README.md) |

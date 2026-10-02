@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "39ddbf1bfee9e28b214849238d198b1e997a1d91f7f1bc2607fed6a2a48d162b"
+      "digest": "597f95cad8ab10d7d7bc552bbb0c0476b6675f7a1d94542f11624d1d2bbc6dee"
     },
     {
       "id": "spec-record-model-v2",
@@ -522,7 +522,7 @@
       "version": "gs1-digital-link@1",
       "kind": "local",
       "path": "spec/gs1-discovery.md",
-      "digest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5"
+      "digest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a"
     },
     {
       "id": "spec-epcis-interoperability",
@@ -4179,9 +4179,9 @@
         "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5"
+      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a"
     },
     {
       "id": "GS1D-2-key-tuple",
@@ -4207,9 +4207,9 @@
         "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5"
+      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a"
     },
     {
       "id": "GS1D-3-decompression",
@@ -4343,9 +4343,9 @@
         "contracts/registry.yaml#/paths/~1.well-known~1gs1resolver"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5",
+      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a",
       "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests)."
     },
     {
@@ -4369,9 +4369,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-02",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f708a21a9dabd6c4c27f64bd0a22880eb86c138bf3a6edcc2394e64e668909e5",
+      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a",
       "notes": "Description file and linkset validated against the pinned GS1 schemas, selection through the profiles helper, a broader anchor labelled with its granularity, an external resolver through the same client, cross-origin redirects refused and no credential ever returned."
     },
     {
