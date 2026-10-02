@@ -25,12 +25,12 @@ A report is a JSON object. [`../contracts/verification-report.schema.json`](../c
 
 ## 3. The expected subject
 
-`expectedSubject` states what the verifier was asked about, and it MUST come from the trusted request context or from a binding established before the evidence under test was read: the identifier printed on the item, the identifier the caller resolved, or a previously verified genesis. It is never read from the evidence being tested, because evidence that names its own subject verifies against itself trivially, which is how a valid record for product B becomes proof about product A.
+`expectedSubject` states what the verifier was asked about. An expectation MUST come from the trusted request context or from a binding established before the evidence under test was read: the identifier printed on the item, the identifier the caller resolved, or a previously verified genesis. An identifier read from the evidence being tested is never an expectation, because evidence that names its own subject verifies against itself trivially, which is how a valid record for product B becomes proof about product A. A verifier that was given no expectation, such as a service asked to verify a record without being told its subject, takes the identifier from the evidence and says so with `source` `none`.
 
 | Property | Requirement |
 |---|---|
 | `passportId` | The exact passport identifier expected. Required. |
-| `source` | One of `request-context`, `established-binding` or `none`. `none` means the verifier had no independent expectation and took the identifier from the evidence; every subject-dependent check then reports `unknown` with reason `subject-not-independent`. |
+| `source` | One of `request-context`, `established-binding` or `none`. `none` means the verifier had no independent expectation and took the identifier from the evidence. `subjectBinding`, the one check that compares the evidence with the expectation, then reports `unknown` with reason `subject-not-independent`, and `limits` says so (§6). Every other check runs as it would with an expectation, so the report still says whether the evidence is valid, though not that it concerns the passport the reader meant. |
 | `productIdentifier` | Optional exact product identifier, when it differs from `passportId` or is known independently. |
 | `expectedIssuer` | Optional exact issuer identifier for the genesis or the claim under test. |
 | `expectedGenesisOutpoint` | Optional `{ txid, outputIndex }` of the genesis state the subject is bound to. |
