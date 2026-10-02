@@ -184,7 +184,6 @@ For your own claim, use your passport, the index you announced to and the regist
 - **What was done.** A claim carries no payload, so it cannot say what was repaired, by whom or where; it records the event's type and time only. The evidence a profile's event mapping asks for, such as the work done in a repair, has no place in a claim yet.
 - **Which types exist.** The four event types classify lifecycle events; there is no type for a test or certification as such. A certifier whose statement needs its own vocabulary can issue a W3C credential with [@bsv/vsc](vsc.md) instead.
 - **Being accepted.** Identity is at Ring 0: your key identifies you, and only the platform account vouches for who holds it. No route yet puts a claimant on readers' lists, and a role such as a notified body for conformity claims would need an identity ring that is not live ([identity and authority](../learn/identity-and-authority.md)).
-- **The identifier form in the test data.** The repository's anchor fixture uses a `urn:uuid:` identifier for its native claim; for your own, follow the specification's `urn:sha256:` and the digest.
 - **Writing to the hosted services.** Storing on the hosted registry and announcing to the hosted index need tokens the programme holds.
 
 [Known limitations](../operate/limitations.md) collects the other open gaps of the reference services.

@@ -85,6 +85,8 @@ Fields 1 to 7 are UTF-8, and each must be non-empty printable text: control char
 
 **Two parties appear in an anchor and they are not the same one.** The issuer (field 4) made the claim; the anchoring service (field 7) wrote the output. The anchor proves the second and merely repeats the first. Conflating them is the one misreading this format invites.
 
+**The earlier prefixes.** `uora-anchor-v1`, the anchoring service's original format, has three fields: the prefix, the digest and the attestation id. It names neither the issuer nor the anchoring service, and its locking key is derived with counterparty `self`, which needs the anchoring service's private root key, so no third party can reproduce the key or tie the output to anyone. A v1 anchor shows that its digest was committed in that transaction and nothing about who claimed or who anchored: a reader can compare the digest with the secured bytes and cannot establish the anchoring service. `uora-anchor-v2` is refused, as above. Neither is written any more.
+
 ## 6. Verifying an anchor
 
 A verifier holding an attestation and any public copy of the anchoring transaction checks: the canonical bytes of the attestation hash to field 2; the attestation's own signature verifies as §3 describes; the anchor's field-8 signature verifies over the SHA-256 of the length-delimited preimage against the field-7 service's derived key; and the locking key equals the derived child. No call to the writing service is required at any step.

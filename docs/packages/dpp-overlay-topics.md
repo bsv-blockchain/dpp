@@ -136,6 +136,7 @@ The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /
 |---|---|
 | Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/src/lib.ts) |
 | Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/src/index.ts) |
+| Read a historical UORA anchor | `tryParseUoraAnchor` and `expectedLockingKey`, as [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) shows for `uora-anchor-v3`; it refuses `uora-anchor-v2` and does not read `uora-anchor-v1` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)) |
 | Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) |
 | Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/README.md) |
 

@@ -69,7 +69,18 @@ No fixture case alters the native claim's own signature; add one to your own tes
 ## What not to copy from the fixtures
 
 - The fixture claim's `recordId` `state-1` and `profile` `generic` are test values, not live forms ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
-- The fixture anchor's `attestationId` is a `urn:uuid:` value. For a native claim the registry identifier is `urn:sha256:` followed by the digest (rules section 6).
+
+## Run an anchor proof page
+
+A proof page lets anyone check a registry's claims without trusting the registry: for each record it fetches the evidence, runs the checks of [build the verifier](#build-the-verifier), and shows each result on its own line. The hosted reference serves one over the hosted registry ([the hosted reference](../../deployment.md#the-hosted-reference)). To run one over your own registry, or anyone's, use only these routes of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml):
+
+1. **List the records.** `GET /attestations`, page by page with `cursor`; filter by `subject` for one passport.
+2. **Fetch each record's evidence.** `GET /attestations/{id}/proof` answers the stored bytes (`securedBytes`, or `canonical` on historical records), their `digest` and, in `anchor`, the anchoring transaction (`recordId`), the output index, the `format` and the `lockingScript` where the registry kept it. Without the script, fetch the transaction by `recordId` from any source and take the output at `outputIndex`.
+3. **Check it.** Steps 3 to 6 above: `verifyLifecycleClaim` and `inspectAttestationAnchor` from `@bsv/dpp-core` ([add a claim](../../packages/add-a-claim.md)). The proof route carries no merkle path, so for inclusion fetch the anchor transaction's path and check it against block headers from a source you trust.
+4. **Check the anchoring service.** Compare the key that anchored with the anchoring services you accept.
+5. **Show each check on its own**, with its status and reason, and no overall verdict (verification section 4).
+
+Records in the historical formats need their own readers. A `uora-anchor-v3` output is read with `tryParseUoraAnchor` from `@bsv/dpp-overlay-topics`, as `examples/verify-anchor.mjs` shows. A `uora-anchor-v1` output names no issuer and no anchoring service ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) section 5), so a page can compare its digest with the stored bytes and cannot establish who anchored it.
 
 ## Known gaps
 
