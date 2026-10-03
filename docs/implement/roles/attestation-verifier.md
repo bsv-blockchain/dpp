@@ -74,6 +74,8 @@ No fixture case alters the native claim's own signature; add one to your own tes
 
 A proof page checks a registry's claims without trusting the registry: the registry hands over each record's stored bytes and names its anchor transaction, and everything else comes from the chain. The hosted reference serves one ([the hosted reference](../../deployment.md#the-hosted-reference)). It reads a registry's two showcase routes, `GET /showcase/attestations` and `GET /showcase/verify/{id}` under the `showcase` tag of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml), from the registry its RESOLVER field names, the hosted registry unless you type another address. A registry that serves those routes, which stay off until its deployment turns them on, can be checked there. The verify route asks a chain source for the anchor transaction on every request, so pace those requests and use the source's API key.
 
+The hosted page fetches from the visitor's browser, so a registry it reads must answer those routes cross-origin, with an `Access-Control-Allow-Origin` header, as the hosted registry does. If your own page fetches from its server instead, fetch only the registries you configure. A server that fetches any address a visitor types can be made to request addresses only it can reach, such as its own internal services, which is server-side request forgery.
+
 One command checks any registry from its two query routes alone, and its source, `examples/check-registry.mjs`, is the recipe to copy:
 
 ```sh

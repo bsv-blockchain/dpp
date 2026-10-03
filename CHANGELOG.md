@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-03, a proof page and the registries it reads
+
+- The verifier's proof page section and the registry page say that the hosted proof page fetches from the visitor's browser, so a registry it reads must answer its showcase routes cross-origin, and that a proof page fetching from its own server must fetch only the registries it is configured with, never an address a visitor types.
+
 ### 2026-10-03, the hosted check reads any host
 
 - The hosted reference page, the GS1 discovery and demonstration guides and the writer walkthrough say that the check at `dpp.bsvb.net/verify` now looks an identifier up exactly as given under any host and accepts any publisher key the hosted index names, and that it finds only what the hosted index holds. They no longer say it reads only identifiers under its own hosts.
