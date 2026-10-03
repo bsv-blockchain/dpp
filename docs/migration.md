@@ -17,9 +17,13 @@ Write down what each running component uses now, and keep the old configuration 
 
 ## Upgrade the packages
 
+### From beta.8 to beta.9
+
+The current set, `dpp-release-2026-10-6`, a candidate pending publication, carries `@bsv/dpp-overlay-topics@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC. An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+
 ### From beta.7 to beta.8
 
-The current set, `dpp-release-2026-10-5`, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 2 October 2026 from source revision `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)). An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+The set `dpp-release-2026-10-5`, now superseded, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 2 October 2026 from source revision `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)). An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
 
 ### From beta.6 to beta.7
 
