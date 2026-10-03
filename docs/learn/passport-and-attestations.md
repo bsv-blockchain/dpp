@@ -37,7 +37,7 @@ Each field of an industry profile has an access tier that says who may read it:
 | `legitimate` | Parties with a legitimate interest, as the profile defines them | Off chain, encrypted |
 | `authority` | Notified bodies, market surveillance and other authorities | Off chain, encrypted |
 
-[Build an application](../packages/build-an-application.md#3-write-a-passport), "Owner tier", shows how to encrypt the restricted fields with the wallet and put their hash in a state. How the `legitimate` and `authority` tiers reach their readers is not settled yet: a state commits to one ciphertext, which reaches whoever holds its key ([known limitations](../operate/limitations.md)).
+[The owner tier](../packages/how-the-writer-works.md#the-owner-tier), in how the writer example works, shows how to encrypt the restricted fields with the wallet and put their hash in a state. How the `legitimate` and `authority` tiers reach their readers is not settled yet: a state commits to one ciphertext, which reaches whoever holds its key ([known limitations](../operate/limitations.md)).
 
 ## Claims and anchors
 
@@ -87,7 +87,7 @@ A record's format selects the source to read. The [fixture guide](../implement/f
 
 | You are | Go to |
 |---|---|
-| Writing passports with the packages | [Build an application](../packages/build-an-application.md#3-write-a-passport), "Write a passport" |
-| Signing claims with the packages | [Build an application](../packages/build-an-application.md), "Sign and anchor a lifecycle claim" |
+| Writing passports with the packages | [Write a passport](../packages/build-an-application.md#3-write-a-passport) in build an application |
+| Signing claims with the packages | [Add a claim](../packages/add-a-claim.md) |
 | Implementing the rules yourself | [Passport writer](../implement/roles/passport-writer.md) or [attestation issuer](../implement/roles/attestation-issuer.md) |
 | Still learning the model | [Identifiers](../identifiers.md), then [identity and authority](identity-and-authority.md) |

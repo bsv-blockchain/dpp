@@ -13,7 +13,7 @@ Every passport state involves four keys, each answering a different question ([c
 | The controller key | Field 6, `controller_key` (version 1 calls it the owner key, `owner_identity_key`) | Whom the passport belongs to now. Every later state must prove control of it, and the owner tier is encrypted under the same wallet |
 | The publisher key | The countersignature | Which service admitted the state. It says nothing about whether the state is true |
 
-The controller key is usually one derivation from the controlling party's wallet: `ownerKeyFor(passportId, wallet)` in `@bsv/dpp-core` derives it under the protocol `[1, 'dpp owner v1']`, with the passport identifier as key identifier, so one wallet holds a different, unlinkable controller key for each passport. When the actor of a state is not the controller, the state proves control with the control linkage: a public 32-byte value, revealed by the wallet with `revealOwnerLinkage`, that links the actor's identity key to the controller key ([build an application](../packages/build-an-application.md#3-write-a-passport), "Keys").
+The controller key is usually one derivation from the controlling party's wallet: `ownerKeyFor(passportId, wallet)` in `@bsv/dpp-core` derives it under the protocol `[1, 'dpp owner v1']`, with the passport identifier as key identifier, so one wallet holds a different, unlinkable controller key for each passport. When the actor of a state is not the controller, the state proves control with the control linkage: a public 32-byte value, revealed by the wallet with `revealOwnerLinkage`, that links the actor's identity key to the controller key ([keys](../packages/how-the-writer-works.md#keys) in how the writer example works).
 
 A reader cannot tell where any of the four keys is kept, and does not need to: the same rules verify a state made in a person's own wallet and one made in an operator's systems. The standard binds itself to one rule so that a person's own wallet can always fill every role: nothing in it may require more than a BRC-100 wallet can do with one derivation from its root key and without exporting a private key.
 
@@ -51,7 +51,7 @@ An offer is accepted once, and one acceptance executes at most one `TRANSFER`. A
 
 A reader that is given the record checks that it binds to the `TRANSFER`: `evidenceAvailability` passes, and `issuerAuthority` checks the custodian against the reader's own `acceptanceCustodians` list. Without the record, `evidenceAvailability` reads `unknown` with `referenced-artefact-unavailable` ([evidence and its limits](evidence-and-freshness.md#results-you-will-see-first)). Either way the report's limits say the commitment is custody-dependent evidence, not a signature made with a key the recipient controls. At [Ring 0](identity-and-authority.md#ring-0), who the recipient is remains the custodian's statement too.
 
-`node examples/lifecycle-v2.mjs`, from a checkout after `npm ci` and `npm run build`, runs the offer, the acceptance and the transfer offline; the `ok:` lines after its Acceptance and TRANSFER steps show the record checked and bound to the transfer. [Build an application](../packages/build-an-application.md#3-write-a-passport), "Transfer under managed custody", shows the calls.
+`node examples/lifecycle-v2.mjs`, from a checkout after `npm ci` and `npm run build`, runs the offer, the acceptance and the transfer offline; the `ok:` lines after its Acceptance and TRANSFER steps show the record checked and bound to the transfer. [Transfer under managed custody](../packages/how-the-writer-works.md#transfer-under-managed-custody), in how the writer example works, shows the calls.
 
 ## After a hand on: the holder's side
 
@@ -101,6 +101,6 @@ These are open in the standard ([known limitations](../operate/limitations.md)).
 
 | You are | Go to |
 |---|---|
-| Building with the packages | [Build an application](../packages/build-an-application.md#3-write-a-passport), "Keys" and "Transfer under managed custody", and [what a passport application offers](../packages/what-an-application-offers.md#after-a-hand-on) for the screens around a hand on |
+| Building with the packages | [Keys](../packages/how-the-writer-works.md#keys) and [transfer under managed custody](../packages/how-the-writer-works.md#transfer-under-managed-custody) in how the writer example works, and [what a passport application offers](../packages/what-an-application-offers.md#after-a-hand-on) for the screens around a hand on |
 | Implementing a writer yourself | [Passport writer](../implement/roles/passport-writer.md) |
 | Still learning the model | [Evidence and its limits](evidence-and-freshness.md) |
