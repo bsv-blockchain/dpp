@@ -1,6 +1,6 @@
 # @bsv/dpp-core
 
-`@bsv/dpp-core` holds the rules every passport application shares: it decodes, builds and signs passport states and claims, and checks a passport's evidence into a verification report. Use it when you build a reader, a writer or a registry in JavaScript or TypeScript; it does not run an index, hold a wallet or decide whom your application trusts.
+Use `@bsv/dpp-core` to build a passport reader, writer or registry in JavaScript or TypeScript. It decodes, builds and signs passport states and claims, and checks a passport's evidence into a verification report. It does not run an index, hold a wallet or decide whom your application trusts.
 
 **Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.7 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
@@ -12,13 +12,13 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/sdk@2.8.10
 ```
 
-A bare `npm install @bsv/dpp-core` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Every example below also imports `@bsv/sdk`. Keep the application lockfile and review compatibility before upgrading. The [support table](support-table.md) says which entry points run where; browser use is untested.
+Pin the exact version so an upgrade is your choice: a bare `npm install @bsv/dpp-core` installs the `latest` tag, the newest beta. Keep your lockfile and review compatibility before upgrading. The examples also import `@bsv/sdk`. The [support table](support-table.md) says which entry points run where; browser use is untested.
 
-The examples on this page are complete files. Save each one under the name given, as an `.mjs` file because they use top-level `await`, and run it with `node <name>.mjs` in that project.
+Each example below is a complete file to save in that project, as `.mjs` because it uses top-level `await`.
 
 ## Check your setup
 
-Save this as `check-setup.mjs`. It fetches the first state of the repository's version 2 test passport, at the reviewed commit, and decodes it:
+Save this as `check-setup.mjs`. It decodes the first state of the repository's version 2 test passport:
 
 ```js
 import { Transaction } from '@bsv/sdk'
@@ -36,13 +36,13 @@ console.log(output.state.op, output.state.passportId, 'in output', output.output
 ISSUE https://dpp.bsvb.net/01/09521000000018/21/V2-0001 in output 0
 ```
 
-A `Cannot find package` error means the install did not finish in this project. Decoding a state is not verifying it: nothing above checked a signature, a link between states or a block proof. The next section does all three.
+A `Cannot find package` error means the install did not finish in this project. Decoding is not verifying: nothing above checked a signature, a link between states or a block proof. The next section checks all three.
 
 ## Gather a passport's evidence
 
-A report is only as complete as the evidence and the policy it is given. This reader gathers everything the hosted reference holds for a version 2 passport with three anchored claims: its lineage from the index, its claims from the registry, their anchors from the index, and a second look at the index for a later state. The lineage is the passport's chain of states, genesis first; an anchor is a small transaction that commits to a claim's exact bytes.
+A report is only as complete as the evidence and policy you give it. This reader gathers everything the hosted reference holds for a version 2 passport with three anchored claims: its lineage (its chain of states, genesis first) and its claims' anchors from the index, the claims from the registry, and a second index lookup for a later state. An anchor is a small transaction that commits to a claim's exact bytes.
 
-You need network access to the hosted index, the hosted registry and WhatsOnChain, which supplies the block headers. A `WOC_API_KEY` environment variable is optional: without one the header source is paced and still answers. Save this as `gather.mjs`:
+It needs network access to the hosted index, the hosted registry and WhatsOnChain, which supplies block headers. `WOC_API_KEY` is optional: without it the header source is paced and still answers. Save this as `gather.mjs`:
 
 ```js
 import { Beef, WhatsOnChain } from '@bsv/sdk'
@@ -166,31 +166,29 @@ evidenceAvailability unknown referenced-artefact-unavailable
 latest state observed
 ```
 
-Two checks read `unknown`, and both are expected for this passport:
+Both `unknown` checks are expected for this passport:
 
-- `schema` reads `unknown` with `schema-unavailable` because the policy gives no `profileValidator`. A native claim names a profile but carries no product data, so there is nothing yet for one to check.
-- `evidenceAvailability` reads `unknown` with `referenced-artefact-unavailable` because the passport's `TRANSFER` commits to a managed acceptance record that only the custodian keeps. No index or registry route serves it yet.
-
-The report does not check a state's `payload_public`, the product data a state carries on chain, against the profile it declares; that is a gap in the package ([known limitations](../operate/limitations.md)). Check it yourself with the profiles package, as [check a payload against its profile](dpp-profiles.md#check-a-payload-against-its-profile) shows, or in a checkout with `node examples/sample-payload.mjs --check <profile@version> <file>`.
+- `schema`: the policy gives no `profileValidator`. A native claim names a profile but carries no product data, so there is nothing yet for one to check.
+- `evidenceAvailability`: the passport's `TRANSFER` commits to a managed acceptance record that only the custodian keeps, and no index or registry route serves it yet.
 
 If `inclusion` reads `unknown` with `header-source-unavailable`, WhatsOnChain limited the header checks: run it again or set `WOC_API_KEY`. If the first lookup throws `the index holds nothing`, the index does not hold that passport; check the identifier character for character.
 
 ## What the report takes
 
-**What the evidence holds and where a reader gets it**
+**What `evidence` holds**
 
 | Field | Holds | Where it comes from |
 |---|---|---|
-| `tokenHistory` | The lineage's transactions, genesis first | `chainFromBeef` over the merged BEEFs of the index's `ls_dpp` lookup. BEEF is the transaction format that carries a transaction with its ancestors and block proofs |
-| `nativeClaims` | Signed lifecycle claims, as objects | The registry: `GET /attestations?subject=<passportId>` lists them, and each one's `GET /attestations/{attestationId}/proof` carries the claim as `attestation` |
-| `anchors` | `{ lockingScript, txid, outputIndex, securedBytes }` for each anchor output | The index's `ls_attestation` lookup with `{ subject: passportId }`; `securedBytes` is the anchored claim's `securedBytes` from its proof, matched by the anchor's transaction identifier |
+| `tokenHistory` | The lineage's transactions, genesis first | `chainFromBeef` over the merged BEEFs (transactions with their ancestors and block proofs) from the index's `ls_dpp` lookup |
+| `nativeClaims` | Signed lifecycle claims, as objects | The registry: `GET /attestations?subject=<passportId>` lists them; each `GET /attestations/{attestationId}/proof` carries one as `attestation` |
+| `anchors` | `{ lockingScript, txid, outputIndex, securedBytes }` for each anchor output | The index's `ls_attestation` lookup with `{ subject: passportId }`; `securedBytes` comes from the proof of the claim the anchor's `txid` matches |
 | `acceptanceRecords` | The managed acceptance records version 2 transfers commit to | The custodian that wrote the transfer; no route serves them yet |
-| `externalCredentials` | `{ representation, mediaType, bytes }`, the exact bytes of a credential in another format | Whoever issued the credential |
+| `externalCredentials` | `{ representation, mediaType, bytes }`, the exact bytes of a credential in another format | Its issuer |
 | `alternativeHistories` | Other lineages under the same identifier, such as a second genesis | The index, when it answers with more than one lineage |
 
-The registry in the reader above is the one that holds this passport's claims. Registries do not exchange claims, an anchor does not name the registry that holds its claim, and no passport state or capability document names one either. Until the standard gives a reader a way to find it, a reader learns the registry from the passport's publisher ([known limitations](../operate/limitations.md), [the registry guide](../implement/roles/registry.md#the-minimum-a-registry-serves)).
+Pass each claim in `nativeClaims` and its exact bytes as its anchor's `securedBytes`, as the reader does. Either one binds the anchor to the claim; the claim also lets the report check the claim's own signature.
 
-When a reader has an anchor but neither its claim nor the claim's bytes, which is what happens when the registry it asks does not hold the claim, six checks change. Run on the repository's claim fixture, `fixtures/attestation-anchor-v1.json`, with and without the claim:
+If the registry you ask does not hold a claim ([limits](#limits)), you have its anchor alone and six checks change. On the repository's claim fixture, `fixtures/attestation-anchor-v1.json`:
 
 | Check | With the claim and its bytes | With the anchor alone |
 |---|---|---|
@@ -201,40 +199,40 @@ When a reader has an anchor but neither its claim nor the claim's bytes, which i
 | `credentialStatus` | `not-applicable` `format-defines-no-status` | `unknown` `no-evidence` |
 | `evidenceAvailability` | `pass` | `unknown` `referenced-artefact-unavailable` |
 
-`anchorSignature`, `anchorKeyDerivation`, `subjectBinding` and `issuerAuthority` still pass, because they need only the anchor; without the claim, `issuerAuthority` asks only about the anchoring service, not the claim's issuer. For the passport in the reader above, `evidenceAvailability` is already `unknown` for its acceptance record, so it does not visibly move there. Either the claim in `nativeClaims` or its exact bytes as the anchor's `securedBytes` lets the report bind the anchor to the claim; pass both, as the reader does, so the claim's own signature is checked too.
+`anchorSignature`, `anchorKeyDerivation`, `subjectBinding` and `issuerAuthority` still pass because they need only the anchor; `issuerAuthority` then asks only about the anchoring service, not the claim's issuer. In the reader above, `evidenceAvailability` is already `unknown` for the acceptance record, so it does not visibly move.
 
 **What `expected` says**
 
-`passportId` is the identifier you were asked about: from the scan, the label or the request, never from the evidence under test. `source` says where it came from:
+Set `passportId` to the identifier you were asked about, from the scan, label or request, never from the evidence under test. `source` says where it came from:
 
 | `source` | Meaning |
 |---|---|
 | `request-context` | The scan, label or request in hand, as in the reader above |
 | `established-binding` | A binding you verified before reading this evidence, such as an earlier verified genesis |
-| `none` | You took it from the evidence itself; `subjectBinding` then reads `unknown` with `subject-not-independent`, because evidence that names its own subject proves nothing about it |
+| `none` | You took it from the evidence itself; `subjectBinding` reads `unknown` with `subject-not-independent`, because evidence that names its own subject proves nothing about it |
 
-`expected` can also name `productIdentifier`, `expectedIssuer`, `expectedGenesisOutpoint` and `expectedStateOutpoint`, and the report checks every artefact against each one given ([verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) section 3).
+`expected` can also name `productIdentifier`, `expectedIssuer`, `expectedGenesisOutpoint` and `expectedStateOutpoint`; the report checks every artefact against each one given ([verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) section 3).
 
 **What the policy selects**
 
 | Field | Selects | Check or finding it settles |
 |---|---|---|
 | `chainTracker` | A header source, or `'scripts only'` to skip header checks | `inclusion` |
-| `publisherKeys`, or `publisherPolicy` with its operators' keys | The publishers whose countersignature is accepted | `publisherSignatures` |
-| `authority` | `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`: the genesis state's actor key, each claim's issuer DID, each anchor's `anchoredBy` key and each acceptance record's custodian that you accept; `verify` answers any role the lists leave open. `{ required: false, reason }` selects no authority check | `issuerAuthority`, which reads `unknown` for any role a required policy does not list |
-| `observers` | Sources asked whether the tip is still the latest state; each answers `unspent`, `spent`, `not-found`, `unavailable` or `conflicting` | `report.observations.latestState`: `observed`, `superseded`, `conflicting`, or `unknown` when no observer is given |
-| `managedAcceptance` | `{ required: true }` to demand an acceptance commitment on every version 2 `TRANSFER` | `linkage`, which fails with `acceptance-commitment-absent` for a transfer without one |
+| `publisherKeys`, or `publisherPolicy` with its operators' keys | Publishers whose countersignature you accept | `publisherSignatures` |
+| `authority` | `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`: the genesis actor keys, claim issuer DIDs, anchor `anchoredBy` keys and acceptance custodians you accept; `verify` answers any role the lists leave open. `{ required: false, reason }` skips the check | `issuerAuthority`; `unknown` for any role a required policy does not list |
+| `observers` | Sources asked whether the tip is still the latest state; each answers `unspent`, `spent`, `not-found`, `unavailable` or `conflicting` | `report.observations.latestState`: `observed`, `superseded`, `conflicting`, or `unknown` with no observer |
+| `managedAcceptance` | `{ required: true }` demands an acceptance commitment on every version 2 `TRANSFER` | `linkage`; fails with `acceptance-commitment-absent` for a transfer without one |
 | `ownerConsent`, `controlAuthorities` | The owner-signed transfer for version 1 states, and the identity keys whose version 2 `UPDATE`, `TRANSFER` or `RETIRE` passes without a control proof, such as a recovery authority | `linkage` |
-| `credentialVerifier` | A function that verifies an external credential's exact bytes, such as `externalCredentialVerifierFor(policy)` from `@bsv/vsc/exchange` ([external credentials](../interoperability/external-credentials.md)). Credential status is checked inside it | `externalCredentialProof`, and each credential's part of `schema`, `credentialTime`, `credentialStatus` and `issuerAuthority`; without it they read `unknown` with `verifier-not-supplied` for an external credential |
-| `profileValidator` | A function that checks a native claim against its declared profile | `schema` for native claims |
-| `policyId` | A name for this policy, recorded in the report | `report.policyId` |
+| `credentialVerifier` | Verifies an external credential's exact bytes and its status, such as `externalCredentialVerifierFor(policy)` from `@bsv/vsc/exchange` ([external credentials](../interoperability/external-credentials.md)) | `externalCredentialProof` and each credential's part of `schema`, `credentialTime`, `credentialStatus` and `issuerAuthority`, which read `unknown` with `verifier-not-supplied` without it |
+| `profileValidator` | Checks a native claim against its declared profile | `schema` for native claims |
+| `policyId` | A name for this policy | `report.policyId` |
 | `checkedAt` | The report's time, for a reproducible report; defaults to now | The observation time, and the instant credential validity is judged at |
 
-`EVIDENCE_CHECK_NAMES` lists the sixteen checks in report order, and `EVIDENCE_CHECK_LABELS` gives each a short sentence a surface can show beside it, such as "Every entry is in a block" for `inclusion`. [Verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) defines each check and the difference between missing evidence (`unknown`) and a check that does not apply (`not-applicable`).
+`EVIDENCE_CHECK_NAMES` lists the sixteen checks in report order. `EVIDENCE_CHECK_LABELS` gives each a short sentence to show beside it, such as "Every entry is in a block" for `inclusion`. [Verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) defines each check and the difference between missing evidence (`unknown`) and a check that does not apply (`not-applicable`).
 
 ## Function reference
 
-These tables list the functions an application calls, what each takes and what it returns. The [walkthrough](build-an-application.md) shows them in order.
+The [walkthrough](build-an-application.md) calls these functions in order.
 
 **Read and verify**
 
@@ -243,16 +241,16 @@ These tables list the functions an application calls, what each takes and what i
 | `findDppOutputs(tx)` | A `Transaction` | The passport outputs it carries, each with its output index and decoded state |
 | `chainFromBeef(beef, passportId?)` | A `Beef` holding a lineage, and the passport to follow | The lineage's transactions, genesis first |
 | `verifyChain(txs, options?)` | The lineage; `chainTracker`, `serverIdentityKey`, `managedAcceptance`, `controlAuthorities`, `ownerConsent` | `{ valid, spv, states, error? }`: whether the lineage holds, whether inclusion is proved, and one finding per state |
-| `verifyPassportEvidence(evidence, expected, policy?)` | `evidence` and `expected` as [above](#what-the-report-takes); `policy` with the fields in the policy table, among them `chainTracker`, `publisherKeys` or `publisherPolicy`, `authority`, `observers`, `managedAcceptance`, `credentialVerifier`, `profileValidator` and `checkedAt` | The verification report: sixteen named checks, each `pass`, `fail`, `unknown` or `not-applicable` with a reason |
+| `verifyPassportEvidence(evidence, expected, policy?)` | `evidence`, `expected` and `policy` as [above](#what-the-report-takes) | The verification report: sixteen named checks, each `pass`, `fail`, `unknown` or `not-applicable` with a reason |
 
 **Write**
 
-The controller key is the key in field 6 of every state: it names who controls the passport, and each state is locked to it. The control linkage is the scalar that proves your identity key derived that controller key; every state after the genesis carries it ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 6). `[1, 'dpp owner v1']` is the BRC-100 wallet protocol, a security level and a name, under which the controller key is derived.
+The controller key, in field 6 of every state, names who controls the passport and locks each state. Every later state carries the control linkage, the scalar proving your identity key derived it ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 6).
 
 | Function | Takes | Returns |
 |---|---|---|
-| `ownerKeyFor(passportId, wallet)` | The passport and a BRC-100 wallet | The controller key, derived for `[1, 'dpp owner v1']` with the passport identifier as key identifier |
-| `revealOwnerLinkage(passportId, wallet, verifierIdentityKey)`, then `decryptOwnerLinkage(revelation, wallet)` | The same wallet, with `verifierIdentityKey` set to the wallet's own identity key, so it reveals the linkage to itself | The control linkage, 64 hex characters, for every state after the genesis |
+| `ownerKeyFor(passportId, wallet)` | The passport and a BRC-100 wallet | The controller key, derived under the BRC-100 protocol `[1, 'dpp owner v1']` (a security level and a name) with the passport identifier as key identifier |
+| `revealOwnerLinkage(passportId, wallet, verifierIdentityKey)`, then `decryptOwnerLinkage(revelation, wallet)` | The same wallet, with `verifierIdentityKey` set to the wallet's own identity key, so it reveals the linkage to itself | The control linkage, 64 hex characters |
 | `ownerBlobHash(ciphertext)` | The encrypted owner tier as bytes | The hash a state carries |
 | `completeState(data, actorWallet, publisherWallet)` | The state's fields, and the wallets that sign as actor and as publisher | The signed state |
 | `buildLockingScript(state, lockKey)` | The signed state and the key that locks it | The output's `LockingScript` |
@@ -276,7 +274,7 @@ The controller key is the key in field 6 of every state: it names who controls t
 | `signLifecycleClaim(claim, signer)` | An unsigned claim with exactly `claimFormat`, `passportId`, `recordId`, `eventType`, `timestamp`, `issuer`, `issuerKeyId`, `profile` and `profile_version` (plus `issuerKeyDid` when the issuer is not a `did:key`), and the issuer's BRC-100 wallet; [add a claim](add-a-claim.md) explains each field | The signed claim; it throws on an unknown field or a signer that is not the issuer's key |
 | `verifyLifecycleClaim(claim, { passportId, recordId })` | A signed claim and what it should be about | Its signature and subject findings |
 | `lifecycleClaimDigest(claim)` | A signed claim | The digest an anchor commits to |
-| `buildAttestationAnchor(metadata, signer)` | All eight metadata fields, as text: `digest` (the claim's digest), `attestationId` (`urn:sha256:` and that digest), `issuer` (the claim's issuer), `subject` (its `passportId`), `attestationType` (its `eventType`), `representation` (`LIFECYCLE_REPRESENTATION`), `mediaType` (`LIFECYCLE_MEDIA_TYPE`) and `anchoredBy` (the anchoring service's identity key); and that service's signer | The anchor's `LockingScript`. It throws `anchor metadata must be text` when a field is missing, and `signer does not match anchoredBy` when the signer holds another key |
+| `buildAttestationAnchor(metadata, signer)` | All eight metadata fields, as text: `digest` (the claim's digest), `attestationId` (`urn:sha256:` and that digest), the claim's `issuer`, `subject` (its `passportId`), `attestationType` (its `eventType`), `representation` (`LIFECYCLE_REPRESENTATION`), `mediaType` (`LIFECYCLE_MEDIA_TYPE`) and `anchoredBy` (the anchoring service's identity key); and that service's signer | The anchor's `LockingScript`; it throws `anchor metadata must be text` for a missing field and `signer does not match anchoredBy` when the signer holds another key |
 | `inspectAttestationAnchor(script)` | An anchor output's script | Its metadata, key derivation and signature findings |
 
 **Publisher policy and evidence packages**
@@ -293,7 +291,7 @@ The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/
 
 ## The standard's schemas
 
-The package also exports `@bsv/dpp-core/schemas/*`: the standard's JSON schemas, copied byte for byte. A consumer can validate a verification report, capability document or evidence package without a repository checkout. Save this as `schema-id.mjs`:
+To validate a verification report, capability document or evidence package without a repository checkout, import the standard's JSON schemas from `@bsv/dpp-core/schemas/*`, copied byte for byte. Save this as `schema-id.mjs`:
 
 ```js
 import { createRequire } from 'node:module'
@@ -306,8 +304,8 @@ console.log(schema.$id)
 
 ## Limits
 
-- The report does not check a state's `payload_public` against its declared profile; check it with the profiles package, as above.
-- A reader cannot find the registry that holds a passport's claims from the passport or its anchors; it learns the registry from the publisher.
+- The report does not check a state's `payload_public`, the product data it carries on chain, against its declared profile. Check it with [the profiles package](dpp-profiles.md#check-a-payload-against-its-profile), or in a checkout with `node examples/sample-payload.mjs --check <profile@version> <file>`.
+- Registries do not exchange claims, and no passport state, anchor or capability document names the registry that holds a claim. Learn it from the passport's publisher ([the registry guide](../implement/roles/registry.md#the-minimum-a-registry-serves)).
 - Identity is at Ring 0: a key identifies a party, and only the platform account vouches for who holds it. Nothing yet binds a key to a legal entity or certifies a party's role ([identity and authority](../learn/identity-and-authority.md)).
 
 [Known limitations](../operate/limitations.md) collects the other open gaps of the reference services.

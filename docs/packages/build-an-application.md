@@ -1,6 +1,6 @@
 # Build an application with the packages
 
-This page takes you from an empty checkout to a first passport you have written yourself: a demonstration passport with an issue and an update, written through your own index with a funded wallet, then read back and checked. Use it if you are adding passports to an application or building a platform, because it also shows which package call does each step; to only look at a passport, use the [quick start](../quick-start.md), and to see one written with no setup, use the [hosted application](../deployment.md), where anyone can sign up and issue for its sample brands.
+Use this page to add passports to an application or build a platform: from an empty checkout, you issue and update a demonstration passport through your own index and a funded wallet, then read it back and check it. To only look at a passport, use the [quick start](../quick-start.md). To see one written with no setup, use the [hosted application](../deployment.md), where anyone can sign up and issue for its sample brands.
 
 ## What you are building
 
@@ -10,46 +10,38 @@ This page takes you from an empty checkout to a first passport you have written 
 | Writer | Issues a passport and writes each later state | To publish passports |
 | Index | Admits states and answers lookups | Yours for writing; the hosted one for reading |
 | Wallet | Holds the keys, signs, funds and broadcasts | For writing and anchoring |
-| Journal | Your application's record of every operation, so a retry continues instead of repeating | For writing |
+| Journal | Your record of every operation, so a retry continues instead of repeating | For writing |
 | Issuer and registry | Sign a lifecycle claim, store it and anchor it | Only for claims |
 
-[Words you will meet](../README.md#words-you-will-meet) defines passport identifier, state, index, publisher key, registry, anchor, wallet and proof. This page defines every other term where it first appears.
-
-You write record version 2 under `managed-custody@1`, the custody profile the current release selects. Version 1 lineages still verify, and [custody](../learn/custody.md) explains the difference.
-
-The steps run one program, `examples/write-passport-v2.mjs`, from the checkout. It issues a passport and updates it, and section 3 names the function of that file that does each part. Every code block says whether it is a whole file you can save and run, or a fragment of that example.
+[Words you will meet](../README.md#words-you-will-meet) defines the core terms; this page defines the rest as they appear. You write record version 2 under `managed-custody@1`, the custody profile the current release selects. Version 1 lineages still verify ([custody](../learn/custody.md) explains the difference).
 
 ## Before you start
 
 | You need | Why | How to get it or check it |
 |---|---|---|
 | Node 22 or later | Everything here is ECMAScript modules | `node --version` prints `v22` or higher |
-| A built checkout of the repository | Your own index builds from it, and the examples run from it | `git clone https://github.com/bsv-blockchain/dpp.git`, then `cd dpp`, `npm ci` and `npm run build` ([source access](README.md#source-access)). Run every command below from this directory |
-| Docker with Compose | Runs your own index and its database | `docker compose version` |
-| A BRC-100 wallet (a wallet that answers the standard BRC-100 interface), unlocked on this machine and funded | Signs and sends every state | See "Fund the wallet" below |
-| A WhatsOnChain API key | Your index asks WhatsOnChain for block headers each time it admits a state, and anonymous access allows only a few requests a second | Get one from WhatsOnChain; you put it in the index's settings in step 2 |
-| A passport identifier under GS1 prefix 952, on a host you control | It is written into every state and cannot change afterwards | See "Make an identifier" below |
-| Two secrets for your index, a submit token and a callback token | The index refuses writes and proofs without them | Step 2 has you generate them |
+| A built checkout of the repository | Builds your index and runs the examples | `git clone https://github.com/bsv-blockchain/dpp.git`, then `cd dpp`, `npm ci` and `npm run build` ([source access](README.md#source-access)). Run every command below from this directory |
+| Docker with Compose | Runs your index and its database | `docker compose version` |
+| A wallet that answers the BRC-100 interface, unlocked on this machine and funded | Signs and sends every state | "Fund the wallet", below |
+| A WhatsOnChain API key | Your index's source of block headers. Anonymous access allows only a few requests a second | From WhatsOnChain. It goes in your index's settings in step 2 |
+| A passport identifier under GS1 prefix 952, on a host you control | It is written into every state and cannot change afterwards | "Make an identifier", below |
+| Two secrets for your index, a submit token and a callback token | The index refuses writes and proofs without them | Generated in step 2 |
 
-To build your own application beside the checkout, install the packages at exact versions. They are published under npm's `next` tag, so an install without a version does not give you these:
+Commands on this page use the packages the checkout links. In your own application, install these exact versions, so an upgrade is your choice:
 
 ```sh
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/sdk@2.8.10
 ```
 
-The checkout already links these packages, so the commands on this page need no install of their own.
-
 ### Fund the wallet
 
-Every live write is a real transaction on BSV mainnet, the live network. It pays a miner fee and it is permanent. The programme runs no test network, and the example says so in its first line.
+Put at least 1,000 satoshis in the wallet through its own receive flow, so a different fee rate or change handling cannot stop a run halfway. Every live write is a real, permanent transaction on BSV mainnet, the live network, and pays a miner fee, as the example's first line warns. Its two states, about one kilobyte each, cost a little over 200 satoshis at the `@bsv/wallet-toolbox` default of 100 satoshis per kilobyte, and one satoshi stays in the passport's current output. [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) says which wallets work.
 
-Each state is about one kilobyte. At 100 satoshis per kilobyte, the default fee rate of `@bsv/wallet-toolbox`, the two states of the example cost a little over 200 satoshis in fees together, and one satoshi stays in the passport's current output. Put at least 1,000 satoshis in the wallet, through the wallet's own receive flow, so a change in fee rate or in the wallet's change handling cannot stop a run halfway. Your wallet's rate may differ.
-
-[Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) says which wallets work. On a developer machine that is a wallet application such as BSV Desktop, running and unlocked. The example does not choose a network: it writes to whichever chain your wallet is on, and your index's `NETWORK` setting must be the same chain. A wallet on the test network with an index started with `NETWORK=test` should rehearse the same run without real money, but the example has not been run that way.
+The programme runs no test network, and the example writes to whichever chain your wallet is on. A test-network wallet with an index on `NETWORK=test` should rehearse the run without real money, but the example has not been run that way.
 
 ### Make an identifier
 
-A passport identifier is the product's web address, `https://<host>/01/<GTIN>/21/<serial>`. Until you hold GTINs of your own, use the GS1 demonstration prefix 952, which GS1 never licenses, and a host you control ([identifiers](../identifiers.md) explains each part). This builds one; replace `passports.example.com` with your host and `DEMO0001` with a serial you have not used:
+A passport identifier has the form `https://<host>/01/<GTIN>/21/<serial>` ([identifiers](../identifiers.md) explains each part). Until you hold your own GTINs, use the GS1 demonstration prefix 952, which GS1 never licenses, on a host you control. Replace `passports.example.com` with your host and `DEMO0001` with an unused serial:
 
 ```sh
 node --input-type=module <<'JS'
@@ -59,11 +51,11 @@ console.log(buildGs1DigitalLink('passports.example.com', data + gs1CheckDigit(da
 JS
 ```
 
-It prints `https://passports.example.com/01/09521234567899/21/DEMO0001`. Never use a GTIN you did not allocate yourself: a state published under someone else's GTIN cannot be withdrawn. The example refuses any identifier outside prefix 952 on a live run.
+It prints `https://passports.example.com/01/09521234567899/21/DEMO0001`. Never use a GTIN you did not allocate yourself: a state published under someone else's cannot be withdrawn. On a live run the example refuses any identifier outside prefix 952.
 
 ## 1. Read a passport
 
-Reading comes first because you will use the same reader to check what you write. A reader asks an index for a passport's states, rebuilds the history and verifies it. Save this as `read-passport.mjs` in the checkout root and run `node read-passport.mjs`. With no settings it reads a version 1 demonstration passport from the [hosted reference](../deployment.md#the-hosted-reference), which serves lookups to anyone:
+Save this as `read-passport.mjs` in the checkout root and run `node read-passport.mjs`. With no settings it reads a version 1 demonstration passport from the [hosted reference](../deployment.md#the-hosted-reference), which serves lookups to anyone. Later it checks what you write.
 
 ```js
 import { Beef, WhatsOnChain } from '@bsv/sdk'
@@ -114,9 +106,9 @@ const report = await verifyPassportEvidence(
 for (const check of report.checks) console.log(check.name, check.status, check.reasonCode ?? '')
 ```
 
-BEEF (Background Evaluation Extended Format) is the byte format in which an index and a wallet exchange a transaction together with the proofs of its ancestors. `Beef.fromBinary` reads it, and `chainFromBeef` puts a passport's states in order, oldest first.
+BEEF (Background Evaluation Extended Format) is the byte format an index and a wallet use to exchange a transaction with its ancestors' proofs. `Beef.fromBinary` reads it, and `chainFromBeef` orders a passport's states, oldest first.
 
-It prints one line per check and takes about four seconds. The first five lines read `pass`, and so do `subjectBinding` and `evidenceAvailability`:
+In about four seconds it prints one line per check. These five read `pass`, as do `subjectBinding` and `evidenceAvailability`:
 
 ```
 recordEncoding pass
@@ -126,19 +118,19 @@ linkage pass
 inclusion pass
 ```
 
-The claim checks read `unknown` with `no-evidence`, and `issuerAuthority` reads `unknown` with `policy-missing`, because this passport carries no claim. If `inclusion` reads `unknown` with `header-source-unavailable`, the header source refused a question: wait a few seconds and run it again, or put `WOC_API_KEY=<your key>` in front of the command. The paced tracker is what keeps a reader under that limit, since the report asks about every state's block.
+This passport carries no claim, so the claim checks read `unknown` with `no-evidence`, and `issuerAuthority` reads `unknown` with `policy-missing`. If `inclusion` reads `unknown` with `header-source-unavailable`, the header source refused a question: retry after a few seconds, or put `WOC_API_KEY=<your key>` in front of the command.
 
-The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason, and [reading the report](../learn/evidence-and-freshness.md) explains them. `examples/verify-passport.mjs` is the same reader with every option, and the [reader guide](../implement/roles/passport-reader.md) holds the rules. To add the passport's claims, their anchors, a check for a later state and the parties you accept, see [gather a passport's evidence](dpp-core.md#gather-a-passports-evidence).
+The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason ([reading the report](../learn/evidence-and-freshness.md)). `examples/verify-passport.mjs` is the same reader with every option, the [reader guide](../implement/roles/passport-reader.md) holds the rules, and [gather a passport's evidence](dpp-core.md#gather-a-passports-evidence) adds claims, their anchors, a check for a later state and the parties you accept.
 
 ## 2. Run your own index
 
-The hosted index cannot take your writes. It admits only states countersigned by the two publisher keys its own policy names, both run by the programme, and its `POST /submit` and `POST /arc-ingest` need tokens that belong to its operator and are not handed out ([what is open and what needs a token](../deployment.md#what-is-open-and-what-needs-a-token)). To publish a passport you run an index of your own.
+To publish a passport, run your own index. The hosted one admits only states countersigned by its policy's two publisher keys, both run by the programme, and does not hand out the tokens for its `POST /submit` and `POST /arc-ingest` ([what is open and what needs a token](../deployment.md#what-is-open-and-what-needs-a-token)).
 
-A passport written to your index is found there and nowhere else. The hosted index does not hold it, and the check at `dpp.bsvb.net/verify` reads only identifiers under its own host and `id.gs1.org`, so read your passport back with the reader above. Records reach another index only if that index's operator names yours as a peer ([federation](../operate/federation.md)).
+What you write is found only on your index, so read it back with your own reader. The hosted index does not hold it, and the check at `dpp.bsvb.net/verify` reads only identifiers under its own host and `id.gs1.org`. Another index gets your records only if its operator names yours as a peer ([federation](../operate/federation.md)).
 
 ### 2.1 Find your wallet's identity key
 
-The index admits only states countersigned by a publisher key you name. In this example the wallet signs as publisher, so the key is the wallet's identity key. Save this as `identity-key.mjs` in the checkout root and run `node identity-key.mjs` with the wallet unlocked; the wallet may ask you to approve the program first.
+Your index admits only states countersigned by a publisher key you name. Here the wallet signs as publisher, so name its identity key. With the wallet unlocked, save this as `identity-key.mjs` in the checkout root and run `node identity-key.mjs`. Approve the program if the wallet asks.
 
 ```js
 import { WalletClient } from '@bsv/sdk'
@@ -148,19 +140,17 @@ const { publicKey } = await wallet.getPublicKey({ identityKey: true })
 console.log(publicKey)
 ```
 
-It prints 66 hexadecimal characters. `localhost` is the originator, the hostname your wallet knows the program by. In Node, `@bsv/sdk` 2.8.10 finds a local wallet only when it is given an originator, and without one it reports `No wallet available over any communication substrate` even while a wallet is running.
+It prints 66 hexadecimal characters. `localhost` is the originator, the hostname your wallet knows the program by. In Node, `@bsv/sdk` 2.8.10 needs an originator to find a local wallet, and without one reports no wallet even while one is running.
 
 ### 2.2 Create the settings file and two secrets
 
-From the checkout root:
+If `deploy/operator.env` already exists, edit it instead of overwriting it. The two secrets must differ.
 
 ```sh
 cp deploy/operator.env.example deploy/operator.env
 openssl rand -hex 32
 openssl rand -hex 32
 ```
-
-If `deploy/operator.env` already exists, edit it instead of overwriting it. Keep the two secrets for the next step; they must differ.
 
 ### 2.3 Fill in the settings
 
@@ -169,14 +159,14 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | Setting | Value | Why |
 |---|---|---|
 | `SERVICE_IDENTITY_KEY` | The 66 characters from 2.1 | The publisher key the index admits. It is a public key; leave `SERVER_PRIVATE_KEY` empty |
-| `SUBMIT_TOKEN` | The first secret | Guards `POST /submit` and `POST /retract`. The example sends it as `--submit-token`. Compose refuses to start without it |
-| `ARC_CALLBACK_TOKEN` | The second secret | Guards `POST /arc-ingest`, where a writer pushes the merkle path of a mined state. The example sends it as `--callback-token`. Compose refuses to start without it |
+| `SUBMIT_TOKEN` | The first secret | Guards `POST /submit` and `POST /retract`. Compose will not start without it |
+| `ARC_CALLBACK_TOKEN` | The second secret | Guards `POST /arc-ingest`, where a writer pushes a mined state's merkle path. Compose will not start without it |
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
-| `NETWORK` | `main`, the default | The chain the index checks headers on. It must be the chain your wallet is on |
+| `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects `managed-custody@1`: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
-`SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys, or to retire one, give the index a signed publisher policy instead ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run a service](../operate/README.md) explains the other settings.
+`SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run a service](../operate/README.md) explains the other settings.
 
 ### 2.4 Start the index
 
@@ -185,11 +175,9 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --buil
 curl --fail http://localhost:8080/health
 ```
 
-The first run builds the image, so it takes longer than later ones. Your index's address is `http://localhost:8080`, or the `OVERLAY_PORT` you set. If `curl` is refused, the index may still be starting; wait a few seconds and run it again, and read the logs as [run a service](../operate/README.md) shows if it stays down.
+Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. The first run builds the image, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run a service](../operate/README.md) shows.
 
 ### 2.5 Confirm it names your key
-
-Run this and check that the key from 2.1 is in the list:
 
 ```sh
 node --input-type=module <<'JS'
@@ -199,20 +187,20 @@ console.log('custody profile:', profiles.find((profile) => profile.kind === 'cus
 JS
 ```
 
-You should see your key under `publisher keys`, and the custody profile `managed-custody` version `1`. If the list is empty or holds another key, the index will refuse every state you send: fix `SERVICE_IDENTITY_KEY`, run the `docker compose ... up -d --build` command again and recheck. The example repeats this check before it builds anything.
+You should see the key from 2.1 under `publisher keys`, and the custody profile `managed-custody` version `1`. If the list is empty or holds another key, the index will refuse every state you send: fix `SERVICE_IDENTITY_KEY`, rerun the `docker compose ... up -d --build` command and check again. The example repeats this check before it builds anything.
 
 ## 3. Write a passport
 
-Every state goes through the same six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md)):
+Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md)):
 
-1. Build the state and its transaction unsent: a transaction the wallet has built and signed but not sent, so it spends nothing yet.
+1. Build the state and its transaction unsent: signed by the wallet but not sent, so it spends nothing yet.
 2. Check it with the reader's own rules.
-3. Announce it to your index with `POST /submit`, and send it only if the index admits it. If the index refuses it, abort the unsent action. If the index cannot be reached, that is not a refusal: send anyway, and announce the same bytes again after the send.
-4. Send it, and report only the network's answer. If the network refuses a state your index admitted, withdraw it from the index with `POST /retract`, behind the same token as `/submit`.
-5. When the wallet has the merkle path, the proof that the transaction is in a block, push it to the index's `POST /arc-ingest`, with that index's own callback token.
+3. Announce it to your index with `POST /submit`. Send it only if the index admits it, and abort the unsent action if the index refuses it. An unreachable index is not a refusal: send anyway, then announce the same bytes again.
+4. Send it, and report only the network's answer. If the network refuses a state your index admitted, withdraw it with `POST /retract`, behind the submit token.
+5. Once the wallet has the merkle path, the proof that the transaction is in a block, push it to the index's `POST /arc-ingest` with that index's own callback token.
 6. Keep the transaction, its BEEF and its proof in your journal for the passport's life.
 
-`examples/write-passport-v2.mjs` does all six for an `ISSUE`, a passport's first state, and then for an `UPDATE`, a later state that changes its data and spends the one before. Run it as a dry run first, then live.
+`examples/write-passport-v2.mjs` does all six for an `ISSUE`, a passport's first state, then an `UPDATE`, a later state that changes its data and spends the one before. Run it dry first, then live.
 
 ### Run the dry run
 
@@ -220,7 +208,7 @@ Every state goes through the same six steps, in this order ([writing lifecycle](
 node examples/write-passport-v2.mjs --dry-run
 ```
 
-A dry run needs no wallet, no funds and no network. A test wallet with fixed keys stands in for yours, the two transactions are built from made-up funding, and an index starts inside the program on a loopback port, with the real index's admission rules except that it does not check block headers. Nothing is broadcast and no hosted service is called. It takes about a second and exits 0. These are the lines to look for; the transaction ids and the port differ each run:
+A dry run needs no wallet, funds or network, broadcasts nothing and calls no hosted service. A test wallet with fixed keys and made-up funding stands in for yours, and an index with the real admission rules, except the block-header check, runs inside the program on a loopback port. It takes about a second and exits 0. Look for these lines; the transaction ids and the port differ each run:
 
 ```
 ok: the index's capability document names this wallet's identity key 034f355bdcb7... as a state publisher, so it can admit what this wallet countersigns.
@@ -236,11 +224,11 @@ ok: the index refuses it too, and says why: control-not-proven, the code a verif
 Every sentence above holds.
 ```
 
-The program then shows a state the record model forbids, an `UPDATE` without its control proof, refused by the writer's own check and by the index. A line starting `FAIL:` means a step did not hold, and the exit code is not 0. The network steps print as what they would do (`Would send`, `Would prove`), and the proofs it pushes to its in-process index are made up, which is the only kind an index with header checks off could take.
+It also shows an `UPDATE` without its control proof, which the record model forbids, refused by the writer's own check and by the index. Network steps print what they would do (`Would send`, `Would prove`). The proofs it pushes are made up, which only an index with header checks off could take. A line starting `FAIL:` means a step did not hold, and the exit code is not 0.
 
 ### Run it live
 
-Before you spend anything, check that the index from step 2 is running and names your key, that the wallet is unlocked and funded, and that you have an identifier you have not written before. Then, from the checkout root:
+Before you spend anything, check that your index is running and names your key, the wallet is unlocked and funded, and the identifier is unused. Then run:
 
 ```sh
 node examples/write-passport-v2.mjs <passportId> http://localhost:8080 \
@@ -254,13 +242,13 @@ node examples/write-passport-v2.mjs <passportId> http://localhost:8080 \
 | `<indexUrl>` | Your own index. Required, and never defaulted to the hosted reference |
 | `--submit-token=<t>` | The index's `SUBMIT_TOKEN`. A 401 or 403 from the index stops the run |
 | `--callback-token=<t>` | The index's `ARC_CALLBACK_TOKEN`, sent as `X-Callback-Token` when a proof is pushed |
-| `--wait-proof=<minutes>` | How long to wait, for each state, for the wallet's merkle path. Default 0. Use 30: a state is proven when a block holds it, which takes about ten minutes on average |
+| `--wait-proof=<minutes>` | How long to wait for each state's merkle path from the wallet. Default 0. Use 30: a state is proven once a block holds it, about ten minutes on average |
 | `--originator=<host>` | The hostname your wallet knows the program by. Default `localhost` |
 | `--journal=<dir>` | Where the journal goes. Default `./dpp-journal` |
 
-A token on a command line stays in your shell history, so use secrets you can replace. The first line the program prints says it spends real satoshis on mainnet. Your wallet may ask you to approve the program, each key protocol it uses (`dpp token v2`, `dpp owner v1` and `dpp owner data v1`) and each transaction, so stay at the machine; a prompt left unanswered stops the run, and the journal records how far it got. With `--wait-proof=30` a full run takes about as long as two blocks, because each state is proven before the next is written.
+A token on a command line stays in your shell history, so use secrets you can replace. Stay at the machine: your wallet may ask you to approve the program, each key protocol it uses (`dpp token v2`, `dpp owner v1` and `dpp owner data v1`) and each transaction. An unanswered prompt stops the run, and the journal records how far it got. With `--wait-proof=30` a run takes about two blocks, because each state is proven before the next is written.
 
-Success is the last line, `Every sentence above holds.`, and an exit code of 0. The journal is in `dpp-journal/`, in a file named for a digest of your identifier. Once both states are mined and their proofs pushed, read your passport back with section 1's reader, with your index and identifier set:
+Success is the last line, `Every sentence above holds.`, and exit code 0. The journal is a file in `dpp-journal/` named for a digest of your identifier. Once both states are mined and their proofs pushed, read the passport back with the section 1 reader:
 
 ```sh
 INDEX_URL=http://localhost:8080 PASSPORT_ID=<passportId> WOC_API_KEY=<your key> node read-passport.mjs
@@ -268,75 +256,75 @@ INDEX_URL=http://localhost:8080 PASSPORT_ID=<passportId> WOC_API_KEY=<your key> 
 
 `inclusion` now reads `pass`. The program's own report reads `unknown` for inclusion, because it runs with header checks off.
 
-If a live run stops, read [when something goes wrong](#when-something-goes-wrong) and the journal before you run again, and never build a state a second time that the journal records as sent.
+If a live run stops, read [when something goes wrong](#when-something-goes-wrong) and the journal before you run again. Never rebuild a state the journal records as sent.
 
 ### How the example works
 
-[How the writer example works](how-the-writer-works.md) takes the example apart one step at a time, for building the same writer into your own application: check before you spend, keys, the owner tier, issue, check, announce and send, prove, keep, update, transfer under managed custody, and retire.
+To build the same writer into your own application, follow [how the writer example works](how-the-writer-works.md): check before you spend, keys, the owner tier, issue, check, announce and send, prove, keep, update, transfer under managed custody, and retire.
 
 ## 4. Sign and anchor a lifecycle claim
 
 A lifecycle claim is a signed statement about a passport, such as a repair or a recycling. It travels on its own track and never spends the passport:
 
-1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`. At Ring 0 a `did:key` is enough. Ring 0 means nobody checks the issuer's real-world identity; the platform vouches for the account ([identity and authority](../learn/identity-and-authority.md)).
+1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`. A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
 2. A registry validates it (`POST /validate` is open on the hosted registry) and, if you run one or hold its write token, stores it.
-3. An anchoring service builds `buildAttestationAnchor` over `lifecycleClaimDigest(claim)` with `attestationId` `urn:sha256:<digest>`, and announces and sends it like a passport state, on topic `tm_attestation`, the index's topic for anchors. An anchor is a small transaction that commits to the claim's exact bytes. The anchoring service is the party whose wallet makes that transaction, and `anchoredBy` names its key.
+3. An anchoring service builds `buildAttestationAnchor` over `lifecycleClaimDigest(claim)` with `attestationId` `urn:sha256:<digest>`, and announces and sends it like a passport state on `tm_attestation`, the index's topic for anchors. The anchor transaction comes from the service's own wallet, and `anchoredBy` names its key.
 
-`examples/lifecycle-v2.mjs` ends with this claim and anchor, `examples/verify-attestation-anchor.mjs` checks one, and the [registry guide](../implement/roles/registry.md) covers running a registry. A reader on another stack learns which registry holds a claim out of band, since an anchor does not name it.
+`examples/lifecycle-v2.mjs` ends with this claim and anchor, `examples/verify-attestation-anchor.mjs` checks one, and the [registry guide](../implement/roles/registry.md) covers running a registry. An anchor does not name its registry, so a reader on another stack learns which registry holds a claim out of band.
 
 ## 5. Keep what you wrote
 
-Record each operation in your journal before you act on it: the state, the unsent transaction, the index's answer, the network's answer and the proof. A retry reads the journal and continues; it never builds a second transaction for the same step. Keep every transaction, BEEF and proof, the owner-tier ciphertext and every acceptance record for the passport's life, because a reader or a replacement index needs them. [Export and recovery](../operate/export-import-recovery.md) covers taking them elsewhere.
+Record each operation in your journal before you act on it: the state, the unsent transaction, the index's answer, the network's answer and the proof. A retry reads the journal and continues, and never builds a second transaction for the same step. Keep every transaction, BEEF and proof, the owner-tier ciphertext and every acceptance record for the passport's life, because a reader or a replacement index needs them. [Export and recovery](../operate/export-import-recovery.md) covers taking them elsewhere.
 
 ## When something goes wrong
 
 | What you see | What it means | What to do |
 |---|---|---|
-| `No wallet available over any communication substrate` | The SDK found no wallet. In Node it needs an originator | Start and unlock the wallet and pass `--originator=<host>`; nothing was built |
+| `No wallet available over any communication substrate` | The SDK found no wallet, even if one is running. In Node it needs an originator | Start and unlock the wallet and pass `--originator=<host>`; nothing was built |
 | The index's publisher keys do not include yours | The index would refuse every state | Fix `SERVICE_IDENTITY_KEY` or the policy and restart the index; the example builds nothing |
 | The index already holds states for the identifier | A second genesis would be a rival record | Use a serial you have not written |
 | HTTP 401 or 403 on `/submit` | The submit token or the address is wrong | Fix it and run again; the example aborts the draft and sends nothing |
-| `X-Admission: tm_dpp=none` | The index refused the state | The draft is aborted; `X-Admission-Refusal` says why, and [when the index refuses a state](#when-the-index-refuses-a-state) says what to do |
-| The index could not be reached | An unreachable index refuses nothing | The state is sent and then announced again, and never rebuilt |
+| `X-Admission: tm_dpp=none` | The index refused the state | The draft is aborted. `X-Admission-Refusal` says why; [when the index refuses a state](#when-the-index-refuses-a-state) says what to do |
+| The index could not be reached | An unreachable index refuses nothing | The state is sent, then announced again, never rebuilt |
 | The wallet answers `sending` | Not yet an answer from the network | Wait for the wallet. Do not rebuild |
-| The network refuses a state the index admitted | The index holds a tip that never existed | `POST /retract` withdraws it, and the example does so |
-| No merkle path yet | Not mined, or the wallet has not attached it | Run with `--wait-proof`, or push it later; readers see the state as pending until then |
+| The network refuses a state the index admitted | The index holds a tip that never existed | `POST /retract` withdraws it, as the example does |
+| No merkle path yet | Not mined, or the wallet has not attached it | Run with `--wait-proof`, or push it later; until then readers see the state as pending |
 | `inclusion` reads `pending` in a report | No proof has reached the index, or the header source could not be asked | Push the proof, and set `WOC_API_KEY` |
 
 ### When the index refuses a state
 
-The index answers a state it refuses with 200, `X-Admission: tm_dpp=none` and nothing admitted, and names the check that failed in `X-Admission-Refusal`, for example `X-Admission-Refusal: tm_dpp=predecessor-not-admitted`. Where a verification report names the same failure, the code is the report's own word. The dry run shows one.
+A refused state gets HTTP 200, `X-Admission: tm_dpp=none` and nothing admitted. `X-Admission-Refusal` names the failed check, for example `X-Admission-Refusal: tm_dpp=predecessor-not-admitted`, using the verification report's own code where the report names the same failure. The dry run shows one.
 
 | Code | What failed | What to do |
 |---|---|---|
 | `decode-failed` | The transaction has no well-formed DPP output, or more than one | Build exactly one DPP output per transaction with `buildLockingScript` |
 | `actor-signature-invalid` | The actor signature does not verify against `actor_identity_key` and `actor_keyID` | Sign with the key and key identifier the state names |
-| `publisher-not-authorised` | The server signature is not from a publisher key the index accepts at the state's own timestamp | Check that your key is listed under `publisherPolicy.publisherKeys` in the index's `GET /capabilities`, and take its window from the operator's signed publisher policy ([tell operators apart](../operate/federation.md#tell-operators-apart)); an index with only `SERVICE_IDENTITY_KEY` has no windows |
-| `link-broken` | A genesis rule or a chain rule does not hold | Run `verifyChain` from `@bsv/dpp-core` over your states and this one: its error names the rule |
+| `publisher-not-authorised` | The server signature is not from a publisher key the index accepts at the state's own timestamp | Check that your key is under `publisherPolicy.publisherKeys` in the index's `GET /capabilities`, and take its window from the operator's signed publisher policy ([tell operators apart](../operate/federation.md#tell-operators-apart)); an index with only `SERVICE_IDENTITY_KEY` has no windows |
+| `link-broken` | A genesis rule or a chain rule does not hold | Run `verifyChain` from `@bsv/dpp-core` over your states and this one; its error names the rule |
 | `control-not-proven` | A version 2 `UPDATE`, `TRANSFER` or `RETIRE` does not prove control of the predecessor | Act as the controller, or carry `control_linkage` |
 | `lineage-retired` | The passport ended with a `RETIRE` | Nothing may follow it |
 | `version-transition-invalid` | The version changed other than by the one upgrade, a version 2 `UPDATE` that spends a version 1 tip | Keep the predecessor's version, or upgrade with that `UPDATE` |
 | `consent-not-proven` | The index runs the owner-signed transfer, and the `TRANSFER`'s actor does not prove it is the previous owner | Act as the previous owner, or carry `owner_linkage` |
 | `acceptance-commitment-absent` | The index runs managed custody, and the version 2 `TRANSFER` has no `authorisation_commitment` | Commit to the acceptance record the custodian keeps |
 | `genesis-spends-passport-output` | A genesis spends a passport state's DPP output | Fund the genesis from other outputs; change from another passport's transaction is fine |
-| `predecessor-not-admitted` | The state does not spend the tip the index holds | Announce the predecessor first, oldest state first, and compare your tip with the one the index's `ls_dpp` lookup returns |
+| `predecessor-not-admitted` | The state does not spend the tip the index holds | Announce the predecessor first, oldest state first, and compare your tip with the index's `ls_dpp` lookup |
 | `predecessor-unavailable` | The state spends the tip, but neither the BEEF nor the index holds the predecessor's bytes | Put the predecessor's transaction in the same BEEF |
 | `lineage-untraceable` | The index cannot trace a version 2 state's lineage back to its genesis | Announce the lineage from its genesis, oldest state first |
 
-An index on an earlier release, or another implementation, may answer `none` without `X-Admission-Refusal`. The reason is then only in its operator's log, so check the two causes you can see yourself, the publisher key and the tip, as the `publisher-not-authorised` and `predecessor-not-admitted` rows say. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes.
+An index on an earlier release, or another implementation, may answer `none` without `X-Admission-Refusal`, leaving the reason only in its operator's log. Then check the two causes you can see, the publisher key and the tip, as the `publisher-not-authorised` and `predecessor-not-admitted` rows say. `tm_dpp=duplicate` is not a refusal: the index already holds those bytes.
 
 ## What is not settled
 
 These are open in the standard, and a writer must not guess them. The [known limitations](../operate/limitations.md) list the rest.
 
-- How the `owner`, `legitimate` and `authority` tiers are each disclosed. One ciphertext reaches whoever holds its key, so a passport that needs more than one audience has no agreed answer yet.
+- How the `owner`, `legitimate` and `authority` tiers are each disclosed. One ciphertext reaches whoever holds its key, so a passport with several audiences has no agreed answer yet.
 - Whether a custodian may write a state for a holder without the holder's request.
 - Which `eventData` properties an `UPDATE` or a `RETIRE` carries.
 - How an acceptance record reaches a reader, since no index or registry serves it yet.
 
 ## Where to go next
 
-To run a second index and exchange records with it, see [federation](../operate/federation.md). To plan the screens and the keys of a whole application, see [what a passport application offers](what-an-application-offers.md). To take a passport's evidence elsewhere, see [export and recovery](../operate/export-import-recovery.md).
+To run a second index and exchange records with it, see [federation](../operate/federation.md). To plan a whole application's screens and keys, see [what a passport application offers](what-an-application-offers.md). To take a passport's evidence elsewhere, see [export and recovery](../operate/export-import-recovery.md).
 
 ## Where each rule lives
 
