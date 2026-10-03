@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-03, the hosted index runs beta.9
+
+- The hosted index at `dpp-overlay.bsvb.net` now runs `@bsv/dpp-overlay-topics@0.4.0-beta.9`, so it answers a `gs1Key` lookup, names the check behind a refusal and serves its signed publisher policy. The hosted reference page names that release, the limitations page drops the row saying the index ran an earlier one and says the hosted check reads only the hosted index, and the versions page keeps the earlier release as its example in the past tense.
+- The GS1 discovery page says that a lookup by GS1 key answers each passport under its own exact identifier, which the reader verifies against that identifier, so it rewrites no subject.
+
 ### 2026-10-03, beta.9 publication
 
 - Publish `@bsv/dpp-overlay-topics@0.4.0-beta.9` under `latest` from `488baaefb5bda535e360fd1c1895124387408816` using GitHub OIDC with provenance, with `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5` already published; `next` stays at the beta.5 set. The public-registry archives match the approved plan. The workflow's final clean install ran before the registry listed the new version, and the same registry checks passed from a clean checkout under a minute later.

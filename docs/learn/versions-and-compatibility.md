@@ -63,7 +63,7 @@ Read it this way:
 
 - **Record versions and index contract.** The protocols must include every record version you write and the `overlay-http` version your client speaks.
 - **Custody.** `managed-custody` with `acceptanceCommitment: required` refuses a version 2 `TRANSFER` without an acceptance commitment. An index that admits version 2 without one declares `record-model-baseline@2` instead.
-- **Implementation.** A service can run an older package release than the current set. The hosted index ran `@bsv/dpp-overlay-topics@0.4.0-beta.3` on 2 October 2026: it reads and writes the same record formats, but it speaks the index contract before this one, so it does not say why it refused a state. Compare what a service advertises, not the release set's name.
+- **Implementation.** A service can run an older package release than the current set. Until 3 October 2026 the hosted index ran `@bsv/dpp-overlay-topics@0.4.0-beta.3`: it read and wrote the same record formats, but it spoke an earlier index contract, so it did not say why it refused a state or answer a GS1 key lookup. Compare what a service advertises, not the release set's name.
 - **Publisher keys.** Before you write, check that `publisherPolicy.publisherKeys` names the key your states are countersigned with.
 
 A reachable server can still lack the history, export or profile operation your client needs. [Contracts](../reference/contracts.md) describes the capability request and the operations behind it.
