@@ -54,7 +54,7 @@ The battery and textile profiles map their fields to what the EU Batteries Regul
 
 ## Where things stand
 
-This is a working draft, before version 1.0. The beta.7 packages, under the Apache 2.0 licence, were published to npm on 2 October 2026 under the `latest` tag, so a plain install gets them, and the beta.8 overlay package, with which an index finds a passport from a GTIN and serial, followed the same day. Pin exact versions all the same. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open, and [known limitations](operate/limitations.md) lists what does not work yet.
+This is a working draft, before version 1.0. The beta.7 packages, under the Apache 2.0 licence, were published to npm on 2 October 2026 under the `latest` tag, so a plain install gets them, and the beta.8 overlay package, with which an index finds a passport from a GTIN and serial, followed the same day; the beta.9 overlay package, with which an index serves its signed publisher policy, is pending publication. Pin exact versions all the same. [Release status](reference/release-sets.md) and [where things stand](start/status.md) say what is published and what is still open, and [known limitations](operate/limitations.md) lists what does not work yet.
 
 ## Everything else
 

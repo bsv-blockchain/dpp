@@ -1,7 +1,7 @@
 {
   "description": "Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository and all four workspace packages use the Apache License, Version 2.0 (Apache-2.0; see LICENSE). Third-party dependencies and artefacts retain their own terms and notices.",
   "repositoryLicence": "Apache-2.0",
-  "pinnedAt": "2026-10-02",
+  "pinnedAt": "2026-10-03",
   "components": [
     {
       "name": "@bsv/dpp-core",
@@ -31,7 +31,7 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0-beta.8",
+      "version": "0.4.0-beta.9",
       "licence": "Apache-2.0",
       "dependencies": [
         {

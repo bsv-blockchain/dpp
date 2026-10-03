@@ -106,7 +106,7 @@ const report = await verifyPassportEvidence(
 for (const check of report.checks) console.log(check.name, check.status, check.reasonCode ?? '')
 ```
 
-BEEF (Background Evaluation Extended Format) is the byte format an index and a wallet use to exchange a transaction with its ancestors' proofs. `Beef.fromBinary` reads it, and `chainFromBeef` orders a passport's states, oldest first.
+BEEF (Background Evaluation Extended Format) is the byte format an index and a wallet use to exchange a transaction with its ancestors' proofs. `Beef.fromBinary` reads it, and `chainFromBeef` orders a passport's states, oldest first. The reader takes the index's publisher keys from `GET /capabilities` on the index's word; to check them and their windows yourself, fetch the signed chain from `GET /publisher-policy` and pass `publisherPolicy: { chain, operatorIdentityKeys }` in place of `publisherKeys`, with operator keys you got from the operator ([tell operators apart](../operate/federation.md#tell-operators-apart)).
 
 In about four seconds it prints one line per check. These five read `pass`, as do `subjectBinding` and `evidenceAvailability`:
 

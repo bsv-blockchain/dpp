@@ -2,6 +2,8 @@
 
 The one package that changed in `dpp-release-2026-10-5`, `@bsv/dpp-overlay-topics@0.4.0-beta.8`, was published to the public npm registry on **2 October 2026**, using GitHub OIDC trusted publishing with provenance, under the `latest` tag. The other three, `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5`, were already published, and their archives matched the approved bytes. With it an index finds a passport from a GS1 key without a host. Every downloaded archive matched the approved bytes, and the workflow's final public-registry consumer check passed.
 
+The set is now superseded by a later one, which [release sets](release-sets.md) names; this receipt stays the record of what beta.8 published.
+
 ## Exact source and approval
 
 | Evidence | Recorded value |
