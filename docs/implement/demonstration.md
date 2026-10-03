@@ -60,7 +60,7 @@ These are open questions in the standard and the reference deployment, not fault
 
 - **Proofs for your states.** A state you write and the reference admits reads `pending` there until its merkle path reaches the reference's `POST /arc-ingest`, which needs the reference's callback token. No one is named yet to deliver a proof to an operator that learned a state by synchronisation ([federation](../operate/federation.md#when-a-record-does-not-arrive)).
 - **Byte-identical evidence.** `two-operators` passes when both operators "serve byte-identical evidence for the same lineage", but the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) does not fix the form of a lookup's BEEF: one operator can wrap an unproven state as Atomic BEEF (a BEEF framed around one subject transaction) and another not, and a proven state can arrive with or without its ancestors. Keep both answers, compare the transactions and merkle paths inside them, and report a byte difference with this explanation.
-- **The hosted page check.** The reference application's check at `https://dpp.bsvb.net/verify` reads only identifiers under `dpp.bsvb.net` and `id.gs1.org` ([hosted reference](../deployment.md#the-hosted-reference)). Verify your passports with a reader instead.
+- **The hosted page check.** The reference application's check at `https://dpp.bsvb.net/verify` finds only what the hosted index holds ([hosted reference](../deployment.md#the-hosted-reference)). Verify your passports with a reader of your own until the hosted index pulls from yours.
 
 ## What completion records
 

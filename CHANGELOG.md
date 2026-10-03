@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-03, the hosted check reads any host
+
+- The hosted reference page, the GS1 discovery and demonstration guides and the writer walkthrough say that the check at `dpp.bsvb.net/verify` now looks an identifier up exactly as given under any host and accepts any publisher key the hosted index names, and that it finds only what the hosted index holds. They no longer say it reads only identifiers under its own hosts.
+
 ### 2026-10-03, beta.9 release candidate
 
 - Prepare `@bsv/dpp-overlay-topics@0.4.0-beta.9` in `dpp-release-2026-10-6`, which publishes to `latest`, beside the unchanged `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5`. Publication was pending at preparation.
