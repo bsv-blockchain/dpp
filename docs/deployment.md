@@ -6,12 +6,12 @@ The programme hosts one instance of each service, so you can look up and verify 
 
 ## Services
 
-Each service's `/capabilities` answer is authoritative; the table records what they ran on 30 September 2026.
+Each service's `/capabilities` answer is authoritative; the table records what the index ran on 3 October 2026 and the others on 30 September 2026.
 
 | Host | Serves | Runs |
 |---|---|---|
 | `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.2 packages |
-| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp` and `tm_attestation`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay-topics@0.4.0-beta.9`, `single-operator@1` under publisher policy version 1, pulling from one peer run under the same administration |
+| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay-topics@0.4.0-beta.9`, `single-operator@1` under publisher policy version 1, pulling all three topics from one peer run under the same administration |
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
 
@@ -39,15 +39,17 @@ None of the three runs a GS1 resolver. No host serves `/.well-known/gs1resolver`
 
 The application's check at `https://dpp.bsvb.net/verify` looks an identifier up in the hosted index exactly as it is given, under any host, and accepts a state countersigned by any publisher key that index names. Given a path without a host, such as `01/<gtin>/21/<serial>`, or an address under one of its own hosts that it does not find, it tries the same path under a fixed list of hosts it knows, `dpp.bsvb.net` and `id.gs1.org` among them. It checks the one passport it finds, and when more than one host holds one it names them all and asks for the full address. A passport under a host not on that list needs its full address. It finds only what the hosted index holds, so a passport written to your own index reads as not found there until the hosted index pulls from yours ([join the hosted reference](#join-the-hosted-reference)). Check such a passport with a reader of your own, as step 1 of [build an application](packages/build-an-application.md) shows. The page reads no registry, so it reports lifecycle claims as not checked; the anchor proof page checks claims.
 
+The registry's capability document does not name its anchoring key. Every current anchor it writes names `036564081bb854af4d049245f775f48495a5c4ffae830db5d3f1dbc05f9bf403e2` as `anchoredBy`, so give that key as an anchoring service you accept when you check its claims, as `--anchoring-services` does for `examples/check-registry.mjs`. Without it, a verifier cannot establish which service wrote the anchor.
+
 Every other known limit, of the hosted services and of the standard, is on [known limitations](operate/limitations.md).
 
 ## Overlays running now
 
-The index below serves `tm_dpp` and `tm_attestation`. Records move between two indexes only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)).
+The index below serves `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, which holds anchors in the format before the current one. Records move between two indexes only in the direction a node pulls, from the peers its operator names ([which way records flow](operate/federation.md#which-way-records-flow)).
 
-| Index | Operator | Pulls from | Admits states from | Runs |
+| Index | Operator | Pulls from | Admits | Runs |
 |---|---|---|---|---|
-| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | One peer run under the same administration | `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application; `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, a second application under the same administration | `@bsv/dpp-overlay-topics@0.4.0-beta.3`, `single-operator@1` |
+| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | One peer run under the same administration, all three topics | States from `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application, and `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, a second application under the same administration; anchors from any anchoring service | `@bsv/dpp-overlay-topics@0.4.0-beta.9`, `single-operator@1` |
 
 Its one peer is run by the same administration, so the exchange between them demonstrates the mechanism, not separately administered operation.
 

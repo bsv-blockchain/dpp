@@ -24,6 +24,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 | History and export snapshots expire after ten minutes | A paging client that pauses longer must start again | Page promptly; a cursor is also lost when the process restarts or another replica answers |
 | `GET /evidence-package` carries at most the newest 500 states | Longer histories are cut short in that route | Use `GET /evidence-export` ([export, import and recovery](export-import-recovery.md)) |
 | `CHAIN_TRACKER=scripts-only` skips header checks | The index would admit unproven ancestry | Use it for local development only |
+| The signing example writes only a first, single-operator version | A first version naming two or more operators, and every later version of a chain, has no ready-made tool | Sign `policySigningPreimage(policy)` from `@bsv/dpp-core` with each key the version needs, and check the chain with `verifyPolicyChain` as [federation](federation.md#3-sign-a-publisher-policy) step 3 does |
 | A refused announcement that spends a tip still marks that tip spent in the engine | Lookups and history answer as before, but synchronising peers are no longer offered that tip | Announce a valid next state; peers are then offered it with its lineage |
 
 ## Synchronisation
@@ -36,6 +37,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 | An output left behind is not asked for again | After five rounds the checkpoint moves past it | Fix the cause, then move the checkpoint back ([when a record does not arrive](federation.md#when-a-record-does-not-arrive)) |
 | Why an output did not arrive is only in the receiving node's log | A peer cannot ask why | Read the receiving node's log |
 | Synchronisation covers current outputs and their lineages | Separately retained evidence does not travel | Use [exports](export-import-recovery.md) |
+| Peers hold the same records only under the same admission settings | Each index admits what it pulls under its own publisher policy and `ANCHOR_SERVICE_KEYS`, and pulls `tm_uora_dpp` only with `SYNC_LEGACY=1`, so a peer with narrower settings holds less | Match the settings, then [confirm both hold the same records](federation.md#7-confirm-both-hold-the-same-records) |
 | Lookup BEEF differs in form by how a state arrived | Comparing two operators' answers byte for byte fails even when they hold the same states | Compare transactions and their proofs, not the BEEF bytes |
 
 ## Proofs and retraction
@@ -52,7 +54,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 |---|---|---|
 | The export signing key is not in the capability document | A reader checking an export has no published key to compare with | The [hosted reference](../deployment.md#the-hosted-reference) lists its key; ask other operators for theirs |
 | An operator's name is bound to no key | Two documents can carry the same name | Tell operators apart by their keys ([federation](federation.md#tell-operators-apart)) |
-| A registry has two capability documents | The capabilities schema and the registry contract define different documents, and which one `GET /capabilities` answers with is not settled | Serve the schema's document to conform ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)) |
+| A registry has two capability documents | The capabilities schema and the registry contract define different documents, which name a registry's anchoring key in different places, and which one `GET /capabilities` answers with is not settled | Serve the schema's document to conform, with your anchoring key under `publisherPolicy.anchoringServices`; a verifier reads that or the contract document's `anchoredBy` ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)) |
 
 ## Finding records
 
@@ -84,6 +86,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 |---|---|---|
 | Writing needs the operator's tokens | You cannot announce to the hosted index or store on the hosted registry | Run your own index, or [contact the programme](../start/choose-your-path.md#contact-the-programme) |
 | The check at `dpp.bsvb.net/verify` reads only the hosted index | A passport written to your own index reads as not found there until the hosted index pulls from yours | Verify with your own reader ([quick start](../quick-start.md#read-a-live-passport)) |
+| The hosted registry does not name its anchoring key | A verifier cannot take the key its anchors are written by from its capability document | Use the key [the hosted reference](../deployment.md#where-the-hosted-services-fall-short) gives |
 | Some older states are held without their merkle paths | A peer synchronising from the hosted index leaves those tips behind until their proofs are supplied | Take each one from the chain yourself ([take a record from the chain](federation.md#take-a-record-from-the-chain)); see [overlays running now](../deployment.md#overlays-running-now) |
 
 ## Open questions in the standard

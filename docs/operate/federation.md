@@ -16,6 +16,8 @@ Use this page to make one index hold another's records: a second index of yours,
 
 An index only pulls. Each round it asks the peers its own `SYNC_PEERS` names what they hold, and admits only what passes its own topic managers and publisher policy. Naming a peer gives that peer nothing, so records flow both ways only when each operator names the other.
 
+Each index pulls `tm_dpp` and `tm_attestation`, and the historical `tm_uora_dpp` only when `SYNC_LEGACY=1`. Two indexes that pull from each other hold the same records only when their settings admit the same things: the publisher policy for passport states, `ANCHOR_SERVICE_KEYS` for anchors (or the policy's anchor-publisher keys when it covers `tm_attestation`), and `SYNC_LEGACY` for the historical topic. An index that names fewer anchoring services than its peer refuses the anchors the peer took from the others, and the two differ for as long as that holds.
+
 Indexes do not find each other. The [services specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) section 1 asks a public index to advertise itself through SHIP and SLAP, the BSV overlay protocols that tell a client which hosts carry a topic or answer a lookup service, but the overlay package does not do that yet.
 
 ## Part one: set up
@@ -47,6 +49,8 @@ Edit `deploy/operator-b.env`:
 | `SYNC_PEERS` | `http://host.docker.internal:8080` when both indexes run on this machine. On separate hosts, the first index's base URL as the second container reaches it. |
 | `WOC_API_KEY` | Your WhatsOnChain API key. |
 | `ACCEPTANCE_COMMITMENT` | The first index's value, `required` in the example file. A stricter one refuses version 2 transfers the first admitted. |
+| `ANCHOR_SERVICE_KEYS` | The first index's value, so the second admits the anchors the first admitted. Empty admits a well-formed anchor from any anchoring service, as the hosted reference does. |
+| `SYNC_LEGACY` | `1` to pull the historical `tm_uora_dpp` topic as well, which the hosted reference holds. Empty pulls only `tm_dpp` and `tm_attestation`. |
 | `EXPORT_SIGNING_KEY`, `EXPORT_TOKEN` | Optional. If set, use the second index's own values, never the first's ([export, import and recovery](export-import-recovery.md)). |
 
 `SYNC_PEERS` is the complete list of peers, never the index's own address. It is read at start, so a change applies after the next `up -d`.
@@ -151,6 +155,58 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 2. Each publisher policy names the other's state-publisher keys, with windows that cover the states to exchange.
 3. Each reads the other's `GET /capabilities`: `synchronisation.discovery` is `static-peers` and `synchronisation.peers` lists its own URL.
 4. Each writes a state and looks it up on the other after the next round.
+
+### 7. Confirm both hold the same records
+
+Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. Save this as `compare-indexes.mjs`:
+
+```js
+// Compare what two indexes hold, topic by topic: node compare-indexes.mjs <first index URL> <second index URL>
+const [first, second] = process.argv.slice(2)
+if (!first || !second) throw new Error('usage: node compare-indexes.mjs <first index URL> <second index URL>')
+
+// Every output an index lists for a topic, as txid.outputIndex, or null when it does not serve the topic.
+async function holdings(index, topic) {
+  const held = new Set()
+  let since = 0
+  for (;;) {
+    const answer = await fetch(`${index}/requestSyncResponse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-BSV-Topic': topic },
+      body: JSON.stringify({ version: 1, since }),
+    })
+    if (answer.status === 400) return null
+    if (!answer.ok) throw new Error(`${index} answered ${answer.status} for ${topic}`)
+    const { UTXOList } = await answer.json()
+    const before = held.size
+    for (const { txid, outputIndex } of UTXOList) held.add(`${txid}.${outputIndex}`)
+    // A page holds at most 500, and the next one starts at the last score, which it repeats.
+    if (UTXOList.length < 500 || held.size === before) return held
+    since = UTXOList.at(-1).score
+  }
+}
+
+for (const topic of ['tm_dpp', 'tm_attestation', 'tm_uora_dpp']) {
+  const [a, b] = await Promise.all([holdings(first, topic), holdings(second, topic)])
+  if (a == null || b == null) {
+    console.log(`${topic}: not served by ${a == null ? first : second}`)
+    continue
+  }
+  const onlyFirst = [...a].filter((o) => !b.has(o))
+  const onlySecond = [...b].filter((o) => !a.has(o))
+  console.log(`${topic}: ${a.size} and ${b.size}, ${onlyFirst.length} only on the first, ${onlySecond.length} only on the second`)
+  for (const o of onlyFirst) console.log(`  only on the first: ${o}`)
+  for (const o of onlySecond) console.log(`  only on the second: ${o}`)
+}
+```
+
+Run it with both indexes' base URLs:
+
+```sh
+node compare-indexes.mjs https://dpp-overlay.bsvb.net http://localhost:8081
+```
+
+Each topic prints both counts and every output only one of them holds. The route lists current outputs, so a passport counts once, by its newest state. A difference the next round carries closes on its own. One that stays has its cause in the receiving index's log ([when a record does not arrive](#when-a-record-does-not-arrive)) or in settings that admit different things ([which way records flow](#which-way-records-flow)). An index that does not serve a topic answers 400 for it, which the script reports as not served.
 
 ### Peer with the hosted reference or another operator
 

@@ -16,8 +16,9 @@
  *   3. anchor             the anchor output, read from the chain, decodes and its signature verifies
  *   4. binding            the anchor commits to this digest and names this claim
  *   5. inclusion          the anchor transaction's merkle path matches a block header
- *   6. anchoring service  the key that wrote the anchor is one you accept, or else the one
- *                         the registry's capability document names (anchoredBy)
+ *   6. anchoring service  the key that wrote the anchor is one you accept, or else one the
+ *                         registry's capability document names (anchoredBy in the registry
+ *                         contract's document, publisherPolicy.anchoringServices in the schema's)
  *
  * The registry hands over the stored bytes and says which transaction holds
  * the anchor. Everything else comes from the chain: the transaction
@@ -202,7 +203,7 @@ function readAnchor(script) {
 
 // ------------------------------------------------------- checking a record
 
-async function checkRecord(record, { registry, chain, accepted, registryKey }) {
+async function checkRecord(record, { registry, chain, accepted, registryKeys }) {
   const lines = []
   const say = (status, check, sentence) => lines.push({ status, check, sentence })
   const proof = await registry.proof(record.attestationId)
@@ -295,13 +296,14 @@ async function checkRecord(record, { registry, chain, accepted, registryKey }) {
   }
 
   // 6. The key that wrote the anchor is one you accept; without a list of
-  // your own, the key the registry's capability document names, which shows
+  // your own, a key the registry's capability document names, which shows
   // the anchor is this registry's and not that the registry is trusted.
   if (anchor.anchoredBy == null) {
     say('unknown', 'anchoring service', `a ${anchor.format} output names no anchoring service`)
-  } else if (accepted == null && registryKey != null) {
-    say(anchor.anchoredBy === registryKey ? 'pass' : 'fail', 'anchoring service',
-      `written by ${short(anchor.anchoredBy)}, ${anchor.anchoredBy === registryKey ? 'the anchoring key the registry names in its capability document' : `not ${short(registryKey)}, the anchoring key the registry names`}`)
+  } else if (accepted == null && registryKeys.length > 0) {
+    const named = registryKeys.includes(anchor.anchoredBy)
+    say(named ? 'pass' : 'fail', 'anchoring service',
+      `written by ${short(anchor.anchoredBy)}, ${named ? 'an anchoring key the registry names in its capability document' : `not ${registryKeys.map(short).join(' or ')}, the anchoring keys the registry names`}`)
   } else if (accepted == null) {
     say('unknown', 'anchoring service', `written by ${short(anchor.anchoredBy)}; the registry names no anchoring key, so pass --anchoring-services=<key>,... to compare it with the services you accept`)
   } else {
@@ -316,8 +318,11 @@ async function checkRecord(record, { registry, chain, accepted, registryKey }) {
 const sources = fixtureMode
   ? fixtureSources()
   : { registry: liveRegistry(registryUrl), chain: liveChain(), accepted: option('anchoring-services')?.split(',').filter(Boolean) }
-const named = (await sources.registry.capabilities()).anchoredBy
-sources.registryKey = typeof named === 'string' && /^0[23][0-9a-f]{64}$/.test(named) ? named : undefined
+// The registry contract's document names the key as anchoredBy; the capabilities schema's names
+// its anchoring services under publisherPolicy.anchoringServices. Read whichever the registry serves.
+const capabilities = await sources.registry.capabilities()
+const named = [capabilities.anchoredBy, ...(Array.isArray(capabilities.publisherPolicy?.anchoringServices) ? capabilities.publisherPolicy.anchoringServices : [])]
+sources.registryKeys = [...new Set(named.filter((k) => typeof k === 'string' && /^0[23][0-9a-f]{64}$/.test(k)))]
 console.log(fixtureMode ? 'Checking the repository\'s test registry, offline.' : `Checking ${registryUrl}${subject == null ? '' : ` for ${subject}`}, at most ${limit} records.`)
 
 const counts = { pass: 0, fail: 0, unknown: 0, 'not-applicable': 0 }
