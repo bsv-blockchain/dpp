@@ -168,7 +168,7 @@ Ask about proofs in the same message. A state the reference pulls from you reads
 
 ### Tell operators apart
 
-Before naming another operator's keys in your policy, compare the keys themselves, then ask the operator for its identity key and signed chain. An index with a policy and an export key also serves its chain as `authority/publisher-policy.json` in every evidence package. Take the identity key from the operator, never from the chain: the chain names its own signer, so checking it against itself proves nothing.
+Before naming another operator's keys in your policy, compare the keys themselves, then ask the operator for its identity key and signed chain. An index with a policy serves its chain on `GET /publisher-policy`, and with an export key also as `authority/publisher-policy.json` in every evidence package. Take the identity key from the operator, never from the chain: the chain names its own signer, so checking it against itself proves nothing.
 
 Capability documents cannot tell operators apart. The operator name is text bound to no key, and `publisherPolicy` has the policy version and keys but no chain digest or signer, so two indexes naming the same operator and keys may be one operator's two indexes or a copy.
 

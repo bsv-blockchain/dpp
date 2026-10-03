@@ -29,6 +29,10 @@
  * And the extensions this reference deployment serves beside them, each in
  * the shape a contract in `contracts/` fixes:
  *
+ *   GET  /publisher-policy                         -> the signed
+ *                  dpp-publisher-policy@1 chain this index admits under, oldest
+ *                  first, as it verified it at boot; 404 without a policy. A
+ *                  reader verifies it against operator keys it got elsewhere
  *   GET  /capabilities                             -> the capability document
  *                  (contracts/capabilities.schema.json), built from constants
  *                  and configuration, never typed by hand
@@ -654,6 +658,23 @@ async function handle(
         network: options.network,
         startedAt: options.startedAt,
       })
+      return
+    }
+
+    if (route === 'GET /publisher-policy') {
+      // The chain, and never the operator keys that authorise it: a reader
+      // takes those from the operator, because a chain checked against keys
+      // the same index supplied proves nothing (spec/services.md section 1).
+      const chain = options.components?.publisherPolicy?.chain
+      if (chain == null) {
+        json(response, 404, {
+          status: 'error',
+          code: 'no-publisher-policy',
+          description: 'this index runs no publisher policy; its one publisher key is in GET /capabilities',
+        })
+        return
+      }
+      json(response, 200, chain)
       return
     }
 

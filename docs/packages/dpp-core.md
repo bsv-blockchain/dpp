@@ -218,7 +218,7 @@ Set `passportId` to the identifier you were asked about, from the scan, label or
 | Field | Selects | Check or finding it settles |
 |---|---|---|
 | `chainTracker` | A header source, or `'scripts only'` to skip header checks | `inclusion` |
-| `publisherKeys`, or `publisherPolicy` with its operators' keys | Publishers whose countersignature you accept | `publisherSignatures` |
+| `publisherKeys`, or `publisherPolicy` with its operators' keys (the chain from an index's `GET /publisher-policy`) | Publishers whose countersignature you accept | `publisherSignatures` |
 | `authority` | `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`: the genesis actor keys, claim issuer DIDs, anchor `anchoredBy` keys and acceptance custodians you accept; `verify` answers any role the lists leave open. `{ required: false, reason }` skips the check | `issuerAuthority`; `unknown` for any role a required policy does not list |
 | `observers` | Sources asked whether the tip is still the latest state; each answers `unspent`, `spent`, `not-found`, `unavailable` or `conflicting` | `report.observations.latestState`: `observed`, `superseded`, `conflicting`, or `unknown` with no observer |
 | `managedAcceptance` | `{ required: true }` demands an acceptance commitment on every version 2 `TRANSFER` | `linkage`; fails with `acceptance-commitment-absent` for a transfer without one |

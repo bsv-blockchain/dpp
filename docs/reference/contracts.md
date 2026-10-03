@@ -72,6 +72,7 @@ To compare two indexes, compare transaction identifiers and proofs, not bytes. T
 | `GET /history?passportId=` (or `uid=`), `&limit=&cursor=` | Open | Query string | 200, one page of a passport's history over a snapshot | 400 `cursor-invalid`, 410 `snapshot-expired` after ten minutes |
 | `GET /evidence-package?passportId=` | Open | Query string | 200, the signed package of the newest 500 states | 503 `export-unavailable` without `EXPORT_SIGNING_KEY` |
 | `GET /evidence-export?passportId=&cursor=` | Bearer `EXPORT_TOKEN` when set | Query string | 200, one signed part of the complete export | 401 `export-unauthorised`, 400, 410, 503 |
+| `GET /publisher-policy` | Open | | 200, the signed publisher policy chain the index admits under, oldest first | 404 `no-publisher-policy` on an index under one identity key |
 | `GET /capabilities`, `GET /health` | Open | | 200 | |
 | `POST /requestSyncResponse`, `POST /requestForeignGASPNode` | Open, bounded | The synchronisation protocol's bodies | 200 | 404 for a transaction the index does not hold |
 
