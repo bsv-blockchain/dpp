@@ -7,7 +7,7 @@
 This is a pre-1.0 candidate. Install the exact published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.8
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.9
 ```
 
 This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.
@@ -23,7 +23,7 @@ service and the record stores, and nothing that listens on a port. This is how
 the demonstration app uses it: both components run in process against
 `InMemoryDppStorage`, which is what its offline mode and the tests are.
 
-**As a service.** `src/index.ts` is an HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for merkle proofs, plus `GET /health`), which is exactly the contract `contracts/overlay.yaml` in this repository pins, together with the five extension routes that contract documents beside them: `GET /capabilities`, `GET /history`, `GET /evidence-package`, `GET /evidence-export` and `POST /retract` (see [The extension routes](#the-extension-routes)), and the two GASP routes a synchronising peer reads. It is reached by path and never by specifier: `npm start` runs `node dist/index.js` and the Dockerfile's `CMD` names the same file. That is deliberate, so importing the package can never start a server.
+**As a service.** `src/index.ts` is an HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for merkle proofs, plus `GET /health`), which is exactly the contract `contracts/overlay.yaml` in this repository pins, together with the six extension routes that contract documents beside them: `GET /capabilities`, `GET /publisher-policy`, `GET /history`, `GET /evidence-package`, `GET /evidence-export` and `POST /retract` (see [The extension routes](#the-extension-routes)), and the two GASP routes a synchronising peer reads. It is reached by path and never by specifier: `npm start` runs `node dist/index.js` and the Dockerfile's `CMD` names the same file. That is deliberate, so importing the package can never start a server.
 
 The service boots only when node runs the file directly, which is how
 `test/http.test.ts` drives `createRequestHandler` and `startOverlayService`
@@ -79,11 +79,12 @@ Everything is environment. An unset variable switches its feature off or falls b
 
 ## The extension routes
 
-Five routes the reference deployment serves beside the ecosystem's wire, each in the shape a contract under `contracts/` fixes and each documented in `contracts/overlay.yaml`, followed by the two GASP routes. None replaces the bounded lookup, which stays exactly what it is. `POST /submit` also answers two headers beside the STEAK: `X-Admission`, the outcome per topic, and, for a refused passport state, `X-Admission-Refusal`, the check that failed as one of the codes `DPP_REFUSAL_CODES` exports (`tm_dpp=predecessor-not-admitted`, for instance). An engine you build yourself and hand to `startOverlayService` gets the same answer when its `tm_dpp` is the package's `DppTopicManager`.
+Six routes the reference deployment serves beside the ecosystem's wire, each in the shape a contract under `contracts/` fixes and each documented in `contracts/overlay.yaml`, followed by the two GASP routes. None replaces the bounded lookup, which stays exactly what it is. `POST /submit` also answers two headers beside the STEAK: `X-Admission`, the outcome per topic, and, for a refused passport state, `X-Admission-Refusal`, the check that failed as one of the codes `DPP_REFUSAL_CODES` exports (`tm_dpp=predecessor-not-admitted`, for instance). An engine you build yourself and hand to `startOverlayService` gets the same answer when its `tm_dpp` is the package's `DppTopicManager`.
 
 | Route | What it serves | Access |
 |---|---|---|
 | `GET /capabilities` | The capability document | Open |
+| `GET /publisher-policy` | The signed publisher policy chain, so a reader checks the keys and their windows itself | Open; 404 without a policy |
 | `GET /history` | Pages of one passport's history over a stable snapshot | Open |
 | `GET /evidence-package` | The bounded signed package of the newest 500 states | Open; 503 without `EXPORT_SIGNING_KEY` |
 | `GET /evidence-export` | The complete export as signed, resumable parts over one snapshot | Bearer `EXPORT_TOKEN` when set; 503 without `EXPORT_SIGNING_KEY` |

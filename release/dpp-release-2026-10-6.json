@@ -1,10 +1,10 @@
 {
-  "releaseSet": "dpp-release-2026-10-5",
-  "status": "superseded",
+  "releaseSet": "dpp-release-2026-10-6",
+  "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate in which an index finds a passport from a GS1 key without a host. @bsv/dpp-overlay-topics 0.4.0-beta.8 answers an ls_dpp lookup by gs1Key, the key tuple, a Digital Link path or a Digital Link URI, with every passport whose identifier names that key under any host, under overlay contract 0.9.0-draft, and now depends on @bsv/dpp-profiles for the GS1 parse. @bsv/dpp-core 0.3.0-beta.7, @bsv/dpp-profiles 0.3.0-beta.7 and @bsv/vsc 0.2.0-beta.5 are unchanged, on @bsv/sdk 2.8.10 under the Apache License 2.0. Record, claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged. Package publication does not establish federated operation or product qualification.",
+  "description": "Experimental prerelease candidate in which an index serves its signed publisher policy. @bsv/dpp-overlay-topics 0.4.0-beta.9 answers GET /publisher-policy with the dpp-publisher-policy@1 chain it admits under, so a reader verifies the publisher keys and their windows against operator keys it trusts instead of taking the capability document's list on the index's word, under overlay contract 0.10.0-draft. @bsv/dpp-core 0.3.0-beta.7, @bsv/dpp-profiles 0.3.0-beta.7 and @bsv/vsc 0.2.0-beta.5 are unchanged, on @bsv/sdk 2.8.10 under the Apache License 2.0. Record, claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged. Package publication does not establish federated operation or product qualification.",
   "baseline": "native-baseline@2",
-  "selection": "conformance/selections/dpp-release-2026-10-5.json",
+  "selection": "conformance/selections/dpp-release-2026-10-6.json",
   "runtime": {
     "node": ">=22",
     "dependencies": [
@@ -69,7 +69,7 @@
     },
     {
       "name": "@bsv/dpp-overlay-topics",
-      "version": "0.4.0-beta.8",
+      "version": "0.4.0-beta.9",
       "directory": "packages/overlay-topics",
       "role": "the topic managers, lookup services, storage adapters, capabilities, history, bounded export, complete export, retraction and synchronisation of the index, as a library; the node itself ships as the image",
       "entryPoints": [
@@ -276,7 +276,7 @@
     "anchor": "bsv-attestation-anchor-v1",
     "acceptanceRecord": "dpp-managed-acceptance@1",
     "verificationReport": "1",
-    "overlayContract": "0.9.0-draft"
+    "overlayContract": "0.10.0-draft"
   },
   "custody": {
     "selected": "managed-custody@1",
@@ -319,7 +319,7 @@
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "de4a79acc76e09a8593f45013285da82f37a753a64a6ab4ef30fe2c3b05fd76d",
+      "sha256": "9c64d3ea3bdc6d251eda9705f538e5ff95b9ff0a3aec400dcf9a8bdaea8c9cb5",
       "pins": "the index's HTTP contract"
     },
     {

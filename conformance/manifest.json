@@ -101,10 +101,10 @@
     {
       "id": "contract-overlay",
       "uri": "contracts/overlay.yaml",
-      "version": "0.9.0-draft",
+      "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "de4a79acc76e09a8593f45013285da82f37a753a64a6ab4ef30fe2c3b05fd76d"
+      "digest": "9c64d3ea3bdc6d251eda9705f538e5ff95b9ff0a3aec400dcf9a8bdaea8c9cb5"
     },
     {
       "id": "contract-registry",
@@ -3268,7 +3268,7 @@
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.9.0-draft",
+      "sourceVersion": "0.10.0-draft",
       "clause": "x-dpp-profile.must",
       "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
       "layer": "role",
@@ -3286,7 +3286,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -4150,7 +4150,7 @@
       "id": "OVL-2-retraction",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.9.0-draft",
+      "sourceVersion": "0.10.0-draft",
       "clause": "POST /retract",
       "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
       "layer": "role",
@@ -4168,7 +4168,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers",
       "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so."
     },
@@ -4176,7 +4176,7 @@
       "id": "OVL-2-refusal-reason",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.9.0-draft",
+      "sourceVersion": "0.10.0-draft",
       "clause": "POST /submit X-Admission-Refusal",
       "summary": "A refused announcement names the check that failed: X-Admission-Refusal carries topic=code for each refused topic whose manager recorded a reason, from the tm_dpp codes the contract lists and in the verification report's word where it names the same failure, and the STEAK body is unchanged.",
       "layer": "role",
@@ -4197,14 +4197,14 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
       "id": "OVL-2-gs1-key-lookup",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.9.0-draft",
+      "sourceVersion": "0.10.0-draft",
       "clause": "components.schemas.passportLookup gs1Key",
       "summary": "ls_dpp answers a GS1 key without a host, as a key tuple, a Digital Link path or a Digital Link URI under any host, with the states of every passport whose identifier names that key, each under its exact identifier; a value naming no GS1 key is refused.",
       "layer": "role",
@@ -4226,7 +4226,32 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-03",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "OVL-2-publisher-policy-route",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.10.0-draft",
+      "clause": "GET /publisher-policy",
+      "summary": "An index under a publisher policy serves its signed dpp-publisher-policy@1 chain, oldest first, as it verified it at boot, and never the operator keys that authorise it; a reader verifies the chain against operator keys it obtained from the operator. An index under one identity key answers 404 no-publisher-policy.",
+      "layer": "role",
+      "roles": [
+        "overlay",
+        "passport-reader"
+      ],
+      "applicability": "when a reader takes an index's publisher keys and their windows",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/index.ts (GET /publisher-policy)"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/publisherPolicyRoute.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {

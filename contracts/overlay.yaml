@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.9.0-draft
+  version: 0.10.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -113,6 +113,10 @@ x-dpp-profile:
     - X-Admission and X-Admission-Refusal response headers on /submit.
     - Extra fields on /health (topic, service, topics, services, network, startedAt).
     - GET /capabilities, the capability document (contracts/capabilities.schema.json).
+    - >-
+      GET /publisher-policy, the signed dpp-publisher-policy@1 chain the index
+      admits under (contracts/publisher-policy.schema.json), so a reader
+      verifies the publisher keys and their windows itself.
     - >-
       GET /history, pages of a passport's complete history over a stable
       snapshot (contracts/paginated-history.schema.json), beside the bounded
@@ -444,6 +448,29 @@ paths:
             application/json:
               schema:
                 $ref: './capabilities.schema.json'
+  /publisher-policy:
+    get:
+      summary: The signed publisher policy chain this index admits under (an extension; spec/services.md section 1)
+      description: >-
+        The dpp-publisher-policy@1 chain, oldest first, exactly as the index
+        verified it at boot. GET /capabilities lists only the keys active now,
+        without their windows and without signatures; this is the chain a
+        reader checks with verifyPolicyChain from @bsv/dpp-core, against
+        operator identity keys it obtained from the operator and never from
+        this index, before taking the keys and windows it names. An index that
+        admits under one configured identity key has no chain and answers 404
+        with code no-publisher-policy.
+      responses:
+        '200':
+          description: The chain, oldest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './publisher-policy.schema.json'
+        '404':
+          $ref: '#/components/responses/error'
   /history:
     get:
       summary: One page of a passport's complete history over a stable snapshot (an extension; spec/portable-evidence.md section 1)
