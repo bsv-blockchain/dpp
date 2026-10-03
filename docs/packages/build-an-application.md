@@ -126,7 +126,7 @@ The index only finds the bytes; the report is your own. Each check answers `pass
 
 To publish a passport, run your own index. The hosted one admits only states countersigned by its policy's two publisher keys, both run by the programme, and does not hand out the tokens for its `POST /submit` and `POST /arc-ingest` ([what is open and what needs a token](../deployment.md#what-is-open-and-what-needs-a-token)).
 
-What you write is found only on your index, so read it back with your own reader. The hosted index does not hold it, and the check at `dpp.bsvb.net/verify` reads only identifiers under its own host and `id.gs1.org`. Another index gets your records only if its operator names yours as a peer ([federation](../operate/federation.md)).
+What you write is found only on your index, so read it back with your own reader. The hosted index does not hold it, so the check at `dpp.bsvb.net/verify`, which reads the hosted index, does not find it either. Another index gets your records only if its operator names yours as a peer ([federation](../operate/federation.md)).
 
 ### 2.1 Find your wallet's identity key
 

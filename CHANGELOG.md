@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-03, the hosted check reads any host
+
+- The hosted reference page, the GS1 discovery and demonstration guides and the writer walkthrough say that the check at `dpp.bsvb.net/verify` now looks an identifier up exactly as given under any host and accepts any publisher key the hosted index names, and that it finds only what the hosted index holds. They no longer say it reads only identifiers under its own hosts.
+
 ### 2026-10-03, the ledger cites the current examples
 
 - The writer rows of the conformance ledger cite `examples/write-passport-v2.mjs`, the writer the docs recommend, beside the version 1 example, with its dry run in CI as a test; the anchor, verification and legacy anchor rows cite `examples/check-registry.mjs` and its offline run. The ten rows were re-reviewed. The baseline's writer test target names the version 1 example until the next release set, since the published set pins the baseline.
