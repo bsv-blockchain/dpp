@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-03, the ledger cites the current examples
+
+- The writer rows of the conformance ledger cite `examples/write-passport-v2.mjs`, the writer the docs recommend, beside the version 1 example, with its dry run in CI as a test; the anchor, verification and legacy anchor rows cite `examples/check-registry.mjs` and its offline run. The ten rows were re-reviewed. The baseline's writer test target names the version 1 example until the next release set, since the published set pins the baseline.
+- The contracts reference says the registry capability document may name its anchoring key.
+
 ### 2026-10-02, the registry names its anchoring key
 
 - The registry contract (`0.3.0`) adds an optional `anchoredBy` to the capability document: the identity key every anchor the registry writes names, so a verifier can tell its anchors from others' without asking. Naming the key does not make a registry trusted. The three ledger rows citing the contract were re-reviewed.

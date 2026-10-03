@@ -1507,19 +1507,21 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-core/src/anchor.ts",
-        "packages/overlay-topics/src/tmAttestation.ts"
+        "packages/overlay-topics/src/tmAttestation.ts",
+        "examples/check-registry.mjs"
       ],
       "testRefs": [
         "packages/overlay-topics/test/attestationAnchor.test.ts",
         "packages/overlay-topics/test/attestationTopics.test.ts",
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-core/test/evidence.test.ts",
+        ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json",
         "fixtures/vectors/dpp/attestation-anchor/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1538,10 +1540,12 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-core/src/evidence.ts",
-        "packages/dpp-core/src/anchor.ts#inspectAttestationAnchor"
+        "packages/dpp-core/src/anchor.ts#inspectAttestationAnchor",
+        "examples/check-registry.mjs"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-core/test/evidence.test.ts",
+        ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.anchor-and-claim",
@@ -1549,7 +1553,7 @@
         "fixtures/evidence-v1.json#cases.anchor-unsupported-representation"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1601,17 +1605,19 @@
       "applicability": "for records already written under the historical format",
       "profileId": "historical",
       "implementationRefs": [
-        "packages/overlay-topics/src/uoraAnchor.ts"
+        "packages/overlay-topics/src/uoraAnchor.ts",
+        "examples/check-registry.mjs (uora-anchor-v3 and uora-anchor-v1)"
       ],
       "testRefs": [
         "packages/overlay-topics/test/uoraAnchor.test.ts",
-        "packages/overlay-topics/test/fixture-json.test.ts"
+        "packages/overlay-topics/test/fixture-json.test.ts",
+        ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
       "evidenceRefs": [
         "fixtures/anchor-v3.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1737,16 +1743,18 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (section 2)"
+        "examples/write-passport.mjs (section 2)",
+        "examples/write-passport-v2.mjs (writeState: verifyChain on the unsent transaction)"
       ],
       "testRefs": [
-        ".github/workflows/ci.yml (write-passport.mjs --dry-run)"
+        ".github/workflows/ci.yml (write-passport.mjs --dry-run)",
+        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)"
       ],
       "evidenceRefs": [
         "fixtures/chain-v1.json#states[0]"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers",
       "notes": "The reference example does this; the consuming application's writer is assessed in its own repository."
     },
@@ -1764,12 +1772,15 @@
       "applicability": "when the deployment names an index (SHOULD)",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (section 3)"
+        "examples/write-passport.mjs (section 3)",
+        "examples/write-passport-v2.mjs (announce)"
       ],
-      "testRefs": [],
+      "testRefs": [
+        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)"
+      ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers",
       "notes": "Exercised live only; the dry run prints what it would do."
     },
@@ -1787,12 +1798,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (sections 4 and 5, acceptDelayedBroadcast false)"
+        "examples/write-passport.mjs (sections 4 and 5, acceptDelayedBroadcast false)",
+        "examples/write-passport-v2.mjs (liveAdapter, acceptDelayedBroadcast false)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers",
       "notes": "The example writes one state under one wallet; concurrent-writer discipline for a multi-instance service is the consuming application's duty."
     },
@@ -1811,12 +1823,13 @@
       "profileId": "core",
       "implementationRefs": [
         "examples/write-passport.mjs (send)",
-        "docs/deployment.md"
+        "docs/deployment.md",
+        "examples/write-passport-v2.mjs (liveAdapter: sendWith the admitted draft)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1833,12 +1846,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (section 6)"
+        "examples/write-passport.mjs (section 6)",
+        "examples/write-passport-v2.mjs (writeState: announced again after an unreachable index)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1856,14 +1870,16 @@
       "profileId": "core",
       "implementationRefs": [
         "examples/write-passport.mjs (proveAndPush)",
-        "packages/overlay-topics/src/index.ts (POST /arc-ingest)"
+        "packages/overlay-topics/src/index.ts (POST /arc-ingest)",
+        "examples/write-passport-v2.mjs (proveState, pushProof)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/http.test.ts"
+        "packages/overlay-topics/test/http.test.ts",
+        ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)"
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1882,12 +1898,13 @@
       "profileId": "core",
       "implementationRefs": [
         "examples/write-passport.mjs (basket dpp)",
-        "contracts/registry.yaml#AnchorProof"
+        "contracts/registry.yaml#AnchorProof",
+        "examples/write-passport-v2.mjs (basket dpp, keepAndReadBack)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-03",
       "reviewOwner": "dpp maintainers"
     },
     {
