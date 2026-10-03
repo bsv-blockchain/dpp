@@ -92,7 +92,7 @@ The first runs offline on the repository's test data and ends `Every sentence ab
 | `anchor` | Decodes the output under the format its first field names, and verifies its signature and locking key | The transaction from WhatsOnChain (`/tx/<txid>/hex`), by the proof's `anchor.recordId` and `anchor.outputIndex`; a script the registry also sends must equal it |
 | `binding` | The anchor commits to the digest and names the claim's identifier, issuer, subject and type | The decoded anchor and the claim |
 | `inclusion` | Verifies the transaction's merkle path against block headers | WhatsOnChain's `/tx/<txid>/proof/bump`, a BUMP that `MerklePath.fromHex` from `@bsv/sdk` reads as it is, and its headers |
-| `anchoring service` | Compares the key that wrote the anchor with the services you accept or, without a list of your own, with the key the registry names | The decoded anchor and your `--anchoring-services`, or `anchoredBy` in the registry's `GET /capabilities` |
+| `anchoring service` | Compares the key that wrote the anchor with the services you accept or, without a list of your own, with the keys the registry names | The decoded anchor and your `--anchoring-services`, or the keys the registry's `GET /capabilities` names, as `anchoredBy` or under `publisherPolicy.anchoringServices` |
 
 What each kind of record can establish:
 

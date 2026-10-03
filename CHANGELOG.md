@@ -12,6 +12,13 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-03, anchoring keys, the historical topic and comparing two indexes
+
+- A registry names its anchoring key under `publisherPolicy.anchoringServices` in the capabilities schema's document or as `anchoredBy` in the registry contract's. The registry and verifier pages say both, and `examples/check-registry.mjs` reads whichever the registry serves.
+- The hosted reference page gives the key the hosted registry's anchors are written by, which its capability document does not name, says the hosted index also serves and pulls the historical `tm_uora_dpp` topic and admits anchors from any anchoring service, and names the release it runs in the overlays table.
+- The federation page says peers hold the same records only when their settings admit the same things, lists `ANCHOR_SERVICE_KEYS` and `SYNC_LEGACY` among the second index's settings, and adds a script that compares what two indexes hold, topic by topic.
+- The overlay role page lists the historical topic as optional, the identifiers page shows how an index on an earlier release refuses a `gs1Key` lookup, and the limitations page gains rows for the hosted registry's key, settings that differ between peers and the single-operator signing example.
+
 ### 2026-10-03, the hosted check and a path without a host
 
 - The hosted reference page and the GS1 discovery page say that the check at `dpp.bsvb.net/verify`, given a path without a host or an address under one of its own hosts that it does not find, tries the same path under a fixed list of hosts it knows, checks the one passport it finds under that passport's own identifier, and asks for the full address when more than one host holds one.
