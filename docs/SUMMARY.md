@@ -91,6 +91,7 @@
 ## Releases and conformance
 
 * [Release sets](reference/release-sets.md)
+* [Beta.9 publication receipt](reference/beta-9-publication.md)
 * [Beta.8 publication receipt](reference/beta-8-publication.md)
 * [Beta.7 publication receipt](reference/beta-7-publication.md)
 * [Beta.6 publication receipt](reference/beta-6-publication.md)
