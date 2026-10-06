@@ -24,7 +24,7 @@ Implement these operations in this order, testing each with a malformed input, a
 | `POST /validate` | Verify without storing, as above | `verifyLifecycleClaim`, `verifyPassportEvidence` |
 | `POST /attestations` | Verify the explicit secured representation under the declared policy; store the exact bytes with their media type, representation, digest and scoped report; refuse an invalid or unsupported submission by name; store a duplicate once; report acceptance, anchoring and inclusion as separate fields | `verifyLifecycleClaim`, `lifecycleClaimBytes`, `lifecycleClaimDigest` |
 | `GET /attestations` and `GET /attestations/{id}/report` | Page the held records over a stable snapshot; return the stored report for one record | The contract's cursor and snapshot rules |
-| `GET /attestations/{id}/proof` | Return the canonical bytes with everything a third party needs to check the anchor without this service | `lifecycleClaimBytes` |
+| `GET /attestations/{id}/proof` | Return the canonical bytes with everything a third party needs to check the anchor without this service; once the anchor is mined, send its `blockHeight` and `merklePath` too if you hold them, so a verifier need not ask a chain source | `lifecycleClaimBytes` |
 | `GET /history` | The lifecycle history of one passport from the claims held; a lookup, not an export | |
 | `GET /passports/{passportId}/evidence-package` | The signed `dpp-evidence-package@1` envelope for one passport | `signEvidenceManifest`, `inspectEvidencePackage` |
 

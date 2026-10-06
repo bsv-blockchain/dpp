@@ -109,10 +109,10 @@
     {
       "id": "contract-registry",
       "uri": "contracts/registry.yaml",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "fe100a1902f720dbd05976545ef68caa8e1f806a5d1923a786f372c3a01e8c1b"
+      "digest": "8cbbc7e77de6fe5e04bcb9ec784e5d0443ba09e0a3157ca8657936c7e536cf76"
     },
     {
       "id": "contract-report-schema",
@@ -3293,7 +3293,7 @@
       "id": "REG-contract-routes",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.3.0",
+      "sourceVersion": "0.4.0",
       "clause": "paths",
       "summary": "Every operation the registry contract lists answers in the documented shape, and no served route is absent from the contract.",
       "layer": "role",
@@ -3310,7 +3310,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-06",
       "reviewOwner": "dpp maintainers",
       "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance and GET /showcase. contracts/registry.yaml is the byte-identical mirror."
     },
@@ -3985,7 +3985,7 @@
       "id": "REG-1-insert-first-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.3.0",
+      "sourceVersion": "0.4.0",
       "clause": "POST /attestations",
       "summary": "Two identical concurrent submissions store one record and anchor once: intake inserts the claim identifier first, then anchors, then replaces, on every store backend.",
       "layer": "role",
@@ -4002,7 +4002,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-06",
       "reviewOwner": "dpp maintainers",
       "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process."
     },
@@ -4843,7 +4843,7 @@
       "id": "EXTC-5-registry-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.3.0",
+      "sourceVersion": "0.4.0",
       "clause": "POST /attestations, vc-di-ecdsa-rdfc-2019@1",
       "summary": "The registry accepts the representation as exact bytes under the operator's external policy, refuses a failing credential with nothing stored, refuses a credential id collision, and anchors accepted bytes through the existing anchor and topic with metadata matching the credential.",
       "layer": "role",
@@ -4862,9 +4862,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-10-06",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "fe100a1902f720dbd05976545ef68caa8e1f806a5d1923a786f372c3a01e8c1b",
+      "sourceDigest": "8cbbc7e77de6fe5e04bcb9ec784e5d0443ba09e0a3157ca8657936c7e536cf76",
       "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested)."
     },
     {

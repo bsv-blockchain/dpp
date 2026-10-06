@@ -12,6 +12,12 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-06, a registry may send an anchor's merkle path
+
+- The registry contract (`0.4.0`) adds optional `blockHeight` and `merklePath`, a BUMP, to an anchor reference, so a verifier of a mined anchor need not ask a chain source. The path saves a request, not a check: its root is still compared with the block header.
+- `examples/check-registry.mjs` checks a path the registry sends against the headers first and asks the chain source when there is none or it does not match; the registry and verifier guides say so.
+- The contract no longer implies that every record anchored since 5 September carries `lockingScript`, and the hosted reference page says the hosted registry's proofs carry none of the three, so a verifier reads them from the chain.
+
 ### 2026-10-03, anchoring keys, the historical topic and comparing two indexes
 
 - A registry names its anchoring key under `publisherPolicy.anchoringServices` in the capabilities schema's document or as `anchoredBy` in the registry contract's. The registry and verifier pages say both, and `examples/check-registry.mjs` reads whichever the registry serves.

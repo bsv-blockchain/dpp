@@ -24,7 +24,9 @@
  * the anchor. Everything else comes from the chain: the transaction
  * (/tx/<txid>/hex) and its merkle proof as a BUMP (/tx/<txid>/proof/bump)
  * from WhatsOnChain (set WOC_API_KEY to raise its rate limit), checked against
- * block headers. The exit code is 1 when any check fails.
+ * block headers. A registry may send the BUMP itself as anchor.merklePath;
+ * the example then checks that one against the headers first, so it trusts
+ * the headers and not the registry. The exit code is 1 when any check fails.
  */
 import { readFileSync } from 'node:fs'
 import { Hash, LockingScript, MerklePath, PushDrop, Signature, Transaction, Utils, WhatsOnChain } from '@bsv/sdk'
@@ -132,13 +134,15 @@ function fixtureSources() {
     roots.set(height, path.computeRoot(txid))
     return txid
   }
+  const nativeTxid = anchorTransaction(native.lockingScript, 900000)
   const proofs = new Map([
     [native.anchor.attestationId, {
       attestationId: native.anchor.attestationId,
       representation: 'dpp-lifecycle-json-v1',
       securedBytes: native.representationBytes,
       digest: native.digest,
-      anchor: { recordId: anchorTransaction(native.lockingScript, 900000), outputIndex: 0, format: 'bsv-attestation-anchor-v1' },
+      // This record's registry sends the merkle path with the anchor, as the contract allows; the legacy one below does not.
+      anchor: { recordId: nativeTxid, outputIndex: 0, format: 'bsv-attestation-anchor-v1', blockHeight: 900000, merklePath: paths.get(nativeTxid).toHex() },
     }],
     [legacy.attestationId, {
       attestationId: legacy.attestationId,
@@ -280,18 +284,35 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
       problems.length === 0 ? `the anchor commits to this digest${named ? ' and names this claim' : ''}` : problems.join('; '))
   }
 
-  // 5. The anchor transaction is in a block: its merkle path, which the
-  // registry does not carry, matches that block's header.
-  const path = await chain.merklePath(txid)
-  if (path == null) {
-    say('unknown', 'inclusion', 'the chain source has no merkle path for the anchor transaction yet')
-  } else {
+  // 5. The anchor transaction is in a block: its merkle path matches that
+  // block's header. A registry may send the path with the anchor
+  // (anchor.merklePath, a BUMP); only the header decides, so a path the
+  // registry sends that does not match is set aside and the chain source asked.
+  const sent = proof.anchor?.merklePath
+  let fromRegistry = false
+  if (typeof sent === 'string' && /^[0-9a-f]+$/.test(sent)) {
     try {
-      const included = await path.verify(txid, chain.headers)
-      say(included ? 'pass' : 'fail', 'inclusion',
-        `the anchor transaction's merkle path ${included ? 'matches' : 'does not match'} the header of block ${path.blockHeight}`)
+      const path = MerklePath.fromHex(sent)
+      if (await path.verify(txid, chain.headers)) {
+        fromRegistry = true
+        say('pass', 'inclusion', `the anchor transaction's merkle path, as the registry sent it, matches the header of block ${path.blockHeight}`)
+      }
     } catch {
-      say('unknown', 'inclusion', `the header source did not answer for block ${path.blockHeight}`)
+      // Not a path for this transaction, or the header source did not answer: ask the chain source below.
+    }
+  }
+  if (!fromRegistry) {
+    const path = await chain.merklePath(txid)
+    if (path == null) {
+      say('unknown', 'inclusion', 'the chain source has no merkle path for the anchor transaction yet')
+    } else {
+      try {
+        const included = await path.verify(txid, chain.headers)
+        say(included ? 'pass' : 'fail', 'inclusion',
+          `the anchor transaction's merkle path ${included ? 'matches' : 'does not match'} the header of block ${path.blockHeight}${sent != null ? '; the path the registry sent did not' : ''}`)
+      } catch {
+        say('unknown', 'inclusion', `the header source did not answer for block ${path.blockHeight}`)
+      }
     }
   }
 

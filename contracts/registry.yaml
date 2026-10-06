@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Attestation registry API
-  version: 0.3.0
+  version: 0.4.0
   summary: Verified native lifecycle claims and VSC SEAL credentials with independent BSV anchors.
   description: |
     Current intake uses explicit signed native or VSC representations. Missing proof,
@@ -1884,7 +1884,23 @@ components:
         lockingScript:
           type: string
           pattern: '^[0-9a-f]+$'
-          description: The anchor output's locking script, hex, where anchoring retained it (records anchored since 2026-09-05). Decode it with the parser for `format` and compare its digest and metadata with the record's secured bytes; absent on older records.
+          description: The anchor output's locking script, hex, where the registry retained it; absent otherwise. Decode it with the parser for `format` and compare its digest and metadata with the record's secured bytes; a verifier that also reads the output from the chain requires the two to be equal.
+        blockHeight:
+          type: integer
+          minimum: 0
+          description: >-
+            The height of the block that includes the anchor transaction, where
+            the registry holds its merkle path. Optional; absent while the
+            transaction is unmined or when the registry keeps no path.
+        merklePath:
+          type: string
+          pattern: '^[0-9a-f]+$'
+          description: >-
+            The anchor transaction's merkle path as a BUMP (BRC-74), hex, where
+            the registry holds one. Optional. It saves a verifier a request to a
+            chain source, not a check: the verifier still compares the path's
+            root with the block header at its height, and asks a chain source
+            when the path is absent or does not match.
     ChainRecord:
       type: object
       description: One record of a passport's custody timeline, exactly as `GET /chain` serves it.
