@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-06, taking a historical anchor from the chain
+
+- The federation page says a historical anchor your index never received is submitted from the chain with `X-Topics: ["tm_uora_dpp"]`, as a current one is with `["tm_attestation"]`.
+
 ### 2026-10-06, where a peer names the anchoring services it admits
 
 - The federation page says a peer's `GET /capabilities` names the anchoring services it admits under `publisherPolicy.anchoringServices`, and that an empty list means it admits any.

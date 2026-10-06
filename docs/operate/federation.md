@@ -291,7 +291,7 @@ How a retraction reaches a peer that already synchronised the withdrawn state is
 A mined transaction's proof does not depend on any peer. WhatsOnChain serves it as a BUMP at `https://api.whatsonchain.com/v1/bsv/main/tx/<txid>/proof/bump`, which `MerklePath.fromHex` from `@bsv/sdk` reads, and the transaction with its proof as a BEEF at `/tx/<txid>/beef`. Check the proof's root against the block header yourself before your index sees it, as `examples/check-registry.mjs` does.
 
 - **A state your index holds unproven:** send the BUMP to your own `POST /arc-ingest` as `{ "txid", "merklePath", "blockHeight" }`, with your callback token.
-- **An anchor your index never received:** send its BEEF to your own `POST /submit` with `X-Topics: ["tm_attestation"]` and your submit token. Your index's rules still apply, so an anchor from a service it does not accept is refused.
+- **An anchor your index never received:** send its BEEF to your own `POST /submit` with `X-Topics: ["tm_attestation"]`, or `["tm_uora_dpp"]` for a historical anchor, and your submit token. Your index's rules still apply, so an anchor from a service it does not accept is refused.
 - **A passport state your index never received:** announce it the same way with `X-Topics: ["tm_dpp"]`, oldest state first, since each state is admitted only on top of its predecessor.
 
 ### Move a checkpoint back
