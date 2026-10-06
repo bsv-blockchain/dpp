@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-06, source-map-js 1.2.2 in the test tooling
+
+- The lockfile moves `source-map-js`, which the test tooling reaches through vitest, vite and postcss, from 1.2.1 to 1.2.2 for GHSA-68fv-2mgg-jv7q. No published package includes it.
+
 ### 2026-10-06, the hosted index serves every record with its merkle path
 
 - The hosted index now serves every passport state and anchor it holds with its merkle path, so the limitations row about states held without them is gone, and the federation page no longer says to expect a partial copy from the hosted index.
