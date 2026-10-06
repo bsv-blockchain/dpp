@@ -87,7 +87,6 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 | Writing needs the operator's tokens | You cannot announce to the hosted index or store on the hosted registry | Run your own index, or [contact the programme](../start/choose-your-path.md#contact-the-programme) |
 | The check at `dpp.bsvb.net/verify` reads only the hosted index | A passport written to your own index reads as not found there until the hosted index pulls from yours | Verify with your own reader ([quick start](../quick-start.md#read-a-live-passport)) |
 | The hosted registry does not name its anchoring key | A verifier cannot take the key its anchors are written by from its capability document | Use the key [the hosted reference](../deployment.md#where-the-hosted-services-fall-short) gives |
-| Some mined states are held without their merkle paths | The newest states the reference application wrote are mined, but their proofs never reached the hosted index, so a peer synchronising from it leaves those tips behind until the proofs are supplied | Take each one from the chain yourself ([take a record from the chain](federation.md#take-a-record-from-the-chain)); see [overlays running now](../deployment.md#overlays-running-now) |
 
 ## Open questions in the standard
 
