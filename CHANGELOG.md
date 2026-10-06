@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-06, where a peer names the anchoring services it admits
+
+- The federation page says a peer's `GET /capabilities` names the anchoring services it admits under `publisherPolicy.anchoringServices`, and that an empty list means it admits any.
+
 ### 2026-10-06, what the hosted services run
 
 - The hosted reference page says the reference application runs the beta.5 packages, with `@bsv/vsc` beta.4, as checked on 6 October 2026, and that this row is the operator's statement, since the application serves no capability document.
