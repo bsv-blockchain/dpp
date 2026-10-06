@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-06, what the hosted services run
+
+- The hosted reference page says the reference application runs the beta.5 packages, with `@bsv/vsc` beta.4, as checked on 6 October 2026, and that this row is the operator's statement, since the application serves no capability document.
+- The limitations page says the states the hosted index holds without merkle paths are the reference application's newest, which are mined but whose proofs never reached it, not older ones.
+
 ### 2026-10-06, a registry may send an anchor's merkle path
 
 - The registry contract (`0.4.0`) adds optional `blockHeight` and `merklePath`, a BUMP, to an anchor reference, so a verifier of a mined anchor need not ask a chain source. The path saves a request, not a check: its root is still compared with the block header.

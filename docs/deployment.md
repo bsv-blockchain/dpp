@@ -6,11 +6,11 @@ The programme hosts one instance of each service, so you can look up and verify 
 
 ## Services
 
-Each service's `/capabilities` answer is authoritative; the table records what the index ran on 3 October 2026 and the others on 30 September 2026.
+Each service's `/capabilities` answer is authoritative; the table records what they ran on 6 October 2026. The application serves no capability document, so its row is the operator's statement.
 
 | Host | Serves | Runs |
 |---|---|---|
-| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.2 packages |
+| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.5 packages, with `@bsv/vsc` beta.4 |
 | `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay-topics@0.4.0-beta.9`, `single-operator@1` under publisher policy version 1, pulling all three topics from one peer run under the same administration |
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
