@@ -34,6 +34,7 @@ export * from './capabilities.js'
 export * from './evidenceExport.js'
 export * from './retraction.js'
 export * from './sync.js'
+export * from './discovery.js'
 export { UoraAnchorTopicManager } from './tmUoraDpp.js'
 export { UoraAnchorLookupService, UORA_SERVICE, UORA_TOPIC } from './lsUoraDpp.js'
 export {

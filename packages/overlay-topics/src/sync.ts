@@ -36,15 +36,19 @@ export interface SyncSettings {
   legacy: boolean
 }
 
-/** Comma-separated base URLs. Anything that is not an http or https URL stops the boot; a peer is not a thing to guess. */
 /** A peer URL without its trailing slashes, scanned rather than matched so a long run of slashes costs linear time. */
-function stripTrailingSlashes(value: string): string {
+export function stripTrailingSlashes(value: string): string {
   let end = value.length
   while (end > 0 && value[end - 1] === '/') end--
   return value.slice(0, end)
 }
 
-export function parseSyncPeers(value: string | undefined): string[] {
+/**
+ * Comma-separated base URLs, normalised and each once. Anything that is not
+ * an http or https URL stops the boot; a peer is not a thing to guess.
+ * `setting` names the variable in errors.
+ */
+export function parseSyncPeers(value: string | undefined, setting = 'SYNC_PEERS'): string[] {
   const peers: string[] = []
   for (const raw of (value ?? '').split(',')) {
     const candidate = raw.trim()
@@ -53,10 +57,10 @@ export function parseSyncPeers(value: string | undefined): string[] {
     try {
       url = new URL(candidate)
     } catch {
-      throw new Error(`SYNC_PEERS entry "${candidate}" is not a URL`)
+      throw new Error(`${setting} entry "${candidate}" is not a URL`)
     }
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      throw new Error(`SYNC_PEERS entry "${candidate}" must be an http or https URL`)
+      throw new Error(`${setting} entry "${candidate}" must be an http or https URL`)
     }
     const normalised = stripTrailingSlashes(candidate)
     if (!peers.includes(normalised)) peers.push(normalised)
@@ -73,8 +77,9 @@ export function syncSettingsFromEnvironment(): SyncSettings {
     intervalMs = Number(rawInterval)
   }
   const legacy = (process.env.SYNC_LEGACY ?? '').trim() === '1'
-  if (peers.length === 0 && (rawInterval !== '' || legacy)) {
-    console.warn('SYNC_INTERVAL_MS or SYNC_LEGACY is set but SYNC_PEERS is not: nothing synchronises')
+  const discovering = (process.env.SYNC_DISCOVERY ?? '').trim() !== ''
+  if (peers.length === 0 && !discovering && (rawInterval !== '' || legacy)) {
+    console.warn('SYNC_INTERVAL_MS or SYNC_LEGACY is set but neither SYNC_PEERS nor SYNC_DISCOVERY is: nothing synchronises')
   }
   return { peers, intervalMs, legacy }
 }
@@ -108,10 +113,24 @@ export interface ReconciliationSettings {
   /** The page asked of the peer; the route serves at most 500. */
   limit?: number
   fetchImpl?: typeof fetch
+  /** Rounds before an output left behind is asked for again; about an hour of rounds by default. */
+  retryAfterRounds?: number
+  /** The longest wait the retry doubles up to; about a day of rounds by default. */
+  maxRetryAfterRounds?: number
 }
 
 export const DEFAULT_RECONCILIATION_ATTEMPTS = 5
 export const RECONCILIATION_PAGE = 500
+/** How long an output left behind waits before it is asked for again, and the longest the doubling wait grows to. */
+export const LEFT_BEHIND_RETRY_MS = 60 * 60 * 1000
+export const LEFT_BEHIND_MAX_RETRY_MS = 24 * 60 * 60 * 1000
+/** Outputs left behind remembered per peer and topic; past this the earliest are forgotten. */
+const MAX_LEFT_BEHIND = 10_000
+
+/** Rounds that span a duration at the given interval, at least one; a node that runs one round only uses the fallback. */
+export function roundsFor(durationMs: number, intervalMs: number, fallback: number): number {
+  return intervalMs > 0 ? Math.max(1, Math.ceil(durationMs / intervalMs)) : fallback
+}
 
 /** What one peer and topic looked like after a round, once the offered outputs were checked against what this node holds. */
 export interface ReconciliationOutcome {
@@ -136,6 +155,10 @@ export interface SyncRound {
   ok: boolean
   error?: string
   reconciliation?: ReconciliationOutcome[]
+  /** The peers each topic pulled from, when a plan chose them for this round. */
+  peers?: Record<string, string[]>
+  /** Peers whose offered outputs could not be read this round, on any topic. */
+  unreachable?: string[]
 }
 
 export interface PeerSynchronisation {
@@ -192,18 +215,32 @@ async function offeredSince(
  * again and checked against this node's storage, and where any is missing the
  * checkpoint is held at the earliest of them, so the next round offers them
  * again. An output offered and missing `maxAttempts` rounds running is left
- * behind and named once, because a refusal by this node's own admission looks
- * the same from here as a failure, and a refused state is not to be asked for
- * for ever.
+ * behind and named, because a refusal by this node's own admission looks the
+ * same from here as a failure, and a refused state is not to be asked for for
+ * ever. Nor is it given up for good: a peer that could not yet serve a graph
+ * or its proof may serve it later, so after `retryAfterRounds` (about an
+ * hour of rounds) the checkpoint is held at it once more, and each time it is
+ * left behind again the wait doubles, up to `maxRetryAfterRounds` (about a
+ * day of rounds).
+ *
+ * With `plan`, the peers come from the planner before each round, per topic,
+ * and are written into the engine's configuration, so the SDK pulls from
+ * exactly those and the reconciliation checks the same list; this is how
+ * discovered peers join the named ones (discovery.ts). Without it every
+ * topic uses `peers`, exactly as before.
  */
 export function startPeerSynchronisation(
-  engine: Pick<Engine, 'startGASPSync'>,
+  engine: Pick<Engine, 'startGASPSync'> & { syncConfiguration?: SyncConfiguration },
   options: {
     intervalMs: number
     peers: string[]
     log?: (line: string) => void
     warn?: (line: string) => void
     reconcile?: ReconciliationSettings
+    /** The peers each topic pulls from this round, asked before the round starts; written into the engine's configuration. */
+    plan?: (round: number) => Promise<Record<string, string[]>>
+    /** Called with every finished round, so a planner can back off a peer that could not be read. */
+    afterRound?: (round: SyncRound) => void
   }
 ): PeerSynchronisation {
   const log = options.log ?? ((line) => console.log(line))
@@ -215,47 +252,111 @@ export function startPeerSynchronisation(
   const maxAttempts = reconcile?.maxAttempts ?? DEFAULT_RECONCILIATION_ATTEMPTS
   const limit = Math.min(reconcile?.limit ?? RECONCILIATION_PAGE, RECONCILIATION_PAGE)
   const fetchImpl = reconcile?.fetchImpl ?? fetch
+  const firstWait = reconcile?.retryAfterRounds ?? roundsFor(LEFT_BEHIND_RETRY_MS, options.intervalMs, 60)
+  const maxWait = Math.max(firstWait, reconcile?.maxRetryAfterRounds ?? roundsFor(LEFT_BEHIND_MAX_RETRY_MS, options.intervalMs, 1440))
   /** Rounds an offered outpoint has been missing, by peer, topic and outpoint. */
   const attempts = new Map<string, number>()
+  /** Outputs left behind, by peer and topic: the score to hold the checkpoint at and the round they are asked for again. */
+  const leftBehind = new Map<string, Map<string, { score: number; due: number }>>()
+  /** The wait the next time an output is left behind, by peer, topic and outpoint; it doubles each time. */
+  const waits = new Map<string, number>()
+  /** The last plan that answered, kept when the planner fails so the engine and the reconciliation agree. */
+  let lastPlan: Record<string, string[]> | undefined
 
-  const checkpoints = async (): Promise<Map<string, number>> => {
+  const peersFor = (plan: Record<string, string[]> | undefined, topic: string): string[] => plan?.[topic] ?? options.peers
+  /** Every peer of the round once, in the order the topics first name them. */
+  const roundPeers = (plan: Record<string, string[]> | undefined, topics: string[]): string[] => {
+    const seen: string[] = []
+    for (const topic of topics) for (const peer of peersFor(plan, topic)) if (!seen.includes(peer)) seen.push(peer)
+    return seen
+  }
+
+  const checkpoints = async (plan: Record<string, string[]> | undefined): Promise<Map<string, number>> => {
     const before = new Map<string, number>()
     if (reconcile == null) return before
-    for (const peer of options.peers) {
+    for (const peer of roundPeers(plan, reconcile.topics)) {
       for (const topic of reconcile.topics) {
+        if (!peersFor(plan, topic).includes(peer)) continue
         before.set(`${peer}|${topic}`, await reconcile.storage.getLastInteraction(peer, topic))
       }
     }
     return before
   }
 
-  const reconcileRound = async (round: number, before: Map<string, number>): Promise<ReconciliationOutcome[]> => {
+  /** Before a round: hold the checkpoint at every output left behind whose wait is over, so this round offers it again. */
+  const scheduleRetries = async (round: number, plan: Record<string, string[]> | undefined): Promise<void> => {
+    if (reconcile == null) return
+    for (const topic of reconcile.topics) {
+      for (const peer of peersFor(plan, topic)) {
+        const remembered = leftBehind.get(`${peer}|${topic}`)
+        if (remembered == null) continue
+        const due = [...remembered].filter(([, entry]) => entry.due <= round)
+        if (due.length === 0) continue
+        for (const [outpoint] of due) remembered.delete(outpoint)
+        const floor = Math.min(...due.map(([, entry]) => entry.score))
+        const current = await reconcile.storage.getLastInteraction(peer, topic)
+        if (floor < current) await reconcile.storage.updateLastInteraction(peer, topic, floor)
+        log(`peer synchronisation round ${round}: asking ${peer} again for ${due.length} output${due.length === 1 ? '' : 's'} left behind for ${topic}`)
+      }
+    }
+  }
+
+  const remember = (peer: string, topic: string, outpoint: string, entry: { score: number; due: number }): void => {
+    const key = `${peer}|${topic}`
+    let remembered = leftBehind.get(key)
+    if (remembered == null) {
+      remembered = new Map()
+      leftBehind.set(key, remembered)
+    }
+    remembered.delete(outpoint)
+    if (remembered.size >= MAX_LEFT_BEHIND) {
+      const oldest = remembered.keys().next().value
+      if (oldest != null) remembered.delete(oldest)
+    }
+    remembered.set(outpoint, entry)
+  }
+
+  const reconcileRound = async (
+    round: number,
+    before: Map<string, number>,
+    plan: Record<string, string[]> | undefined,
+    unreachable: Set<string>
+  ): Promise<ReconciliationOutcome[]> => {
     const outcomes: ReconciliationOutcome[] = []
     if (reconcile == null) return outcomes
-    for (const peer of options.peers) {
+    for (const peer of roundPeers(plan, reconcile.topics)) {
       for (const topic of reconcile.topics) {
+        if (!peersFor(plan, topic).includes(peer)) continue
         const since = before.get(`${peer}|${topic}`) ?? 0
         let offered: Array<{ txid: string; outputIndex: number; score: number }>
         try {
           offered = await offeredSince(peer, topic, since, limit, fetchImpl)
         } catch (cause) {
+          unreachable.add(peer)
           warn(`peer synchronisation round ${round}: could not read what ${peer} offered for ${topic}: ${cause instanceof Error ? cause.message : String(cause)}`)
           continue
         }
         const missing: Array<{ outpoint: string; score: number }> = []
         const abandoned: string[] = []
+        const abandonedWaits: number[] = []
         for (const output of offered) {
           const outpoint = `${output.txid}.${output.outputIndex}`
           const key = `${peer}|${topic}|${outpoint}`
           const held = await reconcile.storage.findOutput(output.txid, output.outputIndex, topic)
           if (held != null) {
             attempts.delete(key)
+            waits.delete(key)
+            leftBehind.get(`${peer}|${topic}`)?.delete(outpoint)
             continue
           }
           const tried = (attempts.get(key) ?? 0) + 1
           if (tried >= maxAttempts) {
             attempts.delete(key)
+            const wait = waits.get(key) ?? firstWait
+            waits.set(key, Math.min(wait * 2, maxWait))
+            remember(peer, topic, outpoint, { score: output.score, due: round + wait })
             abandoned.push(outpoint)
+            abandonedWaits.push(wait)
             continue
           }
           attempts.set(key, tried)
@@ -275,7 +376,10 @@ export function startPeerSynchronisation(
           )
         }
         if (abandoned.length > 0) {
-          warn(`peer synchronisation round ${round}: left behind after ${maxAttempts} rounds, offered by ${peer} for ${topic} and never admitted: ${abandoned.join(', ')}`)
+          warn(
+            `peer synchronisation round ${round}: left behind after ${maxAttempts} rounds, offered by ${peer} for ${topic} and never admitted: ${abandoned.join(', ')}; ` +
+              `asked for again in ${Math.min(...abandonedWaits)} rounds`
+          )
         }
         if (outcome.partial) log(`peer synchronisation round ${round}: ${peer} offered a full page of ${offered.length} for ${topic}; outputs beyond it are checked in a later round`)
         outcomes.push(outcome)
@@ -287,11 +391,29 @@ export function startPeerSynchronisation(
   const run = async (): Promise<SyncRound> => {
     const round = ++count
     const started = Date.now()
-    log(`peer synchronisation round ${round} started with ${options.peers.length} peer${options.peers.length === 1 ? '' : 's'}: ${options.peers.join(', ')}`)
+    let plan: Record<string, string[]> | undefined = lastPlan
+    if (options.plan != null) {
+      try {
+        plan = await options.plan(round)
+        lastPlan = plan
+        if (engine.syncConfiguration != null) {
+          for (const [topic, peers] of Object.entries(plan)) engine.syncConfiguration[topic] = peers.length === 0 ? false : [...peers]
+        }
+      } catch (cause) {
+        warn(`peer synchronisation round ${round}: could not plan the peers, so the round keeps the last ones: ${cause instanceof Error ? cause.message : String(cause)}`)
+      }
+    }
+    const peers = plan == null ? options.peers : roundPeers(plan, Object.keys(plan))
+    log(`peer synchronisation round ${round} started with ${peers.length} peer${peers.length === 1 ? '' : 's'}: ${peers.join(', ')}`)
     let result: SyncRound
     let before = new Map<string, number>()
     try {
-      before = await checkpoints()
+      await scheduleRetries(round, plan)
+    } catch (cause) {
+      warn(`peer synchronisation round ${round}: could not hold the checkpoints for outputs left behind: ${cause instanceof Error ? cause.message : String(cause)}`)
+    }
+    try {
+      before = await checkpoints(plan)
     } catch (cause) {
       warn(`peer synchronisation round ${round}: could not read the checkpoints: ${cause instanceof Error ? cause.message : String(cause)}`)
     }
@@ -304,15 +426,23 @@ export function startPeerSynchronisation(
       result = { round, startedAt: new Date(started).toISOString(), durationMs: Date.now() - started, ok: false, error }
       warn(`peer synchronisation round ${round} failed after ${result.durationMs} ms: ${error}`)
     }
+    const unreachable = new Set<string>()
     if (reconcile != null) {
       try {
-        result.reconciliation = await reconcileRound(round, before)
+        result.reconciliation = await reconcileRound(round, before, plan, unreachable)
       } catch (cause) {
         warn(`peer synchronisation round ${round}: reconciliation failed: ${cause instanceof Error ? cause.message : String(cause)}`)
       }
     }
+    if (plan != null) result.peers = plan
+    if (unreachable.size > 0) result.unreachable = [...unreachable]
     rounds.push(result)
     if (rounds.length > 100) rounds.shift()
+    try {
+      options.afterRound?.(result)
+    } catch (cause) {
+      warn(`peer synchronisation round ${round}: the planner's follow-up failed: ${cause instanceof Error ? cause.message : String(cause)}`)
+    }
     return result
   }
 
