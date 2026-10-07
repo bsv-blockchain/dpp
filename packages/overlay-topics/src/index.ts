@@ -116,6 +116,7 @@ import { buildEvidenceExportPart, buildEvidencePackage } from './evidenceExport.
 import { RetractionRefused, retractOutput } from './retraction.js'
 import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
 import { startPeerSynchronisation, syncConfigurationFor, syncSettingsFromEnvironment, type SyncSettings } from './sync.js'
+import { discoverySettingsFromEnvironment, shipAdvertLookup, startPeerDiscovery, type DiscoverySettings } from './discovery.js'
 import { pacedChainTracker } from './headerSource.js'
 
 export const TOPIC = DPP_TOPIC
@@ -161,8 +162,13 @@ export interface NodeComponents {
   /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
-  /** SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the Engine holds the same peers as its syncConfiguration. */
-  sync?: Pick<SyncSettings, 'peers' | 'intervalMs'> & { legacy?: boolean }
+  /**
+   * SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the
+   * Engine holds the same peers as its syncConfiguration. With discovery,
+   * `peers` is replaced after each plan by every peer the round asks, and
+   * `staticPeers` keeps the named ones.
+   */
+  sync?: Pick<SyncSettings, 'peers' | 'intervalMs'> & { legacy?: boolean; staticPeers?: string[]; discovery?: DiscoverySettings }
 }
 
 export interface OverlayHttpOptions {
@@ -693,6 +699,7 @@ async function handle(
         at: options.now(),
         syncPeers: components?.sync?.peers,
         syncIntervalMs: components?.sync?.intervalMs,
+        syncDiscovery: components?.sync?.discovery?.enabled === true,
       }))
       return
     }
@@ -1379,9 +1386,14 @@ async function engineFromEnvironment(
   }
 
   const sync = syncSettingsFromEnvironment()
-  if (sync.peers.length > 0) {
+  const discovery = discoverySettingsFromEnvironment(network)
+  if (sync.peers.length > 0 || discovery.enabled) {
+    const sources = [
+      ...(sync.peers.length > 0 ? [sync.peers.join(', ')] : []),
+      ...(discovery.enabled ? [`at most ${discovery.maxPeers} hosts found from SHIP adverts through ${discovery.trackers.join(', ')}`] : []),
+    ]
     console.log(
-      `synchronising ${TOPIC} and ${ATTESTATION_TOPIC}${sync.legacy ? ` and ${UORA_TOPIC}` : ''} from ${sync.peers.join(', ')}` +
+      `synchronising ${TOPIC} and ${ATTESTATION_TOPIC}${sync.legacy ? ` and ${UORA_TOPIC}` : ''} from ${sources.join(' and ')}` +
         (sync.intervalMs > 0 ? ` every ${sync.intervalMs} ms` : ' once, at startup')
     )
   }
@@ -1423,7 +1435,7 @@ async function engineFromEnvironment(
     ownerConsent,
     managedAcceptance: versionTwo.managedAcceptance,
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
-    sync: { peers: sync.peers, intervalMs: sync.intervalMs, legacy: sync.legacy },
+    sync: { peers: [...sync.peers], staticPeers: [...sync.peers], intervalMs: sync.intervalMs, legacy: sync.legacy, ...(discovery.enabled ? { discovery } : {}) },
   }
   return { engine, components, close }
 }
@@ -1483,16 +1495,60 @@ async function main(): Promise<void> {
   // The first round after the socket is listening, so a peer that is also a
   // peer of ours can answer us; later rounds on the interval. Nothing awaits
   // a round: a peer that is down is a log line, not a stalled node.
-  const synchronisation = components.sync != null && components.sync.peers.length > 0
+  const sync = components.sync
+  const synchronisedTopics = [TOPIC, ATTESTATION_TOPIC, ...(sync?.legacy === true ? [UORA_TOPIC] : [])]
+  const staticPeers = sync?.staticPeers ?? sync?.peers ?? []
+  // With discovery, each round's peers come from the SHIP adverts beside the
+  // named ones, and a discovered host is compared with this index's own
+  // capability document before it is asked for anything (discovery.ts).
+  const discovery = sync?.discovery == null
+    ? undefined
+    : startPeerDiscovery({
+        topics: synchronisedTopics,
+        staticPeers,
+        self: process.env.PUBLIC_URL,
+        maxPeers: sync.discovery.maxPeers,
+        intervalMs: sync.intervalMs,
+        findAdverts: shipAdvertLookup(sync.discovery.trackers, network),
+        ownCapabilities: () => buildCapabilities({
+          publisherPolicy: components.publisherPolicy,
+          serviceIdentityKey: components.serviceIdentityKey,
+          anchorServiceKeys: components.anchorServiceKeys,
+          ownerConsent: components.ownerConsent,
+          controlAuthorities: components.controlAuthorities,
+          managedAcceptance: components.managedAcceptance,
+          exportAvailable: signingKey != null,
+          completeExportBearer: exportToken != null && exportToken !== '',
+          networkOracleConfigured: knownOnChain != null,
+          at: new Date(),
+          syncPeers: sync.peers,
+          syncIntervalMs: sync.intervalMs,
+          syncDiscovery: true,
+        }),
+        passportTopic: TOPIC,
+        attestationTopic: ATTESTATION_TOPIC,
+      })
+  const synchronisation = sync != null && (staticPeers.length > 0 || discovery != null)
     ? startPeerSynchronisation(engine, {
-        intervalMs: components.sync.intervalMs,
-        peers: components.sync.peers,
+        intervalMs: sync.intervalMs,
+        peers: staticPeers,
         // After each round, what the peers offered is checked against what
         // arrived, and the checkpoint held where something did not (sync.ts).
         reconcile: {
           storage: components.engineStorage,
-          topics: [TOPIC, ATTESTATION_TOPIC, ...(components.sync.legacy === true ? [UORA_TOPIC] : [])],
+          topics: synchronisedTopics,
         },
+        ...(discovery == null
+          ? {}
+          : {
+              plan: async (round: number) => {
+                const plan = await discovery.plan(round)
+                // The capability document names every peer this round asks.
+                sync.peers.splice(0, sync.peers.length, ...discovery.peers())
+                return plan
+              },
+              afterRound: discovery.afterRound,
+            }),
       })
     : undefined
   if (synchronisation != null) void synchronisation.runOnce()

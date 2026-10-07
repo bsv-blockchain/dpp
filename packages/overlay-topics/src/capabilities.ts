@@ -120,8 +120,10 @@ export interface CapabilityInput {
   at: Date
   /** A source revision to publish, when the deployment knows one. */
   sourceRevision?: string
-  /** SYNC_PEERS: the static peers this node synchronises from; none means synchronisation is off. */
+  /** The peers this node synchronises from: SYNC_PEERS, and with discovery the hosts the last round found; none and no discovery means synchronisation is off. */
   syncPeers?: string[]
+  /** SYNC_DISCOVERY=ship: peers are also found from SHIP adverts (discovery.ts). */
+  syncDiscovery?: boolean
   /** SYNC_INTERVAL_MS, reported beside the peers; 0 means one round at startup only. */
   syncIntervalMs?: number
 }
@@ -149,7 +151,10 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   const policy = input.publisherPolicy
   const chain = policy?.chain
   const peers = [...(input.syncPeers ?? [])]
-  const synchronising = peers.length > 0
+  // With discovery a node synchronises before it has found anyone: the round
+  // runs and finds no peer yet, which is not synchronisation switched off.
+  const synchronising = peers.length > 0 || input.syncDiscovery === true
+  const discovery = input.syncDiscovery === true ? 'ship-slap' : synchronising ? 'static-peers' : 'none'
   const federated = synchronising && policy != null && newestPolicy(policy).scope.operators.length >= 2
   const operatorProfile = federated ? FEDERATED_OPERATORS_PROFILE : SINGLE_OPERATOR_PROFILE
   const inForce = chain == null ? undefined : policyInForceAt(chain, input.at)
@@ -172,7 +177,9 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   const managedAcceptance = input.managedAcceptance === true
 
   const unsupported: CapabilityDocument['unsupported'] = [
-    { id: 'ship-slap-discovery', reason: 'This node advertises nothing; a public deployment declares its discovery profile separately.' },
+    input.syncDiscovery === true
+      ? { id: 'ship-slap-advertising', reason: 'This node finds peers from SHIP adverts but advertises nothing of its own; other indexes reach it only by naming it.' }
+      : { id: 'ship-slap-discovery', reason: 'This node advertises nothing; a public deployment declares its discovery profile separately.' },
     ...(synchronising
       ? []
       : [{ id: 'gasp-synchronisation', reason: 'Peer synchronisation is off in this host; federated-operators@1 is a separate operator profile, and naming it does not start a synchronisation.' }]),
@@ -224,7 +231,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
         ...profileEntry(operatorProfile),
         kind: 'operator',
         options: {
-          discovery: synchronising ? 'static-peers' : 'none',
+          discovery,
           gasp: synchronising,
           ...(policy == null ? {} : { operators: [...newestPolicy(policy).scope.operators] }),
           ...(synchronising ? { peers, syncIntervalMs: input.syncIntervalMs ?? DEFAULT_SYNC_INTERVAL_MS } : {}),
@@ -263,7 +270,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       ownerConsent: consentSelected ? 'required' : 'not-selected',
       transferAuthorities,
     },
-    synchronisation: { profile: operatorProfile, discovery: synchronising ? 'static-peers' : 'none', gasp: synchronising, peers },
+    synchronisation: { profile: operatorProfile, discovery, gasp: synchronising, peers },
     limits: {
       maxLookupResults: MAX_LOOKUP_RESULTS,
       defaultAnchorPageSize: DEFAULT_ATTESTATION_RESULTS,

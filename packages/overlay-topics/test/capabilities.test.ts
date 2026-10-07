@@ -161,6 +161,20 @@ describe('synchronisation in the capability document', () => {
     expect(defaulted.limits.syncIntervalMs).toBe(60_000)
   })
 
+  it('says ship-slap with discovery on, synchronising before any peer is found, and that it advertises nothing of its own', () => {
+    const searching = buildCapabilities({ publisherPolicy: federation, syncDiscovery: true, exportAvailable: false, networkOracleConfigured: false, at: AT })
+    expectValid(searching)
+    // Rounds run while it searches, so the two-operator policy claims the federated profile as a named peer would.
+    expect(searching.synchronisation).toEqual({ profile: 'federated-operators@1', discovery: 'ship-slap', gasp: true, peers: [] })
+    expect(ids(searching.unsupported)).toContain('ship-slap-advertising')
+    expect(ids(searching.unsupported)).not.toContain('ship-slap-discovery')
+    expect(ids(searching.unsupported)).not.toContain('gasp-synchronisation')
+    const found = buildCapabilities({ publisherPolicy: federation, syncDiscovery: true, syncPeers: peers, exportAvailable: false, networkOracleConfigured: false, at: AT })
+    expectValid(found)
+    expect(found.synchronisation).toEqual({ profile: 'federated-operators@1', discovery: 'ship-slap', gasp: true, peers })
+    expect(found.profiles[0]).toMatchObject({ options: { discovery: 'ship-slap', gasp: true, peers } })
+  })
+
   it('claims federated-operators@1 only with both a two-operator policy and peers', () => {
     const single = { chain: policyChain(), operators: OPERATORS, versions: [1, 2], source: 'test' }
     const singleWithPeers = buildCapabilities({ publisherPolicy: single, syncPeers: peers, exportAvailable: false, networkOracleConfigured: false, at: AT })

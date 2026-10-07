@@ -219,6 +219,27 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     expect(capabilitiesB.publisherPolicy).toMatchObject({ policyVersion: '1', publisherKeys: [pub(K1)], anchoringServices: [pub(A1)] })
   })
 
+  it('B with no named peer pulls both rails from A once a discovery plan names it, through the same engine path as a named peer', async () => {
+    const policy = writePolicy([federatedChain().genesis])
+    const { A } = await operatorAWithHistory(policy)
+    const B = await startOperator('B', policy)
+    // No SYNC_PEERS: the engine starts with every topic switched off.
+    expect(B.node.engine.syncConfiguration).toMatchObject({ tm_dpp: false, tm_attestation: false })
+    const synchronisation = startPeerSynchronisation(B.node.engine, {
+      intervalMs: 0, peers: [], log: () => {}, warn: () => {},
+      reconcile: { storage: B.node.storage, topics: ['tm_dpp', 'tm_attestation'] },
+      plan: async () => ({ tm_dpp: [A.base], tm_attestation: [A.base] }),
+    })
+    const round = await synchronisation.runOnce()
+    synchronisation.stop()
+    expect(round.ok).toBe(true)
+    expect(round.unreachable).toBeUndefined()
+    expect(B.node.engine.syncConfiguration).toMatchObject({ tm_dpp: [A.base], tm_attestation: [A.base] })
+    expect(normalise(await lookup(B, 'ls_dpp', { passportId: PASSPORT_ID }))).toEqual(normalise(await lookup(A, 'ls_dpp', { passportId: PASSPORT_ID })))
+    expect(normalise(await lookup(B, 'ls_attestation', { subject: PASSPORT_ID }))).toEqual(normalise(await lookup(A, 'ls_attestation', { subject: PASSPORT_ID })))
+    expect(round.reconciliation?.map((r) => [r.topic, r.missing, r.abandoned.length])).toEqual([['tm_dpp', 0, 0], ['tm_attestation', 0, 0]])
+  })
+
   it('a lineage funded from its own change synchronises, which is how a wallet-backed writer funds every state', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const A = await startOperator('A', policy)

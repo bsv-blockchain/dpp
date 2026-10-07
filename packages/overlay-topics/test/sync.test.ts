@@ -2,7 +2,7 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { InMemoryOverlayStorage } from '../src/engineStorage.js'
-import { startPeerSynchronisation } from '../src/sync.js'
+import { startPeerSynchronisation, type SyncConfiguration, type SyncRound } from '../src/sync.js'
 
 /**
  * The reconciliation after a round (sync.ts): the SDK moves the checkpoint to
@@ -119,6 +119,66 @@ describe('reconciliation after a synchronisation round', () => {
     const round = await sync.runOnce()
     expect(round.ok).toBe(true)
     expect(round.reconciliation).toBeUndefined()
+    sync.stop()
+  })
+
+  it('asks for an output left behind again once its wait is over, doubling the wait each time, and forgets it once it arrives', async () => {
+    const storage = new InMemoryOverlayStorage()
+    const peer = await peerOffering({ tm_dpp: [{ txid: TXID_A, outputIndex: 0, score: 40 }] })
+    const engine = { startGASPSync: async () => { await storage.updateLastInteraction(peer.base, 'tm_dpp', 100) } }
+    const logs: string[] = []
+    const warnings: string[] = []
+    const sync = startPeerSynchronisation(engine, {
+      intervalMs: 0, peers: [peer.base], log: (line) => logs.push(line), warn: (line) => warnings.push(line),
+      reconcile: { storage, topics: ['tm_dpp'], maxAttempts: 1, retryAfterRounds: 2, maxRetryAfterRounds: 3 },
+    })
+    // Round 1 leaves it behind; rounds 2 waits; round 3 asks again from its score and leaves it behind again, for longer.
+    expect((await sync.runOnce()).reconciliation?.[0]).toMatchObject({ offered: 1, abandoned: [`${TXID_A}.0`] })
+    expect((await sync.runOnce()).reconciliation?.[0]).toMatchObject({ offered: 0, abandoned: [] })
+    expect((await sync.runOnce()).reconciliation?.[0]).toMatchObject({ offered: 1, abandoned: [`${TXID_A}.0`] })
+    expect(warnings.filter((w) => w.includes('left behind after 1 rounds'))).toHaveLength(2)
+    expect(warnings.some((w) => w.endsWith('asked for again in 2 rounds'))).toBe(true)
+    expect(warnings.some((w) => w.endsWith('asked for again in 3 rounds'))).toBe(true)
+    expect(logs.filter((l) => l.includes(`asking ${peer.base} again for 1 output left behind for tm_dpp`))).toHaveLength(1)
+    // It arrives meanwhile; round 6 asks again, finds it held and forgets it.
+    await admitted(storage, TXID_A, 'tm_dpp')
+    await sync.runOnce()
+    await sync.runOnce()
+    expect((await sync.runOnce()).reconciliation?.[0]).toMatchObject({ offered: 1, missing: 0, abandoned: [] })
+    expect(peer.requests.map((r) => r.since)).toEqual([0, 100, 40, 100, 100, 40])
+    expect(await storage.getLastInteraction(peer.base, 'tm_dpp')).toBe(100)
+    // Nothing left to ask for: a later round starts where the SDK left it.
+    await sync.runOnce()
+    expect(peer.requests.at(-1)?.since).toBe(100)
+    sync.stop()
+  })
+
+  it('takes each round\'s peers from a plan, writes them into the engine and checks exactly those', async () => {
+    const storage = new InMemoryOverlayStorage()
+    const peer = await peerOffering({ tm_dpp: [{ txid: TXID_A, outputIndex: 0, score: 5 }] })
+    const engine = { syncConfiguration: { tm_dpp: false, tm_attestation: false } as SyncConfiguration, startGASPSync: async () => {} }
+    const finished: SyncRound[] = []
+    const plans = [{ tm_dpp: [peer.base, 'http://127.0.0.1:1'], tm_attestation: [] }]
+    const sync = startPeerSynchronisation(engine, {
+      intervalMs: 0, peers: [], log: () => {}, warn: () => {},
+      reconcile: { storage, topics: ['tm_dpp', 'tm_attestation'] },
+      plan: async () => {
+        const next = plans.shift()
+        if (next == null) throw new Error('the trackers are down')
+        return next
+      },
+      afterRound: (round) => finished.push(round),
+    })
+    const round = await sync.runOnce()
+    expect(engine.syncConfiguration).toEqual({ tm_dpp: [peer.base, 'http://127.0.0.1:1'], tm_attestation: false })
+    expect(round.peers).toEqual({ tm_dpp: [peer.base, 'http://127.0.0.1:1'], tm_attestation: [] })
+    expect(round.reconciliation).toEqual([{ peer: peer.base, topic: 'tm_dpp', offered: 1, missing: 1, abandoned: [], partial: false }])
+    expect(round.unreachable).toEqual(['http://127.0.0.1:1'])
+    expect(finished).toEqual([round])
+    // A plan that fails keeps the last one, so the engine and the check still agree.
+    const second = await sync.runOnce()
+    expect(second.peers).toEqual({ tm_dpp: [peer.base, 'http://127.0.0.1:1'], tm_attestation: [] })
+    expect(engine.syncConfiguration.tm_dpp).toEqual([peer.base, 'http://127.0.0.1:1'])
     sync.stop()
   })
 })

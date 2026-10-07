@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-07, an index finds its peers, and asks again for what it left behind
+
+- `@bsv/dpp-overlay-topics` can find its peers. With `SYNC_DISCOVERY=ship`, an index asks the SLAP trackers (`SLAP_TRACKERS`, or the SDK's defaults for the network) which hosts advertise each topic it synchronises, at start and every ten minutes, and pulls from at most `SYNC_MAX_DISCOVERED` of them a round (16 by default) beside the peers `SYNC_PEERS` names. An advert counts only when its token verifies, for that topic, at a plain https address. A host whose capability document shares no publisher key, or no anchoring service when both restrict them, with this index is not asked for that topic. A host that cannot be read sits out a round, then twice as many each time it fails again, up to a day. Admission is unchanged: a discovered index's records are admitted under this index's own publisher policy and anchoring settings. The capability document says `discovery: "ship-slap"`, lists the peers the last round asked, and names `ship-slap-advertising` under `unsupported`, because the index does not advertise itself. Off unless set; no wire format changes; the next release carries it.
+- An output a peer offered and this index did not admit in five rounds is no longer left behind for good. It is asked for again after about an hour of rounds, then after twice as long each time it is left behind again, up to a day, so a state whose graph or proof the peer could not yet serve arrives once it can.
+
 ### 2026-10-07, comparing two indexes' whole histories
 
 - The federation page's `compare-indexes.mjs` also compares each passport's whole history from `GET /history`, spent states included. A difference fails only once it is older than `GRACE_MINUTES` (120 by default), since a new state reaches a peer only when its proof arrives; the script keeps when it first saw each difference in a state file, and stops with exit code 2 when an index does not answer, so it can run on a schedule as a standing check.
