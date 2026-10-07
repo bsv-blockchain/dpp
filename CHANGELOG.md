@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-06, the hosted check finds a path by its GS1 key
+
+- The hosted reference page says the check at `dpp.bsvb.net/verify` asks the hosted index for every passport with a path's GS1 key, under any host, as it has since 3 October, not under a fixed list of hosts.
+
 ### 2026-10-06, source-map-js 1.2.2 in the test tooling
 
 - The lockfile moves `source-map-js`, which the test tooling reaches through vitest, vite and postcss, from 1.2.1 to 1.2.2 for GHSA-68fv-2mgg-jv7q. No published package includes it.
