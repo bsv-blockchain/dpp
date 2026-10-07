@@ -158,55 +158,139 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 
 ### 7. Confirm both hold the same records
 
-Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. Save this as `compare-indexes.mjs`:
+Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. That route lists current outputs only, so a passport counts once, by its newest state; the script below also compares each passport's whole history from `GET /history`, spent states included. Save this as `compare-indexes.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.7` installed:
 
 ```js
-// Compare what two indexes hold, topic by topic: node compare-indexes.mjs <first index URL> <second index URL>
+// Compare what two indexes hold on every topic, and each passport's whole history, and fail on a difference older than the grace period:
+// node compare-indexes.mjs <first index URL> <second index URL>
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { Transaction } from '@bsv/sdk'
+import { tryParseDppOutput } from '@bsv/dpp-core'
+
 const [first, second] = process.argv.slice(2)
 if (!first || !second) throw new Error('usage: node compare-indexes.mjs <first index URL> <second index URL>')
+// A state reaches a peer only once it is proven, up to about an hour after it was written, so a difference counts only once it is older than this.
+const graceMs = Number(process.env.GRACE_MINUTES ?? 120) * 60_000
+const stateFile = process.env.STATE_FILE ?? 'compare-indexes-state.json'
+const firstSeen = existsSync(stateFile) ? JSON.parse(readFileSync(stateFile, 'utf8')) : {}
+
+// A request that names the index when it does not answer at all.
+async function request(index, path, init) {
+  try {
+    return await fetch(`${index}${path}`, init)
+  } catch (cause) {
+    throw new Error(`${index} did not answer ${path}: ${cause.cause?.message ?? cause.message}`)
+  }
+}
+
+async function post(index, path, topic, body) {
+  const answer = await request(index, path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-BSV-Topic': topic }, body: JSON.stringify(body) })
+  if (answer.status === 400 && path === '/requestSyncResponse') return null
+  if (!answer.ok) throw new Error(`${index}${path} answered ${answer.status} for ${topic}`)
+  return answer.json()
+}
 
 // Every output an index lists for a topic, as txid.outputIndex, or null when it does not serve the topic.
 async function holdings(index, topic) {
   const held = new Set()
   let since = 0
   for (;;) {
-    const answer = await fetch(`${index}/requestSyncResponse`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-BSV-Topic': topic },
-      body: JSON.stringify({ version: 1, since }),
-    })
-    if (answer.status === 400) return null
-    if (!answer.ok) throw new Error(`${index} answered ${answer.status} for ${topic}`)
-    const { UTXOList } = await answer.json()
+    const page = await post(index, '/requestSyncResponse', topic, { version: 1, since })
+    if (page == null) return null
     const before = held.size
-    for (const { txid, outputIndex } of UTXOList) held.add(`${txid}.${outputIndex}`)
+    for (const { txid, outputIndex } of page.UTXOList) held.add(`${txid}.${outputIndex}`)
     // A page holds at most 500, and the next one starts at the last score, which it repeats.
-    if (UTXOList.length < 500 || held.size === before) return held
-    since = UTXOList.at(-1).score
+    if (page.UTXOList.length < 500 || held.size === before) return held
+    since = page.UTXOList.at(-1).score
   }
 }
 
+// The passport a current output belongs to, read from its own transaction.
+async function passportOf(index, outpoint) {
+  const [txid, outputIndex] = [outpoint.slice(0, 64), Number(outpoint.slice(65))]
+  const node = await post(index, '/requestForeignGASPNode', 'tm_dpp', { graphID: outpoint, txid, outputIndex, metadata: false })
+  return tryParseDppOutput(Transaction.fromHex(node.rawTx).outputs[outputIndex].lockingScript)?.state.passportId
+}
+
+// Every state an index holds for a passport, oldest first.
+async function history(index, passportId) {
+  const txids = []
+  let cursor = null
+  do {
+    const query = new URLSearchParams({ passportId, limit: '500', ...(cursor ? { cursor } : {}) })
+    const answer = await request(index, `/history?${query}`)
+    if (answer.status === 404) return []
+    if (!answer.ok) throw new Error(`${index}/history answered ${answer.status} for ${passportId}`)
+    const page = await answer.json()
+    txids.push(...page.items.map((item) => item.txid))
+    cursor = page.nextCursor
+  } while (cursor)
+  return txids
+}
+
+const differences = []
+const tips = { first: new Set(), second: new Set() }
+try {
 for (const topic of ['tm_dpp', 'tm_attestation', 'tm_uora_dpp']) {
   const [a, b] = await Promise.all([holdings(first, topic), holdings(second, topic)])
   if (a == null || b == null) {
-    console.log(`${topic}: not served by ${a == null ? first : second}`)
+    differences.push(`${topic}: not served by ${a == null ? first : second}`)
     continue
   }
-  const onlyFirst = [...a].filter((o) => !b.has(o))
-  const onlySecond = [...b].filter((o) => !a.has(o))
-  console.log(`${topic}: ${a.size} and ${b.size}, ${onlyFirst.length} only on the first, ${onlySecond.length} only on the second`)
-  for (const o of onlyFirst) console.log(`  only on the first: ${o}`)
-  for (const o of onlySecond) console.log(`  only on the second: ${o}`)
+  console.log(`${topic}: ${a.size} and ${b.size} current outputs`)
+  for (const o of a) if (!b.has(o)) differences.push(`${topic}: ${o} only on the first`)
+  for (const o of b) if (!a.has(o)) differences.push(`${topic}: ${o} only on the second`)
+  if (topic === 'tm_dpp') [tips.first, tips.second] = [a, b]
 }
-```
 
-Run it with both indexes' base URLs:
+// Each passport's whole history, spent states included, which the current outputs above do not show.
+const passports = new Set()
+for (const [index, held] of [[first, tips.first], [second, tips.second]]) {
+  for (const outpoint of held) passports.add(await passportOf(index, outpoint))
+}
+passports.delete(undefined)
+for (const passportId of passports) {
+  const [a, b] = await Promise.all([history(first, passportId), history(second, passportId)])
+  if (a.join() !== b.join()) differences.push(`history of ${passportId}: ${a.length} states on the first, ${b.length} on the second`)
+}
+console.log(`histories: ${passports.size} passports compared`)
+} catch (error) {
+  // Nothing is compared against an index that did not answer: the check fails rather than reporting agreement.
+  console.log(`not compared: ${error.message}`)
+  process.exit(2)
+}
+
+// Report each difference with how long it has been seen; only those older than the grace period fail the check.
+const now = Date.now()
+const seen = {}
+let failing = 0
+for (const difference of differences) {
+  seen[difference] = firstSeen[difference] ?? new Date(now).toISOString()
+  const ageMinutes = Math.round((now - Date.parse(seen[difference])) / 60_000)
+  const fails = now - Date.parse(seen[difference]) >= graceMs
+  if (fails) failing++
+  console.log(`${fails ? 'DIFFERENT' : 'pending'} for ${ageMinutes} min: ${difference}`)
+}
+writeFileSync(stateFile, JSON.stringify(seen, null, 1))
+console.log(failing === 0 ? `the two indexes agree${differences.length > 0 ? `, apart from ${differences.length} difference(s) younger than the grace period` : ''}` : `${failing} difference(s) older than the grace period`)
+process.exitCode = failing === 0 ? 0 : 1
+```
 
 ```sh
 node compare-indexes.mjs https://dpp-overlay.bsvb.net http://localhost:8081
 ```
 
-Each topic prints both counts and every output only one of them holds. The route lists current outputs, so a passport counts once, by its newest state. A difference the next round carries closes on its own. One that stays has its cause in the receiving index's log ([when a record does not arrive](#when-a-record-does-not-arrive)) or in settings that admit different things ([which way records flow](#which-way-records-flow)). An index that does not serve a topic answers 400 for it, which the script reports as not served.
+Against the hosted index and a second index that pulls from it, on 7 October 2026 it printed:
+
+```
+tm_dpp: 103 and 103 current outputs
+tm_attestation: 68 and 68 current outputs
+tm_uora_dpp: 26 and 26 current outputs
+histories: 103 passports compared
+the two indexes agree
+```
+
+A difference prints as `pending` until it has been seen for longer than `GRACE_MINUTES`, 120 by default, because a new state reaches a peer only once its proof arrives, up to about an hour after it was written. The time each difference was first seen is kept in `compare-indexes-state.json` (or the file `STATE_FILE` names), so run the script from the same directory each time. A difference older than that prints as `DIFFERENT` and the script exits with 1. An index that does not answer stops it with `not compared:` and exit code 2, so a silent peer never reads as agreement. Run it on a schedule, hourly for example, to notice a peer that stopped or fell behind. A difference that stays has its cause in the receiving index's log ([when a record does not arrive](#when-a-record-does-not-arrive)) or in settings that admit different things ([which way records flow](#which-way-records-flow)). An index that does not serve a topic answers 400 for it, which the script reports as a difference.
 
 ### Peer with the hosted reference or another operator
 

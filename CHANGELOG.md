@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-07, comparing two indexes' whole histories
+
+- The federation page's `compare-indexes.mjs` also compares each passport's whole history from `GET /history`, spent states included. A difference fails only once it is older than `GRACE_MINUTES` (120 by default), since a new state reaches a peer only when its proof arrives; the script keeps when it first saw each difference in a state file, and stops with exit code 2 when an index does not answer, so it can run on a schedule as a standing check.
+
 ### 2026-10-07, what the demonstration writes, and other public claims
 
 - The docs say the demonstration's three sample brands write nothing to the blockchain, and that only a brand a signed-in user creates writes mainnet transactions, marked as sample records. They said every passport it writes is a mainnet transaction.
