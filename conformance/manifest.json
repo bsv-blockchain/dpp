@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-09-16",
+  "updatedAt": "2026-10-07",
   "sources": [
     {
       "id": "spec-record-model",
@@ -152,7 +152,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "d88e8469e1daf6948fb0d57e657c4c42f1d86e72c001b5c82cf423321d710d50"
+      "digest": "48908ca596730dd8e753056422d0bf091befa475424d8a7066802910dc4c43ac"
     },
     {
       "id": "profiles-manifest-schema",
@@ -482,7 +482,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "a859e9d85b490b64a4b99d0a393be79bf15738a475bd058e6e02d8b6b3d94bfc"
+      "digest": "3baa6246c17491f669e37c1f62bcb9988e6d38ddff9e062852a0cc83742e2be9"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -3977,9 +3977,9 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-07",
       "reviewOwner": "dpp maintainers",
-      "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands, and the operator start describes the capability document without a served /capabilities route, which is Batch 3 (P07)."
+      "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands."
     },
     {
       "id": "REG-1-insert-first-intake",
@@ -5140,9 +5140,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-30",
+      "reviewedAt": "2026-10-07",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "d88e8469e1daf6948fb0d57e657c4c42f1d86e72c001b5c82cf423321d710d50"
+      "sourceDigest": "48908ca596730dd8e753056422d0bf091befa475424d8a7066802910dc4c43ac"
     },
     {
       "id": "PROF-4-frozen-unchanged",

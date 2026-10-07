@@ -1,6 +1,6 @@
 # The DPP standard
 
-A digital product passport (DPP) is a product's history that anyone can check. This open standard keeps each passport as a chain of signed records on the BSV blockchain, so a reader can verify who wrote each change without trusting the service that shows it.
+A digital product passport (DPP) is a product's history that anyone can check. This open standard keeps each passport as a chain of signed records on the BSV blockchain, so a reader can verify which key signed each change without trusting the service that shows it.
 
 These pages are for anyone bringing the standard into a new platform, an existing application or a service they run. [Choose your path](start/choose-your-path.md) routes every journey, from a ten-minute evaluation to an independent implementation, and an AI agent starts [here](start/for-agents.md).
 
@@ -8,7 +8,7 @@ These pages are for anyone bringing the standard into a new platform, an existin
 
 | I want to | What I need | Start |
 |---|---|---|
-| See a real passport | A browser | Open [a live passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) |
+| See a live sample passport | A browser | Open [a live passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) |
 | Check a passport myself | Node.js 22, npm and git | [Quick start](quick-start.md) |
 | Issue passports from my own system | Your own index (Docker and a checkout), a funded BRC-100 wallet and an identifier | [Issue passports](start/choose-your-path.md#issue-passports) |
 | Run my own index | Docker and a checkout | [Run an index](start/choose-your-path.md#run-an-index) |
@@ -17,7 +17,7 @@ These pages are for anyone bringing the standard into a new platform, an existin
 
 ## Try the hosted demonstration
 
-[dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify its passports, and anyone who signs up can issue and update passports there for its sample brands. Every passport it writes is a real transaction on the BSV mainnet, but the brands, products and data are mock demonstration data. The demonstration behaves exactly as the standard specifies, so it shows what an integration does.
+[dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify the passports it publishes. Its three sample brands are open to anyone and write nothing to the blockchain. Anyone who signs up can create a brand of their own, whose passports are real transactions on the BSV mainnet, marked as sample records, while the demonstration's publishing is open. The brands, products and data are mock demonstration data. The demonstration runs the published packages against the hosted index, so it shows what an integration looks like. It is not a conformance reference: the ledger assesses the packages, not the application.
 
 Open [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8), then check it yourself on the [verifier](https://dpp.bsvb.net/verify). A brand with real products issues them from its own deployment, built with the packages or its own implementation.
 
@@ -25,7 +25,7 @@ Open [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8)
 
 - **A passport is a chain of states.** Each state is a small blockchain transaction that spends the one before it, so the history has one order and cannot be quietly rewritten.
 - **Each state is signed twice:** by the party making the change, and by the service that publishes it.
-- **An index finds a passport's states for you.** It only finds them: your reader checks everything it returns, from the transaction bytes and public block headers.
+- **An index finds a passport's states for you.** It only finds them: your reader checks everything it returns, from the transaction bytes and public block headers, and relies on it only to return the newest state.
 - **Claims about a product are separate.** A repair or a recycling is a signed claim with its own small anchor on chain, so it can be checked without touching the passport.
 - **A reader's answer is a report.** Each check passes, fails, or says which evidence is missing.
 
@@ -33,7 +33,7 @@ Open [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8)
 
 ## What it does not claim
 
-The battery and textile profiles map their fields to what the EU Batteries Regulation (EU) 2023/1542 and the Ecodesign for Sustainable Products Regulation (EU) 2024/1781 ask a passport to carry. The standard claims no conformity with either regulation, and using it does not qualify a product. A reader's report shows who signed which bytes and whether the evidence checks out; it does not show that a product or a claim is genuine, or that an issuer is authorised.
+The battery and textile profiles map their fields to what the EU Batteries Regulation (EU) 2023/1542 and the Ecodesign for Sustainable Products Regulation (EU) 2024/1781 ask a passport to carry; neither mapping has been assessed. The standard claims no conformity with either regulation, and using it does not qualify a product. A reader's report shows who signed which bytes and whether the evidence checks out; it does not show that a product or a claim is genuine, or that an issuer is authorised.
 
 ## Words you will meet
 

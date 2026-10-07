@@ -30,7 +30,7 @@ Every term these pages use, in plain words. Where the docs use two names for one
 | Index | The service that admits passport states and claim anchors and answers lookups. It finds records; it is never the reason to believe them. These pages say index; the BSV software calls it an overlay. |
 | Lineage | All the states of one passport, from its genesis to its tip. |
 | Lookup | A question to an index, such as "every state of this passport" (`ls_dpp`) or "every anchor about this passport" (`ls_attestation`). |
-| Managed custody | The custody profile `managed-custody@1`, the one the current release selects: a custodian holds the keys, and a hand-on to a recipient is accepted by that recipient and committed in the `TRANSFER`. |
+| Managed custody | The custody profile `managed-custody@1`, the one the current release selects: a custodian holds the keys, records and signs the recipient's acceptance of a hand-on, and the `TRANSFER` commits to that record. |
 | Merkle path | The proof that a transaction is in a block (also called a proof or a BUMP). |
 | Outpoint | One output, named by its transaction identifier and output index. |
 | Overlay | The BSV software name for an index. These pages say index. |

@@ -2,7 +2,7 @@
 
 The programme hosts one instance of each service, so you can look up and verify live records, test a reader, or use the hosted index as a peer before you run your own. This page says what each one runs, what is open to anyone, which passports to try and where the hosted services fall short.
 
-[dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify its passports, and anyone who signs up can issue and update passports there for its sample brands. Every passport it writes is a real transaction on the BSV mainnet, but the brands, products and data are mock demonstration data.
+[dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify the passports it publishes. Its three sample brands are open to anyone and write nothing to the blockchain. Anyone who signs up can create a brand of their own, whose passports are real transactions on the BSV mainnet, marked as sample records, while the demonstration's publishing is open. The brands, products and data are mock demonstration data.
 
 ## Services
 

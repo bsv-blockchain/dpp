@@ -8,7 +8,7 @@ Once published, the contents of `spec/`, `contracts/` and `fixtures/` are normat
 
 ## Roles
 
-- **Maintainers** accept changes. While the repository is private, the maintainer is the BSV Association. When the repository opens, the maintainers are the people named in `MAINTAINERS.md`, and adding one is itself a change under this process.
+- **Maintainers** accept changes. The maintainer is the BSV Association, and adding a maintainer is itself a change under this process.
 - **Implementing parties** run a conforming implementation against real records. Today there are two: the reference implementation in this repository and the attestation registry maintained by a second party. A wire shape that both must produce identically is not settled until both have accepted it in writing, and the specification says so where it applies.
 - **Contributors** propose changes. Anyone may.
 

@@ -12,6 +12,13 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-07, what the demonstration writes, and other public claims
+
+- The docs say the demonstration's three sample brands write nothing to the blockchain, and that only a brand a signed-in user creates writes mainnet transactions, marked as sample records. They said every passport it writes is a mainnet transaction.
+- The docs no longer say the demonstration behaves exactly as the standard specifies: it runs the published packages, and the ledger assesses the packages, not the application.
+- A reader verifies which key signed, against headers from a source it chooses, and relies on its index for the newest state; neither regulation mapping has been assessed; a registry is built against the published contract; the status page links the current release selection; a managed custodian records and signs the acceptance; the index is built with Docker Compose from a checkout.
+- `spec/profiles.md` names the fourth kind of profile, custody, which the capabilities schema already allows, and `GOVERNANCE.md` no longer says the repository is private or names a maintainers file that does not exist. The ledger's `updatedAt` is current.
+
 ### 2026-10-06, the hosted check finds a path by its GS1 key
 
 - The hosted reference page says the check at `dpp.bsvb.net/verify` asks the hosted index for every passport with a path's GS1 key, under any host, as it has since 3 October, not under a fixed list of hosts.

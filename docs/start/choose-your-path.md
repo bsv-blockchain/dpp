@@ -5,7 +5,7 @@ Find the row that matches what you want to do. Each path below lists what you ne
 ## Before you choose
 
 - **The hosted services are for reading.** Anyone can look up and verify passports on the [hosted reference](../deployment.md#the-hosted-reference) and ask its registry to check a claim. Writing to its index needs its operator's tokens, so to publish your own passports you run your own index.
-- **The demonstration is a demonstration.** [dpp.bsvb.net](https://dpp.bsvb.net) writes real mainnet transactions for sample brands with mock data. It is not a service for real products.
+- **The demonstration is a demonstration.** [dpp.bsvb.net](https://dpp.bsvb.net) is one: its sample brands write nothing to the blockchain, and a brand you create after signing up writes real mainnet transactions marked as sample records. It is not a service for real products.
 - **Everything is a beta before version 1.0.** Pin exact package versions. Nothing here is declared production-ready.
 - **Two ways to build.** Use the published packages (Node.js 22, JavaScript or TypeScript), or write your own code from the specifications and test vectors.
 
@@ -43,7 +43,7 @@ Done when you can say what a reader checks, and what it cannot establish.
 
 1. Open [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) and its history.
 2. Check it yourself on the [verifier](https://dpp.bsvb.net/verify).
-3. Sign up on [dpp.bsvb.net](https://dpp.bsvb.net) to issue and update passports for a sample brand.
+3. Open a sample brand on [dpp.bsvb.net](https://dpp.bsvb.net) to add a passport to its demonstration catalogue, or sign up to create a brand of your own, whose passports are published to mainnet as sample records.
 
 Done when you have watched a passport's history grow and verified it. The [hosted reference](../deployment.md) says what each hosted service runs.
 
