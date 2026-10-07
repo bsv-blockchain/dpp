@@ -1,6 +1,6 @@
 # Where things stand
 
-The standard is a working draft before version 1.0. Its beta.7 packages, under the Apache 2.0 licence, were published to npm under the `latest` tag on 2 October 2026, the beta.8 overlay package followed the same day, the beta.9 overlay package followed on 3 October 2026, and you can build readers, writers, an index and a registry with them today. This page says what works, what does not yet, and which decisions are still open.
+The standard is a working draft before version 1.0. Its beta.7 packages, under the Apache 2.0 licence, were published to npm under the `latest` tag on 2 October 2026, the beta.8 overlay package followed the same day, the beta.9 overlay package followed on 3 October 2026, and you can build readers, writers and an index with them today, and a registry against the published contract. This page says what works, what does not yet, and which decisions are still open.
 
 ## Works today
 
@@ -23,7 +23,7 @@ The standard is a working draft before version 1.0. Its beta.7 packages, under t
 
 ## Conformance evidence
 
-The ledger records, for every requirement of the standard, how far it is implemented and what evidence supports it; a release's selection names the conformance claims that release makes and the ones it withholds. Claims here are claims about the standard, not the lifecycle claims a passport carries. Read the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) beside the [release selection](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/conformance/selections/dpp-release-2026-10.json), which names the claims required for the published beta.4 set and those withheld.
+The ledger records, for every requirement of the standard, how far it is implemented and what evidence supports it; a release's selection names the conformance claims that release makes and the ones it withholds. Claims here are claims about the standard, not the lifecycle claims a passport carries. Read the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) beside the [release selection](https://github.com/bsv-blockchain/dpp/blob/466095bece6abe61f2f3717946676c80b296cd04/conformance/selections/dpp-release-2026-10-6.json) for the current set, `dpp-release-2026-10-6`, which names the claims it requires and those it withholds.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|

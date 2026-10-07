@@ -11,7 +11,7 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 | Install | Always name the exact version, even though npm's `latest` tag names the current set |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |
-| Demonstration application | `https://dpp.bsvb.net`, with the verifier at `https://dpp.bsvb.net/verify`: sample brands, mock data, real mainnet transactions |
+| Demonstration application | `https://dpp.bsvb.net`, with the verifier at `https://dpp.bsvb.net/verify`: sample brands that write nothing to the chain; brands a signed-in user creates write real mainnet transactions, marked as samples |
 | Hosted index | `https://dpp-overlay.bsvb.net`: lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open; `/submit`, `/retract`, `/arc-ingest` and `/evidence-export` need its operator's tokens |
 | Hosted registry | `https://dpp-resolver.bsvb.net`: validation and reads are open; storing a claim needs its write token |
 | Hosted proof page | `https://dpp-proof.bsvb.net`: the hosted registry's claims checked against their anchors. `node examples/check-registry.mjs <registry>` does the same for any registry ([run an anchor proof page](../implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) |

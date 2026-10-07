@@ -28,7 +28,7 @@ Each rail can be checked without the other, and a party can make a claim without
 4. An issuer signs a claim about the product. A registry keeps the signed claim, and an anchoring service commits to its exact bytes on the claim rail.
 5. A reader gets the lineage from an index and the claim from a registry, and checks the signatures, the links, the subject and the proofs of inclusion itself.
 
-The index and the registry only find and keep records. A reader believes nothing because a service said it: it checks the transaction bytes against public block headers.
+The index and the registry only find and keep records. A reader believes nothing because a service said it: it checks the transaction bytes against block headers from a source it chooses.
 
 ## The building blocks
 

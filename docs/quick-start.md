@@ -32,7 +32,7 @@ The chain as a whole is valid.
 Inclusion across the chain: verified.
 ```
 
-The script asked the [hosted index](deployment.md#the-hosted-reference) for the passport's five states, rebuilt the history and checked every signature, every link and every block proof itself. The index only found the bytes; nothing it said was trusted. Add `--report` to see the full report, one line per check, and [reading the report](learn/evidence-and-freshness.md) explains each answer.
+The script asked the [hosted index](deployment.md#the-hosted-reference) for the passport's five states, rebuilt the history and checked every signature, every link and every block proof itself. The index only found the bytes; the script trusted nothing it said about them, though it relies on the index to return the newest state. Add `--report` to see the full report, one line per check, and [reading the report](learn/evidence-and-freshness.md) explains each answer.
 
 If a state says `inclusion pending`, WhatsOnChain limited the header check: run the command again, or set `WOC_API_KEY` to a WhatsOnChain API key. Under Node 26 you may see `ExperimentalWarning: localStorage is not available`; it is harmless.
 
