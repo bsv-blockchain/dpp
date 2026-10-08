@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-07, two operators serve the same evidence when their transactions and paths match
+
+- `spec/services.md` section 1 says two operators serve the same evidence for a lineage when the transactions and merkle paths they serve for it are byte-identical, whatever the form of the BEEF around them, and that a comparison between operators, including any acceptance exercise that asks for identical evidence, compares those and never the BEEF bytes. The `two-operators` pass criterion, the demonstration page, the limitations row and the overlay README say the same.
+
 ### 2026-10-07, an index finds its peers, and asks again for what it left behind
 
 - `@bsv/dpp-overlay-topics` can find its peers. With `SYNC_DISCOVERY=ship`, an index asks the SLAP trackers (`SLAP_TRACKERS`, or the SDK's defaults for the network) which hosts advertise each topic it synchronises, at start and every ten minutes, and pulls from at most `SYNC_MAX_DISCOVERED` of them a round (16 by default) beside the peers `SYNC_PEERS` names. An advert counts only when its token verifies, for that topic, at a plain https address. A host whose capability document shares no publisher key, or no anchoring service when both restrict them, with this index is not asked for that topic. A host that cannot be read sits out a round, then twice as many each time it fails again, up to a day. Admission is unchanged: a discovered index's records are admitted under this index's own publisher policy and anchoring settings. The capability document says `discovery: "ship-slap"`, lists the peers the last round asked, and names `ship-slap-advertising` under `unsupported`, because the index does not advertise itself. Off unless set; no wire format changes; the next release carries it.

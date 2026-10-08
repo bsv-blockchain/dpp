@@ -40,7 +40,7 @@ Match a limit to the version you use. Unless a row says otherwise, the implement
 | Why an output did not arrive is only in the receiving node's log | A peer cannot ask why | Read the receiving node's log |
 | Synchronisation covers current outputs and their lineages | Separately retained evidence does not travel | Use [exports](export-import-recovery.md) |
 | Peers hold the same records only under the same admission settings | Each index admits what it pulls under its own publisher policy and `ANCHOR_SERVICE_KEYS`, and pulls `tm_uora_dpp` only with `SYNC_LEGACY=1`, so a peer with narrower settings holds less | Match the settings, then [confirm both hold the same records](federation.md#7-confirm-both-hold-the-same-records) |
-| Lookup BEEF differs in form by how a state arrived | Comparing two operators' answers byte for byte fails even when they hold the same states | Compare transactions and their proofs, not the BEEF bytes |
+| Lookup BEEF differs in form by how a state arrived | Comparing two operators' answers byte for byte fails even when they hold the same states | Compare transactions and their merkle paths, as `spec/services.md` section 1 defines, not the BEEF bytes |
 
 ## Proofs and retraction
 

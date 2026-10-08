@@ -77,7 +77,7 @@
       "roles": ["overlay", "registry"],
       "inputs": ["two indexes and two registries with different endpoints, keys, databases and policy configuration, one operated by each party"],
       "evidence": ["both capability documents", "the same passport looked up on both", "each operator's admission of evidence the other served"],
-      "pass": "Each operator validates incoming evidence through its own admission and serves byte-identical evidence for the same lineage; the declared service roles and operator ownership are recorded; a state one refuses and the other admits is visible as a disagreement and reported as such.",
+      "pass": "Each operator validates incoming evidence through its own admission and serves the same transactions and merkle paths for the same lineage, whatever the form of the BEEF that carries them (spec/services.md section 1); the declared service roles and operator ownership are recorded; a state one refuses and the other admits is visible as a disagreement and reported as such.",
       "refuse": "Evidence admitted because a peer served it, or a claim of independence for two nodes under one administration.",
       "rows": ["SVC-1-discovery-sync", "OPR-profiles-named", "CONF-4-overlay-capabilities", "SVC-2-passport-admission", "SVC-2-anchor-admission"]
     },
