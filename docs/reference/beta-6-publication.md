@@ -1,4 +1,10 @@
+---
+hidden: true
+---
+
 # Beta.6 publication receipt
+
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
 
 The four packages selected by `dpp-release-2026-10-3` were published to the public npm registry on **2 October 2026**, using GitHub OIDC trusted publishing with provenance. They are the first published to the `latest` tag, so a plain `npm install` now gets them; no code changed since beta.4. Every downloaded archive matched the approved bytes, and the workflow's final public-registry consumer check passed.
 

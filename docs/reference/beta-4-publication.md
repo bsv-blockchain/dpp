@@ -1,4 +1,10 @@
+---
+hidden: true
+---
+
 # Beta.4 publication receipt
+
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
 
 The four packages selected by `dpp-release-2026-10` were published to the public npm registry on **1 October 2026**, using GitHub OIDC trusted publishing with provenance. Every downloaded archive matched the approved bytes. The workflow's final clean install from the public registry could not yet resolve `@bsv/vsc@0.2.0-beta.3`, uploaded seconds earlier; the same registry checks, run from a clean checkout of the source revision 40 seconds later, passed.
 

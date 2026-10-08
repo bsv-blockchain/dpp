@@ -13,7 +13,7 @@ Publishing makes reviewed package contents available from npm. It does not chang
 
 ## Rehearse step 1 without changing anything
 
-To see every step 1 command pass before you edit anything, run them at the source revision of the current set, which its [publication receipt](beta-4-publication.md) records. From the root of a clean checkout:
+This historical rehearsal uses the published beta.4 set and the source revision its [publication receipt](beta-4-publication.md) records. The [current release](release-sets.md#the-current-set) has its own receipt and verification steps. To reproduce this example, start from the root of a clean checkout:
 
 ```sh
 git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73
@@ -30,7 +30,7 @@ node scripts/publish-candidates.mjs
 
 Each command exits 0. The last prints the plan, `Publication plan SHA-256: ecf6151b4f4dfaba47f9579426fcc3dcb58324b3517cbd36cc4be52c6dff3b51`, `already-published` for each of the four packages and `Read-only preparation. No package or dist-tag was written.` Return to `main` afterwards with `git checkout main`, then run `npm ci` and `npm run build` again.
 
-On `main`, `dpp-release-2026-10` is superseded and the packer refuses it. The packages on `main` changed after beta.4 was published (they carry the Apache 2.0 licence files), so the current set is the beta.5 candidate `dpp-release-2026-10-2`, which step 1 below prepared.
+On `main`, `dpp-release-2026-10` is superseded and the packer refuses it. Use the recorded beta.4 source revision for this rehearsal. To prepare a new publication, start from `main` and declare a new set as step 1 describes.
 
 ## 1. Prepare a candidate
 
@@ -104,6 +104,16 @@ npm view @bsv/dpp-profiles dist-tags --json
 Record the source revision, the successful publication run, the plan digest, package integrities and the registry verification result in a publication receipt, as the [beta.4 receipt](beta-4-publication.md) does, and update the release documentation to tell verified npm availability apart from application adoption. Once the receipt is on the default branch, tag the source revision `v0.1.0-beta.N`, where N is the receipt's number, and publish a GitHub pre-release under that tag that names the release set, lists the package versions and links the receipt. The workflow does not mark the release set as released, tag the repository or notify consumer owners. [Release sets](release-sets.md#verify-a-published-release) shows how anyone can verify the result afterwards.
 
 The handover to the reference application, whose source is not public, includes the exact package selection, release notes and a field-change report for each proposed profile transition. That separate application change must keep readers for existing versions, implement and test the new field shapes, and explicitly select any successor writes. See [version 4 changes](../profiles/version-4-drafts.md) and [consumer adoption](../profiles/updating-applications.md).
+
+### Keep release navigation current
+
+After publication and registry verification, update the documentation in the same change:
+
+1. Update [Releases and compatibility](release-sets.md) with the current package combination, receipt and verification link. Package versions can differ within one release set.
+2. Give the new receipt the `Latest publication` link title in `docs/SUMMARY.md`. Keep every existing receipt in that file at its existing position in the page hierarchy so its address remains stable.
+3. Add `hidden: true` front matter and an archive notice to the previous receipt, and remove its `Latest publication` link title. Keep its recorded evidence and approved JSON plan intact.
+4. Add the superseded set to [Release history](release-history.md). The sidebar should expose one current receipt and one history page, regardless of how many archived releases exist.
+5. Run `node scripts/docs-check.mjs`. Check the GitBook preview to confirm the latest receipt is visible, archived receipts are hidden from the sidebar, and history links still open them.
 
 ## Earlier publications
 
