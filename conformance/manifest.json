@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-10-07",
+  "updatedAt": "2026-10-08",
   "sources": [
     {
       "id": "spec-record-model",
@@ -482,7 +482,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "3baa6246c17491f669e37c1f62bcb9988e6d38ddff9e062852a0cc83742e2be9"
+      "digest": "95919b5d34b52de46affa920acc1249043c60d9cdf34cec5d6a31d3348bcf040"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -3977,7 +3977,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-07",
+      "reviewedAt": "2026-10-08",
       "reviewOwner": "dpp maintainers",
       "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands."
     },
