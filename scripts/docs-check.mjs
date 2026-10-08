@@ -37,7 +37,8 @@ const pages = walk(docs).map((p) => relative(docs, p)).sort()
 
 // 1. Navigation.
 const summary = readFileSync(join(docs, 'SUMMARY.md'), 'utf8')
-const listed = [...summary.matchAll(/\]\(([^)]+)\)/g)].map((m) => m[1])
+// GitBook uses an optional link title as the sidebar label, separate from the path.
+const listed = [...summary.matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)].map((m) => m[1])
 for (const l of listed) say(existsSync(join(docs, l)), `SUMMARY.md names ${l}, which exists.`)
 const unlisted = pages.filter((p) => p !== 'SUMMARY.md' && !listed.includes(p))
 say(unlisted.length === 0, `every page under docs/ is in the navigation${unlisted.length ? `: unlisted ${unlisted.join(', ')}` : ''}.`)

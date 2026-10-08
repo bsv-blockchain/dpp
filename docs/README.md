@@ -1,16 +1,16 @@
-# The DPP standard
+# Build with the open DPP standard
 
-Use this open standard to build product passports into your own platform, connect them to an existing application, or provide a service that other implementations can use.
+Build your own digital product passport platform, add passport features to an existing application, or provide services other implementations can use. Start by choosing what you want to deliver.
 
 A digital product passport connects a product to information about its history. This standard records changes on the BSV blockchain so a reader can check the signed records and their evidence independently of the application displaying them. Your organisation chooses the product experience, data, permissions and services around those records.
 
-You can use the reference packages or implement the published rules yourself. You do not need every package or every service.
+The standard provides shared rules, reference packages and implementation guides. You can use the packages or implement the published rules yourself. You do not need every package or every service.
 
 ## Start here
 
 | Your goal | Start with | What you will get |
 |---|---|---|
-| Plan our own production platform | [Understand and plan](start/plan-your-platform.md) | A platform brief covering scope, services, responsibilities and delivery decisions |
+| Plan our own production platform | [Plan your platform](start/plan-your-platform.md) | A platform brief covering scope, services, responsibilities and delivery decisions |
 | Add passport features to an application | [Build or integrate](start/build-and-integrate.md) | A path to reading, issuing or updating passports, with clear prerequisites |
 | Run services or use a provider | [Deploy and operate](operate/overview.md) | Service choices, access requirements, deployment and recovery guidance |
 | Find the precise rules or implement independently | [Technical reference](reference/README.md) | Specifications, contracts, package interfaces and conformance evidence |

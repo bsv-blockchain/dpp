@@ -1,6 +1,6 @@
 # Summary
 
-* [Understand and plan](README.md)
+* [Build with the open DPP standard](README.md "Start here")
   * [Plan your platform](start/plan-your-platform.md)
   * [Choose packages and services](start/choose-components-and-services.md)
   * [The passport model](start/architecture.md)

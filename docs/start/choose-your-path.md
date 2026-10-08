@@ -1,6 +1,6 @@
 # Choose your path
 
-This is the full task index. For a smaller set of starting choices, use [Understand and plan](../README.md), [Build or integrate](build-and-integrate.md), [Deploy and operate](../operate/overview.md) or [Technical reference](../reference/README.md).
+This is the full task index. For a smaller set of starting choices, use [Start here](../README.md), [Build or integrate](build-and-integrate.md), [Deploy and operate](../operate/overview.md) or [Technical reference](../reference/README.md).
 
 Each path below lists its own prerequisites, steps and completion check. You do not need to finish the earlier paths first. If you are an AI agent, also read [for AI agents](for-agents.md).
 
