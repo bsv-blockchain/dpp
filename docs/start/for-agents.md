@@ -1,6 +1,19 @@
 # For AI agents
 
-This page is for an AI agent asked to read, issue, verify or operate digital product passports with this standard. It gives the facts to rely on, how to run what the pages show, where a human must act, and where to stop and ask. Then follow the path for your task in [choose your path](choose-your-path.md).
+This page is for an AI agent asked to plan, read, issue, verify or operate digital product passports with this standard. Use the same canonical task guides as a person. Establish the requested outcome, selected version/source, inputs and authorised actions before choosing components. Do not interpret a request to evaluate a platform as permission to deploy it or spend funds.
+
+## Choose a small reading set
+
+| Task | Read first | Completion evidence |
+|---|---|---|
+| Plan a full production platform | [Platform planning](plan-your-platform.md), [component choices](choose-components-and-services.md), [current status](status.md) | A scoped brief with service responsibilities, actual access arrangements and unresolved dependencies |
+| Verify a passport | [Quick start](../quick-start.md), [identifiers](../identifiers.md), [evidence reports](../learn/evidence-and-freshness.md) | Report with exact subject/source, checks and reasons for missing evidence |
+| Issue or update | [Build an application](../packages/build-an-application.md), [writer details](../packages/how-the-writer-works.md), [wallet and proofs](../operate/wallet-broadcast-proofs.md) | Controlled write workflow with authorised signing, valid data, journal and retained evidence |
+| Add a native claim | [Add a claim](../packages/add-a-claim.md), [registry role](../implement/roles/registry.md), [contracts](../reference/contracts.md) | Supported claim with separately stated validation, storage, anchor and authority results |
+| Operate a service | [Operator hub](../operate/overview.md), [access details](../deployment.md), [recovery](../operate/export-import-recovery.md) | Correct role/access configuration and evidence of recovery; peers only when selected |
+| Implement a role independently | [Independent implementation](../implement/README.md), the selected role guide, [specifications](../reference/specifications.md), [reporting](../implement/reporting.md) | Requirements and fixture evidence, with disagreements recorded |
+
+Read the relevant [limitations](../operate/limitations.md) before promising the outcome. Other tasks remain in [the full task index](choose-your-path.md). No task needs every package or every service merely because they appear in this documentation.
 
 ## Facts to rely on
 
@@ -17,21 +30,25 @@ This page is for an AI agent asked to read, issue, verify or operate digital pro
 | Hosted proof page | `https://dpp-proof.bsvb.net`: the hosted registry's claims checked against their anchors. `node examples/check-registry.mjs <registry>` does the same for any registry ([run an anchor proof page](../implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) |
 | These pages as text | [`llms.txt`](https://dpp.bsvb.net/docs/llms.txt) lists every page; [`llms-full.txt`](https://dpp.bsvb.net/docs/llms-full.txt) holds them all in one file |
 | Source | [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp), default branch `main` |
+| Reviewed example source | `aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7`, checked out explicitly in the quick start; includes work after the published release |
 | Words | [Words used here](glossary.md) defines every term |
 
 ## How to run what the pages show
 
-- **Shell blocks** run from the root of a checkout of the repository on `main`, after `npm ci` and `npm run build`, unless the page says otherwise. The examples import the packages the checkout builds.
+- **Shell blocks** run from the root of the [reviewed checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, unless the page names another revision. The examples import the packages the checkout builds. Use a publication receipt's revision to reproduce that package; a matching version string does not prove source and npm archives are identical.
 - **JavaScript blocks** run as a file: save the block as `name.mjs` in a project where the exact package versions are installed, and run `node name.mjs`. They use top-level `await`.
 - **A block marked as a fragment** shows one step and does not run alone; the page links the complete example.
 - **Success** reads the same everywhere: one sentence per check, never a score. A line starting `ok:` or `Holds:` held; `FAIL:` did not, and the command exits non-zero. An example that checks itself ends with `Every sentence above holds.`
 - **A report** gives each check `pass`, `fail`, `unknown` or `not-applicable` with a reason code. `unknown` means the evidence was missing, not that the check failed.
 - **A bare `01/<gtin>/21/<serial>` is not a passport identifier.** Resolve it with `node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>`, which lists every passport the index holds for that GS1 key by its exact identifier; never add a host yourself ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)).
-- **Dry runs** come first. `node examples/write-passport.mjs --dry-run` and `node examples/lifecycle-v2.mjs` write passports without a wallet, funds or network, and `node examples/check-registry.mjs --fixture` checks a registry's claims without one.
+- **Dry runs** come first. `node examples/write-passport-v2.mjs --dry-run` and `node examples/lifecycle-v2.mjs` construct and check version 2 passports without a wallet, funds or network. `node examples/check-registry.mjs --fixture` checks registry claims offline. The historical `node examples/write-passport.mjs --dry-run` remains for version 1 compatibility, not as the default new-write path.
+- **Runtime support** comes from the [support table](../packages/support-table.md). Node/ESM support does not establish browser module support. Declare the SDK when directly importing it, and follow profile asset-packaging instructions.
+- **Product data** needs a separate check against its declared profile. A valid transaction report does not establish profile validity. Start with `node examples/sample-payload.mjs` and the [profile validation guide](../packages/dpp-profiles.md#check-a-payload-against-its-profile), not an unchecked hosted sample.
+- **Service choices** come from the selected task. Native lifecycle claims use core helpers, without a mandatory VSC dependency. A reader does not need a funded wallet. An HTTP index client does not need the overlay hosting package.
 
 ## Steps a human must take
 
-Stop and hand over to a person for these:
+Establish the appropriate human authority and any required external action for these. If the user has already authorised the exact action and spending scope, proceed within it; otherwise prepare the reversible work and stop before the unauthorised action:
 
 - funding a wallet, and approving its prompts;
 - anything that spends satoshis on mainnet, which every live write does;
@@ -43,6 +60,12 @@ Stop and hand over to a person for these:
 
 The [open questions](../operate/limitations.md#open-questions-in-the-standard) are not settled, for example how restricted tiers other than the owner tier are disclosed, or which fields `event_data` carries. If a task depends on one, say so and ask. Read the rest of [known limitations](../operate/limitations.md) before you promise an outcome.
 
+State the specific missing input, authority or decision and the step it blocks. Continue independent work that does not depend on it. Do not invent an index from the identifier host, a registry from an anchor, a trusted key from an operator name, a service token or an unsupported claim field. If discovery returns several exact passport identifiers, obtain the intended selection rather than silently choosing one.
+
+For an index, verify the signed publisher policy against independently trusted operator identity keys before relying on its admission windows. Public reads do not grant write access. A discovered peer is not authorised to receive another service's credentials.
+
+Keep published, source and deployed capabilities separate. The reviewed source has opt-in peer discovery and retry changes beyond npm overlay beta.9; the [hosted reference](../deployment.md) reports its own version and features. Follow the [disagreement process](../contribute/disagreements.md) when sources conflict. Do not silently settle an open standard question or claim a validation-only service implements the complete registry role.
+
 ## Never
 
 - Write a passport under a GTIN the brand is not entitled to. For tests, use GS1 demonstration prefix 952 on a host you control.
@@ -50,3 +73,8 @@ The [open questions](../operate/limitations.md#open-questions-in-the-standard) a
 - Send one index's token to another index.
 - Treat an index's or registry's answer as proof. Verify the bytes yourself, as every reading example does.
 - Describe a result as compliance, certification or product qualification. The standard claims none of these.
+- Report missing proof, claim bytes or authority evidence as verified, or treat a bounded evidence package as a complete long-history backup.
+
+## Report the outcome
+
+Name the task completed, exact version or source revision, relevant configured services, checks performed and evidence still missing. Distinguish a verified result from a documented stop. Point to [production readiness](../operate/production-readiness.md) when the task concerns a complete platform; a successful example is not evidence that every production responsibility has been met.

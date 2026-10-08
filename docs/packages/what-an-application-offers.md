@@ -2,6 +2,8 @@
 
 The standard fixes the records, the checks and the services. An application is what people use. This page lists what a passport application usually offers, who uses each part, and what each part does underneath, so you can plan its screens before you write code. [Build an application](build-an-application.md) shows the calls in order.
 
+Use these screens to plan the features in [your platform brief](../start/plan-your-platform.md), not as a mandatory feature list. Claims, custody transfer and service hosting depend on your scope. The account/brand model and wallet placement below describe reference application choices: an account, organisation, signing key, DID and passport controller are separate concepts, and your application can organise them differently while meeting the selected role's rules. [Choose packages and services](../start/choose-components-and-services.md) identifies what you supply or obtain from a provider.
+
 ## Who uses it
 
 | Who | What they do |
@@ -50,7 +52,7 @@ A platform holds several keys and secrets in different places. Plan where each o
 | Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |
 | Anchoring service key | The anchoring service's wallet | Signs claim anchors (`anchoredBy`) | The service's wallet; indexes may list it in `ANCHOR_SERVICE_KEYS` |
 | Registry write token | The registry operator | Storing claims and changing status lists | The registry's own configuration |
-| WhatsOnChain key | Every reader and index | Header lookups without the anonymous rate limit | `WOC_API_KEY` |
+| WhatsOnChain key | Readers and indexes using the reference header source | Header lookups without the anonymous rate limit | `WOC_API_KEY` |
 
 ## Duties that run on their own
 
@@ -66,3 +68,5 @@ Keep a demonstration space apart from live products. A demonstration's identifie
 - Who holds each wallet: the brand itself, or the platform on the brand's behalf ([custody](../learn/custody.md)).
 - Storage for product records, restricted documents and the owner tier, which is encrypted and held off chain.
 - The screens themselves, their languages and their accessibility.
+
+Use [Prepare for production](../operate/production-readiness.md) to turn these responsibilities into release checks for your chosen platform.

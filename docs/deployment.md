@@ -2,11 +2,13 @@
 
 The programme hosts one instance of each service, so you can look up and verify live records, test a reader, or use the hosted index as a peer before you run your own. This page says what each one runs, what is open to anyone, which passports to try and where the hosted services fall short.
 
+For a production design, [choose which services you need](start/choose-components-and-services.md) and establish each provider's actual access and operating commitments. The reference is not a catalogue of generally available production providers. A public URL or successful read does not grant write access or a service agreement.
+
 [dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify the passports it publishes. Its three sample brands are open to anyone and write nothing to the blockchain. Anyone who signs up can create a brand of their own, whose passports are real transactions on the BSV mainnet, marked as sample records, while the demonstration's publishing is open. The brands, products and data are mock demonstration data.
 
 ## Services
 
-Each service's `/capabilities` answer is authoritative; the table records what they ran on 6 October 2026. The application serves no capability document, so its row is the operator's statement.
+Read each service's `/capabilities` for what that deployment reports. The index and registry responses were checked on 8 October 2026 (UTC+4); the application and proof-page descriptions remain the recorded operator information from 6 October. The application serves no capability document, and the registry response names a protocol rather than an implementation version. Reported capabilities do not establish operator identity or prove that a particular record is valid.
 
 | Host | Serves | Runs |
 |---|---|---|
@@ -15,9 +17,13 @@ Each service's `/capabilities` answer is authoritative; the table records what t
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
 
+The index currently reports static peers, not automatic discovery. Its beta.9 deployment must not be assumed to include the later opt-in discovery/retry work in the [reviewed source checkout](packages/README.md#source-access). The registry reports discovery and its external credential policy as `not-configured`. Its `resolver` hostname denotes the attestation registry here, not a hosted GS1 resolver.
+
 ## What is open and what needs a token
 
-On the index, `POST /submit` and `POST /retract` need the operator's submit token, `POST /arc-ingest` needs the broadcaster's callback token and `GET /evidence-export` needs the export token. The index signs its evidence packages and export parts with `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass it as `expectedSigner` when you check one. Lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open. On the registry, storing a claim and changing a status list need its write token; validation and reads are open.
+On the index, `POST /submit` and `POST /retract` need the operator's submit token, `POST /arc-ingest` needs the broadcaster's callback token and `GET /evidence-export` needs the export token. The index signs its evidence packages and export parts with `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass it as `expectedSigner` when you check one. Lookups, `/history`, `/capabilities`, `/publisher-policy`, `/evidence-package`, `/health` and the synchronisation routes are open. On the registry, storing a claim and changing a status list need its write token; validation and reads are open.
+
+These are the documented access rules; the latest capability check did not exercise authenticated writes. Keep each token with its intended endpoint. Independently establish the operator identity key used to check a signed publisher policy, and check its key windows before announcing. The index admits public publisher keys; it does not provide their private countersigning capability.
 
 The tokens belong to the hosted reference's operator and are not handed out for general use: to publish your own passports, [run your own index](operate/README.md). To ask for a token or for the hosted index to name yours as a peer, [contact the programme](start/choose-your-path.md#contact-the-programme).
 

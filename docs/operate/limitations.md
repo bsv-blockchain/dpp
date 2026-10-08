@@ -2,6 +2,8 @@
 
 Everything that does not work yet, or is not settled, in one place, for writers, readers and operators alike. Skim it before you start, and come back when something does not arrive or a check reads `unknown`. Other pages link here instead of restating a limit.
 
+Match a limit to the version you use. Unless a row says otherwise, the implementation limits below describe the selected published set, including overlay `0.4.0-beta.9`. The [reviewed source](../packages/README.md#source-access) includes later opt-in discovery and retry changes, and the [hosted reference](../deployment.md) has its own observed capabilities. An unresolved standard question remains open regardless of which checkout you build.
+
 ## Writing
 
 | Limit | What it means for you | What to do now |
@@ -18,7 +20,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 | Limit | What it means for you | What to do now |
 |---|---|---|
 | Each token is one shared secret | The index accepts one `SUBMIT_TOKEN`, one `ARC_CALLBACK_TOKEN` and one `EXPORT_TOKEN`, so everyone given a token holds the same value and requests cannot be told apart | Give each outside party a value only for as long as it needs one, and replace the value afterwards |
-| Nodes find no peers by themselves | The host does not advertise itself through SHIP/SLAP, so nobody discovers your index | Name each peer in `SYNC_PEERS`, and ask other operators to name you ([federation](federation.md)) |
+| Published beta.9 finds no peers by itself; the host does not advertise itself | Static peers are the published and hosted baseline. The reviewed source adds opt-in discovery of other advertised hosts but still does not advertise your index | Use `SYNC_PEERS` for the documented recipe; see [source discovery and its limits](federation.md#discovery-in-the-reviewed-source) before selecting that source-only option |
 | The header source is WhatsOnChain only | Inclusion checks trust its headers, and anonymous use is limited to a few requests a second. While it fails, synchronisation drops proven states, and five failed rounds leave them behind | Set `WOC_API_KEY`; there is no setting for another header service yet. Move a checkpoint back for anything left behind ([federation](federation.md#move-a-checkpoint-back)) |
 | No operator image is published | You build the index from a checkout | Use the Compose preset in [run a service](README.md) |
 | History and export snapshots expire after ten minutes | A paging client that pauses longer must start again | Page promptly; a cursor is also lost when the process restarts or another replica answers |
@@ -34,7 +36,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 | Synchronisation only pulls | A node receives records only from the peers its operator names; naming a peer gives that peer nothing | Each side names the other ([which way records flow](federation.md#which-way-records-flow)) |
 | A state funded from another passport's change waits until mined | A peer that lacks that other passport's history leaves the new state behind until it is mined; `@bsv/overlay` up to 2.6.2 does not tell the topic which output it reached | Wait for the first round after the state is mined |
 | A later state of a passport the peer already holds waits until mined | Synchronisation cannot assemble an unproven state on top of a lineage the peer already holds, so the peer keeps the previous tip until the state's proof reaches the node it pulls from. A new passport arrives unproven | Push each proof to the index you announced the state to ([follow one write](wallet-broadcast-proofs.md#follow-one-write)); the first round after that carries the state with its proof |
-| An output left behind is not asked for again | After five rounds the checkpoint moves past it | Fix the cause, then move the checkpoint back ([when a record does not arrive](federation.md#when-a-record-does-not-arrive)) |
+| Published beta.9 does not ask for an output left behind again | After five rounds the checkpoint moves past it. The reviewed source schedules another attempt after a backoff, but cannot resolve the underlying failure | Fix the cause, then follow the [version-specific retry and checkpoint guidance](federation.md#read-the-synchronising-indexs-log) |
 | Why an output did not arrive is only in the receiving node's log | A peer cannot ask why | Read the receiving node's log |
 | Synchronisation covers current outputs and their lineages | Separately retained evidence does not travel | Use [exports](export-import-recovery.md) |
 | Peers hold the same records only under the same admission settings | Each index admits what it pulls under its own publisher policy and `ANCHOR_SERVICE_KEYS`, and pulls `tm_uora_dpp` only with `SYNC_LEGACY=1`, so a peer with narrower settings holds less | Match the settings, then [confirm both hold the same records](federation.md#7-confirm-both-hold-the-same-records) |
@@ -77,7 +79,7 @@ Everything that does not work yet, or is not settled, in one place, for writers,
 
 | Limit | What it means for you | What to do now |
 |---|---|---|
-| The report does not check a payload against its declared profile | A state with an invalid payload can pass every check | Run `node examples/sample-payload.mjs <profile> --check <file>`, or validate with the profile's schema ([profiles](../packages/dpp-profiles.md)) |
+| The report does not check a payload against its declared profile | A state with an invalid payload can pass every check | Run `node examples/sample-payload.mjs --check <profile@version> <file>`, with `--check` first, or validate with the profile's schema ([profiles](../packages/dpp-profiles.md)) |
 | Identity assurance is Ring 0 | The platform vouches for an account and its brand name; nobody checks a brand's legal identity | Treat the brand name as the platform's statement ([identity and authority](../learn/identity-and-authority.md)) |
 
 ## The hosted reference

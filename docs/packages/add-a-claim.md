@@ -16,7 +16,7 @@ A claim, in full a lifecycle claim, is a statement about one passport, such as a
 
 The first three are enough to sign and check a claim; storing and anchoring need the last two. Nothing before step 3 spends money or stores anything.
 
-To try it offline first, run these at the root of a checkout on `main`, after `npm ci` and `npm run build`:
+To try it offline first, run these at the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`:
 
 ```sh
 node examples/lifecycle-v2.mjs

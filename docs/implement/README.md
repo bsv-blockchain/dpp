@@ -4,7 +4,7 @@ This page is the starting kit for writing the DPP rules in your own code, in any
 
 ## Before you start
 
-- git, and a checkout of this repository on `main`. The specifications, contracts and fixtures are all in it. A fixture is a JSON file of inputs and expected results, including inputs your code must refuse.
+- git, and a checkout of this repository at the [reviewed example revision](../quick-start.md#get-the-code). The specifications, contracts and fixtures are all in it. A fixture is a JSON file of inputs and expected results, including inputs your code must refuse.
 - Node 22 and npm, to run the reference examples beside your own results. Your implementation does not need them.
 - Python 3, to run the worked example reader. It uses the standard library only.
 - A BSV SDK for your language, or your own code for the building blocks below.

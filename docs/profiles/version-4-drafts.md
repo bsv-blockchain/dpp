@@ -10,7 +10,7 @@ A version on this page is the profile version, the number after `@`; it is not t
 
 ## Try a draft in your application
 
-Run these in the root of a checkout of this repository on `main`, after `npm ci` and `npm run build` ([quick start](../quick-start.md)).
+Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)).
 
 ### 1. Generate the change report
 

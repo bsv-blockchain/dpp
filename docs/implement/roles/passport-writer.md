@@ -4,17 +4,19 @@ A passport writer builds each new state of a passport, checks it with the reader
 
 ## Two ways to build a writer
 
-- **With the packages.** `@bsv/dpp-core` builds and checks each state, and a BRC-100 wallet signs, funds and sends it. [Build an application](../../packages/build-an-application.md#3-write-a-passport), step 3, writes each version 2 state that way, from the issue to a managed transfer and a retirement.
+- **With the packages.** `@bsv/dpp-core` builds and checks each state, and a BRC-100 wallet signs, funds and sends it. [Build an application](../../packages/build-an-application.md#3-write-a-passport), step 3, demonstrates a version 2 `ISSUE` and `UPDATE`. The offline lifecycle example below also covers managed transfer and retirement.
 - **In your own code.** You build the seventeen fields, both preimages and both signatures yourself (the [starting kit](../README.md#what-you-will-implement) lists the building blocks), and follow the steps below with any BRC-100 wallet.
 
 In both cases, passing the fixture recipe leaves live wallet and service integration to exercise. [What a passport application offers](../../packages/what-an-application-offers.md) describes the screens and scheduled duties around the writer.
 
 ## Before you start
 
+These prerequisites apply to live writes. The offline exercises below need only the [reviewed checkout and build](../../quick-start.md#get-the-code).
+
 - **A passport identifier**: a GS1 Digital Link on a host you control, under the demonstration prefix 952 until you have your own ([identifiers](../../identifiers.md)).
 - **A BRC-100 wallet with funds** ([choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet)).
 - **A publisher key the index admits.** Every version 2 state must carry a publisher countersignature: field 17, `publisher_signature`, the publishing service's signature over the framed fields 1 to 16, verified under the BRC-42 child of the publisher's identity key for key identifier `passport_id` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 5). An index admits a state only when that key is in its policy, so check that the index's `GET /capabilities` lists your publisher key under `publisherPolicy.publisherKeys`. Writing through your own wallet, its identity key can be the publisher, as step 2 of [build an application](../../packages/build-an-application.md#2-run-your-own-index) sets up.
-- **An index URL and its two tokens**: the submit token for `POST /submit` and `POST /retract`, and the callback token for `POST /arc-ingest`. The hosted index admits only its own operator's publisher keys and needs that operator's tokens, so run your own ([run a service](../../operate/README.md)).
+- **An index URL and its two tokens**: the submit token for `POST /submit` and `POST /retract`, and the callback token for `POST /arc-ingest`. Use [your own index](../../operate/README.md) or a provider that has agreed to admit your key and provide the required access. The hosted reference does not offer general write credentials ([service choices](../../start/choose-components-and-services.md)).
 - **An industry profile** for the payload ([industry profiles](../../profiles/README.md)).
 
 ## Reproduce the bytes offline
@@ -22,13 +24,21 @@ In both cases, passing the fixture recipe leaves live wallet and service integra
 At the root of a checkout, after [setup](../../quick-start.md#get-the-code):
 
 ```sh
-node examples/write-passport.mjs --dry-run
+node examples/write-passport-v2.mjs --dry-run
 node examples/lifecycle-v2.mjs
 ```
 
-The first is a version 1 writer. Its dry run prints `ok:` lines showing that the locking script and the transaction it builds equal state 1 of `fixtures/chain-v1.json` byte for byte, that the writer's own check accepts the state, and that the same check refuses a state the record model forbids before anything would be sent. It then prints what it would announce, send, prove and keep. The second walks a whole version 2 lifecycle, issue, update, offer, acceptance, transfer and retirement, plus its refusals and a claim after retirement, and ends with `Every sentence above holds.` Neither funds nor broadcasts a transaction.
+The first runs the version 2 issue/update workflow against an in-process index with synthetic funding and proofs, including a refused update without its control proof. The second walks a whole version 2 lifecycle, issue, update, offer, acceptance, transfer and retirement, plus its refusals and a claim after retirement. Both end with `Every sentence above holds.` Neither spends real funds nor broadcasts a transaction.
 
-For version 1, [`examples/write-passport.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) is the complete writer: without `--dry-run` it walks every step below against the BRC-100 wallet on your machine, and the usage at the top of the file names its arguments, including the two tokens. For version 2 there is no complete example; step 3 of [build an application](../../packages/build-an-application.md#3-write-a-passport) shows each call.
+For the historical version 1 byte target, run:
+
+```sh
+node examples/write-passport.mjs --dry-run
+```
+
+It prints `ok:` lines showing that the locking script and transaction equal state 1 of `fixtures/chain-v1.json` byte for byte, that the writer's own check accepts the state, and that the same check refuses a forbidden state before anything would be sent. It then prints what it would announce, send, prove and retain.
+
+The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) remains for compatibility. Removing `--dry-run` selects a live wallet/service workflow; first establish the required access, network and authority to spend. The usage at the top of each file identifies its arguments.
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 

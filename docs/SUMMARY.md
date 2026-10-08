@@ -1,112 +1,83 @@
 # Summary
 
-## Start here
-
-* [The DPP standard](README.md)
-* [Choose your path](start/choose-your-path.md)
-* [Quick start](quick-start.md)
-* [The passport model](start/architecture.md)
-* [Where things stand](start/status.md)
-* [The hosted reference](deployment.md)
-* [Words used here](start/glossary.md)
-* [For AI agents](start/for-agents.md)
-
-## Read and verify passports
-
-* [Evidence and its limits](learn/evidence-and-freshness.md)
-
-## Issue passports
-
-* [What a passport application offers](packages/what-an-application-offers.md)
-* [Identifiers](identifiers.md)
-* [Build an application with the packages](packages/build-an-application.md)
-* [How the writer example works](packages/how-the-writer-works.md)
-* [Wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md)
-
-## Add claims
-
-* [Add a claim as a repairer, certifier or recycler](packages/add-a-claim.md)
-
-## Run an index
-
-* [Run a service](operate/README.md)
-* [Federation with static peers](operate/federation.md)
-* [Export, import and recovery](operate/export-import-recovery.md)
-* [Known limitations and open questions](operate/limitations.md)
-
-## Industry profiles
-
-* [Choose an industry profile](profiles/README.md)
-* [General](profiles/general.md)
-* [Battery](profiles/battery.md)
-* [Textile](profiles/textile.md)
-* [Evaluate the version 4 drafts](profiles/version-4-drafts.md)
-* [Author and propose a profile](profiles/authoring.md)
-* [Review profile and application readiness](profiles/reviewing-readiness.md)
-* [Publish a profile package update](reference/publishing-profile-updates.md)
-* [Update profiles and consuming applications](profiles/updating-applications.md)
-
-## Connect other standards
-
-* [Choose an interoperability profile](interoperability/README.md)
-* [GS1 discovery](interoperability/gs1-discovery.md)
-* [EPCIS source exchange](interoperability/epcis.md)
-* [External credential verification](interoperability/external-credentials.md)
-* [Passport projections](interoperability/projections.md)
-
-## Implement independently
-
-* [Start an independent implementation](implement/README.md)
-* [Choose a role](start/choose-a-role.md)
-* [Run the fixtures](implement/fixture-runner.md)
-* [Passport reader](implement/roles/passport-reader.md)
-* [Attestation verifier](implement/roles/attestation-verifier.md)
-* [Passport writer](implement/roles/passport-writer.md)
-* [Attestation issuer](implement/roles/attestation-issuer.md)
-* [Registry](implement/roles/registry.md)
-* [Overlay](implement/roles/overlay.md)
-* [Requirements and evidence reporting](implement/reporting.md)
-* [Run the interoperability trial](implement/demonstration.md)
-
-## Learn the model
-
-* [Passport states and attestations](learn/passport-and-attestations.md)
-* [Identity and authority](learn/identity-and-authority.md)
-* [Custody](learn/custody.md)
-* [BSV DIDs](learn/dids.md)
-* [Verifiable credentials](learn/verifiable-credentials.md)
-* [Versions and compatibility](learn/versions-and-compatibility.md)
-
-## Package reference
-
-* [Install the selected release](packages/README.md)
-* [Supported entry points](packages/support-table.md)
-* [@bsv/dpp-core](packages/dpp-core.md)
-* [@bsv/dpp-profiles](packages/dpp-profiles.md)
-* [@bsv/vsc](packages/vsc.md)
-* [@bsv/dpp-overlay-topics](packages/dpp-overlay-topics.md)
-* [The application service](packages/application-service.md)
-* [BSV stack integration](stack.md)
-
-## Releases and conformance
-
-* [Release sets](reference/release-sets.md)
-* [Beta.9 publication receipt](reference/beta-9-publication.md)
-* [Beta.8 publication receipt](reference/beta-8-publication.md)
-* [Beta.7 publication receipt](reference/beta-7-publication.md)
-* [Beta.6 publication receipt](reference/beta-6-publication.md)
-* [Beta.5 publication receipt](reference/beta-5-publication.md)
-* [Beta.4 publication receipt](reference/beta-4-publication.md)
-* [Beta.3 publication receipt](reference/beta-3-publication.md)
-* [Beta.2 publication receipt](reference/beta-2-publication.md)
-* [Migration](migration.md)
-* [Conformance and the ledger](reference/conformance.md)
-* [Specification index](reference/specifications.md)
-* [Contracts and schemas](reference/contracts.md)
-
-## Contribute
-
-* [How the standard changes](contribute/README.md)
-* [Report a disagreement](contribute/disagreements.md)
-* [Implementing parties](contribute/implementing-parties.md)
-* [Licence and reuse](contribute/licence.md)
+* [Understand and plan](README.md)
+  * [Plan your platform](start/plan-your-platform.md)
+  * [Choose packages and services](start/choose-components-and-services.md)
+  * [The passport model](start/architecture.md)
+    * [Passport states and claims](learn/passport-and-attestations.md)
+    * [Identity and authority](learn/identity-and-authority.md)
+    * [Custody](learn/custody.md)
+    * [BSV DIDs](learn/dids.md)
+    * [Verifiable credentials](learn/verifiable-credentials.md)
+    * [Versions and compatibility](learn/versions-and-compatibility.md)
+  * [Where things stand](start/status.md)
+  * [Words used here](start/glossary.md)
+  * [All tasks](start/choose-your-path.md)
+  * [For AI agents](start/for-agents.md)
+* [Build or integrate](start/build-and-integrate.md)
+  * [Verify your first passport](quick-start.md)
+  * [What your application supplies](packages/what-an-application-offers.md)
+  * [Issue and update passports](packages/build-an-application.md)
+    * [How the writer works](packages/how-the-writer-works.md)
+  * [Add a lifecycle claim](packages/add-a-claim.md)
+  * [Identifiers](identifiers.md)
+  * [Read the verification report](learn/evidence-and-freshness.md)
+  * [Product data profiles](profiles/README.md)
+    * [General](profiles/general.md)
+    * [Battery](profiles/battery.md)
+    * [Textile](profiles/textile.md)
+    * [Evaluate draft profiles](profiles/version-4-drafts.md)
+    * [Author a profile](profiles/authoring.md)
+    * [Review profile and application readiness](profiles/reviewing-readiness.md)
+    * [Update profiles and applications](profiles/updating-applications.md)
+    * [Publish a profile update](reference/publishing-profile-updates.md)
+  * [Connect other standards](interoperability/README.md)
+    * [GS1 discovery](interoperability/gs1-discovery.md)
+    * [EPCIS source exchange](interoperability/epcis.md)
+    * [External credentials](interoperability/external-credentials.md)
+    * [Passport projections](interoperability/projections.md)
+* [Deploy and operate](operate/overview.md)
+  * [Run an index](operate/README.md)
+    * [Wallet, broadcast and proofs](operate/wallet-broadcast-proofs.md)
+  * [Hosted services and access](deployment.md)
+  * [Exchange records with other indexes](operate/federation.md)
+  * [Export and recovery](operate/export-import-recovery.md)
+  * [Prepare for production](operate/production-readiness.md)
+    * [Known limitations and open questions](operate/limitations.md)
+  * [Upgrade a deployment](migration.md)
+* [Technical reference](reference/README.md)
+  * [Packages and installation](packages/README.md)
+    * [Supported entry points](packages/support-table.md)
+    * [DPP core](packages/dpp-core.md)
+    * [DPP profiles](packages/dpp-profiles.md)
+    * [VSC](packages/vsc.md)
+    * [Overlay components](packages/dpp-overlay-topics.md)
+    * [Application service responsibilities](packages/application-service.md)
+    * [BSV stack integration](stack.md)
+  * [Specifications](reference/specifications.md)
+  * [Contracts and schemas](reference/contracts.md)
+  * [Implement the standard](implement/README.md)
+    * [Choose an implementation role](start/choose-a-role.md)
+    * [Run the fixtures](implement/fixture-runner.md)
+    * [Passport reader](implement/roles/passport-reader.md)
+    * [Passport writer](implement/roles/passport-writer.md)
+    * [Attestation issuer](implement/roles/attestation-issuer.md)
+    * [Attestation verifier](implement/roles/attestation-verifier.md)
+    * [Registry](implement/roles/registry.md)
+    * [Overlay](implement/roles/overlay.md)
+    * [Requirements and evidence reporting](implement/reporting.md)
+    * [Interoperability trial](implement/demonstration.md)
+  * [Releases and compatibility](reference/release-sets.md)
+    * [Conformance and the ledger](reference/conformance.md)
+    * [Beta.9 publication receipt](reference/beta-9-publication.md)
+    * [Beta.8 publication receipt](reference/beta-8-publication.md)
+    * [Beta.7 publication receipt](reference/beta-7-publication.md)
+    * [Beta.6 publication receipt](reference/beta-6-publication.md)
+    * [Beta.5 publication receipt](reference/beta-5-publication.md)
+    * [Beta.4 publication receipt](reference/beta-4-publication.md)
+    * [Beta.3 publication receipt](reference/beta-3-publication.md)
+    * [Beta.2 publication receipt](reference/beta-2-publication.md)
+  * [Contribute](contribute/README.md)
+    * [Report a disagreement](contribute/disagreements.md)
+    * [Implementing parties](contribute/implementing-parties.md)
+    * [Licence and reuse](contribute/licence.md)

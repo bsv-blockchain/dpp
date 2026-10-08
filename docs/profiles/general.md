@@ -33,7 +33,7 @@ The payload's `category` field says what kind of object the passport describes. 
 
 ## Start from a sample payload
 
-Run these in the root of a checkout of this repository on `main`, after `npm ci` and `npm run build` ([quick start](../quick-start.md)):
+Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)):
 
 ```sh
 node examples/sample-payload.mjs general@2 --demonstration > payload.json

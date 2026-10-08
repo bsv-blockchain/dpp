@@ -4,7 +4,7 @@ This page is for contributors who add an industry profile, or a new version of o
 
 ## Before you start
 
-- A checkout of this repository on `main`, Node 22 or later and npm, with `npm ci` and `npm run build` run in its root ([quick start](../quick-start.md)). Every command on this page runs in that root.
+- A checkout of this repository at the reviewed example revision, Node 22 or later and npm, with `npm ci` and `npm run build` run in its root ([quick start](../quick-start.md)). Every command on this page runs in that root.
 - The [profile specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md), which sets the rules every manifest follows.
 - Two version numbers you will set, which are different things. The **profile version** is the number after `@` in the identifier, such as `widget@1`. The **manifest format** (`manifestVersion`) is the shape of the manifest file: format 1, which the current profiles use, validates against [`profile-manifest.schema.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/schemas/profile-manifest.schema.json); format 2 adds a requirement status per field and a succession record, validates against [`profile-manifest-v2.schema.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/schemas/profile-manifest-v2.schema.json), and is what every successor to a frozen profile uses. Neither is the record version of the passport format.
 

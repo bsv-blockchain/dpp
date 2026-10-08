@@ -24,7 +24,7 @@ Use `general@2`: it claims no regulation and fits any product. A profile of your
 
 ## Check a payload
 
-Run these in the root of a checkout of this repository on `main`, after `npm ci` and `npm run build` ([quick start](../quick-start.md)). They use `general@2`; put your profile's identifier in its place.
+Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)). They use `general@2`; put your profile's identifier in its place.
 
 1. Print a sample payload. For a test or demonstration record, one that describes no real product, add `--demonstration`:
 

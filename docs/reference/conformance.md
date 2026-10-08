@@ -17,7 +17,7 @@ The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab19
 
 ## Run the checks
 
-From the root of a checkout on `main`, after `npm ci` and `npm run build` ([get the code](../quick-start.md#get-the-code)):
+From the root of the reviewed source checkout, after `npm ci` and `npm run build` ([get the code](../quick-start.md#get-the-code)):
 
 ```sh
 node conformance/check.mjs
@@ -36,7 +36,7 @@ The second, the qualification gate, checks the named selection against the ledge
 Selection dpp-release-2026-10-6 is qualified: every required claim can be made on the ledger's evidence. This is the ledger's answer, not a conformity certificate.
 ```
 
-Both exit 0 on `main`. Each exits non-zero and names the finding when a check fails.
+Both checks must exit 0 for the checkout being assessed. Each exits non-zero and names the finding when a check fails.
 
 ## Read the result
 

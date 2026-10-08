@@ -14,7 +14,7 @@ A profile version is the number after `@` in a profile identifier, such as `batt
 
 ### 2. See what changed
 
-In a checkout of this repository on `main`, after `npm ci` and `npm run build`, compare the version you use with the new one:
+Use a checkout containing both profile versions, and record its commit. After `npm ci` and `npm run build`, compare the version you use with the new one. The [reviewed example checkout](../quick-start.md#get-the-code) contains the versions used below:
 
 ```sh
 npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4

@@ -1,6 +1,8 @@
 # Build an application with the packages
 
-Use this page to add passports to an application or build a platform: from an empty checkout, you issue and update a demonstration passport through your own index and a funded wallet, then read it back and check it. To only look at a passport, use the [quick start](../quick-start.md). To see one written with no setup, use the [hosted application](../deployment.md), where anyone can sign up and issue for its sample brands.
+Use this page to add passport reading and writing to an application. The worked route builds an index, issues and updates a demonstration passport with a funded wallet, then reads it back. Begin with the [offline quick start](../quick-start.md) if you have not yet checked a passport.
+
+For a complete production platform, first make [your platform brief](../start/plan-your-platform.md). Choose [which components and services you supply](../start/choose-components-and-services.md): an arranged index provider can replace the own-index setup below if it supports the required network, profiles, admission and access. The [hosted application](../deployment.md) is an optional demonstration; open sample brands write nothing to the chain, while created brands can write real mainnet sample transactions.
 
 ## What you are building
 
@@ -8,19 +10,21 @@ Use this page to add passports to an application or build a platform: from an em
 |---|---|---|
 | Reader | Rebuilds a passport's history from an index and verifies it | Always |
 | Writer | Issues a passport and writes each later state | To publish passports |
-| Index | Admits states and answers lookups | Yours for writing; the hosted one for reading |
+| Index | Admits states and answers lookups | An admitting index with agreed access for writes; a compatible source for live reads |
 | Wallet | Holds the keys, signs, funds and broadcasts | For writing and anchoring |
 | Journal | Your record of every operation, so a retry continues instead of repeating | For writing |
-| Issuer and registry | Sign a lifecycle claim, store it and anchor it | Only for claims |
+| Claim issuer, registry and anchoring service | Sign a claim, retain it and publish a separate anchor; these roles can be supplied together or separately | Only for the selected claim workflow |
 
 [Words you will meet](../README.md#words-you-will-meet) defines the core terms; this page defines the rest as they appear. You write record version 2 under `managed-custody@1`, the custody profile the current release selects. Version 1 lineages still verify ([custody](../learn/custody.md) explains the difference).
 
 ## Before you start
 
+These are prerequisites for the full live route, not for the offline dry run. Docker, index secrets and the index's header-source settings apply when you operate the reference index. With an arranged provider, obtain its network, admitted publisher keys, submission/callback access and proof-delivery responsibilities instead. Public hosted reads do not establish those permissions.
+
 | You need | Why | How to get it or check it |
 |---|---|---|
 | Node 22 or later | Everything here is ECMAScript modules | `node --version` prints `v22` or higher |
-| A built checkout of the repository | Builds your index and runs the examples | `git clone https://github.com/bsv-blockchain/dpp.git`, then `cd dpp`, `npm ci` and `npm run build` ([source access](README.md#source-access)). Run every command below from this directory |
+| A built checkout of the reviewed source revision | Builds your index and runs the examples | Follow [Get the code](../quick-start.md#get-the-code), including its pinned checkout. Run every command below from that directory; [source access](README.md#source-access) distinguishes it from npm archives |
 | Docker with Compose | Runs your index and its database | `docker compose version` |
 | A wallet that answers the BRC-100 interface, unlocked on this machine and funded | Signs and sends every state | "Fund the wallet", below |
 | A WhatsOnChain API key | Your index's source of block headers. Anonymous access allows only a few requests a second | From WhatsOnChain. It goes in your index's settings in step 2 |
@@ -32,6 +36,8 @@ Commands on this page use the packages the checkout links. In your own applicati
 ```sh
 npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/sdk@2.8.10
 ```
+
+Before issuing, validate the payload against its declared profile with the [profile checker](dpp-profiles.md#check-a-payload-against-its-profile). Signature and linkage checks alone do not validate product data. Keep the application journal and retained evidence from steps 3 and 5; the packages do not supply your full application, permissions or background scheduler.
 
 ### Fund the wallet
 
@@ -124,7 +130,7 @@ The index only finds the bytes; the report is your own. Each check answers `pass
 
 ## 2. Run your own index
 
-To publish a passport, run your own index. The hosted one admits only states countersigned by its policy's two publisher keys, both run by the programme, and does not hand out the tokens for its `POST /submit` and `POST /arc-ingest` ([what is open and what needs a token](../deployment.md#what-is-open-and-what-needs-a-token)).
+This section implements the own-index choice. If a provider has already agreed to admit your publisher key and supply submission/proof access on the correct network, use its settings and continue to step 3 after verifying them. There is no generally available write entitlement to the hosted reference: it admits the programme's two publisher keys and does not hand out `POST /submit` and `POST /arc-ingest` tokens for general use ([access details](../deployment.md#what-is-open-and-what-needs-a-token)).
 
 What you write is found only on your index, so read it back with your own reader. The hosted index does not hold it, so the check at `dpp.bsvb.net/verify`, which reads the hosted index, does not find it either. Another index gets your records only if its operator names yours as a peer ([federation](../operate/federation.md)).
 

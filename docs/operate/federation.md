@@ -2,6 +2,8 @@
 
 Use this page to make one index hold another's records: a second index of yours, another operator's, or the hosted reference. Part two, [when a record does not arrive](#when-a-record-does-not-arrive), finds out why a record did not reach a peer.
 
+Peer exchange is a choice for your operating model, not a prerequisite for every passport reader or writer. This page's setup uses explicit static peers. The published overlay beta.9 and hosted reference use that mode. The [reviewed source checkout](../packages/README.md#source-access) also contains opt-in discovery and changed retry behaviour, described below; do not infer a deployed feature from an unchanged package version string.
+
 | Word | Meaning on this page |
 |---|---|
 | Peer | Another index this index reads records from. |
@@ -18,14 +20,20 @@ An index only pulls. Each round it asks the peers its own `SYNC_PEERS` names wha
 
 Each index pulls `tm_dpp` and `tm_attestation`, and the historical `tm_uora_dpp` only when `SYNC_LEGACY=1`. Two indexes that pull from each other hold the same records only when their settings admit the same things: the publisher policy for passport states, `ANCHOR_SERVICE_KEYS` for anchors (or the policy's anchor-publisher keys when it covers `tm_attestation`), and `SYNC_LEGACY` for the historical topic. An index that names fewer anchoring services than its peer refuses the anchors the peer took from the others, and the two differ for as long as that holds. A peer's `GET /capabilities` names the anchoring services it admits under `publisherPolicy.anchoringServices`; an empty list means it admits any, as its `anchoring-service-restriction` entry under `unsupported` says.
 
-Indexes do not find each other. The [services specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) section 1 asks a public index to advertise itself through SHIP and SLAP, the BSV overlay protocols that tell a client which hosts carry a topic or answer a lookup service, but the overlay package does not do that yet.
+The published beta.9 host does not discover peers. The [services specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) section 1 asks a public index to advertise itself through SHIP and SLAP, the BSV overlay protocols that tell a client which hosts carry a topic or answer a lookup service. The host does not advertise itself, including in the later source version.
+
+### Discovery in the reviewed source
+
+Source revision `aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7` adds opt-in discovery with `SYNC_DISCOVERY=ship`. It queries `SLAP_TRACKERS` or the SDK's network defaults, validates topic advertisements, filters incompatible admission and limits discovered peers through `SYNC_MAX_DISCOVERED` (16 by default). It refreshes at start and every ten minutes. Static peers remain available, and discovery is off unless selected. See the [source change record](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/CHANGELOG.md).
+
+Discovery selects possible sources; it does not grant their records admission, establish operator identity, provide write credentials or make your own index discoverable. This guide's explicit-peer recipe works without enabling it. Check the actual host's capabilities and source/release before using discovery settings; the [hosted reference](../deployment.md) currently reports `static-peers`.
 
 ## Part one: set up
 
 ### Before you start
 
 - A first index running from the Compose preset at `http://localhost:8080` ([run a service](README.md)), started with `--build` at least once. The second preset has no build step and runs the first one's image, `dpp-overlay:local`.
-- A checkout of the repository on `main`, after `npm ci` and `npm run build`. Run every command here from its root.
+- The [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`. Run every command here from its root, with discovery left off for this static-peer recipe.
 - A WhatsOnChain API key. A synchronising index asks the header source once per state it admits, and without a key paces itself to about three requests a second.
 - A choice of admission: the first index's single publisher key (steps 1, 2 and 4), or a publisher policy naming each key with its window (add step 3). Only a policy admits more than one key, which you need to pull from the hosted reference or another operator.
 
@@ -352,7 +360,9 @@ After each round the index compares what each peer offered with what arrived, an
 peer synchronisation round 1: 17 of 97 outputs offered by https://dpp-overlay.bsvb.net for tm_dpp did not arrive; checkpoint held at 1787744549666 so they are offered again
 ```
 
-An output still missing after five rounds is named once, as `left behind after 5 rounds, offered by <peer> for tm_dpp and never admitted: <txid>.<output>`. It is never asked for again, even after a restart, which resumes from the stored checkpoint.
+In published beta.9, an output still missing after five rounds is named once, as `left behind after 5 rounds, offered by <peer> for tm_dpp and never admitted: <txid>.<output>`. That release does not ask for it again, even after a restart, which resumes from the stored checkpoint. Fix the cause, then use the checkpoint procedure below.
+
+The reviewed source instead schedules missed outputs for another attempt after about an hour of rounds, with repeated waits doubling up to about a day. This does not fix an admission or evidence failure by itself. After fixing the cause, a checkpoint reset can still request an earlier retry; [the source synchroniser](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/packages/overlay-topics/src/sync.ts) defines this behaviour. Keep the release-specific diagnosis when supporting an older or hosted index.
 
 ### Find the cause
 

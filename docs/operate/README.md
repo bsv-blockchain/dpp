@@ -2,6 +2,8 @@
 
 Begin with the [limitations](limitations.md) and [the hosted reference](../deployment.md). The preset runs an index and MongoDB. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists its configuration.
 
+Use this page when you have chosen to operate the reference index. [Choose packages and services](../start/choose-components-and-services.md) explains the alternative of an arranged provider and which other capabilities your task needs. The goal here is an index with the expected admission and access settings, not a complete passport platform.
+
 ## What to prepare
 
 Install Docker with Docker Compose and obtain the [source checkout](../packages/README.md#source-access). The preset builds the index from this repository and stores admitted records in a named MongoDB volume. It does not start a writer, wallet or attestation registry.
@@ -62,7 +64,7 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env down
 
 The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
 
-Follow [broadcast and proofs](wallet-broadcast-proofs.md), [peer synchronisation](federation.md), then [export and recovery](export-import-recovery.md).
+Follow [broadcast and proofs](wallet-broadcast-proofs.md) and [export and recovery](export-import-recovery.md). Add [peer synchronisation](federation.md) if your operating model needs exchange or replication. Source checkouts and published beta.9 differ in discovery and retry behaviour, as the federation guide explains.
 
 Stored records and resumable cursors have different lifetimes. Cursor secrets are per process; restarting invalidates existing cursors. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
 
@@ -79,6 +81,8 @@ Start the index as [start and inspect](#start-and-inspect) shows, check its capa
 Add a registry only when the workflow needs stored claims. Add peers after one operator can admit, retrieve and export the intended records. [Federation](federation.md) covers the second instance and [recovery](export-import-recovery.md) covers the retained evidence needed to replace one.
 
 The MongoDB volume is service storage; it is not itself an independently administered replica.
+
+Before offering the service for real products, use [Prepare for production](production-readiness.md) to record access, retention, recovery and support responsibilities and the checks that support your release decision.
 
 ## Configuration sources
 

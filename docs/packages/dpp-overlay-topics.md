@@ -93,7 +93,7 @@ To embed the claim rail as well, add `tm_attestation: new AttestationTopicManage
 
 ### Admission on its own
 
-To see the admission rules without an engine, offer the topic manager the repository's version 2 test passport, genesis first. This reads `fixtures/chain-v2.json`, so save it as `admit.mjs` at the root of a checkout on `main`, after `npm ci` and `npm run build`, and run `node admit.mjs` there:
+To see the admission rules without an engine, offer the topic manager the repository's version 2 test passport, genesis first. This reads `fixtures/chain-v2.json`, so save it as `admit.mjs` at the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, and run `node admit.mjs` there:
 
 ```js
 import { readFileSync } from 'node:fs'
@@ -124,7 +124,7 @@ Before you rely on an embedded index for evidence, keep its records across resta
 The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /arc-ingest` for block proofs, `GET /capabilities`, `GET /history`, the evidence exports, `POST /retract` and the synchronisation routes. Its configuration is all environment.
 
 - **With Compose.** Follow [run a service](../operate/README.md): it explains the publisher key, the tokens, storage and the first health and capability checks. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
-- **From a checkout.** At the root of a checkout on `main`, after `npm ci` and `npm run build`, `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay-topics` starts it on port 8080 with in-memory storage, and `GET /health` answers `"status":"ok"`. It warns at start for every protection left off; set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS` on anything a stranger can reach. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/README.md) lists every variable.
+- **From a checkout.** At the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay-topics` starts it on port 8080 with in-memory storage, and `GET /health` answers `"status":"ok"`. It warns at start for every protection left off; set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS` on anything a stranger can reach. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/README.md) lists every variable.
 
 **Tokens.** `POST /submit` and `POST /retract` need the operator's submit token, and `POST /arc-ingest` its callback token, when the operator sets them, as the hosted reference does. A writer gets each token from that index's operator.
 
