@@ -1,0 +1,52 @@
+{
+  "manifestVersion": "1",
+  "id": "single-operator",
+  "version": 2,
+  "profile": "single-operator@2",
+  "kind": "operator",
+  "status": "current",
+  "title": "One operator, one index, exchanging records with peers",
+  "description": "One administration running its own index, which pulls from peers it names or finds from their adverts, every native rule enforced. It exchanges records; it claims nothing about independent replication, however many peers it has, which only federated-operators@1 can claim once independently administered operators have been observed.",
+  "roles": ["overlay"],
+  "admission": {
+    "topics": ["tm_dpp", "tm_attestation", "tm_uora_dpp"],
+    "nativeRules": "As single-operator@1. A state or anchor a peer offers is admitted under this index's own publisher policy, anchoring settings and custody policy, exactly as if it had been announced to it; a peer's admission decides nothing here.",
+    "idempotent": true,
+    "ownerConsent": "deployment-choice"
+  },
+  "publisherPolicy": {
+    "separateFromOperatorIdentity": true,
+    "keySet": "Publisher identity keys are configured explicitly (SERVICE_IDENTITY_KEY or a signed publisher policy, ANCHOR_SERVICE_KEYS), never derived from the operator's own key or from a peer, and named in the capability document.",
+    "historicalAuthorisation": "A state's publisher signature is verified against a key that was authorised at the state's time; the current allowlist alone is not authority for a historical state.",
+    "handover": "A publisher handover is a signed authorisation record under the selected governance policy with the old key's evidence preserved; it never moves a token spending key, which only the custody mechanism can move."
+  },
+  "discovery": { "mode": "ship-slap", "notes": "Peers come from SHIP adverts found through SLAP trackers, from a static list the operator names, or both; the capability document says which. Discovery says where records may be found: it never authorises a publisher, and a discovered peer is asked for nothing its capability document shows this index could not admit." },
+  "synchronisation": {
+    "mode": "gasp",
+    "genesisFirst": true,
+    "deduplication": "Admission of a held outpoint is a no-op; an anchor is deduplicated by outpoint and digest.",
+    "proofUpdates": "Proofs arrive through POST /arc-ingest or with a synchronised state, are validated against the header source before storage and never replay held outputs.",
+    "checkpoints": "A checkpoint per peer and topic, held at an offered output that did not arrive so the next round offers it again; an output left behind is asked for again after a back-off.",
+    "bounds": "Request body 8 MiB, lookup 500 outputs, anchor page 100 default and 500 maximum, at most a configured number of discovered peers a round, and back-off for a peer that cannot be read.",
+    "reorganisation": "A proof the header source refutes returns the state to pending until repaired."
+  },
+  "retention": {
+    "spentStates": "Spent passport states are retained as history through coinsToRetain, whether announced or synchronised.",
+    "anchorLeaves": "Anchor outputs are retained and indexed; eviction follows the engine's rules.",
+    "bytes": "Every admitted transaction's BEEF is stored once per transaction."
+  },
+  "capabilities": {
+    "document": "contracts/capabilities.schema.json",
+    "mustDeclare": ["roles", "topics", "services", "publisherPolicy", "synchronisation.profile single-operator@2 with discovery, gasp and peers", "limits", "unsupported independent-replication"]
+  },
+  "acceptance": [
+    { "id": "single-peer-sync", "exercise": "Pull both rails from a named peer and serve the same transactions and merkle paths; a second round admits nothing new.", "evidence": "packages/overlay-topics/test/federation.test.ts", "independence": "local" },
+    { "id": "single-discovered-peer", "exercise": "Pull both rails from a peer a discovery plan found rather than one the operator named, through the same engine path.", "evidence": "packages/overlay-topics/test/federation.test.ts, packages/overlay-topics/test/discovery.test.ts", "independence": "local" },
+    { "id": "single-peer-refused", "exercise": "Refuse a state a peer offers that is signed by a key outside this index's policy, and log the refusal.", "evidence": "packages/overlay-topics/test/federation.test.ts", "independence": "local" },
+    { "id": "single-left-behind", "exercise": "Hold the checkpoint at an offered output that did not arrive, leave it behind after the configured rounds, and ask for it again after the back-off.", "evidence": "packages/overlay-topics/test/sync.test.ts", "independence": "local" },
+    { "id": "single-capabilities", "exercise": "Serve a capability document that validates against the schema and names single-operator@2 with its discovery mode and peers.", "evidence": "packages/overlay-topics/test/capabilities.test.ts", "independence": "local" }
+  ],
+  "unsupported": [
+    { "id": "independent-replication", "reason": "One administration cannot claim independently replicated evidence, however many peers it exchanges records with." }
+  ]
+}

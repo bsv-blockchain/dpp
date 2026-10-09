@@ -47,6 +47,8 @@ export type SelectionConflictCode =
   | 'operator-unknown'
   | 'operator-proposed'
   | 'operator-single-with-federation-options'
+  | 'operator-single-with-two-operators'
+  | 'operator-single-without-peers'
   | 'operator-federation-needs-two'
   | 'operator-federation-without-discovery'
 
@@ -113,8 +115,11 @@ export function checkSelection(selection: ProfileSelection): SelectionResult {
       const d = selection.deployment ?? {}
       if (selection.operator === 'single-operator@1') {
         if ((d.operators ?? 1) > 1 || d.gasp === true || (d.discovery != null && d.discovery !== 'none')) {
-          conflict('operator-single-with-federation-options', 'single-operator@1 declares one administration with discovery and synchronisation off; peers, GASP or advertisement belong to federated-operators@1')
+          conflict('operator-single-with-federation-options', 'single-operator@1 declares one administration with discovery and synchronisation off; one administration that exchanges records with peers is single-operator@2, and independently administered operators are federated-operators@1')
         }
+      } else if (selection.operator === 'single-operator@2') {
+        if ((d.operators ?? 1) > 1) conflict('operator-single-with-two-operators', 'single-operator@2 declares one administration; independently administered operators are federated-operators@1')
+        if (d.gasp !== true && (d.discovery == null || d.discovery === 'none')) conflict('operator-single-without-peers', 'single-operator@2 declares an index that exchanges records with peers; without peers or discovery it is single-operator@1')
       } else {
         if ((d.operators ?? 1) < 2) conflict('operator-federation-needs-two', 'federated-operators@1 needs at least two independently administered operators; one operator is single-operator@1')
         if (d.discovery == null || d.discovery === 'none') conflict('operator-federation-without-discovery', 'federated-operators@1 needs SHIP and SLAP or a declared static-peer profile so operators find each other; discovery none is single-operator@1')

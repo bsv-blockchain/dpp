@@ -145,7 +145,7 @@ export const EXCHANGE_PROFILE_IDS = ['untp-0.7.0-jose@1', 'vsc-draft-compat@0.1.
 export type ExchangeProfileId = (typeof EXCHANGE_PROFILE_IDS)[number]
 
 /** Operator profiles this package catalogues (spec/services.md, spec/conformance.md section 4). */
-export const OPERATOR_PROFILE_IDS = ['single-operator@1', 'federated-operators@1'] as const
+export const OPERATOR_PROFILE_IDS = ['single-operator@1', 'single-operator@2', 'federated-operators@1'] as const
 export type OperatorProfileId = (typeof OPERATOR_PROFILE_IDS)[number]
 
 /** The manifest of one exchange profile: representation, artefacts with their retrieval state, proof suites, anchoring, mappings. */

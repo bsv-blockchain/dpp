@@ -173,13 +173,18 @@ describe('synchronisation in the capability document', () => {
     expectValid(found)
     expect(found.synchronisation).toEqual({ profile: 'federated-operators@1', discovery: 'ship-slap', gasp: true, peers })
     expect(found.profiles[0]).toMatchObject({ options: { discovery: 'ship-slap', gasp: true, peers } })
+    // Under a one-operator policy the same search is single-operator@2.
+    const single = { chain: policyChain(), operators: OPERATORS, versions: [1, 2], source: 'test' }
+    expect(buildCapabilities({ publisherPolicy: single, syncDiscovery: true, exportAvailable: false, networkOracleConfigured: false, at: AT }).synchronisation.profile).toBe('single-operator@2')
   })
 
   it('claims federated-operators@1 only with both a two-operator policy and peers', () => {
     const single = { chain: policyChain(), operators: OPERATORS, versions: [1, 2], source: 'test' }
     const singleWithPeers = buildCapabilities({ publisherPolicy: single, syncPeers: peers, exportAvailable: false, networkOracleConfigured: false, at: AT })
-    expect(singleWithPeers.profiles[0]).toMatchObject({ id: 'single-operator', version: '1', options: { discovery: 'static-peers', gasp: true, peers } })
-    expect(singleWithPeers.synchronisation.profile).toBe('single-operator@1')
+    // One administration with peers exchanges records: single-operator@2, which claims no independent replication.
+    expect(singleWithPeers.profiles[0]).toMatchObject({ id: 'single-operator', version: '2', options: { discovery: 'static-peers', gasp: true, peers } })
+    expect(singleWithPeers.synchronisation.profile).toBe('single-operator@2')
+    expect(ids(singleWithPeers.unsupported)).toContain('independent-replication')
     const federatedNoPeers = buildCapabilities({ publisherPolicy: federation, exportAvailable: false, networkOracleConfigured: false, at: AT })
     expect(federatedNoPeers.profiles[0].id).toBe('single-operator')
     const federated = buildCapabilities({ publisherPolicy: federation, syncPeers: peers, exportAvailable: false, networkOracleConfigured: false, at: AT })
