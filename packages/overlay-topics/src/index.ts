@@ -117,6 +117,7 @@ import { RetractionRefused, retractOutput } from './retraction.js'
 import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
 import { startPeerSynchronisation, syncConfigurationFor, syncSettingsFromEnvironment, type SyncSettings } from './sync.js'
 import { discoverySettingsFromEnvironment, shipAdvertLookup, startPeerDiscovery, type DiscoverySettings } from './discovery.js'
+import { advertiseIndex, advertiserWallet, advertisingSettingsFromEnvironment } from './advertise.js'
 import { pacedChainTracker } from './headerSource.js'
 
 export const TOPIC = DPP_TOPIC
@@ -169,6 +170,8 @@ export interface NodeComponents {
    * `staticPeers` keeps the named ones.
    */
   sync?: Pick<SyncSettings, 'peers' | 'intervalMs'> & { legacy?: boolean; staticPeers?: string[]; discovery?: DiscoverySettings }
+  /** ADVERTISE=1, reported by the capability document. */
+  advertising?: boolean
 }
 
 /** Whether a node pulls from peers it names or discovers, as its capability document and evidence packages reckon it. */
@@ -705,6 +708,7 @@ async function handle(
         syncPeers: components?.sync?.peers,
         syncIntervalMs: components?.sync?.intervalMs,
         syncDiscovery: components?.sync?.discovery?.enabled === true,
+        advertising: components?.advertising === true,
       }))
       return
     }
@@ -1482,7 +1486,10 @@ async function main(): Promise<void> {
         'Set it on any deployment a stranger can reach; the bounded GET /evidence-package stays open either way.'
     )
   }
+  // Read before the engine starts, so a malformed advertising setting stops the boot.
+  const advertising = advertisingSettingsFromEnvironment()
   const { engine, components, close } = await engineFromEnvironment(network, tracker)
+  if (advertising.enabled) components.advertising = true
   const service = await startOverlayService(engine, {
     port,
     submitToken,
@@ -1559,6 +1566,26 @@ async function main(): Promise<void> {
       })
     : undefined
   if (synchronisation != null) void synchronisation.runOnce()
+
+  // Once the socket listens, so a tracker that follows an advert reaches it.
+  // A failure is a log line: an index that cannot advertise still serves and
+  // still pulls; it is found only by the indexes that name it.
+  if (advertising.enabled) {
+    void (async () => {
+      try {
+        const wallet = await advertiserWallet(advertising.privateKey!, advertising.storageUrl!, network)
+        await advertiseIndex({
+          wallet,
+          domain: advertising.domain!,
+          topics: [TOPIC, ATTESTATION_TOPIC, UORA_TOPIC],
+          services: [SERVICE, ATTESTATION_SERVICE, UORA_SERVICE],
+          network,
+        })
+      } catch (cause) {
+        console.warn(`advertising failed, so other indexes find this one only if they name it: ${cause instanceof Error ? cause.message : String(cause)}`)
+      }
+    })()
+  }
 
   let stopping = false
   for (const signal of ['SIGINT', 'SIGTERM'] as const) {

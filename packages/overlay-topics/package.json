@@ -48,5 +48,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "optionalDependencies": {
+    "@bsv/wallet-toolbox-client": "2.11.0"
   }
 }
