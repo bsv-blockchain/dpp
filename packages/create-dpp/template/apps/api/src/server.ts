@@ -2,7 +2,7 @@
 // pages under everything else. Reads are open: anyone may verify a passport.
 // Writes need a signed-in member of the brand that holds the passport, or,
 // for a recipient under managed custody, the claim code they accepted with.
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hash, Utils } from '@bsv/sdk'
 import { verifyLifecycleClaim } from '@bsv/dpp-core'
@@ -43,6 +43,22 @@ class HttpError extends Error {
 }
 
 const sha256hex = (text: string): string => Utils.toHex(Hash.sha256(Utils.toArray(text, 'utf8')))
+/** A URL-safe slug from a name: lower-case letters and digits with single hyphens, at most 64 characters, built without backtracking. */
+function slugOf(name: string): string {
+  let slug = ''
+  let hyphen = false
+  for (const char of name.toLowerCase().slice(0, 128)) {
+    if (/[a-z0-9]/.test(char)) {
+      slug += char
+      hyphen = false
+    } else if (slug.length > 0 && !hyphen) {
+      slug += '-'
+      hyphen = true
+    }
+    if (slug.length >= 64) break
+  }
+  return slug.endsWith('-') ? slug.slice(0, -1) : slug
+}
 /** A route parameter as one string; Express 5 types it as possibly several. */
 const param = (req: Request, name: string): string => {
   const value = req.params[name]
@@ -212,15 +228,15 @@ export function createServer(options: ServerOptions): express.Express {
     '/api/brands',
     wrap(async (req) => {
       const s = await requireSession(req)
-      const name = typeof req.body?.name === 'string' ? req.body.name.trim() : ''
+      const name = typeof req.body?.name === 'string' ? req.body.name.trim().slice(0, 128) : ''
       if (name === '') throw new HttpError(400, 'name-required', 'a brand needs a name')
       let id: string
       if (auth == null) {
         // Development without sign-in: one brand per name, owned by the development session.
-        id = `dev-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`
+        id = `dev-${slugOf(name)}`
         if (!s.brandIds.includes(id)) s.brandIds.push(id)
       } else {
-        const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-${Date.now().toString(36)}`
+        const slug = `${slugOf(name)}-${Date.now().toString(36)}`
         const organisation = await auth.api.createOrganization({ body: { name, slug }, headers: fromNodeHeaders(req.headers) })
         if (organisation == null) throw new HttpError(500, 'brand-not-created', 'the organisation was not created')
         id = organisation.id
@@ -378,10 +394,11 @@ export function createServer(options: ServerOptions): express.Express {
   const webDist = options.webDist
   if (webDist != null && existsSync(join(webDist, 'index.html'))) {
     app.use(express.static(webDist, { index: false }))
-    // The passport page lives at the identifier's own path, and every other path is the single-page app's.
+    // The passport page lives at the identifier's own path, and every other path is the single-page app's. Its shell is read once, not per request.
+    const shell = readFileSync(join(webDist, 'index.html'), 'utf8')
     app.get('/{*splat}', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next()
-      res.sendFile(join(webDist, 'index.html'))
+      res.type('html').send(shell)
     })
   }
 
