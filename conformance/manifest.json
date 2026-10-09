@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-10-08",
+  "updatedAt": "2026-10-09",
   "sources": [
     {
       "id": "spec-record-model",
@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "597f95cad8ab10d7d7bc552bbb0c0476b6675f7a1d94542f11624d1d2bbc6dee"
+      "digest": "f67789d8e2f2038fd071b74b748d007a8f7cfbcc359aa5181f6b02bf4306c987"
     },
     {
       "id": "spec-record-model-v2",
@@ -16,7 +16,15 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model-v2.md",
-      "digest": "a237f2a398c356343b0bd71274b04a0df8c204a5d696d0a297722e8cd75f5fef"
+      "digest": "f70489b04337fd2dec3215bab55a0f4d0ece423ce9c6367fe5d975ec8454381a"
+    },
+    {
+      "id": "spec-token-carrier",
+      "uri": "spec/token-carrier.md",
+      "version": "working draft",
+      "kind": "local",
+      "path": "spec/token-carrier.md",
+      "digest": "81435a6fd406ed47de8e55c11bc4094adfa6c5a6e567910806d0529a3e6f39de"
     },
     {
       "id": "spec-rules",
@@ -56,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/writing.md",
-      "digest": "cfdd8a317798f0efdab6da3518965de81ec76a9234ccbea36b676539fca16576"
+      "digest": "e6d02520db78c90a3bf0b8bfc454131fc3b74820bce1622088dcd57c44908e2d"
     },
     {
       "id": "spec-services",
@@ -64,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "7bb8924b5611a482cd30934b305b36e5ff9cdc351321c679de5cf228bd3d17d0"
+      "digest": "a994194af83a135c670ea9d1ac7107d06ffa790d6e2d2418a551ca2cb6e9f066"
     },
     {
       "id": "spec-verification",
@@ -72,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "a9690538049ad9111fb187d57251c209df98dcf1c566c05c78628b286eecc458"
+      "digest": "f7624105ab9ed3908fc8ed44a86447b8f4fbc1ee37cf80cbda79863e582bc7e4"
     },
     {
       "id": "spec-conformance",
@@ -104,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "9c64d3ea3bdc6d251eda9705f538e5ff95b9ff0a3aec400dcf9a8bdaea8c9cb5"
+      "digest": "7f9200e09dcf7341d485ad02cfc495aa4984f5633e66a93dd1c938e3d8baf132"
     },
     {
       "id": "contract-registry",
@@ -120,7 +128,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/verification-report.schema.json",
-      "digest": "6c54bd1106a7a4aac5bdc0403453d292fc640d033a218b531c2ab35bc156b5ce"
+      "digest": "e4d01fed1523bc3bd9c3bf60234d63e108a1cc112b8a3ecce6d0160b084726e5"
     },
     {
       "id": "contract-capabilities-schema",
@@ -144,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "97bea6f5dcceb2702708c21e8854bdf07ec05a230b3378b5ddf1a136bacf04a7"
+      "digest": "c1befffb7d532b6f9b9ae8aa869d0b77ad3b91da91e9bc1e95c3f35126cab0d4"
     },
     {
       "id": "spec-profiles",
@@ -956,7 +964,8 @@
       "evidenceRefs": [
         "fixtures/record-v2.json#refusals.v1LayoutWithVersion2",
         "fixtures/record-v2.json#refusals.v2LayoutWithVersion1",
-        "fixtures/record-v2.json#refusals.unsupportedVersion",
+        "fixtures/record-v2.json#refusals.versionThreeWithoutPrefix",
+        "fixtures/record-v2.json#refusals.unknownVersion",
         "fixtures/record-v2.json#refusals.tailShort",
         "fixtures/record-v2.json#refusals.tailWithoutOddDrop"
       ],
@@ -1194,6 +1203,342 @@
       ],
       "status": "tested",
       "reviewedAt": "2026-09-06",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-2-script",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "A version 3 state is one output: the BRC-162 token prefix, then the version 2 layout of key, OP_CHECKSIG, seventeen minimal pushes, eight OP_2DROP and one OP_DROP; a bare seventeen-field body is version 2, one behind a prefix is version 3, and either version string in the other place is no DPP output.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#parseDppOutput",
+        "packages/dpp-core/src/codec.ts#fieldsToStateV3",
+        "packages/dpp-core/src/codec.ts#carrierPrefixChunks"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/record-v3.test.ts",
+        "packages/dpp-core/test/record-v2.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v3.json#accepted.genesisWithEmptyPayload",
+        "fixtures/record-v3.json#refusals.versionTwoBehindPrefix",
+        "fixtures/record-v3.json#refusals.versionThreeWithoutPrefix",
+        "fixtures/record-v3.json#refusals.bodyTailShort",
+        "fixtures/record-v3.json#refusals.lockingKeyUncompressed",
+        "fixtures/record-v2.json#refusals.versionThreeWithoutPrefix"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-3-prefix",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The prefix is BRC-162: a deploy is OP_0 OP_1 OP_2DROP and sits at output 0 with an empty token id; a value output is the 32-byte token id in internal byte order, OP_1 and OP_2DROP; the amount is one unit as the minimal script number; neither carries a payload.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#carrierPrefixChunks",
+        "packages/dpp-core/src/codec.ts#carrierPrefixFor",
+        "packages/dpp-core/src/codec.ts#tokenIdWireBytes",
+        "packages/dpp-core/src/constants.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/record-v3.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v3.json#genesis.prefix",
+        "fixtures/record-v3.json#value.prefix",
+        "fixtures/record-v3.json#refusals.prefixMissingDrop",
+        "fixtures/record-v3.json#refusals.amountNonMinimal",
+        "fixtures/record-v3.json#refusals.amountTwo",
+        "fixtures/record-v3.json#refusals.amountZero",
+        "fixtures/record-v3.json#refusals.tokenIdWrongLength",
+        "fixtures/record-v3.json#refusals.tokenIdThirtySixBytes",
+        "fixtures/record-v3.json#refusals.payloadOnValueOutput",
+        "fixtures/record-v3.json#refusals.payloadOnGenesis"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-4-body",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "The body is the seventeen-field version 2 layout under the version string 3; both preimages are VarInt-framed and opened by the version 3 domain tags (dpp-record-v3/actor-signature, dpp-record-v3/publisher-signature); keys derive under [1, 'dpp token v3'] with actor_keyID and passport_id as key identifiers, counterparty anyone; a signature made under the version 2 protocol verifies under nothing in version 3.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/codec.ts#fieldsToStateV3",
+        "packages/dpp-core/src/signatures.ts#actorPreimageV3",
+        "packages/dpp-core/src/signatures.ts#publisherPreimageV3",
+        "packages/dpp-core/src/constants.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/record-v3.test.ts",
+        "packages/dpp-core/test/chain-v3.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/record-v3.json#genesis.actorPreimage",
+        "fixtures/record-v3.json#genesis.publisherPreimage",
+        "fixtures/record-v3.json#value.actorPreimage",
+        "fixtures/chain-v3.json#refusals.signedUnderVersionTwoProtocol"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-5-token-id",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "The token id is the deploy txid with the implied output index 0, written <txid>_0; every state after the genesis carries it in internal byte order and it equals the lineage genesis; a token id naming another deploy, or written in display order, is another token and the link is refused as token-id-mismatch.",
+      "layer": "core",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/carrier.ts#checkCarrier",
+        "packages/dpp-core/src/carrier.ts#tokenIdOf",
+        "packages/dpp-core/src/codec.ts#tokenIdFromWireBytes",
+        "packages/dpp-core/src/verifyChain.ts#inspectChain"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v3.test.ts",
+        "packages/dpp-core/test/record-v3.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v3.json#tokenId",
+        "fixtures/chain-v3.json#tokenIdWire",
+        "fixtures/chain-v3.json#refusals.tokenIdNotLineageGenesis",
+        "fixtures/chain-v3.json#refusals.tokenIdDisplayOrder",
+        "fixtures/evidence-v3.json#cases.v3-token-id-not-lineage-genesis"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-6-invariants",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "The carrier invariants over the version 2 invariants: the genesis is a deploy at output 0 with an empty token id; every later state is a value output carrying the lineage token id; one carrier output per transaction; no version crosses into or out of a carried lineage; ISSUE at genesis only, no state after RETIRE and control proven, as in version 2.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/carrier.ts#checkCarrier",
+        "packages/dpp-core/src/transition.ts#checkTransition",
+        "packages/dpp-core/src/verifyChain.ts#inspectChain"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v3.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v3.json#refusals",
+        "fixtures/chain-v3.json#refusals.deployNotAtOutputZero",
+        "fixtures/chain-v3.json#refusals.deployCarryingTokenId",
+        "fixtures/chain-v3.json#refusals.valueWithEmptyId",
+        "fixtures/chain-v3.json#refusals.twoCarrierOutputs",
+        "fixtures/chain-v3.json#refusals.versionTwoBehindPrefix",
+        "fixtures/chain-v3.json#refusals.versionThreeWithoutPrefix",
+        "fixtures/chain-v3.json#refusals.issueAfterGenesis",
+        "fixtures/chain-v3.json#refusals.stateAfterRetire",
+        "fixtures/chain-v3.json#refusals.strangerWithoutControl",
+        "fixtures/vectors/dpp/chain/v3.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-7-burn",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "A tip spent by a transaction with no carrier output is a burn: a token reader records the token as burnt, a passport reader finds no state in that transaction and reports the lineage as ended without a RETIRE and the tip as spent; RETIRE remains the only orderly end.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "passport-writer",
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/verifyChain.ts#inspectChain",
+        "packages/dpp-core/src/evidence.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/chain-v3.test.ts",
+        "packages/dpp-core/test/evidence-v3-fixture.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v3.json#burn",
+        "fixtures/evidence-v3.json#cases.v3-burn-without-retire"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-8-writing",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§8",
+      "summary": "A writer places the deploy prefix on the genesis at output 0 and the value prefix carrying the lineage token id on every later state, signs under the version 3 protocol and tags, and discharges every writer duty of spec/writing.md; a carried lineage is never continued from a bare one nor a bare lineage into a carried one.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/lifecycle-v3.mjs",
+        "packages/dpp-core/src/codec.ts#carrierPrefixFor"
+      ],
+      "testRefs": [
+        "examples/lifecycle-v3.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v3.json#states"
+      ],
+      "status": "implemented",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-9-admission",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§9",
+      "summary": "tm_dpp admits a version 3 state under the carrier rules and the version 2 rules, with the lineage genesis traced as for version 2 and the token id held to it; ls_dpp answers for a carried lineage as for a bare one; a burn is recorded as the tip spent without a state.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/overlay-topics/src/tmDpp.ts#identifyAdmissibleOutputs",
+        "packages/overlay-topics/src/lsDpp.ts"
+      ],
+      "testRefs": [
+        "packages/overlay-topics/test/tmDppV3.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v3.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-10-verification",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§10",
+      "summary": "The report is unchanged in shape and version; recordEncoding and linkage carry carrier-prefix-invalid, linkage carries token-id-mismatch, every version 3 state detail names its token id, and the limits say that a reader following the token id alone verifies neither the body's signatures nor its control proof.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-core/src/evidence.ts#linkageReasonCode",
+        "packages/dpp-core/src/evidence.ts",
+        "contracts/verification-report.schema.json"
+      ],
+      "testRefs": [
+        "packages/dpp-core/test/evidence-v3-fixture.ts",
+        "packages/dpp-core/test/chain-v3.test.ts",
+        "packages/dpp-core/test/fixture-json.test.ts",
+        "conformance/check.mjs",
+        "examples/verify-passport.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v3.json#cases.v3-valid-lineage",
+        "fixtures/evidence-v3.json#cases.v3-retired-tip-observed",
+        "fixtures/evidence-v3.json#cases.v3-update-after-retire",
+        "fixtures/evidence-v3.json#cases.v3-token-id-not-lineage-genesis",
+        "fixtures/evidence-v3.json#cases.v3-deploy-not-at-output-zero",
+        "fixtures/evidence-v3.json#cases.v3-value-with-empty-id",
+        "fixtures/evidence-v3.json#cases.v3-control-not-proven",
+        "fixtures/evidence-v3.json#cases.v3-version-two-behind-prefix",
+        "fixtures/evidence-v3.json#cases.v3-burn-without-retire"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "CAR-12-conformance",
+      "sourceId": "spec-token-carrier",
+      "sourceUri": "spec/token-carrier.md",
+      "sourceVersion": "working draft",
+      "clause": "§12",
+      "summary": "native-baseline@3 is the native-baseline@2 selection with the carried record current and versions 1 and 2 read beside it, the version 3 derivation and the version 3 fixtures; a claim under it requires the carrier rows beside the version 2 rows; no baseline supersedes another before 1.0.",
+      "layer": "reference",
+      "roles": [
+        "all"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "conformance/baseline-native-3.json"
+      ],
+      "testRefs": [
+        "conformance/check.mjs"
+      ],
+      "evidenceRefs": [
+        "conformance/baseline-native-3.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-10-09",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -5506,6 +5851,45 @@
         "RM2-9-verifier",
         "VER-4-version-2-findings",
         "CONF-3-baseline-2"
+      ]
+    },
+    {
+      "id": "passport-reader-native-baseline-3",
+      "role": "passport-reader",
+      "minimumStatus": "tested",
+      "description": "A passport reader conforming to native-baseline@3: supplied-history verification of the carried record beside both earlier versions, the token prefix and the token id, the burn, and the verification report with its carrier findings.",
+      "requires": [
+        "CONF-2-reader-quickstart",
+        "RM-2-minimal-push",
+        "RM-2-script",
+        "RM-3-fields",
+        "RM-4-operations",
+        "RM-5-signatures",
+        "RM-6-invariants",
+        "RM-7-owner-tier",
+        "RM-8-verifier",
+        "VER-2-report",
+        "VER-3-expected-subject",
+        "VER-4-checks",
+        "VER-5-observations",
+        "RM2-2-script",
+        "RM2-3-fields",
+        "RM2-4-operations",
+        "RM2-5-signatures",
+        "RM2-6-invariants",
+        "RM2-6-control-proof",
+        "RM2-8-commitment",
+        "RM2-9-verifier",
+        "VER-4-version-2-findings",
+        "CONF-3-baseline-2",
+        "CAR-2-script",
+        "CAR-3-prefix",
+        "CAR-4-body",
+        "CAR-5-token-id",
+        "CAR-6-invariants",
+        "CAR-7-burn",
+        "CAR-10-verification",
+        "CAR-12-conformance"
       ]
     },
     {

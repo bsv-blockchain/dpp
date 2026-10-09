@@ -109,7 +109,7 @@ try {
   for (const d of data) say(dataSamples[d.specifier] != null, `data entry point ${d.specifier} has a sample this check reads (${dataSamples[d.specifier] === '' ? 'the file itself' : dataSamples[d.specifier] ?? 'none named; add one'}).`)
 
   mkdirSync(join(dir, 'fixtures'), { recursive: true })
-  for (const f of ['chain-v2.json', 'managed-acceptance-v1.json', 'chain-v1.json']) cpSync(join(root, 'fixtures', f), join(dir, 'fixtures', f))
+  for (const f of ['chain-v2.json', 'managed-acceptance-v1.json', 'chain-v1.json', 'chain-v3.json']) cpSync(join(root, 'fixtures', f), join(dir, 'fixtures', f))
   writeFileSync(join(dir, 'consumer.mjs'), `
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -127,7 +127,7 @@ for (const specifier of ${JSON.stringify(dataSpecifiers)}) {
   try { const v = require(specifier); out.push(['data entry point ' + specifier + ' reads', v != null]) }
   catch (e) { out.push(['data entry point ' + specifier + ' reads: ' + String(e.message).split('\\n')[0], false]) }
 }
-const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAcceptanceToState, findDppOutputs, STANDARD_VERSION_V2, FIELD_COUNT_V2 } = await import('@bsv/dpp-core')
+const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAcceptanceToState, findDppOutputs, STANDARD_VERSION_V2, FIELD_COUNT_V2, STANDARD_VERSION_V3, FIELD_COUNT_V3 } = await import('@bsv/dpp-core')
 const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities, joinEvidenceExport } = await import('@bsv/dpp-overlay-topics')
 const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData } = await import('@bsv/dpp-profiles')
 const vsc = await import('@bsv/vsc')
@@ -143,6 +143,10 @@ out.push(['reader path: acceptance binds to the transfer', bindAcceptanceToState
 const report = await verifyPassportEvidence({ tokenHistory: txs, acceptanceRecords: [acceptance.record] }, { passportId: chain.states[0].data.passportId, source: 'request-context' }, { chainTracker: 'scripts only', publisherKeys: [chain.custodianKey], managedAcceptance: { required: true } })
 out.push(['reader path: report linkage pass and inclusion unknown without a header source', report.checks.find((c) => c.name === 'linkage').status === 'pass' && report.checks.find((c) => c.name === 'inclusion').status !== 'pass'])
 out.push(['core constants: version 2 is 17 fields', STANDARD_VERSION_V2 === '2' && FIELD_COUNT_V2 === 17])
+const carried = JSON.parse(readFileSync('fixtures/chain-v3.json', 'utf8'))
+const carriedResult = await verifyChain(carried.states.map((s) => Transaction.fromHex(s.rawTx)), { chainTracker: 'scripts only', serverIdentityKey: carried.custodianKey })
+out.push(['reader path: chain-v3 valid as a carried lineage under the custodian key', carriedResult.valid === true])
+out.push(['core constants: version 3 is 17 fields behind the token prefix', STANDARD_VERSION_V3 === '3' && FIELD_COUNT_V3 === 17])
 const tm = new DppTopicManager(chain.custodianKey, { managedAcceptance: true })
 out.push(['overlay: topic manager documentation names version 2', (await tm.getDocumentation()).includes('record-model-v2')])
 const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorServiceKeys: [], ownerConsent: false, managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: new Date() })

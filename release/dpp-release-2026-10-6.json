@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-10-6",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate in which an index serves its signed publisher policy. @bsv/dpp-overlay-topics 0.4.0-beta.9 answers GET /publisher-policy with the dpp-publisher-policy@1 chain it admits under, so a reader verifies the publisher keys and their windows against operator keys it trusts instead of taking the capability document's list on the index's word, under overlay contract 0.10.0-draft. @bsv/dpp-core 0.3.0-beta.7, @bsv/dpp-profiles 0.3.0-beta.7 and @bsv/vsc 0.2.0-beta.5 are unchanged, on @bsv/sdk 2.8.10 under the Apache License 2.0. Record, claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged. Package publication does not establish federated operation or product qualification.",
+  "description": "Experimental prerelease candidate in which an index serves its signed publisher policy. @bsv/dpp-overlay-topics 0.4.0-beta.9 answers GET /publisher-policy with the dpp-publisher-policy@1 chain it admits under, so a reader verifies the publisher keys and their windows against operator keys it trusts instead of taking the capability document's list on the index's word, under overlay contract 0.11.0-draft. @bsv/dpp-core 0.3.0-beta.7, @bsv/dpp-profiles 0.3.0-beta.7 and @bsv/vsc 0.2.0-beta.5 are the versions this set names, on @bsv/sdk 2.8.10 under the Apache License 2.0; the core and overlay sources now carry record version 3 and are not republished by this set. The carried record version 3 of spec/token-carrier.md is added as a third wire record, read beside versions 1 and 2; claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged, and the set still claims native-baseline@2. Package publication does not establish federated operation or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-10-6.json",
   "runtime": {
@@ -270,13 +270,22 @@
           "dpp token v2"
         ],
         "specification": "spec/record-model-v2.md"
+      },
+      {
+        "version": "3",
+        "fieldCount": 17,
+        "protocolId": [
+          1,
+          "dpp token v3"
+        ],
+        "specification": "spec/token-carrier.md"
       }
     ],
     "nativeClaim": "dpp-lifecycle-v1",
     "anchor": "bsv-attestation-anchor-v1",
     "acceptanceRecord": "dpp-managed-acceptance@1",
     "verificationReport": "1",
-    "overlayContract": "0.10.0-draft"
+    "overlayContract": "0.11.0-draft"
   },
   "custody": {
     "selected": "managed-custody@1",
@@ -314,17 +323,17 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "97bea6f5dcceb2702708c21e8854bdf07ec05a230b3378b5ddf1a136bacf04a7",
+      "sha256": "c1befffb7d532b6f9b9ae8aa869d0b77ad3b91da91e9bc1e95c3f35126cab0d4",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "9c64d3ea3bdc6d251eda9705f538e5ff95b9ff0a3aec400dcf9a8bdaea8c9cb5",
+      "sha256": "7f9200e09dcf7341d485ad02cfc495aa4984f5633e66a93dd1c938e3d8baf132",
       "pins": "the index's HTTP contract"
     },
     {
       "path": "contracts/verification-report.schema.json",
-      "sha256": "6c54bd1106a7a4aac5bdc0403453d292fc640d033a218b531c2ab35bc156b5ce",
+      "sha256": "e4d01fed1523bc3bd9c3bf60234d63e108a1cc112b8a3ecce6d0160b084726e5",
       "pins": "the report schema and reason codes"
     },
     {
@@ -376,6 +385,31 @@
       "path": "contracts/evidence-export.schema.json",
       "sha256": "f2d5d78bb6e73cccc72a61bb6f1cb3326bbfb7f99070ed6491ba91caf945edb8",
       "pins": "the complete export part, dpp-evidence-export@1"
+    },
+    {
+      "path": "spec/token-carrier.md",
+      "sha256": "81435a6fd406ed47de8e55c11bc4094adfa6c5a6e567910806d0529a3e6f39de",
+      "pins": "the carried record: the token prefix, the version 3 body, the token id, the burn and the migration rule"
+    },
+    {
+      "path": "fixtures/record-v3.json",
+      "sha256": "835a15b762be7017989106027ea45bd23835476f3028ef0a7b45fd8e6b92165c",
+      "pins": "one carried genesis and value output of record version 3 with twelve refusals"
+    },
+    {
+      "path": "fixtures/chain-v3.json",
+      "sha256": "ae8612ee1cdf8ef032e64da1b7692ae4858a5e6585634fdcea8a2e34e02743cc",
+      "pins": "a five-state carried lineage, twelve refusals and the burn"
+    },
+    {
+      "path": "fixtures/evidence-v3.json",
+      "sha256": "ff8ed81946ba3fcc1190035dd092fea9c925d3183dcfb05109b40fc95d0d37c7",
+      "pins": "the verification report for nine carried evidence cases"
+    },
+    {
+      "path": "conformance/baseline-native-3.json",
+      "sha256": "b8bc42cf9e5c188c348278dd0b8cf24f36a7f913900ae414b988b41c7c41bcde",
+      "pins": "the proposed baseline for the carried record, with every fixture digest"
     }
   ],
   "consumers": [

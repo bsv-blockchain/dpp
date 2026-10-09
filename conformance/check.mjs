@@ -12,8 +12,8 @@
  * while any required row is unassessed or below the claim's minimum status;
  * each baseline's role requirements exist, its fixtures' digests match, and its
  * wire values are the ones the reference implementation exports; every report
- * in fixtures/evidence-v1.json and fixtures/evidence-v2.json validates against the report schema with its
- * checks in the schema's order; the example capability document validates;
+ * in fixtures/evidence-v1.json, fixtures/evidence-v2.json and fixtures/evidence-v3.json validates
+ * against the report schema with its checks in the schema's order; the example capability document validates;
  * and the recorded dependency licences match what is installed.
  *
  * Findings print one sentence each, as GOVERNANCE.md requires of every
@@ -40,11 +40,16 @@ import {
   ATTESTATION_ANCHOR_FIELD_COUNT,
   ATTESTATION_ANCHOR_PREFIX,
   ATTESTATION_ANCHOR_PROTOCOL,
+  CARRIER_AMOUNT,
+  CARRIER_DEPLOY_OUTPUT_INDEX,
+  CARRIER_TOKEN_ID_BYTES,
   DPP_PROTOCOL_ID,
   DPP_PROTOCOL_ID_V2,
+  DPP_PROTOCOL_ID_V3,
   EVIDENCE_CHECK_NAMES,
   FIELD_COUNT,
   FIELD_COUNT_V2,
+  FIELD_COUNT_V3,
   LIFECYCLE_CLAIM_FORMAT,
   LIFECYCLE_CLAIM_PROTOCOL,
   OWNER_PROTOCOL_ID,
@@ -52,6 +57,7 @@ import {
   REPORT_VERSION,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
+  STANDARD_VERSION_V3,
 } from '@bsv/dpp-core'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -120,7 +126,11 @@ for (const name of existsSync(selectionsDir) ? readdirSync(selectionsDir).filter
   else if (result.invalid.length === 0) blocked(`selection ${selection.selectionId} would be refused by node conformance/qualify.mjs ${path}.`)
 }
 
-// 3. The baselines: native-baseline@1 reads version 1, native-baseline@2 reads both.
+// 3. The baselines: native-baseline@1 reads version 1, native-baseline@2 reads
+// versions 2 and 1, native-baseline@3 reads the carried version 3 and both
+// bare versions beside it. `record` names the current version, the versions
+// read beside it in the baseline's order, the derivations the baseline adds
+// to the version 1 ones, and the carrier prefix when the record is carried.
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 const checkBaseline = (path, record) => {
   const baseline = read(path)
@@ -129,12 +139,23 @@ const checkBaseline = (path, record) => {
   expectWire('record.protocolMarker', baseline.wire.record.protocolMarker, PROTOCOL_MARKER)
   expectWire('record.version', baseline.wire.record.version, record.version)
   expectWire('record.fieldCount', baseline.wire.record.fieldCount, record.fieldCount)
-  if (record.alsoReads != null) {
-    expectWire('record.alsoReads.version', baseline.wire.record.alsoReads?.version, record.alsoReads.version)
-    expectWire('record.alsoReads.fieldCount', baseline.wire.record.alsoReads?.fieldCount, record.alsoReads.fieldCount)
-    expectWire('derivations.actorSignatureV2.protocolId', baseline.derivations.actorSignatureV2?.protocolId, DPP_PROTOCOL_ID_V2)
-    expectWire('derivations.publisherSignatureV2.protocolId', baseline.derivations.publisherSignatureV2?.protocolId, DPP_PROTOCOL_ID_V2)
-    expectWire('derivations.controllerKey.protocolId', baseline.derivations.controllerKey?.protocolId, OWNER_PROTOCOL_ID)
+  const alsoReads = record.alsoReads == null ? [] : [record.alsoReads].flat()
+  const declared = baseline.wire.record.alsoReads == null ? [] : [baseline.wire.record.alsoReads].flat()
+  if (alsoReads.length !== declared.length) defect(`${baseline.baselineId} reads ${declared.length} other version${declared.length === 1 ? '' : 's'} beside the current one but the reference exports ${alsoReads.length}.`)
+  alsoReads.forEach((expected, i) => {
+    const label = alsoReads.length === 1 ? 'record.alsoReads' : `record.alsoReads[${i}]`
+    expectWire(`${label}.version`, declared[i]?.version, expected.version)
+    expectWire(`${label}.fieldCount`, declared[i]?.fieldCount, expected.fieldCount)
+  })
+  for (const [name, protocolId] of Object.entries(record.derivations ?? {})) {
+    expectWire(`derivations.${name}.protocolId`, baseline.derivations[name]?.protocolId, protocolId)
+  }
+  if (record.carrier != null) {
+    expectWire('record.carrier.tokenIdBytes', baseline.wire.record.carrier?.tokenIdBytes, CARRIER_TOKEN_ID_BYTES)
+    expectWire('record.carrier.amount', baseline.wire.record.carrier?.amount, CARRIER_AMOUNT)
+    expectWire('record.carrier.deployOutputIndex', baseline.wire.record.carrier?.deployOutputIndex, CARRIER_DEPLOY_OUTPUT_INDEX)
+  } else if (baseline.wire.record.carrier != null) {
+    defect(`${baseline.baselineId} declares a carrier prefix but record version ${record.version} is not carried.`)
   }
   expectWire('nativeClaim.claimFormat', baseline.wire.nativeClaim.claimFormat, LIFECYCLE_CLAIM_FORMAT)
   expectWire('anchor.prefix', baseline.wire.anchor.prefix, ATTESTATION_ANCHOR_PREFIX)
@@ -160,15 +181,23 @@ const checkBaseline = (path, record) => {
     else defect(`${baseline.baselineId} fixture ${f.path} has digest ${actual.slice(0, 12)}…, not the recorded ${f.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
   }
 }
+const versionTwoDerivations = { actorSignatureV2: DPP_PROTOCOL_ID_V2, publisherSignatureV2: DPP_PROTOCOL_ID_V2, controllerKey: OWNER_PROTOCOL_ID }
 checkBaseline('conformance/baseline-native-1.json', { version: STANDARD_VERSION, fieldCount: FIELD_COUNT })
-checkBaseline('conformance/baseline-native-2.json', { version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2, alsoReads: { version: STANDARD_VERSION, fieldCount: FIELD_COUNT } })
+checkBaseline('conformance/baseline-native-2.json', { version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2, alsoReads: { version: STANDARD_VERSION, fieldCount: FIELD_COUNT }, derivations: versionTwoDerivations })
+checkBaseline('conformance/baseline-native-3.json', {
+  version: STANDARD_VERSION_V3,
+  fieldCount: FIELD_COUNT_V3,
+  alsoReads: [{ version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2 }, { version: STANDARD_VERSION, fieldCount: FIELD_COUNT }],
+  derivations: { ...versionTwoDerivations, actorSignatureV3: DPP_PROTOCOL_ID_V3, publisherSignatureV3: DPP_PROTOCOL_ID_V3 },
+  carrier: true,
+})
 
 // 4. The report schema and every pinned report.
 const reportSchema = read('contracts/verification-report.schema.json')
 if (!same(reportSchema.$defs.checkName.enum, [...EVIDENCE_CHECK_NAMES])) defect('the report schema lists the check names in a different order from the reference implementation.')
 else note('the report schema names the sixteen checks in the reference order.')
 const validateReport = ajv.compile(reportSchema)
-for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json']) {
+for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json', 'fixtures/evidence-v3.json']) {
   const evidence = read(file)
   let reportDefects = 0
   for (const c of evidence.cases) {
@@ -259,10 +288,17 @@ for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-releas
     else defect(`${set.releaseSet} runtime names ${dep.name}@${dep.version} but ${version} is installed.`)
   }
   const versions = set.wire.records.map((r) => r.version)
-  if (same(versions, [STANDARD_VERSION, STANDARD_VERSION_V2])) note(`${set.releaseSet} names record versions ${versions.join(' and ')}, as the reference exports them.`)
-  else defect(`${set.releaseSet} names record versions ${versions.join(', ')}; the reference exports ${STANDARD_VERSION} and ${STANDARD_VERSION_V2}.`)
+  const exportedVersions = [STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3]
+  if (same(versions, exportedVersions)) note(`${set.releaseSet} names record versions ${versions.join(', ')}, as the reference exports them.`)
+  else defect(`${set.releaseSet} names record versions ${versions.join(', ')}; the reference exports ${exportedVersions.join(', ')}.`)
+  const exportedRecords = {
+    [STANDARD_VERSION]: { fieldCount: FIELD_COUNT, protocolId: DPP_PROTOCOL_ID },
+    [STANDARD_VERSION_V2]: { fieldCount: FIELD_COUNT_V2, protocolId: DPP_PROTOCOL_ID_V2 },
+    [STANDARD_VERSION_V3]: { fieldCount: FIELD_COUNT_V3, protocolId: DPP_PROTOCOL_ID_V3 },
+  }
   for (const r of set.wire.records) {
-    const expected = r.version === STANDARD_VERSION ? { fieldCount: FIELD_COUNT, protocolId: DPP_PROTOCOL_ID } : { fieldCount: FIELD_COUNT_V2, protocolId: DPP_PROTOCOL_ID_V2 }
+    const expected = exportedRecords[r.version]
+    if (expected == null) { defect(`${set.releaseSet} names record version ${r.version}, which the reference does not export.`); continue }
     if (r.fieldCount !== expected.fieldCount || !same(r.protocolId, expected.protocolId)) defect(`${set.releaseSet} record version ${r.version} names ${r.fieldCount} fields under ${JSON.stringify(r.protocolId)}; the reference exports ${expected.fieldCount} under ${JSON.stringify(expected.protocolId)}.`)
   }
   if (set.wire.verificationReport !== REPORT_VERSION) defect(`${set.releaseSet} names report version ${set.wire.verificationReport}; the reference exports ${REPORT_VERSION}.`)

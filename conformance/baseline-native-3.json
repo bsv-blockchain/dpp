@@ -1,20 +1,36 @@
 {
-  "baselineId": "native-baseline@2",
-  "version": "2",
+  "baselineId": "native-baseline@3",
+  "version": "3",
   "status": "proposed",
-  "description": "The recommended path through the current native formats with record version 2 as the current record and version 1 read beside it, because a lineage may hold both. The same selection as native-baseline@1 for the native claim, the anchor and the report; what is added is the seventeen-field record, its derivation, the managed acceptance record as a representation and the version 2 fixtures. A conformance and documentation selection: nothing here changes a byte, revives a refused format or requires every deployment to fill every role.",
+  "description": "The recommended path through the current native formats with the carried record version 3 as the current record and versions 1 and 2 read beside it, because a lineage may hold either earlier version and a carried lineage holds version 3 alone. The same selection as native-baseline@2 for the native claim, the anchor, the report and the managed acceptance record; what is added is the BRC-162 token prefix in front of the seventeen-field body, the token id every later state carries, the version 3 derivation and the version 3 fixtures. A conformance and documentation selection: nothing here changes a byte of an earlier version, revives a refused format or requires every deployment to fill every role.",
   "wire": {
     "record": {
       "protocolMarker": "dpp",
-      "version": "2",
+      "version": "3",
       "fieldCount": 17,
-      "specification": "spec/record-model-v2.md",
-      "alsoReads": {
-        "version": "1",
-        "fieldCount": 14,
-        "specification": "spec/record-model.md",
-        "rule": "A reader selects the version by the field count of the output and reads each state under its own version; a version 1 lineage continues under version 2 only through the upgrade transition of spec/record-model-v2.md section 6."
-      }
+      "specification": "spec/token-carrier.md",
+      "carrier": {
+        "prefixDeploy": "OP_0 OP_1 OP_2DROP",
+        "prefixValue": "<32-byte token id> OP_1 OP_2DROP",
+        "tokenIdBytes": 32,
+        "amount": 1,
+        "deployOutputIndex": 0,
+        "specification": "spec/token-carrier.md#3-the-prefix"
+      },
+      "alsoReads": [
+        {
+          "version": "2",
+          "fieldCount": 17,
+          "specification": "spec/record-model-v2.md",
+          "rule": "A bare seventeen-field body is version 2 and one behind a token prefix is version 3; a reader selects the version by the prefix and the field count and reads each state under its own version; no version crosses into or out of a carried lineage (spec/token-carrier.md section 6)."
+        },
+        {
+          "version": "1",
+          "fieldCount": 14,
+          "specification": "spec/record-model.md",
+          "rule": "A fourteen-field body is version 1; a version 1 lineage continues under version 2 only through the upgrade transition of spec/record-model-v2.md section 6, and never into a carried lineage."
+        }
+      ]
     },
     "nativeClaim": {
       "claimFormat": "dpp-lifecycle-v1",
@@ -78,6 +94,22 @@
       "protocolId": [
         1,
         "dpp token v2"
+      ],
+      "keyId": "passport_id (field 3)",
+      "counterparty": "anyone"
+    },
+    "actorSignatureV3": {
+      "protocolId": [
+        1,
+        "dpp token v3"
+      ],
+      "keyId": "actor_keyID (field 8)",
+      "counterparty": "anyone"
+    },
+    "publisherSignatureV3": {
+      "protocolId": [
+        1,
+        "dpp token v3"
       ],
       "keyId": "passport_id (field 3)",
       "counterparty": "anyone"
@@ -148,7 +180,7 @@
   "reasonCodes": "contracts/verification-report.schema.json#/$defs/sharedReasonCode",
   "roles": {
     "passport-reader": {
-      "responsibility": "Decode and verify supplied token history of either record version and report the scope of the finding.",
+      "responsibility": "Decode and verify supplied token history of any record version, carried or bare, and report the scope of the finding.",
       "requires": [
         "RM-2-script",
         "RM-2-minimal-push",
@@ -171,7 +203,15 @@
         "RM2-6-control-proof",
         "RM2-8-commitment",
         "RM2-9-verifier",
-        "VER-4-version-2-findings"
+        "VER-4-version-2-findings",
+        "CAR-2-script",
+        "CAR-3-prefix",
+        "CAR-4-body",
+        "CAR-5-token-id",
+        "CAR-6-invariants",
+        "CAR-7-burn",
+        "CAR-10-verification",
+        "CAR-12-conformance"
       ],
       "optional": [
         "CUST-4-owner-consent",
@@ -188,7 +228,11 @@
         "fixtures/chain-v2.json",
         "fixtures/managed-acceptance-v1.json",
         "fixtures/evidence-v2.json",
-        "examples/verify-passport.mjs --fixture --version=2 --report"
+        "examples/verify-passport.mjs --fixture --version=2 --report",
+        "fixtures/record-v3.json",
+        "fixtures/chain-v3.json",
+        "fixtures/evidence-v3.json",
+        "examples/verify-passport.mjs --fixture --version=3 --report"
       ]
     },
     "attestation-verifier": {
@@ -218,7 +262,7 @@
       ]
     },
     "passport-writer": {
-      "responsibility": "Construct valid states and discharge the broadcast, serialisation, announcement, proof and retention duties.",
+      "responsibility": "Construct valid states, carried or bare, and discharge the broadcast, serialisation, announcement, proof and retention duties.",
       "requires": [
         "RM-2-script",
         "RM-3-fields",
@@ -236,7 +280,14 @@
         "RM2-5-signatures",
         "RM2-6-invariants",
         "RM2-6-control-proof",
-        "RM2-8-commitment"
+        "RM2-8-commitment",
+        "CAR-2-script",
+        "CAR-3-prefix",
+        "CAR-4-body",
+        "CAR-5-token-id",
+        "CAR-6-invariants",
+        "CAR-7-burn",
+        "CAR-8-writing"
       ],
       "optional": [
         "WR-3-announce-before-send",
@@ -250,7 +301,8 @@
       "testTargets": [
         "examples/write-passport.mjs --dry-run",
         "writer self-report, one sentence per rule (GOVERNANCE.md)",
-        "examples/lifecycle-v2.mjs"
+        "examples/lifecycle-v2.mjs",
+        "examples/lifecycle-v3.mjs"
       ]
     },
     "attestation-issuer": {
@@ -291,7 +343,7 @@
       ]
     },
     "overlay": {
-      "responsibility": "Admit and serve evidence under published policy, including the selected synchronisation profile.",
+      "responsibility": "Admit and serve evidence under published policy, including the selected synchronisation profile, for bare and carried lineages alike.",
       "requires": [
         "SVC-2-passport-admission",
         "SVC-2-anchor-admission",
@@ -299,7 +351,13 @@
         "SVC-2-proof-ingest",
         "SVC-6-idempotent-admission",
         "OVL-contract-must",
-        "SVC-2-version-2-admission"
+        "SVC-2-version-2-admission",
+        "CAR-2-script",
+        "CAR-3-prefix",
+        "CAR-5-token-id",
+        "CAR-6-invariants",
+        "CAR-7-burn",
+        "CAR-9-admission"
       ],
       "optional": [
         "SVC-1-discovery-sync",
@@ -311,7 +369,8 @@
         "contracts/overlay.yaml",
         "fixtures/attestation-anchor-v1.json",
         "fixtures/vectors/",
-        "fixtures/chain-v2.json"
+        "fixtures/chain-v2.json",
+        "fixtures/chain-v3.json"
       ]
     }
   },
@@ -395,6 +454,31 @@
       "path": "fixtures/vectors/dpp/managed-acceptance/v1.json",
       "sha256": "f8b03a497f80a0e666b8928e4af9c60f938898eb54fe72c2caa34d6b45eb2d5a",
       "pins": "the managed acceptance fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/record-v3.json",
+      "sha256": "835a15b762be7017989106027ea45bd23835476f3028ef0a7b45fd8e6b92165c",
+      "pins": "one carried genesis and one value output of record version 3 with their prefixes, framed preimages, signatures, keys, the token id in both byte orders, one accepted variant and twelve refusals"
+    },
+    {
+      "path": "fixtures/chain-v3.json",
+      "sha256": "ae8612ee1cdf8ef032e64da1b7692ae4858a5e6585634fdcea8a2e34e02743cc",
+      "pins": "a five-state carried lineage with its token id, the control proof on every state after the genesis, retirement, twelve refusals and the burn"
+    },
+    {
+      "path": "fixtures/evidence-v3.json",
+      "sha256": "ff8ed81946ba3fcc1190035dd092fea9c925d3183dcfb05109b40fc95d0d37c7",
+      "pins": "the verification report for nine carried evidence cases"
+    },
+    {
+      "path": "fixtures/vectors/dpp/record/v3.json",
+      "sha256": "28555af2b82dfc608f2b8da34b827c78278a6b26794d216e5dd7de574cb9985c",
+      "pins": "the version 3 record fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/vectors/dpp/chain/v3.json",
+      "sha256": "9fe736fbd1c1640572dc860f589022fe01246e4e152a94d3a9f47caaf3f54d38",
+      "pins": "the version 3 chain fixture in the stack's vector format"
     }
   ],
   "dependencies": [
@@ -434,7 +518,7 @@
   "quickStarts": [
     {
       "role": "passport-reader",
-      "command": "node examples/verify-passport.mjs --fixture --version=2 --report",
+      "command": "node examples/verify-passport.mjs --fixture --version=3 --report",
       "needs": "the fixtures in this repository; no account, wallet, network or other role"
     },
     {
@@ -444,13 +528,13 @@
     },
     {
       "role": "passport-writer",
-      "command": "node examples/lifecycle-v2.mjs",
+      "command": "node examples/lifecycle-v3.mjs",
       "needs": "nothing: fresh keys, no wallet and no network; live, a BRC-100 wallet with funds and an index URL"
     },
     {
       "role": "overlay",
       "command": "docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .",
-      "needs": "a service identity key; ACCEPTANCE_COMMITMENT=required to declare managed-custody@1; MongoDB for persistence, memory otherwise"
+      "needs": "a service identity key; ACCEPTANCE_COMMITMENT=required to declare managed-custody@1; MongoDB for persistence, memory otherwise; nothing new for a carried lineage, which the same image admits under the same policy"
     }
   ]
 }

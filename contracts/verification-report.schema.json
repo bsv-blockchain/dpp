@@ -216,7 +216,9 @@
         "referenced-artefact-mismatch",
         "verifier-not-supplied",
         "not-inspected",
-        "resource-limit"
+        "resource-limit",
+        "carrier-prefix-invalid",
+        "token-id-mismatch"
       ]
     },
     "check": {
