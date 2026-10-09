@@ -12,6 +12,12 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-08, single-operator@2 for one administration with peers
+
+- `@bsv/dpp-profiles` adds the operator profile `single-operator@2`: one administration whose index pulls from peers it names or discovers, every native rule enforced, claiming no independent replication. `checkSelection` accepts it with peers or discovery and refuses it without them or with two operators; `single-operator@1` still means discovery and synchronisation are off.
+- `@bsv/dpp-overlay-topics` declares `single-operator@2` in its capability document and its evidence packages when it synchronises under a one-operator policy, with `independent-replication` under `unsupported`; `federated-operators@1` still needs a policy that names two or more operators.
+- `spec/services.md` section 6 says which profile an index declares, and that a publisher policy's `scope.operatorProfile` names the administration it governs and does not change when the index adds peers, so no signed policy changes. The ledger names the new profile and adds its claim. The next release carries both packages.
+
 ### 2026-10-07, two operators serve the same evidence when their transactions and paths match
 
 - `spec/services.md` section 1 says two operators serve the same evidence for a lineage when the transactions and merkle paths they serve for it are byte-identical, whatever the form of the BEEF around them, and that a comparison between operators, including any acceptance exercise that asks for identical evidence, compares those and never the BEEF bytes. The `two-operators` pass criterion, the demonstration page, the limitations row and the overlay README say the same.

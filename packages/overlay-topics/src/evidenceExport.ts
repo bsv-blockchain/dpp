@@ -70,6 +70,8 @@ export interface EvidenceExportRequest {
   /** EXPORT_SIGNING_KEY; the manifest's signer is its public key. */
   signingKey: PrivateKey
   publisherPolicy?: PublisherPolicyConfig
+  /** The operator profile this index runs, as its capability document names it (`operatorProfileFor`); the policy's own profile when unset. */
+  operatorProfile?: string
   serviceIdentityKey?: string
   ownerConsent?: boolean | { authorities: string[] }
   /** The version 2 options the node admits under (CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT). */
@@ -404,7 +406,7 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
     ...(last == null ? {} : { selectedTip: { txid: last.txid, outputIndex: last.outputIndex } }),
     exportedAt,
     exporter: { id: exporterId, role: 'overlay', software: request.software },
-    profiles: [operatorProfileOf(policy)],
+    profiles: [request.operatorProfile ?? operatorProfileOf(policy)],
     policyId,
     // Public scope, and therefore never a recovery backup: the restricted
     // tiers are not held here, so they are withheld by name, not implied.
@@ -486,7 +488,7 @@ export async function buildEvidenceExportPart(request: EvidencePartRequest): Pro
     ...(tip == null ? {} : { selectedTip: { txid: tip.txid, outputIndex: tip.outputIndex } }),
     exportedAt,
     exporter: { id: exporterId, role: 'overlay', software: request.software },
-    profiles: [operatorProfileOf(policy)],
+    profiles: [request.operatorProfile ?? operatorProfileOf(policy)],
     policyId: policyIdOf(policy),
     disclosure: { scope: 'public', recoveryBackup: false },
     completeness: {

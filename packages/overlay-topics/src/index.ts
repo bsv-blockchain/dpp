@@ -110,7 +110,7 @@ import {
   type UoraAnchorStore,
 } from './anchorStorage.js'
 import { MAX_BODY_BYTES, MAX_PAGE_SIZE } from './limits.js'
-import { buildCapabilities, implementationIdentity } from './capabilities.js'
+import { buildCapabilities, implementationIdentity, operatorProfileFor } from './capabilities.js'
 import { HistoryError, HistoryPaginator } from './history.js'
 import { buildEvidenceExportPart, buildEvidencePackage } from './evidenceExport.js'
 import { RetractionRefused, retractOutput } from './retraction.js'
@@ -169,6 +169,11 @@ export interface NodeComponents {
    * `staticPeers` keeps the named ones.
    */
   sync?: Pick<SyncSettings, 'peers' | 'intervalMs'> & { legacy?: boolean; staticPeers?: string[]; discovery?: DiscoverySettings }
+}
+
+/** Whether a node pulls from peers it names or discovers, as its capability document and evidence packages reckon it. */
+export function synchronisingIn(components: Pick<NodeComponents, 'sync'> | undefined): boolean {
+  return (components?.sync?.peers.length ?? 0) > 0 || components?.sync?.discovery?.enabled === true
 }
 
 export interface OverlayHttpOptions {
@@ -974,6 +979,7 @@ async function handle(
         engineStorage: options.components.engineStorage,
         signingKey: options.exportSigner,
         publisherPolicy: options.components.publisherPolicy,
+        operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
         serviceIdentityKey: options.components.serviceIdentityKey,
         ownerConsent: options.components.ownerConsent,
         controlAuthorities: options.components.controlAuthorities,
@@ -1014,6 +1020,7 @@ async function handle(
         engineStorage: options.components.engineStorage,
         signingKey: options.exportSigner,
         publisherPolicy: options.components.publisherPolicy,
+        operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
         serviceIdentityKey: options.components.serviceIdentityKey,
         now: options.now(),
         software: options.software,

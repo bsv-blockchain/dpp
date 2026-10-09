@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "5adea8a3dae3118cc4d396b8e2e9257d08e06bb076c2ec239401f7950e53b7ce"
+      "digest": "7bb8924b5611a482cd30934b305b36e5ff9cdc351321c679de5cf228bd3d17d0"
     },
     {
       "id": "spec-verification",
@@ -514,7 +514,7 @@
       "version": "0.1.0",
       "kind": "local",
       "path": "packages/dpp-profiles/src/combinations.ts",
-      "digest": "0288a5bbcd7dd3842123917587cf4dcb8288c477116b15950e15e77e295fd2bf"
+      "digest": "f274c069d98e1ac23bfb519d4fad1d89c56a9cb42f5e960ed510d2c6e1a0f988"
     },
     {
       "id": "spec-gs1-discovery",
@@ -3684,13 +3684,13 @@
       "sourceUri": "packages/dpp-profiles/schemas/operator-profile.schema.json",
       "sourceVersion": "1",
       "clause": "whole schema",
-      "summary": "single-operator@1 and federated-operators@1 are named operator profiles with admission, publisher policy, discovery, synchronisation, retention, capability and acceptance requirements, and the independently administered exercise is a distinct acceptance item.",
+      "summary": "single-operator@1, single-operator@2 and federated-operators@1 are named operator profiles with admission, publisher policy, discovery, synchronisation, retention, capability and acceptance requirements; single-operator@2 is one administration that exchanges records with named or discovered peers, and the independently administered exercise is a distinct acceptance item.",
       "layer": "profile",
       "roles": [
         "overlay"
       ],
       "applicability": "when an operator claims a profile",
-      "profileId": "single-operator@1, federated-operators@1",
+      "profileId": "single-operator@1, single-operator@2, federated-operators@1",
       "implementationRefs": [
         "packages/dpp-profiles/manifests/operator/"
       ],
@@ -3700,7 +3700,7 @@
       "evidenceRefs": [],
       "status": "tested",
       "notes": "The manifests are tested; the reference node's federated behaviour is the SVC-1-discovery-sync row.",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-08",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -4101,7 +4101,7 @@
       "sourceUri": "packages/dpp-profiles/src/combinations.ts",
       "sourceVersion": "0.1.0",
       "clause": "whole module",
-      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a write or claim under a superseded industry version, a claim on a proposed exchange or operator profile or on unpinned artefacts, a single operator declaring peers, GASP or advertisement, a federation of one or without discovery, and unknown identifiers.",
+      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a write or claim under a superseded industry version, a claim on a proposed exchange or operator profile or on unpinned artefacts, single-operator@1 declaring peers, GASP or advertisement, single-operator@2 without peers or discovery or with two operators, a federation of one or without discovery, and unknown identifiers; single-operator@2 with named or discovered peers passes.",
       "layer": "profile",
       "roles": [
         "all"
@@ -4116,7 +4116,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-10-08",
       "reviewOwner": "dpp maintainers",
       "notes": "A current exchange profile with unretrieved upstream artefacts supports the implemented-subset claim with a note; the ledger's claim gate keeps the full claim blocked."
     },
@@ -5261,6 +5261,30 @@
         "PUB-1-publisher-policy",
         "RM-6-invariants",
         "RULES-5-anchor",
+        "SVC-2-anchor-admission",
+        "SVC-2-cursor-lookup",
+        "SVC-2-passport-admission",
+        "SVC-2-proof-ingest",
+        "SVC-6-idempotent-admission"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "overlay-single-operator-2",
+      "description": "The reference overlay node as one administration that pulls both rails from peers it names or discovers: everything single-operator@1 requires, plus synchronisation, the capability document that declares it, and refusal of what a peer offers outside this index's own policy.",
+      "role": "overlay",
+      "profileId": "single-operator@2",
+      "requires": [
+        "CONF-4-overlay-capabilities",
+        "EXPORT-1-pages",
+        "EXPORT-4-complete-export",
+        "OVL-1-refused-spend-eviction",
+        "OVL-2-retraction",
+        "OVL-contract-must",
+        "PUB-1-publisher-policy",
+        "RM-6-invariants",
+        "RULES-5-anchor",
+        "SVC-1-discovery-sync",
         "SVC-2-anchor-admission",
         "SVC-2-cursor-lookup",
         "SVC-2-passport-admission",

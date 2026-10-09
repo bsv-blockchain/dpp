@@ -68,6 +68,16 @@ const parseJsonFile = (envelope: EvidencePackageEnvelope, path: string): any =>
   JSON.parse(Utils.toUTF8(Utils.toArray(envelope.files[path], 'base64')))
 
 describe('GET /evidence-package', () => {
+  it('names the operator profile the index runs, single-operator@2 once it pulls from a peer, as its capability document does', async () => {
+    const node = newNode(F.serverKey, {}, { syncPeers: ['https://peer.example'], quiet: true })
+    const base = await serve(node)
+    await admitFixture(base)
+    const { status, envelope } = await exportPackage(base, F.passportId)
+    expect(status).toBe(200)
+    expect(envelope.manifest.profiles).toEqual(['single-operator@2'])
+    expect((await bodyOf(await fetch(`${base}/capabilities`))).synchronisation.profile).toBe('single-operator@2')
+  })
+
   it('exports the fixture passport as a package whose structure, inventory and signature all verify', async () => {
     const node = newNode(F.serverKey)
     const base = await serve(node)

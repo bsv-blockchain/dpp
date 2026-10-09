@@ -39,6 +39,14 @@ describe('profile combinations (conformance.md §4)', () => {
     expect(codes({ baseline: 'native-baseline@1', operator: 'federated-operators@1', deployment: { operators: 2, discovery: 'ship-slap' }, purpose: 'claim' })).toEqual(['operator-proposed'])
   })
 
+  it('takes one administration with named or discovered peers as single-operator@2, and nothing else', () => {
+    for (const deployment of [{ operators: 1, discovery: 'static-peers' as const, gasp: true }, { discovery: 'ship-slap' as const, gasp: true }, { gasp: true }]) {
+      expect(checkSelection({ baseline: 'native-baseline@2', operator: 'single-operator@2', deployment, purpose: 'claim' }).ok).toBe(true)
+    }
+    expect(codes({ baseline: 'native-baseline@2', operator: 'single-operator@2', deployment: { operators: 1, discovery: 'none', gasp: false }, purpose: 'write' })).toEqual(['operator-single-without-peers'])
+    expect(codes({ baseline: 'native-baseline@2', operator: 'single-operator@2', deployment: { operators: 2, gasp: true }, purpose: 'write' })).toEqual(['operator-single-with-two-operators'])
+  })
+
   it('lets a deployment read and write under a draft successor by explicit version, and refuses a claim on it', () => {
     const write = checkSelection({ baseline: 'native-baseline@2', industry: 'battery@3', purpose: 'write' })
     expect(write.ok).toBe(true)

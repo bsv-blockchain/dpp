@@ -45,18 +45,38 @@ export const BASELINE_ID = 'native-baseline@2'
  */
 export const IMPLICIT_POLICY_VERSION = 'reference-node-environment'
 
-/** The operator profile a node without peers, or without a federation policy, runs under. */
+/** The operator profile a node runs under when it neither pulls from peers nor discovers them. */
 export const SINGLE_OPERATOR_PROFILE = 'single-operator@1'
+
+/**
+ * The operator profile of one administration whose index pulls from peers it
+ * names or discovers: it exchanges records and claims nothing about
+ * independent replication, however many peers it has.
+ */
+export const SINGLE_OPERATOR_PEERS_PROFILE = 'single-operator@2'
 
 /**
  * The operator profile claimed only when both halves are configured: a
  * publisher policy whose scope names two or more operators, and peers to
- * synchronise from. Either alone is single-operator@1 with a longer
- * configuration; the profile's manifest says two processes under one
- * administration prove the mechanism and never independence, and the
- * document claims support, not independence.
+ * synchronise from. Peers alone are single-operator@2, and a federation
+ * policy alone is single-operator@1 with a longer configuration; the
+ * profile's manifest says two processes under one administration prove the
+ * mechanism and never independence, and the document claims support, not
+ * independence.
  */
 export const FEDERATED_OPERATORS_PROFILE = 'federated-operators@1'
+
+/**
+ * The operator profile an index runs, which its capability document and its
+ * evidence packages both name. A publisher policy's own `scope.operatorProfile`
+ * names the administration the policy governs and does not change when the
+ * index adds peers; this is what the index does with it (`spec/services.md`
+ * section 6).
+ */
+export function operatorProfileFor(policy: PublisherPolicyConfig | undefined, synchronising: boolean): string {
+  if (synchronising && policy != null && newestPolicy(policy).scope.operators.length >= 2) return FEDERATED_OPERATORS_PROFILE
+  return synchronising ? SINGLE_OPERATOR_PEERS_PROFILE : SINGLE_OPERATOR_PROFILE
+}
 
 /**
  * The VSC seal representation this node indexes commitments to. Its rules live
@@ -155,8 +175,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   // runs and finds no peer yet, which is not synchronisation switched off.
   const synchronising = peers.length > 0 || input.syncDiscovery === true
   const discovery = input.syncDiscovery === true ? 'ship-slap' : synchronising ? 'static-peers' : 'none'
-  const federated = synchronising && policy != null && newestPolicy(policy).scope.operators.length >= 2
-  const operatorProfile = federated ? FEDERATED_OPERATORS_PROFILE : SINGLE_OPERATOR_PROFILE
+  const operatorProfile = operatorProfileFor(policy, synchronising)
   const inForce = chain == null ? undefined : policyInForceAt(chain, input.at)
   // The same question admission asks, at this instant: the policy's keys where
   // it covers the topic, the environment's where it does not or where there is
@@ -183,6 +202,9 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
     ...(synchronising
       ? []
       : [{ id: 'gasp-synchronisation', reason: 'Peer synchronisation is off in this host; federated-operators@1 is a separate operator profile, and naming it does not start a synchronisation.' }]),
+    ...(operatorProfile === SINGLE_OPERATOR_PEERS_PROFILE
+      ? [{ id: 'independent-replication', reason: 'One administration cannot claim independently replicated evidence, however many peers it exchanges records with.' }]
+      : []),
     { id: 'credential-content-verification', reason: 'An overlay indexes commitments and authenticates anchoring-service metadata; credential proof, status and authority are verified by a registry or reader.' },
   ]
   if (anchorsUnrestricted) {
