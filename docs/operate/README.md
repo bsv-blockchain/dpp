@@ -64,7 +64,7 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env down
 
 The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
 
-Follow [broadcast and proofs](wallet-broadcast-proofs.md) and [export and recovery](export-import-recovery.md). Add [peer synchronisation](federation.md) if your operating model needs exchange or replication. Source checkouts and published beta.9 differ in discovery and retry behaviour, as the federation guide explains.
+Follow [broadcast and proofs](wallet-broadcast-proofs.md) and [export and recovery](export-import-recovery.md). Add [peer synchronisation](federation.md) if your operating model needs exchange or replication. From the beta.10 overlay package an index can find peers and advertise itself when configured, as the federation guide explains.
 
 Stored records and resumable cursors have different lifetimes. Cursor secrets are per process; restarting invalidates existing cursors. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
 

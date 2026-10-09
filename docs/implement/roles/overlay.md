@@ -54,7 +54,7 @@ Each applies to any new index, whatever its code. [Known limitations](../../oper
 - No one is named to deliver a later proof to a peer that synchronised a state; its readers see `inclusion` pending until someone does.
 - An output your node left behind while synchronising is visible only in its log, and it is not asked for again until you move that peer's checkpoint back; no setting re-synchronises from a chosen point.
 - A state funded from another passport's transaction does not reach a peer that lacks that other passport's history until the new state is mined.
-- Published beta.9 uses static peers. The later [reviewed source](../../operate/federation.md#discovery-in-the-reviewed-source) can discover advertised peers when configured, but the reference host still does not advertise itself through SHIP and SLAP. To have the hosted reference pull and admit your records, its operator must agree your node and publisher keys; ask through the [BSV Association contact form](https://bsvassociation.org/contact/) with your index URL and publisher keys ([overlays running now](../../deployment.md#overlays-running-now)).
+- From the beta.10 overlay package an index can [find advertised peers and advertise itself](../../operate/federation.md#find-peers-automatically) when configured; the hosted reference index pulls from a static peer and does not yet advertise itself through SHIP and SLAP. To have the hosted reference pull and admit your records, its operator must agree your node and publisher keys; ask through the [BSV Association contact form](https://bsvassociation.org/contact/) with your index URL and publisher keys ([overlays running now](../../deployment.md#overlays-running-now)).
 
 ## Exact implementation sources
 

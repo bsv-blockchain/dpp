@@ -1,6 +1,6 @@
 # Where things stand
 
-The standard is a working draft before version 1.0. Its beta.7 packages, under the Apache 2.0 licence, were published to npm under the `latest` tag on 2 October 2026, the beta.8 overlay package followed the same day, the beta.9 overlay package followed on 3 October 2026, and you can build readers, writers and an index with them today, and a registry against the published contract. This page says what works, what does not yet, and which decisions are still open.
+The standard is a working draft before version 1.0. Its beta.7 packages, under the Apache 2.0 licence, were published to npm under the `latest` tag on 2 October 2026, the beta.8 overlay package followed the same day, the beta.9 overlay package followed on 3 October 2026, a beta.8 core and profiles and beta.10 overlay candidate that reads and writes record version 3 is declared and not yet published, and you can build readers, writers and an index with them today, and a registry against the published contract. This page says what works, what does not yet, and which decisions are still open.
 
 ## Works today
 
