@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { STANDARD_VERSION } from '@bsv/dpp-core'
+import { STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3 } from '@bsv/dpp-core'
 import {
   buildCapabilities,
   IMPLICIT_POLICY_VERSION,
@@ -88,6 +88,9 @@ describe('the capability document', () => {
   it('takes the wire versions from the constants, and the contract version from the contract', () => {
     const document = reference()
     expect(document.protocols).toContainEqual({ id: 'dpp-record', version: STANDARD_VERSION })
+    expect(document.protocols).toContainEqual({ id: 'dpp-record', version: STANDARD_VERSION_V2 })
+    expect(document.protocols).toContainEqual({ id: 'dpp-record', version: STANDARD_VERSION_V3 })
+    expect(document.protocols.filter((p) => p.id === 'dpp-record').map((p) => p.version)).toEqual([STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3])
     expect(document.protocols).toContainEqual({ id: 'bsv-attestation-anchor', version: '1' })
     expect(document.protocols).toContainEqual({ id: 'overlay-http', version: OVERLAY_HTTP_CONTRACT_VERSION })
     const yaml = readFileSync(new URL('contracts/overlay.yaml', root), 'utf8')

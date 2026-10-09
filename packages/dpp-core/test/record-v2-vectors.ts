@@ -72,6 +72,19 @@ export function recordV2Vectors(F: Fixture) {
     expected: { accepted: false, stage: 'decode', reason: r.reason },
     tags: ['error-case', 'brc-48'],
   }))
+  // Append-only: the vector that pinned version "3" as unsupported keeps its
+  // identifier and bytes, skipped, because version 3 is now a named refusal
+  // (`refuse-version-three-without-prefix`) and an unknown version is "4".
+  const superseded = F.refusals.find((r) => r.name === 'versionThreeWithoutPrefix')!
+  const skippedVector = {
+    id: 'refuse-unsupported-version',
+    description: 'unsupported standard version "3"',
+    input: { locking_script_hex: superseded.lockingScript },
+    expected: { accepted: false, stage: 'decode', reason: 'unsupported standard version "3"' },
+    tags: ['error-case', 'brc-48'],
+    skip: true,
+    skip_reason: 'Superseded: version 3 is a known version carried behind a token prefix (spec/token-carrier.md); see refuse-version-three-without-prefix and refuse-unknown-version.',
+  }
 
   return {
     $schema:
@@ -82,6 +95,6 @@ export function recordV2Vectors(F: Fixture) {
     version: '1.0.0',
     reference_impl: 'dpp-core@0.3.0',
     parity_class: 'required',
-    vectors: [stateToScript, scriptToState, ...refusalVectors],
+    vectors: [stateToScript, scriptToState, ...refusalVectors, skippedVector],
   }
 }

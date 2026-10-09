@@ -1,0 +1,3381 @@
+{
+  "fixtureVersion": 3,
+  "description": "The report a conforming verifier produces for a carried version 3 lineage, its retirement, the carrier refusals and the burn; report version 1 throughout. Rebuild each case from its hex with checkedAt injected and compare the report byte for byte.",
+  "checkedAt": "2027-06-01T12:00:00Z",
+  "cases": [
+    {
+      "id": "v3-valid-lineage",
+      "description": "The five pinned carried states with the custodian selected as publisher and no header source: the token rail passes, every state carries the token id, control is proven on every non-genesis state, and the limits say what a token reader does not verify.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd700220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31305430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e00473045022100ba62c743a1900667aa678655cbadc697905ba4d3cae827b5f4b977622f7b813c022074ad9df21df8ea2e487f73fe96e2f0f765228a0f30f2cef5422e7b6c8b6957f5473045022100da3cf294ce4cdacf3bb2ae33a7f4a2c4f2a4827fa4d1bef953b83d58c20f4624022015c45f1d276d772b0381b9fcf80c1e0af4d17eb2f5bbfcb2cb6bc0a82097c1916d6d6d6d6d6d6d6d7500000000",
+          "01000000016fe95987ed84fc31f74b4d4a0b0ed8b4098aad157b06d2f0b938f6644f013b590000000000ffffffff02000000000000000002006a0100000000000000fd840220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d30303031085452414e5346455214323032362d31302d31315431303a33303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f0000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e004630440220294088db182e923819ca4afcbeb386718556a0af501b429465bcfc67e82ddf06022003c362282bafffdaaad30ea1b63266ed52f5dbbf5ce5fa22affe2bce7a9c5f0e46304402204bee6eda5b8a00b01f5e3089a5938827da9c3858aea08a8df27fa2b0433d20d2022075c99614f230920b9c4ca868f194009ec3fed8995bf07a9c9d957584b55c04736d6d6d6d6d6d6d6d7500000000",
+          "0100000001b2b8547798805e1572981d63360fe578369b59ee9fbdf82e68a31d4bc0112ffe0100000000ffffffff010100000000000000fd7f0220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31312d30315430383a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d0a636f6e74726f6c6c6572357b226576656e7454797065223a225472616e73666f726d6174696f6e222c226e6f7465223a2263656c6c2062616c616e636564227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2000000010000463044022014b222e5a59b34106599348981d6a0d346717ac4709e862220f91c18e7cc9f280220425f7b63617e0731591ee7052afdee309dd43d237f0090d873e18c00683236b646304402202f142b623435ad1aae246cd51465c4a06a30ebd7a07e54d849981929e5bc487602207a441d7ab851e8f79240bf2edcde49b16d973110a4aab65f26004644067d08ca6d6d6d6d6d6d6d6d7500000000",
+          "0100000001e524484051d17336f99d4a7d159dee26cc5e93f6120f47d2515c158d2e13700c0000000000ffffffff010100000000000000fde00220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310652455449524514323032372d30332d30315431323a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b111726563697069656e74206163636f756e744c6e7b22726561736f6e223a2272656379636c6564222c2265766964656e6365223a2275726e3a7368613235363a61626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca100000000240c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e500000000204c41120009c4fffb50818bb7dc2f1869bb537e5ac8ca80e5d10e62b116324be60046304402207193eafc04000120133684ce47567542675a5e7a6cbbb91b4649ecfb5ff59b760220748f8f5c70c4945ccf6c7fb36d794fb1f8b2ac9ef939a4177409b96ee964e52a46304402201eaa4adf18dfd32218f97aa504eff4a1faa97cbc5bbd961b1cc2186fa91e6ebe0220622f6471add54ec99ccb87bed0b39d6e9ea62fe631ef723a944dc3cb0e49d2466d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-retired-tip-observed",
+      "description": "The retired lineage with an index reporting its RETIRE unspent: the latest state is observed; a retired tip is a valid tip, and to a token reader a live unit.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd700220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31305430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e00473045022100ba62c743a1900667aa678655cbadc697905ba4d3cae827b5f4b977622f7b813c022074ad9df21df8ea2e487f73fe96e2f0f765228a0f30f2cef5422e7b6c8b6957f5473045022100da3cf294ce4cdacf3bb2ae33a7f4a2c4f2a4827fa4d1bef953b83d58c20f4624022015c45f1d276d772b0381b9fcf80c1e0af4d17eb2f5bbfcb2cb6bc0a82097c1916d6d6d6d6d6d6d6d7500000000",
+          "01000000016fe95987ed84fc31f74b4d4a0b0ed8b4098aad157b06d2f0b938f6644f013b590000000000ffffffff02000000000000000002006a0100000000000000fd840220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d30303031085452414e5346455214323032362d31302d31315431303a33303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f0000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e004630440220294088db182e923819ca4afcbeb386718556a0af501b429465bcfc67e82ddf06022003c362282bafffdaaad30ea1b63266ed52f5dbbf5ce5fa22affe2bce7a9c5f0e46304402204bee6eda5b8a00b01f5e3089a5938827da9c3858aea08a8df27fa2b0433d20d2022075c99614f230920b9c4ca868f194009ec3fed8995bf07a9c9d957584b55c04736d6d6d6d6d6d6d6d7500000000",
+          "0100000001b2b8547798805e1572981d63360fe578369b59ee9fbdf82e68a31d4bc0112ffe0100000000ffffffff010100000000000000fd7f0220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31312d30315430383a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d0a636f6e74726f6c6c6572357b226576656e7454797065223a225472616e73666f726d6174696f6e222c226e6f7465223a2263656c6c2062616c616e636564227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2000000010000463044022014b222e5a59b34106599348981d6a0d346717ac4709e862220f91c18e7cc9f280220425f7b63617e0731591ee7052afdee309dd43d237f0090d873e18c00683236b646304402202f142b623435ad1aae246cd51465c4a06a30ebd7a07e54d849981929e5bc487602207a441d7ab851e8f79240bf2edcde49b16d973110a4aab65f26004644067d08ca6d6d6d6d6d6d6d6d7500000000",
+          "0100000001e524484051d17336f99d4a7d159dee26cc5e93f6120f47d2515c158d2e13700c0000000000ffffffff010100000000000000fde00220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310652455449524514323032372d30332d30315431323a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b111726563697069656e74206163636f756e744c6e7b22726561736f6e223a2272656379636c6564222c2265766964656e6365223a2275726e3a7368613235363a61626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca100000000240c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e500000000204c41120009c4fffb50818bb7dc2f1869bb537e5ac8ca80e5d10e62b116324be60046304402207193eafc04000120133684ce47567542675a5e7a6cbbb91b4649ecfb5ff59b760220748f8f5c70c4945ccf6c7fb36d794fb1f8b2ac9ef939a4177409b96ee964e52a46304402201eaa4adf18dfd32218f97aa504eff4a1faa97cbc5bbd961b1cc2186fa91e6ebe0220622f6471add54ec99ccb87bed0b39d6e9ea62fe631ef723a944dc3cb0e49d2466d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "observers": [
+        {
+          "id": "index-a",
+          "kind": "overlay-lookup",
+          "result": "unspent"
+        }
+      ],
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "observed",
+          "sources": [
+            {
+              "id": "index-a",
+              "kind": "overlay-lookup",
+              "observedAt": "2027-06-01T12:00:00Z",
+              "result": "unspent"
+            }
+          ],
+          "queryScope": "overlay-lookup index-a asked for https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "The latest-state observation is as fresh and as complete as the sources asked; it is not a proof that no later spend exists.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-update-after-retire",
+      "description": "An UPDATE by the recipient spending the RETIRE: linkage fails with lineage-retired, and the findings before it stand.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd700220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31305430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e00473045022100ba62c743a1900667aa678655cbadc697905ba4d3cae827b5f4b977622f7b813c022074ad9df21df8ea2e487f73fe96e2f0f765228a0f30f2cef5422e7b6c8b6957f5473045022100da3cf294ce4cdacf3bb2ae33a7f4a2c4f2a4827fa4d1bef953b83d58c20f4624022015c45f1d276d772b0381b9fcf80c1e0af4d17eb2f5bbfcb2cb6bc0a82097c1916d6d6d6d6d6d6d6d7500000000",
+          "01000000016fe95987ed84fc31f74b4d4a0b0ed8b4098aad157b06d2f0b938f6644f013b590000000000ffffffff02000000000000000002006a0100000000000000fd840220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d30303031085452414e5346455214323032362d31302d31315431303a33303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f0000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e004630440220294088db182e923819ca4afcbeb386718556a0af501b429465bcfc67e82ddf06022003c362282bafffdaaad30ea1b63266ed52f5dbbf5ce5fa22affe2bce7a9c5f0e46304402204bee6eda5b8a00b01f5e3089a5938827da9c3858aea08a8df27fa2b0433d20d2022075c99614f230920b9c4ca868f194009ec3fed8995bf07a9c9d957584b55c04736d6d6d6d6d6d6d6d7500000000",
+          "0100000001b2b8547798805e1572981d63360fe578369b59ee9fbdf82e68a31d4bc0112ffe0100000000ffffffff010100000000000000fd7f0220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31312d30315430383a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d0a636f6e74726f6c6c6572357b226576656e7454797065223a225472616e73666f726d6174696f6e222c226e6f7465223a2263656c6c2062616c616e636564227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2000000010000463044022014b222e5a59b34106599348981d6a0d346717ac4709e862220f91c18e7cc9f280220425f7b63617e0731591ee7052afdee309dd43d237f0090d873e18c00683236b646304402202f142b623435ad1aae246cd51465c4a06a30ebd7a07e54d849981929e5bc487602207a441d7ab851e8f79240bf2edcde49b16d973110a4aab65f26004644067d08ca6d6d6d6d6d6d6d6d7500000000",
+          "0100000001e524484051d17336f99d4a7d159dee26cc5e93f6120f47d2515c158d2e13700c0000000000ffffffff010100000000000000fde00220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310652455449524514323032372d30332d30315431323a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b111726563697069656e74206163636f756e744c6e7b22726561736f6e223a2272656379636c6564222c2265766964656e6365223a2275726e3a7368613235363a61626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca100000000240c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e500000000204c41120009c4fffb50818bb7dc2f1869bb537e5ac8ca80e5d10e62b116324be60046304402207193eafc04000120133684ce47567542675a5e7a6cbbb91b4649ecfb5ff59b760220748f8f5c70c4945ccf6c7fb36d794fb1f8b2ac9ef939a4177409b96ee964e52a46304402201eaa4adf18dfd32218f97aa504eff4a1faa97cbc5bbd961b1cc2186fa91e6ebe0220622f6471add54ec99ccb87bed0b39d6e9ea62fe631ef723a944dc3cb0e49d2466d6d6d6d6d6d6d6d7500000000",
+          "0100000001292476517dbb500f2f3f4376a75828965c5e939740a58044744a5c52abda1bf90000000000ffffffff010100000000000000fd720220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032372d30342d30315431323a30303a30305a21021fa23ba77334c83fe275da951bbefcbcdc55ea6293162cfcf7f2bb7818e3856d21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b111726563697069656e74206163636f756e74004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d5176242900000000204c41120009c4fffb50818bb7dc2f1869bb537e5ac8ca80e5d10e62b116324be60046304402205671c618ae643cd70ebd3206aa5a1383245de378e2214928e03767508e1826e302207b4cb4bf9581bf3c901acf912ebdaa3c371ae0b7e977452c57769cc452c6eb7a4730450221009c8f279207661c565ad46b4ec5a22ed7ccd015dfee7019be397114c6fdec5b4c02203b58565f13d0751f0547ca21078bf4738d5859ce7c617dd6645da382df1475946d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 5,
+                "txid": "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 5,
+                "txid": "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 5,
+                "txid": "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "fail",
+            "reasonCode": "lineage-retired",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ],
+            "scope": {
+              "stateIndex": 5
+            },
+            "detail": "state 5 (1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626): the lineage is retired: no state may follow RETIRE"
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 2,
+                "txid": "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "TRANSFER",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 3,
+                "txid": "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 4,
+                "txid": "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "RETIRE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 5,
+                "txid": "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-token-id-not-lineage-genesis",
+      "description": "A value output naming another deploy as its token id after the genesis: a valid token output to a generic reader, and linkage fails here with token-id-mismatch.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd700220efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31325431323a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e00473045022100b2cb81e29df48345069ab020663781dfedd07f0bf923371a0e6f5ebe6ad4e38902205f41893b23496bfe58199b4194fab29a9aec061f4e38f15fc814122aa6e72de5473045022100a2b468f3e9acc2a7d6e1e5502a0c0909352f7660814703bf0be22f77a21717560220233cb445ced7a201b174755b9a6d461eea79ba3a4df12bf7503b9e5493a0e9946d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "fail",
+            "reasonCode": "token-id-mismatch",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ],
+            "scope": {
+              "stateIndex": 1
+            },
+            "detail": "state 1 (3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0): the token id names the lineage genesis"
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-deploy-not-at-output-zero",
+      "description": "The genesis behind an OP_RETURN at output 1: linkage fails on the genesis with carrier-prefix-invalid.",
+      "evidence": {
+        "tokenHistory": [
+          "010000000002000000000000000002006a0100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432",
+          "outputIndex": 1
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432",
+                "version": "3",
+                "tokenId": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432",
+                "version": "3",
+                "tokenId": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432",
+                "version": "3",
+                "tokenId": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "fail",
+            "reasonCode": "carrier-prefix-invalid",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ],
+            "scope": {
+              "stateIndex": 0
+            },
+            "detail": "state 0 (5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432): a genesis is a deploy at output 0"
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432",
+                "version": "3",
+                "tokenId": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432",
+              "outputIndex": 1
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-value-with-empty-id",
+      "description": "A state after the genesis behind a deploy prefix: linkage fails with carrier-prefix-invalid.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd500200516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31325431323a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e00473045022100b2cb81e29df48345069ab020663781dfedd07f0bf923371a0e6f5ebe6ad4e38902205f41893b23496bfe58199b4194fab29a9aec061f4e38f15fc814122aa6e72de5473045022100a2b468f3e9acc2a7d6e1e5502a0c0909352f7660814703bf0be22f77a21717560220233cb445ced7a201b174755b9a6d461eea79ba3a4df12bf7503b9e5493a0e9946d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "fail",
+            "reasonCode": "carrier-prefix-invalid",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ],
+            "scope": {
+              "stateIndex": 1
+            },
+            "detail": "state 1 (39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b): a state after genesis carries the lineage token id"
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-control-not-proven",
+      "description": "A stranger's UPDATE with an empty control_linkage after the genesis: linkage fails with control-not-proven, as for version 2.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd480220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31325431323a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e66868099108737472616e676572004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1000000000000463044022065b060fdf7c3e00525d1a04a74300cc7a60ef0b70803c4289a1085b3e6a80ade022061a13c2960712e2b00e1e88da207af3e17784f891331f48c35ff120550c33d4446304402203ed12fea03e7a1e9548a8137fcf784f7e367a4f07592cb5284d5c12a998593e502200ad969b60b0e31a79372807e797854e5bca63d1942cd195b5c5ac0b02d3e63ea6d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": false,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "actorSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": false,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": false,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "linkage",
+            "status": "fail",
+            "reasonCode": "control-not-proven",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ],
+            "scope": {
+              "stateIndex": 1
+            },
+            "detail": "state 1 (c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea): the actor is not the controller and control_linkage is empty"
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "proof-absent",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": false,
+                "ownerConsentValid": null,
+                "controlValid": false,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "inclusion was not established: proof-absent.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-version-two-behind-prefix",
+      "description": "A version 2 body behind the token prefix after the genesis: this reader finds no DPP output in that transaction, so encoding fails and nothing about the state is guessed.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd6e0220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31325431323a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e0046304402205ff6db7362cfeba1505a5cbf95293847616fe38e7fc1bddfae52420041f5fd2302202dfb017c590f4f3627305f95bc1794c34c48526561d00cd2298d96692b916db34630440220536171bd6d005fae5c7e447f85ddfa94cf4e98c689f531679c737a81f881633a0220430e5af6b2f145d89ce7756b7de105035de82e505ac97b4db175cb1b8d59c1836d6d6d6d6d6d6d6d7500000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "fail",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "7d16f41b2a7b1eb0fa9f8da1149d53dcf2fc188691f93246a6510e649032c1b8"
+            ],
+            "scope": {
+              "stateIndex": 1
+            },
+            "detail": "state 1 (7d16f41b2a7b1eb0fa9f8da1149d53dcf2fc188691f93246a6510e649032c1b8): exactly one DPP output required, found 0"
+          },
+          {
+            "name": "actorSignatures",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ],
+            "scope": {
+              "stateIndex": 1
+            }
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ],
+            "scope": {
+              "stateIndex": 1
+            }
+          },
+          {
+            "name": "linkage",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ],
+            "scope": {
+              "stateIndex": 1
+            }
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ],
+            "scope": {
+              "stateIndex": 1
+            },
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "actorSignatures was not established: decode-failed.",
+          "publisherSignatures was not established: decode-failed.",
+          "linkage was not established: decode-failed.",
+          "inclusion was not established: decode-failed.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    },
+    {
+      "id": "v3-burn-without-retire",
+      "description": "The tip after the second state spent by a transaction with no carrier output: no DPP output is found in it, so encoding fails on that transaction; the two states before it stand, and the lineage ended without a RETIRE.",
+      "evidence": {
+        "tokenHistory": [
+          "0100000000010100000000000000fdcf0100516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d3030303105495353554514323032362d31302d30395430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e697373756572206261746368203100457b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031227d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb0000500000000046304402201cbefe6bc8b610cf3908b43eeb688b2ee7fdb57ce00b579f46de7cb1ccedc5e402202b8bc225a38572fbf995eefa200d6eff593dcd8c0112bde486da85793065d03a463044022064a8009eccde0552cc47d9b2cad57fe9dbb50a0d914ba4cd2bd5402971caf85a02203fb778e3a9a7e48debe693d3426b5c5a9efd2f8594bfd98dc214c2704f469dba6d6d6d6d6d6d6d6d7500000000",
+          "0100000001a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f70000000000ffffffff010100000000000000fd700220a19c5abf66477a0cdbcd83f06681c02eb1174043aa2690b8409471b89438c1f7516d2102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001333168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56332d303030310655504441544514323032362d31302d31305430393a30303a30305a2102cfa97e6c592c847e5f5f935227034fd6400e57193f09f01e0d0f33d2626965aa21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031004c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256332d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d205f53c0ff07ba5d9a330e68c95dabb1a9bc49e29f9ed53f6fa7c6d99abb00005024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000024f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca10000000020098840c0fa23cb3f08c09e042eef0c792dc810207407e75f380d2c06fc24641e00473045022100ba62c743a1900667aa678655cbadc697905ba4d3cae827b5f4b977622f7b813c022074ad9df21df8ea2e487f73fe96e2f0f765228a0f30f2cef5422e7b6c8b6957f5473045022100da3cf294ce4cdacf3bb2ae33a7f4a2c4f2a4827fa4d1bef953b83d58c20f4624022015c45f1d276d772b0381b9fcf80c1e0af4d17eb2f5bbfcb2cb6bc0a82097c1916d6d6d6d6d6d6d6d7500000000",
+          "01000000016fe95987ed84fc31f74b4d4a0b0ed8b4098aad157b06d2f0b938f6644f013b590000000000ffffffff0101000000000000001976a914000000000000000000000000000000000000000088ac00000000"
+        ]
+      },
+      "expectedSubject": {
+        "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+        "source": "request-context"
+      },
+      "policy": {
+        "publisherKeys": [
+          "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        ],
+        "chainTracker": "scripts-only"
+      },
+      "report": {
+        "reportVersion": "1",
+        "checkedAt": "2027-06-01T12:00:00Z",
+        "expectedSubject": {
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V3-0001",
+          "source": "request-context"
+        },
+        "suppliedTip": {
+          "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+          "outputIndex": 0
+        },
+        "policyId": "none",
+        "checks": [
+          {
+            "name": "recordEncoding",
+            "status": "fail",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "15cdf1b9598a65754894b53ae2807c927c44d1e8cfafd5ee68eb35484805f27f"
+            ],
+            "scope": {
+              "stateIndex": 2
+            },
+            "detail": "state 2 (15cdf1b9598a65754894b53ae2807c927c44d1e8cfafd5ee68eb35484805f27f): exactly one DPP output required, found 0"
+          },
+          {
+            "name": "actorSignatures",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ],
+            "scope": {
+              "stateIndex": 2
+            }
+          },
+          {
+            "name": "publisherSignatures",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ],
+            "scope": {
+              "stateIndex": 2
+            }
+          },
+          {
+            "name": "linkage",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ],
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ],
+            "scope": {
+              "stateIndex": 2
+            }
+          },
+          {
+            "name": "inclusion",
+            "status": "unknown",
+            "reasonCode": "decode-failed",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ],
+            "scope": {
+              "stateIndex": 2
+            },
+            "detail": [
+              {
+                "index": 0,
+                "txid": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "ISSUE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": null,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              },
+              {
+                "index": 1,
+                "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+                "version": "3",
+                "tokenId": "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1_0",
+                "op": "UPDATE",
+                "userSignatureValid": true,
+                "serverSignatureValid": true,
+                "linkageValid": true,
+                "ownerConsentValid": null,
+                "controlValid": true,
+                "spv": "pending",
+                "spvReason": "no-proof"
+              }
+            ]
+          },
+          {
+            "name": "nativeAttestationSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorSignature",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorKeyDerivation",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "anchorDigestAndMetadataBinding",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "externalCredentialProof",
+            "status": "not-applicable",
+            "reasonCode": "no-external-credential",
+            "evidenceRefs": []
+          },
+          {
+            "name": "subjectBinding",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ]
+          },
+          {
+            "name": "issuerAuthority",
+            "status": "unknown",
+            "reasonCode": "policy-missing",
+            "evidenceRefs": []
+          },
+          {
+            "name": "schema",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialTime",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "credentialStatus",
+            "status": "unknown",
+            "reasonCode": "no-evidence",
+            "evidenceRefs": []
+          },
+          {
+            "name": "evidenceAvailability",
+            "status": "pass",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ]
+          }
+        ],
+        "observations": {
+          "latestState": "unknown",
+          "sources": [],
+          "queryScope": "no source asked",
+          "observedAt": "2027-06-01T12:00:00Z",
+          "candidateOutpoints": [
+            {
+              "txid": "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f",
+              "outputIndex": 0
+            }
+          ]
+        },
+        "limits": [
+          "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
+          "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
+          "Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body's signatures nor its control proof, and a wallet's display of the token says nothing about the passport.",
+          "actorSignatures was not established: decode-failed.",
+          "publisherSignatures was not established: decode-failed.",
+          "linkage was not established: decode-failed.",
+          "inclusion was not established: decode-failed.",
+          "nativeAttestationSignature was not established: no-evidence.",
+          "anchorSignature was not established: no-evidence.",
+          "anchorKeyDerivation was not established: no-evidence.",
+          "anchorDigestAndMetadataBinding was not established: no-evidence.",
+          "issuerAuthority was not established: policy-missing.",
+          "schema was not established: no-evidence.",
+          "credentialTime was not established: no-evidence.",
+          "credentialStatus was not established: no-evidence."
+        ]
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { CachedKeyDeriver, PublicKey, Utils } from '@bsv/sdk'
-import { DPP_PROTOCOL_ID } from './constants.js'
+import type { DppVersion } from './constants.js'
+import { protocolIdFor } from './signatures.js'
 import type { DppState } from './types.js'
 
 /**
@@ -125,13 +126,13 @@ export function identityKeyFromDidKey(did: string): string {
  * whole reason the standard chose that counterparty for both signatures
  * (`spec/record-model.md` §3 fields 7/8, §5).
  */
-export function signingPublicKeyFor(state: Pick<DppState, 'actorKeyId' | 'actorIdentityKey'>): string {
+export function signingPublicKeyFor(state: Pick<DppState, 'actorKeyId' | 'actorIdentityKey'> & { version?: DppVersion }): string {
   return anyone
-    .derivePublicKey(DPP_PROTOCOL_ID, state.actorKeyId, state.actorIdentityKey)
+    .derivePublicKey(protocolIdFor({ version: state.version ?? '1' }), state.actorKeyId, state.actorIdentityKey)
     .toString()
 }
 
 /** The `did:key` of the key that signed, as distinct from the actor it belongs to. */
-export function signingDidFor(state: Pick<DppState, 'actorKeyId' | 'actorIdentityKey'>): string {
+export function signingDidFor(state: Pick<DppState, 'actorKeyId' | 'actorIdentityKey'> & { version?: DppVersion }): string {
   return didKeyFromIdentityKey(signingPublicKeyFor(state))
 }

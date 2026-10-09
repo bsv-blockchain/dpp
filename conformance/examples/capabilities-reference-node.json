@@ -18,12 +18,16 @@
       "version": "2"
     },
     {
+      "id": "dpp-record",
+      "version": "3"
+    },
+    {
       "id": "bsv-attestation-anchor",
       "version": "1"
     },
     {
       "id": "overlay-http",
-      "version": "0.10.0-draft"
+      "version": "0.11.0-draft"
     }
   ],
   "profiles": [

@@ -24,10 +24,15 @@ const sha256 = (relative) => createHash('sha256').update(readFileSync(join(root,
 
 // The baseline first, because the ledger pins the baseline file itself: its
 // fixture digests must be final before the ledger records its digest.
-for (const path of ['conformance/baseline-native-1.json', 'conformance/baseline-native-2.json']) {
+// A path that does not exist yet is left as recorded and named, so a baseline
+// or set can be pinned while another file is still being written; the checker
+// refuses the missing file until it exists.
+const missing = (path) => { console.log(`${path} does not exist; its recorded digest is left as it is.`); return true }
+for (const path of ['conformance/baseline-native-1.json', 'conformance/baseline-native-2.json', 'conformance/baseline-native-3.json']) {
   const baseline = read(path)
   let fixtures = 0
   for (const f of baseline.fixtures) {
+    if (!existsSync(join(root, f.path)) && missing(f.path)) continue
     const digest = sha256(f.path)
     if (f.sha256 !== digest) { f.sha256 = digest; fixtures += 1 }
   }
@@ -43,6 +48,7 @@ for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-releas
   if (set.status === 'superseded') { console.log(`release/${name} is superseded; its recorded digests are left as history.`); continue }
   let moved = 0
   for (const a of set.artefacts) {
+    if (!existsSync(join(root, a.path)) && missing(a.path)) continue
     const digest = sha256(a.path)
     if (a.sha256 !== digest) { a.sha256 = digest; moved += 1 }
   }
@@ -54,6 +60,7 @@ const ledger = read('conformance/manifest.json')
 let pinned = 0
 for (const s of ledger.sources) {
   if (s.kind !== 'local' || s.path == null) continue
+  if (!existsSync(join(root, s.path)) && missing(s.path)) continue
   const digest = sha256(s.path)
   if (s.digest !== digest) { s.digest = digest; pinned += 1 }
 }

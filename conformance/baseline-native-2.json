@@ -363,8 +363,8 @@
     },
     {
       "path": "fixtures/record-v2.json",
-      "sha256": "7c186aa151c1b510b1b0a2d0c8c97daaef417265e983a34418042a83fd4791c5",
-      "pins": "one record version 2 output with its framed preimages, signatures, keys and nine refusals"
+      "sha256": "d1408b7692779140d1ac37d56d63118f5c6ac34d8670d61ea2be718929f00dd7",
+      "pins": "one record version 2 output with its framed preimages, signatures, keys and ten refusals, two of them the version 3 string on a bare body and an unknown version"
     },
     {
       "path": "fixtures/chain-v2.json",
@@ -378,12 +378,12 @@
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "12d5bf2e4794f614ccda1980b78ca118c98e2c73f90715caed87fa4731a1fa84",
+      "sha256": "fd4e31c85d99d9ca7cc4f143815c81287d865c75b72121c4091713dda064080c",
       "pins": "the verification report for thirteen version 2 evidence cases"
     },
     {
       "path": "fixtures/vectors/dpp/record/v2.json",
-      "sha256": "018f91e26304d6516d5cad2864c276c51025af7c809af2bc06bd03df7ece515c",
+      "sha256": "711bd85f611a6e6a482b06cb3657d1604de15648ab0357104a9f67159ceeba1a",
       "pins": "the version 2 record fixture in the stack's vector format"
     },
     {

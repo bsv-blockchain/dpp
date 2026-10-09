@@ -140,7 +140,7 @@ export const PAYLOAD_DATA_CARRIER_KEY = 'dataCarrier'
 export const STANDARD_VERSION_V2 = '2'
 
 /** The record versions a reader of this release decodes; any other value is refused by name. */
-export const SUPPORTED_VERSIONS = ['1', '2'] as const
+export const SUPPORTED_VERSIONS = ['1', '2', '3'] as const
 export type DppVersion = (typeof SUPPORTED_VERSIONS)[number]
 
 /**
@@ -205,3 +205,43 @@ export const OUTPOINT_FIELD_BYTES = 36
 
 /** The custody profile Part B delivers: managed custody with explicit recipient acceptance (`spec/managed-custody.md`). */
 export const MANAGED_CUSTODY_PROFILE = 'managed-custody@1'
+
+/*
+ * DPP Token Standard version 3, the token carrier (`spec/token-carrier.md`).
+ * The seventeen-field body of version 2, carried as an output of a fungible
+ * token of one unit under BRC-162 (the binary token prefix that document
+ * defines, pinned to the revision `spec/token-carrier.md` names). The
+ * body changes in three places only: the version string, the protocol
+ * identifier and the two domain tags, so a carried body never verifies as
+ * an uncarried one. Everything else is version 2's rule.
+ *
+ * The prefix in front of the body:
+ *   genesis (the deploy):   OP_0 OP_1 OP_2DROP <body>
+ *   every later state:      <32-byte token id> OP_1 OP_2DROP <body>
+ * The token id is the genesis transaction's id in internal byte order, the
+ * order of an outpoint in a signature preimage; the deploy is output 0 of
+ * its transaction, so the index is implied. The amount is always one unit.
+ * No state carries a payload; the genesis may carry an empty payload slot
+ * (OP_0 OP_DROP), which BRC-162 allows and this reader accepts.
+ */
+
+export const STANDARD_VERSION_V3 = '3'
+
+/** BRC-43 protocol ID of both version 3 record signatures; distinct from the version 2 protocol so keys never cross. */
+export const DPP_PROTOCOL_ID_V3: WalletProtocol = [1, 'dpp token v3']
+
+/** Total body fields per version 3 state: the version 2 layout. */
+export const FIELD_COUNT_V3 = FIELD_COUNT_V2
+
+/** The domain tags that open the two version 3 preimages (`spec/token-carrier.md` §4). */
+export const RECORD_V3_ACTOR_TAG = 'dpp-record-v3/actor-signature'
+export const RECORD_V3_PUBLISHER_TAG = 'dpp-record-v3/publisher-signature'
+
+/** The token id push on every state after the genesis: the deploy txid, 32 bytes, internal order. */
+export const CARRIER_TOKEN_ID_BYTES = 32
+
+/** The one unit every carried state holds; written as OP_1, the minimal script number. */
+export const CARRIER_AMOUNT = 1
+
+/** The output index a genesis (the deploy) sits at; BRC-162 implies the index from it. */
+export const CARRIER_DEPLOY_OUTPUT_INDEX = 0

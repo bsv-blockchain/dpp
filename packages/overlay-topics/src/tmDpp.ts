@@ -3,6 +3,7 @@ import type { AdmittanceInstructions, Storage, TopicManager } from '@bsv/overlay
 import {
   ACCEPTANCE_COMMITMENT_REFUSAL,
   MANAGED_CUSTODY_PROFILE,
+  checkCarrier,
   checkGenesisState,
   checkOwnerConsent,
   checkTransition,
@@ -25,7 +26,10 @@ export const DPP_TOPIC = 'tm_dpp'
  * `POST /submit` as `X-Admission-Refusal` (`contracts/overlay.yaml`). Where a
  * verification report names the same failure, the code is the report's own
  * word (`spec/verification.md` section 4); the last four name what only
- * admission checks: whether the state spends the tip this index holds.
+ * admission checks: whether the state spends the tip this index holds. The
+ * two carrier codes are the version 3 prefix's own (`spec/token-carrier.md`
+ * §6): the role or the position is wrong, or the token id names another
+ * lineage.
  */
 export const DPP_REFUSAL_CODES = [
   'decode-failed',
@@ -35,6 +39,8 @@ export const DPP_REFUSAL_CODES = [
   'lineage-retired',
   'control-not-proven',
   'version-transition-invalid',
+  'carrier-prefix-invalid',
+  'token-id-mismatch',
   'consent-not-proven',
   'acceptance-commitment-absent',
   'genesis-spends-passport-output',
@@ -69,8 +75,9 @@ const RECENT_STATES = 4096
 const MAX_LINEAGE_WALK = 10_000
 
 /**
- * tm_dpp - DPP Token Standard admission, versions 1 and 2
- * (`spec/record-model.md` §6 and §8, `spec/record-model-v2.md` §6 and §8).
+ * tm_dpp - DPP Token Standard admission, versions 1, 2 and 3
+ * (`spec/record-model.md` §6 and §8, `spec/record-model-v2.md` §6 and §8,
+ * `spec/token-carrier.md` §6).
  *
  * Admits a transaction's single DPP output when:
  * - exactly one well-formed DPP output exists (invariant 1; field rules are
@@ -81,6 +88,15 @@ const MAX_LINEAGE_WALK = 10_000
  * - genesis states satisfy the genesis rules. Non-genesis states spend the
  *   previously admitted tip (invariant 4, via previousCoins) and satisfy the
  *   per-link transition rules (invariants 5–7).
+ *
+ * A version 3 state is the version 2 body behind the BRC-162 token prefix,
+ * and the codec has already held the prefix to its shape. What is left to
+ * admission is the prefix against the state's position: a genesis is a
+ * deploy at output 0, every later state is a value output whose token id
+ * names the lineage genesis, and those two rules run before the body rules
+ * so a refusal names the carrier when the carrier is what is wrong. The body
+ * is then judged exactly as a version 2 body is, control proof, control
+ * authorities and the managed-custody commitment included.
  *
  * Spent tips are retained (coinsToRetain) so the lifecycle history stays
  * resolvable (§1: the spend history is the passport's lifecycle).
@@ -115,16 +131,16 @@ export interface DppAdmissionOptions {
    */
   publisherPolicy?: PublisherPolicy[]
   /**
-   * Authorities for version 2 control proofs (`spec/record-model-v2.md` §6):
-   * identity keys whose UPDATE, TRANSFER or RETIRE is admitted without a
+   * Authorities for version 2 and 3 control proofs (`spec/record-model-v2.md`
+   * §6): identity keys whose UPDATE, TRANSFER or RETIRE is admitted without a
    * control proof. Defaults to the `ownerConsent` authorities, so one list
-   * serves both versions unless a deployment names another. Malformed keys
+   * serves every version unless a deployment names another. Malformed keys
    * throw at construction.
    */
   controlAuthorities?: string[]
   /**
    * The managed-custody profile (`spec/managed-custody.md`): when selected, a
-   * version 2 TRANSFER is admitted only when it carries an
+   * version 2 or 3 TRANSFER is admitted only when it carries an
    * `authorisation_commitment`. Off by default: the record model admits a
    * TRANSFER with an empty commitment, and the topic documentation says which
    * this instance runs.
@@ -244,9 +260,11 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
   }
 
   /**
-   * The genesis outpoint of the lineage a version 2 successor must name
-   * (`spec/record-model-v2.md` §6). A version 2 predecessor carries it; the
-   * ISSUE is it. A version 1 predecessor carries none, so the manager walks
+   * The genesis outpoint of the lineage a version 2 or 3 successor must name
+   * (`spec/record-model-v2.md` §6, `spec/token-carrier.md` §6). A version 2
+   * or 3 predecessor carries it; the ISSUE is it, and for a carried lineage
+   * it is also the token id every later state names. A version 1
+   * predecessor carries none, so the manager walks
    * the admitted history back to the genesis through the same sources the
    * predecessor's own bytes came from: the submitted BEEF, the engine's
    * storage, and on the historical paths its recent memory. Undefined when
@@ -260,7 +278,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     parsedBeef: Beef | undefined,
     historical: boolean
   ): Promise<Outpoint | undefined> {
-    if (prev.version === '2') return prev.lineageGenesis ?? { txid: prevTxid, outputIndex: prevOutputIndex }
+    if (prev.version !== '1') return prev.lineageGenesis ?? { txid: prevTxid, outputIndex: prevOutputIndex }
     let state: DppState = prev
     let txid = prevTxid
     let outputIndex = prevOutputIndex
@@ -365,7 +383,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
 
     const refs = findDppOutputs(tx)
     if (refs.length !== 1) return refuse('decode-failed')
-    const { state, outputIndex } = refs[0]
+    const { state, outputIndex, carrier } = refs[0]
 
     if (!verifyUserSignature(state)) return refuse('actor-signature-invalid')
     if (!this.publisherKeysFor(state).some((key) => verifyServerSignature(state, key))) {
@@ -382,6 +400,16 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     }
 
     if (state.previousTxid === '') {
+      // The carrier first (`spec/token-carrier.md` §6): a genesis is a
+      // deploy at output 0, and the prefix says which it is. The codec held
+      // the prefix to its shape; the position is only known here. The log
+      // names the rule because a writer meets it through the carrier, not
+      // through the body it signed.
+      const carrierError = carrier == null ? null : checkCarrier(carrier, { genesis: true, outputIndex })
+      if (carrierError != null) {
+        console.warn(`${DPP_TOPIC} refused ${txid}: ${carrierError}`)
+        return refuse(linkageReasonCode(carrierError))
+      }
       if (checkGenesisState(state) != null) return refuse('link-broken')
       if (previousCoins.length > 0) {
         // A genesis spends no passport state. One that consumes an admitted
@@ -440,12 +468,22 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
       const prev = tryParseDppOutput(prevScript)
       if (prev == null) continue
       const lineageGenesis =
-        state.version === '2'
+        state.version !== '1'
           ? await this.lineageGenesisFor(prev.state, prevTxid, input.sourceOutputIndex, parsedBeef, historical)
           : undefined
-      if (state.version === '2' && lineageGenesis == null) {
+      if (state.version !== '1' && lineageGenesis == null) {
         console.warn(`${DPP_TOPIC} refused ${txid}: the lineage genesis could not be traced from the admitted history`)
         return refuse('lineage-untraceable')
+      }
+      // The carrier before the body (`spec/token-carrier.md` §6): a state
+      // after the genesis is a value output, and the token id it names is
+      // the lineage genesis just traced. A prefix naming another token is
+      // another token to every reader, whatever the body says.
+      const carrierError =
+        carrier == null ? null : checkCarrier(carrier, { genesis: false, outputIndex, lineageGenesis })
+      if (carrierError != null) {
+        console.warn(`${DPP_TOPIC} refused ${txid}: ${carrierError}`)
+        return refuse(linkageReasonCode(carrierError))
       }
       const link = checkTransition(prev.state, state, prevTxid, {
         prevOutputIndex: input.sourceOutputIndex,
@@ -453,10 +491,10 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
         authorities: this.controlAuthorities,
       })
       if (link != null) {
-        // A version 2 refusal names a rule the writer may not know this
+        // A version 2 or 3 refusal names a rule the writer may not know this
         // instance applies (a named authority, the upgrade path), so the
         // operator's log names it; version 1 refusals stay silent as before.
-        if (state.version === '2') console.warn(`${DPP_TOPIC} refused ${txid}: ${link}`)
+        if (state.version !== '1') console.warn(`${DPP_TOPIC} refused ${txid}: ${link}`)
         return refuse(linkageReasonCode(link))
       }
       if (state.version === '1' && this.consentSelected) {
@@ -469,7 +507,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
           return refuse('consent-not-proven')
         }
       }
-      if (state.version === '2' && state.op === 'TRANSFER' && this.managedAcceptance && state.authorisationCommitment === '') {
+      if (state.version !== '1' && state.op === 'TRANSFER' && this.managedAcceptance && state.authorisationCommitment === '') {
         console.warn(`${DPP_TOPIC} refused ${txid}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
         return refuse('acceptance-commitment-absent')
       }
@@ -519,20 +557,37 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     const lines = [
       `# ${DPP_TOPIC}`,
       '',
-      'Admission for DPP Token Standard passports, record versions 1 and 2',
-      '(spec/record-model.md, spec/record-model-v2.md). One DPP output per',
-      'transaction; signatures over the version\'s own preimage (unframed for',
-      'version 1, framed and domain-tagged for version 2); non-genesis states',
-      'must spend the admitted tip; spent states are retained as lifecycle',
-      'history. A version 2 state also binds the predecessor outpoint and the',
-      'lineage genesis, proves control of the predecessor on every UPDATE,',
-      'TRANSFER and RETIRE, and nothing is admitted after a RETIRE. A version 2',
-      'UPDATE may spend a version 1 tip, which upgrades the lineage; a version 1',
-      'state never spends a version 2 tip. Admission additionally requires a',
-      'valid publisher signature (deployment policy, spec/record-model.md §8).',
-      'A refused state that spends the admitted tip leaves the tip and its',
-      'history in place. The same rules judge a state a peer offers during',
-      'synchronisation as one a writer announces.',
+      'Admission for DPP Token Standard passports, record versions 1, 2 and 3',
+      '(spec/record-model.md, spec/record-model-v2.md, spec/token-carrier.md).',
+      'One DPP output per transaction; signatures over the version\'s own',
+      'preimage (unframed for version 1, framed and domain-tagged for versions',
+      '2 and 3); non-genesis states must spend the admitted tip; spent states',
+      'are retained as lifecycle history. A version 2 state also binds the',
+      'predecessor outpoint and the lineage genesis, proves control of the',
+      'predecessor on every UPDATE, TRANSFER and RETIRE, and nothing is',
+      'admitted after a RETIRE. A version 2 UPDATE may spend a version 1 tip,',
+      'which upgrades the lineage; a version 1 state never spends a version 2',
+      'tip. Admission additionally requires a valid publisher signature',
+      '(deployment policy, spec/record-model.md §8). A refused state that',
+      'spends the admitted tip leaves the tip and its history in place. The',
+      'same rules judge a state a peer offers during synchronisation as one a',
+      'writer announces.',
+      '',
+      '## The token carrier (version 3)',
+      '',
+      'A seventeen-field body behind the BRC-162 token prefix is version 3',
+      '(spec/token-carrier.md): the version 2 body read under the version 2',
+      'rules with the version 3 string, signed under its own protocol and',
+      'domain tags. The prefix is checked before the body: a genesis is a',
+      'deploy (OP_0 OP_1 OP_2DROP) at output 0 of its transaction, and every',
+      'later state is a value output (the 32-byte token id, OP_1, OP_2DROP)',
+      'whose token id is the lineage genesis, in internal byte order; the',
+      'index refuses a token id naming any other transaction. A version 3',
+      'state follows only a version 3 state, so no lineage crosses into or out',
+      'of the carrier, and control proof, control authorities and the',
+      'managed-custody commitment apply exactly as for version 2. The token',
+      'id of a carried lineage is the genesis txid followed by _0, and ls_dpp',
+      'answers a lookup by it.',
       '',
       '## The publisher key',
       '',
@@ -547,17 +602,17 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
         'This index admits states countersigned by its one configured service identity key, an implicit single-operator policy with no rotation history. GET /capabilities names the key.'
       )
     }
-    lines.push('', '## Control authorities (version 2)', '')
+    lines.push('', '## Control authorities (versions 2 and 3)', '')
     lines.push(
       this.controlAuthorities.length === 0
-        ? 'Control authorities: none. Every version 2 UPDATE, TRANSFER and RETIRE proves control of the predecessor by equality or by control_linkage.'
-        : `Control authorities: ${this.controlAuthorities.join(', ')}. A version 2 UPDATE, TRANSFER or RETIRE by one of these keys is admitted without a control proof; the profile expects it to be attested on the anchor rail.`
+        ? 'Control authorities: none. Every version 2 or 3 UPDATE, TRANSFER and RETIRE proves control of the predecessor by equality or by control_linkage.'
+        : `Control authorities: ${this.controlAuthorities.join(', ')}. A version 2 or 3 UPDATE, TRANSFER or RETIRE by one of these keys is admitted without a control proof; the profile expects it to be attested on the anchor rail.`
     )
     lines.push('', `## The managed-custody profile (${MANAGED_CUSTODY_PROFILE})`, '')
     lines.push(
       this.managedAcceptance
-        ? 'This index is deployed for the managed-custody profile (spec/managed-custody.md): a version 2 TRANSFER is admitted only when its authorisation_commitment names the acceptance record the custodian retained.'
-        : 'Not enforced by this index, which admits a version 2 TRANSFER with an empty authorisation_commitment: the record model baseline. The managed-custody profile is switched on when the topic manager is configured for it (ACCEPTANCE_COMMITMENT=required).'
+        ? 'This index is deployed for the managed-custody profile (spec/managed-custody.md): a version 2 or 3 TRANSFER is admitted only when its authorisation_commitment names the acceptance record the custodian retained.'
+        : 'Not enforced by this index, which admits a version 2 or 3 TRANSFER with an empty authorisation_commitment: the record model baseline. The managed-custody profile is switched on when the topic manager is configured for it (ACCEPTANCE_COMMITMENT=required).'
     )
     lines.push('', '## The owner-signed transfer (version 1)', '')
     if (this.consentSelected) {
@@ -583,8 +638,8 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
   }> {
     return {
       name: DPP_TOPIC,
-      shortDescription: 'Digital Product Passport token admission (DPP Standard record versions 1 and 2)',
-      version: '2.0.0',
+      shortDescription: 'Digital Product Passport token admission (DPP Standard record versions 1, 2 and 3)',
+      version: '3.0.0',
     }
   }
 }

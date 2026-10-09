@@ -17,13 +17,15 @@ Start with the native path: record, chain, acceptance record, report. Add histor
 
 | File | Input | Your code must reproduce or refuse |
 |---|---|---|
-| `fixtures/record-v2.json` | `lockingScript`; `custodianKey`, the publisher's identity key | `state` (the fifteen data fields), `actorPreimage` and `publisherPreimage` byte for byte, `actorVerificationKey` and `publisherVerificationKey`, and both signatures verifying under them. Refuse the nine scripts in `refusals`; each `reason` names the rule broken. |
+| `fixtures/record-v2.json` | `lockingScript`; `custodianKey`, the publisher's identity key | `state` (the fifteen data fields), `actorPreimage` and `publisherPreimage` byte for byte, `actorVerificationKey` and `publisherVerificationKey`, and both signatures verifying under them. Refuse the ten scripts in `refusals`; each `reason` names the rule broken. |
 | `fixtures/record-v1.json` | `lockingScript`; `serverKey`, the publisher's identity key | `state`, `userPreimage`, `serverPreimage`, both verification keys and signatures. Refuse `uncompressedKey`, the three `malformedTail` scripts, `rolledTimestamp`, `mangledUtf8`, `nulPassportId`, `emptyPushdata` and `overlongPassportId`. |
 | `fixtures/chain-v2.json` | `states[].rawTx`, oldest first; `custodianKey` as the publisher key | Accept the five states. Refuse the 22 `refusals`, accept `boundaryControl` (a valid alternative successor of the second state), accept `upgrade` after the six states of `chain-v1.json`, and refuse its three `refusals`. The policy rules are below the table. |
 | `fixtures/chain-v1.json` | `states[].rawTx`; `serverKey` as the publisher key | Accept the six states; refuse the 16 `refusals`. |
+| `fixtures/record-v3.json` | `genesis.lockingScript` and `value.lockingScript`; `custodianKey`, the publisher's identity key | For each output its `state`, `actorPreimage` and `publisherPreimage` byte for byte, both verification keys and both signatures, and the prefix read from the script: the genesis's empty id and the value output's `tokenId`, whose wire bytes are `tokenIdWire`. Accept the one script in `accepted`; refuse the twelve in `refusals`. |
+| `fixtures/chain-v3.json` | `states[].rawTx`, oldest first; `custodianKey` as the publisher key | Accept the five carried states, each with `tokenId`. Refuse the 12 `refusals`; read `burn` as a transaction holding no state, the lineage ended without a `RETIRE`. |
 | `fixtures/managed-acceptance-v1.json` | `record`; `transfer` | `canonicalUnsigned` and `signingPreimageHex`, the custodian's signature, `commitment`, and the record binding to `transfer`. Each of the six `refusals` has three separate verdicts in `expected`: structure, signature and binding. |
 | `fixtures/attestation-anchor-v1.json` | `unsignedClaim`, `issuerPrivateKey`, `anchoringPrivateKey` | `claim`, `canonicalUnsignedClaim`, `representationBytes`, `digest`, the nine `fields`, `signingPreimage`, `signature`, `lockingKey` and `lockingScript`. Its refusals are in the vector form: [attestation verifier](roles/attestation-verifier.md#the-cases-to-run) lists them. |
-| `fixtures/evidence-v2.json` and `fixtures/evidence-v1.json` | Each case's `evidence`, `expectedSubject`, `policy` and `observers`, and the file's `checkedAt` | Each case's `report`, on the parts [what a matching report is](#what-a-matching-report-is) lists |
+| `fixtures/evidence-v2.json`, `fixtures/evidence-v1.json` and `fixtures/evidence-v3.json` | Each case's `evidence`, `expectedSubject`, `policy` and `observers`, and the file's `checkedAt` | Each case's `report`, on the parts [what a matching report is](#what-a-matching-report-is) lists |
 
 **Chain refusals.** Each refusal extends a prefix of the valid chain. `appendAfter` is a zero-based index into `states`: keep `states[0]` to `states[appendAfter]` and add the refusal's `rawTx`. `-1` means the refusal stands alone as a genesis. The default policy names no publisher key (the publisher signature is admission policy and may be skipped; with the file's publisher key the valid chain passes too), selects no custody profile and names no control authorities. Three kinds of case change that, and each must be run both ways:
 
@@ -33,7 +35,7 @@ Start with the native path: record, chain, acceptance record, report. Add histor
 
 These control cases keep a harness that refuses everything from passing.
 
-**Evidence cases.** `evidence.tokenHistory` is the passport's transactions as raw hex, oldest first. Optional parts sit beside it: `merklePaths` (a merkle path per state in BUMP form, as hex), `alternativeHistories`, `nativeClaims` as posted, `anchors` (locking scripts as hex, with the secured bytes when supplied) and `acceptanceRecords`. `policy` names the publisher keys, the profile options (`managedAcceptance`, `ownerConsent`), any `authority` lists and `policyId`. `chainTracker` is `scripts-only` for no header source, or `header-source` with `headerSource` mapping each height to the merkle root the source holds, or to `unavailable` for an outage. `observers` are latest-state sources that answer exactly as written: `unspent`, `spent` with its `spendingTxid`, `not-found` or `unavailable`. Inject the file's `checkedAt` as the observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json` and `2027-06-01T12:00:00Z` in `evidence-v2.json`. The second is a future date on purpose; it is synthetic test input, not a delivery date.
+**Evidence cases.** `evidence.tokenHistory` is the passport's transactions as raw hex, oldest first. Optional parts sit beside it: `merklePaths` (a merkle path per state in BUMP form, as hex), `alternativeHistories`, `nativeClaims` as posted, `anchors` (locking scripts as hex, with the secured bytes when supplied) and `acceptanceRecords`. `policy` names the publisher keys, the profile options (`managedAcceptance`, `ownerConsent`), any `authority` lists and `policyId`. `chainTracker` is `scripts-only` for no header source, or `header-source` with `headerSource` mapping each height to the merkle root the source holds, or to `unavailable` for an outage. `observers` are latest-state sources that answer exactly as written: `unspent`, `spent` with its `spendingTxid`, `not-found` or `unavailable`. Inject the file's `checkedAt` as the observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json` and `2027-06-01T12:00:00Z` in `evidence-v2.json` and `evidence-v3.json`. The second is a future date on purpose; it is synthetic test input, not a delivery date.
 
 ## What a matching report is
 
@@ -89,17 +91,17 @@ The same bytes are also published in the BSV stack's cross-language vector forma
 - Each vector has `id`, `description`, `input`, `expected` and `tags`. Positive vectors are tagged `happy-path` and refusals `error-case`; the publisher policy and evidence package files tag them `valid` and `refusal`.
 - Binary values are lower-case hex under keys ending `_hex`. The positive record and chain vectors publish the synthetic test private keys and `signature_nonce: "rfc6979"`, so a writer reproduces every pinned byte.
 - A record, chain or historical anchor refusal expects `{ "accepted": false, "stage": ..., "reason": ... }`; a current anchor refusal expects `{ "accepted": false }`.
-- Vector identifiers are permanent: a corrected expectation is a new vector, and the old one is marked skipped with a reason.
+- Vector identifiers are permanent: a corrected expectation is a new vector, and the old one is marked skipped with a reason, as `refuse-unsupported-version` in `record/v2.json` is, its bytes now carrying the named refusal `refuse-version-three-without-prefix`.
 
 The two forms do not map one file to one file:
 
 | Vector file | Top-level file |
 |---|---|
-| `record/v1.json`, `record/v2.json`, `chain/v1.json`, `chain/v2.json`, `managed-acceptance/v1.json` | The record, chain and acceptance files of the same name |
+| `record/v1.json`, `record/v2.json`, `record/v3.json`, `chain/v1.json`, `chain/v2.json`, `chain/v3.json`, `managed-acceptance/v1.json` | The record, chain and acceptance files of the same name |
 | `attestation-anchor/v1.json` | `attestation-anchor-v1.json`, plus six refusals only the vector file has |
 | `anchor/v3.json` | `anchor-v3.json`, plus four refusals only the vector file has |
 | `publisher-policy/v1.json`, `evidence-package/v1.json`, everything under `interoperability/` | None: vector form only |
-| None: top-level form only | `evidence-v1.json`, `evidence-v2.json`, `battery-lifecycle-v1.json` |
+| None: top-level form only | `evidence-v1.json`, `evidence-v2.json`, `evidence-v3.json`, `battery-lifecycle-v1.json` |
 
 The stack's structural runner validates the vector files: from a checkout of `ts-stack` with its runner's dependencies installed, `node conformance/runner/src/runner.js --validate-only --vectors <this repository>/fixtures/vectors` exits 0 when they are well formed ([vector format](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/conformance/VECTOR-FORMAT.md)).
 

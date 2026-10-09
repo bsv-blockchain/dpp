@@ -32,7 +32,7 @@ const copy = (from, to = from) => { cpSync(join(root, from), join(out, to), { re
 copy('spec')
 copy('contracts')
 copy('fixtures')
-for (const f of ['baseline-native-1.json', 'baseline-native-2.json', 'baseline.schema.json', 'manifest.json', 'manifest.schema.json', 'selection.schema.json', 'licences.json']) copy(`conformance/${f}`)
+for (const f of ['baseline-native-1.json', 'baseline-native-2.json', 'baseline-native-3.json', 'baseline.schema.json', 'manifest.json', 'manifest.schema.json', 'selection.schema.json', 'licences.json']) copy(`conformance/${f}`)
 copy('conformance/selections')
 copy('conformance/examples')
 copy('conformance/demonstrations')

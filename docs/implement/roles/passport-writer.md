@@ -42,6 +42,8 @@ The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88e
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
+For a carried passport, record version 3 (`spec/token-carrier.md`), the byte targets are `fixtures/record-v3.json` and `fixtures/chain-v3.json` with their vector forms, `fixtures/vectors/dpp/record/v3.json` and `fixtures/vectors/dpp/chain/v3.json`. A carried state is the version 2 body behind a BRC-162 token prefix, signed under `[1, 'dpp token v3']` and the version 3 tags, and the writer owes two things beyond the lifecycle below: the genesis's carrier output is output 0, so the wallet's output randomisation is off for that one action, and every carried output holds one satoshi. `node examples/lifecycle-v3.mjs` walks a carried lifecycle from fresh keys, issue, update, transfer and retirement, then the carrier's refusals and the burn, offline; it ends with `Every sentence above holds.`
+
 ## The write, step by step
 
 The order is the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md). Record each step in an operation journal, your own record of every operation, so a retry continues instead of repeating.

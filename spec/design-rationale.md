@@ -24,6 +24,10 @@ The native version-1 output uses one compressed key and OP_CHECKSIG. Wallet cust
 
 An account may administer multiple entities and keys, and several authorised accounts may administer one entity. These mappings belong to the application. Managed signing reduces onboarding requirements; independent signing and portable evidence support deployments that need greater operational independence. Neither arrangement changes the shared verification rules.
 
+## Carried states
+
+Record version 3 carries the version 2 body behind a generic token prefix (BRC-162) rather than defining a new body. A generic token reader follows a token id and a linear history of one unit without reading the body, which is how a wallet or an index that knows nothing of passports can still find and follow a lineage. The body keeps the verification property: the signatures, the control proof and the lineage binding are in the seventeen fields, verified from bytes and headers as before, and the prefix adds discovery without adding anything a reader must trust. Nothing in version 1 or version 2 changes; a carried lineage begins at its own deploy, and the open points the carrier document lists are the places where a token reader's view and a passport reader's view could have been aligned further and were not yet.
+
 ## Availability and implementation guidance
 
 No named platform is the exclusive source of record validity. Nevertheless, verifiers need the relevant bytes and authenticated evidence. Writers must retain transactions, proofs and secured credentials, and operators must report unavailable status or identity evidence explicitly. A local overlay index cannot prove global latest state or complete availability.

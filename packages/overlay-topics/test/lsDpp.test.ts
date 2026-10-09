@@ -46,15 +46,15 @@ describe('the query guard', () => {
     for (const query of probes) {
       await expect(
         service.lookup({ service: 'ls_dpp', query: query as unknown as object })
-      ).rejects.toThrow(/passportId, uid or gs1Key/)
+      ).rejects.toThrow(/passportId, uid, tokenId or gs1Key/)
     }
   })
 
   it('treats an empty string as missing, since every record without a chip stores uid as ""', async () => {
     const service = await seeded(3)
-    for (const query of [{ uid: '' }, { passportId: '' }, {}]) {
+    for (const query of [{ uid: '' }, { passportId: '' }, { tokenId: '' }, {}]) {
       await expect(service.lookup({ service: 'ls_dpp', query })).rejects.toThrow(
-        /passportId, uid or gs1Key/
+        /passportId, uid, tokenId or gs1Key/
       )
     }
   })
@@ -106,6 +106,44 @@ describe('the GS1 key, for a caller holding a GTIN and serial but no host', () =
     await storage.insert(record(0, { passportId: 'urn:example:passport:1', uid: '' }))
     expect((await storage.findByPassport('urn:example:passport:1'))[0].gs1Key).toBe('')
     expect(await storage.findByGs1Key('')).toEqual([])
+  })
+})
+
+describe('the token id, for a caller holding a carried lineage and nothing else', () => {
+  const TOKEN = `${'c'.repeat(64)}_0`
+  const OTHER_TOKEN = `${'d'.repeat(64)}_0`
+  const CARRIED = 'https://dpp.example.com/01/09529990001039/21/TOKEN-1'
+
+  async function mixed(): Promise<DppLookupService> {
+    const storage = new InMemoryDppStorage()
+    // An uncarried lineage, then a carried one, then another carried one.
+    await storage.insert(record(0))
+    await storage.insert(record(1))
+    await storage.insert(record(2, { passportId: CARRIED, uid: '', previousTxid: '', tokenId: TOKEN }))
+    await storage.insert(record(3, { passportId: CARRIED, uid: '', tokenId: TOKEN }))
+    await storage.insert(record(4, { passportId: CARRIED, uid: '', previousTxid: '', tokenId: OTHER_TOKEN }))
+    return new DppLookupService(storage)
+  }
+  const txids = (formula: unknown) => (formula as Array<{ txid: string }>).map((o) => o.txid.replace(/^0+/, '') || '0')
+
+  it('answers exactly the states of the one lineage the token is', async () => {
+    const service = await mixed()
+    expect(txids(await service.lookup({ service: 'ls_dpp', query: { tokenId: TOKEN } }))).toEqual(['2', '3'])
+    expect(txids(await service.lookup({ service: 'ls_dpp', query: { tokenId: OTHER_TOKEN } }))).toEqual(['4'])
+    expect(await service.lookup({ service: 'ls_dpp', query: { tokenId: `${'e'.repeat(64)}_0` } })).toEqual([])
+  })
+
+  it('answers the passport identifier first when both are given, as it does for uid', async () => {
+    const service = await mixed()
+    expect(txids(await service.lookup({ service: 'ls_dpp', query: { passportId: PASSPORT_ID, tokenId: TOKEN } }))).toEqual(['0', '1'])
+  })
+
+  it('refuses any other spelling of a token id by name rather than answering empty', async () => {
+    const service = await mixed()
+    for (const tokenId of ['c'.repeat(64), `${'c'.repeat(64)}_1`, `${'C'.repeat(64)}_0`, `${'c'.repeat(63)}_0`, 'TOKEN-1', `${'c'.repeat(64)}_0 `]) {
+      await expect(service.lookup({ service: 'ls_dpp', query: { tokenId } })).rejects.toThrow(/tokenId must be/)
+    }
+    await expect(service.lookup({ service: 'ls_dpp', query: { tokenId: { $ne: '' } } as unknown as object })).rejects.toThrow(/passportId, uid, tokenId or gs1Key/)
   })
 })
 

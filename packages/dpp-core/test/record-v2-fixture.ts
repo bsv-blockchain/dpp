@@ -26,7 +26,9 @@ import { BLOB_V2_1, custodianPriv, idKey, issuerPriv, makeDataV2, signedStateV2 
  * count without the version or the version without the count refuses both; a
  * drop tail one short and one with the odd OP_DROP missing; a 35-byte outpoint
  * and a 31-byte control scalar; a control scalar on an ISSUE; event_data one
- * byte over its bound; and a version string this reader does not know.
+ * byte over its bound; a version 3 string on a bare body, which this reader
+ * names (version 3 is carried behind a token prefix, `spec/token-carrier.md`);
+ * and a version string this reader does not know.
  */
 
 function rechunk(script: LockingScript, edit: (chunks: ScriptChunk[]) => ScriptChunk[]): string {
@@ -58,6 +60,7 @@ export async function recordV2Fixture() {
   })
   const versionOne = withField(1, Utils.toArray('1', 'utf8'))
   const versionThree = withField(1, Utils.toArray('3', 'utf8'))
+  const versionFour = withField(1, Utils.toArray('4', 'utf8'))
   const tailShort = rechunk(script, (chunks) => chunks.slice(0, -1))
   const tailNoOddDrop = rechunk(script, (chunks) => [...chunks.slice(0, -1), { op: OP.OP_2DROP }])
   const outpointShort = withField(12, Array<number>(35).fill(0xab))
@@ -84,7 +87,8 @@ export async function recordV2Fixture() {
     refusals: [
       { name: 'v1LayoutWithVersion2', reason: 'version "2" is carried by the 17-field layout, not the 14-field one', lockingScript: v1Layout },
       { name: 'v2LayoutWithVersion1', reason: 'version "1" is carried by the 14-field layout, not the 17-field one', lockingScript: versionOne },
-      { name: 'unsupportedVersion', reason: 'unsupported standard version "3"', lockingScript: versionThree },
+      { name: 'versionThreeWithoutPrefix', reason: 'version "3" is carried behind a token prefix', lockingScript: versionThree },
+      { name: 'unknownVersion', reason: 'unsupported standard version "4"', lockingScript: versionFour },
       { name: 'tailShort', reason: 'malformed drop tail', lockingScript: tailShort },
       { name: 'tailWithoutOddDrop', reason: 'malformed drop tail', lockingScript: tailNoOddDrop },
       { name: 'outpointWrongLength', reason: 'previous_outpoint must be empty or 36 bytes', lockingScript: outpointShort },
