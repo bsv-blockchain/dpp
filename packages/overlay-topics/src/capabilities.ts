@@ -144,6 +144,8 @@ export interface CapabilityInput {
   syncPeers?: string[]
   /** SYNC_DISCOVERY=ship: peers are also found from SHIP adverts (discovery.ts). */
   syncDiscovery?: boolean
+  /** ADVERTISE=1: the index advertises its topics and lookup services through SHIP and SLAP (advertise.ts). */
+  advertising?: boolean
   /** SYNC_INTERVAL_MS, reported beside the peers; 0 means one round at startup only. */
   syncIntervalMs?: number
 }
@@ -196,9 +198,15 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   const managedAcceptance = input.managedAcceptance === true
 
   const unsupported: CapabilityDocument['unsupported'] = [
-    input.syncDiscovery === true
-      ? { id: 'ship-slap-advertising', reason: 'This node finds peers from SHIP adverts but advertises nothing of its own; other indexes reach it only by naming it.' }
-      : { id: 'ship-slap-discovery', reason: 'This node advertises nothing; a public deployment declares its discovery profile separately.' },
+    ...(input.syncDiscovery === true
+      ? input.advertising === true
+        ? []
+        : [{ id: 'ship-slap-advertising', reason: 'This node finds peers from SHIP adverts but advertises nothing of its own; other indexes reach it only by naming it.' }]
+      : [
+          input.advertising === true
+            ? { id: 'ship-slap-discovery', reason: 'This node advertises itself but finds no peers from adverts; it pulls only from the peers it names.' }
+            : { id: 'ship-slap-discovery', reason: 'This node advertises nothing; a public deployment declares its discovery profile separately.' },
+        ]),
     ...(synchronising
       ? []
       : [{ id: 'gasp-synchronisation', reason: 'Peer synchronisation is off in this host; federated-operators@1 is a separate operator profile, and naming it does not start a synchronisation.' }]),

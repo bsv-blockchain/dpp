@@ -173,6 +173,12 @@ describe('synchronisation in the capability document', () => {
     expectValid(found)
     expect(found.synchronisation).toEqual({ profile: 'federated-operators@1', discovery: 'ship-slap', gasp: true, peers })
     expect(found.profiles[0]).toMatchObject({ options: { discovery: 'ship-slap', gasp: true, peers } })
+    // Advertising as well: neither SHIP/SLAP entry under unsupported. Advertising alone: it is found, but finds no one.
+    const both = buildCapabilities({ publisherPolicy: federation, syncDiscovery: true, advertising: true, exportAvailable: false, networkOracleConfigured: false, at: AT })
+    expect(ids(both.unsupported)).not.toContain('ship-slap-advertising')
+    expect(ids(both.unsupported)).not.toContain('ship-slap-discovery')
+    const advertisedOnly = buildCapabilities({ publisherPolicy: federation, advertising: true, exportAvailable: false, networkOracleConfigured: false, at: AT })
+    expect(advertisedOnly.unsupported.find((u) => u.id === 'ship-slap-discovery')?.reason).toMatch(/advertises itself but finds no peers/)
     // Under a one-operator policy the same search is single-operator@2.
     const single = { chain: policyChain(), operators: OPERATORS, versions: [1, 2], source: 'test' }
     expect(buildCapabilities({ publisherPolicy: single, syncDiscovery: true, exportAvailable: false, networkOracleConfigured: false, at: AT }).synchronisation.profile).toBe('single-operator@2')

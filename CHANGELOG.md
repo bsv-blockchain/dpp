@@ -12,6 +12,10 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-09, an index advertises itself
+
+- `@bsv/dpp-overlay-topics` can advertise. With `ADVERTISE=1`, `PUBLIC_URL`, `ADVERTISER_PRIVATE_KEY` and `ADVERTISER_STORAGE_URL`, the index looks up the SHIP and SLAP adverts its advertiser key already has for its address and creates the missing ones, one 1-satoshi token per topic and lookup service, in one transaction the advertiser's own wallet funds, so indexes with `SYNC_DISCOVERY=ship` find it. The tokens are the SDK's own advert template; the wallet comes from `@bsv/wallet-toolbox-client` 2.11.0, a new optional dependency that `--omit=optional` leaves out and that only the node's server entry loads. A run with every advert present spends nothing, a failure is logged and the index keeps serving, and nothing revokes an advert. The capability document drops `ship-slap-advertising` from `unsupported` when the index advertises. Off unless set; the next release carries it.
+
 ### 2026-10-08, single-operator@2 for one administration with peers
 
 - `@bsv/dpp-profiles` adds the operator profile `single-operator@2`: one administration whose index pulls from peers it names or discovers, every native rule enforced, claiming no independent replication. `checkSelection` accepts it with peers or discovery and refuses it without them or with two operators; `single-operator@1` still means discovery and synchronisation are off.
