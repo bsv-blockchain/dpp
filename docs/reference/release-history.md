@@ -8,6 +8,7 @@ Each earlier set is superseded, and each link opens its JSON at a recorded revis
 
 | Set | State | Receipt |
 |---|---|---|
+| [dpp-release-2026-10-6](https://github.com/bsv-blockchain/dpp/blob/488baaefb5bda535e360fd1c1895124387408816/release/dpp-release-2026-10-6.json) | Superseded; its beta.9 overlay package was published under `latest` on 3 October 2026 beside beta.7 of core and profiles and beta.5 of VSC | [Beta.9 publication receipt](beta-9-publication.md) |
 | [dpp-release-2026-10-5](https://github.com/bsv-blockchain/dpp/blob/a8db9b6018c61d933596e21797ce2d67ddb5a33e/release/dpp-release-2026-10-5.json) | Superseded; its beta.8 overlay package was published under `latest` on 2 October 2026 beside beta.7 of core and profiles and beta.5 of VSC | [Beta.8 publication receipt](beta-8-publication.md) |
 | [dpp-release-2026-10-4](https://github.com/bsv-blockchain/dpp/blob/25fabf755090442b98c6714abfae54ec48fee029/release/dpp-release-2026-10-4.json) | Superseded; its beta.7 packages (VSC beta.5) were published under `latest` on 2 October 2026 | [Beta.7 publication receipt](beta-7-publication.md) |
 | [dpp-release-2026-10-3](https://github.com/bsv-blockchain/dpp/blob/77d53611d884f7d9aa058fe063acb187f77ec9c7/release/dpp-release-2026-10-3.json) | Superseded; its beta.6 packages (VSC beta.5) were published under `latest` on 2 October 2026, the first to `latest` | [Beta.6 publication receipt](beta-6-publication.md) |

@@ -2,14 +2,14 @@
 
 `@bsv/dpp-profiles` holds the industry profiles, the published lists of product fields a passport's payload carries, with code to read them, find the fields that apply to a product and check a payload against its profile. Use it to build a passport's product data, or to show someone else's.
 
-**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.7 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.8 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Install
 
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.7
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.8
 ```
 
 Use 0.3.0-beta.4 or later; earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta; pin the exact version anyway so upgrades are your choice, keep the lockfile, and review compatibility before upgrading. The [support table](support-table.md) separates the Node module from the data entry points.
@@ -111,7 +111,7 @@ In a repository checkout, `node examples/sample-payload.mjs general@2` prints a 
 
 ## Show a stored payload under its profile
 
-Show a passport's product data under the profile its record declares, even a draft or superseded one, never under a newer one. This example also needs `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/sdk@2.8.10` and network access to the hosted index. Save it as `show-payload.mjs`:
+Show a passport's product data under the profile its record declares, even a draft or superseded one, never under a newer one. This example also needs `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/sdk@2.8.10` and network access to the hosted index. Save it as `show-payload.mjs`:
 
 ```js
 import { Beef } from '@bsv/sdk'

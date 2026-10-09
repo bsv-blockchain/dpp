@@ -12,6 +12,11 @@ The beta.5 packages, the first under the Apache 2.0 licence, were published on 2
 
 ## Repository history
 
+### 2026-10-09, beta.8 and beta.10 release candidate
+
+- Prepare `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10` in `dpp-release-2026-10-7`, which publishes to `latest`, beside the unchanged `@bsv/vsc@0.2.0-beta.5`: the first packages that read and write record version 3, the token carrier, under overlay contract 0.11.0-draft, and the first publication of the overlay package's peer discovery, advertising and left-behind retry and of the profiles package's `single-operator@2`. The set's runtime record notes `@bsv/wallet-toolbox-client` 2.11.0 as an optional dependency of the overlay package from this set, for advertising. The set's selection requires the version 3 passport reader claim beside the version 1 and 2 claims and still claims `native-baseline@2`. Publication was pending at preparation.
+- Mark `dpp-release-2026-10-6` superseded with its recorded digests left as published; the demonstration definition and the qualification test move to the new set.
+
 ### 2026-10-09, record version 3: the token carrier
 
 - `spec/token-carrier.md`, record version 3: the seventeen-field body of version 2 carried behind a BRC-162 token prefix (the token id or `OP_0`, the amount `OP_1`, `OP_2DROP`), with the version string `3`, the protocol identifier `[1, 'dpp token v3']` and the tags `dpp-record-v3/actor-signature` and `dpp-record-v3/publisher-signature`, so a carried body never verifies as an uncarried one. The genesis is a fixed-supply deploy of one unit at output 0 and its outpoint is the token id; every later state is a value output of one unit naming it, which the reader holds to `lineage_genesis`; no payload beyond an empty slot on the genesis; one carrier output per transaction; `RETIRE` stays terminal; a version 3 lineage begins at its own deploy and no version crosses into or out of it; a spend of the tip with no carrier output is a burn, reported as the lineage ended without a `RETIRE`. `record-model.md`, `record-model-v2.md`, `verification.md`, `services.md`, `writing.md` and `design-rationale.md` point at it.

@@ -1,8 +1,8 @@
 # Federation with static peers
 
-Use this page to make one index hold another's records: a second index of yours, another operator's, or the hosted reference. Part two, [when a record does not arrive](#when-a-record-does-not-arrive), finds out why a record did not reach a peer.
+Use this page to make one index hold another's records: a second index of yours, another operator's, or the hosted reference. Part one sets up a named peer. [Find peers automatically](#find-peers-automatically) and [advertise your index](#advertise-your-index) add the indexes that advertise themselves, and the last part, [when a record does not arrive](#when-a-record-does-not-arrive), finds out why a record did not reach a peer.
 
-Peer exchange is a choice for your operating model, not a prerequisite for every passport reader or writer. This page's setup uses explicit static peers. The published overlay beta.9 and hosted reference use that mode. The [reviewed source checkout](../packages/README.md#source-access) also contains opt-in discovery and changed retry behaviour, described below; do not infer a deployed feature from an unchanged package version string.
+Peer exchange is a choice for your operating model, not a prerequisite for every passport reader or writer. This page's setup names its peers, which every release supports. Overlay `0.4.0-beta.10` adds three things an index on beta.9 lacks: finding advertised indexes, advertising its own, and asking again for an output it left behind. Read an index's `GET /capabilities`, which names its package version, before relying on any of the three.
 
 | Word | Meaning on this page |
 |---|---|
@@ -20,13 +20,11 @@ An index only pulls. Each round it asks the peers its own `SYNC_PEERS` names wha
 
 Each index pulls `tm_dpp` and `tm_attestation`, and the historical `tm_uora_dpp` only when `SYNC_LEGACY=1`. Two indexes that pull from each other hold the same records only when their settings admit the same things: the publisher policy for passport states, `ANCHOR_SERVICE_KEYS` for anchors (or the policy's anchor-publisher keys when it covers `tm_attestation`), and `SYNC_LEGACY` for the historical topic. An index that names fewer anchoring services than its peer refuses the anchors the peer took from the others, and the two differ for as long as that holds. A peer's `GET /capabilities` names the anchoring services it admits under `publisherPolicy.anchoringServices`; an empty list means it admits any, as its `anchoring-service-restriction` entry under `unsupported` says.
 
-The published beta.9 host does not discover peers. The [services specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) section 1 asks a public index to advertise itself through SHIP and SLAP, the BSV overlay protocols that tell a client which hosts carry a topic or answer a lookup service. The host does not advertise itself, including in the later source version.
+Named peers are not the only source. The [services specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/services.md) section 1 asks a public index to advertise itself through SHIP and SLAP, the BSV overlay protocols that tell a client which hosts carry a topic or answer a lookup service. With `SYNC_DISCOVERY=ship` an index also pulls from the indexes that advertise its topics ([find peers automatically](#find-peers-automatically)), and with `ADVERTISE=1` it advertises itself ([advertise your index](#advertise-your-index)). Both are off unless set, and neither changes what is admitted.
 
 ### Discovery in the reviewed source
 
-Source revision `aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7` adds opt-in discovery with `SYNC_DISCOVERY=ship`. It queries `SLAP_TRACKERS` or the SDK's network defaults, validates topic advertisements, filters incompatible admission and limits discovered peers through `SYNC_MAX_DISCOVERED` (16 by default). It refreshes at start and every ten minutes. Static peers remain available, and discovery is off unless selected. See the [source change record](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/CHANGELOG.md).
-
-Discovery selects possible sources; it does not grant their records admission, establish operator identity, provide write credentials or make your own index discoverable. This guide's explicit-peer recipe works without enabling it. Check the actual host's capabilities and source/release before using discovery settings; the [hosted reference](../deployment.md) currently reports `static-peers`.
+Discovery, advertising and the retry for outputs left behind entered the source between 7 and 9 October 2026 and are published in overlay `0.4.0-beta.10`, so this page describes them as released: [find peers automatically](#find-peers-automatically) and [advertise your index](#advertise-your-index) are the parts to read. The recipe below names its peers and works without either.
 
 ## Part one: set up
 
@@ -131,7 +129,7 @@ curl --fail http://localhost:8081/health
 curl --fail -s http://localhost:8081/capabilities | node -e "const c = JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log(JSON.stringify({ synchronisation: c.synchronisation, publisherKeys: c.publisherPolicy.publisherKeys }, null, 2))"
 ```
 
-Expect `"discovery": "static-peers"`, `"gasp": true`, `peers` listing `http://host.docker.internal:8080`, and `publisherKeys` listing the keys the index admits now. Key windows are not shown: they are only in the operator's signed chain ([tell operators apart](#tell-operators-apart)).
+Expect `"profile": "single-operator@2"`, `"discovery": "static-peers"`, `"gasp": true`, `peers` listing `http://host.docker.internal:8080`, and `publisherKeys` listing the keys the index admits now. An index on beta.9 says `single-operator@1` here. Key windows are not shown: they are only in the operator's signed chain ([tell operators apart](#tell-operators-apart)).
 
 If the index does not start, read its log:
 
@@ -166,7 +164,7 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 
 ### 7. Confirm both hold the same records
 
-Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. That route lists current outputs only, so a passport counts once, by its newest state; the script below also compares each passport's whole history from `GET /history`, spent states included. Save this as `compare-indexes.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.7` installed:
+Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. That route lists current outputs only, so a passport counts once, by its newest state; the script below also compares each passport's whole history from `GET /history`, spent states included. Save this as `compare-indexes.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.8` installed:
 
 ```js
 // Compare what two indexes hold on every topic, and each passport's whole history, and fail on a difference older than the grace period:
@@ -320,7 +318,7 @@ Before naming another operator's keys in your policy, compare the keys themselve
 
 Capability documents cannot tell operators apart. The operator name is text bound to no key, and `publisherPolicy` has the policy version and keys but no chain digest or signer, so two indexes naming the same operator and keys may be one operator's two indexes or a copy.
 
-Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.7` installed:
+Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.8` installed:
 
 ```js
 // Check another operator's signed publisher policy chain against the identity key the operator gave you.
@@ -342,7 +340,79 @@ Run `node check-policy-chain.mjs <chain file> <operator name as the chain's scop
 
 ### What two indexes demonstrate
 
-An index claims `federated-operators@1` in its capability document only when it synchronises with peers and the newest version of its policy names two or more operators; otherwise it stays `single-operator@1`. That claims support, not independent operation. Two indexes under one administration, such as the two presets on one machine, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/deploy/README.md#a-second-operator)).
+An index declares one of three operator profiles in its capability document and its evidence packages. `single-operator@1` means it neither pulls from peers nor discovers them. `single-operator@2` means one administration whose index pulls from peers it names or discovers: it exchanges records and claims nothing about independent replication, however many peers it has, which its `unsupported` list says as `independent-replication`. `federated-operators@1` is declared only when the index synchronises and the newest version of its publisher policy names two or more operators. That claims support, not independent operation. Two indexes under one administration, such as the two presets on one machine, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/deploy/README.md#a-second-operator)).
+
+A publisher policy's own `scope.operatorProfile` names the administration the policy governs, `single-operator@1` or `federated-operators@1`, and does not change when the index adds peers or turns discovery on. The step 3 policy stays as written while the index it governs declares `single-operator@2` ([services specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/services.md) section 6).
+
+## Find peers automatically
+
+With `SYNC_DISCOVERY=ship`, an index pulls from the indexes that advertise its topics as well as from the peers `SYNC_PEERS` names, and it works with `SYNC_PEERS` empty. Nothing else changes: a discovered index's records pass the same topic managers and publisher policy as a named peer's, so match the admission settings first ([which way records flow](#which-way-records-flow)).
+
+### Turn it on
+
+Add to the index's environment file:
+
+| Setting | Value |
+|---|---|
+| `SYNC_DISCOVERY` | `ship`. Unset leaves discovery off; any other value stops the boot. |
+| `SLAP_TRACKERS` | Optional. Comma-separated base URLs of the SLAP trackers to ask. Unset uses the overlay SDK's defaults for `NETWORK`: on `main`, `https://overlay-us-1.bsvb.tech`, `https://overlay-eu-1.bsvb.tech`, `https://overlay-ap-1.bsvb.tech` and `https://users.bapp.dev`; on `test`, `https://testnet-users.bapp.dev`. An entry that is not an http or https URL stops the boot. |
+| `SYNC_MAX_DISCOVERED` | Optional. The most discovered hosts a round pulls from, a positive integer; `16` when unset. |
+| `PUBLIC_URL` | Your index's own base URL, so that it is left out of the hosts it discovers. |
+
+`SLAP_TRACKERS` or `SYNC_MAX_DISCOVERED` without `SYNC_DISCOVERY` is a warning at start and discovers nothing. Apply the change with `up -d`; the start log then reads `synchronising tm_dpp and tm_attestation from <named peers> and at most 16 hosts found from SHIP adverts through <trackers> every 60000 ms`.
+
+### What a round does
+
+Before its first round, and before any round once ten minutes have passed since the last look, the index asks the trackers for the SHIP adverts of each topic it synchronises: `tm_dpp`, `tm_attestation`, and `tm_uora_dpp` with `SYNC_LEGACY=1`. An advert counts only when the SDK's `OverlayAdminTokenTemplate.decodeAndVerify` accepts its token, when it names the topic asked about, and when its address starts with `https://`; a tracker's answer is read 1,000 adverts a topic at most. The index's own `PUBLIC_URL` and every `SYNC_PEERS` entry are left out of the discovered hosts. When the trackers cannot be asked, the last answer stands. A look logs `peer discovery: hosts advertising tm_dpp: <hosts>; tm_attestation: <hosts>` when the answer changed, and counts the adverts it ignored.
+
+The named peers are asked every round. Of the discovered hosts, at most `SYNC_MAX_DISCOVERED` are asked in a round; when more advertise, they are taken in turn round by round, so each is asked in time.
+
+Before a discovered host is asked for anything, the index reads its `GET /capabilities`, ten seconds and 1 MiB at most, and keeps the answer ten minutes. The host is not asked for `tm_dpp` when both documents name publisher keys and share none, and not for `tm_attestation` when both restrict anchoring services and share none; an index whose `anchoringServices` is empty beside an `anchoring-service-restriction` entry under `unsupported` restricts nothing and is asked. Only a certain mismatch excludes a host, so a document without a readable `publisherPolicy` excludes nothing. Each exclusion is logged once per host and topic as `peer discovery: <host> admits nothing this index admits for tm_dpp, so it is not asked for tm_dpp`. Asking anyway would cost a header check for every graph and end in refusals.
+
+A host whose capability document could not be read, or whose offered outputs could not be read during the round, sits out: one round the first time, then twice as many each time it fails again, up to a day of rounds, 1,440 at the default interval. A host that answers again is forgiven. The log says `peer discovery: <host> could not be read this round; it sits out 2 rounds`.
+
+A discovered address is a lead, never trust. The token proves that the key it names signed the advert and nothing about who runs the host, and discovery authorises no publisher: a state a discovered index offers is admitted only under your publisher policy, and an anchor only under your anchoring settings, exactly as from a named peer. [When a record does not arrive](#when-a-record-does-not-arrive) applies to a discovered peer as to a named one, and its checkpoint is stored under the address the advert names, without a trailing slash, which is what [move a checkpoint back](#move-a-checkpoint-back) deletes.
+
+### The capability document with discovery on
+
+`synchronisation.discovery` is `ship-slap`, `gasp` is `true` from the start, before any host is found, and `peers` lists every peer the last round asked, the named ones first; the operator profile entry under `profiles` carries the same values. With discovery on and advertising off, `unsupported` carries `ship-slap-advertising`: this node finds peers from SHIP adverts but advertises nothing of its own, and other indexes reach it only by naming it. The profile is `single-operator@2` under a one-operator policy and `federated-operators@1` under a policy naming two or more ([what two indexes demonstrate](#what-two-indexes-demonstrate)).
+
+### What it does not bound
+
+The index sets no page or time budget of its own on a discovered peer: a round reads what the overlay SDK's synchronisation asks for and fetches every graph behind it with no time limit, and rounds do not overlap, so a large or slow discovered peer lengthens every round ([known limitations](limitations.md#synchronisation)). Lower `SYNC_MAX_DISCOVERED`, or name trackers you choose in `SLAP_TRACKERS`, to narrow who is asked. The [discovery source](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/src/discovery.ts) defines every rule above.
+
+## Advertise your index
+
+With `ADVERTISE=1`, an index creates the SHIP and SLAP adverts that let an index with discovery on find it: one advert per topic and lookup service, each a 1-satoshi token the SDK's `OverlayAdminTokenTemplate` builds, signed by an advertiser key of its own and naming `PUBLIC_URL`. An advert says where your index is. It makes nobody admit your records: an index that finds you still admits only the publisher keys its own policy names, so ask its operator to name yours, as [peer with the hosted reference or another operator](#peer-with-the-hosted-reference-or-another-operator) describes.
+
+### Turn it on
+
+| Setting | Value |
+|---|---|
+| `ADVERTISE` | `1`. Unset leaves advertising off; any other value stops the boot. |
+| `PUBLIC_URL` | Your index's base URL as other indexes reach it, starting with `https://`; trailing slashes are dropped. |
+| `ADVERTISER_PRIVATE_KEY` | A private key in hex for advertising alone, never the operator identity key, the export key or the publisher key. Its public key signs the adverts, and its wallet pays for them. |
+| `ADVERTISER_STORAGE_URL` | The `https://` address of the wallet storage server holding that key's coins. |
+
+A missing or malformed value stops the boot with a message naming the variable. `ADVERTISER_PRIVATE_KEY` or `ADVERTISER_STORAGE_URL` without `ADVERTISE` is a warning at start and advertises nothing.
+
+Fund the advertiser's wallet at that storage server before the first start. A start creates at most six tokens, one each for `tm_dpp`, `tm_attestation`, `tm_uora_dpp`, `ls_dpp`, `ls_attestation` and `ls_uora_dpp`, of one satoshi each plus the transaction fee, so a small balance is enough, and a start with every advert present spends nothing.
+
+### What a start does
+
+Once the socket listens, the index asks the overlay SDK's default trackers for `NETWORK`, whatever `SLAP_TRACKERS` says, which SHIP and SLAP adverts its advertiser key already has at `PUBLIC_URL`, and creates only the missing ones, in one transaction its wallet funds and hands to the hosts of `tm_ship` and `tm_slap`. The log then reads `advertising: SHIP tm_dpp, SHIP tm_attestation, ... at <PUBLIC_URL> under <identity key>, in <txid>`, or `advertising: every topic and lookup service is already advertised at <PUBLIC_URL> under <identity key>`. When the trackers cannot say which adverts exist, nothing is created.
+
+A failure after the boot is a log line, `advertising failed, so other indexes find this one only if they name it: <reason>`, and the index keeps serving and pulling. Advertising is tried once per start, so fix the cause and restart.
+
+Nothing revokes an advert. An index that moves host, or stops for good, leaves its old adverts in place; the trackers keep returning them, and indexes that discover the old address find nothing there and back off. To take them down, spend the tokens with the advertiser's wallet; the index never does ([known limitations](limitations.md#index-host)).
+
+### The wallet library
+
+The wallet comes from `@bsv/wallet-toolbox-client` 2.11.0, an optional dependency of the package. `npm install` installs it; `npm install --omit=optional` leaves it out, and `ADVERTISE=1` then logs `advertising failed, so other indexes find this one only if they name it: ADVERTISE=1 needs @bsv/wallet-toolbox-client installed beside this package (npm install @bsv/wallet-toolbox-client)` and serves without advertising. The image the [Dockerfile](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/Dockerfile) builds includes it. The library is loaded only when an index with `ADVERTISE=1` starts; importing the package loads nothing of it.
+
+### The capability document with advertising on
+
+With advertising on, `unsupported` no longer carries `ship-slap-advertising`. With advertising on and discovery off, it carries `ship-slap-discovery` with the reason `This node advertises itself but finds no peers from adverts; it pulls only from the peers it names.` Advertising changes neither `synchronisation.discovery`, which stays `static-peers` with named peers and `none` without, nor the operator profile. The [advertising source](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/src/advertise.ts) defines the rules above.
 
 ## When a record does not arrive
 
@@ -360,9 +430,7 @@ After each round the index compares what each peer offered with what arrived, an
 peer synchronisation round 1: 17 of 97 outputs offered by https://dpp-overlay.bsvb.net for tm_dpp did not arrive; checkpoint held at 1787744549666 so they are offered again
 ```
 
-In published beta.9, an output still missing after five rounds is named once, as `left behind after 5 rounds, offered by <peer> for tm_dpp and never admitted: <txid>.<output>`. That release does not ask for it again, even after a restart, which resumes from the stored checkpoint. Fix the cause, then use the checkpoint procedure below.
-
-The reviewed source instead schedules missed outputs for another attempt after about an hour of rounds, with repeated waits doubling up to about a day. This does not fix an admission or evidence failure by itself. After fixing the cause, a checkpoint reset can still request an earlier retry; [the source synchroniser](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/packages/overlay-topics/src/sync.ts) defines this behaviour. Keep the release-specific diagnosis when supporting an older or hosted index.
+An output still missing after five rounds is left behind and named: `left behind after 5 rounds, offered by <peer> for tm_dpp and never admitted: <txid>.<output>; asked for again in 60 rounds`. The checkpoint moves past it, so the rounds in between do not offer it. After about an hour of rounds, 60 at the default interval, the index holds the checkpoint at it once more and logs `asking <peer> again for 1 output left behind for tm_dpp`; each time the output is left behind again the wait doubles, up to about a day of rounds. The retry fixes nothing by itself: a state your own admission refused is refused again, and a graph the peer could not serve stays missing until the peer can serve it. The schedule lives in memory, at most 10,000 outputs per peer and topic, and a restart forgets it and resumes from the stored checkpoint. After fixing the cause, [move the checkpoint back](#move-a-checkpoint-back) rather than waiting; [the synchroniser](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/src/sync.ts) defines the schedule. An index on beta.9 names the output once and never asks again, so there the checkpoint procedure is the only way.
 
 ### Find the cause
 
@@ -372,7 +440,7 @@ The reviewed source instead schedules missed outputs for another attempt after a
 | `tm_dpp refused <txid>: <another reason>` | The state breaks a record rule your index applies, such as a missing acceptance commitment under `ACCEPTANCE_COMMITMENT=required`. | Match the admission settings to the index you pull from, or accept that the two disagree. |
 | `Failed to verify merkleroot for height <height>` | Your header source did not answer for that block, usually WhatsOnChain limiting anonymous requests, so the proven state was dropped for that round. | Set `WOC_API_KEY`; if an output was left behind, [move the checkpoint back](#move-a-checkpoint-back). |
 | `Error with incoming UTXO <txid>.<output>: HTTP error! Status: 404` | The peer cannot serve the state's graph, usually because it holds a mined state without its merkle path, so your index asks for ancestors the peer lacks. | Ask the peer's operator to deliver the missing proofs to its own `POST /arc-ingest`, then move the checkpoint back. Or [take the record from the chain](#take-a-record-from-the-chain) yourself. |
-| The state is unproven and its writer's wallet funded it from another passport's change | A known limit of `@bsv/dpp-overlay-topics@0.4.0-beta.9`: the peer reaches the other passport through the change output and asks for its predecessor, which it cannot get. The topic now asks only through the passport output, but `@bsv/overlay` up to 2.6.2 does not say which output a walk arrived by. | Wait for the first round after the state is mined ([known limitations](limitations.md)). |
+| The state is unproven and its writer's wallet funded it from another passport's change | A known limit of the overlay package: the peer reaches the other passport through the change output and asks for its predecessor, which it cannot get. The topic now asks only through the passport output, but `@bsv/overlay` up to 2.6.2 does not say which output a walk arrived by. | Wait for the first round after the state is mined ([known limitations](limitations.md)). |
 | Nothing: the peer keeps the previous tip of a passport it holds | The new state is unproven. The overlay SDK needs an unproven state's parent in the graph it assembles but leaves out a parent the peer already holds, so the state cannot arrive; a new passport can. | Push the state's proof to the node the peer pulls from. The next round carries the state with its proof, and the peer admits it on the tip it holds. |
 | Nothing: the state arrived, but readers of the peer see `inclusion` pending | A proof that arrives after a peer synchronised the state does not follow it. | Deliver the proof to the peer (below), or [take it from the chain](#take-a-record-from-the-chain) yourself. |
 
@@ -401,7 +469,7 @@ Expect `{ acknowledged: true, deletedCount: 1 }` or more, one per topic the peer
 ## Sources
 
 - [Second-operator preset](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/deploy/compose.second-operator.yml) and the [preset README](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/deploy/README.md), including backup of a node's volume.
-- [Peer configuration and reconciliation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/src/sync.ts) and every setting in the overlay package's [configuration table](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/README.md#configuration).
+- [Peer configuration, reconciliation and the left-behind retry](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/src/sync.ts), [peer discovery](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/src/discovery.ts), [advertising](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/src/advertise.ts) and every setting in the overlay package's [configuration table](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/packages/overlay-topics/README.md#configuration).
 - The [services specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) for admission, publisher policy and synchronisation requirements, and the [publisher policy schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json).
 - The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records what local tests do not establish about independent operation.
 
