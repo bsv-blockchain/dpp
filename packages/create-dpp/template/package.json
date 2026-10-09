@@ -1,0 +1,42 @@
+{
+  "name": "my-dpp",
+  "private": true,
+  "description": "A Digital Product Passport application on BSV, scaffolded by @bsv/create-dpp",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w api\" \"npm run dev -w web\"",
+    "build": "npm run build -w api && npm run build -w web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "oxlint apps",
+    "format": "prettier --write \"apps/**/*.{ts,tsx,css,json}\"",
+    "start": "node apps/api/dist/main.js",
+    "wallet": "tsx apps/api/src/cli.ts wallet",
+    "operations": "tsx apps/api/src/cli.ts operations"
+  },
+  "dpp": {
+    "releaseSet": "dpp-release-2026-10-6"
+  },
+  "overrides": {
+    "@bsv/overlay": {
+      "@bsv/sdk": "2.8.10"
+    }
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "oxlint": "^1.87.0",
+    "prettier": "^3.9.9",
+    "typescript": "^7.0.2"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "esbuild@0.28.2": true
+  }
+}

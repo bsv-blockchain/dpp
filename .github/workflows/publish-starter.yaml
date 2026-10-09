@@ -1,0 +1,36 @@
+# Manual npm publication of @bsv/create-dpp with provenance through GitHub
+# OIDC trusted publishing, separate from the release-set publication of the
+# four protocol packages: the starter is a consumer of a published release set
+# and follows it, never the other way round. Register this repository and
+# workflow as the package's trusted publisher on npm before the first run. A
+# dry run packs and checks without publishing.
+name: Publish @bsv/create-dpp
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: Pack and check without publishing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run build -w @bsv/create-dpp
+      - run: npm test -w @bsv/create-dpp
+      - run: npm run starter:check
+      - run: npm pack --dry-run -w @bsv/create-dpp
+      - name: Publish
+        if: ${{ !inputs.dryRun }}
+        run: npm publish -w @bsv/create-dpp --provenance --access public

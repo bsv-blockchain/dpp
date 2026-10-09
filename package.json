@@ -10,7 +10,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics -w @bsv/vsc",
+    "build": "npm run build -w @bsv/dpp-core -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics -w @bsv/vsc -w @bsv/create-dpp",
     "test": "npm run test --workspaces --if-present && npm run conformance:test && npm run conformance:check && npm run docs:check",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "conformance:check": "node conformance/check.mjs",
@@ -24,7 +24,8 @@
     "release:consumer": "node scripts/consumer-check.mjs",
     "release:registry": "node scripts/consumer-check.mjs --registry",
     "release:publish": "node scripts/publish-candidates.mjs",
-    "release:bundle": "node scripts/implementer-bundle.mjs"
+    "release:bundle": "node scripts/implementer-bundle.mjs",
+    "starter:check": "node packages/create-dpp/scripts/scaffold-check.mjs"
   },
   "overrides": {
     "@bsv/overlay": {

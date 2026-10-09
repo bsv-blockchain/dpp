@@ -1,0 +1,4 @@
+# Development installs and builds inside the template never enter the repository or the package.
+template/package-lock.json
+template/local/
+template/.env

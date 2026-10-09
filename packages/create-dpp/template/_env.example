@@ -1,0 +1,49 @@
+# Copy to .env and fill in. Everything here is read by the API at start.
+# Values marked (live) are needed only to write real passports on BSV mainnet;
+# `npm test` and `npm run dev` work without them.
+
+# The chain your wallet and index are on: main or test
+NETWORK=main
+PORT=3000
+# Where the web app is served from in production (the API serves it); in dev Vite proxies to the API
+PUBLIC_URL=http://localhost:3000
+
+# MongoDB for the application's records, journal and sign-in
+MONGO_URL=mongodb://127.0.0.1:27017
+MONGO_DB=dpp_app
+
+# Sign-in (Better Auth). Generate a secret with: openssl rand -hex 32
+AUTH_SECRET=change-me-to-32-random-bytes-hex
+
+# The platform wallet: a BRC-100 wallet the API owns (wallet-toolbox on SQLite).
+# Generate a root key with: openssl rand -hex 32. Keep it secret and backed up.
+WALLET_ROOT_KEY=
+WALLET_FILE=local/wallet.sqlite
+# WhatsOnChain API key: the header source for the wallet and the reader (live)
+WOC_API_KEY=
+# An ARC-compatible broadcaster URL; empty uses the toolbox's defaults for the network (live)
+ARC_URL=
+
+# Secrets the platform derives managed identities from: one per brand, one per recipient. openssl rand -hex 32 each.
+BRAND_ROOT_SECRET=
+MANAGED_IDENTITY_SECRET=
+
+# The index (overlay) this platform writes to. Empty in dev: the API runs one in-process.
+INDEX_URL=
+INDEX_SUBMIT_TOKEN=
+INDEX_CALLBACK_TOKEN=
+
+# The host passports are minted under: https://<PASSPORT_HOST>/01/<gtin>/21/<serial>
+PASSPORT_HOST=localhost:3000
+# The GS1 company prefix passports may be written under. 952 is GS1's demonstration prefix, never licensed to anyone.
+# Replace with your licensed prefix for real products; the demo notice switches off with it.
+GS1_PREFIX=952
+
+# A registry that validates and stores lifecycle claims (POST /validate is open on the hosted reference)
+REGISTRY_URL=https://dpp-resolver.bsvb.net
+REGISTRY_TOKEN=
+
+# Writing to the chain spends real satoshis. Keep false until the live prerequisites in README.md are met.
+LIVE_PUBLISHING=false
+# How many satoshis the platform may spend per day before it refuses to write more
+SPEND_CAP_SATOSHIS=20000

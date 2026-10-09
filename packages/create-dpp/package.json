@@ -1,0 +1,54 @@
+{
+  "name": "@bsv/create-dpp",
+  "version": "0.1.0",
+  "description": "Scaffold a Digital Product Passport application on BSV: a web app, an API that writes and reads passports with the @bsv/dpp packages, and an offline dry run as its first test",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "create-dpp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "template",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test test/*.test.mjs",
+    "scaffold:check": "node scripts/scaffold-check.mjs"
+  },
+  "dpp": {
+    "releaseSet": "dpp-release-2026-10-6",
+    "packages": {
+      "@bsv/dpp-core": "0.3.0-beta.7",
+      "@bsv/dpp-profiles": "0.3.0-beta.7",
+      "@bsv/dpp-overlay-topics": "0.4.0-beta.9",
+      "@bsv/sdk": "2.8.10"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.3",
+    "typescript": "^7.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsv-blockchain/dpp.git",
+    "directory": "packages/create-dpp"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "bsv",
+    "digital-product-passport",
+    "dpp",
+    "scaffold",
+    "create"
+  ]
+}
