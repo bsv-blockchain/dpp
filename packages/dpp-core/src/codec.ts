@@ -1,5 +1,7 @@
 import { LockingScript, OP, PublicKey, Utils, type ScriptChunk } from '@bsv/sdk'
 import {
+  CARRIER_AMOUNT,
+  CARRIER_TOKEN_ID_BYTES,
   DPP_OPS,
   DPP_OPS_V2,
   FIELD_COUNT,
@@ -13,8 +15,23 @@ import {
   PROTOCOL_MARKER,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
+  STANDARD_VERSION_V3,
 } from './constants.js'
-import type { DppOpV1, DppOpV2, DppState, DppStateData, DppStateDataV2, DppStateV1, DppStateV2, Outpoint } from './types.js'
+import type {
+  CarrierPrefix,
+  DppOpV1,
+  DppOpV2,
+  DppState,
+  DppStateData,
+  DppStateDataV2,
+  DppStateDataV3,
+  DppStateV1,
+  DppStateV2,
+  DppStateV3,
+  Outpoint,
+  SeventeenFieldData,
+  SeventeenFieldState,
+} from './types.js'
 
 /** Thrown when a script does not carry a well-formed DPP output of a version this reader decodes. */
 export class DppFormatError extends Error {
@@ -57,9 +74,19 @@ function chunkToField(chunk: ScriptChunk): number[] | null {
   return null
 }
 
-/** Whether signable content, of either version, is version 2. */
+/** Whether signable content, of any version, is version 2. */
 export function isV2Data(d: object): d is DppStateDataV2 {
   return (d as { version?: unknown }).version === STANDARD_VERSION_V2
+}
+
+/** Whether signable content, of any version, is version 3: the carried body (`spec/token-carrier.md`). */
+export function isV3Data(d: object): d is DppStateDataV3 {
+  return (d as { version?: unknown }).version === STANDARD_VERSION_V3
+}
+
+/** Whether signable content carries the seventeen-field layout, under version 2 or version 3. */
+export function isSeventeenFieldData(d: object): d is SeventeenFieldData {
+  return isV2Data(d) || isV3Data(d)
 }
 
 /** Fields 1–12 (the signable content) of a version 1 state as raw wire bytes, in standard order. */
@@ -92,13 +119,17 @@ export function outpointFieldBytes(outpoint: Outpoint | null): number[] {
   return [...txid, (index >>> 24) & 0xff, (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff]
 }
 
-/** Fields 1–15 (the signable content) of a version 2 state as raw wire bytes, in standard order. */
-export function dataFieldsV2(d: DppStateDataV2): number[][] {
+/**
+ * Fields 1–15 (the signable content) of a seventeen-field state as raw wire
+ * bytes, in standard order. The version string is the data's own: `2` for a
+ * version 2 state, `3` for a carried version 3 body (`spec/token-carrier.md` §4).
+ */
+export function dataFieldsV2(d: SeventeenFieldData): number[][] {
   const predecessor: Outpoint | null =
     d.previousTxid === '' ? null : { txid: d.previousTxid, outputIndex: d.previousOutputIndex ?? -1 }
   return [
     Utils.toArray(PROTOCOL_MARKER, 'utf8'),
-    Utils.toArray(STANDARD_VERSION_V2, 'utf8'),
+    Utils.toArray(d.version, 'utf8'),
     Utils.toArray(d.passportId, 'utf8'),
     Utils.toArray(d.op, 'utf8'),
     Utils.toArray(d.timestamp, 'utf8'),
@@ -115,21 +146,67 @@ export function dataFieldsV2(d: DppStateDataV2): number[][] {
   ]
 }
 
-/** All fields of a state as raw wire bytes: 14 for version 1, 17 for version 2. */
+/** All fields of a state as raw wire bytes: 14 for version 1, 17 for versions 2 and 3. */
 export function stateToFields(s: DppState): number[][] {
-  const data = s.version === STANDARD_VERSION_V2 ? dataFieldsV2(s) : dataFields(s)
+  const data = s.version === STANDARD_VERSION ? dataFields(s) : dataFieldsV2(s)
   return [...data, [...s.userSignature], [...s.serverSignature]]
+}
+
+/** The 32 token id bytes a value output pushes: the deploy txid in internal byte order (`spec/token-carrier.md` §3). */
+export function tokenIdWireBytes(deployTxid: string): number[] {
+  const bytes = Utils.toArray(deployTxid, 'hex')
+  if (bytes.length !== CARRIER_TOKEN_ID_BYTES) throw new DppFormatError('a token id is the 32-byte deploy txid')
+  return bytes.reverse()
+}
+
+/** The display form of a token id read from the wire: the deploy txid in display order. */
+export function tokenIdFromWireBytes(bytes: readonly number[]): string {
+  if (bytes.length !== CARRIER_TOKEN_ID_BYTES) throw new DppFormatError('a token id is the 32-byte deploy txid')
+  return Utils.toHex([...bytes].reverse())
+}
+
+/**
+ * The token prefix of a carried state (`spec/token-carrier.md` §2, §3): the
+ * token id or OP_0, the amount of one unit as OP_1, and OP_2DROP. No payload
+ * is written; the body's first chunk is a 33-byte push followed by
+ * OP_CHECKSIG, which the prefix's encoder rule says can never be read as one.
+ */
+export function carrierPrefixChunks(carrier: CarrierPrefix): ScriptChunk[] {
+  const id: ScriptChunk =
+    carrier.role === 'deploy' || carrier.tokenId == null
+      ? { op: 0 }
+      : { op: CARRIER_TOKEN_ID_BYTES, data: tokenIdWireBytes(carrier.tokenId) }
+  return [id, { op: 0x50 + CARRIER_AMOUNT }, { op: OP.OP_2DROP }]
+}
+
+/**
+ * The prefix a version 3 state is carried behind, read from the state itself:
+ * a genesis (no predecessor) is the deploy; every later state is a value
+ * output naming the lineage genesis as its token id, which the verifier holds
+ * field 12 to (`spec/token-carrier.md` §5). The genesis outpoint's index is 0
+ * because a deploy is output 0 of its transaction; a state naming another
+ * index cannot be carried, and the builder says so rather than guessing.
+ */
+export function carrierPrefixFor(state: Pick<DppStateDataV3, 'previousTxid' | 'lineageGenesis'>): CarrierPrefix {
+  if (state.previousTxid === '') return { role: 'deploy', tokenId: null }
+  if (state.lineageGenesis == null) throw new DppFormatError('a carried state after the genesis names its lineage genesis')
+  if (state.lineageGenesis.outputIndex !== 0) throw new DppFormatError('a carried lineage begins at output 0 of its deploy')
+  return { role: 'value', tokenId: state.lineageGenesis.txid }
 }
 
 /**
  * Build the DPP locking script: <33-byte key> OP_CHECKSIG <fields> drops.
  * Custody-neutral (`spec/record-model.md` §2): the locking key may be treasury-derived or user-held.
  * The drop tail is one OP_2DROP per pair of fields and one OP_DROP for an odd
- * field left over: seven OP_2DROP for version 1, eight and an OP_DROP for version 2.
+ * field left over: seven OP_2DROP for version 1, eight and an OP_DROP for
+ * versions 2 and 3. A version 3 body is carried behind its token prefix
+ * (`spec/token-carrier.md` §2), derived from the state unless `carrier`
+ * names one, which a fixture does to pin what a reader refuses.
  */
 export function buildLockingScript(
   state: DppState,
-  lockingPublicKey: PublicKey | string
+  lockingPublicKey: PublicKey | string,
+  carrier?: CarrierPrefix
 ): LockingScript {
   const pub =
     typeof lockingPublicKey === 'string'
@@ -137,7 +214,9 @@ export function buildLockingScript(
       : lockingPublicKey
   const pubBytes = pub.encode(true) as number[]
   const fields = stateToFields(state)
+  const prefix = state.version === STANDARD_VERSION_V3 ? carrierPrefixChunks(carrier ?? carrierPrefixFor(state)) : []
   const chunks: ScriptChunk[] = [
+    ...prefix,
     { op: pubBytes.length, data: pubBytes },
     { op: OP.OP_CHECKSIG },
     ...fields.map(minimalChunk),
@@ -351,6 +430,22 @@ export function fieldsToState(fields: number[][]): DppStateV1 {
 
 /** Validate and type raw version 2 fields per `spec/record-model-v2.md` §2-§3. Throws DppFormatError. */
 export function fieldsToStateV2(fields: number[][]): DppStateV2 {
+  return seventeenFieldsToState(fields, STANDARD_VERSION_V2) as DppStateV2
+}
+
+/** Validate and type the raw fields of a carried version 3 body per `spec/token-carrier.md` §4. Throws DppFormatError. */
+export function fieldsToStateV3(fields: number[][]): DppStateV3 {
+  return seventeenFieldsToState(fields, STANDARD_VERSION_V3) as DppStateV3
+}
+
+/**
+ * The seventeen-field reader both versions share. The version the caller
+ * expects is the layout's: version 2 for a bare body, version 3 for a body
+ * read from behind a token prefix. The other version's string is refused by
+ * name, because one version has one layout: a version 2 body is never
+ * carried and a version 3 body is never bare.
+ */
+function seventeenFieldsToState(fields: number[][], expectedVersion: '2' | '3'): SeventeenFieldState {
   if (fields.length !== FIELD_COUNT_V2) {
     throw new DppFormatError(`expected ${FIELD_COUNT_V2} fields, found ${fields.length}`)
   }
@@ -360,11 +455,15 @@ export function fieldsToStateV2(fields: number[][]): DppStateV2 {
     throw new DppFormatError(`protocol_marker must be "${PROTOCOL_MARKER}"`)
   }
   const version = Utils.toUTF8(fields[1])
-  if (version !== STANDARD_VERSION_V2) {
+  if (version !== expectedVersion) {
     throw new DppFormatError(
       version === STANDARD_VERSION
         ? `version "${STANDARD_VERSION}" is carried by the ${FIELD_COUNT}-field layout, not the ${FIELD_COUNT_V2}-field one`
-        : `unsupported standard version "${version}"`
+        : version === STANDARD_VERSION_V3
+          ? `version "${STANDARD_VERSION_V3}" is carried behind a token prefix`
+          : version === STANDARD_VERSION_V2
+            ? `version "${STANDARD_VERSION_V2}" is not carried behind a token prefix`
+            : `unsupported standard version "${version}"`
     )
   }
   const passportId = passportIdField(fields[2])
@@ -403,7 +502,7 @@ export function fieldsToStateV2(fields: number[][]): DppStateV2 {
   if (serverSignature.length === 0) throw new DppFormatError('publisher_signature must be present')
   return {
     protocolMarker: marker,
-    version: '2',
+    version: expectedVersion,
     passportId,
     op,
     timestamp,
@@ -420,30 +519,81 @@ export function fieldsToStateV2(fields: number[][]): DppStateV2 {
     authorisationCommitment,
     userSignature,
     serverSignature,
+  } as SeventeenFieldState
+}
+
+/** What a parsed output yields: the state, the locking key, and the token prefix when the state is carried. */
+export interface ParsedDppOutput {
+  state: DppState
+  lockingPublicKey: PublicKey
+  /** Present for a version 3 state, which is always carried; absent for versions 1 and 2, which never are. */
+  carrier?: CarrierPrefix
+}
+
+const isPushChunk = (c: ScriptChunk): boolean => c.op === 0 || (c.op >= 1 && c.op <= 0x4e) || c.op === 0x4f || (c.op >= 0x51 && c.op <= 0x60)
+
+/**
+ * Read the BRC-162 token prefix a carried state begins with
+ * (`spec/token-carrier.md` §2, §3), or report that the script carries none.
+ * A script whose first chunk is a 33-byte push is a bare body and is read as
+ * one; a first chunk of OP_0 or a 32- or 36-byte push is a prefix attempt
+ * and is held to the carrier's rules: the id is the 32-byte deploy txid, the
+ * amount is one unit as OP_1, then OP_2DROP, then no payload except an empty
+ * slot on a deploy. Returns the prefix and the index the body starts at.
+ */
+function readCarrierPrefix(chunks: ScriptChunk[]): { carrier: CarrierPrefix; bodyStart: number } | null {
+  const first = chunks[0]
+  if (first == null) return null
+  const idLength = first.data?.length ?? 0
+  const prefixAttempt = first.op === 0 || idLength === CARRIER_TOKEN_ID_BYTES || idLength === 36
+  if (!prefixAttempt) return null
+  if (chunks.length < 3) throw new DppFormatError('not a DPP output: malformed token prefix')
+  if (idLength === 36) throw new DppFormatError('the token id is the 32-byte deploy txid')
+  const amount = chunks[1]
+  if (amount.op !== 0x50 + CARRIER_AMOUNT) {
+    if (amount.data?.length === 1 && amount.data[0] === CARRIER_AMOUNT) {
+      throw new DppFormatError('the token amount is a minimally encoded script number')
+    }
+    throw new DppFormatError(`the token amount is ${CARRIER_AMOUNT}`)
   }
+  if (chunks[2].op !== OP.OP_2DROP || chunks[2].data !== undefined) {
+    throw new DppFormatError('not a DPP output: malformed token prefix')
+  }
+  const role: CarrierPrefix['role'] = first.op === 0 ? 'deploy' : 'value'
+  const carrier: CarrierPrefix = { role, tokenId: role === 'deploy' ? null : tokenIdFromWireBytes(first.data as number[]) }
+  let bodyStart = 3
+  // A payload is one push then OP_DROP right after the OP_2DROP. The body's
+  // second chunk is OP_CHECKSIG, so a body is never read as a payload.
+  if (chunks.length > 4 && isPushChunk(chunks[3]) && chunks[4].op === OP.OP_DROP && chunks[4].data === undefined) {
+    if (role === 'value') throw new DppFormatError('a value output carries no payload')
+    if (chunks[3].op !== 0) throw new DppFormatError('a genesis carries no payload beyond an empty slot')
+    bodyStart = 5
+  }
+  return { carrier, bodyStart }
 }
 
 /**
- * Parse a DPP output script of either version. Throws DppFormatError when the
- * script is not a well-formed DPP output: the field count selects the version's
- * rules (fourteen fields for version 1, seventeen for version 2), the version
- * field must agree with the count, and any other count or version is refused by
- * name so an older reader meeting a newer state fails clearly rather than
- * guessing.
+ * Parse a DPP output script of any version. Throws DppFormatError when the
+ * script is not a well-formed DPP output. A bare body is read by field count
+ * (fourteen fields for version 1, seventeen for version 2) and the version
+ * field must agree with the count. A body behind a token prefix is version 3,
+ * read under the version 2 rules with the version 3 string; a version 2 body
+ * behind a prefix and a version 3 body without one are refused by name, so an
+ * older reader meeting a newer state fails clearly rather than guessing.
  */
-export function parseDppOutput(script: LockingScript): {
-  state: DppState
-  lockingPublicKey: PublicKey
-} {
+export function parseDppOutput(script: LockingScript): ParsedDppOutput {
   const chunks = script.chunks
-  if (chunks.length < 2 || chunks[0].data == null || chunks[0].data.length !== 33) {
+  const prefix = readCarrierPrefix(chunks)
+  const start = prefix?.bodyStart ?? 0
+  const key = chunks[start]
+  if (chunks.length < start + 2 || key?.data == null || key.data.length !== 33) {
     throw new DppFormatError('not a DPP output: missing 33-byte locking key push')
   }
-  if (chunks[1].op !== OP.OP_CHECKSIG) {
+  if (chunks[start + 1].op !== OP.OP_CHECKSIG) {
     throw new DppFormatError('not a DPP output: missing OP_CHECKSIG')
   }
   const fields: number[][] = []
-  let i = 2
+  let i = start + 2
   for (; i < chunks.length; i++) {
     const op = chunks[i].op
     if (op === OP.OP_2DROP || op === OP.OP_DROP) break
@@ -468,20 +618,23 @@ export function parseDppOutput(script: LockingScript): {
   }
   let lockingPublicKey: PublicKey
   try {
-    lockingPublicKey = PublicKey.fromString(Utils.toHex(chunks[0].data))
+    lockingPublicKey = PublicKey.fromString(Utils.toHex(key.data))
   } catch {
     // Keep the documented contract: every refusal is a DppFormatError.
     throw new DppFormatError('not a DPP output: locking key is not a valid public key')
+  }
+  if (prefix != null) {
+    if (fields.length !== FIELD_COUNT_V2) {
+      throw new DppFormatError(`a carried body has ${FIELD_COUNT_V2} fields, found ${fields.length}`)
+    }
+    return { state: fieldsToStateV3(fields), lockingPublicKey, carrier: prefix.carrier }
   }
   const state = fields.length === FIELD_COUNT_V2 ? fieldsToStateV2(fields) : fieldsToState(fields)
   return { state, lockingPublicKey }
 }
 
 /** Non-throwing variant of parseDppOutput, for scanning arbitrary outputs. */
-export function tryParseDppOutput(script: LockingScript): {
-  state: DppState
-  lockingPublicKey: PublicKey
-} | null {
+export function tryParseDppOutput(script: LockingScript): ParsedDppOutput | null {
   try {
     return parseDppOutput(script)
   } catch {

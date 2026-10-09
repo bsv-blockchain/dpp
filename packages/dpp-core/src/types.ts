@@ -73,8 +73,33 @@ export interface DppStateDataV2 {
   authorisationCommitment: string
 }
 
-/** Either version's signable content. */
-export type AnyDppStateData = DppStateDataV1 | DppStateDataV2
+/**
+ * The signable content of one version 3 passport state: the version 2 fields
+ * exactly, with the version string `3` (`spec/token-carrier.md` §4). A version
+ * 3 state is carried behind the BRC-162 token prefix; the prefix is not part
+ * of the signed content, and the token id it names is checked against
+ * `lineageGenesis` by the verifier rather than signed again.
+ */
+export type DppStateDataV3 = Omit<DppStateDataV2, 'version'> & { version: '3' }
+
+/** The seventeen-field content of either version that carries it. */
+export type SeventeenFieldData = DppStateDataV2 | DppStateDataV3
+
+/** Any version's signable content. */
+export type AnyDppStateData = DppStateDataV1 | DppStateDataV2 | DppStateDataV3
+
+/**
+ * The token prefix a version 3 state is carried behind (`spec/token-carrier.md`
+ * §2, §3): the role BRC-162 derives from the prefix, and the token id for a
+ * value output as the deploy transaction's id in display order (the token's
+ * display form is `<txid>_0`). A deploy carries no token id: its own
+ * outpoint is the token id once the transaction exists.
+ */
+export interface CarrierPrefix {
+  role: 'deploy' | 'value'
+  /** The deploy txid in display order (64 lower-case hex); null on a deploy. */
+  tokenId: string | null
+}
 
 interface SignedFields {
   protocolMarker: string
@@ -92,8 +117,14 @@ export interface DppStateV1 extends DppStateDataV1, SignedFields {
 /** A fully signed version 2 state: fields 1–17 decoded from a DPP output. */
 export interface DppStateV2 extends DppStateDataV2, SignedFields {}
 
-/** A fully signed state of either version. Narrow on `version`. */
-export type DppState = DppStateV1 | DppStateV2
+/** A fully signed version 3 state: the seventeen-field body decoded from behind its token prefix. */
+export type DppStateV3 = DppStateDataV3 & SignedFields
+
+/** A signed seventeen-field state of either version that carries the layout. */
+export type SeventeenFieldState = DppStateV2 | DppStateV3
+
+/** A fully signed state of any version. Narrow on `version`. */
+export type DppState = DppStateV1 | DppStateV2 | DppStateV3
 
 /** One link of a passport chain as needed for verification. */
 export interface DppChainEntry {

@@ -32,9 +32,10 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
   }
   const prefixPlus = (r: { appendAfter: number; rawTx: string }): string[] => [...raw.slice(0, r.appendAfter + 1), r.rawTx]
 
-  // A state under version 3: seventeen fields with the version string changed,
-  // signed by nobody in particular. A reader that does not know version 3
-  // finds no DPP output at all in the transaction, and says so.
+  // A bare seventeen-field body with the version string "3", signed by nobody
+  // in particular. Version 3 is carried behind a token prefix
+  // (`spec/token-carrier.md`), so a bare body carrying it is no DPP output at
+  // all to this reader, and it says so.
   const unknownVersion = (() => {
     const tx = Transaction.fromHex(raw[1])
     const chunks = tx.outputs[0].lockingScript.chunks.map((c) => ({ ...c }))
@@ -136,7 +137,7 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
     },
     {
       id: 'unknown-version',
-      description: 'A seventeen-field output carrying version "3" after the genesis: this reader finds no DPP output in that transaction, so encoding fails and nothing about the state is guessed.',
+      description: 'A bare seventeen-field output carrying version "3" after the genesis: version 3 is carried behind a token prefix, so this reader finds no DPP output in that transaction, encoding fails and nothing about the state is guessed.',
       evidence: { tokenHistory: [raw[0], unknownVersion] },
       expectedSubject: asked,
       policy: { publisherKeys: [custodian], chainTracker: 'scripts-only' },
@@ -151,7 +152,7 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
   }
   return {
     fixtureVersion: 2,
-    description: 'The report a conforming verifier produces for version 2 lineages, the managed-custody profile, retirement, a fork, the upgrade from version 1 and an unknown version; report version 1 throughout. Rebuild each case from its hex and stand-ins with checkedAt injected and compare the report byte for byte.',
+    description: 'The report a conforming verifier produces for version 2 lineages, the managed-custody profile, retirement, a fork, the upgrade from version 1 and a bare body carrying the version 3 string; report version 1 throughout. Rebuild each case from its hex and stand-ins with checkedAt injected and compare the report byte for byte.',
     checkedAt: EVIDENCE_V2_CHECKED_AT,
     cases,
   }

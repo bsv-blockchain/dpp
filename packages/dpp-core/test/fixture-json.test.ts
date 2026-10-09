@@ -17,6 +17,11 @@ import { chainV2Vectors } from './chain-v2-vectors.js'
 import { managedAcceptanceV1Fixture } from './managed-acceptance-v1-fixture.js'
 import { managedAcceptanceV1Vectors } from './managed-acceptance-v1-vectors.js'
 import { evidenceV2Fixture } from './evidence-v2-fixture.js'
+import { recordV3Fixture } from './record-v3-fixture.js'
+import { recordV3Vectors } from './record-v3-vectors.js'
+import { chainV3Fixture } from './chain-v3-fixture.js'
+import { chainV3Vectors } from './chain-v3-vectors.js'
+import { evidenceV3Fixture } from './evidence-v3-fixture.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
@@ -143,6 +148,29 @@ describe('the published fixture files', () => {
     expect(generated.cases.map((c) => c.id)).toEqual([...new Set(generated.cases.map((c) => c.id))])
     for (const c of generated.cases) expect(c.report.checkedAt).toBe(generated.checkedAt)
     expectPublished('evidence-v2.json', generated)
+  })
+
+  it('record-v3.json is recordV3Fixture(), verbatim, and vectors/dpp/record/v3.json its vector form', async () => {
+    const generated = await recordV3Fixture()
+    expectPublished('record-v3.json', generated)
+    const vectors = recordV3Vectors(generated)
+    expectPublished('vectors/dpp/record/v3.json', vectors)
+    expectStackShape(vectors as never)
+  })
+
+  it('chain-v3.json is chainV3Fixture(), verbatim, and vectors/dpp/chain/v3.json its vector form', async () => {
+    const generated = await chainV3Fixture()
+    expectPublished('chain-v3.json', generated)
+    const vectors = chainV3Vectors(generated)
+    expectPublished('vectors/dpp/chain/v3.json', vectors)
+    expectStackShape(vectors as never)
+  })
+
+  it('evidence-v3.json is evidenceV3Fixture(), verbatim: the report every surface produces for each carried case', async () => {
+    const generated = await evidenceV3Fixture()
+    expect(generated.cases.map((c) => c.id)).toEqual([...new Set(generated.cases.map((c) => c.id))])
+    for (const c of generated.cases) expect(c.report.checkedAt).toBe(generated.checkedAt)
+    expectPublished('evidence-v3.json', generated)
   })
 
   it('anchor-v3.json canonical bytes and digest are what this package computes', () => {

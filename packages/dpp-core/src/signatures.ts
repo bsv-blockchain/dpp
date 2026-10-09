@@ -2,13 +2,16 @@ import { CachedKeyDeriver, Signature, Utils, type WalletProtocol } from '@bsv/sd
 import {
   DPP_PROTOCOL_ID,
   DPP_PROTOCOL_ID_V2,
+  DPP_PROTOCOL_ID_V3,
   PROTOCOL_MARKER,
   RECORD_V2_ACTOR_TAG,
   RECORD_V2_PUBLISHER_TAG,
+  RECORD_V3_ACTOR_TAG,
+  RECORD_V3_PUBLISHER_TAG,
   STANDARD_VERSION,
 } from './constants.js'
-import { dataFields, dataFieldsV2, isV2Data } from './codec.js'
-import type { AnyDppStateData, DppState, DppStateData, DppStateDataV2 } from './types.js'
+import { dataFields, dataFieldsV2, isSeventeenFieldData, isV3Data } from './codec.js'
+import type { AnyDppStateData, DppState, DppStateData, DppStateDataV2, DppStateDataV3, SeventeenFieldData } from './types.js'
 
 /**
  * Canonical version 1 user-signature preimage (`spec/record-model.md` §5): the
@@ -62,19 +65,36 @@ export function publisherPreimageV2(d: DppStateDataV2, actorSignature: number[])
   return frameFields([Utils.toArray(RECORD_V2_PUBLISHER_TAG, 'utf8'), ...dataFieldsV2(d), actorSignature])
 }
 
-/** The actor's preimage under the version the data declares: version 1 unframed, version 2 framed and tagged. */
+/**
+ * The version 3 preimages (`spec/token-carrier.md` §4): the version 2 framing
+ * under the version 3 tags, over the fields with the version 3 string, so a
+ * carried body's signatures verify under nothing of version 2 and the reverse.
+ */
+export function actorPreimageV3(d: DppStateDataV3): number[] {
+  return frameFields([Utils.toArray(RECORD_V3_ACTOR_TAG, 'utf8'), ...dataFieldsV2(d)])
+}
+
+/** The version 3 publisher preimage: the version 3 publisher tag, fields 1–15 and the actor signature, each framed. */
+export function publisherPreimageV3(d: DppStateDataV3, actorSignature: number[]): number[] {
+  return frameFields([Utils.toArray(RECORD_V3_PUBLISHER_TAG, 'utf8'), ...dataFieldsV2(d), actorSignature])
+}
+
+/** The actor's preimage under the version the data declares: version 1 unframed, versions 2 and 3 framed and tagged. */
 export function userPreimage(d: AnyDppStateData): number[] {
-  return isV2Data(d) ? actorPreimageV2(d) : userPreimageV1(d)
+  if (isV3Data(d)) return actorPreimageV3(d)
+  return isSeventeenFieldData(d) ? actorPreimageV2(d as DppStateDataV2) : userPreimageV1(d as DppStateData)
 }
 
 /** The publisher's preimage under the version the data declares. */
 export function serverPreimage(d: AnyDppStateData, userSignature: number[]): number[] {
-  return isV2Data(d) ? publisherPreimageV2(d, userSignature) : serverPreimageV1(d, userSignature)
+  if (isV3Data(d)) return publisherPreimageV3(d, userSignature)
+  return isSeventeenFieldData(d) ? publisherPreimageV2(d as DppStateDataV2, userSignature) : serverPreimageV1(d as DppStateData, userSignature)
 }
 
 /** The BRC-43 protocol both signatures of a state derive under: one per version, so keys never cross. */
 export function protocolIdFor(d: object): WalletProtocol {
-  return isV2Data(d) ? DPP_PROTOCOL_ID_V2 : DPP_PROTOCOL_ID
+  if (isV3Data(d)) return DPP_PROTOCOL_ID_V3
+  return isSeventeenFieldData(d) ? DPP_PROTOCOL_ID_V2 : DPP_PROTOCOL_ID
 }
 
 /**
@@ -142,8 +162,8 @@ export async function completeState(
 ): Promise<DppState> {
   const userSignature = await createUserSignature(d, actorWallet)
   const serverSignature = await createServerSignature(d, userSignature, serverWallet)
-  if (isV2Data(d)) {
-    return { ...d, protocolMarker: PROTOCOL_MARKER, userSignature, serverSignature }
+  if (isSeventeenFieldData(d)) {
+    return { ...(d as SeventeenFieldData), protocolMarker: PROTOCOL_MARKER, userSignature, serverSignature } as DppState
   }
   return {
     ...d,
