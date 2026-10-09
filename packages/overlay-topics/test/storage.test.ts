@@ -52,6 +52,20 @@ const harnesses: Array<[string, () => DppRecordStore]> = [
 ]
 
 describe.each(harnesses)('the record store, %s', (_name, fresh) => {
+  it('finds a carried lineage by its token id, and stores no token on an uncarried record', async () => {
+    const store = fresh()
+    const tokenId = `${'c'.repeat(64)}_0`
+    await store.insert(input(0, { tokenId }))
+    await store.insert(input(1, { tokenId, previousTxid: input(0).txid }))
+    await store.insert(input(2, { passportId: OTHER }))
+    expect((await store.findByTokenId(tokenId)).map((r) => r.sequence)).toEqual([1, 2])
+    expect(await store.findByTokenId(`${'d'.repeat(64)}_0`)).toEqual([])
+    expect(await store.findByTokenId('')).toEqual([])
+    // Absent, not null or empty: the uncarried rows must never match one another under the token index.
+    const [uncarried] = await store.findByPassport(OTHER)
+    expect(uncarried.tokenId).toBeUndefined()
+  })
+
   it('assigns a strictly increasing sequence at insert and keeps it on re-insert', async () => {
     const store = fresh()
     for (let n = 0; n < 5; n++) await store.insert(input(n))

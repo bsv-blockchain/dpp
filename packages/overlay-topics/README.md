@@ -14,6 +14,8 @@ This is a Node >=22 library for overlay operators and server integrations. Impor
 
 The package serves native passport history (`tm_dpp`/`ls_dpp`), current complete-representation anchors (`tm_attestation`/`ls_attestation`) and historical UORA-named anchors (`tm_uora_dpp`/`ls_uora_dpp`). Native token admission checks `@bsv/dpp-core` rules. Anchor admission checks its own exact script and service signature; credential proof, authority and status require separate evidence.
 
+`tm_dpp` admits record versions 1, 2 and 3. A version 3 state is the version 2 body carried behind the BRC-162 token prefix (`spec/token-carrier.md`): the index checks the prefix against the state's position before the body, a genesis as a deploy at output 0 and every later state as a value output naming the lineage genesis as its token id, and then judges the body under the version 2 rules. `ls_dpp` stores the token id (`<genesis txid>_0`) on every carried state and answers `POST /lookup` by `tokenId` beside `passportId`, `uid` and `gs1Key`; a version 1 or 2 record stores none.
+
 The package is two things at once, and which one you get depends on how you
 enter it.
 

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.10.0-draft
+  version: 0.11.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -44,7 +44,15 @@ x-dpp-profile:
       unless its actor is the previous owner, by equality or by
       owner_linkage, or a configured transfer authority. When deployed for
       managed-custody@1 (spec/managed-custody.md), a version 2 TRANSFER is
-      refused without its acceptance commitment.
+      refused without its acceptance commitment. A seventeen-field body
+      behind the BRC-162 token prefix is version 3 (spec/token-carrier.md),
+      read under the version 2 rules with the version 3 string and signed
+      under its own protocol; the prefix is checked before the body: a
+      genesis is a deploy at output 0 of its transaction, every later state
+      is a value output naming the lineage genesis as its token id, and no
+      version crosses into or out of a carried lineage. Control proof, the
+      control authorities and the managed-custody commitment apply to a
+      version 3 state exactly as to a version 2 one.
     tm_attestation: >-
       Admits bsv-attestation-anchor-v1 with ten fields, a signature over nine
       length-prefixed fields and a publicly derived anchoring-service key.
@@ -224,14 +232,16 @@ paths:
                   publisher-not-authorised: 'The server signature is not from a publisher key this index accepts at the state''s own timestamp; GET /capabilities lists the keys.'
                   link-broken: 'A genesis rule or a chain invariant does not hold; checkTransition in @bsv/dpp-core names the rule.'
                   lineage-retired: 'The lineage is retired, and nothing follows a RETIRE.'
-                  control-not-proven: 'A version 2 UPDATE, TRANSFER or RETIRE does not prove control of the predecessor.'
+                  control-not-proven: 'A version 2 or 3 UPDATE, TRANSFER or RETIRE does not prove control of the predecessor.'
                   version-transition-invalid: 'The version change is not the one upgrade transition, a version 2 UPDATE that spends a version 1 tip.'
+                  carrier-prefix-invalid: 'The BRC-162 token prefix of a version 3 state does not fit its position: a genesis is a deploy at output 0, and every later state is a value output (spec/token-carrier.md section 6).'
+                  token-id-mismatch: 'The token id a version 3 value output names is not the lineage genesis this index traced, or the genesis could not be traced to check it.'
                   consent-not-proven: 'The index runs the owner-signed transfer, and the TRANSFER''s actor does not prove it is the previous owner.'
-                  acceptance-commitment-absent: 'The index runs managed-custody@1, and the version 2 TRANSFER carries no authorisation_commitment.'
+                  acceptance-commitment-absent: 'The index runs managed-custody@1, and the version 2 or 3 TRANSFER carries no authorisation_commitment.'
                   genesis-spends-passport-output: 'A genesis state spends a passport output this index admitted.'
                   predecessor-not-admitted: 'The state does not spend the tip this index holds. Announce the predecessor first, oldest state first.'
                   predecessor-unavailable: 'The state spends the tip, but neither the BEEF nor this index holds the predecessor''s bytes. Include them in the BEEF.'
-                  lineage-untraceable: 'The lineage genesis of a version 2 state cannot be traced from the history this index holds.'
+                  lineage-untraceable: 'The lineage genesis of a version 2 or 3 state cannot be traced from the history this index holds.'
         '400':
           $ref: '#/components/responses/error'
         '401':
@@ -886,8 +896,9 @@ components:
       required: [service, query]
       description: >-
         The passport rail. Resolves a record's chain by its passport identifier,
-        by its data-carrier identifier or by its GS1 key. At least one of the
-        three must be provided; the service refuses an empty query. The answer holds the tip
+        by its data-carrier identifier, by its GS1 key or, for a version 3
+        lineage, by its token id. At least one of the
+        four must be provided; the service refuses an empty query. The answer holds the tip
         and every retained earlier state, bounded to 500 outputs with the
         newest kept, so a truncated history fails verification rather than
         presenting a stale tip.
@@ -902,6 +913,16 @@ components:
             uid:
               type: string
               description: The data-carrier identifier carried in the record's public payload.
+            tokenId:
+              type: string
+              pattern: '^[0-9a-f]{64}_0$'
+              description: >-
+                The token id of a carried lineage (spec/token-carrier.md
+                section 3): the genesis txid as 64 lower-case hex characters
+                followed by _0. Answers the states of the one version 3
+                lineage that token is. A version 1 or 2 passport carries no
+                token and is never answered by it, and any other spelling of
+                a token id is refused rather than answered empty.
             gs1Key:
               type: string
               description: >-

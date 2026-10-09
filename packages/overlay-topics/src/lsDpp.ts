@@ -5,7 +5,7 @@ import type {
   OutputAdmittedByTopic,
   OutputSpent,
 } from '@bsv/overlay'
-import { PAYLOAD_DATA_CARRIER_KEY, tryParseDppOutput } from '@bsv/dpp-core'
+import { CARRIER_DEPLOY_OUTPUT_INDEX, PAYLOAD_DATA_CARRIER_KEY, tokenIdOf, tryParseDppOutput } from '@bsv/dpp-core'
 import { DPP_TOPIC } from './tmDpp.js'
 import { normaliseGs1Key } from './gs1Key.js'
 import type { DppRecordInput, DppRecordStore } from './storage.js'
@@ -16,6 +16,13 @@ export interface DppLookupQuery {
   passportId?: string
   uid?: string
   /**
+   * The token id of a carried lineage (`spec/token-carrier.md` §3): the
+   * genesis txid, 64 lower-case hex characters, followed by `_0`. Answers
+   * the states of the one version 3 lineage that token is; versions 1 and 2
+   * carry no token and are never answered by it.
+   */
+  tokenId?: string
+  /**
    * A GS1 key with no host: the tuple `01:{gtin}|21:{serial}`, the path
    * `01/{gtin}/21/{serial}`, or any Digital Link URI. Answers the states of
    * every passport whose identifier names that key, under whatever host it was
@@ -23,6 +30,9 @@ export interface DppLookupQuery {
    */
   gs1Key?: string
 }
+
+/** The one spelling of a token id this service answers by: the deploy txid and the implied index. */
+const TOKEN_ID = /^[0-9a-f]{64}_0$/
 
 /**
  * Answers stay bounded whatever the caller asks for; matches the anchor
@@ -38,7 +48,8 @@ const PENDING_SPENDS = 1000
  * ls_dpp - passport lookup (`spec/services.md` §2).
  *
  * Indexed on passport_id, chip UID (the data-carrier property inside
- * payload_public) and the GS1 key tuple the passport identifier names. Returns the tip plus the ordered history: spent states are
+ * payload_public), the GS1 key tuple the passport identifier names and, for
+ * a version 3 state, the token id of its carried lineage. Returns the tip plus the ordered history: spent states are
  * kept (the engine retains them via tm_dpp's coinsToRetain) so a fresh device
  * can resolve and verify the full lifecycle. Clients order the result with
  * dpp-core's chainFromBeef; record order here is best-effort.
@@ -77,12 +88,22 @@ export class DppLookupService implements LookupService {
     } catch {
       // payload_public was validated as JSON at admission; defensive only
     }
+    // A carried state is also found by its token (`spec/token-carrier.md`
+    // §3): the lineage genesis the body names, or the state itself when it is
+    // the genesis, which admission held to output 0. Versions 1 and 2 carry
+    // no token, and the field is absent rather than empty so the Mongo index
+    // never matches them to each other.
+    const tokenId =
+      state.version === '3'
+        ? tokenIdOf(state.lineageGenesis ?? { txid: payload.txid, outputIndex: CARRIER_DEPLOY_OUTPUT_INDEX })
+        : undefined
     // The store assigns the record's sequence at insert (storage.ts).
     const record: DppRecordInput = {
       txid: payload.txid,
       outputIndex: payload.outputIndex,
       passportId: state.passportId,
       uid,
+      ...(tokenId == null ? {} : { tokenId }),
       op: state.op,
       timestamp: state.timestamp,
       previousTxid: state.previousTxid,
@@ -136,14 +157,22 @@ export class DppLookupService implements LookupService {
     const passportId =
       typeof query.passportId === 'string' && query.passportId !== '' ? query.passportId : undefined
     const uid = typeof query.uid === 'string' && query.uid !== '' ? query.uid : undefined
+    const tokenId = typeof query.tokenId === 'string' && query.tokenId !== '' ? query.tokenId : undefined
     const gs1Key = typeof query.gs1Key === 'string' && query.gs1Key !== '' ? query.gs1Key : undefined
-    if (passportId == null && uid == null && gs1Key == null) {
-      throw new Error('Query must provide passportId, uid or gs1Key')
+    if (passportId == null && uid == null && tokenId == null && gs1Key == null) {
+      throw new Error('Query must provide passportId, uid, tokenId or gs1Key')
     }
     let records
     if (passportId != null) records = await this.storage.findByPassport(passportId)
     else if (uid != null) records = await this.storage.findByUid(uid)
-    else {
+    else if (tokenId != null) {
+      // Refused by name rather than answered empty: a token id in another
+      // spelling (display order reversed, an index other than 0, upper-case
+      // hex) is a different string to the store and would read as a lineage
+      // this index does not hold.
+      if (!TOKEN_ID.test(tokenId)) throw new Error('tokenId must be the lineage token id: the genesis txid as 64 lower-case hex characters followed by _0')
+      records = await this.storage.findByTokenId(tokenId)
+    } else {
       const tuple = normaliseGs1Key(gs1Key as string)
       if (tuple == null) throw new Error('gs1Key must be a GS1 key tuple such as 01:09529990001039|21:SERIAL, a Digital Link path such as 01/09529990001039/21/SERIAL, or a Digital Link URI')
       records = await this.storage.findByGs1Key(tuple)
@@ -159,8 +188,10 @@ export class DppLookupService implements LookupService {
     return [
       `# ${DPP_SERVICE}`,
       '',
-      'Lookup for DPP passports, indexed on passport_id and chip UID.',
-      'Query: { "passportId": "..." } or { "uid": "..." }.',
+      'Lookup for DPP passports, indexed on passport_id, chip UID, the GS1 key',
+      'the identifier names and, for a version 3 lineage, its token id.',
+      'Query: { "passportId": "..." }, { "uid": "..." }, { "tokenId": "<genesis txid>_0" }',
+      'or { "gs1Key": "..." }.',
       'Answers contain the tip plus all retained historical states as BEEF,',
       'bounded to the newest 500; order with dpp-core chainFromBeef and verify',
       'with verifyChain. GET /history pages the complete history over a stable',

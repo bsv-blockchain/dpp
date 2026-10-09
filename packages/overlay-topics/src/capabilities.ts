@@ -15,6 +15,7 @@ import {
   MANAGED_CUSTODY_PROFILE,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
+  STANDARD_VERSION_V3,
   policyInForceAt,
 } from '@bsv/dpp-core'
 import { DPP_TOPIC } from './tmDpp.js'
@@ -33,7 +34,7 @@ import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
  * test holds the two equal, so the document cannot claim a contract version
  * the file does not carry.
  */
-export const OVERLAY_HTTP_CONTRACT_VERSION = '0.10.0-draft'
+export const OVERLAY_HTTP_CONTRACT_VERSION = '0.11.0-draft'
 
 /** The recommended baseline this node claims (`conformance/baseline-native-1.json`). */
 export const BASELINE_ID = 'native-baseline@2'
@@ -253,6 +254,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
     protocols: [
       { id: 'dpp-record', version: STANDARD_VERSION },
       { id: 'dpp-record', version: STANDARD_VERSION_V2 },
+      { id: 'dpp-record', version: STANDARD_VERSION_V3 },
       protocolFromPrefix(ATTESTATION_ANCHOR_PREFIX),
       { id: 'overlay-http', version: OVERLAY_HTTP_CONTRACT_VERSION },
     ],

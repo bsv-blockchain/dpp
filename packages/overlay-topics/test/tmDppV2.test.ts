@@ -96,8 +96,8 @@ describe('tm_dpp admits the version 2 fixture lineage', () => {
 
   it('names the version 2 rules and the profile in its documentation', async () => {
     const off = await new DppTopicManager(CUSTODIAN).getDocumentation()
-    expect(off).toContain('record versions 1 and 2')
-    expect(off).toContain('Not enforced by this index, which admits a version 2 TRANSFER with an empty authorisation_commitment')
+    expect(off).toContain('record versions 1, 2 and 3')
+    expect(off).toContain('Not enforced by this index, which admits a version 2 or 3 TRANSFER with an empty authorisation_commitment')
     const on = await new DppTopicManager(CUSTODIAN, { managedAcceptance: true, controlAuthorities: [V2.authorityKey] }).getDocumentation()
     expect(on).toContain('managed-custody profile')
     expect(on).toContain(V2.authorityKey)

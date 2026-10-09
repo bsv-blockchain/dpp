@@ -31,6 +31,14 @@ export interface DppRecord {
    * rows written before the field existed are given it at boot.
    */
   gs1Key: string
+  /**
+   * The token id of a carried lineage (`spec/token-carrier.md` §3), the
+   * genesis txid followed by `_0`, on a version 3 state only: what a caller
+   * holding the token and nothing else looks the passport up by. Absent on a
+   * version 1 or 2 state, which carries no token, rather than empty, so no
+   * index entry matches the uncarried records to each other.
+   */
+  tokenId?: string
 }
 
 /** What the lookup service hands the store; the store assigns `sequence` and derives `gs1Key`. */
@@ -67,6 +75,8 @@ export interface DppRecordStore {
   findByUid: (uid: string) => Promise<DppRecord[]>
   /** The records of every passport whose identifier names this GS1 key tuple, under any host. */
   findByGs1Key: (gs1Key: string) => Promise<DppRecord[]>
+  /** The records of the one carried lineage this token id names; nothing for a version 1 or 2 passport. */
+  findByTokenId: (tokenId: string) => Promise<DppRecord[]>
   /**
    * The highest sequence assigned so far, 0 when nothing was ever inserted:
    * what a snapshot pins. A deleted row's sequence stays assigned, so the
@@ -126,6 +136,7 @@ export class MongoDppStorage implements DppRecordStore {
       await this.records.createIndex({ passportId: 1, sequence: 1 })
       await this.records.createIndex({ uid: 1, sequence: 1 })
       await this.records.createIndex({ gs1Key: 1, sequence: 1 })
+      await this.records.createIndex({ tokenId: 1, sequence: 1 })
       await this.records.createIndex({ txid: 1, outputIndex: 1 }, { unique: true })
       const legacy = this.records
         .find({ sequence: { $exists: false } })
@@ -211,6 +222,12 @@ export class MongoDppStorage implements DppRecordStore {
     return await this.records.find({ gs1Key }).sort({ sequence: 1 }).toArray()
   }
 
+  async findByTokenId(tokenId: string): Promise<DppRecord[]> {
+    await this.ensureReady()
+    if (tokenId === '') return []
+    return await this.records.find({ tokenId }).sort({ sequence: 1 }).toArray()
+  }
+
   async highestSequence(): Promise<number> {
     await this.ensureReady()
     const counter = await this.counters.findOne({ _id: COUNTER_ID })
@@ -278,6 +295,13 @@ export class InMemoryDppStorage implements DppRecordStore {
     if (gs1Key === '') return []
     return [...this.records.values()]
       .filter((r) => r.gs1Key === gs1Key)
+      .sort((a, b) => a.sequence - b.sequence)
+  }
+
+  async findByTokenId(tokenId: string): Promise<DppRecord[]> {
+    if (tokenId === '') return []
+    return [...this.records.values()]
+      .filter((r) => r.tokenId === tokenId)
       .sort((a, b) => a.sequence - b.sequence)
   }
 
