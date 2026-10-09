@@ -10,12 +10,12 @@ A release set is one tested combination of all these parts, declared in a file u
 |---|---|---|---|
 | Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.9`, `@bsv/vsc@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
 | Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
-| Passport records | Version 1 (14 fields) and version 2 (17 fields) | `wire.records` | `protocols`: `dpp-record` version `1` and version `2` |
+| Passport records | Version 1 (14 fields), version 2 (17 fields) and version 3 (the version 2 body behind a token prefix) | `wire.records` | `protocols`: `dpp-record` version `1`, version `2` and version `3` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
 | Anchor | `bsv-attestation-anchor-v1` | `wire.anchor` | `protocols`: `bsv-attestation-anchor` version `1`; `anchorFormats` lists it as `current` |
 | Acceptance record | `dpp-managed-acceptance@1` | `wire.acceptanceRecord` | Implied by the custody profile |
 | Verification report | Version `1` | `wire.verificationReport` | Not advertised; each report carries `reportVersion` |
-| Index contract | `0.10.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.10.0-draft` |
+| Index contract | `0.11.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.11.0-draft` |
 | Custody profile | `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `1`, with its options |
 | Industry profiles | Current: `general@2`, `battery@2`, `textile@2`. Drafts: `battery@3`, `battery@4`, `textile@3`, `textile@4` | The frozen manifests in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
 
@@ -32,7 +32,7 @@ These numbers move independently. A package prerelease version is not a specific
 | Ending a passport | No terminal operation | `RETIRE`, after which nothing can follow |
 | Commitment to an authorisation record | None | Field 15, which `managed-custody@1` requires on every `TRANSFER` |
 
-Readers read both with the same call, including a lineage that began as version 1 and continued as version 2. Writers write version 2 for new passports. A version 1 passport continues as version 2 through one `UPDATE` that keeps its controller key, and no version 1 state can ever follow a version 2 state ([migration](../migration.md#start-writing-version-2)).
+Readers read both with the same call, including a lineage that began as version 1 and continued as version 2, and read a version 3 lineage, the version 2 body carried behind a BRC-162 token prefix for new lineages only, with the same call again (`spec/token-carrier.md`). Writers write version 2 for new passports. A version 1 passport continues as version 2 through one `UPDATE` that keeps its controller key, and no version 1 state can ever follow a version 2 state ([migration](../migration.md#start-writing-version-2)).
 
 ## Check a service before you connect
 
@@ -48,20 +48,21 @@ for (const p of capabilities.profiles.filter((p) => p.kind === 'custody')) conso
 JS
 ```
 
-Against an index on the current release, deployed for managed custody (`ACCEPTANCE_COMMITMENT=required`), it prints:
+Against an index built from the current checkout, deployed for managed custody (`ACCEPTANCE_COMMITMENT=required`), it prints:
 
 ```
 implementation @bsv/dpp-overlay-topics 0.4.0-beta.9
 protocol dpp-record 1
 protocol dpp-record 2
+protocol dpp-record 3
 protocol bsv-attestation-anchor 1
-protocol overlay-http 0.10.0-draft
+protocol overlay-http 0.11.0-draft
 custody managed-custody 1 {"acceptanceCommitment":"required","controlAuthorities":[]}
 ```
 
 Read it this way:
 
-- **Record versions and index contract.** The protocols must include every record version you write and the `overlay-http` version your client speaks.
+- **Record versions and index contract.** The protocols must include every record version you write and the `overlay-http` version your client speaks. The published beta.9 index prints no `dpp-record 3` line and an earlier `overlay-http` version; the carried record and the contract that admits it arrive with the next release set.
 - **Custody.** `managed-custody` with `acceptanceCommitment: required` refuses a version 2 `TRANSFER` without an acceptance commitment. An index that admits version 2 without one declares `record-model-baseline@2` instead.
 - **Implementation.** A service can run an older package release than the current set. Until 3 October 2026 the hosted index ran `@bsv/dpp-overlay-topics@0.4.0-beta.3`: it read and wrote the same record formats, but it spoke an earlier index contract, so it did not say why it refused a state or answer a GS1 key lookup. Compare what a service advertises, not the release set's name.
 - **Publisher keys.** Before you write, check that `publisherPolicy.publisherKeys` names the key your states are countersigned with.

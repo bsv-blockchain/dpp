@@ -15,7 +15,7 @@ New passports are written as record version 2, which has four operations:
 | `TRANSFER` | The controller key, which says who controls the passport next, and the payload with it ([custody](custody.md)) |
 | `RETIRE` | Nothing in the payload; its event data may give the reason. It ends the passport, and no state can follow it |
 
-Record version 1 had seven operations named after lifecycle events: `ACTIVATE`, `SOLD`, `RESOLD`, `REPAIRED`, `RECYCLED`, `EDIT` and `TRANSFER`. Version 1 passports stay readable: the live passport in the [quick start](../quick-start.md) is one. Version 2 keeps in the record only what the record must enforce, and leaves the meaning, such as "this was a repair", to claims and to the event data a profile defines. A version 1 passport can continue as version 2 through one `UPDATE` ([versions and compatibility](versions-and-compatibility.md#record-versions-1-and-2)).
+Record version 1 had seven operations named after lifecycle events: `ACTIVATE`, `SOLD`, `RESOLD`, `REPAIRED`, `RECYCLED`, `EDIT` and `TRANSFER`. Version 1 passports stay readable: the live passport in the [quick start](../quick-start.md) is one. Version 2 keeps in the record only what the record must enforce, and leaves the meaning, such as "this was a repair", to claims and to the event data a profile defines. A version 1 passport can continue as version 2 through one `UPDATE` ([versions and compatibility](versions-and-compatibility.md#record-versions-1-and-2)). Record version 3 carries the same four-operation body behind a token prefix, so that a generic token reader can follow a passport by its token id; it is for new lineages only (`spec/token-carrier.md`).
 
 ## What a state carries
 

@@ -13,6 +13,7 @@ If a fixture disagrees with the text, keep the failing input and both readings, 
 | Group | Document | Read when |
 |---|---|---|
 | Records | [record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md), the record model, version 2 | You write new passports: version 2 is the seventeen-field layout new states use. |
+| Records | `spec/token-carrier.md`, the token carrier, record version 3 | You write passports a generic token reader can follow: the version 2 body behind a BRC-162 token prefix, found by its token id, for new lineages only. The link will be pinned once the change lands. |
 | Records | [record-model.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), the record model, version 1 | You read existing passports: readers still verify version 1, and version 2 builds on it. |
 | Records | [writing.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md), the writer's lifecycle | You write states: the order of check, announce and send, and the duties to prove and keep. |
 | Records | [verification.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md), one verification contract | You read passports: the report's checks and the four answers each can give. |
