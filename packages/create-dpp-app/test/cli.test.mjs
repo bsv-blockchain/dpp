@@ -17,7 +17,7 @@ test('--help names the release set and its packages', () => {
 })
 
 test('scaffolds into an empty directory, restores dotfiles and names the project', () => {
-  const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-test-'))
+  const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-app-test-'))
   try {
     const target = join(scratch, 'My App')
     const out = execFileSync(process.execPath, [cli, target, '--no-install'], { encoding: 'utf8', cwd: scratch })
@@ -36,7 +36,7 @@ test('scaffolds into an empty directory, restores dotfiles and names the project
 })
 
 test('refuses a directory that is not empty', () => {
-  const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-test-'))
+  const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-app-test-'))
   try {
     writeFileSync(join(scratch, 'something.txt'), 'x')
     assert.throws(() => execFileSync(process.execPath, [cli, scratch, '--no-install'], { encoding: 'utf8', stdio: 'pipe' }), /is not empty/)

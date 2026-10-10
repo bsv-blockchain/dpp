@@ -84,7 +84,7 @@ jobs:
           curl -fsS http://127.0.0.1:18080/capabilities | head -c 400
           docker rm -f smoke
 
-  # The starter: @bsv/create-dpp scaffolds an application from its bundled
+  # The starter: @bsv/create-dpp-app scaffolds an application from its bundled
   # template, pinned to the published release set. The CLI builds and tests,
   # then a scaffold in a temporary directory installs from the registry,
   # typechecks, builds and runs the template's offline lifecycle test, on the
@@ -101,8 +101,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
-      - run: npm run build -w @bsv/create-dpp
-      - run: npm test -w @bsv/create-dpp
+      - run: npm run build -w @bsv/create-dpp-app
+      - run: npm test -w @bsv/create-dpp-app
       - run: npm run starter:check
 
   # The scaffolded application's image builds and its API answers /api/health.
@@ -115,8 +115,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build -w @bsv/create-dpp
-      - run: node packages/create-dpp/dist/index.js /tmp/my-dpp --no-install
+      - run: npm run build -w @bsv/create-dpp-app
+      - run: node packages/create-dpp-app/dist/index.js /tmp/my-dpp --no-install
       - run: docker build -t my-dpp /tmp/my-dpp
       - run: |
           set -euo pipefail

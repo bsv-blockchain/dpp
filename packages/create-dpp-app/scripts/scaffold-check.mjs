@@ -12,7 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const cli = join(root, 'dist', 'index.js')
 if (!existsSync(cli)) throw new Error('build the CLI first: npm run build')
 
-const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-'))
+const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-app-'))
 const target = join(scratch, 'my-dpp')
 const run = (command, args, cwd) => {
   console.log(`$ ${command} ${args.join(' ')}`)

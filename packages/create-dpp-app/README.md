@@ -1,9 +1,9 @@
-# @bsv/create-dpp
+# @bsv/create-dpp-app
 
 Scaffold a Digital Product Passport application on BSV in one command.
 
 ```sh
-npm create @bsv/dpp my-app
+npm create @bsv/dpp-app my-app
 cd my-app
 npm test
 npm run dev
@@ -32,8 +32,8 @@ This package is a workspace of the DPP standard's repository, published separate
 
 ```sh
 npm ci
-npm run build -w @bsv/create-dpp   # the CLI
-npm test -w @bsv/create-dpp        # the CLI's own tests
+npm run build -w @bsv/create-dpp-app   # the CLI
+npm test -w @bsv/create-dpp-app        # the CLI's own tests
 npm run starter:check              # scaffold into a temporary directory, install from the registry, build and run the template's tests
 ```
 

@@ -1,7 +1,7 @@
 {
   "name": "my-dpp",
   "private": true,
-  "description": "A Digital Product Passport application on BSV, scaffolded by @bsv/create-dpp",
+  "description": "A Digital Product Passport application on BSV, scaffolded by @bsv/create-dpp-app",
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
