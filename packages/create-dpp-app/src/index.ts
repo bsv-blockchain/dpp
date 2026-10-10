@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * create-dpp: copy the bundled template into a new directory and name it.
+ * create-dpp-app: copy the bundled template into a new directory and name it.
  *
- *   npm create @bsv/dpp my-app
- *   npx @bsv/create-dpp my-app [--no-install] [--yes]
+ *   npm create @bsv/dpp-app my-app
+ *   npx @bsv/create-dpp-app my-app [--no-install] [--yes]
  *
  * The template ships inside this package, so scaffolding needs no network;
  * installing the dependencies does. Every version the template pins comes
@@ -26,9 +26,9 @@ const flags = new Set(args.filter((a) => a.startsWith('--')))
 const positional = args.filter((a) => !a.startsWith('--'))
 
 if (flags.has('--help') || flags.has('-h')) {
-  console.log(`create-dpp ${manifest.version}: scaffold a Digital Product Passport application on BSV.
+  console.log(`create-dpp-app ${manifest.version}: scaffold a Digital Product Passport application on BSV.
 
-usage: npm create @bsv/dpp <directory> [--no-install] [--yes]
+usage: npm create @bsv/dpp-app <directory> [--no-install] [--yes]
 
   <directory>    where to create the application; must be empty or hold only .git
   --no-install   do not run npm install afterwards

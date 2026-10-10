@@ -1,11 +1,11 @@
 {
-  "name": "@bsv/create-dpp",
+  "name": "@bsv/create-dpp-app",
   "version": "0.1.0",
   "description": "Scaffold a Digital Product Passport application on BSV: a web app, an API that writes and reads passports with the @bsv/dpp packages, and an offline dry run as its first test",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "create-dpp": "dist/index.js"
+    "create-dpp-app": "dist/index.js"
   },
   "files": [
     "dist",
@@ -38,7 +38,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bsv-blockchain/dpp.git",
-    "directory": "packages/create-dpp"
+    "directory": "packages/create-dpp-app"
   },
   "publishConfig": {
     "access": "public",
