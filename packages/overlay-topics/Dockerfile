@@ -10,7 +10,15 @@
 # directory's README.md lists the variables and the root .dockerignore keeps
 # .env files out of the context.
 
-FROM node:22-slim AS build
+# The base image is a build argument so the same Docker Official Image can
+# come from a mirror: the repository workflows pass the Amazon ECR Public
+# mirror (public.ecr.aws/docker/library/node:22-slim), which serves the same
+# manifest digests as Docker Hub, so a Docker Hub rate limit or outage cannot
+# block a release gate. The default below keeps platform and local builds
+# exactly as before.
+ARG BASE_IMAGE=node:22-slim
+
+FROM ${BASE_IMAGE} AS build
 WORKDIR /repo
 
 # Manifests first, so a dependency change is the only thing that busts the
@@ -29,7 +37,7 @@ COPY contracts ./contracts
 COPY packages ./packages
 RUN npm run build -w @bsv/dpp-core -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics
 
-FROM node:22-slim
+FROM ${BASE_IMAGE}
 WORKDIR /repo
 ENV NODE_ENV=production
 

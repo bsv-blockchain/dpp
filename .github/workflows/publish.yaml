@@ -82,10 +82,14 @@ jobs:
           node scripts/consumer-check.mjs
           node scripts/implementer-bundle.mjs "$SET_PATH"
           node conformance/qualify.mjs "$SELECTION"
+      # The image gate pulls its base image from the Docker Official Images
+      # mirror on Amazon ECR Public, which serves the same digests as Docker
+      # Hub, so a Docker Hub rate limit or outage cannot block a publication
+      # that needs no image registry of its own.
       - name: Build and smoke the operator image locally
         run: |
           set -euo pipefail
-          docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay:release-check .
+          docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-slim -f packages/overlay-topics/Dockerfile -t dpp-overlay:release-check .
           trap 'docker rm -f smoke >/dev/null 2>&1 || true' EXIT
           docker run -d --name smoke -p 18080:8080 \
             -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
