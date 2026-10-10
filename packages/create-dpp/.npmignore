@@ -1,0 +1,6 @@
+template/node_modules
+template/apps/*/node_modules
+template/apps/*/dist
+template/local
+template/.env
+template/package-lock.json
