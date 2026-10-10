@@ -8,18 +8,35 @@ Write down what each running component uses now, and keep the old configuration 
 
 | What | Where to read it |
 |---|---|
-| Package versions | Your lockfile, or `npm ls @bsv/dpp-core @bsv/dpp-profiles @bsv/dpp-overlay-topics @bsv/vsc @bsv/sdk` in your project |
+| Package versions | Your lockfile, or `npm ls @bsv/dpp-protocol @bsv/dpp-core @bsv/dpp-profiles @bsv/dpp-overlay-topics @bsv/vsc @bsv/sdk` in your project |
 | The release set they belong to | [Release sets](reference/release-sets.md) |
 | What an index runs and admits | Its `GET /capabilities`: `implementation`, `protocols`, the custody profile and `publisherPolicy` ([check a service before you connect](learn/versions-and-compatibility.md#check-a-service-before-you-connect)) |
 | An index's settings | Its environment file: `SERVICE_IDENTITY_KEY`, `PUBLISHER_POLICY_FILE` or `PUBLISHER_POLICY_JSON`, `ACCEPTANCE_COMMITMENT`, `CONTROL_AUTHORITIES` ([run a service](operate/README.md)) |
 | The record versions you hold | The operations the reader prints for each passport: version 2 uses `ISSUE`, `UPDATE`, `TRANSFER` and `RETIRE` |
 | The profiles your records declare | The `profile` and `profile_version` in each state's public payload |
 
+## Rename dpp-core to dpp-protocol
+
+The candidate `dpp-release-2026-10-8` introduces `@bsv/dpp-protocol@0.3.0-beta.9` as the name of the shared protocol library. The name reflects its passport tokens, custody rules, native lifecycle claims, anchors and evidence verification. Its implementation moved to `packages/dpp-protocol`.
+
+**Publication is pending.** Use the [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test the transition. Earlier published `@bsv/dpp-core` versions keep their original names and bytes. A previously installed version does not turn into the wrapper automatically.
+
+The candidate `@bsv/dpp-core@0.3.0-beta.9` is a compatibility wrapper. It re-exports the protocol library's runtime API and TypeScript types and keeps `@bsv/dpp-core/schemas/*`. New code can use the protocol name while a dependency still uses this wrapper; both resolve to the same implementation when their exact protocol version matches.
+
+To migrate your own imports:
+
+1. Install `@bsv/dpp-protocol` at the selected candidate or published release's exact version. Keep the matching SDK and other DPP package versions.
+2. Replace `from '@bsv/dpp-core'` with `from '@bsv/dpp-protocol'`, including dynamic imports. Change schema paths to `@bsv/dpp-protocol/schemas/*`.
+3. Run your type checks, schema loading and passport/claim verification checks. Keep your lockfile and the candidate archives if installing locally.
+4. Remove your direct `@bsv/dpp-core` dependency once your application no longer imports it. A dependency may still retain the compatibility wrapper.
+
+The rename changes the package name and dependency graph. It does not change any wire bytes, signing protocol identifiers, topic names, profile identifiers, passport identifiers or database records. Earlier protocol upgrades described below still apply if you are moving from an older implementation at the same time.
+
 ## Upgrade the packages
 
 ### From beta.8 to beta.9
 
-The current set, `dpp-release-2026-10-6`, carries `@bsv/dpp-overlay-topics@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 3 October 2026 from source revision `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)). An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+The superseded set `dpp-release-2026-10-6` carries `@bsv/dpp-overlay-topics@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 3 October 2026 from source revision `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)). An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
 
 ### From beta.7 to beta.8
 

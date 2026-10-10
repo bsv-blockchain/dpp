@@ -1,99 +1,26 @@
 # @bsv/dpp-core
 
-**Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
+Compatibility entry point for [`@bsv/dpp-protocol`](../dpp-protocol/README.md), the DPP protocol library for passport tokens, native lifecycle claims, anchors and evidence verification.
 
-The DPP standard's reference implementation for record versions 1, 2 and 3, the
-attestation rail and the verification report, and the only place in this
-repository the standard's rules are implemented. Everything else in the
-reference implementation imports it: the overlay topic manager admits outputs
-by asking this package whether a state is valid, and the consuming
-applications build and verify every record through it. An independent
-implementation does not import it; it reproduces the same rules from `spec/`
-and holds itself to the same `fixtures/`.
+This candidate's `0.3.0-beta.9` version re-exports the protocol library's runtime API and TypeScript types. It retains `@bsv/dpp-core/schemas/*` with the same normative JSON schema bytes. The wrapper contains no separate protocol implementation.
 
-Standard v1 is v0 plus the JSON field conventions (`spec/record-model.md` §3,
-fields 9 and 10). The 14-field layout and the
-chain invariants are untouched from v0, which is why the suite here was ported
-rather than rewritten.
+**Publication pending:** the compatibility wrapper and `@bsv/dpp-protocol` are source candidates. Earlier published versions of `@bsv/dpp-core` remain available under their original name. Use the [candidate installation guide](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this transition before publication.
 
-## Install and consume
-
-This is a pre-1.0 candidate. Install the exact published versions from npm:
-
-```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.8 @bsv/sdk@2.8.10
-```
-
-Node >=22 and ECMAScript modules are supported. Browser use of the runtime is untested. No source checkout or build of this package is needed after installation.
+Existing imports can continue through this wrapper:
 
 ```js
-import { PrivateKey, ProtoWallet } from '@bsv/sdk'
-import { didKeyFromIdentityKey, signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-core'
-
-const key = PrivateKey.fromRandom()
-const claim = await signLifecycleClaim({
-  claimFormat: 'dpp-lifecycle-v1',
-  passportId: 'https://example.com/01/09521000000018/21/EXAMPLE',
-  recordId: '0'.repeat(64), // Synthetic record identifier for this offline example.
-  eventType: 'Origin',
-  timestamp: new Date().toISOString(),
-  issuer: didKeyFromIdentityKey(key.toPublicKey().toString()),
-  issuerKeyId: 'example',
-  profile: 'general',
-  profile_version: 2,
-}, new ProtoWallet(key))
-console.log(verifyLifecycleClaim(claim))
+import { verifyPassportEvidence } from '@bsv/dpp-core'
 ```
 
-This offline example creates a temporary key and signs a claim. Production callers supply their authorised signing capability. Signature verification alone does not establish authority, current status or blockchain inclusion.
+New code uses the protocol package directly:
 
-The `@bsv/dpp-core/schemas/*` export carries the standard's JSON schemas. For example, load `@bsv/dpp-core/schemas/verification-report.schema.json` using a JSON import or Node's `createRequire`. The evidence export schema and its referenced evidence package schema are shipped together. They are data files and may also be used by other runtimes.
-
-## Public API
-
-`src/index.ts` re-exports the whole surface, so `@bsv/dpp-core` is the only
-specifier anything needs:
-
-| Module | What it owns |
-|---|---|
-| `codec.ts` | The 14-field version 1 layout and the 17-field version 2 layout, selected by field count: encode and decode per `spec/record-model.md` §3 and `spec/record-model-v2.md` §3; and the version 3 token prefix of `spec/token-carrier.md` §2 and §3, read and built with the body: `parseDppOutput` returns the `carrier` of a carried state beside the state and the locking key, and `buildLockingScript` derives the prefix from the state or takes one as its optional third argument |
-| `signatures.ts` | The canonical signature preimages: unframed for version 1 (§5), framed and domain-tagged for version 2 (`record-model-v2.md` §5), the same framing under the version 3 tags and `[1, 'dpp token v3']` for a carried state (`token-carrier.md` §4) |
-| `transition.ts` | Which operation may change what, state by state, for every version: the version 2 control proof, the terminal `RETIRE`, the single upgrade transition, and for version 3 a carried state behind a carried state only |
-| `carrier.ts` | The carrier invariants of `spec/token-carrier.md` §6 that need the transaction and the lineage: `checkCarrier` holds the prefix's role to the state's position and its token id to the lineage genesis, and `tokenIdOf` gives a lineage's token id in display form, `<deploy txid>_0` |
-| `owner.ts` | The owner and controller key, the linkage scalar, the owner-signed transfer of version 1 and the control proof of version 2 |
-| `acceptance.ts` | The managed acceptance record `dpp-managed-acceptance@1` (`spec/managed-custody.md` §3): inspect, sign, commit and bind to the `TRANSFER` |
-| `verifyChain.ts` | Chain verification from genesis, including SPV inclusion; `inspectChain` is the same loop reported finding by finding |
-| `evidence.ts` | `verifyPassportEvidence`, the one verification contract of `spec/verification.md`: sixteen named checks, four answers each, an expected subject and a latest-state observation, across the token, attestation, anchor and credential rails |
-| `anchor.ts` | The generic complete-representation anchor `bsv-attestation-anchor-v1` (`spec/rules.md` §5): build, strict decode and check-by-check inspection |
-| `attestation.ts` | Native lifecycle claims `dpp-lifecycle-v1` (`spec/rules.md` §3): validate, sign, verify and digest |
-| `blob.ts` | Owner-tier blob hash binding (§7) |
-| `canonical.ts` | The canonical bytes an attestation is signed and hashed over: a refusing subset of JCS (`spec/rules.md` §4) |
-| `constants.ts`, `types.ts` | The shared vocabulary both of the above are written against |
-
-## Working on it
-
-```
-npm run build      # tsc to dist/, which is what the exports map points at
-npm run typecheck  # the same compile, emitting nothing
-npm test           # the whole suite runs offline
+```js
+import { verifyPassportEvidence } from '@bsv/dpp-protocol'
 ```
 
-The build matters. `main`, `types` and the `exports` map all point into
-`dist/`, and nothing aliases the specifier back to `src/`, so a consumer that
-has not built this package fails to resolve it rather than falling back to
-source. A fresh clone should run `npm run build --workspaces` before anything
-that imports `@bsv/dpp-core`.
+To migrate an application, install the protocol package at the selected release's exact version, change module imports and schema paths from `@bsv/dpp-core` to `@bsv/dpp-protocol`, and retain the resulting lockfile. Remove the old direct dependency once your application no longer imports it. Dependencies that still use the wrapper can coexist with the new name.
 
-## The rule that governs it
-
-Within the reference implementation this package is the single place the
-standard's rules are coded, and no reference consumer reimplements any of it:
-if a consumer needs behaviour that is not here, the change belongs here, with a
-test. The normative text is the specification, not this package: `spec/`
-defines the rules, `fixtures/` pins the bytes, and an independent
-implementation reproduces both without this code. Where this package and the
-specification disagree before version 1.0, `GOVERNANCE.md` names the
-tiebreaker.
+The [migration guide](../../docs/migration.md#rename-dpp-core-to-dpp-protocol) explains the release boundary. The rename changes neither the protocol's wire formats nor its verification rules.
 
 ## Licence
 

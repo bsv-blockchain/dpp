@@ -2,7 +2,7 @@
 /** Offline commitment and native signature verification using public test data. */
 import { readFileSync } from 'node:fs'
 import { LockingScript, Utils } from '@bsv/sdk'
-import { lifecycleClaimBytes, lifecycleClaimDigest, verifyLifecycleClaim } from '@bsv/dpp-core'
+import { lifecycleClaimBytes, lifecycleClaimDigest, verifyLifecycleClaim } from '@bsv/dpp-protocol'
 import { decodeAttestationAnchor } from '@bsv/dpp-overlay-topics'
 
 const path = process.argv[2] ?? new URL('../fixtures/attestation-anchor-v1.json', import.meta.url)

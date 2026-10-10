@@ -230,7 +230,7 @@ paths:
                   decode-failed: 'The transaction carries no well-formed DPP output, or more than one.'
                   actor-signature-invalid: 'The actor signature does not verify against actor_identity_key and actor_keyID.'
                   publisher-not-authorised: 'The server signature is not from a publisher key this index accepts at the state''s own timestamp; GET /capabilities lists the keys.'
-                  link-broken: 'A genesis rule or a chain invariant does not hold; checkTransition in @bsv/dpp-core names the rule.'
+                  link-broken: 'A genesis rule or a chain invariant does not hold; checkTransition in @bsv/dpp-protocol names the rule.'
                   lineage-retired: 'The lineage is retired, and nothing follows a RETIRE.'
                   control-not-proven: 'A version 2 or 3 UPDATE, TRANSFER or RETIRE does not prove control of the predecessor.'
                   version-transition-invalid: 'The version change is not the one upgrade transition, a version 2 UPDATE that spends a version 1 tip.'
@@ -465,7 +465,7 @@ paths:
         The dpp-publisher-policy@1 chain, oldest first, exactly as the index
         verified it at boot. GET /capabilities lists only the keys active now,
         without their windows and without signatures; this is the chain a
-        reader checks with verifyPolicyChain from @bsv/dpp-core, against
+        reader checks with verifyPolicyChain from @bsv/dpp-protocol, against
         operator identity keys it obtained from the operator and never from
         this index, before taking the keys and windows it names. An index that
         admits under one configured identity key has no chain and answers 404

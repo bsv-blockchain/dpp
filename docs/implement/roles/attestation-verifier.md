@@ -1,6 +1,6 @@
 # Attestation verifier
 
-An attestation verifier checks a signed claim about a product and, when it is given one, the claim's anchor: the small on-chain output that commits to the claim's exact bytes. This page is for anyone building one in their own code; with the packages, `verifyLifecycleClaim` and `verifyPassportEvidence` from `@bsv/dpp-core` do it, as [gather a passport's evidence](../../packages/dpp-core.md#gather-a-passports-evidence) shows.
+An attestation verifier checks a signed claim about a product and, when it is given one, the claim's anchor: the small on-chain output that commits to the claim's exact bytes. This page is for anyone building one in their own code; with the packages, `verifyLifecycleClaim` and `verifyPassportEvidence` from `@bsv/dpp-protocol` do it, as [gather a passport's evidence](../../packages/dpp-protocol.md#gather-a-passports-evidence) shows.
 
 A verifier needs:
 
@@ -88,7 +88,7 @@ The first runs offline on the repository's test data and ends `Every sentence ab
 | Check | What it does | Where the evidence comes from |
 |---|---|---|
 | `digest` | Hashes the stored bytes with SHA-256 and compares the result with the registry's `digest` | `GET /attestations/{id}/proof`: `securedBytes`, or `canonical` on a `legacy-uora-json` record |
-| `claim signature` | Verifies a native claim with `verifyLifecycleClaim` from `@bsv/dpp-core` | The stored bytes |
+| `claim signature` | Verifies a native claim with `verifyLifecycleClaim` from `@bsv/dpp-protocol` | The stored bytes |
 | `anchor` | Decodes the output under the format its first field names, and verifies its signature and locking key | The transaction from WhatsOnChain (`/tx/<txid>/hex`), by the proof's `anchor.recordId` and `anchor.outputIndex`; a script the registry also sends must equal it |
 | `binding` | The anchor commits to the digest and names the claim's identifier, issuer, subject and type | The decoded anchor and the claim |
 | `inclusion` | Verifies the transaction's merkle path against block headers; a path the registry sends counts only when its root matches the header | The proof's `anchor.merklePath` when the registry sends one, otherwise WhatsOnChain's `/tx/<txid>/proof/bump`: both are BUMPs that `MerklePath.fromHex` from `@bsv/sdk` reads as they are. The block headers come from your header source |
@@ -98,7 +98,7 @@ What each kind of record can establish:
 
 | Record | Anchor | What can be established |
 |---|---|---|
-| `dpp-lifecycle-json-v1`, a native claim | `bsv-attestation-anchor-v1`, read with `inspectAttestationAnchor` from `@bsv/dpp-core` | Every check |
+| `dpp-lifecycle-json-v1`, a native claim | `bsv-attestation-anchor-v1`, read with `inspectAttestationAnchor` from `@bsv/dpp-protocol` | Every check |
 | `legacy-uora-json` | `uora-anchor-v3`, read with `tryParseUoraAnchor` from `@bsv/dpp-overlay-topics` | Every check but the claim signature, which the example does not check |
 | `legacy-uora-json` | `uora-anchor-v1` | The digest, inclusion, and that the output is signed by its own locking key. A v1 anchor names no issuer and no anchoring service, so who anchored it cannot be established |
 | `vsc-seal-json-v1`, a SEAL credential | `bsv-attestation-anchor-v1` | The digest, anchor and inclusion; verify the credential itself with [`@bsv/vsc`](../../packages/vsc.md) |

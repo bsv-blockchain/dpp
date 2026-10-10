@@ -20,7 +20,7 @@ All three values come from the wallet, and no key leaves it.
 | Name | What it is | Where it appears |
 |---|---|---|
 | Identity key | The wallet's root public key. It signs each state as the actor, the party making the change, and as the publisher, the party that countersigns it | `actorIdentityKey`, field 7, and the publisher signature |
-| Controller key | The identity key derived for this passport, in the same wallet, under `[1, 'dpp owner v1']` (`OWNER_PROTOCOL_ID` in `@bsv/dpp-core`), with the passport identifier as key identifier and counterparty `self` | `ownerIdentityKey` in the package's state data, field 6 of the record, and the key every state's output is locked to |
+| Controller key | The identity key derived for this passport, in the same wallet, under `[1, 'dpp owner v1']` (`OWNER_PROTOCOL_ID` in `@bsv/dpp-protocol`), with the passport identifier as key identifier and counterparty `self` | `ownerIdentityKey` in the package's state data, field 6 of the record, and the key every state's output is locked to |
 | Control linkage | The scalar that proves the controller key came from the identity key | `controlLinkage`, field 14, on every state after the genesis |
 
 The actor's identity key is not the controller key, so every later state carries the linkage to prove control of the state it spends. A state without it is refused ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 6). The wallet reveals the linkage to itself, your application decrypts it once, and it is then public on chain.
@@ -33,11 +33,11 @@ const controllerKey = await ownerKeyFor(passportId, wallet)
 const controlLinkage = await decryptOwnerLinkage(await revealOwnerLinkage(passportId, wallet, identityKey), wallet)
 ```
 
-`ownerKeyFor`, `revealOwnerLinkage` and `decryptOwnerLinkage` come from `@bsv/dpp-core`. Then check the result with `verifyOwnerLinkage(identityKey, controllerKey, controlLinkage)`, as the example does.
+`ownerKeyFor`, `revealOwnerLinkage` and `decryptOwnerLinkage` come from `@bsv/dpp-protocol`. Then check the result with `verifyOwnerLinkage(identityKey, controllerKey, controlLinkage)`, as the example does.
 
 ## The owner tier
 
-A profile's restricted fields, every tier but `public`, form the owner tier and never go on chain. Encrypt them with the wallet, keep the ciphertext off chain, and put only its hash in the state ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). `@bsv/dpp-core` does not export the protocol `[2, 'dpp owner data v1']`, so copy it from that section.
+A profile's restricted fields, every tier but `public`, form the owner tier and never go on chain. Encrypt them with the wallet, keep the ciphertext off chain, and put only its hash in the state ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). `@bsv/dpp-protocol` does not export the protocol `[2, 'dpp owner data v1']`, so copy it from that section.
 
 Fragment of `examples/write-passport-v2.mjs`, in `sealOwnerTier`, where `restrictedFields` is an object that passes `readRestrictedPayloadSchema(profile)`, such as `{ serviceNotes: '...' }` for `general@2`:
 

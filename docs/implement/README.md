@@ -27,7 +27,7 @@ The rule is in [conformance](https://github.com/bsv-blockchain/dpp/blob/dab99763
 
 | You may use | You may not use for a property you claim |
 |---|---|
-| Any BSV SDK: `@bsv/sdk` for TypeScript, the [Go SDK](https://github.com/bsv-blockchain/go-sdk), the [Python SDK](https://github.com/bsv-blockchain/py-sdk) or another. None of them is this repository's code. | `@bsv/dpp-core`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay-topics` or `@bsv/vsc`, or code copied or translated from them |
+| Any BSV SDK: `@bsv/sdk` for TypeScript, the [Go SDK](https://github.com/bsv-blockchain/go-sdk), the [Python SDK](https://github.com/bsv-blockchain/py-sdk) or another. None of them is this repository's code. | `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay-topics` or `@bsv/vsc`, or code copied or translated from them |
 | Your language's standard library and general cryptography, JSON, HTTP and JSON Schema libraries | The reference service or a reference example deciding an answer for you: that runs the reference implementation behind your interface |
 | The fixtures and vectors, copied unchanged as test data | A fixture edited to make a case pass |
 | The specifications, contracts and schemas | |

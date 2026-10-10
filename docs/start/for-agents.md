@@ -10,7 +10,7 @@ This page is for an AI agent asked to plan, read, issue, verify or operate digit
 | Verify a passport | [Quick start](../quick-start.md), [identifiers](../identifiers.md), [evidence reports](../learn/evidence-and-freshness.md) | Report with exact subject/source, checks and reasons for missing evidence |
 | Issue or update | [Build an application](../packages/build-an-application.md), [writer details](../packages/how-the-writer-works.md), [wallet and proofs](../operate/wallet-broadcast-proofs.md) | Controlled write workflow with authorised signing, valid data, journal and retained evidence |
 | Add a native claim | [Add a claim](../packages/add-a-claim.md), [registry role](../implement/roles/registry.md), [contracts](../reference/contracts.md) | Supported claim with separately stated validation, storage, anchor and authority results |
-| Operate a service | [Operator hub](../operate/overview.md), [access details](../deployment.md), [recovery](../operate/export-import-recovery.md) | Correct role/access configuration and evidence of recovery; peers only when selected |
+| Operate an index | [Create an index](../packages/create-dpp-index.md), [operator hub](../operate/overview.md), [access details](../deployment.md), [recovery](../operate/export-import-recovery.md) | One generated project with its included runtime, correct role/access configuration and evidence of recovery; peers only when selected |
 | Implement a role independently | [Independent implementation](../implement/README.md), the selected role guide, [specifications](../reference/specifications.md), [reporting](../implement/reporting.md) | Requirements and fixture evidence, with disagreements recorded |
 
 Read the relevant [limitations](../operate/limitations.md) before promising the outcome. Other tasks remain in [the full task index](choose-your-path.md). No task needs every package or every service merely because they appear in this documentation.
@@ -19,9 +19,9 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 
 | Fact | Value |
 |---|---|
-| Current release set | `dpp-release-2026-10-6`, published on npm under `latest` on 3 October 2026 |
-| Packages | `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7`, `@bsv/dpp-overlay-topics@0.4.0-beta.9`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
-| Install | Always name the exact version, even though npm's `latest` tag names the current set |
+| Source candidate | `dpp-release-2026-10-8`, publication pending; [release status and receipts](../reference/release-sets.md) distinguish it from the earlier published packages |
+| Candidate packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10`; `@bsv/dpp-core@0.3.0-beta.9` is the compatibility wrapper |
+| Install | Use the [local candidate archives](../packages/README.md#use-the-renamed-source-candidate) until publication. Pin exact versions and retain the lockfile; do not infer publication from a source version or a dist-tag |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |
 | Demonstration application | `https://dpp.bsvb.net`, with the verifier at `https://dpp.bsvb.net/verify`: sample brands that write nothing to the chain; brands a signed-in user creates write real mainnet transactions, marked as samples |
@@ -30,12 +30,12 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 | Hosted proof page | `https://dpp-proof.bsvb.net`: the hosted registry's claims checked against their anchors. `node examples/check-registry.mjs <registry>` does the same for any registry ([run an anchor proof page](../implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) |
 | These pages as text | [`llms.txt`](https://dpp.bsvb.net/docs/llms.txt) lists every page; [`llms-full.txt`](https://dpp.bsvb.net/docs/llms-full.txt) holds them all in one file |
 | Source | [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp), default branch `main` |
-| Reviewed example source | `aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7`, checked out explicitly in the quick start; includes work after the published release |
+| Example source | Record `git rev-parse HEAD` in the [source checkout](../quick-start.md#get-the-code); use a receipt's exact revision to reproduce that historical publication |
 | Words | [Words used here](glossary.md) defines every term |
 
 ## How to run what the pages show
 
-- **Shell blocks** run from the root of the [reviewed checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, unless the page names another revision. The examples import the packages the checkout builds. Use a publication receipt's revision to reproduce that package; a matching version string does not prove source and npm archives are identical.
+- **Shell blocks** run from the root of the [reviewed checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, unless the page names another directory or revision. Run starter project commands inside the generated project. The repository examples import the packages the checkout builds. Use a publication receipt's revision to reproduce that package; a matching version string does not prove source and npm archives are identical.
 - **JavaScript blocks** run as a file: save the block as `name.mjs` in a project where the exact package versions are installed, and run `node name.mjs`. They use top-level `await`.
 - **A block marked as a fragment** shows one step and does not run alone; the page links the complete example.
 - **Success** reads the same everywhere: one sentence per check, never a score. A line starting `ok:` or `Holds:` held; `FAIL:` did not, and the command exits non-zero. An example that checks itself ends with `Every sentence above holds.`
@@ -45,6 +45,7 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 - **Runtime support** comes from the [support table](../packages/support-table.md). Node/ESM support does not establish browser module support. Declare the SDK when directly importing it, and follow profile asset-packaging instructions.
 - **Product data** needs a separate check against its declared profile. A valid transaction report does not establish profile validity. Start with `node examples/sample-payload.mjs` and the [profile validation guide](../packages/dpp-profiles.md#check-a-payload-against-its-profile), not an unchecked hosted sample.
 - **Service choices** come from the selected task. Native lifecycle claims use core helpers, without a mandatory VSC dependency. A reader does not need a funded wallet. An HTTP index client does not need the overlay hosting package.
+- **Index scaffolding** starts with `@bsv/create-dpp-index`, which includes `@bsv/dpp-overlay-topics` as the generated project's runtime dependency. Do not add a separate runtime installation or start the repository's index alongside it. Direct runtime integration and source deployment are alternatives for custom requirements. The [index starter guide](../packages/create-dpp-index.md) names its publication prerequisite, setup commands, explicit flags, JSON configuration and results, and app connection settings. A successful configuration check does not establish blockchain settlement or production readiness.
 
 ## Steps a human must take
 

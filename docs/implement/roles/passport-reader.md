@@ -1,6 +1,6 @@
 # Passport reader
 
-A passport reader rebuilds a passport's history from transaction bytes and reports, check by check, what that history establishes about the product the caller asked about. This page is for anyone building one in their own code; with the packages, a reader is `chainFromBeef` and `verifyPassportEvidence` from `@bsv/dpp-core`, as step 1 of [build an application](../../packages/build-an-application.md#1-read-a-passport) shows.
+A passport reader rebuilds a passport's history from transaction bytes and reports, check by check, what that history establishes about the product the caller asked about. This page is for anyone building one in their own code; with the packages, a reader is `chainFromBeef` and `verifyPassportEvidence` from `@bsv/dpp-protocol`, as step 1 of [build an application](../../packages/build-an-application.md#1-read-a-passport) shows.
 
 A reader needs:
 

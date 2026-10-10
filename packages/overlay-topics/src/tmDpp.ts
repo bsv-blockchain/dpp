@@ -16,7 +16,7 @@ import {
   type DppState,
   type Outpoint,
   type PublisherPolicy,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { policyKeysFor } from './policyConfig.js'
 
 export const DPP_TOPIC = 'tm_dpp'
@@ -81,7 +81,7 @@ const MAX_LINEAGE_WALK = 10_000
  *
  * Admits a transaction's single DPP output when:
  * - exactly one well-formed DPP output exists (invariant 1; field rules are
- *   enforced by the dpp-core codec at parse time),
+ *   enforced by the dpp-protocol codec at parse time),
  * - user_signature verifies against actor_identity_key + actor_keyID,
  * - server_signature verifies against the configured service key
  *   (admission policy, not token validity - §5),

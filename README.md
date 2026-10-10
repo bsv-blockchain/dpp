@@ -13,7 +13,7 @@ A digital product passport records information about a product and its history, 
 | Understand the design | [Architecture](docs/start/architecture.md) |
 | Build with the reference packages | [Package guide](docs/packages/README.md) |
 | Implement the standard independently | [Implementer guide](docs/implement/README.md) |
-| Run passport services | [Operations guide](docs/operate/README.md) |
+| Run your own index | [Create an index](docs/packages/create-dpp-index.md) |
 | Define product data for an industry | [Industry profiles](docs/profiles/README.md) |
 | Browse all documentation | [Documentation index](docs/README.md) |
 
@@ -68,12 +68,20 @@ Records can remain verifiable after a provider disappears if their transactions,
 
 ## Reference packages
 
+For a new application, use [`@bsv/create-dpp-app`](packages/create-dpp-app/README.md). It creates the web app, API and application database configuration. Connect to an existing compatible index or create a separate index project.
+
+For a new index, use [`@bsv/create-dpp-index`](packages/create-dpp-index/README.md). It creates your project and includes `@bsv/dpp-overlay-topics` as its runtime dependency. There is no separate runtime installation step. Both starters are source candidates pending publication.
+
+The packages below are reusable components. Select them directly when integrating their APIs into your own code. An application using an existing index over HTTP needs neither the index starter nor the hosting runtime.
+
 | Package | Purpose |
 |---|---|
-| [`@bsv/dpp-core`](packages/dpp-core/README.md) | Read, write and verify passport records, signatures, history, attestations and portable evidence. Supports record versions 1 and 2. |
-| [`@bsv/dpp-overlay-topics`](packages/overlay-topics/README.md) | Index and retrieve passports and anchors, export evidence and synchronise with configured peers. Available as a library or HTTP service. |
+| [`@bsv/dpp-protocol`](packages/dpp-protocol/README.md) | Read, write and verify passport records, signatures, history, attestations and portable evidence. Supports record versions 1, 2 and 3. |
+| [`@bsv/dpp-overlay-topics`](packages/overlay-topics/README.md) | Included index runtime for the starter. Direct installation is for custom or embedded indexes; it admits and retrieves records, exports evidence and synchronises with configured peers. |
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data schemas for batteries, textiles and general products, plus identifier, mapping and projection helpers. |
 | [`@bsv/vsc`](packages/vsc/README.md) | Sign and verify credentials under the supported draft compatibility profile, map EPCIS events and verify supported external credentials. |
+
+The source candidate names the shared library `@bsv/dpp-protocol`. The new name is not yet published; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test it. `@bsv/dpp-core` is retained as a compatibility wrapper for existing imports and JSON schema paths. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
 
 Build from this checkout or use the packed candidates described in the [release guide](release/README.md), which records compatible package and protocol versions.
 
@@ -87,7 +95,11 @@ Optional interoperability profiles cover GS1 Digital Link discovery, EPCIS event
 
 ## Run an index
 
-The [Docker Compose deployment](deploy/README.md) provides the reference index with MongoDB storage and an optional second node. To build the index image directly:
+Start with [Create an index](docs/packages/create-dpp-index.md). The starter includes the runtime, persistent MongoDB configuration, deployment files, checks and application connection settings. Follow the generated project's README for startup and maintenance. It is a source candidate; its guide explains how to test the packed packages before publication.
+
+### Advanced alternative: run from source
+
+The [repository's Docker Compose deployment](deploy/README.md) builds the index directly from this checkout, with MongoDB storage and an optional second node. Choose this instead of the starter when you need a source deployment. To build the index image directly:
 
 ```sh
 docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .

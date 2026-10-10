@@ -1,0 +1,29 @@
+{
+  "name": "@bsv/create-dpp-index",
+  "version": "0.1.0-beta.1",
+  "description": "Scaffold a standalone DPP index with persistent MongoDB, operator configuration and an application connection file",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": { "create-dpp-index": "src/index.mjs" },
+  "files": ["src", "template", "README.md", "LICENSE"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node --check src/index.mjs",
+    "test": "node --test test/*.test.mjs",
+    "scaffold:check": "node scripts/scaffold-check.mjs"
+  },
+  "dpp": {
+    "releaseSet": "dpp-release-2026-10-8",
+    "packages": {
+      "@bsv/dpp-overlay-topics": "0.4.0-beta.11",
+      "@bsv/dpp-protocol": "0.3.0-beta.9",
+      "@bsv/dpp-profiles": "0.3.0-beta.9"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsv-blockchain/dpp.git",
+    "directory": "packages/create-dpp-index"
+  },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/", "tag": "next" }
+}

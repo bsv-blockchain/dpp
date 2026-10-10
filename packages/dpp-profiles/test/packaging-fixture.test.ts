@@ -186,14 +186,14 @@ describe('the published packaging vectors', () => {
       tags: c.tags,
     }
   })
-  const version = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version
   const file = {
     $schema: 'https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json',
     id: 'dpp.projection.packaging-v1',
     name: 'DPP passport projection v1 over a packaging relationship graph: container, components and content under general@2',
     brc: [],
     version: '1.0.0',
-    reference_impl: `dpp-profiles@${version}`,
+    // Provenance of the published vectors, independent of later package versions.
+    reference_impl: 'dpp-profiles@0.3.0-beta.8',
     parity_class: 'required',
     shared: { profile: GENERAL },
     vectors,

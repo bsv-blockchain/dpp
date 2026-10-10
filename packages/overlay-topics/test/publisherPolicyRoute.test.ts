@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { verifyPolicyChain } from '@bsv/dpp-core'
+import { verifyPolicyChain } from '@bsv/dpp-protocol'
 import { startOverlayService, type RunningService } from '../src/index.js'
 import { newNode } from './helpers.js'
 import { OPERATORS, policyChain } from './policy-fixture.js'

@@ -5,7 +5,7 @@ import type {
   OutputAdmittedByTopic,
   OutputSpent,
 } from '@bsv/overlay'
-import { CARRIER_DEPLOY_OUTPUT_INDEX, PAYLOAD_DATA_CARRIER_KEY, tokenIdOf, tryParseDppOutput } from '@bsv/dpp-core'
+import { CARRIER_DEPLOY_OUTPUT_INDEX, PAYLOAD_DATA_CARRIER_KEY, tokenIdOf, tryParseDppOutput } from '@bsv/dpp-protocol'
 import { DPP_TOPIC } from './tmDpp.js'
 import { normaliseGs1Key } from './gs1Key.js'
 import type { DppRecordInput, DppRecordStore } from './storage.js'
@@ -52,7 +52,7 @@ const PENDING_SPENDS = 1000
  * a version 3 state, the token id of its carried lineage. Returns the tip plus the ordered history: spent states are
  * kept (the engine retains them via tm_dpp's coinsToRetain) so a fresh device
  * can resolve and verify the full lifecycle. Clients order the result with
- * dpp-core's chainFromBeef; record order here is best-effort.
+ * dpp-protocol's chainFromBeef; record order here is best-effort.
  */
 export class DppLookupService implements LookupService {
   readonly admissionMode = 'locking-script' as const
@@ -193,7 +193,7 @@ export class DppLookupService implements LookupService {
       'Query: { "passportId": "..." }, { "uid": "..." }, { "tokenId": "<genesis txid>_0" }',
       'or { "gs1Key": "..." }.',
       'Answers contain the tip plus all retained historical states as BEEF,',
-      'bounded to the newest 500; order with dpp-core chainFromBeef and verify',
+      'bounded to the newest 500; order with dpp-protocol chainFromBeef and verify',
       'with verifyChain. GET /history pages the complete history over a stable',
       'snapshot and GET /evidence-package exports it (spec/portable-evidence.md).',
     ].join('\n')

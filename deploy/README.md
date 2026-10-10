@@ -2,6 +2,8 @@
 
 One supported preset, on Docker Compose: the index node from this repository's image and a MongoDB beside it, both on named volumes, configured from one env file. It is the same node `packages/overlay-topics/README.md` documents, with nothing added and nothing taken away; this directory only fixes an arrangement that persists. Everything here is informative, as [`../docs/deployment.md`](../docs/deployment.md) is: the standard requires no particular host.
 
+For a new editable operator project, start with [Create an index](../docs/packages/create-dpp-index.md). The starter includes the runtime and its own deployment files. This directory is the advanced alternative for running directly from a repository checkout; a generated project does not need this second setup.
+
 ## What the preset is
 
 | Piece | What it runs | Where its state lives |

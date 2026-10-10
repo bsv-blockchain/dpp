@@ -67,7 +67,13 @@ for (const page of pages) {
         if (!/^[a-f0-9]{40}$/.test(revision)) { linkFailures += 1; say(false, `${page} references ${repo} at ${revision}; use a full commit hash.`) }
         if (repo === 'bsv-blockchain/dpp') {
           const [path, fragment] = decodeURIComponent(rest).split('#')
-          const local = resolve(root, path)
+          // Historical source URLs keep the paths at their recorded revision.
+          // Follow moved files for the offline checkout check without rewriting
+          // those URLs to paths that did not exist at the pinned commit.
+          const movedPath = path.startsWith('packages/dpp-core/')
+            ? path.replace(/^packages\/dpp-core\//, 'packages/dpp-protocol/')
+            : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md' : path
+          const local = resolve(root, existsSync(resolve(root, movedPath)) ? movedPath : path)
           if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
           const directory = statSync(local).isDirectory()
           if (directory !== (kind === 'tree')) { linkFailures += 1; say(false, `${page} pins ${path} with ${kind}; use ${directory ? 'tree' : 'blob'}.`) }
@@ -101,7 +107,7 @@ for (const page of pages) {
     if (mentions > 0 && !explained) { linkFailures += 1; say(false, `${page} names the superseded set ${s} without saying it is superseded.`) }
   }
   if (/planning\/|AGENTS\.md|docs\/private\//.test(text)) { linkFailures += 1; say(false, `${page} names a private working path.`) }
-  for (const m of text.matchAll(/`@bsv\/(dpp-core|dpp-overlay-topics|dpp-profiles|vsc)`\s+(\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)/g)) {
+  for (const m of text.matchAll(/`@bsv\/(dpp-protocol|dpp-core|dpp-overlay-topics|dpp-profiles|vsc)`\s+(\d+\.\d+\.\d+(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?)/g)) {
     const pkg = current.packages.find((p) => p.name === `@bsv/${m[1]}`)
     if (pkg.version !== m[2]) { linkFailures += 1; say(false, `${page} names @bsv/${m[1]} ${m[2]}; the current set names ${pkg.version}.`) }
   }

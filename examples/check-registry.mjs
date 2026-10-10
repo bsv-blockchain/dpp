@@ -30,7 +30,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { Hash, LockingScript, MerklePath, PushDrop, Signature, Transaction, Utils, WhatsOnChain } from '@bsv/sdk'
-import { inspectAttestationAnchor, verifyLifecycleClaim } from '@bsv/dpp-core'
+import { inspectAttestationAnchor, verifyLifecycleClaim } from '@bsv/dpp-protocol'
 import { tryParseUoraAnchor } from '@bsv/dpp-overlay-topics'
 
 const args = process.argv.slice(2)

@@ -8,16 +8,16 @@
 
 **Verifiable Supply Chain (VSC)** is a draft of the W3C Verifiable Supply Chain Community Group for credentials that record supply-chain events. This package implements a selected subset of it as its own profile, `vsc-draft-compat/0.1.0`, against the draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It is not a W3C standard and the package claims no W3C certification.
 
-**A SEAL** is the VSC credential for one signed event: which products (`what`), when, where, who acted and how, with links to the earlier SEALs in the product's chain of custody. It is a W3C verifiable credential, secured with an `Ed25519Signature2020` or `bbs-2023` proof, and it is a different format from the native lifecycle claim that `@bsv/dpp-core` signs. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
+**A SEAL** is the VSC credential for one signed event: which products (`what`), when, where, who acted and how, with links to the earlier SEALs in the product's chain of custody. It is a W3C verifiable credential, secured with an `Ed25519Signature2020` or `bbs-2023` proof, and it is a different format from the native lifecycle claim that `@bsv/dpp-protocol` signs. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
 
 | You want to | Need this package? |
 |---|---|
-| Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-core](dpp-core.md) |
+| Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-protocol](dpp-protocol.md) |
 | Issue or verify SEALs | Yes, the root entry point |
 | Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/vsc/exchange` |
 | Import EPCIS 2.0.1 event documents, or map their events to SEALs | Yes, `@bsv/vsc/epcis-source` and the root |
 
-The package does not fund a wallet, move a passport or find records through an index; those stay with [@bsv/dpp-core](dpp-core.md) and your own wallet. It has no BSV runtime dependency.
+The package does not fund a wallet, move a passport or find records through an index; those stay with [@bsv/dpp-protocol](dpp-protocol.md) and your own wallet. It has no BSV runtime dependency.
 
 ## Install
 

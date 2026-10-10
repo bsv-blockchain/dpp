@@ -1,0 +1,485 @@
+{
+  "releaseSet": "dpp-release-2026-10-8",
+  "status": "candidate",
+  "distTag": "latest",
+  "description": "Experimental prerelease candidate introducing @bsv/dpp-protocol as the name of the shared DPP protocol library, with @bsv/dpp-core as a compatibility wrapper retaining its runtime, type and JSON schema entry points. The protocol library and wrapper are 0.3.0-beta.9, profiles is 0.3.0-beta.9 and overlay topics is 0.4.0-beta.11; @bsv/vsc remains 0.2.0-beta.5. This set changes package names and dependencies from dpp-release-2026-10-7, with the same record versions, wire formats, custody rules, profiles and conformance claims. The new package name and compatibility wrapper are not yet published. Package publication does not establish deployment readiness or product qualification.",
+  "baseline": "native-baseline@2",
+  "selection": "conformance/selections/dpp-release-2026-10-8.json",
+  "runtime": {
+    "node": ">=22",
+    "dependencies": [
+      {
+        "name": "@bsv/sdk",
+        "version": "2.8.10"
+      },
+      {
+        "name": "@bsv/overlay",
+        "version": "2.3.1",
+        "note": "resolves @bsv/gasp 1.3.6; consumed by @bsv/dpp-overlay-topics only"
+      },
+      {
+        "name": "mongodb",
+        "version": "7.6.0",
+        "note": "the reference persistence of the index node, replaceable"
+      },
+      {
+        "name": "@bsv/wallet-toolbox-client",
+        "version": "2.11.0",
+        "note": "the application service's wallet, and from this set an optional dependency of @bsv/dpp-overlay-topics for advertising, at the same version; npm install --omit=optional leaves it out"
+      }
+    ]
+  },
+  "packages": [
+    {
+      "name": "@bsv/dpp-protocol",
+      "version": "0.3.0-beta.9",
+      "directory": "packages/dpp-protocol",
+      "role": "the passport record models, signatures, custody rules, chain and evidence verification, native lifecycle claims, attestation anchors, publisher policies and portable evidence",
+      "entryPoints": [
+        ".",
+        "./schemas/*"
+      ],
+      "carries": [
+        "dist",
+        "schemas"
+      ],
+      "nodeBuiltins": [],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "untested",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Depends on @bsv/sdk only and imports no Node built-in; a browser bundle is not tested and not promised."
+        },
+        {
+          "entryPoint": "./schemas/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "schemas/*.schema.json"
+          ],
+          "notes": "Normative JSON schemas copied byte for byte from contracts; relative schema references remain alongside one another."
+        }
+      ]
+    },
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.3.0-beta.9",
+      "directory": "packages/dpp-core",
+      "role": "compatibility entry point for existing @bsv/dpp-core consumers; re-exports @bsv/dpp-protocol and retains the schema subpaths",
+      "entryPoints": [
+        ".",
+        "./schemas/*"
+      ],
+      "carries": [
+        "dist",
+        "schemas"
+      ],
+      "nodeBuiltins": [],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "untested",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Re-exports @bsv/dpp-protocol without another protocol implementation. Same Node ESM runtime and types; browser use remains untested."
+        },
+        {
+          "entryPoint": "./schemas/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "schemas/*.schema.json"
+          ],
+          "notes": "Normative JSON schemas copied byte for byte from contracts; relative schema references remain alongside one another."
+        }
+      ]
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.4.0-beta.11",
+      "directory": "packages/overlay-topics",
+      "role": "the topic managers, lookup services, storage adapters, capabilities, history, evidence export, retraction and synchronisation of the index; a supported server entry point and dpp-index executable also run the HTTP node",
+      "entryPoints": [
+        ".",
+        "./server"
+      ],
+      "carries": [
+        "dist"
+      ],
+      "nodeBuiltins": [
+        "node:crypto",
+        "node:fs",
+        "node:http",
+        "node:process",
+        "node:util",
+        "node:url"
+      ],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Server only: Node built-ins, the overlay engine and the MongoDB driver. Importing never starts the HTTP host."
+        },
+        {
+          "entryPoint": "./server",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "HTTP host and runFromEnvironment for an operator process. Importing starts nothing; the dpp-index executable calls the runner explicitly."
+        }
+      ],
+      "serverOnly": true
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.9",
+      "directory": "packages/dpp-profiles",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports and version 4 cross-field data review",
+      "entryPoints": [
+        ".",
+        "./manifests/*",
+        "./schemas/*",
+        "./generated/*",
+        "./frozen.json"
+      ],
+      "carries": [
+        "dist",
+        "manifests",
+        "schemas",
+        "generated",
+        "frozen.json"
+      ],
+      "nodeBuiltins": [
+        "node:crypto",
+        "node:fs"
+      ],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Reads its data files through the Node file system; the one runtime dependency is the RFC 8785 canonicaliser."
+        },
+        {
+          "entryPoint": "./manifests/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "manifests/<id>@<version>.json",
+            "manifests/exchange/*.json",
+            "manifests/operator/*.json",
+            "manifests/interoperability/*.json"
+          ],
+          "notes": "Frozen profile manifests, plain JSON."
+        },
+        {
+          "entryPoint": "./schemas/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "schemas/*.schema.json",
+            "schemas/gs1/*"
+          ],
+          "notes": "The manifest, identity, exchange, operator and interoperability schemas and the pinned GS1 resolver schemas."
+        },
+        {
+          "entryPoint": "./generated/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "generated/payload-schema/*.schema.json",
+            "generated/consumer/*.json",
+            "generated/mapping/*.md",
+            "generated/index.json"
+          ],
+          "notes": "Generated payload schemas, consumer documents and mapping inventories."
+        },
+        {
+          "entryPoint": "./frozen.json",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "frozen.json"
+          ],
+          "notes": "The digests every published file is held to."
+        }
+      ]
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.2.0-beta.5",
+      "directory": "packages/vsc",
+      "role": "the VSC draft compatibility profile with its owned context and schema artefacts and the two proof suites; the EPCIS source helpers with the pinned EPCIS 2.0.1 artefacts (./epcis-source) and the external ecdsa-rdfc-2019 credential verifier (./exchange)",
+      "entryPoints": [
+        ".",
+        "./exchange",
+        "./epcis-source",
+        "./artifacts/*"
+      ],
+      "carries": [
+        "dist",
+        "artifacts"
+      ],
+      "nodeBuiltins": [
+        "node:crypto",
+        "node:fs",
+        "node:zlib"
+      ],
+      "support": [
+        {
+          "entryPoint": ".",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "Server only: reads its artefacts through the file system and decompresses status lists with node:zlib."
+        },
+        {
+          "entryPoint": "./exchange",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The external ecdsa-rdfc-2019 credential verifier; server only for the same reasons."
+        },
+        {
+          "entryPoint": "./epcis-source",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The EPCIS source helpers; server only for the same reasons."
+        },
+        {
+          "entryPoint": "./artifacts/*",
+          "kind": "data",
+          "runtime": "any",
+          "browser": "supported",
+          "types": false,
+          "carries": [
+            "artifacts/context-0.1.0.jsonld",
+            "artifacts/seal-0.1.0.schema.json",
+            "artifacts/disclosure-0.1.0.schema.json",
+            "artifacts/profile-0.1.0.json",
+            "artifacts/epcis/*",
+            "artifacts/external/*",
+            "artifacts/w3c/*"
+          ],
+          "notes": "The owned context and schemas, the pinned EPCIS and W3C artefacts and the external passport context and schema, each with a notice file naming its digest."
+        }
+      ]
+    }
+  ],
+  "wire": {
+    "records": [
+      {
+        "version": "1",
+        "fieldCount": 14,
+        "protocolId": [
+          1,
+          "dpp token v1"
+        ],
+        "specification": "spec/record-model.md"
+      },
+      {
+        "version": "2",
+        "fieldCount": 17,
+        "protocolId": [
+          1,
+          "dpp token v2"
+        ],
+        "specification": "spec/record-model-v2.md"
+      },
+      {
+        "version": "3",
+        "fieldCount": 17,
+        "protocolId": [
+          1,
+          "dpp token v3"
+        ],
+        "specification": "spec/token-carrier.md"
+      }
+    ],
+    "nativeClaim": "dpp-lifecycle-v1",
+    "anchor": "bsv-attestation-anchor-v1",
+    "acceptanceRecord": "dpp-managed-acceptance@1",
+    "verificationReport": "1",
+    "overlayContract": "0.11.0-draft"
+  },
+  "custody": {
+    "selected": "managed-custody@1",
+    "profile": "custody",
+    "specification": "spec/managed-custody.md",
+    "alsoSupported": [
+      "record-model-baseline@2",
+      "owner-signed transfer (spec/custody.md section 4) for version 1 lineages"
+    ]
+  },
+  "serviceInterface": {
+    "package": "@dpp/service",
+    "version": "0.2.0",
+    "entryPoints": [
+      ".",
+      "./verify",
+      "./server"
+    ],
+    "operations": [
+      "issue",
+      "update",
+      "offer",
+      "accept",
+      "decline",
+      "retire",
+      "upgrade",
+      "status",
+      "operation",
+      "settle",
+      "verify",
+      "exportEvidence"
+    ],
+    "note": "PassportService in the reference application, whose source is not public, is the account-agnostic entry point over the writer's journal; it consumes the packages above and is not itself published in this set."
+  },
+  "artefacts": [
+    {
+      "path": "conformance/baseline-native-2.json",
+      "sha256": "ac83d83cc26827e18edbf5cbc46313450dd8a31c66fdd94f532d824352433983",
+      "pins": "the baseline this set claims, with every fixture digest"
+    },
+    {
+      "path": "contracts/overlay.yaml",
+      "sha256": "18cf32e4036a056b8ee7ff7dd7cb7ff2ef061364442fea7381b7405030b650e5",
+      "pins": "the index's HTTP contract"
+    },
+    {
+      "path": "contracts/verification-report.schema.json",
+      "sha256": "e4d01fed1523bc3bd9c3bf60234d63e108a1cc112b8a3ecce6d0160b084726e5",
+      "pins": "the report schema and reason codes"
+    },
+    {
+      "path": "contracts/capabilities.schema.json",
+      "sha256": "2b9bcdab73627a146689c1eb73772cf7d7a6ad40d1e71d67046f63d4db9f66d8",
+      "pins": "the capability document"
+    },
+    {
+      "path": "packages/dpp-profiles/frozen.json",
+      "sha256": "1a6a4116cd6aeed5bc996b5d111f33d3116a70ccd127ff7c5e647c8ae7ed252d",
+      "pins": "the frozen profile manifests"
+    },
+    {
+      "path": "contracts/interoperability.yaml",
+      "sha256": "adc11c1a78ba67989956b72c4261b36943128f44468baea3ae9f01c93c627b6a",
+      "pins": "the application interoperability API contract"
+    },
+    {
+      "path": "contracts/epcis-import.schema.json",
+      "sha256": "23c4167319c6b269a908426d6d23499fe8c19ab9949342f3de8e13b4885b4bdb",
+      "pins": "the durable EPCIS import record"
+    },
+    {
+      "path": "contracts/passport-source.schema.json",
+      "sha256": "bfd9b06926b093f0cf8cd51dbcb9a5431d8a3656f058236166c9ef72003e2a78",
+      "pins": "source revisions and relationships"
+    },
+    {
+      "path": "contracts/passport-projection.schema.json",
+      "sha256": "c489252c83fc3708f984dcbbff4b914cf20ada6ca47818b7ab89a2dbebd52ed9",
+      "pins": "passport-projection@1"
+    },
+    {
+      "path": "contracts/profile-evidence.schema.json",
+      "sha256": "08d6521c4ae69860c940cfd4ee1e2c8f9f4a16a9f5dd951352037b32add91261",
+      "pins": "the shared evidence, measurement, certification, document and language shapes"
+    },
+    {
+      "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
+      "sha256": "7a1dfd887af7b278b25c2a5d6f19c409790825da558416a9d55b2b7509fa922f",
+      "pins": "the interoperability manifest contract"
+    },
+    {
+      "path": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
+      "sha256": "983284a926c7d3cfa814ca0b5179f42db85951230eb44afb7b79595c013a3a44",
+      "pins": "the successor industry manifest contract"
+    },
+    {
+      "path": "contracts/evidence-export.schema.json",
+      "sha256": "f2d5d78bb6e73cccc72a61bb6f1cb3326bbfb7f99070ed6491ba91caf945edb8",
+      "pins": "the complete export part, dpp-evidence-export@1"
+    },
+    {
+      "path": "spec/token-carrier.md",
+      "sha256": "81435a6fd406ed47de8e55c11bc4094adfa6c5a6e567910806d0529a3e6f39de",
+      "pins": "the carried record: the token prefix, the version 3 body, the token id, the burn and the migration rule"
+    },
+    {
+      "path": "fixtures/record-v3.json",
+      "sha256": "835a15b762be7017989106027ea45bd23835476f3028ef0a7b45fd8e6b92165c",
+      "pins": "one carried genesis and value output of record version 3 with twelve refusals"
+    },
+    {
+      "path": "fixtures/chain-v3.json",
+      "sha256": "ae8612ee1cdf8ef032e64da1b7692ae4858a5e6585634fdcea8a2e34e02743cc",
+      "pins": "a five-state carried lineage, twelve refusals and the burn"
+    },
+    {
+      "path": "fixtures/evidence-v3.json",
+      "sha256": "ff8ed81946ba3fcc1190035dd092fea9c925d3183dcfb05109b40fc95d0d37c7",
+      "pins": "the verification report for nine carried evidence cases"
+    },
+    {
+      "path": "conformance/baseline-native-3.json",
+      "sha256": "8074421d16cba8e7d666fe0b937e81585652a8a6f91c9e1c7c5dbf1b58c8732c",
+      "pins": "the proposed baseline for the carried record, with every fixture digest"
+    }
+  ],
+  "consumers": [
+    {
+      "name": "the reference application",
+      "consumes": "exact npm dependencies; adoption of @bsv/dpp-profiles 0.3.0-beta.9 and explicit profile activation require a separate application change",
+      "note": "the example consumer with sector workflows; package installation, supported readers and selected writers are separate adoption decisions"
+    },
+    {
+      "name": "the reference registry",
+      "consumes": "the packages as vendored tarballs, to be replaced by the published packages of this set"
+    },
+    {
+      "name": "a second stack under the same administration",
+      "consumes": "the packages through public entry points at exact public registry versions",
+      "note": "an index, registry, writer and reader application built from the public documentation, repository and packages alone; a reference consumer under the same administration, not an independent implementation, and no federated operation claim"
+    }
+  ],
+  "image": {
+    "dockerfile": "packages/overlay-topics/Dockerfile",
+    "preset": "deploy/compose.yml",
+    "tag": "dpp-overlay:0.4.0"
+  }
+}

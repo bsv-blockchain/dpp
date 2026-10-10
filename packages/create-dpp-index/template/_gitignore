@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.app.env
+.app.env.*
+backups/
+*.tgz
+.DS_Store

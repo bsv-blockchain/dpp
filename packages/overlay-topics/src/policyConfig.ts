@@ -23,7 +23,7 @@ import {
   verifyPolicyChain,
   type PublisherPolicy,
   type PublisherRole,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 
 export interface PublisherPolicyConfig {
   /** The verified chain, oldest first. */

@@ -15,7 +15,7 @@
  * version 2 chain and the acceptance record, the artefacts the packages carry
  * are read from inside the installed packages, the licence file is present in
  * each, no private, test or environment file is inside any tarball, and the
- * declarations of all four packages and the VSC subpaths are type-checked by
+ * declarations of all packages and the VSC subpaths are type-checked by
  * a strict TypeScript project. One sentence per assertion, naming what it
  * covered; never a score; exit 1 when any sentence does not hold.
  *
@@ -79,7 +79,7 @@ try {
   say(unexpected.length === 0, `no private, test or environment file is inside any tarball${unexpected.length === 0 ? '' : `: ${unexpected.join(', ')}`}.`)
   cpSync(join(root, 'examples/lifecycle-v2.mjs'), join(dir, 'lifecycle-v2.mjs'))
   run(['node', 'lifecycle-v2.mjs'], dir)
-  say(true, 'the packed core builds and verifies ISSUE, UPDATE, managed TRANSFER, RETIRE and a separate lifecycle claim and anchor; unauthorised, uncommitted, expired and post-retirement actions are refused offline.')
+  say(true, 'the packed protocol library builds and verifies ISSUE, UPDATE, managed TRANSFER, RETIRE and a separate lifecycle claim and anchor; unauthorised, uncommitted, expired and post-retirement actions are refused offline.')
 
   // 2. Every declared entry point, from the record, not from a hand-written list.
   const modules = []
@@ -93,6 +93,7 @@ try {
   }
   // One sample file per data entry point pattern, read through the package's exports map.
   const dataSamples = {
+    '@bsv/dpp-protocol/schemas/*': 'verification-report.schema.json',
     '@bsv/dpp-core/schemas/*': 'verification-report.schema.json',
     '@bsv/dpp-profiles/manifests/*': 'battery@2.json',
     '@bsv/dpp-profiles/schemas/*': 'profile-manifest.schema.json',
@@ -103,8 +104,10 @@ try {
   const dataSpecifiers = data.map((d) => (d.specifier.endsWith('/*') ? d.specifier.slice(0, -1) + (dataSamples[d.specifier] ?? '') : d.specifier))
   for (const name of readdirSync(join(root, 'contracts')).filter((name) => name.endsWith('.schema.json'))) {
     const original = readFileSync(join(root, 'contracts', name))
-    const packed = readFileSync(join(dir, 'node_modules/@bsv/dpp-core/schemas', name))
-    say(original.equals(packed), `@bsv/dpp-core/schemas/${name} matches the normative contract bytes.`)
+    for (const packageName of ['@bsv/dpp-protocol', '@bsv/dpp-core']) {
+      const packed = readFileSync(join(dir, 'node_modules', packageName, 'schemas', name))
+      say(original.equals(packed), `${packageName}/schemas/${name} matches the normative contract bytes.`)
+    }
   }
   for (const d of data) say(dataSamples[d.specifier] != null, `data entry point ${d.specifier} has a sample this check reads (${dataSamples[d.specifier] === '' ? 'the file itself' : dataSamples[d.specifier] ?? 'none named; add one'}).`)
 
@@ -127,8 +130,13 @@ for (const specifier of ${JSON.stringify(dataSpecifiers)}) {
   try { const v = require(specifier); out.push(['data entry point ' + specifier + ' reads', v != null]) }
   catch (e) { out.push(['data entry point ' + specifier + ' reads: ' + String(e.message).split('\\n')[0], false]) }
 }
-const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAcceptanceToState, findDppOutputs, STANDARD_VERSION_V2, FIELD_COUNT_V2, STANDARD_VERSION_V3, FIELD_COUNT_V3 } = await import('@bsv/dpp-core')
+const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAcceptanceToState, findDppOutputs, STANDARD_VERSION_V2, FIELD_COUNT_V2, STANDARD_VERSION_V3, FIELD_COUNT_V3 } = await import('@bsv/dpp-protocol')
+const protocol = await import('@bsv/dpp-protocol')
+const legacy = await import('@bsv/dpp-core')
+out.push(['compatibility: the old and new package names expose identical runtime exports', JSON.stringify(Object.keys(legacy)) === JSON.stringify(Object.keys(protocol)) && Object.keys(protocol).every((name) => Object.is(legacy[name], protocol[name]))])
 const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities, joinEvidenceExport } = await import('@bsv/dpp-overlay-topics')
+const host = await import('@bsv/dpp-overlay-topics/server')
+out.push(['overlay/server: importing starts no process and exposes the host', typeof host.startOverlayService === 'function' && typeof host.runFromEnvironment === 'function'])
 const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData } = await import('@bsv/dpp-profiles')
 const vsc = await import('@bsv/vsc')
 const exchange = await import('@bsv/vsc/exchange')
@@ -137,6 +145,8 @@ const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
 const txs = chain.states.map((s) => Transaction.fromHex(s.rawTx))
 const result = await verifyChain(txs, { chainTracker: 'scripts only', managedAcceptance: true, serverIdentityKey: chain.custodianKey })
 out.push(['reader path: chain-v2 valid under managed-custody@1', result.valid === true])
+const legacyResult = await legacy.verifyChain(txs, { chainTracker: 'scripts only', managedAcceptance: true, serverIdentityKey: chain.custodianKey })
+out.push(['compatibility: a reader using the old import verifies the same passport history', JSON.stringify(legacyResult) === JSON.stringify(result)])
 const acceptance = JSON.parse(readFileSync('fixtures/managed-acceptance-v1.json', 'utf8'))
 out.push(['reader path: acceptance record signature valid', inspectManagedAcceptance(acceptance.record).signatureValid === true])
 out.push(['reader path: acceptance binds to the transfer', bindAcceptanceToState(acceptance.record, findDppOutputs(txs[2])[0].state).length === 0])
@@ -213,14 +223,21 @@ console.log(JSON.stringify(out))
   // 4. The types: a strict TypeScript project importing every package and every VSC subpath, using a declaration from each.
   run(['npm', 'install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, 'typescript@7.0.2', '@types/node@22.20.3'], dir)
   writeFileSync(join(dir, 'types.ts'), `
-import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, EvidencePackageManifest } from '@bsv/dpp-core'
-import { verifyChain } from '@bsv/dpp-core'
+import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, EvidencePackageManifest } from '@bsv/dpp-protocol'
+import { verifyChain } from '@bsv/dpp-protocol'
+import type { DppState as LegacyDppState, EvidenceReport as LegacyEvidenceReport } from '@bsv/dpp-core'
+import { verifyChain as legacyVerifyChain } from '@bsv/dpp-core'
 import { DppTopicManager, type DppRecordStore, type EvidenceExportPart } from '@bsv/dpp-overlay-topics'
+import { startOverlayService, type OverlayHttpOptions } from '@bsv/dpp-overlay-topics/server'
 import { readManifest, type ProfileManifest, type InteroperabilityProfileId } from '@bsv/dpp-profiles'
 import { verifySeal, type Seal } from '@bsv/vsc'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/vsc/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/vsc/epcis-source'
 import type { Transaction } from '@bsv/sdk'
+export const legacyReader: typeof verifyChain = legacyVerifyChain
+export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
+export const startHost: typeof startOverlayService = startOverlayService
+export function legacyTypes(state: LegacyDppState, report: LegacyEvidenceReport): [DppState, EvidenceReport] { return [state, report] }
 export async function check(txs: Transaction[], key: string): Promise<{ v2: DppStateV2 | undefined; report?: EvidenceReport; record?: ManagedAcceptanceRecord; manifest?: EvidencePackageManifest }> {
   const result = await verifyChain(txs, { chainTracker: 'scripts only', serverIdentityKey: key, managedAcceptance: true })
   const tm = new DppTopicManager(key, { managedAcceptance: true, controlAuthorities: [] })
@@ -243,7 +260,7 @@ export async function credentials(seal: Seal, bytes: Uint8Array, policy: Externa
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))
   try {
     run(['npx', 'tsc', '-p', 'tsconfig.json'], dir)
-    say(true, 'the declarations of @bsv/dpp-core, @bsv/dpp-overlay-topics, @bsv/dpp-profiles, @bsv/vsc, @bsv/vsc/exchange and @bsv/vsc/epcis-source resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
+    say(true, 'the declarations of @bsv/dpp-protocol, the @bsv/dpp-core compatibility wrapper, @bsv/dpp-overlay-topics, @bsv/dpp-profiles, @bsv/vsc, @bsv/vsc/exchange and @bsv/vsc/epcis-source resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
   } catch (error) {
     say(false, `type-check failed: ${String(error.stdout ?? error.message).split('\n').slice(0, 8).join(' | ')}`)
   }

@@ -209,7 +209,7 @@ export interface OverlayHttpOptions {
   startedAt?: string
   /**
    * The address to bind. Unset binds the wildcard, which is what a container
-   * wants and what `main()` leaves it as.
+   * wants and what `runFromEnvironment()` selects unless HOST is set.
    *
    * **A test must set this, and the reason is not tidiness.** A wildcard bind
    * on an ephemeral port succeeds even when another process already holds that
@@ -1451,9 +1451,12 @@ async function engineFromEnvironment(
   return { engine, components, close }
 }
 
-async function main(): Promise<void> {
+/** Start the configured operator process, including graceful signal handling. */
+export async function runFromEnvironment(): Promise<void> {
   const port = Number(process.env.PORT ?? 8080)
   const network = (process.env.NETWORK ?? 'main') as 'main' | 'test'
+  if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('PORT must be an integer from 0 to 65535')
+  if (network !== 'main' && network !== 'test') throw new Error('NETWORK must be main or test')
   const submitToken = process.env.SUBMIT_TOKEN
   if (submitToken == null || submitToken === '') {
     console.warn(
@@ -1492,6 +1495,7 @@ async function main(): Promise<void> {
   if (advertising.enabled) components.advertising = true
   const service = await startOverlayService(engine, {
     port,
+    host: process.env.HOST,
     submitToken,
     proofToken,
     chainTracker: tracker,
@@ -1500,6 +1504,9 @@ async function main(): Promise<void> {
     exportSigningKey: signingKey,
     exportToken,
     knownOnChain,
+  }).catch(async (error: unknown) => {
+    await close()
+    throw error
   })
 
   console.log(`dpp overlay listening on http://localhost:${service.port}`)
@@ -1613,4 +1620,4 @@ function runningAsEntryPoint(): boolean {
   }
 }
 
-if (runningAsEntryPoint()) await main()
+if (runningAsEntryPoint()) await runFromEnvironment()

@@ -4,7 +4,7 @@ Your reader returns a report, not a yes or a no. This page explains how to read 
 
 ## The shape of a report
 
-`verifyPassportEvidence` in `@bsv/dpp-core` returns one JSON object, and so does every reader that follows the [verification report](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) specification:
+`verifyPassportEvidence` in `@bsv/dpp-protocol` returns one JSON object, and so does every reader that follows the [verification report](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) specification:
 
 | Property | What it holds |
 |---|---|
@@ -32,7 +32,7 @@ No property sums the checks up into one word. To decide something, such as wheth
 
 ## The sixteen checks
 
-The checks fall into four groups. The second column is the short label `@bsv/dpp-core` gives each check in `EVIDENCE_CHECK_LABELS`, which the examples print; it says what `pass` means.
+The checks fall into four groups. The second column is the short label `@bsv/dpp-protocol` gives each check in `EVIDENCE_CHECK_LABELS`, which the examples print; it says what `pass` means.
 
 **The passport's states**
 
@@ -77,7 +77,7 @@ A pass on the passport's states says nothing about its claims, and the other way
 | You see | It means |
 |---|---|
 | `inclusion` `unknown` `proof-absent` | A state carries no merkle proof yet: test data, or a state whose proof has not reached the index. The reader example prints this as `inclusion pending`; the two are the same finding. `pending` can also mean `header-source-unavailable` (the header source refused or timed out: run again, or set `WOC_API_KEY`) or `not-selected` (no header source was given). |
-| Claim and anchor checks `unknown` `no-evidence` | You supplied no claims or anchors. The passport may have none, or you did not fetch them from its registry ([gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence)). |
+| Claim and anchor checks `unknown` `no-evidence` | You supplied no claims or anchors. The passport may have none, or you did not fetch them from its registry ([gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence)). |
 | `issuerAuthority` `unknown` `policy-missing` | You gave no `authority` option, so nobody is accepted or refused. |
 | `schema` `unknown` `schema-unavailable` | You supplied native claims and no profile validator. |
 | `evidenceAvailability` `unknown` `referenced-artefact-unavailable` on a passport with a managed transfer | Its `TRANSFER` commits to an acceptance record that you did not supply. The custodian keeps it and no index or registry route serves it yet, so a reader on another stack sees this for every managed transfer it did not write ([custody](custody.md#not-settled-yet), [known limitations](../operate/limitations.md)). |
@@ -95,7 +95,7 @@ To ask, pass `observers` in the policy: sources that are asked whether the tip, 
 | `conflicting` | The sources disagreed, or two valid next states spend the same state (a fork). Every candidate is listed in `candidateOutpoints`; the report never picks one. |
 | `unknown` | No source was asked, or none answered. This is what you get without `observers`. |
 
-`sources` lists each source asked, with its answer and the time, and `queryScope` says in words what was asked (`no source asked` when nothing was). Whenever `latestState` is not `unknown`, `limits` says the observation is not a proof. [Gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence) shows an observer that asks the index again for a later state.
+`sources` lists each source asked, with its answer and the time, and `queryScope` says in words what was asked (`no source asked` when nothing was). Whenever `latestState` is not `unknown`, `limits` says the observation is not a proof. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) shows an observer that asks the index again for a later state.
 
 ## Supply the expected subject
 
@@ -150,6 +150,6 @@ A complete export covers the history one index held at one snapshot ([export and
 
 | You are | Go to |
 |---|---|
-| Building with the packages | [Gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence): claims, anchors, an observer and the parties you accept, in one reader |
+| Building with the packages | [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence): claims, anchors, an observer and the parties you accept, in one reader |
 | Implementing a reader yourself | [Passport reader](../implement/roles/passport-reader.md), then [run the fixtures](../implement/fixture-runner.md) |
 | Moving retained evidence elsewhere | [Export and recovery](../operate/export-import-recovery.md) |

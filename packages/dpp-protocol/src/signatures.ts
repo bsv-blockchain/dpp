@@ -98,7 +98,7 @@ export function protocolIdFor(d: object): WalletProtocol {
 }
 
 /**
- * The signing capability dpp-core needs: satisfied by @bsv/sdk ProtoWallet
+ * The signing capability dpp-protocol needs: satisfied by @bsv/sdk ProtoWallet
  * (backend, holds a root key) and by a BRC-100 WalletClient (connected path).
  * createSignature signs ECDSA over sha256(data) with the BRC-42 child key for
  * (protocolID, keyID, counterparty).

@@ -1,18 +1,24 @@
 # @bsv/dpp-overlay-topics
 
+The maintained DPP index runtime, included by [`@bsv/create-dpp-index`](../create-dpp-index/README.md).
+
+**To set up a new index, start with the starter.** It creates your project and installs this package as a dependency. There is no separate runtime installation step. This page covers direct integration and runtime configuration for custom or embedded indexes. An application that only connects to an existing index over HTTP needs neither hosting package.
+
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
 ## Install
 
-This is a pre-1.0 candidate. Install the exact published version from npm:
+For a custom integration, install the runtime directly. If you used the starter, follow your generated project's README instead; it already declares this dependency.
+
+**Publication pending:** [install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this version. The following npm command applies after publication.
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.10
+npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.11
 ```
 
 This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.
 
-The package serves native passport history (`tm_dpp`/`ls_dpp`), current complete-representation anchors (`tm_attestation`/`ls_attestation`) and historical UORA-named anchors (`tm_uora_dpp`/`ls_uora_dpp`). Native token admission checks `@bsv/dpp-core` rules. Anchor admission checks its own exact script and service signature; credential proof, authority and status require separate evidence.
+The package serves native passport history (`tm_dpp`/`ls_dpp`), current complete-representation anchors (`tm_attestation`/`ls_attestation`) and historical UORA-named anchors (`tm_uora_dpp`/`ls_uora_dpp`). Native token admission checks `@bsv/dpp-protocol` rules. Anchor admission checks its own exact script and service signature; credential proof, authority and status require separate evidence.
 
 `tm_dpp` admits record versions 1, 2 and 3. A version 3 state is the version 2 body carried behind the BRC-162 token prefix (`spec/token-carrier.md`): the index checks the prefix against the state's position before the body, a genesis as a deploy at output 0 and every later state as a value output naming the lineage genesis as its token id, and then judges the body under the version 2 rules. `ls_dpp` stores the token id (`<genesis txid>_0`) on every carried state and answers `POST /lookup` by `tokenId` beside `passportId`, `uid` and `gs1Key`; a version 1 or 2 record stores none.
 
@@ -25,15 +31,15 @@ service and the record stores, and nothing that listens on a port. This is how
 the demonstration app uses it: both components run in process against
 `InMemoryDppStorage`, which is what its offline mode and the tests are.
 
-**As a service.** `src/index.ts` is an HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for merkle proofs, plus `GET /health`), which is exactly the contract `contracts/overlay.yaml` in this repository pins, together with the six extension routes that contract documents beside them: `GET /capabilities`, `GET /publisher-policy`, `GET /history`, `GET /evidence-package`, `GET /evidence-export` and `POST /retract` (see [The extension routes](#the-extension-routes)), and the two GASP routes a synchronising peer reads. It is reached by path and never by specifier: `npm start` runs `node dist/index.js` and the Dockerfile's `CMD` names the same file. That is deliberate, so importing the package can never start a server.
+**As a service.** `@bsv/dpp-overlay-topics/server` exports the HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for Merkle proofs, plus `GET /health`), the extension routes documented below, and the GASP routes a synchronising peer reads. Importing starts nothing. Call `runFromEnvironment()` to run the configured operator process, or use the installed `dpp-index --env-file operator.env` command. `dpp-index --help` describes the entry point. Existing source and Docker startup paths still work.
 
-The service boots only when node runs the file directly, which is how
-`test/http.test.ts` drives `createRequestHandler` and `startOverlayService`
-without a container.
+The [starter](../create-dpp-index/README.md) configures this HTTP host with MongoDB, deployment files, startup checks and application connection settings. Its default profile selects managed custody; custom integrations can configure their own policies.
 
 **Proofs.** The host does not broadcast, so no broadcaster's callback reaches it unasked. A writer pushes each state's merkle path to `POST /arc-ingest` once its wallet has it, or points its broadcaster's callback URL here; the proof is checked to contain the transaction and validated against the header source before the stored BEEF is updated, and the lookup then serves the state proven (`spec/services.md` §2, `spec/writing.md` §7). Re-announcing a mined state does nothing: the engine skips a txid it already holds.
 
 ## Running it
+
+These commands are for developing the runtime from this package's source directory. Generated projects have their own commands in their README.
 
 ```
 npm run build      # tsc to dist/, needed before start and before the app imports it
@@ -42,7 +48,7 @@ npm test           # admission policy, lookup indexing, engine wiring, the HTTP 
 npm start          # node dist/index.js
 ```
 
-Configuration is environment only, and an unset variable switches its feature off or falls back; only a missing identity key, or a publisher policy file that does not verify, stops the boot. The image builds from the repository root, not from this directory, because the service depends on the `@bsv/dpp-core` workspace:
+Configuration uses environment variables. The executable can load an explicit `--env-file`; existing process values take precedence. Invalid settings fail startup. Unset optional settings switch their feature off or use the documented fallback. The repository image builds from the repository root because the service depends on the `@bsv/dpp-protocol` workspace:
 
 ```
 docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
@@ -50,11 +56,12 @@ docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
 
 ## Configuration
 
-Everything is environment. An unset variable switches its feature off or falls back; the variables that can fail the boot are the identity key, because admitting without one would admit anything, and the publisher policy file, because admitting under a chain that does not verify would admit under whatever a file said.
+Settings come from the environment. Optional values use the fallbacks below; invalid settings and an unverified publisher policy stop startup.
 
 | Variable | Effect when set | When unset |
 |----------|-----------------|------------|
 | `PORT` | Port to bind. Platforms inject it. | `8080` |
+| `HOST` | IP address to bind, for example `127.0.0.1` for a local process. | All interfaces |
 | `SERVICE_IDENTITY_KEY` | The public key `server_signature` is verified against (`spec/record-model.md` §5). 66 hex characters, compressed. Under `PUBLISHER_POLICY_FILE` it is optional and consulted only for a topic the policy's `scope.topics` leaves out. | Falls back to deriving it from `SERVER_PRIVATE_KEY`, with a warning; if neither is set and no policy file is, the boot fails |
 | `SERVER_PRIVATE_KEY` | Fallback source for the above. Set the public key instead: the service only ever needs the public half. | See above |
 | `MONGO_URL` | Persist the engine's UTXO state and the passport and both anchor indexes. | In memory, with a warning. Restart loses the index |
@@ -109,7 +116,7 @@ Pages of a passport's complete history over a stable snapshot (`spec/portable-ev
 
 ### `GET /evidence-package?passportId=`
 
-The `dpp-evidence-package@1` for one passport (`spec/portable-evidence.md` §2, `contracts/evidence-package.schema.json`): every retained state's raw transaction under `transactions/`, the BEEF it is held in under `proofs/` (with the merkle path once `/arc-ingest` delivered it), the publisher policy chain under `authority/` when one is configured, the index's spend observations under `status/` and a `spec/verification.md` report under `reports/`, inventoried by path, media type, length and SHA-256 in a manifest signed with `EXPORT_SIGNING_KEY`. The archive form is this build's own: a JSON envelope `{ manifest, files: { "<path>": "<base64>" } }`, which is exactly the map `inspectEvidencePackage` in `@bsv/dpp-core` takes. The disclosure scope is public and the package is never a recovery backup: the restricted tiers are withheld by name, and a state whose transaction or proof could not be produced is declared absent. A package carries at most 500 states, the newest by the index's sequence, as the bounded lookup keeps the newest; older states are declared absent by outpoint and the snapshot declaration says the package is not complete for its snapshot. The cap is in the capability document as `limits.maxEvidencePackageStates`, and it is what keeps an unauthenticated GET from parsing and signing an unbounded number of transactions. It applies after every record of the passport has been read from the record store, so the database read is proportional to the passport's length even though the BEEF parsing and the signing are capped; the rows are small and indexed by passport, and the read is what `GET /history` does page by page. A second operator restores a passport by submitting the `proofs/` BEEFs, genesis first, to its own `/submit`; `test/evidenceExport.test.ts` does exactly that and then discards the first operator. Without `EXPORT_SIGNING_KEY` the route answers 503 `export-unavailable`. A package cut at the cap names no genesis, because it does not hold one.
+The `dpp-evidence-package@1` for one passport (`spec/portable-evidence.md` §2, `contracts/evidence-package.schema.json`): every retained state's raw transaction under `transactions/`, the BEEF it is held in under `proofs/` (with the merkle path once `/arc-ingest` delivered it), the publisher policy chain under `authority/` when one is configured, the index's spend observations under `status/` and a `spec/verification.md` report under `reports/`, inventoried by path, media type, length and SHA-256 in a manifest signed with `EXPORT_SIGNING_KEY`. The archive form is this build's own: a JSON envelope `{ manifest, files: { "<path>": "<base64>" } }`, which is exactly the map `inspectEvidencePackage` in `@bsv/dpp-protocol` takes. The disclosure scope is public and the package is never a recovery backup: the restricted tiers are withheld by name, and a state whose transaction or proof could not be produced is declared absent. A package carries at most 500 states, the newest by the index's sequence, as the bounded lookup keeps the newest; older states are declared absent by outpoint and the snapshot declaration says the package is not complete for its snapshot. The cap is in the capability document as `limits.maxEvidencePackageStates`, and it is what keeps an unauthenticated GET from parsing and signing an unbounded number of transactions. It applies after every record of the passport has been read from the record store, so the database read is proportional to the passport's length even though the BEEF parsing and the signing are capped; the rows are small and indexed by passport, and the read is what `GET /history` does page by page. A second operator restores a passport by submitting the `proofs/` BEEFs, genesis first, to its own `/submit`; `test/evidenceExport.test.ts` does exactly that and then discards the first operator. Without `EXPORT_SIGNING_KEY` the route answers 503 `export-unavailable`. A package cut at the cap names no genesis, because it does not hold one.
 
 The complete export is `GET /evidence-export?passportId=...` (`contracts/evidence-export.schema.json`): the first request pins a snapshot and answers the first part, a package over the oldest states within it, holding at most `limits.maxEvidenceExportPartStates` states and closing earlier once their raw transactions and BEEFs exceed `limits.maxEvidenceExportPartBytes`, always with at least one; each part carries a coverage record (passport, snapshot, index, sequence range, number of states, final flag and the SHA-256 of its package manifest as signed) signed with `EXPORT_SIGNING_KEY` under the manifest's own preimage rule, carries that part's spend observations and the policy chain, and carries no report, because the report is the reader's to produce over the joined history; `nextCursor` stays outside the signed record and resumes the next part over the same snapshot under the same cursor rules as `GET /history` (400 `cursor-invalid`, 410 `snapshot-expired`, and a history cursor is refused here by name as an export cursor is there), and the final part ends at the snapshot's sequence with a null cursor. `joinEvidenceExport` in this package is the reader's join: first each part's coverage signature under the exporter's key and the digest binding of its package (`inspectEvidenceExportPart`), so no unsigned field establishes coverage or finality; then the same passport and snapshot, indexes with no repeat, ranges that tile with no gap or overlap, every package inspecting clean, no path repeated with different bytes, and the signed final flag on the last part; only then is the join complete, and `test/evidenceExportParts.test.ts` walks 505 connected states through two parts, joins them, restores them into a second operator and exports them again. With `EXPORT_TOKEN` set the route requires the bearer and answers 401 `export-unauthorised` without it.
 
@@ -128,7 +135,7 @@ Two nodes on two ports under one administration, sharing one publisher policy fi
 Build once from the repository root and write a policy file whose scope names both operators, with the operators' identity keys at hand (the chain must verify under `verifyPolicyChain`; `examples/sign-publisher-policy.mjs` signs a genesis, and `test/policy-fixture.ts` builds a two-operator chain for the tests). A node claims `federated-operators@1` only when it synchronises with peers and the newest version of its policy names two or more operators; with a one-operator policy and peers it declares `single-operator@2`, and without peers `single-operator@1`:
 
 ```
-npm run build -w @bsv/dpp-core -w @bsv/dpp-overlay-topics
+npm run build -w @bsv/dpp-protocol -w @bsv/dpp-overlay-topics
 ```
 
 Operator A, in one terminal:

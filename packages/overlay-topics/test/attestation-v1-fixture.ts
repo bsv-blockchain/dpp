@@ -1,5 +1,5 @@
 import { LockingScript, PrivateKey, ProtoWallet, PublicKey, Utils } from '@bsv/sdk'
-import { canonicalString, didKeyFromIdentityKey, lifecycleClaimBytes, lifecycleClaimDigest, signLifecycleClaim, type LifecycleClaim } from '@bsv/dpp-core'
+import { canonicalString, didKeyFromIdentityKey, lifecycleClaimBytes, lifecycleClaimDigest, signLifecycleClaim, type LifecycleClaim } from '@bsv/dpp-protocol'
 import { ATTESTATION_ANCHOR_PREFIX, ATTESTATION_ANCHOR_PROTOCOL, attestationAnchorFields, attestationAnchorSigningPreimage, buildAttestationAnchor, decodeAttestationAnchor } from '../src/attestationAnchor.js'
 
 /** Published synthetic keys. Independent implementations reproduce these bytes. */

@@ -4,7 +4,7 @@
  * demo mode and tests). The node entry point is index.ts.
  *
  * Two rails, deliberately separate. `tm_dpp`/`ls_dpp` carry the passport
- * itself and depend on `@bsv/dpp-core`. `tm_uora_dpp`/`ls_uora_dpp` carry the
+ * itself and depend on `@bsv/dpp-protocol`. `tm_uora_dpp`/`ls_uora_dpp` carry the
  * attestation anchors that say what a named party claimed about a passport,
  * and depend on nothing of ours: they are written to be dropped into a shared
  * overlay instance that has never heard of this programme's token core.

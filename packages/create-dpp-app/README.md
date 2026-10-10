@@ -2,14 +2,26 @@
 
 Scaffold a Digital Product Passport application on BSV in one command.
 
+This renamed package is a source candidate pending publication. The npm command below applies after publication; use the development commands below to test it from this checkout.
+
 ```sh
-npm create @bsv/dpp-app my-app
+npm create @bsv/dpp-app@0.1.0 my-app
 cd my-app
 npm test
 npm run dev
 ```
 
-You get a working application: a React web app with a brand dashboard, passport pages, hand-on acceptance and public verification; an Express API that owns a platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps a journal and runs the unattended duties; and Compose services for MongoDB and the reference DPP index. The first run is an offline test of a whole passport lifecycle, with no wallet, funds, Docker or network. The template's README explains the rest, including the route to writing real passports.
+You get a working application: a React web app with a brand dashboard, passport pages, hand-on acceptance and public verification; an Express API that owns a platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps a journal and runs the unattended duties; and a Compose service for the application database. The first run is an offline test of a whole passport lifecycle, with no wallet, funds, Docker or network. The template's README explains the rest, including the route to writing real passports.
+
+## Choose the index connection
+
+| You want to | What to use |
+| --- | --- |
+| Build the application | `@bsv/create-dpp-app`, this starter |
+| Connect to an existing compatible index | Its URL, network and scoped access settings; no index starter required |
+| Operate your own index | A separate project created by `@bsv/create-dpp-index`, which includes its runtime |
+
+The app's Compose file starts only its database, so connecting a separately operated index cannot start another index accidentally. The app includes overlay library components for its offline exercises; those components do not deploy a persistent index. Do not manually install another overlay package as part of app setup. See the generated README's **Connect an index** section and [service choices](../../docs/start/choose-components-and-services.md).
 
 ## What it decides for you
 

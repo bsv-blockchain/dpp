@@ -19,7 +19,7 @@ import {
   ownerLinkageFromDeriver,
   type DppState,
   type DppStateData,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { atomicOver } from './helpers.js'
 import { readFileSync } from 'node:fs'
 import { DPP_REFUSAL_CODES, DppTopicManager } from '../src/tmDpp.js'

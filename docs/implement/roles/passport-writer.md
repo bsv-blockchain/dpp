@@ -4,7 +4,7 @@ A passport writer builds each new state of a passport, checks it with the reader
 
 ## Two ways to build a writer
 
-- **With the packages.** `@bsv/dpp-core` builds and checks each state, and a BRC-100 wallet signs, funds and sends it. [Build an application](../../packages/build-an-application.md#3-write-a-passport), step 3, demonstrates a version 2 `ISSUE` and `UPDATE`. The offline lifecycle example below also covers managed transfer and retirement.
+- **With the packages.** `@bsv/dpp-protocol` builds and checks each state, and a BRC-100 wallet signs, funds and sends it. [Build an application](../../packages/build-an-application.md#3-write-a-passport), step 3, demonstrates a version 2 `ISSUE` and `UPDATE`. The offline lifecycle example below also covers managed transfer and retirement.
 - **In your own code.** You build the seventeen fields, both preimages and both signatures yourself (the [starting kit](../README.md#what-you-will-implement) lists the building blocks), and follow the steps below with any BRC-100 wallet.
 
 In both cases, passing the fixture recipe leaves live wallet and service integration to exercise. [What a passport application offers](../../packages/what-an-application-offers.md) describes the screens and scheduled duties around the writer.
@@ -16,7 +16,7 @@ These prerequisites apply to live writes. The offline exercises below need only 
 - **A passport identifier**: a GS1 Digital Link on a host you control, under the demonstration prefix 952 until you have your own ([identifiers](../../identifiers.md)).
 - **A BRC-100 wallet with funds** ([choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet)).
 - **A publisher key the index admits.** Every version 2 state must carry a publisher countersignature: field 17, `publisher_signature`, the publishing service's signature over the framed fields 1 to 16, verified under the BRC-42 child of the publisher's identity key for key identifier `passport_id` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 5). An index admits a state only when that key is in its policy, so check that the index's `GET /capabilities` lists your publisher key under `publisherPolicy.publisherKeys`. Writing through your own wallet, its identity key can be the publisher, as step 2 of [build an application](../../packages/build-an-application.md#2-run-your-own-index) sets up.
-- **An index URL and its two tokens**: the submit token for `POST /submit` and `POST /retract`, and the callback token for `POST /arc-ingest`. Use [your own index](../../operate/README.md) or a provider that has agreed to admit your key and provide the required access. The hosted reference does not offer general write credentials ([service choices](../../start/choose-components-and-services.md)).
+- **An index URL and its two tokens**: the submit token for `POST /submit` and `POST /retract`, and the callback token for `POST /arc-ingest`. Use [your own index](../../packages/create-dpp-index.md) or a provider that has agreed to admit your key and provide the required access. The hosted reference does not offer general write credentials ([service choices](../../start/choose-components-and-services.md)).
 - **An industry profile** for the payload ([industry profiles](../../profiles/README.md)).
 
 ## Reproduce the bytes offline

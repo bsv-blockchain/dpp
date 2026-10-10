@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-core",
-  "version": "0.3.0-beta.8",
-  "description": "Experimental prerelease: DPP standard reference implementation: record versions 1 and 2, signature preimages, chain verification with SPV, the verification report, the native lifecycle claim, the generic anchor, the managed acceptance record, publisher key policy and the evidence package manifest",
+  "version": "0.3.0-beta.9",
+  "description": "Compatibility entry point for @bsv/dpp-protocol: re-exports the DPP protocol API and retains the JSON schema paths for existing consumers",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,17 +18,14 @@
     "schemas"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node ../../scripts/package-schemas.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "tsc -p tsconfig.json && node ../../scripts/package-schemas.mjs dpp-core",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@bsv/sdk": "2.8.10"
+    "@bsv/dpp-protocol": "0.3.0-beta.9"
   },
   "devDependencies": {
-    "typescript": "^7.0.2",
-    "vitest": "5.0.1"
+    "typescript": "^7.0.2"
   },
   "repository": {
     "type": "git",

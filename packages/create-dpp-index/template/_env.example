@@ -1,0 +1,60 @@
+# create-dpp-index writes a populated .env with fresh secrets. Keep that file private.
+# Existing process environment values take precedence when running Node directly.
+
+# REQUIRED: match the application wallet, never its private key.
+SERVICE_IDENTITY_KEY=
+NETWORK=main
+# By default only the same publisher can announce anchors. Add a registry's
+# anchor publisher PUBLIC key here, comma-separated, when it signs anchors.
+ANCHOR_SERVICE_KEYS=
+
+# Local HTTP port; Compose publishes on loopback. Put a TLS proxy in front for hosting.
+PORT=8080
+HOST=127.0.0.1
+PUBLIC_URL=http://localhost:8080
+
+# Index storage is separate from the application's database and wallet storage.
+# The generator fills the URI with the dedicated MongoDB user's credentials.
+MONGO_URL=
+MONGO_DB=dpp_index
+MONGO_INDEX_PASSWORD=
+# Maintenance credentials for the bundled MongoDB, never given to the index.
+MONGO_ROOT_PASSWORD=
+
+# Three separate scopes. The generator supplies independent random tokens.
+SUBMIT_TOKEN=
+ARC_CALLBACK_TOKEN=
+EXPORT_TOKEN=
+# A separate key signs portable evidence packages. It is not a publisher/wallet key.
+EXPORT_SIGNING_KEY=
+
+# Header checks remain enabled. scripts-only is for synthetic protocol tests
+# and is refused by this operator project's startup checks.
+CHAIN_TRACKER=
+WOC_API_KEY=
+
+# Default matches the app starter's managed-custody@1 profile.
+# Leave empty only when deliberately selecting the baseline custody profile.
+ACCEPTANCE_COMMITMENT=required
+CONTROL_AUTHORITIES=
+OWNER_CONSENT=
+TRANSFER_AUTHORITIES=
+
+# OPTIONAL: signed publisher policy and independently trusted operator keys.
+# Files under ./config are mounted at /app/config in the container.
+PUBLISHER_POLICY_FILE=
+PUBLISHER_POLICY_JSON=
+OPERATOR_IDENTITY_KEYS=
+
+# OPTIONAL: peer synchronisation and discovery. No peers or discovery by default.
+SYNC_PEERS=
+SYNC_INTERVAL_MS=
+SYNC_LEGACY=
+SYNC_DISCOVERY=
+SLAP_TRACKERS=
+SYNC_MAX_DISCOVERED=
+
+# OPTIONAL: public SHIP/SLAP advertising spends funds from a separate wallet.
+ADVERTISE=
+ADVERTISER_PRIVATE_KEY=
+ADVERTISER_STORAGE_URL=

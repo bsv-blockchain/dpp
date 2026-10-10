@@ -63,6 +63,7 @@ jobs:
       - run: npm ci
       - run: node scripts/release-candidates.mjs
       - run: node scripts/consumer-check.mjs
+      - run: npm run index-starter:check
       # The implementer bundle assembles from the same tree, so a file it
       # would refuse to carry is caught here.
       - run: node scripts/implementer-bundle.mjs

@@ -1,0 +1,77 @@
+# Release the starter independently, after its exact runtime dependencies.
+name: Publish index starter
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: Check and prepare without publishing
+        type: boolean
+        default: true
+      approval:
+        description: SHA-256 of the reviewed index starter publication plan
+        required: false
+      provenance:
+        description: Include npm provenance; changing this requires a new plan
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: dpp-index-starter-publication
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      APPROVED_PLAN: ${{ inputs.approval }}
+      PROVENANCE: ${{ inputs.provenance }}
+      GITHUB_REPOSITORY_VISIBILITY: ${{ github.event.repository.visibility }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.3
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.19.0
+      - name: Validate publication inputs
+        if: ${{ !inputs.dryRun }}
+        run: |
+          node --input-type=module <<'JS'
+          if (!/^[a-f0-9]{64}$/.test(process.env.APPROVED_PLAN ?? '')) throw new Error('the exact index starter plan digest is required')
+          if (process.env.PROVENANCE === 'true' && process.env.GITHUB_REPOSITORY_VISIBILITY !== 'public') throw new Error('npm provenance requires a public source repository')
+          for (const name of ['ACTIONS_ID_TOKEN_REQUEST_URL', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN']) {
+            if (!process.env[name]) throw new Error(`GitHub OIDC is unavailable: ${name} is missing`)
+          }
+          JS
+      - run: npm ci
+      - run: npm test -w @bsv/create-dpp-index
+      - run: node --test conformance/test/publication.test.mjs conformance/test/index-starter-publication.test.mjs
+      - name: Prepare the plan and verify published runtime archives
+        run: npm run index-starter:release -- --check-registry --provenance="$PROVENANCE"
+      - name: Check the packed starter with published dependencies
+        run: npm run index-starter:check -- --registry-dependencies
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: index-starter-candidates
+          path: release/index-starter/
+          if-no-files-found: ignore
+      - name: Publish the approved starter
+        if: ${{ !inputs.dryRun }}
+        run: |
+          set -euo pipefail
+          starter_npmrc="${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
+          if [ -f "$starter_npmrc" ]; then
+            sed -i '/_authToken/d' "$starter_npmrc"
+          fi
+          npm run index-starter:release -- --execute --approval="$APPROVED_PLAN" --provenance="$PROVENANCE"
+      - name: Verify the published archives
+        if: ${{ !inputs.dryRun }}
+        run: npm run index-starter:release -- --verify-registry --provenance="$PROVENANCE"
+      - name: Check the documented npm create command from a fresh cache
+        if: ${{ !inputs.dryRun }}
+        run: npm run index-starter:check -- --registry

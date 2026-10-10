@@ -9,12 +9,13 @@ You need Node.js 22 or later, npm and git. Downloading and building the checkout
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
 cd dpp
-git checkout --detach aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7
+git switch --detach
+git rev-parse HEAD
 npm ci
 npm run build
 ```
 
-These commands select a reviewed source revision. The examples use the packages that checkout builds, rather than the npm archives. This revision includes changes after the published release; use [source access](packages/README.md#source-access) to distinguish the tracks. A `Cannot find module` error means the build did not finish: run `npm run build` again and read its first error.
+These commands detach the current source checkout and print its exact revision. Keep that revision with your lockfile and test results so you can reproduce the run. The examples use the packages that checkout builds, including the candidate rename to `@bsv/dpp-protocol`; the new name is not yet published to npm. Use [source access](packages/README.md#source-access) for a published release's recorded revision. A `Cannot find module` error means the build did not finish: run `npm run build` again and read its first error.
 
 **How to read the output.** Every check prints one sentence. A line starting `ok:` or `Holds:` is a check that held, including where a deliberately broken input is refused, as it should be. A line starting `FAIL:` or `FAILS:` means something is wrong, and the command then exits with a non-zero status.
 
@@ -93,7 +94,7 @@ node --input-type=module <<'JS'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { PrivateKey, ProtoWallet } from '@bsv/sdk'
-import { signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-core'
+import { signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-protocol'
 
 const fixture = JSON.parse(readFileSync('fixtures/attestation-anchor-v1.json', 'utf8'))
 const wallet = new ProtoWallet(PrivateKey.fromHex(fixture.issuerPrivateKey))
@@ -138,7 +139,7 @@ Return to [Build or integrate](start/build-and-integrate.md) to choose your next
 | Next | Page |
 |---|---|
 | Build an application that issues and updates passports | [Build an application](packages/build-an-application.md) |
-| Run your own index | [Operate](operate/README.md) |
+| Run your own index | [Create an index](packages/create-dpp-index.md) |
 | Choose the product data a passport carries | [Industry profiles](profiles/README.md) |
 | Write your own implementation instead of using the packages | [Implementer start](implement/README.md) |
 

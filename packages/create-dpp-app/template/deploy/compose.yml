@@ -1,17 +1,10 @@
-# The services beside the application in production: MongoDB for the
-# application's records and sign-in, and the reference DPP index with its own
-# MongoDB. Start them with:
+# MongoDB for the application's records and sign-in. Start it with:
 #
 #   docker compose -f deploy/compose.yml --env-file .env up -d
 #
-# The index image is the reference index from the DPP standard's repository
-# (packages/overlay-topics/Dockerfile there). Set INDEX_IMAGE to a published
-# image, or build it from a checkout of the standard with:
-#
-#   docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay:local <checkout>
-#
-# and leave INDEX_IMAGE at its default. Then point the application at it:
-# INDEX_URL=http://localhost:8080 with the two tokens below.
+# Connect the app to an existing index with INDEX_URL and its access tokens,
+# or operate one in a separate project made with @bsv/create-dpp-index.
+# This Compose file does not start an index. See README.md, Connect an index.
 name: dpp-platform
 
 services:
@@ -28,33 +21,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-
-  index:
-    image: ${INDEX_IMAGE:-dpp-overlay:local}
-    restart: unless-stopped
-    depends_on:
-      mongo:
-        condition: service_healthy
-    ports:
-      - "${INDEX_PORT:-8080}:8080"
-    environment:
-      PORT: "8080"
-      MONGO_URL: mongodb://mongo:27017
-      MONGO_DB: dpp_index
-      NETWORK: ${NETWORK:-main}
-      # The publisher key the index admits: your platform wallet's identity key (npm run wallet prints it).
-      SERVICE_IDENTITY_KEY: ${INDEX_PUBLISHER_KEY:-}
-      SUBMIT_TOKEN: ${INDEX_SUBMIT_TOKEN:?set INDEX_SUBMIT_TOKEN in .env}
-      ARC_CALLBACK_TOKEN: ${INDEX_CALLBACK_TOKEN:?set INDEX_CALLBACK_TOKEN in .env}
-      WOC_API_KEY: ${WOC_API_KEY:-}
-      # managed-custody@1: a version 2 TRANSFER is admitted only with its acceptance commitment.
-      ACCEPTANCE_COMMITMENT: required
-      PUBLIC_URL: ${INDEX_PUBLIC_URL:-}
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      retries: 8
 
 volumes:
   mongo-data:

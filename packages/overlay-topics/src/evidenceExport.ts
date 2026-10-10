@@ -48,7 +48,7 @@ import {
   type PackageInspection,
   type SourceObservation,
   type UnsignedEvidenceManifest,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { DPP_TOPIC } from './tmDpp.js'
 import { DPP_SERVICE } from './lsDpp.js'
 import { IMPLICIT_POLICY_VERSION, SINGLE_OPERATOR_PROFILE } from './capabilities.js'

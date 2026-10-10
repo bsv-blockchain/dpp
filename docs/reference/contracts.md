@@ -6,7 +6,7 @@ The index (the reference package and its software call it an overlay) admits pas
 
 ## Check a service
 
-Every service answers two open routes. Against your own index, started as [run a service](../operate/README.md) describes, or against the hosted index at `https://dpp-overlay.bsvb.net`:
+Every service answers two open routes. Against your own index, started as [Create an index](../packages/create-dpp-index.md) describes, or against the hosted index at `https://dpp-overlay.bsvb.net`:
 
 ```sh
 curl --fail http://localhost:8080/health

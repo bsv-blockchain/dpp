@@ -1,6 +1,6 @@
 {
   "releaseSet": "dpp-release-2026-10-7",
-  "status": "candidate",
+  "status": "superseded",
   "distTag": "latest",
   "description": "Experimental prerelease candidate that reads and writes record version 3, the token carrier of spec/token-carrier.md: the seventeen-field body carried behind a BRC-162 token prefix as a token of one unit, read beside versions 1 and 2. @bsv/dpp-core 0.3.0-beta.8 parses, builds and verifies carried states and reports the carrier reason codes; @bsv/dpp-overlay-topics 0.4.0-beta.10 admits them under the carrier rules, indexes the token id, declares dpp-record version 3 and serves overlay contract 0.11.0-draft; it also finds peers through the overlay discovery protocols when configured, advertises itself from a separate advertiser key when configured, asks again for outputs it left behind, and declares single-operator@2 when one administration pulls from peers. @bsv/dpp-profiles 0.3.0-beta.8 carries the operator profile single-operator@2 added on 8 October 2026 and is otherwise unchanged; @bsv/vsc 0.2.0-beta.5 is unchanged, on @bsv/sdk 2.8.10 under the Apache License 2.0. Claim, anchor and acceptance formats, frozen profiles and the custody profile are unchanged, and the set claims native-baseline@2 with the version 3 reader claim required beside it. Package publication does not establish that any wallet or index outside this repository handles a carried state, nor federated operation or product qualification.",
   "baseline": "native-baseline@2",

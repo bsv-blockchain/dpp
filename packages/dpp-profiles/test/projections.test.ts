@@ -232,14 +232,14 @@ describe('the published projection vectors', () => {
       tags: c.tags,
     }
   })
-  const version = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version
   const file = {
     $schema: 'https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json',
     id: 'dpp.projection.v1',
     name: 'DPP passport projection v1: deterministic derivation from pinned sources under a named policy',
     brc: [],
     version: '1.0.0',
-    reference_impl: `dpp-profiles@${version}`,
+    // Provenance of the published vectors, independent of later package versions.
+    reference_impl: 'dpp-profiles@0.3.0-beta.8',
     parity_class: 'required',
     shared: { profile: SYNTHETIC_MANIFEST },
     vectors,

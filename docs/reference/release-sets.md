@@ -1,33 +1,36 @@
 # Release sets
 
-A release set is a declared combination of package versions, the wire and contract versions they implement, the profiles they carry and a conformance selection: one compatibility target you can pin and check. This page names the current set, shows how to use it and how to verify that the published packages are the approved ones, and links to the release history.
+A release set is a declared combination of package versions, wire and contract versions, profiles and a conformance selection: one compatibility target you can pin and check. Use the current candidate for source development, or a publication receipt to reproduce an already published set.
 
 ## The current set
 
-| | `dpp-release-2026-10-7` |
+| | `dpp-release-2026-10-8` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-7.json`; the link is pinned to its source revision once the publication plan binds it |
-| Status | Candidate, not yet published. `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10` are new; `@bsv/vsc@0.2.0-beta.5` is the published one. Until it publishes, a plain install gets the beta.9 set below |
-| Packages | `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-overlay-topics@0.4.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
+| Declaration | `release/dpp-release-2026-10-8.json`; its source revision is recorded when a publication plan binds it |
+| Status | Candidate. The renamed protocol package, compatibility wrapper and changed consumers are not yet published |
+| Main packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
+| Compatibility package | `@bsv/dpp-core@0.3.0-beta.9`, which re-exports the protocol library and retains the old schema paths |
 | Licence | Apache 2.0 |
-| npm tag | `latest`, so a plain install gets these versions; `next` stays at the beta.5 set. Install exact versions all the same |
+| Intended npm tag | `latest` when published; install exact versions and retain the lockfile |
 | Source revision | Recorded at publication |
-| Receipt | None yet; the [beta.9 publication receipt](beta-9-publication.md) records the preceding publication, of the superseded `dpp-release-2026-10-6` |
-| Selection | `conformance/selections/dpp-release-2026-10-7.json`, the claims this release requires and withholds ([conformance](conformance.md)); it adds the version 3 passport reader claim |
+| Receipt | None for this candidate. The [beta.9 receipt](beta-9-publication.md) records the last complete publication documented here |
+| Selection | `conformance/selections/dpp-release-2026-10-8.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
 
-Compared with the published beta.9 set `dpp-release-2026-10-6`, the core and overlay packages read and write record version 3, the token carrier: the seventeen-field body carried behind a BRC-162 token prefix as a token of one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)), under index contract `0.11.0-draft`. Versions 1 and 2 are read as before. The overlay package also finds peers through the overlay discovery protocols when configured, advertises itself from a separate advertiser key when configured, and asks again for outputs it left behind ([federation](../operate/federation.md)); the profiles package carries the operator profile `single-operator@2`, which an index declares when one administration pulls from named or discovered peers. No claim, anchor or acceptance format, frozen profile or custody profile changed.
+Compared with the superseded `dpp-release-2026-10-7`, this set renames the shared library to `@bsv/dpp-protocol`, adds the `@bsv/dpp-core` compatibility wrapper and updates the consuming packages. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
+
+The preceding candidate introduced record version 3, the token carrier: a seventeen-field body behind a BRC-162 token prefix, representing one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)). Versions 1 and 2 remain readable. It also added optional index discovery, advertising and retries ([federation](../operate/federation.md)), and the `single-operator@2` operator profile. Those changes remain part of this candidate; the package rename adds no wire-format change.
 
 ## Use the current set
 
-1. Install the exact versions, as [install from npm](../packages/README.md#install-from-npm) shows, and keep your lockfile. Together they identify the bytes you installed.
-2. Before pointing a client at a running service, compare the service's `GET /capabilities` with what the client expects: `implementation.version`, the protocol versions and the profiles. Installing a release does not upgrade any running service, the hosted ones included; each service's capability document says what it runs.
-3. To move from an earlier set, rehearse against retained data as [migration](../migration.md) describes, and adopt successor industry profiles separately ([update profiles and consuming applications](../profiles/updating-applications.md)).
+1. [Build and install the local candidate archives](../packages/README.md#use-the-renamed-source-candidate). The new name is not yet on npm.
+2. Record package versions, source revision and lockfile alongside the configuration of each service you run or use.
+3. Review the [migration guide](../migration.md) before upgrading an existing deployment. Installing a new profile package does not activate a new writer profile ([updating applications](../profiles/updating-applications.md)).
 
-These are experimental prereleases: APIs may change significantly during testing, so read the changelog before upgrading. Published versions are immutable, so every change takes a new version. Package versions are separate from the specification, wire-format and frozen profile versions they implement, and installing them establishes neither live interoperability nor production readiness.
+These are experimental prereleases: APIs may change during testing. Package versions are separate from specification, wire-format and frozen profile versions. Publication and installation establish neither deployed interoperability nor production readiness.
 
 ## Verify a published release
 
-For the current set, follow the [latest publication receipt's verification steps](beta-9-publication.md#verification), using its recorded source revision and toolchain.
+For a published set, follow its [publication receipt's verification steps](beta-9-publication.md#verification), using the recorded source revision and toolchain. The current candidate has no publication receipt yet.
 
 The worked example below reproduces the historical beta.4 publication. Its package versions and source revision belong to that archived set.
 

@@ -4,6 +4,22 @@ Use this page to add passport reading and writing to an application. The worked 
 
 For a complete production platform, first make [your platform brief](../start/plan-your-platform.md). Choose [which components and services you supply](../start/choose-components-and-services.md): an arranged index provider can replace the own-index setup below if it supports the required network, profiles, admission and access. The [hosted application](../deployment.md) is an optional demonstration; open sample brands write nothing to the chain, while created brands can write real mainnet sample transactions.
 
+## Start with an application skeleton
+
+`@bsv/create-dpp-app` creates an editable application with React and Vite, an Express API, MongoDB configuration and Better Auth. It includes passport workflows and an offline lifecycle exercise. Follow the generated README from the first run through deployment, then use the rest of this guide when customising the writer or integrating the libraries into existing code.
+
+The starter is a source candidate pending publication. To try it now, run these commands from the DPP repository root with Node 22 or later, choosing a new directory for the app:
+
+```sh
+npm ci
+npm run build -w @bsv/create-dpp-app
+node packages/create-dpp-app/dist/index.js ../my-app
+```
+
+The generator installs the app's dependencies and prints the first-run commands. After publication, `npm create @bsv/dpp-app@0.1.0 my-app` provides the same starting point without the repository checkout. The app currently pins the earlier published runtime set, including `@bsv/dpp-core`; keep its declared versions together until a starter upgrade adopts the renamed set.
+
+For deployment, connect to an existing compatible index or create a separate project with [the index starter](create-dpp-index.md). The app's Compose file starts its application database. The index starter includes its own maintained runtime, so there is no additional overlay installation step. A successful offline exercise does not establish readiness for production; complete the generated guide and [production checks](../operate/production-readiness.md).
+
 ## What you are building
 
 | Part | What it does | Needed |
@@ -24,7 +40,7 @@ These are prerequisites for the full live route, not for the offline dry run. Do
 | You need | Why | How to get it or check it |
 |---|---|---|
 | Node 22 or later | Everything here is ECMAScript modules | `node --version` prints `v22` or higher |
-| A built checkout of the reviewed source revision | Builds your index and runs the examples | Follow [Get the code](../quick-start.md#get-the-code), including its pinned checkout. Run every command below from that directory; [source access](README.md#source-access) distinguishes it from npm archives |
+| A built checkout of the selected source revision | Builds your index and runs the examples | Follow [Get the code](../quick-start.md#get-the-code), including its pinned checkout. Run every command below from that directory; [source access](README.md#source-access) distinguishes it from npm archives |
 | Docker with Compose | Runs your index and its database | `docker compose version` |
 | A wallet that answers the BRC-100 interface, unlocked on this machine and funded | Signs and sends every state | "Fund the wallet", below |
 | A WhatsOnChain API key | Your index's source of block headers. Anonymous access allows only a few requests a second | From WhatsOnChain. It goes in your index's settings in step 2 |
@@ -33,8 +49,10 @@ These are prerequisites for the full live route, not for the offline dry run. Do
 
 Commands on this page use the packages the checkout links. In your own application, install these exact versions, so an upgrade is your choice:
 
+First [pack the source candidate](README.md#use-the-renamed-source-candidate). Replace `/absolute/path/to/dpp` with that checkout's path; the renamed packages are not yet published.
+
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
 ```
 
 Before issuing, validate the payload against its declared profile with the [profile checker](dpp-profiles.md#check-a-payload-against-its-profile). Signature and linkage checks alone do not validate product data. Keep the application journal and retained evidence from steps 3 and 5; the packages do not supply your full application, permissions or background scheduler.
@@ -65,7 +83,7 @@ Save this as `read-passport.mjs` in the checkout root and run `node read-passpor
 
 ```js
 import { Beef, WhatsOnChain } from '@bsv/sdk'
-import { chainFromBeef, verifyPassportEvidence } from '@bsv/dpp-core'
+import { chainFromBeef, verifyPassportEvidence } from '@bsv/dpp-protocol'
 
 // Ask the header source one question at a time, a little apart, and keep each
 // answer for the run: WhatsOnChain answers only a few requests a second.
@@ -126,11 +144,13 @@ inclusion pass
 
 This passport carries no claim, so the claim checks read `unknown` with `no-evidence`, and `issuerAuthority` reads `unknown` with `policy-missing`. If `inclusion` reads `unknown` with `header-source-unavailable`, the header source refused a question: retry after a few seconds, or put `WOC_API_KEY=<your key>` in front of the command.
 
-The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason ([reading the report](../learn/evidence-and-freshness.md)). `examples/verify-passport.mjs` is the same reader with every option, the [reader guide](../implement/roles/passport-reader.md) holds the rules, and [gather a passport's evidence](dpp-core.md#gather-a-passports-evidence) adds claims, their anchors, a check for a later state and the parties you accept.
+The index only finds the bytes; the report is your own. Each check answers `pass`, `fail`, `unknown` or `not-applicable` with a reason ([reading the report](../learn/evidence-and-freshness.md)). `examples/verify-passport.mjs` is the same reader with every option, the [reader guide](../implement/roles/passport-reader.md) holds the rules, and [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) adds claims, their anchors, a check for a later state and the parties you accept.
 
 ## 2. Run your own index
 
 This section implements the own-index choice. If a provider has already agreed to admit your publisher key and supply submission/proof access on the correct network, use its settings and continue to step 3 after verifying them. There is no generally available write entitlement to the hosted reference: it admits the programme's two publisher keys and does not hand out `POST /submit` and `POST /arc-ingest` tokens for general use ([access details](../deployment.md#what-is-open-and-what-needs-a-token)).
+
+For a new index project, follow [Create an index](create-dpp-index.md), which includes the runtime and deployment files. Use the wallet identity key from step 2.1 if you need to obtain it. Once the generated project's `npm run doctor -- --online` check passes, continue to step 3 with that index's URL, submit token and proof callback token. The source setup in steps 2.2 to 2.5 is an alternative; skip it if you already have a generated index.
 
 What you write is found only on your index, so read it back with your own reader. The hosted index does not hold it, so the check at `dpp.bsvb.net/verify`, which reads the hosted index, does not find it either. Another index gets your records only if its operator names yours as a peer ([federation](../operate/federation.md)).
 
@@ -149,6 +169,8 @@ console.log(publicKey)
 It prints 66 hexadecimal characters. `localhost` is the originator, the hostname your wallet knows the program by. In Node, `@bsv/sdk` 2.8.10 needs an originator to find a local wallet, and without one reports no wallet even while one is running.
 
 ### 2.2 Create the settings file and two secrets
+
+Continue here only for the repository's source deployment. A generated index already has its own configuration and secrets.
 
 If `deploy/operator.env` already exists, edit it instead of overwriting it. The two secrets must differ.
 
@@ -172,7 +194,7 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects `managed-custody@1`: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
-`SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run a service](../operate/README.md) explains the other settings.
+`SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run an index from source](../operate/README.md) explains the other settings.
 
 ### 2.4 Start the index
 
@@ -181,7 +203,7 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --buil
 curl --fail http://localhost:8080/health
 ```
 
-Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. The first run builds the image, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run a service](../operate/README.md) shows.
+Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. The first run builds the image, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run an index from source](../operate/README.md) shows.
 
 ### 2.5 Confirm it names your key
 
@@ -252,6 +274,8 @@ node examples/write-passport-v2.mjs <passportId> http://localhost:8080 \
 | `--originator=<host>` | The hostname your wallet knows the program by. Default `localhost` |
 | `--journal=<dir>` | Where the journal goes. Default `./dpp-journal` |
 
+For an index made with the starter, use `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN` from its generated `.app.env` as the URL, submit-token and callback-token arguments. These are connection settings for the existing index; the writer does not need a separate installation of its runtime.
+
 A token on a command line stays in your shell history, so use secrets you can replace. Stay at the machine: your wallet may ask you to approve the program, each key protocol it uses (`dpp token v2`, `dpp owner v1` and `dpp owner data v1`) and each transaction. An unanswered prompt stops the run, and the journal records how far it got. With `--wait-proof=30` a run takes about two blocks, because each state is proven before the next is written.
 
 Success is the last line, `Every sentence above holds.`, and exit code 0. The journal is a file in `dpp-journal/` named for a digest of your identifier. Once both states are mined and their proofs pushed, read the passport back with the section 1 reader:
@@ -306,7 +330,7 @@ A refused state gets HTTP 200, `X-Admission: tm_dpp=none` and nothing admitted. 
 | `decode-failed` | The transaction has no well-formed DPP output, or more than one | Build exactly one DPP output per transaction with `buildLockingScript` |
 | `actor-signature-invalid` | The actor signature does not verify against `actor_identity_key` and `actor_keyID` | Sign with the key and key identifier the state names |
 | `publisher-not-authorised` | The server signature is not from a publisher key the index accepts at the state's own timestamp | Check that your key is under `publisherPolicy.publisherKeys` in the index's `GET /capabilities`, and take its window from the operator's signed publisher policy ([tell operators apart](../operate/federation.md#tell-operators-apart)); an index with only `SERVICE_IDENTITY_KEY` has no windows |
-| `link-broken` | A genesis rule or a chain rule does not hold | Run `verifyChain` from `@bsv/dpp-core` over your states and this one; its error names the rule |
+| `link-broken` | A genesis rule or a chain rule does not hold | Run `verifyChain` from `@bsv/dpp-protocol` over your states and this one; its error names the rule |
 | `control-not-proven` | A version 2 `UPDATE`, `TRANSFER` or `RETIRE` does not prove control of the predecessor | Act as the controller, or carry `control_linkage` |
 | `lineage-retired` | The passport ended with a `RETIRE` | Nothing may follow it |
 | `version-transition-invalid` | The version changed other than by the one upgrade, a version 2 `UPDATE` that spends a version 1 tip | Keep the predecessor's version, or upgrade with that `UPDATE` |

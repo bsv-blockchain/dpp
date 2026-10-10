@@ -10,14 +10,14 @@ An issuer needs:
 
 ## Sign one claim with the packages
 
-`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-core` signs a claim with anything that offers the BRC-100 `createSignature` call: your BRC-100 wallet in an application, or `ProtoWallet` from `@bsv/sdk` in a test. This signs the fixture's claim with its published test key, at the root of a checkout after [setup](../../quick-start.md#get-the-code):
+`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` signs a claim with anything that offers the BRC-100 `createSignature` call: your BRC-100 wallet in an application, or `ProtoWallet` from `@bsv/sdk` in a test. This signs the fixture's claim with its published test key, at the root of a checkout after [setup](../../quick-start.md#get-the-code):
 
 ```sh
 node --input-type=module <<'JS'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { PrivateKey, ProtoWallet } from '@bsv/sdk'
-import { signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-core'
+import { signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-protocol'
 
 const fixture = JSON.parse(readFileSync('fixtures/attestation-anchor-v1.json', 'utf8'))
 const wallet = new ProtoWallet(PrivateKey.fromHex(fixture.issuerPrivateKey))

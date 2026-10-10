@@ -1,0 +1,46 @@
+{
+  "name": "@bsv/dpp-protocol",
+  "version": "0.3.0-beta.9",
+  "description": "Experimental prerelease: DPP standard reference implementation: record versions 1, 2 and 3, signature preimages, chain verification with SPV, the verification report, the native lifecycle claim, the generic anchor, the managed acceptance record, publisher key policy and the evidence package manifest",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schemas/*": "./schemas/*"
+  },
+  "files": [
+    "dist",
+    "schemas"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node ../../scripts/package-schemas.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@bsv/sdk": "2.8.10"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsv-blockchain/dpp.git",
+    "directory": "packages/dpp-protocol"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

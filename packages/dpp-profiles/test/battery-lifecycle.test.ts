@@ -22,8 +22,8 @@ import {
   type LifecycleClaim,
   type LifecycleEventType,
   type SignedLifecycleClaim,
-} from '@bsv/dpp-core'
-import { idKey, makeData, makerPriv, makerWallet, owner1Priv, owner1Wallet, owner2Priv, owner2Wallet, owner3Priv, owner3Wallet, serverPriv, signedState, stateTx } from '../../dpp-core/test/helpers.js'
+} from '@bsv/dpp-protocol'
+import { idKey, makeData, makerPriv, makerWallet, owner1Priv, owner1Wallet, owner2Priv, owner2Wallet, owner3Priv, owner3Wallet, serverPriv, signedState, stateTx } from '../../dpp-protocol/test/helpers.js'
 import { buildGs1DigitalLink, gs1CheckDigit, isDemonstrationGtin, mapNativeOperation, parseGs1DigitalLink, readManifest, readPublicPayloadSchema, type LifecycleEvidence, type MappingResult, type NativeOperation } from '../src/index.js'
 
 const FIXTURE_PATH = new URL('../../../fixtures/battery-lifecycle-v1.json', import.meta.url)
