@@ -1,6 +1,14 @@
+---
+hidden: true
+---
+
 # Beta.9 publication receipt
 
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
+
 The one package that changed in `dpp-release-2026-10-6`, `@bsv/dpp-overlay-topics@0.4.0-beta.9`, was published to the public npm registry on **3 October 2026**, using GitHub OIDC trusted publishing with provenance, under the `latest` tag. The other three, `@bsv/dpp-core@0.3.0-beta.7`, `@bsv/dpp-profiles@0.3.0-beta.7` and `@bsv/vsc@0.2.0-beta.5`, were already published, and their archives matched the approved bytes. With it an index serves its signed publisher policy. Every downloaded archive matched the approved bytes. The workflow's final clean install from the public registry could not yet resolve `@bsv/dpp-overlay-topics@0.4.0-beta.9`, uploaded seconds earlier; the same registry checks, run from a clean checkout of the source revision under a minute later, passed.
+
+The set is now superseded by a later one, which [release sets](release-sets.md) names; this receipt stays the record of what beta.9 published.
 
 ## Exact source and approval
 

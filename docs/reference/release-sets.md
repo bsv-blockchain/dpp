@@ -6,13 +6,13 @@ A release set is a declared combination of package versions, the wire and contra
 
 | | `dpp-release-2026-10-7` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-7.json`; the link is pinned to its source revision once the publication plan binds it |
-| Status | Candidate, not yet published. `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10` are new; `@bsv/vsc@0.2.0-beta.5` is the published one. Until it publishes, a plain install gets the beta.9 set below |
+| Declaration | [`release/dpp-release-2026-10-7.json`](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/release/dpp-release-2026-10-7.json), as the approved publication plan bound it |
+| Status | Published to npm under the `latest` tag on 9 October 2026. The JSON keeps `status: candidate` because its exact digest was approved; the receipt records the publication |
 | Packages | `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-overlay-topics@0.4.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
 | npm tag | `latest`, so a plain install gets these versions; `next` stays at the beta.5 set. Install exact versions all the same |
-| Source revision | Recorded at publication |
-| Receipt | None yet; the [beta.9 publication receipt](beta-9-publication.md) records the preceding publication, of the superseded `dpp-release-2026-10-6` |
+| Source revision | `1b7a922616f5943f884ec07a39e8b966ecc8a42d` |
+| Receipt | [Beta.10 publication receipt](beta-10-publication.md): the approved plan, archive digests and registry verification |
 | Selection | `conformance/selections/dpp-release-2026-10-7.json`, the claims this release requires and withholds ([conformance](conformance.md)); it adds the version 3 passport reader claim |
 
 Compared with the published beta.9 set `dpp-release-2026-10-6`, the core and overlay packages read and write record version 3, the token carrier: the seventeen-field body carried behind a BRC-162 token prefix as a token of one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)), under index contract `0.11.0-draft`. Versions 1 and 2 are read as before. The overlay package also finds peers through the overlay discovery protocols when configured, advertises itself from a separate advertiser key when configured, and asks again for outputs it left behind ([federation](../operate/federation.md)); the profiles package carries the operator profile `single-operator@2`, which an index declares when one administration pulls from named or discovered peers. No claim, anchor or acceptance format, frozen profile or custody profile changed.

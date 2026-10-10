@@ -1,6 +1,6 @@
 # Release history
 
-These earlier releases are retained for upgrades, verification and audit. For a new implementation, start with the [current release](release-sets.md#the-current-set) and its [publication receipt](beta-9-publication.md). Each archived receipt records the packages, source revision and verification steps for that publication.
+These earlier releases are retained for upgrades, verification and audit. For a new implementation, start with the [current release](release-sets.md#the-current-set) and its [publication receipt](beta-10-publication.md). Each archived receipt records the packages, source revision and verification steps for that publication.
 
 ## Earlier sets
 
