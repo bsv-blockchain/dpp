@@ -40,25 +40,25 @@ For a published release, use the exact packages below and keep `@bsv/dpp-core` i
 
 ## Install from npm
 
-The last complete publication with a receipt in this documentation is `dpp-release-2026-10-6`: overlay beta.9, core and profiles beta.7, and VSC beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.9 publication receipt](../reference/beta-9-publication.md).
+The latest complete publication with a receipt in this documentation is the earlier `dpp-release-2026-10-7`: overlay beta.10, core and profiles beta.8, and VSC beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.10 publication receipt](../reference/beta-10-publication.md).
 
 A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with core:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.7
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.8
 ```
 
 | Add when needed | Exact package | Purpose |
 |---|---|---|
-| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.7` | Profile manifests, payload schemas and supported projection/discovery helpers |
+| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.8` | Profile manifests, payload schemas and supported projection/discovery helpers |
 | Your code imports wallet or transaction APIs | `@bsv/sdk@2.8.10` | Declare direct imports as direct dependencies |
 | Your selected credential or exchange feature uses VSC | `@bsv/vsc@0.2.0-beta.5` | Supported credential/exchange formats; not needed just to sign a native lifecycle claim |
-| You embed index components in your own code | `@bsv/dpp-overlay-topics@0.4.0-beta.9` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
+| You embed index components in your own code | `@bsv/dpp-overlay-topics@0.4.0-beta.10` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
 
-For example, the application writer guide uses core, profiles and the SDK:
+For a published installation using the protocol helpers, profiles and the SDK:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.8 @bsv/dpp-profiles@0.3.0-beta.8 @bsv/sdk@2.8.10
 ```
 
 A hosted writer's wallet toolbox must accept that SDK version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. All four DPP packages use ECMAScript modules. Releases publish to the `latest` tag until version 1.0; exact versions and the consumer lockfile define the tested installation. An [independent implementation](../implement/README.md) need not use any of these packages.

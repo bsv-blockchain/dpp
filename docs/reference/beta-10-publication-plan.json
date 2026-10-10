@@ -1,0 +1,47 @@
+{
+  "releaseSet": "dpp-release-2026-10-7",
+  "releaseSetSha256": "78cd4991597f05d62d9453b8ed49ebf2a9b0cbe29902542053d82214c52004d0",
+  "sourceRevision": "1b7a922616f5943f884ec07a39e8b966ecc8a42d",
+  "sourceState": "committed",
+  "selection": "conformance/selections/dpp-release-2026-10-7.json",
+  "selectionSha256": "3fa73b9fc518afec5ee7030990b8887d29ab05baf9856de339b3b1cc8f28f510",
+  "changelogSha256": "6fc65220e3de5f24eda6c93a18e096a63976fea4853dbd90fdac799cf3507a2b",
+  "registry": "https://registry.npmjs.org/",
+  "access": "public",
+  "tag": "latest",
+  "provenance": true,
+  "candidates": [
+    {
+      "name": "@bsv/dpp-core",
+      "version": "0.3.0-beta.8",
+      "filename": "bsv-dpp-core-0.3.0-beta.8.tgz",
+      "sha256": "ef66d592272c6e949fac75f25e0ce745bac53fdbd30a9424bd9eef2ca1e852f1",
+      "integrity": "sha512-QBJi9Fxq/g6YgEzlvyQxnDpFiG0+P35edGC/d07/4X6UkR7Mmt5qgyD+UaLtB223L0+ftUA28NvQt/ty0L51rA==",
+      "size": 125583
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.8",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.8.tgz",
+      "sha256": "2c1352fc5bd877f7dc39ed847e9823c43b75dd82675548d89b242805d312dc9a",
+      "integrity": "sha512-GkCQzUf2U41lgEWnvSMXAAxGS8lH05YA4UDPEijOGlZhxbNr0+8vzAgsNJXekfTxRKzYOgc+u0qFJL85vVxYXQ==",
+      "size": 358955
+    },
+    {
+      "name": "@bsv/dpp-overlay-topics",
+      "version": "0.4.0-beta.10",
+      "filename": "bsv-dpp-overlay-topics-0.4.0-beta.10.tgz",
+      "sha256": "0e00d2eca4754f18fecb697c9e45d610adf694c6a51d3382e9fbf04b2177ad4f",
+      "integrity": "sha512-7sfy4JaZnhK0lJ0uDslu/whn9ibhblB7pAIhaWGBXfRlLq/eomSluof8LPr8CJByd8uO2/+PPMjG9G6gPUM5Ug==",
+      "size": 177904
+    },
+    {
+      "name": "@bsv/vsc",
+      "version": "0.2.0-beta.5",
+      "filename": "bsv-vsc-0.2.0-beta.5.tgz",
+      "sha256": "bde2bbfe40b2ee2c562060039935acc2843e5e9f94c0ad037d9ea8246ff60d65",
+      "integrity": "sha512-+E5vgAj8DwuWetNMxPZih8rIO2vlU3Qtqs42vujtXq1tH/P7n+I9w+V/7ZC9UOD22EoMe4hAL3hBZpwCUCTaiQ==",
+      "size": 101846
+    }
+  ]
+}

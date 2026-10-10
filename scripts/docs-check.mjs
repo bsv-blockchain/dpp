@@ -101,9 +101,14 @@ for (const page of pages) {
     commands += 1
     if (!exampleFiles.includes(m[1])) { linkFailures += 1; say(false, `${page} runs examples/${m[1]}, which does not exist.`) }
   }
+  // A publication receipt records its archived plan's set. Keep that evidence
+  // intact when a later candidate supersedes the set in the working tree.
+  const receiptPlanPath = join(docs, page.replace(/\.md$/, '-plan.json'))
+  const receiptPlan = /^reference\/beta-\d+-publication\.md$/.test(page) && existsSync(receiptPlanPath)
+    ? JSON.parse(readFileSync(receiptPlanPath, 'utf8')) : null
   for (const s of superseded) {
     const mentions = [...text.matchAll(new RegExp(`${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!-)`, 'g'))].length
-    const explained = /superseded|history|earlier|second candidate set|first candidate set|first set|second set/.test(text)
+    const explained = /superseded|history|earlier|second candidate set|first candidate set|first set|second set/.test(text) || receiptPlan?.releaseSet === s
     if (mentions > 0 && !explained) { linkFailures += 1; say(false, `${page} names the superseded set ${s} without saying it is superseded.`) }
   }
   if (/planning\/|AGENTS\.md|docs\/private\//.test(text)) { linkFailures += 1; say(false, `${page} names a private working path.`) }

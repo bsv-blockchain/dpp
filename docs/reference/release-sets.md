@@ -13,12 +13,12 @@ A release set is a declared combination of package versions, wire and contract v
 | Licence | Apache 2.0 |
 | Intended npm tag | `latest` when published; install exact versions and retain the lockfile |
 | Source revision | Recorded at publication |
-| Receipt | None for this candidate. The [beta.9 receipt](beta-9-publication.md) records the last complete publication documented here |
+| Receipt | None for this candidate. The [beta.10 receipt](beta-10-publication.md) records the latest complete publication documented here |
 | Selection | `conformance/selections/dpp-release-2026-10-8.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-7`, this set renames the shared library to `@bsv/dpp-protocol`, adds the `@bsv/dpp-core` compatibility wrapper and updates the consuming packages. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
 
-The preceding candidate introduced record version 3, the token carrier: a seventeen-field body behind a BRC-162 token prefix, representing one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)). Versions 1 and 2 remain readable. It also added optional index discovery, advertising and retries ([federation](../operate/federation.md)), and the `single-operator@2` operator profile. Those changes remain part of this candidate; the package rename adds no wire-format change.
+The preceding published set introduced record version 3, the token carrier: a seventeen-field body behind a BRC-162 token prefix, representing one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)). Versions 1 and 2 remain readable. It also added optional index discovery, advertising and retries ([federation](../operate/federation.md)), and the `single-operator@2` operator profile. Those changes remain part of this candidate; the package rename adds no wire-format change.
 
 ## Use the current set
 
@@ -30,7 +30,9 @@ These are experimental prereleases: APIs may change during testing. Package vers
 
 ## Verify a published release
 
-For a published set, follow its [publication receipt's verification steps](beta-9-publication.md#verification), using the recorded source revision and toolchain. The current candidate has no publication receipt yet.
+The latest documented npm publication is the earlier `dpp-release-2026-10-7`: core and profiles beta.8, overlay beta.10 and unchanged VSC beta.5, published under `latest` on 9 and 10 October 2026. Its [beta.10 receipt](beta-10-publication.md) records the approved source revision `1b7a922616f5943f884ec07a39e8b966ecc8a42d`, original release-set input, archive digests and verification results.
+
+Follow that receipt's [verification steps](beta-10-publication.md#verification) to reproduce the published packages. The newer source candidate has no publication receipt yet.
 
 The worked example below reproduces the historical beta.4 publication. Its package versions and source revision belong to that archived set.
 

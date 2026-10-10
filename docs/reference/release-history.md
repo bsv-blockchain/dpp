@@ -1,6 +1,6 @@
 # Release history
 
-These earlier releases are retained for upgrades, verification and audit. For a new implementation, start with the [current release](release-sets.md#the-current-set) and its [publication receipt](beta-9-publication.md). Each archived receipt records the packages, source revision and verification steps for that publication.
+These earlier releases are retained for upgrades, verification and audit. For a new implementation, choose the [current source candidate](release-sets.md#the-current-set) or the [latest published set](beta-10-publication.md). Each archived receipt records the packages, source revision and verification steps for that publication.
 
 ## Earlier sets
 
@@ -8,6 +8,7 @@ Each earlier set is superseded, and each link opens its JSON at a recorded revis
 
 | Set | State | Receipt |
 |---|---|---|
+| [dpp-release-2026-10-7](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/release/dpp-release-2026-10-7.json) | Superseded by the source candidate; core and profiles beta.8 and overlay beta.10 were published under `latest` on 9 and 10 October 2026, with unchanged VSC beta.5 | [Beta.10 publication receipt](beta-10-publication.md) |
 | [dpp-release-2026-10-6](https://github.com/bsv-blockchain/dpp/blob/488baaefb5bda535e360fd1c1895124387408816/release/dpp-release-2026-10-6.json) | Superseded; its beta.9 overlay package was published under `latest` on 3 October 2026 beside beta.7 of core and profiles and beta.5 of VSC | [Beta.9 publication receipt](beta-9-publication.md) |
 | [dpp-release-2026-10-5](https://github.com/bsv-blockchain/dpp/blob/a8db9b6018c61d933596e21797ce2d67ddb5a33e/release/dpp-release-2026-10-5.json) | Superseded; its beta.8 overlay package was published under `latest` on 2 October 2026 beside beta.7 of core and profiles and beta.5 of VSC | [Beta.8 publication receipt](beta-8-publication.md) |
 | [dpp-release-2026-10-4](https://github.com/bsv-blockchain/dpp/blob/25fabf755090442b98c6714abfae54ec48fee029/release/dpp-release-2026-10-4.json) | Superseded; its beta.7 packages (VSC beta.5) were published under `latest` on 2 October 2026 | [Beta.7 publication receipt](beta-7-publication.md) |
