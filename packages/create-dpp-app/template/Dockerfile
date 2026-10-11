@@ -1,7 +1,14 @@
 # One image: the API serving the built web app. The wallet's SQLite driver is
 # a native module; it ships prebuilt binaries for common platforms, and the
 # build stage carries the tools to compile it where it does not.
-FROM node:22-bookworm-slim AS build
+#
+# The base image is a build argument so a build can take the same Docker
+# Official Image from a mirror, for example
+# --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim
+# where Docker Hub rate limits apply. The default is Docker Hub's.
+ARG BASE_IMAGE=node:22-bookworm-slim
+
+FROM ${BASE_IMAGE} AS build
 RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json* ./
@@ -12,7 +19,7 @@ RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm inst
 COPY . .
 RUN npm run build && npm prune --omit=dev
 
-FROM node:22-bookworm-slim
+FROM ${BASE_IMAGE}
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules
