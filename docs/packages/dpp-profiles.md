@@ -2,14 +2,16 @@
 
 `@bsv/dpp-profiles` holds the industry profiles, the published lists of product fields a passport's payload carries, with code to read them, find the fields that apply to a product and check a payload against its profile. Use it to build a passport's product data, or to show someone else's.
 
-**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.8 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.9 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Install
+
+**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now. The npm command below applies once these exact versions have been published.
 
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.8
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.9
 ```
 
 Use 0.3.0-beta.4 or later; earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta; pin the exact version anyway so upgrades are your choice, keep the lockfile, and review compatibility before upgrading. The [support table](support-table.md) separates the Node module from the data entry points.
@@ -111,11 +113,11 @@ In a repository checkout, `node examples/sample-payload.mjs general@2` prints a 
 
 ## Show a stored payload under its profile
 
-Show a passport's product data under the profile its record declares, even a draft or superseded one, never under a newer one. This example also needs `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/sdk@2.8.10` and network access to the hosted index. Save it as `show-payload.mjs`:
+Show a passport's product data under the profile its record declares, even a draft or superseded one, never under a newer one. This example also needs `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/sdk@2.8.10` and network access to the hosted index. Save it as `show-payload.mjs`:
 
 ```js
 import { Beef } from '@bsv/sdk'
-import { chainFromBeef, findDppOutputs } from '@bsv/dpp-core'
+import { chainFromBeef, findDppOutputs } from '@bsv/dpp-protocol'
 import { PROFILE_IDS, readManifestAny } from '@bsv/dpp-profiles'
 
 const index = 'https://dpp-overlay.bsvb.net'
@@ -150,7 +152,7 @@ battery@4 draft Battery passport
   Model name: "Hearth 10"
 ```
 
-When `manifest.status` is `draft`, say so beside the data, and show any `notice` first. The example decodes the latest state without verifying it; verify the passport first, as [gather a passport's evidence](dpp-core.md#gather-a-passports-evidence) shows. This package cannot label a record whose profile is outside `PROFILE_IDS`: show its values as unlabelled data, or not at all.
+When `manifest.status` is `draft`, say so beside the data, and show any `notice` first. The example decodes the latest state without verifying it; verify the passport first, as [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) shows. This package cannot label a record whose profile is outside `PROFILE_IDS`: show its values as unlabelled data, or not at all.
 
 ## Read a field
 

@@ -29,7 +29,7 @@ jobs:
       - run: npm ci
       - run: npm run build -w @bsv/create-dpp-app
       - run: npm test -w @bsv/create-dpp-app
-      - run: npm run starter:check
+      - run: npm run starter:check -- --registry-dependencies
       - run: npm pack --dry-run -w @bsv/create-dpp-app
       - name: Publish
         if: ${{ !inputs.dryRun }}

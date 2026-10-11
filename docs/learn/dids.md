@@ -28,7 +28,7 @@ A native lifecycle claim (format `dpp-lifecycle-v1`) names its issuer in `issuer
 
 The [native claim source](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md#L46-L55) defines this binding.
 
-Passport states have the same split. A state names the actor's identity key, but the actor's signature is made with a key derived from it, so the two differ. `@bsv/dpp-core` converts between them: `didKeyFromIdentityKey` and `identityKeyFromDidKey` for an identity key, and `signingPublicKeyFor(state)` and `signingDidFor(state)` for the derived key that verifies a state's actor signature ([@bsv/dpp-core](../packages/dpp-core.md), table "Claims and anchors").
+Passport states have the same split. A state names the actor's identity key, but the actor's signature is made with a key derived from it, so the two differ. `@bsv/dpp-protocol` converts between them: `didKeyFromIdentityKey` and `identityKeyFromDidKey` for an identity key, and `signingPublicKeyFor(state)` and `signingDidFor(state)` for the derived key that verifies a state's actor signature ([@bsv/dpp-protocol](../packages/dpp-protocol.md), table "Claims and anchors").
 
 A `did:bsv` document does not automatically satisfy a credential profile that selects `did:web`, another curve or a particular proof purpose.
 
@@ -86,7 +86,7 @@ The [resolver API](https://web.archive.org/web/20260211224122/https://docs.teran
 
 ## Create a `did:bsv`
 
-You cannot create or update a `did:bsv` from public material today. The reference application has its own script and document builders and its own issuance, completion and update operations, but they are application components, not exports of `@bsv/dpp-core`, and their source is not public. The reference application has also recorded differences between the method's prose and the script encodings it observed on chain; those notes are not public yet, and an independent encoder cannot rely on the prose alone until they are resolved ([known limitations](../operate/limitations.md)).
+You cannot create or update a `did:bsv` from public material today. The reference application has its own script and document builders and its own issuance, completion and update operations, but they are application components, not exports of `@bsv/dpp-protocol`, and their source is not public. The reference application has also recorded differences between the method's prose and the script encodings it observed on chain; those notes are not public yet, and an independent encoder cannot rely on the prose alone until they are resolved ([known limitations](../operate/limitations.md)).
 
 For planning only, this is what an integration that creates one must do. It needs the subject's and the controller's signing capabilities, the public DID document and funding for the transactions. It creates the issuance, publishes the document in a following transaction, keeps both transaction identifiers and resolves the result to check it. An issuance without its document is completed under that same issuance; minting another identifier does not repair it.
 

@@ -1,6 +1,6 @@
 import { Transaction } from '@bsv/sdk'
 import type { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
-import type { PublisherPolicy } from '@bsv/dpp-core'
+import type { PublisherPolicy } from '@bsv/dpp-protocol'
 import { decodeAttestationAnchor, ATTESTATION_ANCHOR_PREFIX } from './attestationAnchor.js'
 import { policyKeysFor } from './policyConfig.js'
 

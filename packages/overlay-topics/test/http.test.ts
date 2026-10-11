@@ -14,7 +14,7 @@ import {
   type TaggedBEEF,
 } from '@bsv/sdk'
 import { Engine } from '@bsv/overlay'
-import { buildLockingScript, completeState, ownerBlobHash, type DppStateData } from '@bsv/dpp-core'
+import { buildLockingScript, completeState, ownerBlobHash, type DppStateData } from '@bsv/dpp-protocol'
 import { DppTopicManager } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { InMemoryDppStorage } from '../src/storage.js'

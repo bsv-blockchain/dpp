@@ -2,7 +2,7 @@
 # any platform, so the same image hands to any container host unchanged.
 #
 # Build context is the REPOSITORY ROOT, not this directory, because the
-# service depends on the @bsv/dpp-core and @bsv/dpp-profiles workspaces:
+# service depends on the @bsv/dpp-protocol and @bsv/dpp-profiles workspaces:
 #
 #   docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
 #
@@ -24,18 +24,20 @@ WORKDIR /repo
 # Manifests first, so a dependency change is the only thing that busts the
 # install layer. npm ci needs every workspace manifest the lockfile knows.
 COPY package.json package-lock.json ./
-COPY packages/dpp-core/package.json packages/dpp-core/
+COPY packages/dpp-protocol/package.json packages/dpp-protocol/
 COPY packages/overlay-topics/package.json packages/overlay-topics/
 COPY packages/vsc/package.json packages/vsc/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
+COPY packages/create-dpp-app/package.json packages/create-dpp-app/
+COPY packages/create-dpp-index/package.json packages/create-dpp-index/
 RUN npm ci --ignore-scripts \
-      -w @bsv/dpp-overlay-topics -w @bsv/dpp-core -w @bsv/dpp-profiles --include-workspace-root
+      -w @bsv/dpp-overlay-topics -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root
 
 COPY tsconfig.base.json ./
 COPY scripts/package-schemas.mjs ./scripts/package-schemas.mjs
 COPY contracts ./contracts
 COPY packages ./packages
-RUN npm run build -w @bsv/dpp-core -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics
+RUN npm run build -w @bsv/dpp-protocol -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics
 
 FROM ${BASE_IMAGE}
 WORKDIR /repo
@@ -43,16 +45,18 @@ ENV NODE_ENV=production
 
 COPY LICENSE ./
 COPY package.json package-lock.json ./
-COPY packages/dpp-core/package.json packages/dpp-core/
+COPY packages/dpp-protocol/package.json packages/dpp-protocol/
 COPY packages/overlay-topics/package.json packages/overlay-topics/
 COPY packages/vsc/package.json packages/vsc/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
+COPY packages/create-dpp-app/package.json packages/create-dpp-app/
+COPY packages/create-dpp-index/package.json packages/create-dpp-index/
 RUN npm ci --omit=dev --ignore-scripts \
-      -w @bsv/dpp-overlay-topics -w @bsv/dpp-core -w @bsv/dpp-profiles --include-workspace-root \
+      -w @bsv/dpp-overlay-topics -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root \
     && npm cache clean --force
 
-COPY --from=build /repo/packages/dpp-core/dist packages/dpp-core/dist
-COPY --from=build /repo/packages/dpp-core/schemas packages/dpp-core/schemas
+COPY --from=build /repo/packages/dpp-protocol/dist packages/dpp-protocol/dist
+COPY --from=build /repo/packages/dpp-protocol/schemas packages/dpp-protocol/schemas
 COPY --from=build /repo/packages/overlay-topics/dist packages/overlay-topics/dist
 # The GS1 key lookup reads the profiles package, whose entry point loads its
 # manifests and generated schemas at import.

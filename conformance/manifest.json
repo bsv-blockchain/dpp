@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "f7624105ab9ed3908fc8ed44a86447b8f4fbc1ee37cf80cbda79863e582bc7e4"
+      "digest": "4053d267b982c36f5df4e7dbfa6a605c7e2e182ddb76ab7c89e9c663d3a19bad"
     },
     {
       "id": "spec-conformance",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "7f9200e09dcf7341d485ad02cfc495aa4984f5633e66a93dd1c938e3d8baf132"
+      "digest": "18cf32e4036a056b8ee7ff7dd7cb7ff2ef061364442fea7381b7405030b650e5"
     },
     {
       "id": "contract-registry",
@@ -144,7 +144,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "8f3c2066904df71cae776ea6fc75c73ddefa1775c5b938c1b97a71f4ce6afa05"
+      "digest": "d3d5c05dc568343d5e4e4c42ec2cce4e6c8f758da56aec01e45c9dc1132052d0"
     },
     {
       "id": "baseline-native-2",
@@ -152,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "c1befffb7d532b6f9b9ae8aa869d0b77ad3b91da91e9bc1e95c3f35126cab0d4"
+      "digest": "ac83d83cc26827e18edbf5cbc46313450dd8a31c66fdd94f532d824352433983"
     },
     {
       "id": "spec-profiles",
@@ -490,7 +490,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "95919b5d34b52de46affa920acc1249043c60d9cdf34cec5d6a31d3348bcf040"
+      "digest": "d4cf41043b40af9ff5fe8a514954930c3b956682703624eb1155501293f5e896"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -692,13 +692,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts",
-        "packages/dpp-core/src/verifyChain.ts#findDppOutputs"
+        "packages/dpp-protocol/src/codec.ts",
+        "packages/dpp-protocol/src/verifyChain.ts#findDppOutputs"
       ],
       "testRefs": [
-        "packages/dpp-core/test/codec.test.ts",
-        "packages/dpp-core/test/fixture.test.ts",
-        "packages/dpp-core/test/chain-fixture.test.ts"
+        "packages/dpp-protocol/test/codec.test.ts",
+        "packages/dpp-protocol/test/fixture.test.ts",
+        "packages/dpp-protocol/test/chain-fixture.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v1.json",
@@ -722,11 +722,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts"
+        "packages/dpp-protocol/src/codec.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/codec.test.ts",
-        "packages/dpp-core/test/fixture.test.ts"
+        "packages/dpp-protocol/test/codec.test.ts",
+        "packages/dpp-protocol/test/fixture.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v1.json#nulPassportId",
@@ -751,12 +751,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#fieldsToState",
-        "packages/dpp-core/src/constants.ts"
+        "packages/dpp-protocol/src/codec.ts#fieldsToState",
+        "packages/dpp-protocol/src/constants.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/codec.test.ts",
-        "packages/dpp-core/test/fixture.test.ts"
+        "packages/dpp-protocol/test/codec.test.ts",
+        "packages/dpp-protocol/test/fixture.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v1.json#rolledTimestamp",
@@ -809,12 +809,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/transition.ts",
-        "packages/dpp-core/src/constants.ts"
+        "packages/dpp-protocol/src/transition.ts",
+        "packages/dpp-protocol/src/constants.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/transition.test.ts",
-        "packages/dpp-core/test/chain-fixture.test.ts"
+        "packages/dpp-protocol/test/transition.test.ts",
+        "packages/dpp-protocol/test/chain-fixture.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v1.json#refusals"
@@ -837,11 +837,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/signatures.ts"
+        "packages/dpp-protocol/src/signatures.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/signatures.test.ts",
-        "packages/dpp-core/test/fixture.test.ts"
+        "packages/dpp-protocol/test/signatures.test.ts",
+        "packages/dpp-protocol/test/fixture.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v1.json#userPreimage",
@@ -867,13 +867,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/verifyChain.ts#inspectChain",
-        "packages/dpp-core/src/transition.ts",
+        "packages/dpp-protocol/src/verifyChain.ts#inspectChain",
+        "packages/dpp-protocol/src/transition.ts",
         "packages/overlay-topics/src/tmDpp.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain.test.ts",
-        "packages/dpp-core/test/chain-fixture.test.ts",
+        "packages/dpp-protocol/test/chain.test.ts",
+        "packages/dpp-protocol/test/chain-fixture.test.ts",
         "packages/overlay-topics/test/tmDpp.test.ts"
       ],
       "evidenceRefs": [
@@ -898,10 +898,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/blob.ts"
+        "packages/dpp-protocol/src/blob.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/blob.test.ts"
+        "packages/dpp-protocol/test/blob.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v1.json#ownerBlob"
@@ -925,11 +925,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/verifyChain.ts"
+        "packages/dpp-protocol/src/verifyChain.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/spv.test.ts",
-        "packages/dpp-core/test/chain.test.ts"
+        "packages/dpp-protocol/test/spv.test.ts",
+        "packages/dpp-protocol/test/chain.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.header-source-unavailable",
@@ -953,12 +953,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#parseDppOutput",
-        "packages/dpp-core/src/codec.ts#fieldsToStateV2"
+        "packages/dpp-protocol/src/codec.ts#parseDppOutput",
+        "packages/dpp-protocol/src/codec.ts#fieldsToStateV2"
       ],
       "testRefs": [
-        "packages/dpp-core/test/record-v2.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/record-v2.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -987,13 +987,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#fieldsToStateV2",
-        "packages/dpp-core/src/codec.ts#dataFieldsV2",
-        "packages/dpp-core/src/constants.ts"
+        "packages/dpp-protocol/src/codec.ts#fieldsToStateV2",
+        "packages/dpp-protocol/src/codec.ts#dataFieldsV2",
+        "packages/dpp-protocol/src/constants.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/record-v2.test.ts",
-        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/record-v2.test.ts",
+        "packages/dpp-protocol/test/chain-v2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -1021,11 +1021,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/transition.ts#checkTransitionV2",
+        "packages/dpp-protocol/src/transition.ts#checkTransitionV2",
         "packages/dpp-profiles/src/mapping.ts#VERSION_2_OPERATION_MAPPING"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/chain-v2.test.ts",
         "packages/dpp-profiles/test/mapping-v2.test.ts"
       ],
       "evidenceRefs": [
@@ -1051,13 +1051,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/signatures.ts#actorPreimageV2",
-        "packages/dpp-core/src/signatures.ts#publisherPreimageV2",
-        "packages/dpp-core/src/signatures.ts#frameFields"
+        "packages/dpp-protocol/src/signatures.ts#actorPreimageV2",
+        "packages/dpp-protocol/src/signatures.ts#publisherPreimageV2",
+        "packages/dpp-protocol/src/signatures.ts#frameFields"
       ],
       "testRefs": [
-        "packages/dpp-core/test/signatures-v2.test.ts",
-        "packages/dpp-core/test/record-v2.test.ts",
+        "packages/dpp-protocol/test/signatures-v2.test.ts",
+        "packages/dpp-protocol/test/record-v2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -1087,12 +1087,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/transition.ts#checkTransitionV2",
-        "packages/dpp-core/src/verifyChain.ts#inspectChain",
+        "packages/dpp-protocol/src/transition.ts#checkTransitionV2",
+        "packages/dpp-protocol/src/verifyChain.ts#inspectChain",
         "packages/overlay-topics/src/tmDpp.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/chain-v2.test.ts",
         "packages/overlay-topics/test/tmDppV2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
@@ -1121,11 +1121,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/owner.ts#checkControl",
-        "packages/dpp-core/src/owner.ts#verifyOwnerLinkage"
+        "packages/dpp-protocol/src/owner.ts#checkControl",
+        "packages/dpp-protocol/src/owner.ts#verifyOwnerLinkage"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/chain-v2.test.ts",
         "packages/overlay-topics/test/tmDppV2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
@@ -1156,13 +1156,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#fieldsToStateV2",
-        "packages/dpp-core/src/evidence.ts",
-        "packages/dpp-core/src/verifyChain.ts#ACCEPTANCE_COMMITMENT_REFUSAL"
+        "packages/dpp-protocol/src/codec.ts#fieldsToStateV2",
+        "packages/dpp-protocol/src/evidence.ts",
+        "packages/dpp-protocol/src/verifyChain.ts#ACCEPTANCE_COMMITMENT_REFUSAL"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v2.test.ts",
-        "packages/dpp-core/test/acceptance.test.ts"
+        "packages/dpp-protocol/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/acceptance.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v2.json#refusals.transferWithoutCommitment",
@@ -1188,12 +1188,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/verifyChain.ts",
-        "packages/dpp-core/src/signatures.ts#verifyUserSignature"
+        "packages/dpp-protocol/src/verifyChain.ts",
+        "packages/dpp-protocol/src/signatures.ts#verifyUserSignature"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v2.test.ts",
-        "packages/dpp-core/test/evidence-v1-fixture.ts",
+        "packages/dpp-protocol/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/evidence-v1-fixture.ts",
         "examples/verify-passport.mjs"
       ],
       "evidenceRefs": [
@@ -1219,14 +1219,14 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#parseDppOutput",
-        "packages/dpp-core/src/codec.ts#fieldsToStateV3",
-        "packages/dpp-core/src/codec.ts#carrierPrefixChunks"
+        "packages/dpp-protocol/src/codec.ts#parseDppOutput",
+        "packages/dpp-protocol/src/codec.ts#fieldsToStateV3",
+        "packages/dpp-protocol/src/codec.ts#carrierPrefixChunks"
       ],
       "testRefs": [
-        "packages/dpp-core/test/record-v3.test.ts",
-        "packages/dpp-core/test/record-v2.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts"
+        "packages/dpp-protocol/test/record-v3.test.ts",
+        "packages/dpp-protocol/test/record-v2.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v3.json#accepted.genesisWithEmptyPayload",
@@ -1254,14 +1254,14 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#carrierPrefixChunks",
-        "packages/dpp-core/src/codec.ts#carrierPrefixFor",
-        "packages/dpp-core/src/codec.ts#tokenIdWireBytes",
-        "packages/dpp-core/src/constants.ts"
+        "packages/dpp-protocol/src/codec.ts#carrierPrefixChunks",
+        "packages/dpp-protocol/src/codec.ts#carrierPrefixFor",
+        "packages/dpp-protocol/src/codec.ts#tokenIdWireBytes",
+        "packages/dpp-protocol/src/constants.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/record-v3.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts"
+        "packages/dpp-protocol/test/record-v3.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v3.json#genesis.prefix",
@@ -1293,14 +1293,14 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/codec.ts#fieldsToStateV3",
-        "packages/dpp-core/src/signatures.ts#actorPreimageV3",
-        "packages/dpp-core/src/signatures.ts#publisherPreimageV3",
-        "packages/dpp-core/src/constants.ts"
+        "packages/dpp-protocol/src/codec.ts#fieldsToStateV3",
+        "packages/dpp-protocol/src/signatures.ts#actorPreimageV3",
+        "packages/dpp-protocol/src/signatures.ts#publisherPreimageV3",
+        "packages/dpp-protocol/src/constants.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/record-v3.test.ts",
-        "packages/dpp-core/test/chain-v3.test.ts"
+        "packages/dpp-protocol/test/record-v3.test.ts",
+        "packages/dpp-protocol/test/chain-v3.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v3.json#genesis.actorPreimage",
@@ -1326,15 +1326,15 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/carrier.ts#checkCarrier",
-        "packages/dpp-core/src/carrier.ts#tokenIdOf",
-        "packages/dpp-core/src/codec.ts#tokenIdFromWireBytes",
-        "packages/dpp-core/src/verifyChain.ts#inspectChain"
+        "packages/dpp-protocol/src/carrier.ts#checkCarrier",
+        "packages/dpp-protocol/src/carrier.ts#tokenIdOf",
+        "packages/dpp-protocol/src/codec.ts#tokenIdFromWireBytes",
+        "packages/dpp-protocol/src/verifyChain.ts#inspectChain"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v3.test.ts",
-        "packages/dpp-core/test/record-v3.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts"
+        "packages/dpp-protocol/test/chain-v3.test.ts",
+        "packages/dpp-protocol/test/record-v3.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v3.json#tokenId",
@@ -1363,13 +1363,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/carrier.ts#checkCarrier",
-        "packages/dpp-core/src/transition.ts#checkTransition",
-        "packages/dpp-core/src/verifyChain.ts#inspectChain"
+        "packages/dpp-protocol/src/carrier.ts#checkCarrier",
+        "packages/dpp-protocol/src/transition.ts#checkTransition",
+        "packages/dpp-protocol/src/verifyChain.ts#inspectChain"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v3.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts"
+        "packages/dpp-protocol/test/chain-v3.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v3.json#refusals",
@@ -1404,12 +1404,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/verifyChain.ts#inspectChain",
-        "packages/dpp-core/src/evidence.ts"
+        "packages/dpp-protocol/src/verifyChain.ts#inspectChain",
+        "packages/dpp-protocol/src/evidence.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/chain-v3.test.ts",
-        "packages/dpp-core/test/evidence-v3-fixture.ts"
+        "packages/dpp-protocol/test/chain-v3.test.ts",
+        "packages/dpp-protocol/test/evidence-v3-fixture.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v3.json#burn",
@@ -1434,7 +1434,7 @@
       "profileId": "core",
       "implementationRefs": [
         "examples/lifecycle-v3.mjs",
-        "packages/dpp-core/src/codec.ts#carrierPrefixFor"
+        "packages/dpp-protocol/src/codec.ts#carrierPrefixFor"
       ],
       "testRefs": [
         "examples/lifecycle-v3.mjs"
@@ -1489,14 +1489,14 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts#linkageReasonCode",
-        "packages/dpp-core/src/evidence.ts",
+        "packages/dpp-protocol/src/evidence.ts#linkageReasonCode",
+        "packages/dpp-protocol/src/evidence.ts",
         "contracts/verification-report.schema.json"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence-v3-fixture.ts",
-        "packages/dpp-core/test/chain-v3.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/evidence-v3-fixture.ts",
+        "packages/dpp-protocol/test/chain-v3.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "conformance/check.mjs",
         "examples/verify-passport.mjs"
       ],
@@ -1555,11 +1555,11 @@
       "applicability": "when a deployment follows the recommended owner-key derivation",
       "profileId": "core (SHOULD)",
       "implementationRefs": [
-        "packages/dpp-core/src/owner.ts#ownerKeyFor"
+        "packages/dpp-protocol/src/owner.ts#ownerKeyFor"
       ],
       "testRefs": [
-        "packages/dpp-core/test/owner.test.ts",
-        "packages/dpp-core/test/chain-fixture.test.ts"
+        "packages/dpp-protocol/test/owner.test.ts",
+        "packages/dpp-protocol/test/chain-fixture.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v1.json#owner3OwnerKey"
@@ -1583,12 +1583,12 @@
       "applicability": "when a profile selects the owner-signed transfer",
       "profileId": "owner-consent@1",
       "implementationRefs": [
-        "packages/dpp-core/src/owner.ts#checkOwnerConsent",
+        "packages/dpp-protocol/src/owner.ts#checkOwnerConsent",
         "packages/overlay-topics/src/tmDpp.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/owner.test.ts",
-        "packages/dpp-core/test/chain-fixture.test.ts",
+        "packages/dpp-protocol/test/owner.test.ts",
+        "packages/dpp-protocol/test/chain-fixture.test.ts",
         "packages/overlay-topics/test/tmDpp.test.ts"
       ],
       "evidenceRefs": [
@@ -1615,12 +1615,12 @@
       "applicability": "when managed-custody@1 is selected",
       "profileId": "managed-custody@1",
       "implementationRefs": [
-        "packages/dpp-core/src/acceptance.ts#inspectManagedAcceptance",
-        "packages/dpp-core/src/acceptance.ts#acceptanceCommitment",
-        "packages/dpp-core/src/acceptance.ts#signManagedAcceptance"
+        "packages/dpp-protocol/src/acceptance.ts#inspectManagedAcceptance",
+        "packages/dpp-protocol/src/acceptance.ts#acceptanceCommitment",
+        "packages/dpp-protocol/src/acceptance.ts#signManagedAcceptance"
       ],
       "testRefs": [
-        "packages/dpp-core/test/acceptance.test.ts",
+        "packages/dpp-protocol/test/acceptance.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -1647,13 +1647,13 @@
       "applicability": "when managed-custody@1 is selected",
       "profileId": "managed-custody@1",
       "implementationRefs": [
-        "packages/dpp-core/src/acceptance.ts#bindAcceptanceToState",
-        "packages/dpp-core/src/verifyChain.ts",
+        "packages/dpp-protocol/src/acceptance.ts#bindAcceptanceToState",
+        "packages/dpp-protocol/src/verifyChain.ts",
         "packages/overlay-topics/src/tmDpp.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/acceptance.test.ts",
-        "packages/dpp-core/test/chain-v2.test.ts",
+        "packages/dpp-protocol/test/acceptance.test.ts",
+        "packages/dpp-protocol/test/chain-v2.test.ts",
         "packages/overlay-topics/test/tmDppV2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
@@ -1705,11 +1705,11 @@
       "applicability": "when managed-custody@1 is selected",
       "profileId": "managed-custody@1",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts"
+        "packages/dpp-protocol/src/evidence.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence-v2-fixture.ts",
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/evidence-v2-fixture.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "examples/verify-passport.mjs"
       ],
       "evidenceRefs": [
@@ -1766,10 +1766,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/attestation.ts"
+        "packages/dpp-protocol/src/attestation.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/attestation.test.ts"
+        "packages/dpp-protocol/test/attestation.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json#claim"
@@ -1819,13 +1819,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/attestation.ts#lifecycleClaimBytes",
-        "packages/dpp-core/src/canonical.ts",
+        "packages/dpp-protocol/src/attestation.ts#lifecycleClaimBytes",
+        "packages/dpp-protocol/src/canonical.ts",
         "packages/vsc/src/validation.ts#parseStrictJsonBytes"
       ],
       "testRefs": [
-        "packages/dpp-core/test/attestation.test.ts",
-        "packages/dpp-core/test/canonical.test.ts",
+        "packages/dpp-protocol/test/attestation.test.ts",
+        "packages/dpp-protocol/test/canonical.test.ts",
         "packages/vsc/test/verification.test.ts"
       ],
       "evidenceRefs": [
@@ -1851,14 +1851,14 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/anchor.ts",
+        "packages/dpp-protocol/src/anchor.ts",
         "packages/overlay-topics/src/tmAttestation.ts",
         "examples/check-registry.mjs"
       ],
       "testRefs": [
         "packages/overlay-topics/test/attestationAnchor.test.ts",
         "packages/overlay-topics/test/attestationTopics.test.ts",
-        "packages/dpp-core/test/evidence.test.ts",
+        "packages/dpp-protocol/test/evidence.test.ts",
         ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
       "evidenceRefs": [
@@ -1884,12 +1884,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts",
-        "packages/dpp-core/src/anchor.ts#inspectAttestationAnchor",
+        "packages/dpp-protocol/src/evidence.ts",
+        "packages/dpp-protocol/src/anchor.ts#inspectAttestationAnchor",
         "examples/check-registry.mjs"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts",
+        "packages/dpp-protocol/test/evidence.test.ts",
         ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
       "evidenceRefs": [
@@ -1919,12 +1919,12 @@
       "implementationRefs": [
         "packages/overlay-topics/src/uoraAnchor.ts",
         "packages/overlay-topics/src/tmUoraDpp.ts",
-        "packages/dpp-core/src/anchor.ts"
+        "packages/dpp-protocol/src/anchor.ts"
       ],
       "testRefs": [
         "packages/overlay-topics/test/uoraAnchor.test.ts",
         "packages/overlay-topics/test/uoraRail.test.ts",
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/anchor-v3.json",
@@ -1979,12 +1979,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts (authority from policy lists and verifiers only)",
+        "packages/dpp-protocol/src/evidence.ts (authority from policy lists and verifiers only)",
         "spec/conformance.md#5-identity-vocabulary",
         "the reference application (not published)"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts (authority never inferred from evidence)",
+        "packages/dpp-protocol/test/evidence.test.ts (authority never inferred from evidence)",
         "the reference application (not published)"
       ],
       "evidenceRefs": [
@@ -2011,10 +2011,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/did.ts"
+        "packages/dpp-protocol/src/did.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/did.test.ts"
+        "packages/dpp-protocol/test/did.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json#issuer"
@@ -2517,12 +2517,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts",
+        "packages/dpp-protocol/src/evidence.ts",
         "contracts/verification-report.schema.json"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts",
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/evidence.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "conformance/check.mjs (schema validation of every fixture report)"
       ],
       "evidenceRefs": [
@@ -2548,10 +2548,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts (subjectBinding)"
+        "packages/dpp-protocol/src/evidence.ts (subjectBinding)"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.subject-substitution",
@@ -2578,11 +2578,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts",
+        "packages/dpp-protocol/src/evidence.ts",
         "contracts/verification-report.schema.json#/$defs/sharedReasonCode"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json"
@@ -2606,10 +2606,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts (observe)"
+        "packages/dpp-protocol/src/evidence.ts (observe)"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/evidence-v1.json#cases.stale-prefix-superseded"
@@ -2634,12 +2634,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/evidence.ts",
+        "packages/dpp-protocol/src/evidence.ts",
         "contracts/verification-report.schema.json"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence-v2-fixture.ts",
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/evidence-v2-fixture.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "conformance/check.mjs",
         "examples/verify-passport.mjs"
       ],
@@ -3673,13 +3673,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/test/record-v1-vectors.ts",
-        "packages/dpp-core/test/chain-v1-vectors.ts",
+        "packages/dpp-protocol/test/record-v1-vectors.ts",
+        "packages/dpp-protocol/test/chain-v1-vectors.ts",
         "packages/overlay-topics/test/anchor-v3-vectors.ts",
         "packages/overlay-topics/test/attestation-v1-fixture.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/fixture-json.test.ts (expectStackShape)",
+        "packages/dpp-protocol/test/fixture-json.test.ts (expectStackShape)",
         "packages/overlay-topics/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
@@ -3905,11 +3905,11 @@
       "implementationRefs": [
         "packages/dpp-profiles/schemas/exchange-profile.schema.json",
         "packages/dpp-profiles/manifests/exchange/",
-        "packages/dpp-core/src/evidence.ts (representation-unsupported)"
+        "packages/dpp-protocol/src/evidence.ts (representation-unsupported)"
       ],
       "testRefs": [
         "packages/dpp-profiles/test/catalogue.test.ts",
-        "packages/dpp-core/test/evidence.test.ts"
+        "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4009,11 +4009,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/src/anchor.ts",
+        "packages/dpp-protocol/src/anchor.ts",
         "the reference registry (not published)"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidence.test.ts (anchor-tampered-bytes)",
+        "packages/dpp-protocol/test/evidence.test.ts (anchor-tampered-bytes)",
         "the reference registry (not published)"
       ],
       "evidenceRefs": [
@@ -4094,12 +4094,12 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/evidence-package.schema.json",
-        "packages/dpp-core/src/evidencePackage.ts",
+        "packages/dpp-protocol/src/evidencePackage.ts",
         "the reference registry (not published)",
         "packages/overlay-topics/src/evidenceExport.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/evidencePackage.test.ts",
+        "packages/dpp-protocol/test/evidencePackage.test.ts",
         "the reference registry (not published)",
         "packages/overlay-topics/test/evidenceExport.test.ts"
       ],
@@ -4256,14 +4256,14 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/publisher-policy.schema.json",
-        "packages/dpp-core/src/publisherPolicy.ts",
-        "packages/dpp-core/src/verifyChain.ts",
+        "packages/dpp-protocol/src/publisherPolicy.ts",
+        "packages/dpp-protocol/src/verifyChain.ts",
         "packages/overlay-topics/src/policyConfig.ts",
         "packages/overlay-topics/src/tmDpp.ts",
         "packages/overlay-topics/src/tmAttestation.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/publisherPolicy.test.ts",
+        "packages/dpp-protocol/test/publisherPolicy.test.ts",
         "packages/overlay-topics/test/publisherPolicy.test.ts"
       ],
       "evidenceRefs": [],
@@ -4396,10 +4396,10 @@
       "applicability": "for an implementation of the publisher key policy",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/test/publisher-policy-vectors.ts"
+        "packages/dpp-protocol/test/publisher-policy-vectors.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -4426,10 +4426,10 @@
       "applicability": "for an implementation of the evidence package",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-core/test/evidence-package-vectors.ts"
+        "packages/dpp-protocol/test/evidence-package-vectors.ts"
       ],
       "testRefs": [
-        "packages/dpp-core/test/fixture-json.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [

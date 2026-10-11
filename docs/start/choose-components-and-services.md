@@ -19,13 +19,19 @@ For live writes, arrange access before configuring the writer. An index being pu
 
 ## Pick only the packages your task uses
 
-For the TypeScript/JavaScript reference implementation:
+For a new application, start with **[the application skeleton](../packages/build-an-application.md#start-with-an-application-skeleton)**. `@bsv/create-dpp-app` creates the app and declares its selected dependencies. For deployment, choose an existing index provider or a separate index project.
+
+For a new reference index, start with **[Create an index](../packages/create-dpp-index.md)**. `@bsv/create-dpp-index` creates your project and includes `@bsv/dpp-overlay-topics` as its runtime dependency. There is one setup path; you do not install the runtime separately. The starter guide identifies its current publication prerequisite.
+
+If your app will use an existing compatible index, obtain its URL and access settings from the operator. You need neither index package just to connect over HTTP.
+
+The reference libraries below are components for your code. An included dependency is already supplied by the starter or package that uses it:
 
 | Package | Purpose | Needed when |
 |---|---|---|
-| `@bsv/dpp-core` | Passport records, verification and native lifecycle claim helpers | Your application uses these reference helpers |
+| `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers | Your application uses these reference helpers |
 | `@bsv/dpp-profiles` | Product profile manifests, payload schemas and supported profile helpers | You use its product data or interoperability tooling |
-| `@bsv/dpp-overlay-topics` | DPP index topics and lookup services | You host or embed the reference index; HTTP clients do not need this package just to call it |
+| `@bsv/dpp-overlay-topics` | Index runtime, topics and lookup services | Included by the index starter; install directly only for a custom or embedded index |
 | `@bsv/vsc` | Supported verifiable-credential and exchange features | Your selected feature uses those formats; native lifecycle claims do not require it |
 
 Use the exact versions in [install the selected release](../packages/README.md). Declare `@bsv/sdk` directly if your code imports it. The reference runtime is Node.js 22 or later with ESM. Check the [supported entry points](../packages/support-table.md) before choosing a browser deployment; browser module support is not established merely because a package is JavaScript. Profile JSON/schema assets have their own packaging instructions.
@@ -36,7 +42,7 @@ There is no released turnkey application service or registry package. The [appli
 
 | Service or capability | When it is needed | Your choices |
 |---|---|---|
-| Index, also called overlay | The documented live lookup and publication workflow | Use a compatible provider with agreed access, or [run your own](../operate/README.md) |
+| Index, also called overlay | The documented live lookup and publication workflow | Use a compatible provider with agreed access, or [create your own index](../packages/create-dpp-index.md) |
 | Wallet and broadcast | Funding and submitting live transactions | Integrate a suitable wallet or connect to one; the reference writer uses BRC-100. Every reader does not need a funded wallet |
 | Header and proof source | Checking blockchain inclusion where applicable | Obtain the required evidence through a compatible source. The reference index currently uses WhatsOnChain |
 | Publisher countersigning | Issuing or updating a passport | Supply authorised signing through your application or an agreed service. Running an index does not automatically supply it |

@@ -13,7 +13,7 @@ import {
 } from '@bsv/sdk'
 import { Engine, type LookupService } from '@bsv/overlay'
 import { readFileSync } from 'node:fs'
-import { buildLockingScript, completeState, ownerBlobHash, type DppState, type DppStateData } from '@bsv/dpp-core'
+import { buildLockingScript, completeState, ownerBlobHash, type DppState, type DppStateData } from '@bsv/dpp-protocol'
 import { DppTopicManager, type DppAdmissionOptions } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { AttestationTopicManager } from '../src/tmAttestation.js'

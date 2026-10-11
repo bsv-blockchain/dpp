@@ -23,7 +23,7 @@ The standard is a working draft before version 1.0. Its beta.7 packages, under t
 
 ## Conformance evidence
 
-The ledger records, for every requirement of the standard, how far it is implemented and what evidence supports it; a release's selection names the conformance claims that release makes and the ones it withholds. Claims here are claims about the standard, not the lifecycle claims a passport carries. Read the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) beside the [release selection](https://github.com/bsv-blockchain/dpp/blob/466095bece6abe61f2f3717946676c80b296cd04/conformance/selections/dpp-release-2026-10-6.json) for the current set, `dpp-release-2026-10-6`, which names the claims it requires and those it withholds.
+The ledger records, for every requirement of the standard, how far it is implemented and what evidence supports it; a release's selection names the conformance claims that release makes and the ones it withholds. Claims here are claims about the standard, not the lifecycle claims a passport carries. Use the [current release set and selection](../reference/release-sets.md) to check which claims apply to your exact versions. The source candidate is `dpp-release-2026-10-8`, with its claims in `conformance/selections/dpp-release-2026-10-8.json`; the latest published set has its own receipt and recorded source revision.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|

@@ -42,7 +42,7 @@ import {
   tokenIdWireBytes,
   verifyChain,
   verifyPassportEvidence,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 
 let failures = 0
 const say = (ok, sentence) => {

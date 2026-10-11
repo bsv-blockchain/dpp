@@ -4,7 +4,7 @@
 // or not-applicable for each check with a reason. Missing evidence stays
 // unknown and is never treated as verified.
 import { WhatsOnChain, type ChainTracker, type Transaction } from '@bsv/sdk'
-import { EVIDENCE_CHECK_LABELS, findDppOutputs, verifyPassportEvidence, type EvidenceReport, type ManagedAcceptanceRecord } from '@bsv/dpp-core'
+import { EVIDENCE_CHECK_LABELS, findDppOutputs, verifyPassportEvidence, type EvidenceReport, type ManagedAcceptanceRecord } from '@bsv/dpp-protocol'
 import type { Network } from './config.js'
 import type { IndexClient } from './index-client.js'
 

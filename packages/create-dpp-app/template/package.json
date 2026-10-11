@@ -22,7 +22,7 @@
     "operations": "tsx apps/api/src/cli.ts operations"
   },
   "dpp": {
-    "releaseSet": "dpp-release-2026-10-6"
+    "releaseSet": "dpp-release-2026-10-8"
   },
   "overrides": {
     "@bsv/overlay": {

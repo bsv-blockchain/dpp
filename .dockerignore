@@ -20,6 +20,7 @@ contracts/*
 **/node_modules/
 **/dist/
 packages/dpp-core/schemas/
+packages/dpp-protocol/schemas/
 
 # Secrets never enter an image; configuration is environment only.
 **/.env

@@ -31,7 +31,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { PrivateKey } from '@bsv/sdk'
-import { policyDigest, policySigningPreimage, verifyPolicyChain } from '@bsv/dpp-core'
+import { policyDigest, policySigningPreimage, verifyPolicyChain } from '@bsv/dpp-protocol'
 
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')

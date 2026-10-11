@@ -76,7 +76,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Beef, LockingScript, MerklePath, Transaction, WhatsOnChain } from '@bsv/sdk'
-import { EVIDENCE_CHECK_LABELS, chainFromBeef, findDppOutputs, verifyChain, verifyPassportEvidence } from '@bsv/dpp-core'
+import { EVIDENCE_CHECK_LABELS, chainFromBeef, findDppOutputs, verifyChain, verifyPassportEvidence } from '@bsv/dpp-protocol'
 
 // One question at a time, a little apart, each answer kept for the run: the
 // chain check and the report ask about the same blocks, and questions asked

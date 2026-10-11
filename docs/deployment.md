@@ -25,7 +25,7 @@ On the index, `POST /submit` and `POST /retract` need the operator's submit toke
 
 These are the documented access rules; the latest capability check did not exercise authenticated writes. Keep each token with its intended endpoint. Independently establish the operator identity key used to check a signed publisher policy, and check its key windows before announcing. The index admits public publisher keys; it does not provide their private countersigning capability.
 
-The tokens belong to the hosted reference's operator and are not handed out for general use: to publish your own passports, [run your own index](operate/README.md). To ask for a token or for the hosted index to name yours as a peer, [contact the programme](start/choose-your-path.md#contact-the-programme).
+The tokens belong to the hosted reference's operator and are not handed out for general use: to publish your own passports, [create your own index](packages/create-dpp-index.md) or arrange access with a compatible provider. To ask for a token or for the hosted index to name yours as a peer, [contact the programme](start/choose-your-path.md#contact-the-programme).
 
 ## Passports to try
 

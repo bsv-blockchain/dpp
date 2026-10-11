@@ -1,18 +1,20 @@
-# @bsv/dpp-core
+# @bsv/dpp-protocol
 
-Use `@bsv/dpp-core` to build a passport reader, writer or registry in JavaScript or TypeScript. It decodes, builds and signs passport states and claims, and checks a passport's evidence into a verification report. It does not run an index, hold a wallet or decide whom your application trusts.
+Use `@bsv/dpp-protocol` to build a passport reader, writer or registry in JavaScript or TypeScript. It decodes, builds and signs passport states and claims, and checks a passport's evidence into a verification report. It does not run an index, hold a wallet or decide whom your application trusts.
 
-**Experimental prerelease:** `@bsv/dpp-core` 0.3.0-beta.8 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-protocol` 0.3.0-beta.9 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Install
+
+**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now. The npm command below applies once these exact versions have been published.
 
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.8 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10
 ```
 
-Pin the exact version so an upgrade is your choice: a bare `npm install @bsv/dpp-core` installs the `latest` tag, the newest beta. Keep your lockfile and review compatibility before upgrading. The examples also import `@bsv/sdk`. The [support table](support-table.md) says which entry points run where; browser use is untested.
+Pin the exact version so an upgrade is your choice: after publication, a bare `npm install @bsv/dpp-protocol` installs the `latest` tag, the newest beta. Keep your lockfile and review compatibility before upgrading. The examples also import `@bsv/sdk`. The [support table](support-table.md) says which entry points run where; browser use is untested.
 
 Each example below is a complete file to save in that project, as `.mjs` because it uses top-level `await`.
 
@@ -22,7 +24,7 @@ Save this as `check-setup.mjs`. It decodes the first state of the repository's v
 
 ```js
 import { Transaction } from '@bsv/sdk'
-import { findDppOutputs } from '@bsv/dpp-core'
+import { findDppOutputs } from '@bsv/dpp-protocol'
 
 // The first state of the repository's version 2 test passport, at the reviewed commit.
 const fixture = await (await fetch('https://raw.githubusercontent.com/bsv-blockchain/dpp/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/chain-v2.json')).json()
@@ -46,7 +48,7 @@ It needs network access to the hosted index, the hosted registry and WhatsOnChai
 
 ```js
 import { Beef, WhatsOnChain } from '@bsv/sdk'
-import { chainFromBeef, verifyPassportEvidence } from '@bsv/dpp-core'
+import { chainFromBeef, verifyPassportEvidence } from '@bsv/dpp-protocol'
 
 // Ask the header source one question at a time, a little apart, and keep each
 // answer for the run: WhatsOnChain answers only a few requests a second.
@@ -287,16 +289,16 @@ The controller key, in field 6 of every state, names who controls the passport a
 | `policyInForceAt(chain, at)`, `publisherKeysAt(chain, at, role?)` | The chain and an instant | The version in force then, and the keys it admits |
 | `inspectEvidencePackage(manifest, files, { expectedPassportId, expectedSigner })` | A package's manifest and its files by path | Structure, inventory and signature findings; check that `failures` is empty |
 
-The source is under [`packages/dpp-core/src`](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/src), and the [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/README.md) lists the remaining exports. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
+The current source is under `packages/dpp-protocol/src`. The [implementation](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/src) and the [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/README.md) show the source before the rename. Source disagreements are listed in the [fixture guide](../implement/fixture-runner.md).
 
 ## The standard's schemas
 
-To validate a verification report, capability document or evidence package without a repository checkout, import the standard's JSON schemas from `@bsv/dpp-core/schemas/*`, copied byte for byte. Save this as `schema-id.mjs`:
+To validate a verification report, capability document or evidence package without a repository checkout, import the standard's JSON schemas from `@bsv/dpp-protocol/schemas/*`, copied byte for byte. Save this as `schema-id.mjs`:
 
 ```js
 import { createRequire } from 'node:module'
 const require = createRequire(import.meta.url)
-const schema = require('@bsv/dpp-core/schemas/verification-report.schema.json')
+const schema = require('@bsv/dpp-protocol/schemas/verification-report.schema.json')
 console.log(schema.$id)
 ```
 
@@ -317,4 +319,4 @@ console.log(schema.$id)
 | Check a state's product data against its profile | [@bsv/dpp-profiles](dpp-profiles.md) |
 | Write passports with these functions | [Build an application](build-an-application.md), step 3 |
 | Add a claim to a passport you do not control | [Add a claim](add-a-claim.md) |
-| Run an index of your own | [@bsv/dpp-overlay-topics](dpp-overlay-topics.md) |
+| Run an index of your own | [Create an index](create-dpp-index.md), with the runtime included |

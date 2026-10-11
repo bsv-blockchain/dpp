@@ -29,6 +29,7 @@ test('scaffolds into an empty directory, restores dotfiles and names the project
     assert.equal(scaffolded.name, 'my-app')
     assert.equal(scaffolded.dpp.releaseSet, manifest.dpp.releaseSet)
     const api = JSON.parse(readFileSync(join(target, 'apps/api/package.json'), 'utf8'))
+    assert.ok(!Object.hasOwn(api.dependencies, '@bsv/dpp-core'), 'new apps use the protocol package directly')
     for (const [name, version] of Object.entries(manifest.dpp.packages)) assert.equal(api.dependencies[name], version, `${name} is pinned to the release set`)
   } finally {
     rmSync(scratch, { recursive: true, force: true })

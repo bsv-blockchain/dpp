@@ -49,7 +49,7 @@ An application account sits outside all three. Knowing who signed in does not es
 
 ## Accept the parties you trust
 
-A reader names the parties it accepts in the `authority` option of `verifyPassportEvidence`: `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`. These are lists you keep: the genesis actor keys, claim issuer DIDs, anchoring service keys and acceptance custodians you accept. Never take them from the evidence under test. The `issuerAuthority` check reports the result. It reads `unknown` with `policy-missing` when you give no `authority` option, `unknown` with `authority-unconfirmed` for a role you give no list for, and `fail` with `authority-unconfirmed` for a party a list leaves out. [Gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence) shows a reader that passes one.
+A reader names the parties it accepts in the `authority` option of `verifyPassportEvidence`: `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`. These are lists you keep: the genesis actor keys, claim issuer DIDs, anchoring service keys and acceptance custodians you accept. Never take them from the evidence under test. The `issuerAuthority` check reports the result. It reads `unknown` with `policy-missing` when you give no `authority` option, `unknown` with `authority-unconfirmed` for a role you give no list for, and `fail` with `authority-unconfirmed` for a party a list leaves out. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) shows a reader that passes one.
 
 A repairer's signature establishes which key signed the repair claim. Accepting that party as a repairer is your policy's decision.
 

@@ -8,16 +8,16 @@
 
 **Verifiable Supply Chain (VSC)** is a draft of the W3C Verifiable Supply Chain Community Group for credentials that record supply-chain events. This package implements a selected subset of it as its own profile, `vsc-draft-compat/0.1.0`, against the draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It is not a W3C standard and the package claims no W3C certification.
 
-**A SEAL** is the VSC credential for one signed event: which products (`what`), when, where, who acted and how, with links to the earlier SEALs in the product's chain of custody. It is a W3C verifiable credential, secured with an `Ed25519Signature2020` or `bbs-2023` proof, and it is a different format from the native lifecycle claim that `@bsv/dpp-core` signs. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
+**A SEAL** is the VSC credential for one signed event: which products (`what`), when, where, who acted and how, with links to the earlier SEALs in the product's chain of custody. It is a W3C verifiable credential, secured with an `Ed25519Signature2020` or `bbs-2023` proof, and it is a different format from the native lifecycle claim that `@bsv/dpp-protocol` signs. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
 
 | You want to | Need this package? |
 |---|---|
-| Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-core](dpp-core.md) |
+| Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-protocol](dpp-protocol.md) |
 | Issue or verify SEALs | Yes, the root entry point |
 | Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/vsc/exchange` |
 | Import EPCIS 2.0.1 event documents, or map their events to SEALs | Yes, `@bsv/vsc/epcis-source` and the root |
 
-The package does not fund a wallet, move a passport or find records through an index; those stay with [@bsv/dpp-core](dpp-core.md) and your own wallet. It has no BSV runtime dependency.
+The package does not fund a wallet, move a passport or find records through an index; those stay with [@bsv/dpp-protocol](dpp-protocol.md) and your own wallet. It has no BSV runtime dependency.
 
 ## Install
 
@@ -27,7 +27,7 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/vsc@0.2.0-beta.5
 ```
 
-Each package numbers its own prereleases, so `@bsv/vsc` 0.2.0-beta.5 is the version in the current release set, `dpp-release-2026-10-6`, beside beta.7 of core and profiles and beta.9 of overlay topics. A bare `npm install @bsv/vsc` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
+Each package numbers its own prereleases. `@bsv/vsc` 0.2.0-beta.5 is unchanged in the current source candidate, `dpp-release-2026-10-8`, beside protocol and profiles beta.9 and overlay topics beta.11. The [release page](../reference/release-sets.md) distinguishes that candidate from the latest published set. A bare `npm install @bsv/vsc` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
 
 ## Entry points and their main functions
 

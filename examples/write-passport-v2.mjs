@@ -102,7 +102,7 @@ import {
   verifyOwnerBlob,
   verifyOwnerLinkage,
   verifyPassportEvidence,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { gs1CheckDigit, buildGs1DigitalLink, parseGs1DigitalLink, readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -117,7 +117,7 @@ const originator = flag('originator') ?? 'localhost'
 const journalDirectory = flag('journal')
 
 const PROFILE = 'general@2'
-/** BRC-43 protocol the owner tier is encrypted under (spec/record-model.md section 7); dpp-core does not export it. */
+/** BRC-43 protocol the owner tier is encrypted under (spec/record-model.md section 7); dpp-protocol does not export it. */
 const OWNER_DATA_PROTOCOL = [2, 'dpp owner data v1']
 const CUSTODY_PROFILE = 'managed-custody@1'
 const ANYONE = new LockingScript([{ op: 0x51 }])

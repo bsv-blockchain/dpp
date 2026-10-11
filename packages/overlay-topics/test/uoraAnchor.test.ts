@@ -74,7 +74,7 @@ async function writeAnchor(
 
 describe('did:key, as this package encodes it', () => {
   /**
-   * Pinned against `@bsv/dpp-core`'s own vector rather than imported from it. The
+   * Pinned against `@bsv/dpp-protocol`'s own vector rather than imported from it. The
    * duplication is deliberate (see `uoraAnchor.ts`): this file must not depend
    * on the token core, so the two are held together by a committed string. If
    * either implementation drifts, one of the two suites goes red.

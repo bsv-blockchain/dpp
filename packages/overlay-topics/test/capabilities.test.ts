@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3 } from '@bsv/dpp-core'
+import { STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3 } from '@bsv/dpp-protocol'
 import {
   buildCapabilities,
   IMPLICIT_POLICY_VERSION,

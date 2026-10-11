@@ -17,7 +17,7 @@ import {
   STANDARD_VERSION_V2,
   STANDARD_VERSION_V3,
   policyInForceAt,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { DPP_TOPIC } from './tmDpp.js'
 import { DPP_SERVICE, MAX_LOOKUP_RESULTS } from './lsDpp.js'
 import { ATTESTATION_TOPIC } from './tmAttestation.js'

@@ -8,7 +8,7 @@ A claim, in full a lifecycle claim, is a statement about one passport, such as a
 
 | You need | For | Where it comes from |
 |---|---|---|
-| Node 22 and the packages: `npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/sdk@2.8.10` in your project | Signing and checking | npm, at exact versions |
+| Node 22 and the [renamed candidate packages](README.md#use-the-renamed-source-candidate), including `@bsv/sdk@2.8.10` | Signing and checking | Local candidate archives; publication is pending |
 | The passport identifier | The claim's subject | The product's label or data carrier, never a lookup result |
 | An identity key in a BRC-100 wallet | Signing; its `did:key` is your issuer name | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |
 | A registry that will hold the claim | Readers get the claim from it | The hosted registry, which stores only with its write token ([ask the programme](../start/choose-your-path.md#contact-the-programme)), or your own ([registry guide](../implement/roles/registry.md)) |
@@ -16,7 +16,7 @@ A claim, in full a lifecycle claim, is a statement about one passport, such as a
 
 The first three are enough to sign and check a claim; storing and anchoring need the last two. Nothing before step 3 spends money or stores anything.
 
-To try it offline first, run these at the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`:
+To try it offline first, run these at the root of the [source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`:
 
 ```sh
 node examples/lifecycle-v2.mjs
@@ -50,7 +50,7 @@ import { Beef, PrivateKey, ProtoWallet } from '@bsv/sdk'
 import {
   LIFECYCLE_MEDIA_TYPE, LIFECYCLE_REPRESENTATION, buildAttestationAnchor, chainFromBeef, didKeyFromIdentityKey,
   findDppOutputs, inspectAttestationAnchor, lifecycleClaimDigest, signLifecycleClaim, verifyLifecycleClaim,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 
 const index = 'https://dpp-overlay.bsvb.net'
 const registry = 'https://dpp-resolver.bsvb.net'
@@ -148,7 +148,7 @@ Save this as `find-claims.mjs`; it reads the three anchored claims the hosted re
 
 ```js
 import { Beef } from '@bsv/sdk'
-import { inspectAttestationAnchor } from '@bsv/dpp-core'
+import { inspectAttestationAnchor } from '@bsv/dpp-protocol'
 
 const index = 'https://dpp-overlay.bsvb.net'
 const registry = 'https://dpp-resolver.bsvb.net'
@@ -175,7 +175,7 @@ Transfer did:key:zQ3shnfXGt4r claim held by this registry
 Origin did:key:zQ3shnfXGt4r claim held by this registry
 ```
 
-For your own claim, use your passport, the index you announced to and your registry. Then run the full reader in [gather a passport's evidence](dpp-core.md#gather-a-passports-evidence) with your DID in `claimIssuers` and your anchoring service's key in `anchoringServices`: `nativeAttestationSignature`, the three anchor checks and `issuerAuthority` should pass. If it finds your anchor but not your claim, six checks read `unknown`, as that page lists.
+For your own claim, use your passport, the index you announced to and your registry. Then run the full reader in [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) with your DID in `claimIssuers` and your anchoring service's key in `anchoringServices`: `nativeAttestationSignature`, the three anchor checks and `issuerAuthority` should pass. If it finds your anchor but not your claim, six checks read `unknown`, as that page lists.
 
 ## What is not settled
 
@@ -196,4 +196,4 @@ For your own claim, use your passport, the index you announced to and your regis
 | See how readers decide whom to accept | [Identity and authority](../learn/identity-and-authority.md) |
 | Issue a claim as a W3C credential instead | [Verifiable credentials](../learn/verifiable-credentials.md), [external credential verification](../interoperability/external-credentials.md) |
 | Hold claims yourself | [Registry](../implement/roles/registry.md) |
-| Read the report a reader makes of your claim | [Gather a passport's evidence](dpp-core.md#gather-a-passports-evidence) |
+| Read the report a reader makes of your claim | [Gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) |

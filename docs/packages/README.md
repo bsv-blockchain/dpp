@@ -2,29 +2,63 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The selected release is `dpp-release-2026-10-6`, with beta.9 of overlay topics, beta.7 of core and profiles and beta.5 of the VSC package, on `@bsv/sdk` 2.8.10 and under the Apache 2.0 licence, all published to npm under `latest`, the overlay package on 3 October 2026. See the [beta.9 publication receipt](../reference/beta-9-publication.md), [release status](../reference/release-sets.md) and [support table](support-table.md).
+The source candidate uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. Existing consumers must migrate their imports and schema paths; the active release uses only the new name. Publication of the renamed packages is pending; use the source route below to run this documentation's current examples. See [migration](../migration.md#rename-dpp-core-to-dpp-protocol) for existing applications.
 
-Use [choose packages and services](../start/choose-components-and-services.md) if you have not selected your components. Install published packages for your application, or use the separately pinned source checkout below for the documentation examples.
+Use [choose packages and services](../start/choose-components-and-services.md) to select your components. The [release status](../reference/release-sets.md) distinguishes the source candidate from published releases, and the [support table](support-table.md) describes the candidate's entry points.
+
+## Choose your starting point
+
+| You want to | Start here | What to install |
+| --- | --- | --- |
+| Create a new application | [Application skeleton](build-an-application.md#start-with-an-application-skeleton) | Use `@bsv/create-dpp-app`. It includes the application files and selected dependencies |
+| Run a new index | [Create an index](create-dpp-index.md) | Use `@bsv/create-dpp-index`. It includes `@bsv/dpp-overlay-topics` in the generated project's dependencies |
+| Connect your app to an existing index | [Choose index access](../start/choose-components-and-services.md#decide-which-services-to-run-or-use) | Neither index package is needed just for HTTP access; obtain the URL and scoped access settings |
+| Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
+| Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay-topics.md) | Install the runtime directly as an alternative to the starter |
+
+Both starters are source candidates pending publication. Their guides explain how to check them today. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
+
+## Use the renamed source candidate
+
+From a checkout containing `packages/dpp-protocol`, using Node 22 or later:
+
+```sh
+npm ci
+node scripts/release-candidates.mjs
+node scripts/consumer-check.mjs
+```
+
+This builds the packages, packs their archives and tests them in a separate project. It publishes nothing. To try the protocol library and profiles in your own application, replace `/absolute/path/to/dpp` with the checkout's absolute path:
+
+```sh
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
+```
+
+Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-topics-0.4.0-beta.11.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
+
+For a published release, use the exact packages below and keep `@bsv/dpp-core` in its imports. Those earlier versions do not provide the new package name. Change imports to `@bsv/dpp-protocol` when adopting the renamed candidate or its eventual published release.
 
 ## Install from npm
+
+The latest complete publication with a receipt in this documentation is the earlier `dpp-release-2026-10-7`: overlay beta.10, core and profiles beta.8, and VSC beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.10 publication receipt](../reference/beta-10-publication.md).
 
 A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with core:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.7
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.8
 ```
 
 | Add when needed | Exact package | Purpose |
 |---|---|---|
-| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.7` | Profile manifests, payload schemas and supported projection/discovery helpers |
+| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.8` | Profile manifests, payload schemas and supported projection/discovery helpers |
 | Your code imports wallet or transaction APIs | `@bsv/sdk@2.8.10` | Declare direct imports as direct dependencies |
 | Your selected credential or exchange feature uses VSC | `@bsv/vsc@0.2.0-beta.5` | Supported credential/exchange formats; not needed just to sign a native lifecycle claim |
-| You embed index components or operate the reference overlay | `@bsv/dpp-overlay-topics@0.4.0-beta.9` | Topic managers and lookup services; not required just to call an index over HTTP |
+| You embed index components in your own code | `@bsv/dpp-overlay-topics@0.4.0-beta.10` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
 
-For example, the application writer guide uses core, profiles and the SDK:
+For a published installation using the protocol helpers, profiles and the SDK:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.7 @bsv/dpp-profiles@0.3.0-beta.7 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-core@0.3.0-beta.8 @bsv/dpp-profiles@0.3.0-beta.8 @bsv/sdk@2.8.10
 ```
 
 A hosted writer's wallet toolbox must accept that SDK version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. All four DPP packages use ECMAScript modules. Releases publish to the `latest` tag until version 1.0; exact versions and the consumer lockfile define the tested installation. An [independent implementation](../implement/README.md) need not use any of these packages.
@@ -37,28 +71,29 @@ The table maps each workflow to the package functions it uses. For the order to 
 
 | Workflow | Public package API | Application responsibility | Specification |
 |---|---|---|---|
-| Issue, update and retire a passport | Core `completeState`, `buildLockingScript`, `verifyChain` | Supply authorised signers and a funded BRC-100 wallet; verify before sending; serialise writes, retain evidence and obtain proofs | Record models and writing lifecycle |
-| Offer, accept and transfer custody | Core `signManagedAcceptance`, `acceptanceCommitment`, `bindAcceptanceToState` | Record offers, expiry, recipient evidence, access policy, idempotency and operation outcomes | Managed custody |
+| Issue, update and retire a passport | Protocol `completeState`, `buildLockingScript`, `verifyChain` | Supply authorised signers and a funded BRC-100 wallet; verify before sending; serialise writes, retain evidence and obtain proofs | Record models and writing lifecycle |
+| Offer, accept and transfer custody | Protocol `signManagedAcceptance`, `acceptanceCommitment`, `bindAcceptanceToState` | Record offers, expiry, recipient evidence, access policy, idempotency and operation outcomes | Managed custody |
 | Decline an offer or query an operation | Application orchestration | Persist the workflow without inventing another token operation | Managed custody and writing lifecycle |
-| Read and verify a passport | Core `findDppOutputs`, `verifyPassportEvidence` | Supply expected subject, history, header source, latest-state observations and authority policy | Verification |
-| Sign, anchor and verify lifecycle claims | Core `signLifecycleClaim`, `buildAttestationAnchor`, `verifyLifecycleClaim` | Retain exact secured bytes; fund and broadcast the separate anchor; configure authority and status evidence | Rules and services |
+| Read and verify a passport | Protocol `findDppOutputs`, `verifyPassportEvidence` | Supply expected subject, history, header source, latest-state observations and authority policy | Verification |
+| Sign, anchor and verify lifecycle claims | Protocol `signLifecycleClaim`, `buildAttestationAnchor`, `verifyLifecycleClaim` | Retain exact secured bytes; fund and broadcast the separate anchor; configure authority and status evidence | Rules and services |
 | Find passport states and anchors | Overlay topic managers and lookup services, or the BRC-24 HTTP contract | Choose an operator; retrieve and verify the returned evidence; retry announcement using the same transaction | Overlay services |
 | Validate profiles and project data | Profiles `readManifest`, `missingRequired`, `projectPassport` and data exports | Select exact profile versions; supply sources, policy and a format-asserting schema validator | Profiles and projections |
 | Credentials and source exchange | VSC `verifySeal`, `./exchange`, `./epcis-source` | Supply selected suites, authority/status evidence and durable source retention | Credential and interoperability profiles |
-| Export and import evidence | Core `signEvidenceManifest`, `inspectEvidencePackage`; overlay `buildEvidenceExportPart`, `joinEvidenceExport` | Retain and transport files; check digests and reverify under the reader's own policy | Portable evidence |
+| Export and import evidence | Protocol `signEvidenceManifest`, `inspectEvidencePackage`; overlay `buildEvidenceExportPart`, `joinEvidenceExport` | Retain and transport files; check digests and reverify under the reader's own policy | Portable evidence |
 
-The application service remains outside this release. Its existing implementation includes demo persistence and identity structures, so applications adopting the standard directly should supply their own adapters rather than inherit those structures. The four packages own the shared protocol rules; they do not provide a hosted registry, an account system or durable operation scheduling.
+The application service remains outside this release. Its existing implementation includes demo persistence and identity structures, so applications adopting the standard directly should supply their own adapters rather than inherit those structures. The reference packages own the shared protocol rules; they do not provide a hosted registry, an account system or durable operation scheduling.
 
 Node runtime support does not imply browser runtime support. Keep server packages on the backend and use the [support table](support-table.md) when choosing browser-facing data exports. Missing proof, authority or status evidence remains `unknown`, and must not be treated as verified.
 
 ## Source access
 
-The repository is public. The documentation examples use this reviewed source revision, as the [quick start](../quick-start.md) does:
+The repository is public. The documentation examples use the current source candidate, as the [quick start](../quick-start.md) does:
 
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
 cd dpp
-git checkout --detach aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7
+git switch --detach
+git rev-parse HEAD
 npm ci
 npm run build
 ```
@@ -107,7 +142,7 @@ In the consuming application's directory, run `npm install /absolute/path/to/the
 
 | Task | Package |
 |---|---|
-| Passport records and shared evidence | [Core](dpp-core.md) |
+| Passport records and shared evidence | [Protocol](dpp-protocol.md) |
 | Product profiles and projections | [Profiles](dpp-profiles.md) |
 | Credentials and source events | [VSC](vsc.md) |
 | Index services | [Overlay](dpp-overlay-topics.md) |

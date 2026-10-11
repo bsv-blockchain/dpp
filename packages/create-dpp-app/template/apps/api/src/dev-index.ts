@@ -4,13 +4,13 @@
 // platform wallet and the managed-custody profile selected. Its header
 // checks are off, so it takes the made-up proofs a dry run pushes and claims
 // no inclusion. Production runs the reference index as its own service
-// (deploy/compose.yml) and never this.
+// (a separate operator project or an existing provider) and never this.
 //
 // The HTTP host is not an export of @bsv/dpp-overlay-topics (its entry point
 // is the library), so it is loaded by file URL beside the library's own
 // entry. Imported, the host is a library and starts nothing by itself.
 import { PrivateKey } from '@bsv/sdk'
-import { policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-core'
+import { policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-protocol'
 
 export interface DevIndex {
   url: string

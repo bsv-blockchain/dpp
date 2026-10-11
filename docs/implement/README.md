@@ -27,7 +27,7 @@ The rule is in [conformance](https://github.com/bsv-blockchain/dpp/blob/dab99763
 
 | You may use | You may not use for a property you claim |
 |---|---|
-| Any BSV SDK: `@bsv/sdk` for TypeScript, the [Go SDK](https://github.com/bsv-blockchain/go-sdk), the [Python SDK](https://github.com/bsv-blockchain/py-sdk) or another. None of them is this repository's code. | `@bsv/dpp-core`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay-topics` or `@bsv/vsc`, or code copied or translated from them |
+| Any BSV SDK: `@bsv/sdk` for TypeScript, the [Go SDK](https://github.com/bsv-blockchain/go-sdk), the [Python SDK](https://github.com/bsv-blockchain/py-sdk) or another. None of them is this repository's code. | `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay-topics` or `@bsv/vsc`, or code copied or translated from them |
 | Your language's standard library and general cryptography, JSON, HTTP and JSON Schema libraries | The reference service or a reference example deciding an answer for you: that runs the reference implementation behind your interface |
 | The fixtures and vectors, copied unchanged as test data | A fixture edited to make a case pass |
 | The specifications, contracts and schemas | |
@@ -130,6 +130,6 @@ To take the material somewhere without the code, assemble the data-only bundle a
 node scripts/implementer-bundle.mjs
 ```
 
-It prints one line naming the number of files, the release set `dpp-release-2026-10-6`, the source revision with `(committed)` when the working tree was clean, and the archive's SHA-256. The output is `release/implementer-bundle/`, with the archive beside it. The bundle holds the specifications, contracts, fixtures in both forms, baselines, ledger, schemas, selections, an example capability document, the frozen profile data, these docs and the licence. It has no README at its root: start with `bundle-manifest.json`, which records the source revision, working-tree state, release selection and the digest of every file, then open `docs/implement/README.md`, this page. It carries no runtime code, examples or Python reader, so keep the checkout to run those.
+It prints one line naming the number of files, the current source release set `dpp-release-2026-10-8`, the source revision with `(committed)` when the working tree was clean, and the archive's SHA-256. The output is `release/implementer-bundle/`, with the archive beside it. The bundle holds the specifications, contracts, fixtures in both forms, baselines, ledger, schemas, selections, an example capability document, the frozen profile data, these docs and the licence. It has no README at its root: start with `bundle-manifest.json`, which records the source revision, working-tree state, release selection and the digest of every file, then open `docs/implement/README.md`, this page. It carries no runtime code, examples or Python reader, so keep the checkout to run those.
 
 Next: [run the fixtures](fixture-runner.md).

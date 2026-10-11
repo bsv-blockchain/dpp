@@ -38,7 +38,7 @@ redirects:
   start-here/choose-a-journey: start/choose-your-path.md
   start-here/choose-a-role: start/choose-a-role.md
   use-the-reference-packages/application-service: packages/application-service.md
-  use-the-reference-packages/dpp-core: packages/dpp-core.md
+  use-the-reference-packages/dpp-core: packages/dpp-protocol.md
   use-the-reference-packages/dpp-overlay-topics: packages/dpp-overlay-topics.md
   use-the-reference-packages/dpp-profiles: packages/dpp-profiles.md
   use-the-reference-packages/packages: packages/README.md
@@ -100,7 +100,7 @@ redirects:
   learn-the-model/versions-and-compatibility: learn/versions-and-compatibility.md
   package-reference/packages: packages/README.md
   package-reference/support-table: packages/support-table.md
-  package-reference/dpp-core: packages/dpp-core.md
+  package-reference/dpp-core: packages/dpp-protocol.md
   package-reference/dpp-profiles: packages/dpp-profiles.md
   package-reference/vsc: packages/vsc.md
   package-reference/dpp-overlay-topics: packages/dpp-overlay-topics.md
@@ -123,3 +123,7 @@ redirects:
   contribute/disagreements: contribute/disagreements.md
   contribute/implementing-parties: contribute/implementing-parties.md
   contribute/licence: contribute/licence.md
+
+  # Preserve the protocol reference page through the package rename.
+  packages/dpp-core: packages/dpp-protocol.md
+  technical-reference/packages-and-installation/dpp-core: packages/dpp-protocol.md

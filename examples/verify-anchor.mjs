@@ -23,7 +23,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Hash, LockingScript, Utils } from '@bsv/sdk'
-import { canonicalBytes, canonicalString } from '@bsv/dpp-core'
+import { canonicalBytes, canonicalString } from '@bsv/dpp-protocol'
 import { identityKeyFromDidKey, tryParseUoraAnchor, expectedLockingKey } from '@bsv/dpp-overlay-topics'
 
 const here = dirname(fileURLToPath(import.meta.url))

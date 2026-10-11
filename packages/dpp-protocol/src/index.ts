@@ -1,5 +1,5 @@
 /**
- * @bsv/dpp-core - DPP Token Standard v1 reference implementation.
+ * @bsv/dpp-protocol - DPP protocol reference implementation.
  *
  * Single source of truth (build-guide hard rule 3) for:
  * - field layout encode/decode (`spec/record-model.md` §2-§3)

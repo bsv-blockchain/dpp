@@ -59,11 +59,11 @@ import type { LockingScript, WalletProtocol } from '@bsv/sdk'
  *
  * ## Why this file imports nothing of ours
  *
- * `tm_dpp` reads the token standard, so it depends on `@bsv/dpp-core` and can never
+ * `tm_dpp` reads the token standard, so it depends on `@bsv/dpp-protocol` and can never
  * be published as part of a shared overlay package. `tm_uora_dpp` is meant to
  * be PR'd into the shared mainnet overlay instances, so it deliberately depends
  * on `@bsv/sdk` and `@bsv/overlay` alone. The fifteen lines of `did:key`
- * decoding below are the same fifteen in `@bsv/dpp-core/did.ts`, duplicated on
+ * decoding below are the same fifteen in `@bsv/dpp-protocol/did.ts`, duplicated on
  * purpose against the repository's own rule about one implementation per
  * concept: the alternative is that a shared overlay instance takes a dependency
  * on this programme's token core, which is a worse trade. The two are pinned

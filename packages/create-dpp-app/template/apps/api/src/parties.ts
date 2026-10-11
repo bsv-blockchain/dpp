@@ -5,7 +5,7 @@
 // the seam: a later implementation can be a person's own BRC-100 wallet,
 // which the standard allows for every role, without changing the writer.
 import { CachedKeyDeriver, Hash, PrivateKey, ProtoWallet, Utils } from '@bsv/sdk'
-import { didKeyFromIdentityKey, ownerKeyFromDeriver, ownerLinkageFromDeriver } from '@bsv/dpp-core'
+import { didKeyFromIdentityKey, ownerKeyFromDeriver, ownerLinkageFromDeriver } from '@bsv/dpp-protocol'
 
 /** The slice of a BRC-100 wallet the @bsv/dpp packages call on an actor or controller. */
 export interface PartyWallet {

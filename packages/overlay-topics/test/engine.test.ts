@@ -18,7 +18,7 @@ import {
   ownerBlobHash,
   type DppState,
   type DppStateData,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { DppTopicManager } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { InMemoryDppStorage } from '../src/storage.js'

@@ -57,7 +57,7 @@ import {
   ownerBlobHash,
   ownerKeyFor,
   verifyChain,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const args = process.argv.slice(2)

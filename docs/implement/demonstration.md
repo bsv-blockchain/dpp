@@ -2,14 +2,14 @@
 
 The trial is a defined exchange between the reference implementation, which the programme operates, and a second implementation written from the bundle: each writes fresh records, the other verifies them, and every scenario records what passes and what must be refused. This page is for an implementer whose components already pass the fixtures and who wants to run the trial, alone where a scenario allows and with the programme where it needs the reference to act.
 
-The trial is defined in [`independent-implementation-2026-09`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) for release set `dpp-release-2026-10-7`, baseline `native-baseline@2` and custody profile `managed-custody@1`. It has not been completed. Evidence the programme produces itself is engineering evidence; the organisational independence that version 1.0 needs is recorded only when another implementing party runs the same scenarios.
+The trial is defined in [`independent-implementation-2026-09`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) for release set `dpp-release-2026-10-8`, baseline `native-baseline@2` and custody profile `managed-custody@1`. It has not been completed. Evidence the programme produces itself is engineering evidence; the organisational independence that version 1.0 needs is recorded only when another implementing party runs the same scenarios.
 
 ## Take part
 
 To take part, or to arrange a scenario that needs the reference, write to the programme through the [BSV Association contact form](https://bsvassociation.org/contact/). Say which scenarios you want to run, the roles and record versions you implement, your index and registry URLs, and the publisher keys your states are countersigned with. Before you ask, have:
 
 - components that pass their fixtures, with your results and your authorship and dependency record kept as [reporting](reporting.md) describes;
-- for a writer, a BRC-100 wallet with funds and your own index ([run a service](../operate/README.md)).
+- for a writer, a BRC-100 wallet with funds and your own index ([Create an index](../packages/create-dpp-index.md) includes the reference runtime; use your own implementation when claiming the independent overlay role).
 
 ## The scenarios
 

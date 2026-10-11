@@ -63,7 +63,7 @@ A reader shows product data under the profile the payload declares:
 
 Never read a payload under a newer version than the one it declares. [Read a record that declares a draft](version-4-drafts.md#read-a-record-that-declares-a-draft) is a complete example that reads a live passport this way; it works for any declared profile.
 
-The passport verification report from `@bsv/dpp-core` does not check `payload_public` against its declared profile, so a reader that needs that check runs it itself, as [check a payload](#check-a-payload) shows ([known limitations](../operate/limitations.md)).
+The passport verification report from `@bsv/dpp-protocol` does not check `payload_public` against its declared profile, so a reader that needs that check runs it itself, as [check a payload](#check-a-payload) shows ([known limitations](../operate/limitations.md)).
 
 ## Not defined yet
 

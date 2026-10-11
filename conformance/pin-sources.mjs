@@ -81,7 +81,7 @@ for (const dir of readdirSync(join(root, 'packages'))) {
   components.push({ name: manifest.name, version: manifest.version, licence: manifest.license, dependencies })
 }
 write('conformance/licences.json', {
-  description: 'Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository and all four workspace packages use the Apache License, Version 2.0 (Apache-2.0; see LICENSE). Third-party dependencies and artefacts retain their own terms and notices.',
+  description: 'Direct runtime dependencies of each workspace package with the licence each declares in its installed manifest, recorded so the checker notices a change. The repository and all workspace packages use the Apache License, Version 2.0 (Apache-2.0; see LICENSE). Third-party dependencies and artefacts retain their own terms and notices.',
   repositoryLicence: 'Apache-2.0',
   pinnedAt: new Date().toISOString().slice(0, 10),
   components,

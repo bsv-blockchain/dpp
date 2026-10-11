@@ -1,10 +1,10 @@
 # Licence and reuse
 
-This page says under which terms you may reuse the repository, its four packages and the third-party material inside them. It is for anyone copying, modifying or redistributing the code, specifications or documentation.
+This page says under which terms you may reuse the repository, its packages and the third-party material inside them. It is for anyone copying, modifying or redistributing the code, specifications or documentation.
 
 ## The repository and its packages
 
-The repository's software, specifications, schemas, fixtures, examples and documentation, its four packages included, use the Apache License, Version 2.0 (`Apache-2.0`), copyright BSV Association. The full text is in the root [`LICENSE`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/LICENSE), and each package carries the same text in its own `LICENSE`, for example [`packages/dpp-core/LICENSE`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/LICENSE).
+The repository's software, specifications, schemas, fixtures, examples and documentation, its packages included, use the Apache License, Version 2.0 (`Apache-2.0`), copyright BSV Association. The full text is in the root [`LICENSE`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/LICENSE), and each package carries the same text in its own `LICENSE`, for example [the protocol library's licence at the recorded revision](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/LICENSE).
 
 In short, and the licence text governs: Apache 2.0 lets you use, modify and redistribute the material, and grants a patent licence from its contributors. When you redistribute it, give recipients a copy of the licence, keep the copyright and attribution notices, and mark the files you changed. It grants no trademark rights and comes without warranty.
 

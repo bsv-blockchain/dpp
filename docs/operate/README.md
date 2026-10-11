@@ -1,8 +1,12 @@
-# Run a service
+# Run an index from source
+
+This is the advanced alternative for building and running the index directly from a repository checkout. For a new editable operator project, start with **[Create an index](../packages/create-dpp-index.md)**. The starter includes the runtime, MongoDB configuration and deployment files; its guide records the publication prerequisite.
+
+If you already used the starter, follow your generated README. This source deployment replaces that setup; it is not an additional service or installation step.
 
 Begin with the [limitations](limitations.md) and [the hosted reference](../deployment.md). The preset runs an index and MongoDB. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists its configuration.
 
-Use this page when you have chosen to operate the reference index. [Choose packages and services](../start/choose-components-and-services.md) explains the alternative of an arranged provider and which other capabilities your task needs. The goal here is an index with the expected admission and access settings, not a complete passport platform.
+[Choose packages and services](../start/choose-components-and-services.md) explains the alternative of an arranged provider and which other capabilities your task needs. The goal here is an index with the expected admission and access settings, not a complete passport platform.
 
 ## What to prepare
 

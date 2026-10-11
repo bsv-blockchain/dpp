@@ -1,0 +1,51 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: dpp_operator
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD}
+      MONGO_DB: ${MONGO_DB:?set MONGO_DB}
+      MONGO_INDEX_PASSWORD: ${MONGO_INDEX_PASSWORD:?set MONGO_INDEX_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+      - ./deploy/init-mongo.js:/docker-entrypoint-initdb.d/index.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "if (!db.getSiblingDB('admin').auth(process.env.MONGO_INITDB_ROOT_USERNAME, process.env.MONGO_INITDB_ROOT_PASSWORD).ok) quit(1); db.adminCommand({ping: 1})"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  index:
+    build: .
+    restart: unless-stopped
+    init: true
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      PORT: "8080"
+      HOST: "0.0.0.0"
+      # Maintenance credentials are for MongoDB, never the index process.
+      MONGO_ROOT_PASSWORD: ""
+      MONGO_INDEX_PASSWORD: ""
+    ports:
+      - "127.0.0.1:${PORT:-8080}:8080"
+    volumes:
+      - ./config:/app/config:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "node", "scripts/health.mjs"]
+      interval: 15s
+      timeout: 6s
+      retries: 8
+
+volumes:
+  mongo-data:

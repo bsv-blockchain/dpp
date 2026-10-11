@@ -12,6 +12,26 @@ The beta.8 core and profiles packages and the beta.10 overlay package, the first
 
 ## Repository history
 
+### 2026-10-11, one protocol package for both starters
+
+- Migrate the application starter to `@bsv/dpp-protocol` and the same `dpp-release-2026-10-8` runtime set as the index starter. Keep the existing application workflows and SDK version.
+- Remove the proposed `@bsv/dpp-core` compatibility wrapper from the workspace and active release. Existing consumers migrate their dependencies, imports and schema paths. Published release declarations, receipts, fixture provenance and pinned historical source links remain unchanged.
+- Check generated applications against packed runtime candidates before publication, and require a separate public-registry dependency check for starter publication. Confirm that clean runtime and app installations contain no `dpp-core` package.
+
+### 2026-10-10, standalone index starter
+
+- Add `@bsv/create-dpp-index`, a separate generator for an operator project with authenticated persistent MongoDB, scoped tokens, application connection settings, Docker deployment and recovery instructions. Guided prompts, explicit flags and JSON results support human and automated setup.
+- Expose `@bsv/dpp-overlay-topics/server` and the `dpp-index` executable. Importing starts no server. The starter checks configuration before calling the maintained runtime; it does not copy the protocol implementation. Passport and attestation topics share one host, with peers, discovery and advertising optional.
+- Pin the renamed source candidate and add a separate starter publication workflow that checks the exact runtime archives and requires approval of the publication plan. Add packed external-consumer checks for the generator and runtime, plus configuration, authentication and restart checks.
+- Align the application starter's connection guide and Compose configuration with the separate index project, while retaining its published runtime pins. Link both starter paths from the getting-started documentation.
+
+### 2026-10-10, name the shared library dpp-protocol
+
+- Move the protocol implementation to `@bsv/dpp-protocol` under `packages/dpp-protocol`. Keep `@bsv/dpp-core` as a compatibility wrapper that re-exports the same runtime API and TypeScript types and retains every `schemas/*` path.
+- Update the index, profile tests, examples, Docker build, conformance references and active documentation to the new name. Retain historical package names in publication receipts, release records, fixture provenance and pinned source URLs, and redirect the old documentation page.
+- Prepare `dpp-release-2026-10-8`: protocol and compatibility packages at `0.3.0-beta.9`, profiles at `0.3.0-beta.9`, overlay topics at `0.4.0-beta.11`, and unchanged VSC at `0.2.0-beta.5`. The rename and wrapper are not yet published. The preceding set keeps its recorded artefact digests as superseded history.
+- Extend the external consumer check to compare old and new runtime exports, verify a passport through both names, load every normative schema through both paths and check compatible TypeScript declarations. Wire formats, signing identifiers, topic names and fixture bytes are unchanged.
+
 ### 2026-10-09, beta.10 publication
 
 - Publish `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10` under `latest` from `1b7a922616f5943f884ec07a39e8b966ecc8a42d` using GitHub OIDC with provenance, with `@bsv/vsc@0.2.0-beta.5` already published; `next` stays at the beta.5 set. The public-registry archives match the approved plan. The first run published the core package and stopped on its ten-minute wait for npm to expose the profiles package; a second run stopped before publishing when the image registry rate-limited the base image pull; the same approved plan, resumed on the same revision once npm exposed the profiles package with matching bytes, published the overlay package.

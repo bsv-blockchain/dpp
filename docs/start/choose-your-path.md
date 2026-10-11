@@ -22,7 +22,7 @@ Each path below lists its own prerequisites, steps and completion check. You do 
 | Build a new passport platform end to end | A product scope and decisions about which parts you supply | [Build a platform](#build-a-platform) |
 | Add a repair, test, certification or recycling claim | An issuer key; registry and anchoring access for the published storage workflow | [Add a claim](#add-a-claim) |
 | Hand a passport on, or receive one | A custodian application | [Hand on or receive](#hand-on-or-receive) |
-| Run an index | Docker and a checkout of the repository | [Run an index](#run-an-index) |
+| Run an index | Node.js 22, npm, Docker Compose and your publisher public key; check the starter's publication status | [Run an index](#run-an-index) |
 | Exchange records with the hosted reference | Your own index | [Exchange with the reference](#exchange-with-the-reference) |
 | Run a registry | An implementation of its contract; the reference helpers use Node.js 22 | [Run a registry](#run-a-registry) |
 | Use GS1 Digital Link, EPCIS or W3C credentials with what we have | Your existing system | [Connect other standards](#connect-other-standards) |
@@ -53,7 +53,7 @@ Done when you have watched a passport's history grow and verified it. The [hoste
 
 1. [Quick start](../quick-start.md): verify a fixture offline, then read a live passport from the command line.
 2. [Build an application, step 1](../packages/build-an-application.md#1-read-a-passport): read and verify a passport in your own code.
-3. [Gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence): add its claims and anchors to the report.
+3. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence): add its claims and anchors to the report.
 4. [Evidence and its limits](../learn/evidence-and-freshness.md#the-sixteen-checks): what each of the report's sixteen checks means.
 
 Done when your code prints a report whose signature and linkage checks pass for a live passport. Not settled yet: finding a publisher's index or registry from the passport alone ([limitations](../operate/limitations.md#finding-records)).
@@ -63,7 +63,7 @@ Done when your code prints a report whose signature and linkage checks pass for 
 1. [What a passport application offers](../packages/what-an-application-offers.md): the parts you are building.
 2. [Get an identifier](../identifiers.md#get-an-identifier): a GTIN, a host you control, or demonstration prefix 952 until you have both.
 3. [Choose a profile](../profiles/README.md): the product data your passports carry.
-4. [Choose index access](choose-components-and-services.md#what-the-existing-hosted-services-allow): arrange an admitting provider or [run your own index](../operate/README.md). Your writer announces every state to the chosen index.
+4. [Choose index access](choose-components-and-services.md#what-the-existing-hosted-services-allow): arrange an admitting provider or [create your own index](../packages/create-dpp-index.md). Your writer announces every state to the chosen index.
 5. [Build an application, step 3](../packages/build-an-application.md#3-write-a-passport): issue and update passports with a wallet; [how the writer example works](../packages/how-the-writer-works.md) takes it apart step by step.
 6. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): send, prove and recover from interruptions.
 7. [Export, import and recovery](../operate/export-import-recovery.md): keep what you wrote.
@@ -99,7 +99,7 @@ Done when the recipient's acceptance is committed in the `TRANSFER` and the read
 
 ## Run an index
 
-1. [Run a service](../operate/README.md): start the index with Docker and inspect it.
+1. [Create an index](../packages/create-dpp-index.md): generate your project, start it with Docker and check its configuration. The starter includes the runtime; there is no separate `@bsv/dpp-overlay-topics` installation step.
 2. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): how proofs reach your index.
 3. [Export, import and recovery](../operate/export-import-recovery.md): back up and restore.
 4. [Known limitations](../operate/limitations.md#index-host): what the index does not do yet.

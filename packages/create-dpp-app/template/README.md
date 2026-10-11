@@ -2,15 +2,19 @@
 
 Scaffolded by `@bsv/create-dpp-app`. Brands issue product passports as records on the BSV blockchain, hand them on along the supply chain, and anyone verifies a passport from its label. The records follow the open DPP standard; this application is one way of building what the standard requires, and every opinion it takes is yours to change.
 
+The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-10-8` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
+
 ## What you have
 
 | Part | Where | What it does |
 |---|---|---|
 | Web app | `apps/web` | React single-page app: brand dashboard, passport pages, hand-on acceptance, public verification |
 | API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps the journal and runs the unattended duties |
-| Services | `deploy/compose.yml` | MongoDB for the application, and the reference DPP index with its own MongoDB |
+| Application database | `deploy/compose.yml` | MongoDB for application records, journal and sign-in |
 
 The API's routes are in [apps/api/API.md](apps/api/API.md).
+
+For deployment, connect to an existing compatible index or create a separate operator project with `@bsv/create-dpp-index`. The app's Compose file starts only its database. Overlay library components are included for offline exercises; you do not install them separately or use the in-process development index as persistent service storage.
 
 ## First run
 
@@ -62,7 +66,7 @@ Writing a real passport spends real satoshis on BSV mainnet and is permanent. Be
 2. **A root key.** `openssl rand -hex 32` into `WALLET_ROOT_KEY`. Back it up: a root key alone is not a full wallet backup, so read the wallet toolbox's recovery guidance and keep the SQLite file in `local/` on a persistent volume.
 3. **Secrets.** `AUTH_SECRET`, `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET`, each `openssl rand -hex 32`. Changing an identity secret changes every key derived from it, so decide them once.
 4. **A header source.** A WhatsOnChain API key in `WOC_API_KEY`, for the wallet's monitor and the reader.
-5. **An index that admits your publisher key.** `npm run wallet` prints the identity key. Run the reference index with `deploy/compose.yml` with that key as `INDEX_PUBLISHER_KEY`, two secrets as `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`, and set `INDEX_URL`. The index image is built from the DPP standard's repository; the compose file says how.
+5. **An index that admits your publisher key.** `npm run wallet` prints the identity key. Follow [Connect an index](#connect-an-index) to arrange an existing provider or run a separate index project. Match the wallet's network and managed custody profile.
 6. **Funds.** `npm run wallet` prints a funding address. Pay it from any wallet, then take the payment in with the `wallet fund` command it prints, or from the Wallet page. A state costs a little over a hundred satoshis and leaves one satoshi in the passport output.
 7. **Your identifier host and prefix.** `PASSPORT_HOST` must be a host you control and serve this application from, so a label's QR code opens the passport page.
 
@@ -70,7 +74,41 @@ Then set `LIVE_PUBLISHING=true`. Until then, a write is built, checked and admit
 
 `SPEND_CAP_SATOSHIS` refuses writes once the platform has spent that much in a day.
 
+## Connect an index
+
+Choose one route. This app's Compose file starts only the application database.
+
+**Use an existing index.** Arrange admission of your publisher public key, managed custody support, and submit and proof-delivery access with its operator. Public lookup access alone is insufficient. Get its URL and network, then set the four app settings below. You need no index starter or additional overlay installation.
+
+**Operate your own index.** Use `@bsv/create-dpp-index` in a separate directory. It includes the persistent runtime, MongoDB configuration, tokens and deployment files. This starter is a source candidate pending publication; after its release, from the directory containing your app project:
+
+```sh
+npm create @bsv/dpp-index@0.1.0-beta.1 my-index
+cd my-index
+npm test
+npm run up
+npm run doctor -- --online
+npm run connection
+```
+
+Supply the publisher **public** key printed by this app's `npm run wallet`, select the same network and keep managed custody enabled. The index does not need the wallet's private key. Follow the index project's README for its own startup, hosting and recovery. Before publication, use the index starter's candidate checks in the DPP repository; do not substitute another runtime version to force installation.
+
+Copy these settings from the generated index's `.app.env`, or from the existing operator, into the app's server-side `.env`:
+
+| App setting | Meaning |
+| --- | --- |
+| `INDEX_URL` | Index address reachable from the API |
+| `INDEX_SUBMIT_TOKEN` | Submission and retraction access |
+| `INDEX_CALLBACK_TOKEN` | Proof-delivery access |
+| `NETWORK` | The same network as the wallet and index |
+
+Restart the app after changing its settings. Keep these tokens out of browser code. For an API running in Docker, use an index address reachable from that container; `localhost` refers to the API container itself. The index project's `npm run connection -- --url https://index.example.org` writes connection settings for a chosen address.
+
+Check that the index's `/capabilities` names your publisher key and managed custody profile before enabling live writes. The app uses `INDEX_URL` directly and starts no in-process index when it is set. A connection failure does not cause another index to start.
+
 ## Deploy
+
+If `.candidate.Dockerfile` is present, build with `docker build -f .candidate.Dockerfile -t my-dpp .` to include the local dependency archives. For projects generated by the published starter, build and run with the normal Dockerfile:
 
 ```sh
 docker build -t my-dpp .

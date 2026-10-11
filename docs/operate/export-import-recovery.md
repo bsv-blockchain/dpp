@@ -42,11 +42,11 @@ Give the export signer, the second line, to anyone who will check your packages:
 
 Use this when the passport has no more than 500 states. It works against any index with an export key, the hosted reference included, and needs no token from the source. The replacement index must admit the passport's publisher keys, through `SERVICE_IDENTITY_KEY` or a publisher policy that names them ([sign a publisher policy](federation.md#3-sign-a-publisher-policy)); for the hosted reference's passports, those are `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24` and `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`.
 
-Save this as `restore-package.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.7` installed:
+Save this as `restore-package.mjs` at the root of the checkout, or in a project with the [protocol candidate archive](../packages/README.md#use-the-renamed-source-candidate) installed:
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.
-import { inspectEvidencePackage } from '@bsv/dpp-core'
+import { inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'

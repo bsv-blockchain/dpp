@@ -6,7 +6,9 @@ Three terms recur. A topic is a named set of admission rules: `tm_dpp` for passp
 
 ## Two ways to build one
 
-- **Embed or run the package.** `@bsv/dpp-overlay-topics` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [package page](../../packages/dpp-overlay-topics.md) shows, and an HTTP host you can run with Docker ([run a service](../../operate/README.md)).
+To operate the reference index, start with [Create an index](../../packages/create-dpp-index.md). It includes the runtime. Continue here when customising an integration or implementing the role yourself.
+
+- **Reuse the runtime in your own integration.** `@bsv/dpp-overlay-topics` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [runtime reference](../../packages/dpp-overlay-topics.md) shows, and an HTTP host you can [run from source](../../operate/README.md). These are advanced alternatives to the starter.
 - **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
 
 Either way, the steps below are the order to build and test in.

@@ -1,5 +1,5 @@
 import { PrivateKey, Utils } from '@bsv/sdk'
-import { policyDigest, policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-core'
+import { policyDigest, policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-protocol'
 
 /**
  * A publisher key policy chain for the overlay tests, built with the core's

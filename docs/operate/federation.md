@@ -89,7 +89,7 @@ Three more rules:
 
 - Keep `topics` at `["tm_dpp"]` unless the policy also names `anchor-publisher` keys: a scope covering `tm_attestation` admits anchors only from those keys.
 - The first version also governs the time before its own `issuedAt`, so a policy written late still admits earlier states inside each key's window ([services](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) section 1).
-- A later version names the previous one's digest in `supersedes` (`policyDigest` in `@bsv/dpp-core` computes it) and is authorised by a key the chain already trusts. The script below writes only a first version.
+- A later version names the previous one's digest in `supersedes` (`policyDigest` in `@bsv/dpp-protocol` computes it) and is authorised by a key the chain already trusts. The script below writes only a first version.
 
 Sign the policy into `deploy/config/`, which the Compose presets mount read-only at `/config` inside the container:
 
@@ -164,14 +164,14 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 
 ### 7. Confirm both hold the same records
 
-Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. That route lists current outputs only, so a passport counts once, by its newest state; the script below also compares each passport's whole history from `GET /history`, spent states included. Save this as `compare-indexes.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.8` installed:
+Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. That route lists current outputs only, so a passport counts once, by its newest state; the script below also compares each passport's whole history from `GET /history`, spent states included. Save this as `compare-indexes.mjs` at the root of the checkout, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
 
 ```js
 // Compare what two indexes hold on every topic, and each passport's whole history, and fail on a difference older than the grace period:
 // node compare-indexes.mjs <first index URL> <second index URL>
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { Transaction } from '@bsv/sdk'
-import { tryParseDppOutput } from '@bsv/dpp-core'
+import { tryParseDppOutput } from '@bsv/dpp-protocol'
 
 const [first, second] = process.argv.slice(2)
 if (!first || !second) throw new Error('usage: node compare-indexes.mjs <first index URL> <second index URL>')
@@ -318,12 +318,12 @@ Before naming another operator's keys in your policy, compare the keys themselve
 
 Capability documents cannot tell operators apart. The operator name is text bound to no key, and `publisherPolicy` has the policy version and keys but no chain digest or signer, so two indexes naming the same operator and keys may be one operator's two indexes or a copy.
 
-Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-core@0.3.0-beta.8` installed:
+Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
 
 ```js
 // Check another operator's signed publisher policy chain against the identity key the operator gave you.
 import { readFileSync } from 'node:fs'
-import { verifyPolicyChain } from '@bsv/dpp-core'
+import { verifyPolicyChain } from '@bsv/dpp-protocol'
 
 const [file, operator, identityKey] = process.argv.slice(2)
 if (!file || !operator || !identityKey) throw new Error('usage: node check-policy-chain.mjs <chain.json> <operator name> <operator identity key>')

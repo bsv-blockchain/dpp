@@ -12,7 +12,7 @@ import {
   tokenIdOf,
   verifyChain,
   type DppStateDataV3,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import { DppTopicManager, type DppRefusal } from '../src/tmDpp.js'
 import { DppLookupService } from '../src/lsDpp.js'
 import { InMemoryDppStorage } from '../src/storage.js'

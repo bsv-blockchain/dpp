@@ -27,7 +27,7 @@ Match a limit to the version you use. Unless a row says otherwise, the implement
 | History and export snapshots expire after ten minutes | A paging client that pauses longer must start again | Page promptly; a cursor is also lost when the process restarts or another replica answers |
 | `GET /evidence-package` carries at most the newest 500 states | Longer histories are cut short in that route | Use `GET /evidence-export` ([export, import and recovery](export-import-recovery.md)) |
 | `CHAIN_TRACKER=scripts-only` skips header checks | The index would admit unproven ancestry | Use it for local development only |
-| The signing example writes only a first, single-operator version | A first version naming two or more operators, and every later version of a chain, has no ready-made tool | Sign `policySigningPreimage(policy)` from `@bsv/dpp-core` with each key the version needs, and check the chain with `verifyPolicyChain` as [federation](federation.md#3-sign-a-publisher-policy) step 3 does |
+| The signing example writes only a first, single-operator version | A first version naming two or more operators, and every later version of a chain, has no ready-made tool | Sign `policySigningPreimage(policy)` from `@bsv/dpp-protocol` with each key the version needs, and check the chain with `verifyPolicyChain` as [federation](federation.md#3-sign-a-publisher-policy) step 3 does |
 | A refused announcement that spends a tip still marks that tip spent in the engine | Lookups and history answer as before, but synchronising peers are no longer offered that tip | Announce a valid next state; peers are then offered it with its lineage |
 
 ## Synchronisation
@@ -67,7 +67,7 @@ Match a limit to the version you use. Unless a row says otherwise, the implement
 | A GTIN and serial find a passport only on the current release | An index on an earlier release looks a passport up only by its exact identifier, host included, or by a chip `uid`, so given `01/<gtin>/21/<serial>` alone it finds nothing issued under another host; a GS1 key finds only the passports that index holds | Ask an index on the current release with `gs1Key`; otherwise ask for the full address ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)) |
 | Nothing names a publisher's index | A reader holding only a passport identifier cannot discover where its states are held | Learn the index from the publisher, for example from its passport page |
 | An anchor does not name the registry that holds its claim | Registries do not exchange claims, so a reader finds the anchor on any index that holds it but must already know which registry to ask for the claim's bytes | Learn the registry from the publisher; without the bytes the claim's checks read `unknown` ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)) |
-| No directory maps a brand to its keys | A reader must take a brand's issuer and publisher keys from the brand or its application | Keep your own list of the keys you accept, as the trusted parties in [gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence) show |
+| No directory maps a brand to its keys | A reader must take a brand's issuer and publisher keys from the brand or its application | Keep your own list of the keys you accept, as the trusted parties in [gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) show |
 
 ## Registry
 

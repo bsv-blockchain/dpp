@@ -486,7 +486,7 @@
       "name": "@bsv/sdk",
       "version": "2.8.10",
       "usedBy": [
-        "@bsv/dpp-core",
+        "@bsv/dpp-protocol",
         "@bsv/dpp-overlay-topics",
         "examples"
       ]

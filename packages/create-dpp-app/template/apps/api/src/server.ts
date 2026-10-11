@@ -5,7 +5,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hash, Utils } from '@bsv/sdk'
-import { verifyLifecycleClaim } from '@bsv/dpp-core'
+import { verifyLifecycleClaim } from '@bsv/dpp-protocol'
 import { readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node'

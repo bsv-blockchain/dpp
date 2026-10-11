@@ -58,7 +58,7 @@ import {
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
   STANDARD_VERSION_V3,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (relative) => JSON.parse(readFileSync(join(root, relative), 'utf8'))

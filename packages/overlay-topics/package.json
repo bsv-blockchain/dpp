@@ -1,15 +1,22 @@
 {
   "name": "@bsv/dpp-overlay-topics",
-  "version": "0.4.0-beta.10",
-  "description": "Experimental prerelease: DPP overlay index components as a library: tm_dpp and tm_attestation topic managers, ls_dpp and ls_attestation lookup services, storage adapters, capabilities, history pages, bounded and complete evidence export, retraction and static-peer synchronisation; the HTTP node ships as the image",
+  "version": "0.4.0-beta.11",
+  "description": "Experimental prerelease: DPP overlay index components, a supported HTTP host and dpp-index executable, with passport and attestation topics, persistent storage, evidence export and peer synchronisation",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/lib.js",
   "types": "./dist/lib.d.ts",
+  "bin": {
+    "dpp-index": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/lib.d.ts",
       "default": "./dist/lib.js"
+    },
+    "./server": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "files": [
@@ -22,8 +29,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@bsv/dpp-core": "0.3.0-beta.8",
-    "@bsv/dpp-profiles": "0.3.0-beta.8",
+    "@bsv/dpp-protocol": "0.3.0-beta.9",
+    "@bsv/dpp-profiles": "0.3.0-beta.9",
     "@bsv/overlay": "2.3.1",
     "@bsv/sdk": "2.8.10",
     "mongodb": "^7.6.0"

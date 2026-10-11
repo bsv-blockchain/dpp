@@ -73,5 +73,5 @@ The [VSC profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a
 | You are | Go to |
 |---|---|
 | Verifying a partner's credential | [External credential verification](../interoperability/external-credentials.md) |
-| Building with the packages | [@bsv/vsc](../packages/vsc.md), then [gather a passport's evidence](../packages/dpp-core.md#gather-a-passports-evidence) to add credentials to a report |
+| Building with the packages | [@bsv/vsc](../packages/vsc.md), then [gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) to add credentials to a report |
 | Implementing a verifier yourself | [Attestation verifier](../implement/roles/attestation-verifier.md) |

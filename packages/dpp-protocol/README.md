@@ -1,4 +1,4 @@
-# @bsv/dpp-core
+# @bsv/dpp-protocol
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
@@ -18,17 +18,17 @@ rather than rewritten.
 
 ## Install and consume
 
-This is a pre-1.0 candidate. Install the exact published versions from npm:
+This is a pre-1.0 source candidate. The package was renamed from `@bsv/dpp-core`. Existing consumers must [migrate their imports and schema paths](../../docs/migration.md#rename-dpp-core-to-dpp-protocol); the active release contains no wrapper under the old name. The new name is not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.8 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10
 ```
 
-Node >=22 and ECMAScript modules are supported. Browser use of the runtime is untested. No source checkout or build of this package is needed after installation.
+Node >=22 and ECMAScript modules are supported. Browser use of the runtime is untested. The installed archive includes the built package.
 
 ```js
 import { PrivateKey, ProtoWallet } from '@bsv/sdk'
-import { didKeyFromIdentityKey, signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-core'
+import { didKeyFromIdentityKey, signLifecycleClaim, verifyLifecycleClaim } from '@bsv/dpp-protocol'
 
 const key = PrivateKey.fromRandom()
 const claim = await signLifecycleClaim({
@@ -47,11 +47,11 @@ console.log(verifyLifecycleClaim(claim))
 
 This offline example creates a temporary key and signs a claim. Production callers supply their authorised signing capability. Signature verification alone does not establish authority, current status or blockchain inclusion.
 
-The `@bsv/dpp-core/schemas/*` export carries the standard's JSON schemas. For example, load `@bsv/dpp-core/schemas/verification-report.schema.json` using a JSON import or Node's `createRequire`. The evidence export schema and its referenced evidence package schema are shipped together. They are data files and may also be used by other runtimes.
+The `@bsv/dpp-protocol/schemas/*` export carries the standard's JSON schemas. For example, load `@bsv/dpp-protocol/schemas/verification-report.schema.json` using a JSON import or Node's `createRequire`. The evidence export schema and its referenced evidence package schema are shipped together. They are data files and may also be used by other runtimes.
 
 ## Public API
 
-`src/index.ts` re-exports the whole surface, so `@bsv/dpp-core` is the only
+`src/index.ts` re-exports the whole surface, so `@bsv/dpp-protocol` is the only
 specifier anything needs:
 
 | Module | What it owns |
@@ -82,7 +82,7 @@ The build matters. `main`, `types` and the `exports` map all point into
 `dist/`, and nothing aliases the specifier back to `src/`, so a consumer that
 has not built this package fails to resolve it rather than falling back to
 source. A fresh clone should run `npm run build --workspaces` before anything
-that imports `@bsv/dpp-core`.
+that imports `@bsv/dpp-protocol`.
 
 ## The rule that governs it
 

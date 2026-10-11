@@ -63,6 +63,7 @@ jobs:
       - run: npm ci
       - run: node scripts/release-candidates.mjs
       - run: node scripts/consumer-check.mjs
+      - run: npm run index-starter:check
       # The implementer bundle assembles from the same tree, so a file it
       # would refuse to carry is caught here.
       - run: node scripts/implementer-bundle.mjs
@@ -89,8 +90,8 @@ jobs:
           docker rm -f smoke
 
   # The starter: @bsv/create-dpp-app scaffolds an application from its bundled
-  # template, pinned to the published release set. The CLI builds and tests,
-  # then a scaffold in a temporary directory installs from the registry,
+  # template, pinned to the current release set. The CLI builds and tests,
+  # then a scaffold in a temporary directory installs packed runtime candidates,
   # typechecks, builds and runs the template's offline lifecycle test, on the
   # oldest supported Node and the current LTS.
   starter:
@@ -105,7 +106,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
-      - run: npm run build -w @bsv/create-dpp-app
+      - run: npm run build
       - run: npm test -w @bsv/create-dpp-app
       - run: npm run starter:check
 
@@ -119,9 +120,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build -w @bsv/create-dpp-app
-      - run: node packages/create-dpp-app/dist/index.js /tmp/my-dpp --no-install
-      - run: docker build -t my-dpp /tmp/my-dpp
+      - run: npm run build
+      - run: npm run starter:check -- --prepare-only --directory /tmp/my-dpp
+      - run: docker build -f /tmp/my-dpp/.candidate.Dockerfile -t my-dpp /tmp/my-dpp
       - run: |
           set -euo pipefail
           docker run -d --name app -p 3000:3000 -e MONGO_URL=mongodb://127.0.0.1:1 -e PASSPORT_HOST=localhost:3000 my-dpp

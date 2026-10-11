@@ -6,8 +6,9 @@ If you are designing a complete platform, start with [your platform brief](plan-
 
 | Task | Guide | What completing it establishes |
 |---|---|---|
+| Create a new application | [Application skeleton](../packages/build-an-application.md#start-with-an-application-skeleton) | An editable app with an offline lifecycle exercise and a guide to its live deployment |
 | Check a passport and understand its evidence | [Quick start](../quick-start.md) | You can run the reader and explain the checks; missing evidence remains unknown |
-| Add a reader to your application | [Core package](../packages/dpp-core.md) and [evidence reports](../learn/evidence-and-freshness.md) | Your application can acquire evidence and present verification results |
+| Add a reader to your application | [Protocol library](../packages/dpp-protocol.md) and [evidence reports](../learn/evidence-and-freshness.md) | Your application can acquire evidence and present verification results |
 | Issue or update passports | [Build an application](../packages/build-an-application.md) | A controlled write workflow with its required signing, custody, index access and retained evidence |
 | Add a lifecycle claim | [Add a claim](../packages/add-a-claim.md) | A supported signed claim, with validation, storage and anchoring as selected |
 | Choose and validate product data | [Product profiles](../profiles/README.md) | Data checked against the selected profile, separately from transaction verification |
