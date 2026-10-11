@@ -6,7 +6,7 @@
 //
 // Two implementations: MongoDB for a running platform, memory for tests.
 import type { Collection, Db } from 'mongodb'
-import type { ManagedAcceptanceRecord, SignedLifecycleClaim } from '@bsv/dpp-core'
+import type { ManagedAcceptanceRecord, SignedLifecycleClaim } from '@bsv/dpp-protocol'
 
 export type IndexAnswer = 'pending' | 'admitted' | 'duplicate' | 'refused' | 'unauthorised' | 'unreachable' | 'not-asked'
 export type NetworkAnswer = 'pending' | 'accepted' | 'refused' | 'unanswered' | 'not-sent' | 'dry-run'

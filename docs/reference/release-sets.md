@@ -7,16 +7,15 @@ A release set is a declared combination of package versions, wire and contract v
 | | `dpp-release-2026-10-8` |
 |---|---|
 | Declaration | `release/dpp-release-2026-10-8.json`; its source revision is recorded when a publication plan binds it |
-| Status | Candidate. The renamed protocol package, compatibility wrapper and changed consumers are not yet published |
+| Status | Candidate. The renamed protocol package and changed consumers are not yet published |
 | Main packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
-| Compatibility package | `@bsv/dpp-core@0.3.0-beta.9`, which re-exports the protocol library and retains the old schema paths |
 | Licence | Apache 2.0 |
 | Intended npm tag | `latest` when published; install exact versions and retain the lockfile |
 | Source revision | Recorded at publication |
 | Receipt | None for this candidate. The [beta.10 receipt](beta-10-publication.md) records the latest complete publication documented here |
 | Selection | `conformance/selections/dpp-release-2026-10-8.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
 
-Compared with the superseded `dpp-release-2026-10-7`, this set renames the shared library to `@bsv/dpp-protocol`, adds the `@bsv/dpp-core` compatibility wrapper and updates the consuming packages. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
+Compared with the superseded `dpp-release-2026-10-7`, this set renames the shared library to `@bsv/dpp-protocol` and updates the consuming packages. Both starters pin this set, and existing consumers must migrate their imports and schema paths. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
 
 The preceding published set introduced record version 3, the token carrier: a seventeen-field body behind a BRC-162 token prefix, representing one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)). Versions 1 and 2 remain readable. It also added optional index discovery, advertising and retries ([federation](../operate/federation.md)), and the `single-operator@2` operator profile. Those changes remain part of this candidate; the package rename adds no wire-format change.
 

@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-10-8",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate introducing @bsv/dpp-protocol as the name of the shared DPP protocol library, with @bsv/dpp-core as a compatibility wrapper retaining its runtime, type and JSON schema entry points. The protocol library and wrapper are 0.3.0-beta.9, profiles is 0.3.0-beta.9 and overlay topics is 0.4.0-beta.11; @bsv/vsc remains 0.2.0-beta.5. This set changes package names and dependencies from dpp-release-2026-10-7, with the same record versions, wire formats, custody rules, profiles and conformance claims. The new package name and compatibility wrapper are not yet published. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate introducing @bsv/dpp-protocol as the name of the shared DPP protocol library. The protocol library and profiles are 0.3.0-beta.9 and overlay topics is 0.4.0-beta.11; @bsv/vsc remains 0.2.0-beta.5. Consumers must migrate their imports and schema paths from @bsv/dpp-core; this set contains no compatibility wrapper. The application and index starters pin this set. This set changes package names and dependencies from dpp-release-2026-10-7, with the same record versions, wire formats, custody rules, profiles and conformance claims. The new package name is not yet published. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-10-8.json",
   "runtime": {
@@ -53,43 +53,6 @@
           "types": true,
           "sideEffects": false,
           "notes": "Depends on @bsv/sdk only and imports no Node built-in; a browser bundle is not tested and not promised."
-        },
-        {
-          "entryPoint": "./schemas/*",
-          "kind": "data",
-          "runtime": "any",
-          "browser": "supported",
-          "types": false,
-          "carries": [
-            "schemas/*.schema.json"
-          ],
-          "notes": "Normative JSON schemas copied byte for byte from contracts; relative schema references remain alongside one another."
-        }
-      ]
-    },
-    {
-      "name": "@bsv/dpp-core",
-      "version": "0.3.0-beta.9",
-      "directory": "packages/dpp-core",
-      "role": "compatibility entry point for existing @bsv/dpp-core consumers; re-exports @bsv/dpp-protocol and retains the schema subpaths",
-      "entryPoints": [
-        ".",
-        "./schemas/*"
-      ],
-      "carries": [
-        "dist",
-        "schemas"
-      ],
-      "nodeBuiltins": [],
-      "support": [
-        {
-          "entryPoint": ".",
-          "kind": "module",
-          "runtime": "node",
-          "browser": "untested",
-          "types": true,
-          "sideEffects": false,
-          "notes": "Re-exports @bsv/dpp-protocol without another protocol implementation. Same Node ESM runtime and types; browser use remains untested."
         },
         {
           "entryPoint": "./schemas/*",

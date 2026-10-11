@@ -20,7 +20,7 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 | Fact | Value |
 |---|---|
 | Source candidate | `dpp-release-2026-10-8`, publication pending; [release status and receipts](../reference/release-sets.md) distinguish it from the earlier published packages |
-| Candidate packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10`; `@bsv/dpp-core@0.3.0-beta.9` is the compatibility wrapper |
+| Candidate packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
 | Install | Use the [local candidate archives](../packages/README.md#use-the-renamed-source-candidate) until publication. Pin exact versions and retain the lockfile; do not infer publication from a source version or a dist-tag |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |

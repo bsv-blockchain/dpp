@@ -19,16 +19,16 @@ Write down what each running component uses now, and keep the old configuration 
 
 The candidate `dpp-release-2026-10-8` introduces `@bsv/dpp-protocol@0.3.0-beta.9` as the name of the shared protocol library. The name reflects its passport tokens, custody rules, native lifecycle claims, anchors and evidence verification. Its implementation moved to `packages/dpp-protocol`.
 
-**Publication is pending.** Use the [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test the transition. Earlier published `@bsv/dpp-core` versions keep their original names and bytes. A previously installed version does not turn into the wrapper automatically.
+**Publication is pending.** Use the [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test the transition. Earlier published `@bsv/dpp-core` versions keep their original names and bytes, and installations pinned to them continue using those versions.
 
-The candidate `@bsv/dpp-core@0.3.0-beta.9` is a compatibility wrapper. It re-exports the protocol library's runtime API and TypeScript types and keeps `@bsv/dpp-core/schemas/*`. New code can use the protocol name while a dependency still uses this wrapper; both resolve to the same implementation when their exact protocol version matches.
+This is a breaking package rename: the active release contains only `@bsv/dpp-protocol`, with no compatibility wrapper. Both the application and index starters use the renamed release set. Upgrading an existing generated application requires the same dependency and import changes as any other consumer; generating a new project does not update existing projects.
 
 To migrate your own imports:
 
 1. Install `@bsv/dpp-protocol` at the selected candidate or published release's exact version. Keep the matching SDK and other DPP package versions.
 2. Replace `from '@bsv/dpp-core'` with `from '@bsv/dpp-protocol'`, including dynamic imports. Change schema paths to `@bsv/dpp-protocol/schemas/*`.
 3. Run your type checks, schema loading and passport/claim verification checks. Keep your lockfile and the candidate archives if installing locally.
-4. Remove your direct `@bsv/dpp-core` dependency once your application no longer imports it. A dependency may still retain the compatibility wrapper.
+4. Use `npm ls --all @bsv/dpp-core` to find remaining consumers. Upgrade dependencies that still require the old name, then remove your direct `@bsv/dpp-core` dependency once your application no longer imports it.
 
 The rename changes the package name and dependency graph. It does not change any wire bytes, signing protocol identifiers, topic names, profile identifiers, passport identifiers or database records. Earlier protocol upgrades described below still apply if you are moving from an older implementation at the same time.
 

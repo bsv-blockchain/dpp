@@ -6,7 +6,7 @@
 // field 15 and moves control to the recipient's managed key. Only the third
 // step touches the chain. A declined or expired offer writes nothing.
 import { Hash, PrivateKey, Utils } from '@bsv/sdk'
-import { bindAcceptanceToState, canonicalJson, inspectManagedAcceptance, signManagedAcceptance, type ManagedAcceptanceClaim, type ManagedAcceptanceRecord } from '@bsv/dpp-core'
+import { bindAcceptanceToState, canonicalJson, inspectManagedAcceptance, signManagedAcceptance, type ManagedAcceptanceClaim, type ManagedAcceptanceRecord } from '@bsv/dpp-protocol'
 import type { Parties, Party } from './parties.js'
 import type { OfferRecord, PassportRecord, Store } from './store.js'
 import type { PlatformWallet } from './wallet.js'

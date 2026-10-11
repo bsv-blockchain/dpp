@@ -18,7 +18,7 @@ rather than rewritten.
 
 ## Install and consume
 
-This is a pre-1.0 source candidate. The package was renamed from `@bsv/dpp-core`; that name remains as a compatibility wrapper for existing imports and schema paths. The new name is not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
+This is a pre-1.0 source candidate. The package was renamed from `@bsv/dpp-core`. Existing consumers must [migrate their imports and schema paths](../../docs/migration.md#rename-dpp-core-to-dpp-protocol); the active release contains no wrapper under the old name. The new name is not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10

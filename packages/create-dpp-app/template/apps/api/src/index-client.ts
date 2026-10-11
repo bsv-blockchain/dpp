@@ -4,7 +4,7 @@
 // same bytes again later. A 401 or 403 is this platform's own configuration
 // and stops a write while the state is still a draft.
 import { Beef, type MerklePath, type Transaction } from '@bsv/sdk'
-import { chainFromBeef } from '@bsv/dpp-core'
+import { chainFromBeef } from '@bsv/dpp-protocol'
 
 export type Announcement = 'admitted' | 'duplicate' | 'refused' | 'unauthorised' | 'unreachable'
 

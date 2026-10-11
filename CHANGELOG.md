@@ -12,6 +12,12 @@ The beta.8 core and profiles packages and the beta.10 overlay package, the first
 
 ## Repository history
 
+### 2026-10-11, one protocol package for both starters
+
+- Migrate the application starter to `@bsv/dpp-protocol` and the same `dpp-release-2026-10-8` runtime set as the index starter. Keep the existing application workflows and SDK version.
+- Remove the proposed `@bsv/dpp-core` compatibility wrapper from the workspace and active release. Existing consumers migrate their dependencies, imports and schema paths. Published release declarations, receipts, fixture provenance and pinned historical source links remain unchanged.
+- Check generated applications against packed runtime candidates before publication, and require a separate public-registry dependency check for starter publication. Confirm that clean runtime and app installations contain no `dpp-core` package.
+
 ### 2026-10-10, standalone index starter
 
 - Add `@bsv/create-dpp-index`, a separate generator for an operator project with authenticated persistent MongoDB, scoped tokens, application connection settings, Docker deployment and recovery instructions. Guided prompts, explicit flags and JSON results support human and automated setup.

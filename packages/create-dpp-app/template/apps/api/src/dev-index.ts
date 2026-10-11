@@ -10,7 +10,7 @@
 // is the library), so it is loaded by file URL beside the library's own
 // entry. Imported, the host is a library and starts nothing by itself.
 import { PrivateKey } from '@bsv/sdk'
-import { policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-core'
+import { policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-protocol'
 
 export interface DevIndex {
   url: string

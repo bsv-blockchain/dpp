@@ -22,7 +22,7 @@ import {
   type DppStateDataV2,
   type DppStateV2,
   type ManagedAcceptanceRecord,
-} from '@bsv/dpp-core'
+} from '@bsv/dpp-protocol'
 import type { ProfileId } from '@bsv/dpp-profiles'
 import { identifierProblems, type IdentifierPolicy } from './identifiers.js'
 import type { IndexClient } from './index-client.js'

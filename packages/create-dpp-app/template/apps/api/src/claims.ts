@@ -6,7 +6,7 @@
 // managed identity it derives for them, and sends the claim to the
 // configured registry over HTTP.
 import { PrivateKey, Utils } from '@bsv/sdk'
-import { lifecycleClaimDigest, signLifecycleClaim, verifyLifecycleClaim, type LifecycleClaim, type LifecycleEventType, type SignedLifecycleClaim } from '@bsv/dpp-core'
+import { lifecycleClaimDigest, signLifecycleClaim, verifyLifecycleClaim, type LifecycleClaim, type LifecycleEventType, type SignedLifecycleClaim } from '@bsv/dpp-protocol'
 import type { Party } from './parties.js'
 import type { ClaimRecord, PassportRecord, Store } from './store.js'
 import { WriteRefused } from './writer.js'

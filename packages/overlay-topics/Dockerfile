@@ -17,7 +17,6 @@ WORKDIR /repo
 # install layer. npm ci needs every workspace manifest the lockfile knows.
 COPY package.json package-lock.json ./
 COPY packages/dpp-protocol/package.json packages/dpp-protocol/
-COPY packages/dpp-core/package.json packages/dpp-core/
 COPY packages/overlay-topics/package.json packages/overlay-topics/
 COPY packages/vsc/package.json packages/vsc/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
@@ -39,7 +38,6 @@ ENV NODE_ENV=production
 COPY LICENSE ./
 COPY package.json package-lock.json ./
 COPY packages/dpp-protocol/package.json packages/dpp-protocol/
-COPY packages/dpp-core/package.json packages/dpp-core/
 COPY packages/overlay-topics/package.json packages/overlay-topics/
 COPY packages/vsc/package.json packages/vsc/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/

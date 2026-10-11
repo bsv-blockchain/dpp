@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The source candidate uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. The candidate also includes a compatibility wrapper under the old name. Publication of the renamed packages is pending; use the source route below to run this documentation's current examples. See [migration](../migration.md#rename-dpp-core-to-dpp-protocol) for existing applications.
+The source candidate uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. Existing consumers must migrate their imports and schema paths; the active release uses only the new name. Publication of the renamed packages is pending; use the source route below to run this documentation's current examples. See [migration](../migration.md#rename-dpp-core-to-dpp-protocol) for existing applications.
 
 Use [choose packages and services](../start/choose-components-and-services.md) to select your components. The [release status](../reference/release-sets.md) distinguishes the source candidate from published releases, and the [support table](support-table.md) describes the candidate's entry points.
 
@@ -34,7 +34,7 @@ This builds the packages, packs their archives and tests them in a separate proj
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
 ```
 
-Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-topics-0.4.0-beta.11.tgz` from the same directory. To test existing `@bsv/dpp-core` imports, add `bsv-dpp-core-0.3.0-beta.9.tgz`. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
+Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-topics-0.4.0-beta.11.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
 
 For a published release, use the exact packages below and keep `@bsv/dpp-core` in its imports. Those earlier versions do not provide the new package name. Change imports to `@bsv/dpp-protocol` when adopting the renamed candidate or its eventual published release.
 

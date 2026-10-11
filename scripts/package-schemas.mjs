@@ -4,8 +4,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const packageName = process.argv[2] ?? 'dpp-protocol'
-if (!['dpp-protocol', 'dpp-core'].includes(packageName)) throw new Error(`Unknown schema package: ${packageName}`)
+const packageName = 'dpp-protocol'
 const target = join(root, 'packages', packageName, 'schemas')
 rmSync(target, { recursive: true, force: true })
 mkdirSync(target, { recursive: true })

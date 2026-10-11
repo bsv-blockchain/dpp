@@ -81,7 +81,7 @@ The packages below are reusable components. Select them directly when integratin
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data schemas for batteries, textiles and general products, plus identifier, mapping and projection helpers. |
 | [`@bsv/vsc`](packages/vsc/README.md) | Sign and verify credentials under the supported draft compatibility profile, map EPCIS events and verify supported external credentials. |
 
-The source candidate names the shared library `@bsv/dpp-protocol`. The new name is not yet published; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test it. `@bsv/dpp-core` is retained as a compatibility wrapper for existing imports and JSON schema paths. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
+The source candidate names the shared library `@bsv/dpp-protocol`. The new name is not yet published; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test it. Existing applications migrate their imports and schema paths from `@bsv/dpp-core`; the active release uses only the new name. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
 
 Build from this checkout or use the packed candidates described in the [release guide](release/README.md), which records compatible package and protocol versions.
 

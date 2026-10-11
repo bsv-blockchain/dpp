@@ -27,7 +27,7 @@ import {
   type WalletInterface,
   type WalletProtocol,
 } from '@bsv/sdk'
-import { OWNER_PROTOCOL_ID, type AcceptanceSigner, type DataSigner } from '@bsv/dpp-core'
+import { OWNER_PROTOCOL_ID, type AcceptanceSigner, type DataSigner } from '@bsv/dpp-protocol'
 import type { Network } from './config.js'
 
 export interface Tip {

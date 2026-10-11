@@ -6,8 +6,6 @@ Generated from `release/dpp-release-2026-10-8.json` in the documentation build f
 |---|---|---|---|---|---|---|---|---|
 | `@bsv/dpp-protocol` 0.3.0-beta.9 | `.` | module | Node >=22 | Untested | Yes | None | none | `dist/`, `schemas/` |
 | `@bsv/dpp-protocol` 0.3.0-beta.9 | `./schemas/*` | data | Any | Plain data | No | None | none | `schemas/*.schema.json` |
-| `@bsv/dpp-core` 0.3.0-beta.9 | `.` | module | Node >=22 | Untested | Yes | None | none | `dist/`, `schemas/` |
-| `@bsv/dpp-core` 0.3.0-beta.9 | `./schemas/*` | data | Any | Plain data | No | None | none | `schemas/*.schema.json` |
 | `@bsv/dpp-overlay-topics` 0.4.0-beta.11 | `.` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:http`, `node:process`, `node:util`, `node:url` | `dist/` |
 | `@bsv/dpp-overlay-topics` 0.4.0-beta.11 | `./server` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:http`, `node:process`, `node:util`, `node:url` | `dist/` |
 | `@bsv/dpp-profiles` 0.3.0-beta.9 | `.` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs` | `dist/`, `manifests/`, `schemas/`, `generated/`, `frozen.json` |
@@ -27,7 +25,6 @@ Generated from `release/dpp-release-2026-10-8.json` in the documentation build f
 Source: `conformance/licences.json` in the same source checkout. See the [licence guide](../contribute/licence.md).
 
 - `@bsv/dpp-protocol` 0.3.0-beta.9: `@bsv/sdk` 2.8.10
-- `@bsv/dpp-core` 0.3.0-beta.9: `@bsv/dpp-protocol` 0.3.0-beta.9
 - `@bsv/dpp-overlay-topics` 0.4.0-beta.11: `@bsv/dpp-protocol` 0.3.0-beta.9, `@bsv/dpp-profiles` 0.3.0-beta.9, `@bsv/overlay` 2.3.1, `@bsv/sdk` 2.8.10, `mongodb` ^7.6.0
 - `@bsv/dpp-profiles` 0.3.0-beta.9: `canonicalize` 5.0.0
 - `@bsv/vsc` 0.2.0-beta.5: `@digitalbazaar/bbs-2023-cryptosuite` 2.0.1, `@digitalbazaar/bls12-381-multikey` 2.2.0, `@digitalbazaar/credentials-context` 3.2.0, `@digitalbazaar/data-integrity` 2.5.0, `@digitalbazaar/data-integrity-context` 2.0.1, `@digitalbazaar/ecdsa-multikey` 1.8.0, `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` 1.3.0, `@digitalbazaar/ed25519-signature-2020` 5.4.0, `@digitalbazaar/ed25519-verification-key-2020` 4.2.0, `@digitalbazaar/multikey-context` 2.0.1, `ajv` 8.20.0, `ajv-formats` 3.0.1, `did-context` 3.1.1, `jsonld-signatures` 11.6.0
