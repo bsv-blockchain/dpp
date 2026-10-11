@@ -8,11 +8,11 @@ For a production design, [choose which services you need](start/choose-component
 
 ## Services
 
-Read each service's `/capabilities` for what that deployment reports. The index response was checked on 10 October 2026 (UTC) after its redeployment, the registry response on 8 October 2026 (UTC+4); the application and proof-page descriptions remain the recorded operator information from 6 October. The application serves no capability document, and the registry response names a protocol rather than an implementation version. Reported capabilities do not establish operator identity or prove that a particular record is valid.
+Read each service's `/capabilities` for what that deployment reports. The index response was checked on 10 October 2026 (UTC) after its redeployment, the registry response on 8 October 2026 (UTC+4); the application description reflects its 11 October deployment of the beta.10 set, and the proof-page description remains the recorded operator information from 6 October. The application serves no capability document, and the registry response names a protocol rather than an implementation version. Reported capabilities do not establish operator identity or prove that a particular record is valid.
 
 | Host | Serves | Runs |
 |---|---|---|
-| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.5 packages, with `@bsv/vsc` beta.4 |
+| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.10 set: the protocol library as `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay-topics@0.4.0-beta.10` and `@bsv/vsc@0.2.0-beta.5` |
 | `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay-topics@0.4.0-beta.10`, `single-operator@2` under publisher policy version 1, pulling all three topics from one peer run under the same administration, with discovery and advertising off |
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
