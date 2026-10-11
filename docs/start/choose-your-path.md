@@ -152,7 +152,7 @@ Done when your implementation passes the fixtures for its role and you can repor
 
 1. [Release sets](../reference/release-sets.md): what the current set contains.
 2. [Migration](../migration.md): move a deployment or application to a new set.
-3. Use the publication receipts linked from the selected release. The [beta.9 receipt](../reference/beta-9-publication.md) records the current overlay publication; the [beta.4 receipt](../reference/beta-4-publication.md) remains the historical reproduction example.
+3. Use the publication receipts linked from the selected release. The [beta.10 receipt](../reference/beta-10-publication.md) records the current publication; the [beta.4 receipt](../reference/beta-4-publication.md) remains the historical reproduction example.
 
 Done when your lockfile names the current set's exact versions and your tests pass.
 

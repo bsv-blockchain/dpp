@@ -34,6 +34,10 @@ The rename changes the package name and dependency graph. It does not change any
 
 ## Upgrade the packages
 
+### From beta.9 to beta.10
+
+The latest published set, `dpp-release-2026-10-7`, carries the protocol library as `@bsv/dpp-core@0.3.0-beta.8`, the name it had before [the rename](#rename-dpp-core-to-dpp-protocol) to `@bsv/dpp-protocol`, with `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10` beside the unchanged beta.5 VSC, published under `latest` on 9 and 10 October 2026 from source revision `1b7a922616f5943f884ec07a39e8b966ecc8a42d` ([receipt](reference/beta-10-publication.md)). The protocol library reads and writes record version 3, the token carrier ([the specification](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/spec/token-carrier.md)): `DppState` gains a third version, `parseDppOutput` returns the carrier beside the state and a `verifyChain` inspection names the token id. Every existing call compiles unchanged, but code that treats any state other than version 2 as version 1 misreads a version 3 state, so narrow on both where a carried lineage can arrive (`SeventeenFieldState` covers the two). Nothing writes version 3 unless the writer builds a state with version `3`; an application on beta.10 keeps writing version 2 until it decides otherwise. An index on it admits version 3 states, accepts the token id as a lookup selector, speaks index contract `0.11.0-draft` and declares `single-operator@2` when it pulls from peers under a one-operator policy; discovery, advertising and the left-behind retry are opt-in ([peer exchange](operate/federation.md)). The protocol library and overlay topics pin `@bsv/sdk@2.8.10` exactly, so a project on another SDK version ends up with two copies whose types do not match; pin 2.8.10. Profiles beta.8 adds the `single-operator@2` operator manifest. No industry profile, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+
 ### From beta.8 to beta.9
 
 The superseded set `dpp-release-2026-10-6` carries `@bsv/dpp-overlay-topics@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 3 October 2026 from source revision `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)). An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
@@ -111,6 +115,7 @@ Compare what your reader reports on the same evidence under the old release and 
 
 | Release set | Packages | Source revision |
 |---|---|---|
+| `dpp-release-2026-10-7` | beta.10 of overlay topics, beta.8 of the protocol library (published as dpp-core) and profiles (VSC beta.5) | `1b7a922616f5943f884ec07a39e8b966ecc8a42d` |
 | `dpp-release-2026-10-6` | beta.9 of overlay topics, beta.7 of core and profiles (VSC beta.5) | `488baaefb5bda535e360fd1c1895124387408816` |
 | `dpp-release-2026-10-5` | beta.8 of overlay topics, beta.7 of core and profiles (VSC beta.5) | `a8db9b6018c61d933596e21797ce2d67ddb5a33e` |
 | `dpp-release-2026-10-4` | beta.7 (VSC beta.5) | `25fabf755090442b98c6714abfae54ec48fee029` |
