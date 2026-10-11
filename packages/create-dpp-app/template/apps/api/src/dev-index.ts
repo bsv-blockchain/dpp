@@ -6,9 +6,8 @@
 // no inclusion. Production runs the reference index as its own service
 // (a separate operator project or an existing provider) and never this.
 //
-// The HTTP host is not an export of @bsv/dpp-overlay-topics (its entry point
-// is the library), so it is loaded by file URL beside the library's own
-// entry. Imported, the host is a library and starts nothing by itself.
+// The HTTP host is the package's ./server export. Imported, it is a library
+// and starts nothing by itself.
 import { PrivateKey } from '@bsv/sdk'
 import { policySigningPreimage, type PublisherPolicy } from '@bsv/dpp-protocol'
 
@@ -22,9 +21,7 @@ export interface DevIndex {
 export async function startDevIndex(publisherKey: string): Promise<DevIndex> {
   const overlay = await import('@bsv/overlay')
   const topics = await import('@bsv/dpp-overlay-topics')
-  const host = (await import(new URL('./index.js', import.meta.resolve('@bsv/dpp-overlay-topics')).href)) as {
-    startOverlayService: (engine: unknown, options: Record<string, unknown>) => Promise<{ port: number; close: () => Promise<void> }>
-  }
+  const host = await import('@bsv/dpp-overlay-topics/server')
 
   // The policy chain of spec/services.md section 1: one operator signs a genesis naming the platform wallet as a state publisher.
   const operatorKey = PrivateKey.fromHex('44'.repeat(32))

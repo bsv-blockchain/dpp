@@ -122,7 +122,9 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run starter:check -- --prepare-only --directory /tmp/my-dpp
-      - run: docker build -f /tmp/my-dpp/.candidate.Dockerfile -t my-dpp /tmp/my-dpp
+      # The base image comes from the same Amazon ECR Public mirror as the
+      # overlay image above, so a Docker Hub rate limit cannot fail this job.
+      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim -f /tmp/my-dpp/.candidate.Dockerfile -t my-dpp /tmp/my-dpp
       - run: |
           set -euo pipefail
           docker run -d --name app -p 3000:3000 -e MONGO_URL=mongodb://127.0.0.1:1 -e PASSPORT_HOST=localhost:3000 my-dpp
