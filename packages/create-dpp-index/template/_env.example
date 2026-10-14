@@ -33,8 +33,8 @@ EXPORT_SIGNING_KEY=
 CHAIN_TRACKER=
 WOC_API_KEY=
 
-# Default matches the app starter's managed-custody@1 profile.
-# Leave empty only when deliberately selecting the baseline custody profile.
+# Matches the app starter's managed-custody@1 profile: the platform holds the owners' keys.
+# Leave empty only to admit self-custody states, which carry no acceptance record. No starter app writes them yet.
 ACCEPTANCE_COMMITMENT=required
 CONTROL_AUTHORITIES=
 OWNER_CONSENT=

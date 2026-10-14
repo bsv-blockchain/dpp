@@ -20,7 +20,7 @@ If your app uses an existing compatible index, obtain its URL and access setting
 npm create @bsv/dpp-index@0.1.0-beta.1 my-index
 ```
 
-You need Node 22 or later, npm, Docker with Compose v2, and the app wallet's publisher **public** key. The guided setup asks for that key, the network and custody profile. It generates fresh secrets without printing them. The default custody profile requires managed acceptance to match the app starter.
+You need Node 22 or later, npm, Docker with Compose v2, and the publisher key that `npm run wallet` prints in the app. The guided setup says what an index does, then asks for that key and the network. It generates fresh secrets without printing them. Custody follows the app starter, managed custody, and is not asked; admitting self-custody states is an environment setting in the generated project.
 
 ## Start and connect
 
@@ -44,7 +44,7 @@ The generator installs dependencies unless you pass `--no-install`. `up` builds 
 | Passport and attestation topics on one service | Publisher public keys and network |
 | Persistent MongoDB with a dedicated user | Bundled Docker MongoDB or a managed database |
 | Separate submit, proof-delivery and complete-export tokens | Which trusted service receives each scope |
-| Managed custody admission by default | Deliberate baseline selection for a different app model |
+| Managed custody admission, as the app starter writes | Admitting self-custody states, by environment setting; no starter app writes them yet |
 | Header verification enabled | Header-source credentials and quota |
 | Evidence export with a separate signing key | Disable exports if you do not provide them |
 | Deployment, diagnostics and backup instructions | Hosting, TLS, monitoring and recovery rehearsal |

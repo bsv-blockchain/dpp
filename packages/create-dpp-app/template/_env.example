@@ -29,6 +29,7 @@ BRAND_ROOT_SECRET=
 MANAGED_IDENTITY_SECRET=
 
 # The index (overlay) this platform writes to. Empty in dev: the API runs one in-process.
+# Required once LIVE_PUBLISHING=true; the API refuses to start without it.
 # Use an existing provider or a separate @bsv/create-dpp-index project.
 # Copy its .app.env connection values here. App Compose starts only the app database.
 INDEX_URL=

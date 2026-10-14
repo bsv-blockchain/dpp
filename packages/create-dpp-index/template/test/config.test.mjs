@@ -14,7 +14,7 @@ function valid() {
     ACCEPTANCE_COMMITMENT: 'required' }
 }
 
-test('managed and baseline admission both have a valid explicit configuration', () => {
+test('managed and self-custody admission both have a valid explicit configuration', () => {
   assert.deepEqual(validateConfiguration(valid()), [])
   assert.deepEqual(validateConfiguration({ ...valid(), ACCEPTANCE_COMMITMENT: '' }), [])
 })

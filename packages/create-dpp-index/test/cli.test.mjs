@@ -63,14 +63,14 @@ test('a fresh project has private independent secrets, pins and no secret output
 test('configuration files, explicit overrides and a different anchor publisher work', t => {
   const parent = directory(t)
   const file = join(parent, 'settings.json')
-  writeFileSync(file, JSON.stringify({ publisherKey: publisher, anchorKeys: [anchor], network: 'test', custody: 'baseline', port: 18080, publicUrl: 'https://index.example.org/' }))
+  writeFileSync(file, JSON.stringify({ publisherKey: publisher, anchorKeys: [anchor], network: 'test', port: 18080, publicUrl: 'https://index.example.org/' }))
   const target = join(parent, 'configured')
   const result = run([target, '--config', file, '--network', 'main', '--no-install', '--yes'])
   assert.equal(result.status, 0, result.stderr)
   const env = parseEnv(readFileSync(join(target, '.env'), 'utf8'))
   assert.equal(env.NETWORK, 'main')
   assert.equal(env.ANCHOR_SERVICE_KEYS, anchor)
-  assert.equal(env.ACCEPTANCE_COMMITMENT, '')
+  assert.equal(env.ACCEPTANCE_COMMITMENT, 'required')
   assert.equal(env.PORT, '18080')
   assert.equal(env.PUBLIC_URL, 'https://index.example.org')
 })
@@ -78,7 +78,7 @@ test('configuration files, explicit overrides and a different anchor publisher w
 test('invalid settings and missing required input create nothing', t => {
   const parent = directory(t)
   for (const args of [
-    ['--network', 'bitcoin'], ['--custody', 'anything'], ['--port', '0'],
+    ['--network', 'bitcoin'], ['--port', '0'],
     ['--publisher-key', '11'.repeat(32)], ['--publisher-key', `02${'ff'.repeat(32)}`],
     ['--anchor-key', 'not-a-key'], ['--public-url', 'https://user:password@index.example.org'],
     ['--public-url', 'http://public.example.org'], ['--public-url', 'https://index.example.org/path'],

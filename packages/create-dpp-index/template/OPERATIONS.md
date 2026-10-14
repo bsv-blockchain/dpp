@@ -14,7 +14,7 @@ The Node commands produce JSON and return a non-zero status on failure. `doctor`
 
 `connection` creates or replaces `.app.env` with private server-side settings. It does not print tokens. Do not paste `.env`, `.app.env`, MongoDB URIs, export keys or advertiser keys into logs, reports or browser code. Read environment variable names from `.env.example` without exposing their populated values.
 
-Keep header verification enabled. Do not resolve admission failures by bypassing it, clearing publisher restrictions or adding control authorities. Match the app's publisher public key, network, custody profile and token scopes, then inspect the actual refusal.
+Keep header verification enabled. Do not resolve admission failures by bypassing it, clearing publisher restrictions or adding control authorities. Match the app's publisher key, network, custody profile and token scopes, then inspect the actual refusal.
 
 The starter starts no funded wallet and broadcasts no transaction. Advertising is an explicit optional extension. It requires a separate wallet and funding. The app and registry own their own duties and backups.
 

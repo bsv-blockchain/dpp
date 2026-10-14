@@ -53,7 +53,7 @@ Do not copy MongoDB maintenance credentials or the export signing key to the app
 | Index storage | Authenticated MongoDB with a named volume | Use a managed MongoDB with credentials and TLS if preferred |
 | Passport publisher | Your app's public key | Use a signed policy for multiple publishers or rotation |
 | Anchor publishers | Same key as the app publisher | Add the registry's anchor publisher public key if it signs under a different key |
-| Custody | Managed acceptance required | Select baseline deliberately if your app uses a different custody model |
+| Custody | Managed acceptance required, as the app starter writes | Empty `ACCEPTANCE_COMMITMENT` admits self-custody states; no starter app writes them yet |
 | Header source | WhatsOnChain on the chosen network | Set `WOC_API_KEY` for your service quota |
 | Evidence exports | Enabled with a separate signing key and complete-export token | Remove the signing key to disable both export routes |
 | Peer synchronisation | Off | Set `SYNC_PEERS` and `SYNC_INTERVAL_MS` to pull compatible peers |
@@ -61,7 +61,7 @@ Do not copy MongoDB maintenance credentials or the export signing key to the app
 | SHIP/SLAP advertising | Off | Set `ADVERTISE=1`, HTTPS `PUBLIC_URL`, and a separate funded advertiser wallet and storage URL |
 | App auth, application database, claim registry | Outside this project | Configure them in the app or separate registry service |
 
-The default custody profile matches the app starter. It does not create extra control or recovery authorities. Those lists stay empty until you deliberately name them. An anchor is a commitment to a claim; it does not establish the claim's truth or replace access to its bytes.
+The custody profile follows the app starter; the generator does not ask. It does not create extra control or recovery authorities. Those lists stay empty until you deliberately name them. An anchor is a commitment to a claim; it does not establish the claim's truth or replace access to its bytes.
 
 This starter keeps header verification on, including when it runs locally. It refuses `CHAIN_TRACKER=scripts-only`. The protocol's synthetic fixture tests use that setting in a separate test process and claim no blockchain inclusion. No part of scaffolding, `npm test`, or `doctor` broadcasts a transaction.
 
