@@ -10,7 +10,7 @@ This source candidate has not been published. After the starter and its pinned d
 npm create @bsv/dpp-index@0.1.0-beta.1 my-index
 ```
 
-The guided path asks for the publisher **public** key, network and custody profile. Get that identity key from the app's wallet. It is not the app user's identity or a private wallet key. Managed custody is the default to match the app starter.
+The guided path explains what an index does, then asks for the publisher key and the network. The publisher key is the line `npm run wallet` prints in the app; it is a public key, not the app user's identity or a private wallet key. Custody follows the app starter, managed custody, and is not asked.
 
 For scripts and agents:
 
@@ -18,7 +18,7 @@ For scripts and agents:
 npx @bsv/create-dpp-index@0.1.0-beta.1 my-index --publisher-key "$PUBLISHER_PUBLIC_KEY" --network main --yes --no-install --json
 ```
 
-`--config settings.json` accepts `publisherKey`, `anchorKeys`, `network`, `custody`, `port` and `publicUrl`. Flags override the file. Invalid or missing settings and non-empty targets fail without overwriting existing work. `--no-install` scaffolds offline; dependency installation requires registry access. Installation failure returns non-zero and preserves the generated project for retry. `--help` lists all options.
+`--config settings.json` accepts `publisherKey`, `anchorKeys`, `network`, `port` and `publicUrl`. Flags override the file. Invalid or missing settings and non-empty targets fail without overwriting existing work. `--no-install` scaffolds offline; dependency installation requires registry access. Installation failure returns non-zero and preserves the generated project for retry. `--help` lists all options.
 
 Inside the result, run `npm test`, `npm run up`, `npm run doctor -- --online`, then `npm run connection`. Run `npm install --ignore-scripts` first only if you used `--no-install` or installation needs a retry. The last command saves `.app.env` with `INDEX_URL`, `INDEX_SUBMIT_TOKEN`, `INDEX_CALLBACK_TOKEN` and the matching `NETWORK` for the app. No secrets are printed.
 

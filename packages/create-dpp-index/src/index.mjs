@@ -19,7 +19,7 @@ try {
     yes: { type: 'boolean', short: 'y' }, json: { type: 'boolean' },
     'no-install': { type: 'boolean' }, config: { type: 'string' },
     'publisher-key': { type: 'string' }, 'anchor-key': { type: 'string', multiple: true },
-    network: { type: 'string' }, custody: { type: 'string' }, port: { type: 'string' },
+    network: { type: 'string' }, port: { type: 'string' },
     'public-url': { type: 'string' },
   } })
   json = values.json === true
@@ -28,18 +28,22 @@ try {
 
 Usage: npm create @bsv/dpp-index <directory> -- [options]
 
-  --publisher-key <key>  App wallet's compressed public key (required)
+  --publisher-key <key>  Publisher key printed by npm run wallet in your app (required)
   --anchor-key <key>     Authorised anchor publisher; repeat for several
                         Defaults to the passport publisher
   --network main|test   Match the app wallet (default: main)
-  --custody managed|baseline  Admission profile (default: managed)
   --port <number>       Local HTTP port (default: 8080)
   --public-url <url>    Advertised origin (default: http://localhost:<port>)
-  --config <file>       JSON with publisherKey, anchorKeys, network, custody,
-                        port and publicUrl; flags override it
+  --config <file>       JSON with publisherKey, anchorKeys, network, port and
+                        publicUrl; flags override it
   --yes                 No prompts; missing required input is an error
   --no-install          Create files without downloading dependencies
   --json                One JSON result, no secrets; implies no prompts
+
+An index is the service your app announces passports to and readers look
+them up in. It admits states countersigned by the publisher key you name.
+It follows the app's custody model: managed custody, where your platform
+holds the owners' keys. Self-custody admission is an environment setting.
 
 The project includes @bsv/dpp-overlay-topics as its runtime dependency.
 No separate runtime installation is needed. Use the generated project commands.
@@ -52,32 +56,30 @@ Template release set: ${manifest.dpp.releaseSet}.`)
     if (positionals.length > 1) throw new Error('Name one target directory')
     let config = values.config ? JSON.parse(readFileSync(resolve(values.config), 'utf8')) : {}
     if (config == null || typeof config !== 'object' || Array.isArray(config)) throw new Error('--config must contain a JSON object')
-    const allowed = new Set(['publisherKey', 'anchorKeys', 'network', 'custody', 'port', 'publicUrl'])
+    const allowed = new Set(['publisherKey', 'anchorKeys', 'network', 'port', 'publicUrl'])
     if (Object.keys(config).some(key => !allowed.has(key))) throw new Error('--config contains an unknown setting; run --help for the supported names')
     config = { ...config }
-    for (const [flag, key] of Object.entries({ 'publisher-key': 'publisherKey', 'anchor-key': 'anchorKeys', network: 'network', custody: 'custody', port: 'port', 'public-url': 'publicUrl' })) {
+    for (const [flag, key] of Object.entries({ 'publisher-key': 'publisherKey', 'anchor-key': 'anchorKeys', network: 'network', port: 'port', 'public-url': 'publicUrl' })) {
       if (values[flag] !== undefined) config[key] = values[flag]
     }
     let directory = positionals[0]
     if (process.stdin.isTTY && !values.yes && !json) {
       const prompt = createInterface({ input: process.stdin, output: process.stdout })
       try {
+        console.log('An index is the service your app announces passports to and readers look them up in.\nIt admits states countersigned by your app\'s publisher key, under the app\'s managed custody.')
         directory ??= (await prompt.question('Project directory [my-dpp-index]: ')).trim() || 'my-dpp-index'
-        config.publisherKey ??= (await prompt.question('App wallet publisher PUBLIC key (npm run wallet in the app): ')).trim()
-        config.network ??= (await prompt.question('Network [main/test, default main]: ')).trim() || 'main'
-        config.custody ??= (await prompt.question('Custody [managed/baseline, default managed]: ')).trim() || 'managed'
+        config.publisherKey ??= (await prompt.question('Publisher key (printed by npm run wallet in your app): ')).trim()
+        config.network ??= (await prompt.question('Network, the same as your app wallet [main/test, default main]: ')).trim() || 'main'
       } finally { prompt.close() }
     }
     if (!directory) throw new Error('Name a target directory, for example my-dpp-index')
-    if (!config.publisherKey) throw new Error('Supply --publisher-key with the app wallet public key. Run npm run wallet in the app; never pass its private key.')
+    if (!config.publisherKey) throw new Error('Supply --publisher-key with the publisher key that npm run wallet prints in your app. Never pass a private key.')
     const publisherKey = publicKey(config.publisherKey, 'publisherKey')
     const rawAnchors = config.anchorKeys ?? [publisherKey]
     if (!Array.isArray(rawAnchors) || rawAnchors.length === 0) throw new Error('anchorKeys must be a non-empty array of public keys')
     const anchors = [...new Set(rawAnchors.map(key => publicKey(key, 'anchorKeys')))]
     const network = config.network ?? 'main'
     if (!['main', 'test'].includes(network)) throw new Error('network must be main or test')
-    const custody = config.custody ?? 'managed'
-    if (!['managed', 'baseline'].includes(custody)) throw new Error('custody must be managed or baseline')
     const port = Number(config.port ?? 8080)
     if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('port must be an integer from 1 to 65535')
     const url = baseUrl(config.publicUrl ?? `http://localhost:${port}`, 'publicUrl')
@@ -104,7 +106,7 @@ Template release set: ${manifest.dpp.releaseSet}.`)
     const mongoPassword = randomBytes(32).toString('hex')
     const substitutions = {
       SERVICE_IDENTITY_KEY: publisherKey, ANCHOR_SERVICE_KEYS: anchors.join(','),
-      NETWORK: network, ACCEPTANCE_COMMITMENT: custody === 'managed' ? 'required' : '',
+      NETWORK: network, ACCEPTANCE_COMMITMENT: 'required',
       PORT: String(port), PUBLIC_URL: url, MONGO_DB: database,
       MONGO_INDEX_PASSWORD: mongoPassword, MONGO_ROOT_PASSWORD: randomBytes(32).toString('hex'),
       MONGO_URL: `mongodb://dpp_index:${mongoPassword}@mongo:27017/${database}?authSource=${database}`,

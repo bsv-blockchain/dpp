@@ -102,6 +102,7 @@ Done. Next:
   cp .env.example .env
   npm run dev         # web on http://localhost:5173, API on http://localhost:3000, a local index in-process
 
-For deployment, connect to an existing index or create a separate @bsv/create-dpp-index project.
+For deployment you need an index: the service your app announces passports to and readers look them up in.
+Connect to one that exists, or create your own with @bsv/create-dpp-index (README, Connect an index).
 The app's Compose file starts only its database. No separate overlay installation is needed.
 Read README.md for the live route: a funded wallet, index access, and the identifier you will write under.`)

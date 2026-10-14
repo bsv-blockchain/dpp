@@ -66,7 +66,7 @@ Writing a real passport spends real satoshis on BSV mainnet and is permanent. Be
 2. **A root key.** `openssl rand -hex 32` into `WALLET_ROOT_KEY`. Back it up: a root key alone is not a full wallet backup, so read the wallet toolbox's recovery guidance and keep the SQLite file in `local/` on a persistent volume.
 3. **Secrets.** `AUTH_SECRET`, `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET`, each `openssl rand -hex 32`. Changing an identity secret changes every key derived from it, so decide them once.
 4. **A header source.** A WhatsOnChain API key in `WOC_API_KEY`, for the wallet's monitor and the reader.
-5. **An index that admits your publisher key.** `npm run wallet` prints the identity key. Follow [Connect an index](#connect-an-index) to arrange an existing provider or run a separate index project. Match the wallet's network and managed custody profile.
+5. **An index that admits your publisher key.** An index is the service this app announces each passport state to before sending it, and the service readers look passports up in. In development the API runs one in-process; live passports need one that persists, and the API refuses to start with `LIVE_PUBLISHING=true` until `INDEX_URL` is set. `npm run wallet` prints the publisher key. Follow [Connect an index](#connect-an-index) to arrange an existing provider or run a separate index project. Match the wallet's network and managed custody profile.
 6. **Funds.** `npm run wallet` prints a funding address. Pay it from any wallet, then take the payment in with the `wallet fund` command it prints, or from the Wallet page. A state costs a little over a hundred satoshis and leaves one satoshi in the passport output.
 7. **Your identifier host and prefix.** `PASSPORT_HOST` must be a host you control and serve this application from, so a label's QR code opens the passport page.
 
@@ -76,7 +76,7 @@ Then set `LIVE_PUBLISHING=true`. Until then, a write is built, checked and admit
 
 ## Connect an index
 
-Choose one route. This app's Compose file starts only the application database.
+An index is where your passports become findable: the app announces every state to it before sending, and readers, including other platforms, look states and their evidence up there. It admits only states countersigned by a publisher key it names, and it follows this app's custody model. Choose one route. This app's Compose file starts only the application database.
 
 **Use an existing index.** Arrange admission of your publisher public key, managed custody support, and submit and proof-delivery access with its operator. Public lookup access alone is insufficient. Get its URL and network, then set the four app settings below. You need no index starter or additional overlay installation.
 
@@ -91,7 +91,7 @@ npm run doctor -- --online
 npm run connection
 ```
 
-Supply the publisher **public** key printed by this app's `npm run wallet`, select the same network and keep managed custody enabled. The index does not need the wallet's private key. Follow the index project's README for its own startup, hosting and recovery. Before publication, use the index starter's candidate checks in the DPP repository; do not substitute another runtime version to force installation.
+Supply the publisher key printed by this app's `npm run wallet` and select the same network; custody follows this app. The key is public, and the index does not need the wallet's private key. Follow the index project's README for its own startup, hosting and recovery. Before publication, use the index starter's candidate checks in the DPP repository; do not substitute another runtime version to force installation.
 
 Copy these settings from the generated index's `.app.env`, or from the existing operator, into the app's server-side `.env`:
 

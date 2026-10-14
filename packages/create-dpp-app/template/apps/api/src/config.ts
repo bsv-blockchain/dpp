@@ -35,6 +35,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const rootKeyHex = text(env, 'WALLET_ROOT_KEY')
   if (rootKeyHex != null && !/^[0-9a-fA-F]{64}$/.test(rootKeyHex)) throw new Error('WALLET_ROOT_KEY must be 64 hexadecimal characters')
   if (livePublishing && rootKeyHex == null) throw new Error('LIVE_PUBLISHING=true needs WALLET_ROOT_KEY')
+  // A real passport announced only to the in-process index would be on the chain and findable by nobody after a restart.
+  if (livePublishing && text(env, 'INDEX_URL') == null) throw new Error('LIVE_PUBLISHING=true needs INDEX_URL: connect an index that persists before writing to the chain (README, Connect an index)')
   return {
     network,
     port: Number(text(env, 'PORT') ?? 3000),

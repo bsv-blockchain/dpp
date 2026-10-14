@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Operator commands against the running configuration, with no HTTP:
 //
-//   node apps/api/dist/cli.js wallet                 identity key, a funding address, balance
+//   node apps/api/dist/cli.js wallet                 publisher key, a funding address, balance
 //   node apps/api/dist/cli.js wallet fund <txid> <address> <prefix> <suffix>
 //                                                    take in a payment made to a funding address
 //   node apps/api/dist/cli.js operations             what is still owed, and run the duties once
@@ -22,8 +22,8 @@ try {
     console.log(`Took in ${taken.satoshis} satoshis from ${txid}. Balance: ${await platform.wallet.balance()} satoshis.`)
   } else if (command === 'wallet') {
     const funding = await platform.wallet.fundingAddress()
+    console.log(`Publisher key (give this to your index; it is public): ${platform.wallet.identityKey}`)
     console.log(`Wallet: ${platform.wallet.kind} on ${platform.wallet.network}`)
-    console.log(`Identity key (the publisher key your index must admit): ${platform.wallet.identityKey}`)
     console.log(`Balance: ${await platform.wallet.balance()} satoshis`)
     console.log(`Funding address: ${funding.address}`)
     console.log(`After paying it, take the payment in with: wallet fund <txid> ${funding.address} ${funding.derivationPrefix} ${funding.derivationSuffix}`)
