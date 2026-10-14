@@ -5,6 +5,7 @@
 //   node apps/api/dist/cli.js wallet fund <txid> <address> <prefix> <suffix>
 //                                                    take in a payment made to a funding address
 //   node apps/api/dist/cli.js operations             what is still owed, and run the duties once
+import './env.js'
 import { loadConfig } from './config.js'
 import { openPlatform } from './platform.js'
 import { pendingDuties, runDuties } from './worker.js'

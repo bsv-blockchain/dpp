@@ -60,6 +60,8 @@ Passports are GS1 Digital Links, `https://<PASSPORT_HOST>/01/<GTIN>/21/<serial>`
 
 ## Going live
 
+Every npm script reads `.env` from the project root at start, so a setting changed there applies on the next run without exporting anything. Docker gets the same file with `--env-file`.
+
 Writing a real passport spends real satoshis on BSV mainnet and is permanent. Before `LIVE_PUBLISHING=true`:
 
 1. **MongoDB.** `docker compose -f deploy/compose.yml --env-file .env up -d mongo`, or a hosted MongoDB. Set `MONGO_URL`. Sign-in and persistence need it.
