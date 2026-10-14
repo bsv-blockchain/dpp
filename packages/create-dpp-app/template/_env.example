@@ -1,4 +1,5 @@
-# Copy to .env and fill in. Everything here is read by the API at start.
+# Copy to .env and fill in. The npm scripts (dev, start, wallet, operations) read .env at start,
+# as does Docker with --env-file. A value already set in the environment wins over the file.
 # Values marked (live) are needed only to write real passports on BSV mainnet;
 # `npm test` and `npm run dev` work without them.
 

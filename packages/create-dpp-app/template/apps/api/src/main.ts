@@ -1,6 +1,7 @@
 // Boot: configuration, the platform, sign-in, the HTTP server and the worker
 // loop, in one process. Scale by running more API processes and exactly one
 // worker (WORKER=only runs the loop alone; WORKER=off runs the API alone).
+import './env.js'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
