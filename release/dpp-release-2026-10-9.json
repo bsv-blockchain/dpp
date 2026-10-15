@@ -335,7 +335,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "ac83d83cc26827e18edbf5cbc46313450dd8a31c66fdd94f532d824352433983",
+      "sha256": "ac996c6f2d23bf6fa530d91e373ee5ade004bd7886723dad17e4f66fb49a41df",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
@@ -420,7 +420,7 @@
     },
     {
       "path": "conformance/baseline-native-3.json",
-      "sha256": "8074421d16cba8e7d666fe0b937e81585652a8a6f91c9e1c7c5dbf1b58c8732c",
+      "sha256": "aa6548d7dc3b402a71c596076f8cbcd804a62252116ea1f2c39e8cb0146ba6ec",
       "pins": "the proposed baseline for the carried record, with every fixture digest"
     }
   ],

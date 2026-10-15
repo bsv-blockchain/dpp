@@ -88,7 +88,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "123d42b1fa049e2aed1d0d73510bcce00af56c82fdd533c68fb312d40622c197"
+      "digest": "ef624e0d24d01fc08ab16583d7c0d26ef426ff83ca2c953886d831f810696b0c"
     },
     {
       "id": "spec-vsc-profile",
@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "e443503d5855e3764ccd2f4db69ae0bbd7e94eba482488f78ade9e6b16a48e3f"
+      "digest": "e295966237d7e6f266316426f19d03290bf05de9cd8305b2e2a5618fbe3087ba"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -144,7 +144,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "d3d5c05dc568343d5e4e4c42ec2cce4e6c8f758da56aec01e45c9dc1132052d0"
+      "digest": "2865dab45d3f29020552b8cc9114a86f4e5cd709daa95f358099122fc1063bc3"
     },
     {
       "id": "baseline-native-2",
@@ -152,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "ac83d83cc26827e18edbf5cbc46313450dd8a31c66fdd94f532d824352433983"
+      "digest": "ac996c6f2d23bf6fa530d91e373ee5ade004bd7886723dad17e4f66fb49a41df"
     },
     {
       "id": "spec-profiles",
@@ -538,7 +538,7 @@
       "version": "epcis-json@1, epcis-vsc@1",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "digest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "spec-external-credential-profile",
@@ -546,7 +546,7 @@
       "version": "vc-di-ecdsa-rdfc-2019@1",
       "kind": "local",
       "path": "spec/external-credential-profile.md",
-      "digest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "digest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "spec-passport-projections",
@@ -4842,9 +4842,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -4928,9 +4928,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-5-source-reference",
@@ -4956,9 +4956,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
@@ -4984,9 +4984,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-7-import-record",
@@ -5039,9 +5039,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904",
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
@@ -5065,9 +5065,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904",
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
@@ -5096,9 +5096,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "EXTC-2-proof-and-binding",
@@ -5151,9 +5151,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "EXTC-4-reformat-vs-bytes",
@@ -5180,9 +5180,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "EXTC-5-registry-intake",
