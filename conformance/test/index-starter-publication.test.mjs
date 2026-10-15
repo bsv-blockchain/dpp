@@ -8,7 +8,7 @@ import { checkIndexStarterRegistry, indexStarterPlan, starterRuntimePackages } f
 
 function fixture() {
   const pins = { '@bsv/dpp-overlay': '0.4.0-beta.11', '@bsv/dpp-profiles': '0.3.0-beta.9', '@bsv/dpp-protocol': '0.3.0-beta.9' }
-  const manifest = { name: '@bsv/create-dpp-index', version: '0.1.0-beta.1', publishConfig: { access: 'public', registry: NPM_REGISTRY, tag: 'next' }, dpp: { releaseSet: 'dpp-release-test', packages: pins } }
+  const manifest = { name: '@bsv/create-dpp-index', version: '0.1.0-beta.1', publishConfig: { access: 'public', registry: NPM_REGISTRY, tag: 'latest' }, dpp: { releaseSet: 'dpp-release-test', packages: pins } }
   const template = { dependencies: { '@bsv/dpp-overlay': pins['@bsv/dpp-overlay'] } }
   const set = { releaseSet: manifest.dpp.releaseSet, status: 'candidate', packages: Object.entries(pins).map(([name, version]) => ({ name, version })) }
   const files = new Map()
@@ -27,7 +27,7 @@ test('the starter release has one publication target and three separately publis
   assert.deepEqual(plan.candidates, [f.candidates[0]])
   assert.deepEqual(plan.dependencies, f.candidates.slice(1))
   assert.equal(plan.releaseSetSha256, sha256(f.setBytes))
-  assert.equal(plan.tag, 'next')
+  assert.equal(plan.tag, 'latest')
   f.set.status = 'released'
   assert.doesNotThrow(() => starterRuntimePackages(f.manifest, f.template, f.set))
 })
@@ -41,7 +41,7 @@ test('a mismatched template or release pin cannot be packaged as the selected st
     f => { f.manifest.dpp.releaseSet = 'another-set' },
     f => { f.set.status = 'superseded' },
     f => { f.set.packages.push(f.set.packages[0]) },
-    f => { f.manifest.publishConfig.tag = 'latest' },
+    f => { f.manifest.publishConfig.tag = 'next' },
   ]) {
     const f = fixture()
     change(f)

@@ -5,7 +5,7 @@
   "components": [
     {
       "name": "@bsv/create-dpp-app",
-      "version": "0.1.0",
+      "version": "0.1.0-beta.1",
       "licence": "Apache-2.0",
       "dependencies": []
     },

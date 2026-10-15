@@ -79,7 +79,7 @@ A missing or changed runtime archive stops the release. The starter workflow nev
 
 Publication requires a clean committed revision and explicit approval of its exact plan digest. Working-tree plans are for review and testing only. Commit, push and publication each require their own approval.
 
-For a package with trusted publishing configured, run **Publish index starter** with `dryRun: true`. Review the uploaded plan and archives, then run it on the same revision with `dryRun: false` and the approved SHA-256. Configure the package's npm trusted publisher for organisation `bsv-blockchain`, repository `dpp`, workflow filename `publish-index-starter.yaml`, no deployment environment, and permission for `npm publish`. The workflow uses GitHub OIDC and publishes the starter under `next`; it does not need a stored npm token.
+For a package with trusted publishing configured, run **Publish index starter** with `dryRun: true`. Review the uploaded plan and archives, then run it on the same revision with `dryRun: false` and the approved SHA-256. Configure the package's npm trusted publisher for organisation `bsv-blockchain`, repository `dpp`, workflow filename `publish-index-starter.yaml`, no deployment environment, and permission for `npm publish`. The workflow uses GitHub OIDC and publishes the starter under `latest`; it does not need a stored npm token.
 
 For the first publication of a new package name, an npm scope maintainer may need to establish the package before trusted publishing can be configured. Prepare that as a separate interactive plan from the same clean checkout:
 

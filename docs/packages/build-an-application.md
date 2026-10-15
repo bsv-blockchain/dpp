@@ -18,7 +18,7 @@ npm run starter:check -- --directory ../my-app
 
 This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-10-9`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test before publication and do not establish that the public npm command works.
 
-After the runtime and starter are published, `npm create @bsv/dpp-app@0.1.0 my-app` creates the same application and installs its dependencies from npm. Follow the generated README for development and deployment.
+After the runtime and starter are published, `npm create @bsv/dpp-app@0.1.0-beta.1 my-app` creates the same application and installs its dependencies from npm. Follow the generated README for development and deployment.
 
 For deployment, connect to an existing compatible index or create a separate project with [the index starter](create-dpp-index.md). The app's Compose file starts its application database. The index starter includes its own maintained runtime, so there is no additional overlay installation step. A successful offline exercise does not establish readiness for production; complete the generated guide and [production checks](../operate/production-readiness.md).
 

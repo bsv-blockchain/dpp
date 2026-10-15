@@ -12,6 +12,10 @@ The beta.8 core and profiles packages and the beta.10 overlay package, the first
 
 ## Repository history
 
+### 2026-10-15, both starters as beta prereleases on latest
+
+- Version `@bsv/create-dpp-app` as `0.1.0-beta.1` and publish both starters under the `latest` tag, as the runtime packages are. The bare `npm create @bsv/dpp-app` and `npm create @bsv/dpp-index` commands then resolve without a version, and every package of the set carries the same beta convention until launch.
+
 ### 2026-10-15, name the index runtime dpp-overlay and the credentials package dpp-credentials
 
 - Move the index runtime to `@bsv/dpp-overlay` under `packages/dpp-overlay`, and the credentials package to `@bsv/dpp-credentials` under `packages/dpp-credentials`. Entry points, executables and APIs are unchanged; only the names and directories move.

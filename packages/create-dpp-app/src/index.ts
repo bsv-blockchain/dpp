@@ -2,7 +2,7 @@
 /**
  * create-dpp-app: copy the bundled template into a new directory and name it.
  *
- *   npm create @bsv/dpp-app@0.1.0 my-app
+ *   npm create @bsv/dpp-app@0.1.0-beta.1 my-app
  *   npx @bsv/create-dpp-app my-app [--no-install] [--yes]
  *
  * The template ships inside this package, so scaffolding needs no network;
@@ -28,7 +28,7 @@ const positional = args.filter((a) => !a.startsWith('--'))
 if (flags.has('--help') || flags.has('-h')) {
   console.log(`create-dpp-app ${manifest.version}: scaffold a Digital Product Passport application on BSV.
 
-usage: npm create @bsv/dpp-app@0.1.0 <directory> [--no-install] [--yes]
+usage: npm create @bsv/dpp-app@0.1.0-beta.1 <directory> [--no-install] [--yes]
 
   <directory>    where to create the application; must be empty or hold only .git
   --no-install   do not run npm install afterwards
