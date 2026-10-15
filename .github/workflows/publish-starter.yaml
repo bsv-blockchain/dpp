@@ -24,8 +24,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.3
           registry-url: https://registry.npmjs.org
+      # Node 22 bundles npm 10, below the npm 11.5.1 minimum for trusted
+      # publishing with OIDC. Pin the same npm the other publish workflows use.
+      - run: npm install --global npm@11.19.0
       - run: npm ci
       - run: npm run build -w @bsv/create-dpp-app
       - run: npm test -w @bsv/create-dpp-app
