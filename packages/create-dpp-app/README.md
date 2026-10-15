@@ -5,7 +5,7 @@ Scaffold a Digital Product Passport application on BSV in one command.
 This starter and its renamed protocol dependency are source candidates pending publication. The npm command below applies after both are published; use the development commands below to test them from this checkout.
 
 ```sh
-npm create @bsv/dpp-app@0.1.0 my-app
+npm create @bsv/dpp-app@0.1.0-beta.1 my-app
 cd my-app
 npm test
 npm run dev

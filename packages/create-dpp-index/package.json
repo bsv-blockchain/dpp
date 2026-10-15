@@ -25,5 +25,5 @@
     "url": "git+https://github.com/bsv-blockchain/dpp.git",
     "directory": "packages/create-dpp-index"
   },
-  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/", "tag": "next" }
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/", "tag": "latest" }
 }

@@ -6,8 +6,8 @@ const runtimeNames = ['@bsv/dpp-overlay', '@bsv/dpp-profiles', '@bsv/dpp-protoco
 /** Keep the independently released generator bound to one compatible runtime set. */
 export function starterRuntimePackages(manifest, template, set) {
   if (manifest.name !== '@bsv/create-dpp-index' || manifest.private) throw new Error('select the public index starter')
-  if (manifest.publishConfig?.access !== 'public' || manifest.publishConfig?.registry !== NPM_REGISTRY || manifest.publishConfig?.tag !== 'next') {
-    throw new Error('the index starter must publish to public npm under next')
+  if (manifest.publishConfig?.access !== 'public' || manifest.publishConfig?.registry !== NPM_REGISTRY || manifest.publishConfig?.tag !== 'latest') {
+    throw new Error('the index starter must publish to public npm under latest')
   }
   if (manifest.dpp?.releaseSet !== set.releaseSet || !['candidate', 'released'].includes(set.status)) throw new Error('the starter must select a current candidate or released runtime set')
   if (JSON.stringify(Object.keys(manifest.dpp.packages ?? {}).sort()) !== JSON.stringify(runtimeNames)) throw new Error('the starter must pin the overlay, profiles and protocol packages')
