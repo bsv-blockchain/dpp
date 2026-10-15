@@ -1,6 +1,6 @@
 # @bsv/create-dpp-index
 
-Create an independently editable operator project for the DPP index. It contains MongoDB, deployment files, checks and an app connection helper. **The starter includes `@bsv/dpp-overlay-topics` as the project's runtime dependency. There is no separate runtime installation step.** One index serves both passport and attestation topics.
+Create an independently editable operator project for the DPP index. It contains MongoDB, deployment files, checks and an app connection helper. **The starter includes `@bsv/dpp-overlay` as the project's runtime dependency. There is no separate runtime installation step.** One index serves both passport and attestation topics.
 
 If your app uses an existing compatible index, obtain its URL and access settings from its operator; you need neither the starter nor the runtime package just to connect over HTTP.
 
@@ -26,9 +26,9 @@ The generated README explains local startup, hosting, optional peers and discove
 
 ## Package boundary
 
-The starter creates your project; the included runtime runs it. `@bsv/dpp-overlay-topics` is a separate maintained package so the generated project can receive runtime upgrades through its dependencies. You select it directly only when building a [custom or embedded index](../overlay-topics/README.md).
+The starter creates your project; the included runtime runs it. `@bsv/dpp-overlay` is a separate maintained package so the generated project can receive runtime upgrades through its dependencies. You select it directly only when building a [custom or embedded index](../overlay-topics/README.md).
 
-The generated project directly depends on `@bsv/dpp-overlay-topics`. That package brings the compatible `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, overlay engine, SDK and MongoDB driver automatically. The generator itself has no runtime dependencies and is not a service you keep running.
+The generated project directly depends on `@bsv/dpp-overlay`. That package brings the compatible `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, overlay engine, SDK and MongoDB driver automatically. The generator itself has no runtime dependencies and is not a service you keep running.
 
 Application auth, the application database, wallet funding, claim storage and resolver deployment are separate responsibilities. A second index is optional, as are static peers, SHIP discovery and funded SHIP/SLAP advertising. The index does not need a funded wallet unless advertising is deliberately enabled.
 

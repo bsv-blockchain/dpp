@@ -66,7 +66,7 @@ Continue with [your first lookup](../reference/contracts.md#find-passport-record
 docker compose -f deploy/compose.yml --env-file deploy/operator.env down
 ```
 
-The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
+The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-overlay/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
 
 Follow [broadcast and proofs](wallet-broadcast-proofs.md) and [export and recovery](export-import-recovery.md). Add [peer synchronisation](federation.md) if your operating model needs exchange or replication. From the beta.10 overlay package an index can find peers and advertise itself when configured, as the federation guide explains.
 
@@ -93,7 +93,7 @@ Before offering the service for real products, use [Prepare for production](prod
 | Configure | Source |
 |---|---|
 | Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) |
-| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/overlay-topics/src/index.ts) |
+| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-overlay/src/index.ts) |
 | Wallet, broadcast and proof retrieval | [Integration guide](wallet-broadcast-proofs.md) |
 | Another operator | [Federation](federation.md) |
 | Retention and replacement provider | [Recovery](export-import-recovery.md) |

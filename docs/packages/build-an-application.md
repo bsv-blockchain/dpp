@@ -16,7 +16,7 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-10-8`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test before publication and do not establish that the public npm command works.
+This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-10-9`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test before publication and do not establish that the public npm command works.
 
 After the runtime and starter are published, `npm create @bsv/dpp-app@0.1.0 my-app` creates the same application and installs its dependencies from npm. Follow the generated README for development and deployment.
 

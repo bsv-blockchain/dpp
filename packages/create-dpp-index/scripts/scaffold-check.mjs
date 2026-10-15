@@ -51,7 +51,7 @@ try {
   if (!values.registry) run('npm', ['run', 'build'])
   for (const dir of [archives, cliConsumer]) mkdirSync(dir)
   const packed = {}
-  const packageDirs = values.registry ? [] : registryDependencies ? ['create-dpp-index'] : ['dpp-protocol', 'dpp-profiles', 'overlay-topics', 'create-dpp-index']
+  const packageDirs = values.registry ? [] : registryDependencies ? ['create-dpp-index'] : ['dpp-protocol', 'dpp-profiles', 'dpp-overlay', 'create-dpp-index']
   for (const dir of packageDirs) {
     const manifest = read(join(root, 'packages', dir, 'package.json'))
     if (manifest.name !== pkg.name) assert.equal(manifest.version, pkg.dpp.packages[manifest.name], 'generator pins must match the packed runtime')
@@ -82,7 +82,7 @@ try {
   const created = JSON.parse(creationOutput.trim().split('\n').at(-1))
   assert.equal(created.status, 'created')
   const projectManifest = read(join(project, 'package.json'))
-  assert.deepEqual(projectManifest.dependencies, { '@bsv/dpp-overlay-topics': pkg.dpp.packages['@bsv/dpp-overlay-topics'] })
+  assert.deepEqual(projectManifest.dependencies, { '@bsv/dpp-overlay': pkg.dpp.packages['@bsv/dpp-overlay'] })
   if (registryDependencies) {
     assert.equal(created.installed, true, 'the starter must install its own runtime dependencies')
     const lock = read(join(project, 'package-lock.json'))
@@ -105,9 +105,9 @@ try {
   assert.ok(!run('npm', ['ls', '--json'], project).includes('link:'))
   say(`${values.registry ? 'the published npm create command' : 'the packed generator'} creates a project outside the repository and its offline checks pass`)
   if (registryDependencies) say('the project installs its exact DPP runtime versions from public npm, with a fresh cache and no local archives')
-  assert.equal(run(process.execPath, ['node_modules/@bsv/dpp-overlay-topics/dist/cli.js', '--version'], project).trim(), pkg.dpp.packages['@bsv/dpp-overlay-topics'])
-  assert.match(run(process.execPath, ['node_modules/@bsv/dpp-overlay-topics/dist/cli.js', '--help'], project), /env-file/)
-  const overlayRequire = createRequire(join(root, 'packages/overlay-topics/package.json'))
+  assert.equal(run(process.execPath, ['node_modules/@bsv/dpp-overlay/dist/cli.js', '--version'], project).trim(), pkg.dpp.packages['@bsv/dpp-overlay'])
+  assert.match(run(process.execPath, ['node_modules/@bsv/dpp-overlay/dist/cli.js', '--help'], project), /env-file/)
+  const overlayRequire = createRequire(join(root, 'packages/dpp-overlay/package.json'))
   const { MongoMemoryServer } = overlayRequire('mongodb-memory-server')
   const dbPath = join(temp, 'mongo')
   mkdirSync(dbPath)
@@ -121,7 +121,7 @@ try {
     output = ''
     // Use the public runtime command for synthetic fixtures only. The generated
     // start script must refuse that setting, which is checked below.
-    const args = fixtures ? ['node_modules/@bsv/dpp-overlay-topics/dist/cli.js', '--env-file', '.env'] : ['scripts/start.mjs']
+    const args = fixtures ? ['node_modules/@bsv/dpp-overlay/dist/cli.js', '--env-file', '.env'] : ['scripts/start.mjs']
     child = spawn(process.execPath, args, { cwd: project, env: { ...process.env, ...config, ...(fixtures ? { CHAIN_TRACKER: 'scripts-only' } : {}) }, stdio: ['ignore', 'pipe', 'pipe'] })
     child.stdout.on('data', bytes => { output += bytes })
     child.stderr.on('data', bytes => { output += bytes })
@@ -145,7 +145,7 @@ try {
     const { IndexClient } = await import(pathToFileURL(join(appProject, 'apps/api/dist/index-client.js')).href)
     appClient = new IndexClient({ url: app.INDEX_URL, submitToken: app.INDEX_SUBMIT_TOKEN, callbackToken: app.INDEX_CALLBACK_TOKEN })
     assert.ok((await appClient.publisherKeys()).includes(fixture.custodianKey))
-    assert.equal((await appClient.capabilities()).implementation.version, pkg.dpp.packages['@bsv/dpp-overlay-topics'])
+    assert.equal((await appClient.capabilities()).implementation.version, pkg.dpp.packages['@bsv/dpp-overlay'])
     assert.deepEqual(await appClient.lineage('https://example.org/not-announced'), [])
     assert.equal(await new IndexClient({ url: app.INDEX_URL }).announce([]), 'unauthorised')
     assert.equal(await appClient.announce([]), 'refused')

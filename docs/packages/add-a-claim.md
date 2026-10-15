@@ -12,7 +12,7 @@ A claim, in full a lifecycle claim, is a statement about one passport, such as a
 | The passport identifier | The claim's subject | The product's label or data carrier, never a lookup result |
 | An identity key in a BRC-100 wallet | Signing; its `did:key` is your issuer name | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |
 | A registry that will hold the claim | Readers get the claim from it | The hosted registry, which stores only with its write token ([ask the programme](../start/choose-your-path.md#contact-the-programme)), or your own ([registry guide](../implement/roles/registry.md)) |
-| An anchoring service and an index that admits its anchors | The anchor | The hosted registry anchors what it stores. Otherwise your own funded wallet and an index whose `POST /submit` you may use: the hosted index's needs its operator's token, and your own runs [@bsv/dpp-overlay-topics](dpp-overlay-topics.md) |
+| An anchoring service and an index that admits its anchors | The anchor | The hosted registry anchors what it stores. Otherwise your own funded wallet and an index whose `POST /submit` you may use: the hosted index's needs its operator's token, and your own runs [@bsv/dpp-overlay](dpp-overlay.md) |
 
 The first three are enough to sign and check a claim; storing and anchoring need the last two. Nothing before step 3 spends money or stores anything.
 
@@ -182,7 +182,7 @@ For your own claim, use your passport, the index you announced to and your regis
 - **Finding the registry.** No anchor, passport state, capability document or GS1 link names it, so a reader learns it from the passport's publisher, outside the standard.
 - **The `recordId` spelling.** The specification calls it the exact state reference without fixing its form.
 - **What was done.** A claim carries no payload, only the event's type and time, so it cannot say what was repaired, by whom or where, or hold the evidence a profile's event mapping asks for.
-- **Which types exist.** None of the four lifecycle event types is for a test or certification as such. A certifier needing its own vocabulary can issue a W3C credential with [@bsv/vsc](vsc.md) instead.
+- **Which types exist.** None of the four lifecycle event types is for a test or certification as such. A certifier needing its own vocabulary can issue a W3C credential with [@bsv/dpp-credentials](dpp-credentials.md) instead.
 - **Being accepted.** Identity is at Ring 0: your key identifies you, and only the platform account vouches for who holds it. No route yet puts a claimant on readers' lists, and a role such as a notified body for conformity claims would need an identity ring that is not live ([identity and authority](../learn/identity-and-authority.md)).
 - **Writing to the hosted services.** Storing on the hosted registry and announcing to the hosted index need tokens the programme holds.
 

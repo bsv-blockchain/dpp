@@ -88,7 +88,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "123d42b1fa049e2aed1d0d73510bcce00af56c82fdd533c68fb312d40622c197"
+      "digest": "ef624e0d24d01fc08ab16583d7c0d26ef426ff83ca2c953886d831f810696b0c"
     },
     {
       "id": "spec-vsc-profile",
@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "e443503d5855e3764ccd2f4db69ae0bbd7e94eba482488f78ade9e6b16a48e3f"
+      "digest": "e295966237d7e6f266316426f19d03290bf05de9cd8305b2e2a5618fbe3087ba"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -144,7 +144,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "d3d5c05dc568343d5e4e4c42ec2cce4e6c8f758da56aec01e45c9dc1132052d0"
+      "digest": "2865dab45d3f29020552b8cc9114a86f4e5cd709daa95f358099122fc1063bc3"
     },
     {
       "id": "baseline-native-2",
@@ -152,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "ac83d83cc26827e18edbf5cbc46313450dd8a31c66fdd94f532d824352433983"
+      "digest": "ac996c6f2d23bf6fa530d91e373ee5ade004bd7886723dad17e4f66fb49a41df"
     },
     {
       "id": "spec-profiles",
@@ -538,7 +538,7 @@
       "version": "epcis-json@1, epcis-vsc@1",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "digest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "spec-external-credential-profile",
@@ -546,7 +546,7 @@
       "version": "vc-di-ecdsa-rdfc-2019@1",
       "kind": "local",
       "path": "spec/external-credential-profile.md",
-      "digest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "digest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "spec-passport-projections",
@@ -642,7 +642,7 @@
       "version": "2.0.1",
       "kind": "public",
       "attribution": "GS1",
-      "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) carried under packages/vsc/artifacts/epcis/ and the REST binding pinned by digest 3d33792c... in the epcis-json@1 manifest."
+      "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) carried under packages/dpp-credentials/artifacts/epcis/ and the REST binding pinned by digest 3d33792c... in the epcis-json@1 manifest."
     },
     {
       "id": "w3c-vc-di-ecdsa",
@@ -658,7 +658,7 @@
       "version": "RFC 8785",
       "kind": "public",
       "attribution": "IETF",
-      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/vsc/src/jcs.ts)."
+      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/dpp-credentials/src/jcs.ts)."
     },
     {
       "id": "eu-battery-guidance-2026-08",
@@ -869,12 +869,12 @@
       "implementationRefs": [
         "packages/dpp-protocol/src/verifyChain.ts#inspectChain",
         "packages/dpp-protocol/src/transition.ts",
-        "packages/overlay-topics/src/tmDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/chain.test.ts",
         "packages/dpp-protocol/test/chain-fixture.test.ts",
-        "packages/overlay-topics/test/tmDpp.test.ts"
+        "packages/dpp-overlay/test/tmDpp.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v1.json#refusals"
@@ -1089,11 +1089,11 @@
       "implementationRefs": [
         "packages/dpp-protocol/src/transition.ts#checkTransitionV2",
         "packages/dpp-protocol/src/verifyChain.ts#inspectChain",
-        "packages/overlay-topics/src/tmDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/chain-v2.test.ts",
-        "packages/overlay-topics/test/tmDppV2.test.ts",
+        "packages/dpp-overlay/test/tmDppV2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -1126,7 +1126,7 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/chain-v2.test.ts",
-        "packages/overlay-topics/test/tmDppV2.test.ts",
+        "packages/dpp-overlay/test/tmDppV2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -1460,11 +1460,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/tmDpp.ts#identifyAdmissibleOutputs",
-        "packages/overlay-topics/src/lsDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts#identifyAdmissibleOutputs",
+        "packages/dpp-overlay/src/lsDpp.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/tmDppV3.test.ts"
+        "packages/dpp-overlay/test/tmDppV3.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v3.json"
@@ -1584,12 +1584,12 @@
       "profileId": "owner-consent@1",
       "implementationRefs": [
         "packages/dpp-protocol/src/owner.ts#checkOwnerConsent",
-        "packages/overlay-topics/src/tmDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/owner.test.ts",
         "packages/dpp-protocol/test/chain-fixture.test.ts",
-        "packages/overlay-topics/test/tmDpp.test.ts"
+        "packages/dpp-overlay/test/tmDpp.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v1.json#refusals (ownerConsent)",
@@ -1649,12 +1649,12 @@
       "implementationRefs": [
         "packages/dpp-protocol/src/acceptance.ts#bindAcceptanceToState",
         "packages/dpp-protocol/src/verifyChain.ts",
-        "packages/overlay-topics/src/tmDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/acceptance.test.ts",
         "packages/dpp-protocol/test/chain-v2.test.ts",
-        "packages/overlay-topics/test/tmDppV2.test.ts",
+        "packages/dpp-overlay/test/tmDppV2.test.ts",
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
@@ -1736,12 +1736,12 @@
       "applicability": "when version 2 states are admitted",
       "profileId": "managed-custody@1",
       "implementationRefs": [
-        "packages/overlay-topics/src/capabilities.ts",
-        "packages/overlay-topics/src/index.ts#versionTwoAdmission"
+        "packages/dpp-overlay/src/capabilities.ts",
+        "packages/dpp-overlay/src/index.ts#versionTwoAdmission"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/capabilities.test.ts",
-        "packages/overlay-topics/test/tmDppV2.test.ts"
+        "packages/dpp-overlay/test/capabilities.test.ts",
+        "packages/dpp-overlay/test/tmDppV2.test.ts"
       ],
       "evidenceRefs": [
         "conformance/examples/capabilities-reference-node.json"
@@ -1821,12 +1821,12 @@
       "implementationRefs": [
         "packages/dpp-protocol/src/attestation.ts#lifecycleClaimBytes",
         "packages/dpp-protocol/src/canonical.ts",
-        "packages/vsc/src/validation.ts#parseStrictJsonBytes"
+        "packages/dpp-credentials/src/validation.ts#parseStrictJsonBytes"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/attestation.test.ts",
         "packages/dpp-protocol/test/canonical.test.ts",
-        "packages/vsc/test/verification.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json#representationHex"
@@ -1852,12 +1852,12 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-protocol/src/anchor.ts",
-        "packages/overlay-topics/src/tmAttestation.ts",
+        "packages/dpp-overlay/src/tmAttestation.ts",
         "examples/check-registry.mjs"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/attestationAnchor.test.ts",
-        "packages/overlay-topics/test/attestationTopics.test.ts",
+        "packages/dpp-overlay/test/attestationAnchor.test.ts",
+        "packages/dpp-overlay/test/attestationTopics.test.ts",
         "packages/dpp-protocol/test/evidence.test.ts",
         ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
@@ -1917,13 +1917,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/uoraAnchor.ts",
-        "packages/overlay-topics/src/tmUoraDpp.ts",
+        "packages/dpp-overlay/src/uoraAnchor.ts",
+        "packages/dpp-overlay/src/tmUoraDpp.ts",
         "packages/dpp-protocol/src/anchor.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/uoraAnchor.test.ts",
-        "packages/overlay-topics/test/uoraRail.test.ts",
+        "packages/dpp-overlay/test/uoraAnchor.test.ts",
+        "packages/dpp-overlay/test/uoraRail.test.ts",
         "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
@@ -1950,12 +1950,12 @@
       "applicability": "for records already written under the historical format",
       "profileId": "historical",
       "implementationRefs": [
-        "packages/overlay-topics/src/uoraAnchor.ts",
+        "packages/dpp-overlay/src/uoraAnchor.ts",
         "examples/check-registry.mjs (uora-anchor-v3 and uora-anchor-v1)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/uoraAnchor.test.ts",
-        "packages/overlay-topics/test/fixture-json.test.ts",
+        "packages/dpp-overlay/test/uoraAnchor.test.ts",
+        "packages/dpp-overlay/test/fixture-json.test.ts",
         ".github/workflows/ci.yml (check-registry.mjs --fixture)"
       ],
       "evidenceRefs": [
@@ -2038,13 +2038,13 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/validation.ts",
-        "packages/vsc/src/crypto.ts#issuerPurpose",
-        "packages/vsc/src/did-web.ts"
+        "packages/dpp-credentials/src/validation.ts",
+        "packages/dpp-credentials/src/crypto.ts#issuerPurpose",
+        "packages/dpp-credentials/src/did-web.ts"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts",
-        "packages/vsc/test/did-web.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts",
+        "packages/dpp-credentials/test/did-web.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2215,11 +2215,11 @@
       "profileId": "core",
       "implementationRefs": [
         "examples/write-passport.mjs (proveAndPush)",
-        "packages/overlay-topics/src/index.ts (POST /arc-ingest)",
+        "packages/dpp-overlay/src/index.ts (POST /arc-ingest)",
         "examples/write-passport-v2.mjs (proveState, pushProof)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/http.test.ts",
+        "packages/dpp-overlay/test/http.test.ts",
         ".github/workflows/ci.yml (write-passport-v2.mjs --dry-run)"
       ],
       "evidenceRefs": [],
@@ -2266,15 +2266,15 @@
       "applicability": "when an operator claims federated-operators@1",
       "profileId": "federated-operators@1 (proposed)",
       "implementationRefs": [
-        "packages/overlay-topics/src/sync.ts",
-        "packages/overlay-topics/src/index.ts"
+        "packages/dpp-overlay/src/sync.ts",
+        "packages/dpp-overlay/src/index.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/federation.test.ts",
-        "packages/overlay-topics/test/gaspRoutes.test.ts"
+        "packages/dpp-overlay/test/federation.test.ts",
+        "packages/dpp-overlay/test/gaspRoutes.test.ts"
       ],
       "evidenceRefs": [
-        "packages/overlay-topics/src/index.ts (Engine built without trackers, advertiser or GASP)"
+        "packages/dpp-overlay/src/index.ts (Engine built without trackers, advertiser or GASP)"
       ],
       "status": "tested",
       "reviewedAt": "2026-09-05",
@@ -2295,13 +2295,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/tmDpp.ts",
-        "packages/overlay-topics/src/lsDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts",
+        "packages/dpp-overlay/src/lsDpp.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/tmDpp.test.ts",
-        "packages/overlay-topics/test/lsUoraDpp.test.ts",
-        "packages/overlay-topics/test/http.test.ts"
+        "packages/dpp-overlay/test/tmDpp.test.ts",
+        "packages/dpp-overlay/test/lsUoraDpp.test.ts",
+        "packages/dpp-overlay/test/http.test.ts"
       ],
       "evidenceRefs": [
         "contracts/overlay.yaml#x-dpp-profile.topics.tm_dpp"
@@ -2324,11 +2324,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/tmDpp.ts#lineageGenesisFor",
-        "packages/overlay-topics/src/tmDpp.ts#identifyAdmissibleOutputs"
+        "packages/dpp-overlay/src/tmDpp.ts#lineageGenesisFor",
+        "packages/dpp-overlay/src/tmDpp.ts#identifyAdmissibleOutputs"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/tmDppV2.test.ts"
+        "packages/dpp-overlay/test/tmDppV2.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v2.json",
@@ -2352,12 +2352,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/tmAttestation.ts",
-        "packages/overlay-topics/src/lsAttestation.ts"
+        "packages/dpp-overlay/src/tmAttestation.ts",
+        "packages/dpp-overlay/src/lsAttestation.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/attestationTopics.test.ts",
-        "packages/overlay-topics/test/attestationHttp.test.ts"
+        "packages/dpp-overlay/test/attestationTopics.test.ts",
+        "packages/dpp-overlay/test/attestationHttp.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json"
@@ -2380,10 +2380,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/attestationStorage.ts"
+        "packages/dpp-overlay/src/attestationStorage.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/attestationTopics.test.ts"
+        "packages/dpp-overlay/test/attestationTopics.test.ts"
       ],
       "evidenceRefs": [
         "contracts/overlay.yaml#components.schemas.anchorLookup"
@@ -2407,10 +2407,10 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/index.ts (POST /arc-ingest)"
+        "packages/dpp-overlay/src/index.ts (POST /arc-ingest)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/http.test.ts"
+        "packages/dpp-overlay/test/http.test.ts"
       ],
       "evidenceRefs": [
         "contracts/overlay.yaml#paths./arc-ingest"
@@ -2487,12 +2487,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/engineStorage.ts",
-        "packages/overlay-topics/src/attestationStorage.ts"
+        "packages/dpp-overlay/src/engineStorage.ts",
+        "packages/dpp-overlay/src/attestationStorage.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/engineStorage.test.ts",
-        "packages/overlay-topics/test/http.test.ts"
+        "packages/dpp-overlay/test/engineStorage.test.ts",
+        "packages/dpp-overlay/test/http.test.ts"
       ],
       "evidenceRefs": [
         "contracts/overlay.yaml#x-dpp-profile.must"
@@ -2798,11 +2798,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/capabilities.ts",
-        "packages/overlay-topics/src/index.ts"
+        "packages/dpp-overlay/src/capabilities.ts",
+        "packages/dpp-overlay/src/index.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/capabilities.test.ts"
+        "packages/dpp-overlay/test/capabilities.test.ts"
       ],
       "evidenceRefs": [
         "conformance/examples/capabilities-reference-node.json (hand-written example of what the node would serve)"
@@ -2884,16 +2884,16 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/validation.ts",
-        "packages/vsc/src/schema.ts",
-        "packages/vsc/artifacts/seal-0.1.0.schema.json"
+        "packages/dpp-credentials/src/validation.ts",
+        "packages/dpp-credentials/src/schema.ts",
+        "packages/dpp-credentials/artifacts/seal-0.1.0.schema.json"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts",
-        "packages/vsc/test/artifacts.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts",
+        "packages/dpp-credentials/test/artifacts.test.ts"
       ],
       "evidenceRefs": [
-        "packages/vsc/artifacts/profile-0.1.0.json"
+        "packages/dpp-credentials/artifacts/profile-0.1.0.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-09-05",
@@ -2915,11 +2915,11 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/crypto.ts"
+        "packages/dpp-credentials/src/crypto.ts"
       ],
       "testRefs": [
-        "packages/vsc/test/crypto.test.ts",
-        "packages/vsc/test/verification.test.ts"
+        "packages/dpp-credentials/test/crypto.test.ts",
+        "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2942,10 +2942,10 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/verification.ts#verifyCredentialStatus"
+        "packages/dpp-credentials/src/verification.ts#verifyCredentialStatus"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2967,10 +2967,10 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/verification.ts#verifyIssuerAuthority"
+        "packages/dpp-credentials/src/verification.ts#verifyIssuerAuthority"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -2992,13 +2992,13 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/verification.ts#verifySeal"
+        "packages/dpp-credentials/src/verification.ts#verifySeal"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [
-        "packages/vsc/artifacts/profile-0.1.0.json#decisions DAG-01 CORR-01"
+        "packages/dpp-credentials/artifacts/profile-0.1.0.json#decisions DAG-01 CORR-01"
       ],
       "status": "tested",
       "reviewedAt": "2026-09-05",
@@ -3018,10 +3018,10 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/epcis.ts"
+        "packages/dpp-credentials/src/epcis.ts"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis.test.ts"
+        "packages/dpp-credentials/test/epcis.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3044,11 +3044,11 @@
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/context.ts"
+        "packages/dpp-credentials/src/context.ts"
       ],
       "testRefs": [],
       "evidenceRefs": [
-        "packages/vsc/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-CONTEXT"
+        "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-CONTEXT"
       ],
       "status": "unassessed",
       "reviewedAt": "2026-09-05",
@@ -3072,7 +3072,7 @@
       "implementationRefs": [],
       "testRefs": [],
       "evidenceRefs": [
-        "packages/vsc/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-TESTS"
+        "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-TESTS"
       ],
       "status": "unassessed",
       "reviewedAt": "2026-09-05",
@@ -3121,11 +3121,11 @@
       "applicability": "whenever a credential carries a status entry",
       "profileId": "core",
       "implementationRefs": [
-        "packages/vsc/src/verification.ts#verifyCredentialStatus",
+        "packages/dpp-credentials/src/verification.ts#verifyCredentialStatus",
         "the reference registry (not published)"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts",
+        "packages/dpp-credentials/test/verification.test.ts",
         "the reference registry (not published)"
       ],
       "evidenceRefs": [],
@@ -3205,7 +3205,7 @@
         "the reference registry (not published)"
       ],
       "testRefs": [
-        "packages/vsc/test/did-web.test.ts",
+        "packages/dpp-credentials/test/did-web.test.ts",
         "the reference registry (not published)"
       ],
       "evidenceRefs": [],
@@ -3230,11 +3230,11 @@
       "applicability": "when a W3C credential representation is selected",
       "profileId": "vsc-draft-compat/0.1.0",
       "implementationRefs": [
-        "packages/vsc/src/validation.ts",
-        "packages/vsc/src/verification.ts#verifyTemporal"
+        "packages/dpp-credentials/src/validation.ts",
+        "packages/dpp-credentials/src/verification.ts#verifyTemporal"
       ],
       "testRefs": [
-        "packages/vsc/test/verification.test.ts"
+        "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3623,11 +3623,11 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/index.ts"
+        "packages/dpp-overlay/src/index.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/http.test.ts",
-        "packages/overlay-topics/test/attestationHttp.test.ts"
+        "packages/dpp-overlay/test/http.test.ts",
+        "packages/dpp-overlay/test/attestationHttp.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -3675,12 +3675,12 @@
       "implementationRefs": [
         "packages/dpp-protocol/test/record-v1-vectors.ts",
         "packages/dpp-protocol/test/chain-v1-vectors.ts",
-        "packages/overlay-topics/test/anchor-v3-vectors.ts",
-        "packages/overlay-topics/test/attestation-v1-fixture.ts"
+        "packages/dpp-overlay/test/anchor-v3-vectors.ts",
+        "packages/dpp-overlay/test/attestation-v1-fixture.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/fixture-json.test.ts (expectStackShape)",
-        "packages/overlay-topics/test/fixture-json.test.ts"
+        "packages/dpp-overlay/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/"
@@ -4065,11 +4065,11 @@
       "implementationRefs": [
         "contracts/paginated-history.schema.json",
         "the reference registry (not published)",
-        "packages/overlay-topics/src/history.ts"
+        "packages/dpp-overlay/src/history.ts"
       ],
       "testRefs": [
         "the reference registry (not published)",
-        "packages/overlay-topics/test/history.test.ts"
+        "packages/dpp-overlay/test/history.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4096,12 +4096,12 @@
         "contracts/evidence-package.schema.json",
         "packages/dpp-protocol/src/evidencePackage.ts",
         "the reference registry (not published)",
-        "packages/overlay-topics/src/evidenceExport.ts"
+        "packages/dpp-overlay/src/evidenceExport.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/evidencePackage.test.ts",
         "the reference registry (not published)",
-        "packages/overlay-topics/test/evidenceExport.test.ts"
+        "packages/dpp-overlay/test/evidenceExport.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4126,12 +4126,12 @@
       "profileId": "core",
       "implementationRefs": [
         "contracts/evidence-export.schema.json",
-        "packages/overlay-topics/src/evidenceExport.ts",
-        "packages/overlay-topics/src/history.ts",
-        "packages/overlay-topics/src/index.ts"
+        "packages/dpp-overlay/src/evidenceExport.ts",
+        "packages/dpp-overlay/src/history.ts",
+        "packages/dpp-overlay/src/index.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/evidenceExportParts.test.ts"
+        "packages/dpp-overlay/test/evidenceExportParts.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4258,13 +4258,13 @@
         "contracts/publisher-policy.schema.json",
         "packages/dpp-protocol/src/publisherPolicy.ts",
         "packages/dpp-protocol/src/verifyChain.ts",
-        "packages/overlay-topics/src/policyConfig.ts",
-        "packages/overlay-topics/src/tmDpp.ts",
-        "packages/overlay-topics/src/tmAttestation.ts"
+        "packages/dpp-overlay/src/policyConfig.ts",
+        "packages/dpp-overlay/src/tmDpp.ts",
+        "packages/dpp-overlay/src/tmAttestation.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/publisherPolicy.test.ts",
-        "packages/overlay-topics/test/publisherPolicy.test.ts"
+        "packages/dpp-overlay/test/publisherPolicy.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4479,11 +4479,11 @@
       "applicability": "when a refused transaction spends an admitted tip",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/tmDpp.ts",
-        "packages/overlay-topics/src/lsDpp.ts"
+        "packages/dpp-overlay/src/tmDpp.ts",
+        "packages/dpp-overlay/src/lsDpp.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/refusedSpend.test.ts"
+        "packages/dpp-overlay/test/refusedSpend.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4506,10 +4506,10 @@
       "applicability": "when a state was announced before its transaction was sent and the network then refused it",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/retraction.ts"
+        "packages/dpp-overlay/src/retraction.ts"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/retract.test.ts"
+        "packages/dpp-overlay/test/retract.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4532,13 +4532,13 @@
       "applicability": "when an index refuses a passport state announced on /submit",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/tmDpp.ts (DPP_REFUSAL_CODES)",
-        "packages/overlay-topics/src/index.ts (refusalReasons)"
+        "packages/dpp-overlay/src/tmDpp.ts (DPP_REFUSAL_CODES)",
+        "packages/dpp-overlay/src/index.ts (refusalReasons)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/tmDpp.test.ts",
-        "packages/overlay-topics/test/http.test.ts",
-        "packages/overlay-topics/test/refusedSpend.test.ts"
+        "packages/dpp-overlay/test/tmDpp.test.ts",
+        "packages/dpp-overlay/test/http.test.ts",
+        "packages/dpp-overlay/test/refusedSpend.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4560,14 +4560,14 @@
       "applicability": "when a reader holds a GTIN and serial but not the host a passport was issued under",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/gs1Key.ts",
-        "packages/overlay-topics/src/lsDpp.ts (gs1Key)",
-        "packages/overlay-topics/src/storage.ts (findByGs1Key)"
+        "packages/dpp-overlay/src/gs1Key.ts",
+        "packages/dpp-overlay/src/lsDpp.ts (gs1Key)",
+        "packages/dpp-overlay/src/storage.ts (findByGs1Key)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/lsDpp.test.ts",
-        "packages/overlay-topics/test/storage.test.ts",
-        "packages/overlay-topics/test/gs1KeyLookup.test.ts"
+        "packages/dpp-overlay/test/lsDpp.test.ts",
+        "packages/dpp-overlay/test/storage.test.ts",
+        "packages/dpp-overlay/test/gs1KeyLookup.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4589,10 +4589,10 @@
       "applicability": "when a reader takes an index's publisher keys and their windows",
       "profileId": "core",
       "implementationRefs": [
-        "packages/overlay-topics/src/index.ts (GET /publisher-policy)"
+        "packages/dpp-overlay/src/index.ts (GET /publisher-policy)"
       ],
       "testRefs": [
-        "packages/overlay-topics/test/publisherPolicyRoute.test.ts"
+        "packages/dpp-overlay/test/publisherPolicyRoute.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
@@ -4833,18 +4833,18 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "packages/vsc/src/epcis-source.ts#parseEpcisSource"
+        "packages/dpp-credentials/src/epcis-source.ts#parseEpcisSource"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis-source.test.ts"
+        "packages/dpp-credentials/test/epcis-source.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -4861,12 +4861,12 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "packages/vsc/src/epcis-source.ts#validateEpcisDocument",
-        "packages/vsc/artifacts/epcis/NOTICE.md"
+        "packages/dpp-credentials/src/epcis-source.ts#validateEpcisDocument",
+        "packages/dpp-credentials/artifacts/epcis/NOTICE.md"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis-source.test.ts",
-        "packages/vsc/test/epcis-artefacts.test.ts"
+        "packages/dpp-credentials/test/epcis-source.test.ts",
+        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
@@ -4890,12 +4890,12 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "packages/vsc/src/jcs.ts",
-        "packages/vsc/src/epcis-source.ts#epcisEventBodyDigest"
+        "packages/dpp-credentials/src/jcs.ts",
+        "packages/dpp-credentials/src/epcis-source.ts#epcisEventBodyDigest"
       ],
       "testRefs": [
-        "packages/vsc/test/jcs.test.ts",
-        "packages/vsc/test/epcis-source.test.ts"
+        "packages/dpp-credentials/test/jcs.test.ts",
+        "packages/dpp-credentials/test/epcis-source.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
@@ -4919,18 +4919,18 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "packages/vsc/src/epcis-source.ts#classifyEventArrival"
+        "packages/dpp-credentials/src/epcis-source.ts#classifyEventArrival"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis-source.test.ts"
+        "packages/dpp-credentials/test/epcis-source.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-5-source-reference",
@@ -4946,19 +4946,19 @@
       "applicability": "when the mapping profile is selected",
       "profileId": "epcis-vsc@1",
       "implementationRefs": [
-        "packages/vsc/src/epcis-source.ts#epcisSourceReference",
-        "packages/vsc/src/epcis.ts#mapEpcisEventWithReport"
+        "packages/dpp-credentials/src/epcis-source.ts#epcisSourceReference",
+        "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis-report.test.ts"
+        "packages/dpp-credentials/test/epcis-report.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
@@ -4974,19 +4974,19 @@
       "applicability": "when the mapping profile is selected",
       "profileId": "epcis-vsc@1",
       "implementationRefs": [
-        "packages/vsc/src/epcis.ts#mapEpcisEventWithReport"
+        "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis-report.test.ts",
-        "packages/vsc/test/epcis.test.ts"
+        "packages/dpp-credentials/test/epcis-report.test.ts",
+        "packages/dpp-credentials/test/epcis.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904"
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
     },
     {
       "id": "EPCIS-7-import-record",
@@ -5007,7 +5007,7 @@
         "the reference application (not published)"
       ],
       "testRefs": [
-        "packages/vsc/test/epcis-artefacts.test.ts",
+        "packages/dpp-credentials/test/epcis-artefacts.test.ts",
         "the reference application (not published)"
       ],
       "evidenceRefs": [],
@@ -5039,9 +5039,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904",
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
@@ -5065,9 +5065,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "63c84fe4700d2fef8ddd54da72866888116cc6e48eaf520ce0dcd9862c9ee904",
+      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
@@ -5085,20 +5085,20 @@
       "applicability": "when the exchange profile is selected",
       "profileId": "vc-di-ecdsa-rdfc-2019@1",
       "implementationRefs": [
-        "packages/vsc/src/exchange.ts",
+        "packages/dpp-credentials/src/exchange.ts",
         "packages/dpp-profiles/manifests/exchange/vc-di-ecdsa-rdfc-2019@1.json"
       ],
       "testRefs": [
-        "packages/vsc/test/exchange.test.ts",
-        "packages/vsc/test/exchange-vectors.test.ts"
+        "packages/dpp-credentials/test/exchange.test.ts",
+        "packages/dpp-credentials/test/exchange-vectors.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "EXTC-2-proof-and-binding",
@@ -5115,10 +5115,10 @@
       "applicability": "when the exchange profile is selected",
       "profileId": "vc-di-ecdsa-rdfc-2019@1",
       "implementationRefs": [
-        "packages/vsc/src/exchange.ts#verifyExternalCredential"
+        "packages/dpp-credentials/src/exchange.ts#verifyExternalCredential"
       ],
       "testRefs": [
-        "packages/vsc/test/exchange-vectors.test.ts"
+        "packages/dpp-credentials/test/exchange-vectors.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
@@ -5142,18 +5142,18 @@
       "applicability": "when the exchange profile is selected",
       "profileId": "vc-di-ecdsa-rdfc-2019@1",
       "implementationRefs": [
-        "packages/vsc/src/exchange.ts"
+        "packages/dpp-credentials/src/exchange.ts"
       ],
       "testRefs": [
-        "packages/vsc/test/exchange-vectors.test.ts"
+        "packages/dpp-credentials/test/exchange-vectors.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "EXTC-4-reformat-vs-bytes",
@@ -5170,19 +5170,19 @@
       "applicability": "when the exchange profile is selected",
       "profileId": "vc-di-ecdsa-rdfc-2019@1",
       "implementationRefs": [
-        "packages/vsc/src/exchange.ts",
+        "packages/dpp-credentials/src/exchange.ts",
         "examples/verify-external-credential.mjs"
       ],
       "testRefs": [
-        "packages/vsc/test/exchange-vectors.test.ts"
+        "packages/dpp-credentials/test/exchange-vectors.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-10-15",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46b144c01c7b7a1ae881c3ecd2ea3d8f33908239270881ca16038aa395e1291c"
+      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
     },
     {
       "id": "EXTC-5-registry-intake",

@@ -7,12 +7,12 @@
  * sentence per check, and separately the exact-byte digests of the issued
  * bytes and of a re-serialised copy, which differ while both proofs hold.
  *
- *   node examples/verify-external-credential.mjs           # after npm run build -w @bsv/vsc
+ *   node examples/verify-external-credential.mjs           # after npm run build -w @bsv/dpp-credentials
  *   node examples/verify-external-credential.mjs <vectors.json>
  */
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { createExternalDocumentLoader, verifyExternalCredential } from '@bsv/vsc/exchange'
+import { createExternalDocumentLoader, verifyExternalCredential } from '@bsv/dpp-credentials/exchange'
 
 const path = process.argv[2] ?? new URL('../fixtures/vectors/dpp/interoperability/external-credential/v1.json', import.meta.url)
 const { vectors } = JSON.parse(readFileSync(path, 'utf8'))

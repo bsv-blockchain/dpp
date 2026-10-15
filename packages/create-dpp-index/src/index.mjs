@@ -45,7 +45,7 @@ them up in. It admits states countersigned by the publisher key you name.
 It follows the app's custody model: managed custody, where your platform
 holds the owners' keys. Self-custody admission is an environment setting.
 
-The project includes @bsv/dpp-overlay-topics as its runtime dependency.
+The project includes @bsv/dpp-overlay as its runtime dependency.
 No separate runtime installation is needed. Use the generated project commands.
 No publisher private key or funded wallet is needed to operate the index.
 The generated README covers startup, app connection and deployment.
@@ -97,7 +97,7 @@ Template release set: ${manifest.dpp.releaseSet}.`)
     }
     const project = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'))
     project.name = projectName
-    project.dependencies['@bsv/dpp-overlay-topics'] = manifest.dpp.packages['@bsv/dpp-overlay-topics']
+    project.dependencies['@bsv/dpp-overlay'] = manifest.dpp.packages['@bsv/dpp-overlay']
     project.dpp = { generator: `${manifest.name}@${manifest.version}`, releaseSet: manifest.dpp.releaseSet, packages: manifest.dpp.packages }
     writeFileSync(join(target, 'package.json'), `${JSON.stringify(project, null, 2)}\n`)
     const exporter = createECDH('secp256k1')
@@ -126,7 +126,7 @@ Template release set: ${manifest.dpp.releaseSet}.`)
     }
     report({ status: process.exitCode ? 'install-failed' : 'created', directory: target, installed,
       generator: `${manifest.name}@${manifest.version}`, releaseSet: manifest.dpp.releaseSet,
-      message: `Created ${target}. Secrets are in .env and were not printed.\nThe project includes @bsv/dpp-overlay-topics as its runtime dependency; no separate runtime installation is needed.\n\nNext, inside that directory:\n${installed ? '' : '  npm install --ignore-scripts\n'}  npm test\n  npm run up\n  npm run doctor -- --online\n  npm run connection\n\nThe last command writes .app.env for your application. Read README.md for deployment and optional services.${process.exitCode ? '\nDependency installation failed; the project is saved. Check registry availability and retry npm install.' : ''}` })
+      message: `Created ${target}. Secrets are in .env and were not printed.\nThe project includes @bsv/dpp-overlay as its runtime dependency; no separate runtime installation is needed.\n\nNext, inside that directory:\n${installed ? '' : '  npm install --ignore-scripts\n'}  npm test\n  npm run up\n  npm run doctor -- --online\n  npm run connection\n\nThe last command writes .app.env for your application. Read README.md for deployment and optional services.${process.exitCode ? '\nDependency installation failed; the project is saved. Check registry availability and retry npm install.' : ''}` })
   }
 } catch (error) {
   const message = error instanceof Error ? error.message : 'Scaffolding failed'

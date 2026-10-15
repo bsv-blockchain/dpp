@@ -2,7 +2,7 @@ import { loadEnvironment, requireConfiguration } from './config.mjs'
 
 try {
   requireConfiguration(loadEnvironment())
-  const { runFromEnvironment } = await import('@bsv/dpp-overlay-topics/server')
+  const { runFromEnvironment } = await import('@bsv/dpp-overlay/server')
   await runFromEnvironment()
 } catch (error) {
   console.error(`Index startup failed: ${error instanceof Error ? error.message : 'unknown error'}`)

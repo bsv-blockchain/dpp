@@ -12,8 +12,8 @@ Read each service's `/capabilities` for what that deployment reports. The index 
 
 | Host | Serves | Runs |
 |---|---|---|
-| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.10 set: the protocol library as `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay-topics@0.4.0-beta.10` and `@bsv/vsc@0.2.0-beta.5` |
-| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay-topics@0.4.0-beta.10`, `single-operator@2` under publisher policy version 1, pulling all three topics from one peer run under the same administration, with discovery and advertising off |
+| `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The beta.10 set: the protocol library as `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay@0.4.0-beta.10` and `@bsv/dpp-credentials@0.2.0-beta.5` |
+| `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay@0.4.0-beta.10`, `single-operator@2` under publisher policy version 1, pulling all three topics from one peer run under the same administration, with discovery and advertising off |
 | `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
 
@@ -55,7 +55,7 @@ The index below serves `tm_dpp`, `tm_attestation` and the historical `tm_uora_dp
 
 | Index | Operator | Pulls from | Admits | Runs |
 |---|---|---|---|---|
-| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | One peer run under the same administration, all three topics | States from `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application, and `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, a second application under the same administration; anchors from any anchoring service | `@bsv/dpp-overlay-topics@0.4.0-beta.10`, `single-operator@2` |
+| `https://dpp-overlay.bsvb.net` | The programme, as the hosted reference | One peer run under the same administration, all three topics | States from `0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24`, the reference application, and `03c8850a79a6fba2ea48b9419d7490bae6b6dcf3521e1f75aa98ed4939d1cab89f`, a second application under the same administration; anchors from any anchoring service | `@bsv/dpp-overlay@0.4.0-beta.10`, `single-operator@2` |
 
 Its one peer is run by the same administration, so the exchange between them demonstrates the mechanism, not separately administered operation.
 

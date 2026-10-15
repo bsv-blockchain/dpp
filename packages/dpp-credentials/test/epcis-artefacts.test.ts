@@ -39,6 +39,7 @@ describe('the pinned EPCIS artefacts', () => {
         expect(artefact.retrieval).toBe('pinned');
         expect(artefact.digest).toBe(pinned.sha256);
         expect(artefact.byteLength).toBe(pinned.byteLength);
+        // The frozen manifests record the directory the package had when they were frozen, packages/vsc; a manifest cannot change without a new frozen version.
         if (pinned.carried) expect(artefact.carried).toBe(`packages/vsc/${pinned.path}`);
         else expect(artefact.carried).toBeUndefined();
       }

@@ -1,7 +1,7 @@
 # The reference index node with persistent storage: one MongoDB, one node,
 # both data and configuration on named volumes and an env file, so a restart
 # or a host move keeps every admitted state. The image is this repository's
-# (packages/overlay-topics/Dockerfile), built from the repository root.
+# (packages/dpp-overlay/Dockerfile), built from the repository root.
 #
 #   cp deploy/operator.env.example deploy/operator.env   # then fill it in
 #   docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
@@ -9,7 +9,7 @@
 # What the node does and does not do is unchanged from running it by hand:
 # it admits and serves, it does not broadcast, proofs reach it through
 # POST /arc-ingest, and CHAIN_TRACKER=scripts-only is a local fixture setting
-# that claims no inclusion (packages/overlay-topics/README.md, Configuration).
+# that claims no inclusion (packages/dpp-overlay/README.md, Configuration).
 # deploy/README.md is the recipe, including the second operator.
 name: dpp-overlay
 
@@ -29,7 +29,7 @@ services:
   overlay:
     build:
       context: ..
-      dockerfile: packages/overlay-topics/Dockerfile
+      dockerfile: packages/dpp-overlay/Dockerfile
     image: ${OVERLAY_IMAGE:-dpp-overlay:local}
     restart: unless-stopped
     depends_on:

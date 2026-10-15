@@ -1,5 +1,5 @@
 {
-  "name": "@bsv/vsc",
+  "name": "@bsv/dpp-credentials",
   "version": "0.2.0-beta.5",
   "description": "Experimental prerelease: Versioned VSC draft compatibility profile with its proof suites and verification, the EPCIS source helpers with pinned EPCIS 2.0.1 artefacts, and the external ecdsa-rdfc-2019 credential verifier",
   "license": "Apache-2.0",
@@ -55,7 +55,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bsv-blockchain/dpp.git",
-    "directory": "packages/vsc"
+    "directory": "packages/dpp-credentials"
   },
   "engines": {
     "node": ">=22"

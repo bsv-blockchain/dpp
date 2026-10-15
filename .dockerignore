@@ -1,5 +1,5 @@
 # Docker build context: an allowlist. The only image built from here is
-# packages/overlay-topics/Dockerfile, whose context is the repository root
+# packages/dpp-overlay/Dockerfile, whose context is the repository root
 # because the service depends on the workspace packages. Everything is
 # excluded unless the Dockerfile copies it, so no local working material,
 # specification, fixture or documentation can enter the context by accident.

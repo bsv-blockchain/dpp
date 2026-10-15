@@ -4,7 +4,7 @@
 # topic managers as its own /submit. Run beside deploy/compose.yml with a
 # second env file, or on another host entirely, which is what independence
 # means; on one host it proves the mechanism and nothing more
-# (packages/overlay-topics/README.md, Running two operators locally).
+# (packages/dpp-overlay/README.md, Running two operators locally).
 #
 #   docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env up -d
 name: dpp-overlay-b

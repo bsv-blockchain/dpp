@@ -1,7 +1,7 @@
 import { sha256 } from './candidates.mjs'
 import { NPM_REGISTRY, publicationActions, registryVersion } from './publication.mjs'
 
-const runtimeNames = ['@bsv/dpp-overlay-topics', '@bsv/dpp-profiles', '@bsv/dpp-protocol']
+const runtimeNames = ['@bsv/dpp-overlay', '@bsv/dpp-profiles', '@bsv/dpp-protocol']
 
 /** Keep the independently released generator bound to one compatible runtime set. */
 export function starterRuntimePackages(manifest, template, set) {
@@ -11,7 +11,7 @@ export function starterRuntimePackages(manifest, template, set) {
   }
   if (manifest.dpp?.releaseSet !== set.releaseSet || !['candidate', 'released'].includes(set.status)) throw new Error('the starter must select a current candidate or released runtime set')
   if (JSON.stringify(Object.keys(manifest.dpp.packages ?? {}).sort()) !== JSON.stringify(runtimeNames)) throw new Error('the starter must pin the overlay, profiles and protocol packages')
-  if (Object.keys(template.dependencies ?? {}).length !== 1 || template.dependencies['@bsv/dpp-overlay-topics'] !== manifest.dpp.packages['@bsv/dpp-overlay-topics']) {
+  if (Object.keys(template.dependencies ?? {}).length !== 1 || template.dependencies['@bsv/dpp-overlay'] !== manifest.dpp.packages['@bsv/dpp-overlay']) {
     throw new Error('the template must include the pinned overlay as its only direct runtime dependency')
   }
   return runtimeNames.map(name => {

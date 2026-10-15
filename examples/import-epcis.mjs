@@ -3,7 +3,7 @@
  * Import one EPCIS document under the epcis-json@1 profile and map its
  * events under epcis-vsc@1, printing one sentence per finding and no score
  * (spec/epcis-interoperability.md). Runs from the packed packages: the only
- * imports are @bsv/vsc and its ./epcis-source entry point.
+ * imports are @bsv/dpp-credentials and its ./epcis-source entry point.
  *
  *   node examples/import-epcis.mjs                      # the neutral five-event fixture
  *   node examples/import-epcis.mjs path/to/document.json # any EPCIS 2.0.1 JSON or JSON-LD document
@@ -17,8 +17,8 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { mapEpcisEventWithReport } from '@bsv/vsc'
-import { EPCIS_DEFAULT_LIMITS, epcisEventBodyDigest, epcisSourceReference, parseEpcisSource, pinnedContextDigests, unresolvedCorrections, validateEpcisDocument } from '@bsv/vsc/epcis-source'
+import { mapEpcisEventWithReport } from '@bsv/dpp-credentials'
+import { EPCIS_DEFAULT_LIMITS, epcisEventBodyDigest, epcisSourceReference, parseEpcisSource, pinnedContextDigests, unresolvedCorrections, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const say = (sentence) => console.log(sentence)

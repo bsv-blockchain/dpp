@@ -1,4 +1,4 @@
-# @bsv/dpp-overlay-topics
+# @bsv/dpp-overlay
 
 The maintained DPP index runtime, included by [`@bsv/create-dpp-index`](../create-dpp-index/README.md).
 
@@ -13,7 +13,7 @@ For a custom integration, install the runtime directly. If you used the starter,
 **Publication pending:** [install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this version. The following npm command applies after publication.
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.11
+npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.11
 ```
 
 This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.
@@ -26,12 +26,12 @@ The package is two things at once, and which one you get depends on how you
 enter it.
 
 **As a library.** `main` and the `exports` map point at `dist/lib.js`, so
-`import ... from '@bsv/dpp-overlay-topics'` gets the topic manager, the lookup
+`import ... from '@bsv/dpp-overlay'` gets the topic manager, the lookup
 service and the record stores, and nothing that listens on a port. This is how
 the demonstration app uses it: both components run in process against
 `InMemoryDppStorage`, which is what its offline mode and the tests are.
 
-**As a service.** `@bsv/dpp-overlay-topics/server` exports the HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for Merkle proofs, plus `GET /health`), the extension routes documented below, and the GASP routes a synchronising peer reads. Importing starts nothing. Call `runFromEnvironment()` to run the configured operator process, or use the installed `dpp-index --env-file operator.env` command. `dpp-index --help` describes the entry point. Existing source and Docker startup paths still work.
+**As a service.** `@bsv/dpp-overlay/server` exports the HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for Merkle proofs, plus `GET /health`), the extension routes documented below, and the GASP routes a synchronising peer reads. Importing starts nothing. Call `runFromEnvironment()` to run the configured operator process, or use the installed `dpp-index --env-file operator.env` command. `dpp-index --help` describes the entry point. Existing source and Docker startup paths still work.
 
 The [starter](../create-dpp-index/README.md) configures this HTTP host with MongoDB, deployment files, startup checks and application connection settings. Its default profile selects managed custody; custom integrations can configure their own policies.
 
@@ -51,7 +51,7 @@ npm start          # node dist/index.js
 Configuration uses environment variables. The executable can load an explicit `--env-file`; existing process values take precedence. Invalid settings fail startup. Unset optional settings switch their feature off or use the documented fallback. The repository image builds from the repository root because the service depends on the `@bsv/dpp-protocol` workspace:
 
 ```
-docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
+docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .
 ```
 
 ## Configuration
@@ -135,7 +135,7 @@ Two nodes on two ports under one administration, sharing one publisher policy fi
 Build once from the repository root and write a policy file whose scope names both operators, with the operators' identity keys at hand (the chain must verify under `verifyPolicyChain`; `examples/sign-publisher-policy.mjs` signs a genesis, and `test/policy-fixture.ts` builds a two-operator chain for the tests). A node claims `federated-operators@1` only when it synchronises with peers and the newest version of its policy names two or more operators; with a one-operator policy and peers it declares `single-operator@2`, and without peers `single-operator@1`:
 
 ```
-npm run build -w @bsv/dpp-protocol -w @bsv/dpp-overlay-topics
+npm run build -w @bsv/dpp-protocol -w @bsv/dpp-overlay
 ```
 
 Operator A, in one terminal:
@@ -144,7 +144,7 @@ Operator A, in one terminal:
 PORT=18081 CHAIN_TRACKER=scripts-only SUBMIT_TOKEN=operator-a-secret \
 PUBLISHER_POLICY_FILE=./publisher-policy.json \
 OPERATOR_IDENTITY_KEYS='did:example:operator-a=02aa...,did:example:operator-b=03bb...' \
-node packages/overlay-topics/dist/index.js
+node packages/dpp-overlay/dist/index.js
 ```
 
 Operator B, in another, synchronising from A every ten seconds:
@@ -154,7 +154,7 @@ PORT=18082 CHAIN_TRACKER=scripts-only SUBMIT_TOKEN=operator-b-secret \
 PUBLISHER_POLICY_FILE=./publisher-policy.json \
 OPERATOR_IDENTITY_KEYS='did:example:operator-a=02aa...,did:example:operator-b=03bb...' \
 SYNC_PEERS=http://127.0.0.1:18081 SYNC_INTERVAL_MS=10000 \
-node packages/overlay-topics/dist/index.js
+node packages/dpp-overlay/dist/index.js
 ```
 
 Announce states and anchors to A with its token (`POST http://127.0.0.1:18081/submit`), then ask both for the same passport (`POST /lookup` with `{"service":"ls_dpp","query":{"passportId":"..."}}`) and compare the transactions and merkle paths in the two answers, since the BEEF around them may differ in form; `GET /history` on each shows the same items in the same order, and `GET /capabilities` on B says `synchronisation.profile` `federated-operators@1`, `discovery` `static-peers` and the peer list, while A, with no peers, says `single-operator@1`. `CHAIN_TRACKER=scripts-only` is the local setting; a hosted pair keeps the default header source, under which both nodes verify every offered graph against block headers before admitting it.

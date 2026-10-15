@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs'
 import { LockingScript, Utils } from '@bsv/sdk'
 import { lifecycleClaimBytes, lifecycleClaimDigest, verifyLifecycleClaim } from '@bsv/dpp-protocol'
-import { decodeAttestationAnchor } from '@bsv/dpp-overlay-topics'
+import { decodeAttestationAnchor } from '@bsv/dpp-overlay'
 
 const path = process.argv[2] ?? new URL('../fixtures/attestation-anchor-v1.json', import.meta.url)
 const fixture = JSON.parse(readFileSync(path, 'utf8'))

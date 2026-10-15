@@ -49,6 +49,6 @@ Every term these pages use, in plain words. Where the docs use two names for one
 | Topic | The admission rules an index applies to one kind of record: `tm_dpp` for passport states, `tm_attestation` for claim anchors. |
 | Two rails | The passport's chain of states is one rail; claims and their anchors are the other. Each can be checked without the other. |
 | UHRP | A content address derived from the hash of a file. The owner tier's hash in a state is already its UHRP address, so the encrypted file can be stored anywhere that serves it by that address. |
-| VSC | Verifiable Supply Chain, a W3C Community Group draft for supply-chain credentials called SEALs. `@bsv/vsc` implements a documented subset; it is not a W3C Standard. |
+| VSC | Verifiable Supply Chain, a W3C Community Group draft for supply-chain credentials called SEALs. `@bsv/dpp-credentials` implements a documented subset; it is not a W3C Standard. |
 | W3C Verifiable Credential | A signed credential in the W3C format. The packages verify selected external formats beside the native claim. |
 | WhatsOnChain | The public BSV block explorer the packages use as their header source. |

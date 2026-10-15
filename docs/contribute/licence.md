@@ -10,7 +10,7 @@ In short, and the licence text governs: Apache 2.0 lets you use, modify and redi
 
 ## Versions already on npm
 
-The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4`, is the first under Apache 2.0 ([receipt](../reference/beta-5-publication.md)). Every earlier version, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3`, was published before the change. Published archives cannot change, so each keeps the licence file it contains: the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. Read the `LICENSE` file inside the version you install.
+The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/dpp-credentials@0.2.0-beta.4`, is the first under Apache 2.0 ([receipt](../reference/beta-5-publication.md)). Every earlier version, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/dpp-credentials@0.2.0-beta.3`, was published before the change. Published archives cannot change, so each keeps the licence file it contains: the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. Read the `LICENSE` file inside the version you install.
 
 ## Third-party material
 
@@ -19,7 +19,7 @@ Third-party dependencies and artefacts keep their own terms and notices; the rep
 | Material | Terms and notices |
 |---|---|
 | Package dependencies | The [licence ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json) records the licence each direct dependency declares, and `conformance/check.mjs` notices when one changes |
-| Credential and event artefacts | The [notices beside the retained artefacts](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/artifacts) |
+| Credential and event artefacts | The [notices beside the retained artefacts](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/artifacts) |
 | GS1 schema material | The [GS1 schema notice](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/schemas/gs1/NOTICE.md) |
 
 Read the applicable terms before reuse. For a reuse question these sources do not answer, use the [BSV Association contact page](https://bsvassociation.org/contact/).

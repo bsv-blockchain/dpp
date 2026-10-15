@@ -1,7 +1,7 @@
 /**
  * External credential verification: the `vc-di-ecdsa-rdfc-2019@1` exchange
  * profile (`spec/external-credential-profile.md`), a separate entry point
- * (`@bsv/vsc/exchange`) from the SEAL verifier so that a foreign credential
+ * (`@bsv/dpp-credentials/exchange`) from the SEAL verifier so that a foreign credential
  * is never routed through `verifySeal` and the main entry's proof verifier
  * keeps its pinned SEAL context allowlist.
  *

@@ -70,16 +70,16 @@ Records can remain verifiable after a provider disappears if their transactions,
 
 For a new application, use [`@bsv/create-dpp-app`](packages/create-dpp-app/README.md). It creates the web app, API and application database configuration. Connect to an existing compatible index or create a separate index project.
 
-For a new index, use [`@bsv/create-dpp-index`](packages/create-dpp-index/README.md). It creates your project and includes `@bsv/dpp-overlay-topics` as its runtime dependency. There is no separate runtime installation step. Both starters are source candidates pending publication.
+For a new index, use [`@bsv/create-dpp-index`](packages/create-dpp-index/README.md). It creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is no separate runtime installation step. Both starters are source candidates pending publication.
 
 The packages below are reusable components. Select them directly when integrating their APIs into your own code. An application using an existing index over HTTP needs neither the index starter nor the hosting runtime.
 
 | Package | Purpose |
 |---|---|
 | [`@bsv/dpp-protocol`](packages/dpp-protocol/README.md) | Read, write and verify passport records, signatures, history, attestations and portable evidence. Supports record versions 1, 2 and 3. |
-| [`@bsv/dpp-overlay-topics`](packages/overlay-topics/README.md) | Included index runtime for the starter. Direct installation is for custom or embedded indexes; it admits and retrieves records, exports evidence and synchronises with configured peers. |
+| [`@bsv/dpp-overlay`](packages/dpp-overlay/README.md) | Included index runtime for the starter. Direct installation is for custom or embedded indexes; it admits and retrieves records, exports evidence and synchronises with configured peers. |
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data schemas for batteries, textiles and general products, plus identifier, mapping and projection helpers. |
-| [`@bsv/vsc`](packages/vsc/README.md) | Sign and verify credentials under the supported draft compatibility profile, map EPCIS events and verify supported external credentials. |
+| [`@bsv/dpp-credentials`](packages/dpp-credentials/README.md) | Sign and verify credentials under the supported draft compatibility profile, map EPCIS events and verify supported external credentials. |
 
 The source candidate names the shared library `@bsv/dpp-protocol`. The new name is not yet published; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test it. Existing applications migrate their imports and schema paths from `@bsv/dpp-core`; the active release uses only the new name. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
 
@@ -102,10 +102,10 @@ Start with [Create an index](docs/packages/create-dpp-index.md). The starter inc
 The [repository's Docker Compose deployment](deploy/README.md) builds the index directly from this checkout, with MongoDB storage and an optional second node. Choose this instead of the starter when you need a source deployment. To build the index image directly:
 
 ```sh
-docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
+docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .
 ```
 
-Before running it, configure publisher keys, persistent storage, the network, access tokens and an export signing key using the [configuration reference](packages/overlay-topics/README.md#configuration).
+Before running it, configure publisher keys, persistent storage, the network, access tokens and an export signing key using the [configuration reference](packages/dpp-overlay/README.md#configuration).
 
 The index receives records and proofs; writers' wallets broadcast transactions. Peer synchronisation uses explicitly configured peers, with no automatic discovery. Running two nodes demonstrates synchronisation, but does not establish independent operation. The [deployment guide](docs/deployment.md) explains the supporting services and operational limits.
 

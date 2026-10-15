@@ -1,8 +1,8 @@
-# @bsv/vsc
+# @bsv/dpp-credentials
 
-`@bsv/vsc` issues and verifies supply-chain credentials in W3C formats, and reads supply-chain event documents in the GS1 EPCIS format. Use it if your application exchanges SEALs or other W3C verifiable credentials with partners, or imports EPCIS events; a passport reader or writer that uses only passports and native claims does not need it.
+`@bsv/dpp-credentials` issues and verifies supply-chain credentials in W3C formats, and reads supply-chain event documents in the GS1 EPCIS format. Use it if your application exchanges SEALs or other W3C verifiable credentials with partners, or imports EPCIS events; a passport reader or writer that uses only passports and native claims does not need it.
 
-**Experimental prerelease:** `@bsv/vsc` 0.2.0-beta.5 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-credentials` 0.2.0-beta.5 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## What it is and whether you need it
 
@@ -14,8 +14,8 @@
 |---|---|
 | Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-protocol](dpp-protocol.md) |
 | Issue or verify SEALs | Yes, the root entry point |
-| Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/vsc/exchange` |
-| Import EPCIS 2.0.1 event documents, or map their events to SEALs | Yes, `@bsv/vsc/epcis-source` and the root |
+| Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/dpp-credentials/exchange` |
+| Import EPCIS 2.0.1 event documents, or map their events to SEALs | Yes, `@bsv/dpp-credentials/epcis-source` and the root |
 
 The package does not fund a wallet, move a passport or find records through an index; those stay with [@bsv/dpp-protocol](dpp-protocol.md) and your own wallet. It has no BSV runtime dependency.
 
@@ -24,26 +24,26 @@ The package does not fund a wallet, move a passport or find records through an i
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/vsc@0.2.0-beta.5
+npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
 ```
 
-Each package numbers its own prereleases. `@bsv/vsc` 0.2.0-beta.5 is unchanged in the current source candidate, `dpp-release-2026-10-8`, beside protocol and profiles beta.9 and overlay topics beta.11. The [release page](../reference/release-sets.md) distinguishes that candidate from the latest published set. A bare `npm install @bsv/vsc` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
+Each package numbers its own prereleases. `@bsv/dpp-credentials` 0.2.0-beta.5 is unchanged in the current source candidate, `dpp-release-2026-10-9`, beside protocol and profiles beta.9 and overlay beta.11. The [release page](../reference/release-sets.md) distinguishes that candidate from the latest published set. A bare `npm install @bsv/dpp-credentials` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
 
 ## Entry points and their main functions
 
 | Entry point | Main functions | A runnable call |
 |---|---|---|
-| `@bsv/vsc` | `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL. The root also re-exports every `/epcis-source` function | `npm run test -w @bsv/vsc -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
-| `@bsv/vsc/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
-| `@bsv/vsc/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
-| `@bsv/vsc/artifacts/*` | The retained schemas, contexts and notices, as files | |
+| `@bsv/dpp-credentials` | `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL. The root also re-exports every `/epcis-source` function | `npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
+| `@bsv/dpp-credentials/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
+| `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
+| `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files | |
 
 ## First call
 
 This parses and validates one EPCIS document, the kind of event file a supplier's system sends. It needs no network, key or checkout. Save it as `vsc-first.mjs` in a project with the package installed:
 
 ```js
-import { parseEpcisSource, validateEpcisDocument } from '@bsv/vsc/epcis-source'
+import { parseEpcisSource, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 
 // One EPCIS 2.0.1 document with one event, as a supplier's system might send it.
 const document = {
@@ -82,7 +82,7 @@ schema: pass ; findings: 0
 
 In an importer, keep the bytes exactly as received rather than serialising a parsed object again. To go further, run `node examples/import-epcis.mjs` at the root of a checkout, after `npm ci` and `npm run build`: it maps each event of a seven-event fixture to an unsigned SEAL and prints the outcome, `lossless`, `transformed` or `unsupported`, with what was lost.
 
-To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID documents, a status resolver and an authority policy; a credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/README.md) shows the issuance and verification calls with each policy.
+To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID documents, a status resolver and an authority policy; a credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/README.md) shows the issuance and verification calls with each policy.
 
 ## Limits
 
@@ -94,10 +94,10 @@ To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID doc
 
 | Entry point | Source |
 |---|---|
-| `@bsv/vsc` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md) |
-| `@bsv/vsc/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md) |
-| `@bsv/vsc/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
-| `@bsv/vsc/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/artifacts) |
+| `@bsv/dpp-credentials` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md) |
+| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md) |
+| `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
+| `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/artifacts) |
 
 ## Next
 

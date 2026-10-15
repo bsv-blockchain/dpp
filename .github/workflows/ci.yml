@@ -76,7 +76,7 @@ jobs:
       # ECR Public, which serves the same digests as Docker Hub, so a Docker
       # Hub rate limit or outage cannot fail this job; the Dockerfile default
       # stays node:22-slim for platform and local builds.
-      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-slim -f packages/overlay-topics/Dockerfile -t dpp-overlay:ci .
+      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-slim -f packages/dpp-overlay/Dockerfile -t dpp-overlay:ci .
       # A versioned smoke of the image: it boots on configuration alone,
       # answers /health and names its capabilities.
       - run: |

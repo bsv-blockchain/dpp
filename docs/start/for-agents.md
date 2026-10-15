@@ -19,9 +19,9 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 
 | Fact | Value |
 |---|---|
-| Published set | `dpp-release-2026-10-7`, under `latest` since 9 and 10 October 2026: the protocol library as `@bsv/dpp-core@0.3.0-beta.8` (its name before the rename to `@bsv/dpp-protocol`), `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay-topics@0.4.0-beta.10`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` ([receipt](../reference/beta-10-publication.md)) |
-| Source candidate | `dpp-release-2026-10-8`, publication pending; [release status and receipts](../reference/release-sets.md) distinguish it from the earlier published packages |
-| Candidate packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/vsc@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
+| Published set | `dpp-release-2026-10-7`, under `latest` since 9 and 10 October 2026: the protocol library as `@bsv/dpp-core@0.3.0-beta.8` (its name before the rename to `@bsv/dpp-protocol`), `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay@0.4.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` ([receipt](../reference/beta-10-publication.md)) |
+| Source candidate | `dpp-release-2026-10-9`, publication pending; [release status and receipts](../reference/release-sets.md) distinguish it from the earlier published packages |
+| Candidate packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.11`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
 | Install | Use the [local candidate archives](../packages/README.md#use-the-renamed-source-candidate) until publication. Pin exact versions and retain the lockfile; do not infer publication from a source version or a dist-tag |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |
@@ -46,7 +46,7 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 - **Runtime support** comes from the [support table](../packages/support-table.md). Node/ESM support does not establish browser module support. Declare the SDK when directly importing it, and follow profile asset-packaging instructions.
 - **Product data** needs a separate check against its declared profile. A valid transaction report does not establish profile validity. Start with `node examples/sample-payload.mjs` and the [profile validation guide](../packages/dpp-profiles.md#check-a-payload-against-its-profile), not an unchecked hosted sample.
 - **Service choices** come from the selected task. Native lifecycle claims use core helpers, without a mandatory VSC dependency. A reader does not need a funded wallet. An HTTP index client does not need the overlay hosting package.
-- **Index scaffolding** starts with `@bsv/create-dpp-index`, which includes `@bsv/dpp-overlay-topics` as the generated project's runtime dependency. Do not add a separate runtime installation or start the repository's index alongside it. Direct runtime integration and source deployment are alternatives for custom requirements. The [index starter guide](../packages/create-dpp-index.md) names its publication prerequisite, setup commands, explicit flags, JSON configuration and results, and app connection settings. A successful configuration check does not establish blockchain settlement or production readiness.
+- **Index scaffolding** starts with `@bsv/create-dpp-index`, which includes `@bsv/dpp-overlay` as the generated project's runtime dependency. Do not add a separate runtime installation or start the repository's index alongside it. Direct runtime integration and source deployment are alternatives for custom requirements. The [index starter guide](../packages/create-dpp-index.md) names its publication prerequisite, setup commands, explicit flags, JSON configuration and results, and app connection settings. A successful configuration check does not establish blockchain settlement or production readiness.
 
 ## Steps a human must take
 
