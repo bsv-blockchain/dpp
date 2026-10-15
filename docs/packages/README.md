@@ -11,10 +11,10 @@ Use [choose packages and services](../start/choose-components-and-services.md) t
 | You want to | Start here | What to install |
 | --- | --- | --- |
 | Create a new application | [Application skeleton](build-an-application.md#start-with-an-application-skeleton) | Use `@bsv/create-dpp-app`. It includes the application files and selected dependencies |
-| Run a new index | [Create an index](create-dpp-index.md) | Use `@bsv/create-dpp-index`. It includes `@bsv/dpp-overlay-topics` in the generated project's dependencies |
+| Run a new index | [Create an index](create-dpp-index.md) | Use `@bsv/create-dpp-index`. It includes `@bsv/dpp-overlay` in the generated project's dependencies |
 | Connect your app to an existing index | [Choose index access](../start/choose-components-and-services.md#decide-which-services-to-run-or-use) | Neither index package is needed just for HTTP access; obtain the URL and scoped access settings |
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
-| Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay-topics.md) | Install the runtime directly as an alternative to the starter |
+| Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the starter |
 
 Both starters are source candidates pending publication. Their guides explain how to check them today. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
 
@@ -34,7 +34,7 @@ This builds the packages, packs their archives and tests them in a separate proj
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
 ```
 
-Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-topics-0.4.0-beta.11.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
+Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.11.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
 
 For a published release, use the exact packages below and keep `@bsv/dpp-core` in its imports. Those earlier versions do not provide the new package name. Change imports to `@bsv/dpp-protocol` when adopting the renamed candidate or its eventual published release.
 
@@ -52,8 +52,8 @@ npm install --save-exact @bsv/dpp-core@0.3.0-beta.8
 |---|---|---|
 | Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.8` | Profile manifests, payload schemas and supported projection/discovery helpers |
 | Your code imports wallet or transaction APIs | `@bsv/sdk@2.8.10` | Declare direct imports as direct dependencies |
-| Your selected credential or exchange feature uses VSC | `@bsv/vsc@0.2.0-beta.5` | Supported credential/exchange formats; not needed just to sign a native lifecycle claim |
-| You embed index components in your own code | `@bsv/dpp-overlay-topics@0.4.0-beta.10` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
+| Your selected credential or exchange feature uses VSC | `@bsv/dpp-credentials@0.2.0-beta.5` | Supported credential/exchange formats; not needed just to sign a native lifecycle claim |
+| You embed index components in your own code | `@bsv/dpp-overlay@0.4.0-beta.10` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
 
 For a published installation using the protocol helpers, profiles and the SDK:
 
@@ -100,7 +100,7 @@ npm run build
 
 This source revision includes work after the selected published release, including opt-in index discovery and retry changes. Building it does not reproduce the npm archives, even when a package's version string is unchanged. For the exact source of a published package, use its [release set and publication receipt](../reference/release-sets.md).
 
-The following is the retained historical beta.4 reproduction example. All four packages in that set, the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and `@bsv/vsc@0.2.0-beta.3`, repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, the revision the [beta.4 publication receipt](../reference/beta-4-publication.md) records. Its examples are older than the current quick start. Use a separate checkout if you want to keep both revisions available.
+The following is the retained historical beta.4 reproduction example. All four packages in that set, the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay` and `@bsv/dpp-profiles` and `@bsv/dpp-credentials@0.2.0-beta.3`, repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, the revision the [beta.4 publication receipt](../reference/beta-4-publication.md) records. Its examples are older than the current quick start. Use a separate checkout if you want to keep both revisions available.
 
 ```sh
 git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73
@@ -144,7 +144,7 @@ In the consuming application's directory, run `npm install /absolute/path/to/the
 |---|---|
 | Passport records and shared evidence | [Protocol](dpp-protocol.md) |
 | Product profiles and projections | [Profiles](dpp-profiles.md) |
-| Credentials and source events | [VSC](vsc.md) |
-| Index services | [Overlay](dpp-overlay-topics.md) |
+| Credentials and source events | [DPP credentials](dpp-credentials.md) |
+| Index services | [Overlay](dpp-overlay.md) |
 
 The [application service](application-service.md) is maintained separately from this release set.

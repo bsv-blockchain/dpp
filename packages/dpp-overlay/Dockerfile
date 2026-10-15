@@ -4,7 +4,7 @@
 # Build context is the REPOSITORY ROOT, not this directory, because the
 # service depends on the @bsv/dpp-protocol and @bsv/dpp-profiles workspaces:
 #
-#   docker build -f packages/overlay-topics/Dockerfile -t dpp-overlay .
+#   docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .
 #
 # Configuration is environment only; the Configuration table in this
 # directory's README.md lists the variables and the root .dockerignore keeps
@@ -25,19 +25,19 @@ WORKDIR /repo
 # install layer. npm ci needs every workspace manifest the lockfile knows.
 COPY package.json package-lock.json ./
 COPY packages/dpp-protocol/package.json packages/dpp-protocol/
-COPY packages/overlay-topics/package.json packages/overlay-topics/
-COPY packages/vsc/package.json packages/vsc/
+COPY packages/dpp-overlay/package.json packages/dpp-overlay/
+COPY packages/dpp-credentials/package.json packages/dpp-credentials/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 COPY packages/create-dpp-app/package.json packages/create-dpp-app/
 COPY packages/create-dpp-index/package.json packages/create-dpp-index/
 RUN npm ci --ignore-scripts \
-      -w @bsv/dpp-overlay-topics -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root
+      -w @bsv/dpp-overlay -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root
 
 COPY tsconfig.base.json ./
 COPY scripts/package-schemas.mjs ./scripts/package-schemas.mjs
 COPY contracts ./contracts
 COPY packages ./packages
-RUN npm run build -w @bsv/dpp-protocol -w @bsv/dpp-profiles -w @bsv/dpp-overlay-topics
+RUN npm run build -w @bsv/dpp-protocol -w @bsv/dpp-profiles -w @bsv/dpp-overlay
 
 FROM ${BASE_IMAGE}
 WORKDIR /repo
@@ -46,18 +46,18 @@ ENV NODE_ENV=production
 COPY LICENSE ./
 COPY package.json package-lock.json ./
 COPY packages/dpp-protocol/package.json packages/dpp-protocol/
-COPY packages/overlay-topics/package.json packages/overlay-topics/
-COPY packages/vsc/package.json packages/vsc/
+COPY packages/dpp-overlay/package.json packages/dpp-overlay/
+COPY packages/dpp-credentials/package.json packages/dpp-credentials/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 COPY packages/create-dpp-app/package.json packages/create-dpp-app/
 COPY packages/create-dpp-index/package.json packages/create-dpp-index/
 RUN npm ci --omit=dev --ignore-scripts \
-      -w @bsv/dpp-overlay-topics -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root \
+      -w @bsv/dpp-overlay -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root \
     && npm cache clean --force
 
 COPY --from=build /repo/packages/dpp-protocol/dist packages/dpp-protocol/dist
 COPY --from=build /repo/packages/dpp-protocol/schemas packages/dpp-protocol/schemas
-COPY --from=build /repo/packages/overlay-topics/dist packages/overlay-topics/dist
+COPY --from=build /repo/packages/dpp-overlay/dist packages/dpp-overlay/dist
 # The GS1 key lookup reads the profiles package, whose entry point loads its
 # manifests and generated schemas at import.
 COPY --from=build /repo/packages/dpp-profiles/dist packages/dpp-profiles/dist
@@ -72,4 +72,4 @@ EXPOSE 8080
 # node directly, not npm: npm as PID 1 does not forward SIGTERM, so the
 # graceful shutdown in src/index.ts would never run and every stop would be a
 # hard kill mid-write.
-CMD ["node", "packages/overlay-topics/dist/index.js"]
+CMD ["node", "packages/dpp-overlay/dist/index.js"]

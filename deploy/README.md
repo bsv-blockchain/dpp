@@ -1,6 +1,6 @@
 # Running the reference index as an operator
 
-One supported preset, on Docker Compose: the index node from this repository's image and a MongoDB beside it, both on named volumes, configured from one env file. It is the same node `packages/overlay-topics/README.md` documents, with nothing added and nothing taken away; this directory only fixes an arrangement that persists. Everything here is informative, as [`../docs/deployment.md`](../docs/deployment.md) is: the standard requires no particular host.
+One supported preset, on Docker Compose: the index node from this repository's image and a MongoDB beside it, both on named volumes, configured from one env file. It is the same node `packages/dpp-overlay/README.md` documents, with nothing added and nothing taken away; this directory only fixes an arrangement that persists. Everything here is informative, as [`../docs/deployment.md`](../docs/deployment.md) is: the standard requires no particular host.
 
 For a new editable operator project, start with [Create an index](../docs/packages/create-dpp-index.md). The starter includes the runtime and its own deployment files. This directory is the advanced alternative for running directly from a repository checkout; a generated project does not need this second setup.
 
@@ -8,7 +8,7 @@ For a new editable operator project, start with [Create an index](../docs/packag
 
 | Piece | What it runs | Where its state lives |
 |---|---|---|
-| `overlay` | `packages/overlay-topics/Dockerfile`, built from the repository root: `tm_dpp`, `tm_attestation`, the historical UORA topic, their lookup services, the HTTP routes of `contracts/overlay.yaml` | Nothing on disk of its own. Everything admitted is in MongoDB |
+| `overlay` | `packages/dpp-overlay/Dockerfile`, built from the repository root: `tm_dpp`, `tm_attestation`, the historical UORA topic, their lookup services, the HTTP routes of `contracts/overlay.yaml` | Nothing on disk of its own. Everything admitted is in MongoDB |
 | `mongo` | MongoDB 7 | The named volume `mongo-data`: the engine's outputs and transactions, the passport and anchor indexes, the sequences |
 | `deploy/operator.env` | The configuration, copied from `operator.env.example` | Local file, never committed (`.gitignore`) |
 | `deploy/config/` | A publisher policy chain, when one is used as a file; `PUBLISHER_POLICY_JSON` carries the same chain inline where a host cannot mount one | Mounted read-only at `/config` |
@@ -49,6 +49,6 @@ cp deploy/operator.env.example deploy/operator-b.env
 docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env up -d
 ```
 
-What the pair proves, and what it does not, is `packages/overlay-topics/README.md`, Running two operators locally: the mechanism (initial synchronisation, restart and catch-up, admission during synchronisation, independent verification of the same bytes), never independence. Two containers on one machine under one administration are one operator twice; `federated-operators@1` is claimed only by two organisations with separate administrations, credentials, databases and infrastructure. Where the two nodes' policies differ, their answers differ and each capability document says so; a state one refuses and the other admits stays visible as a disagreement, and adding a third node settles nothing, because acceptance by an index is not finality and never was.
+What the pair proves, and what it does not, is `packages/dpp-overlay/README.md`, Running two operators locally: the mechanism (initial synchronisation, restart and catch-up, admission during synchronisation, independent verification of the same bytes), never independence. Two containers on one machine under one administration are one operator twice; `federated-operators@1` is claimed only by two organisations with separate administrations, credentials, databases and infrastructure. Where the two nodes' policies differ, their answers differ and each capability document says so; a state one refuses and the other admits stays visible as a disagreement, and adding a third node settles nothing, because acceptance by an index is not finality and never was.
 
 Set `WOC_API_KEY` on a synchronising node: a round asks the header source once per state, and anonymous access answers 429 past a few a second; the node paces and retries, but a key is what a full corpus needs. Three limits of synchronisation stand whatever the topology. A proof that reaches one operator does not travel to the other through GASP; each receives it through its own `/arc-ingest`. An unproven state announced during a partition arrives once its proof reaches the source. And synchronisation carries the current outputs and their lineages, not every historical artefact: an operator that needs the complete retained evidence restores from the evidence package.

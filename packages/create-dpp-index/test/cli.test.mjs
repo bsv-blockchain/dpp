@@ -50,7 +50,7 @@ test('a fresh project has private independent secrets, pins and no secret output
   if (process.platform !== 'win32') assert.equal(statSync(join(target, '.env')).mode & 0o777, 0o600)
   const project = JSON.parse(readFileSync(join(target, 'package.json'), 'utf8'))
   assert.equal(project.name, 'my-index')
-  assert.equal(project.dependencies['@bsv/dpp-overlay-topics'], project.dpp.packages['@bsv/dpp-overlay-topics'])
+  assert.equal(project.dependencies['@bsv/dpp-overlay'], project.dpp.packages['@bsv/dpp-overlay'])
   assert.match(project.dpp.generator, /^@bsv\/create-dpp-index@/)
   assert.ok(!readdirSync(target).some(name => name.startsWith('_')))
   const second = join(parent, 'second')

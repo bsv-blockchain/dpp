@@ -22,7 +22,7 @@ A parser MUST preserve secured bytes, reject duplicate JSON keys, malformed UTF-
 
 ## 3. Contexts and proofs
 
-The upstream example context was unavailable at the reviewed revision. This implementation therefore uses the owned, versioned context `urn:bsv:vsc:context:0.1.0`, distributed with @bsv/vsc, together with pinned VC and proof-suite contexts. It does not invent content under a W3C URL. This difference is an explicit compatibility limitation, and prevents an unqualified claim of exact upstream-context conformance.
+The upstream example context was unavailable at the reviewed revision. This implementation therefore uses the owned, versioned context `urn:bsv:vsc:context:0.1.0`, distributed with @bsv/dpp-credentials, together with pinned VC and proof-suite contexts. It does not invent content under a W3C URL. This difference is an explicit compatibility limitation, and prevents an unqualified claim of exact upstream-context conformance.
 
 The package supports the actual Ed25519Signature2020 Data Integrity suite, using its maintained implementation and suite-defined JSON-LD/RDF canonicalisation. Native secp256k1 DER signatures and Ed25519 JWS are not substitutes. A verified key must be authorised for assertion by the credential issuer's DID document. Unsupported or substituted contexts and proof suites cannot pass the relevant check.
 
@@ -56,7 +56,7 @@ Extensions are preserved with their signed meaning. An unknown optional vocabula
 
 ## 7. Roles, reports and qualification
 
-The reference package provides parsing, structure validation, genuine issuance/proof verification, BBS derivation, status/authority checks, graph/correction checks and EPCIS mapping. [Its capability manifest and README](../packages/vsc/README.md) record implemented APIs and limits. [The registry contract](../contracts/registry.yaml) selects those capabilities for intake and retrieval. It does not claim to implement every upstream presentation exchange or industry conformance class.
+The reference package provides parsing, structure validation, genuine issuance/proof verification, BBS derivation, status/authority checks, graph/correction checks and EPCIS mapping. [Its capability manifest and README](../packages/dpp-credentials/README.md) record implemented APIs and limits. [The registry contract](../contracts/registry.yaml) selects those capabilities for intake and retrieval. It does not claim to implement every upstream presentation exchange or industry conformance class.
 
 Report structure, proof, temporal, status, authority, chain and correction findings separately. Overall acceptance depends on the explicitly required checks. Results are scoped to supplied/discovered evidence and do not prove global completeness. The implementation profile, test fixtures and local resolutions are independently versioned artefacts. A project test pass must not be labelled an upstream conformance-suite pass when that suite is unavailable.
 

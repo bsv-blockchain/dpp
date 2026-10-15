@@ -99,9 +99,9 @@ What each kind of record can establish:
 | Record | Anchor | What can be established |
 |---|---|---|
 | `dpp-lifecycle-json-v1`, a native claim | `bsv-attestation-anchor-v1`, read with `inspectAttestationAnchor` from `@bsv/dpp-protocol` | Every check |
-| `legacy-uora-json` | `uora-anchor-v3`, read with `tryParseUoraAnchor` from `@bsv/dpp-overlay-topics` | Every check but the claim signature, which the example does not check |
+| `legacy-uora-json` | `uora-anchor-v3`, read with `tryParseUoraAnchor` from `@bsv/dpp-overlay` | Every check but the claim signature, which the example does not check |
 | `legacy-uora-json` | `uora-anchor-v1` | The digest, inclusion, and that the output is signed by its own locking key. A v1 anchor names no issuer and no anchoring service, so who anchored it cannot be established |
-| `vsc-seal-json-v1`, a SEAL credential | `bsv-attestation-anchor-v1` | The digest, anchor and inclusion; verify the credential itself with [`@bsv/vsc`](../../packages/vsc.md) |
+| `vsc-seal-json-v1`, a SEAL credential | `bsv-attestation-anchor-v1` | The digest, anchor and inclusion; verify the credential itself with [`@bsv/dpp-credentials`](../../packages/dpp-credentials.md) |
 
 ## Known gaps
 

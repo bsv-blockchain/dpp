@@ -11,16 +11,16 @@ The profile accepts a VC Data Model 2.0 credential from a `did:web` issuer, with
 - The issuer's DID document, retrieved in advance or through a bounded `did:web` resolver you configure, and the JSON-LD contexts the credential uses, pinned in advance: the verifier never fetches a context from a URL the credential names.
 - The evaluation time, a status policy with a way to fetch status lists, and an authority policy naming the issuers you trust, or saying explicitly that you require none.
 
-Use the `@bsv/vsc/exchange` entry point. The root `@bsv/vsc` entry verifies SEAL credentials of the Verifiable Supply Chain (VSC) profile, a different representation with different rules. Handing a credential to whichever verifier happens to parse JSON is not representation selection.
+Use the `@bsv/dpp-credentials/exchange` entry point. The root `@bsv/dpp-credentials` entry verifies SEAL credentials of the Verifiable Supply Chain (VSC) profile, a different representation with different rules. Handing a credential to whichever verifier happens to parse JSON is not representation selection.
 
 ## Verify the vector file's credentials
 
-At the root of a checkout, after [setup](../quick-start.md#get-the-code), this verifies the `positive` case of the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json) and then checks every case against its expected checks. Inside the checkout `@bsv/vsc` resolves to the workspace build; the same code gives the same answers against the published `@bsv/vsc` 0.2.0-beta.5.
+At the root of a checkout, after [setup](../quick-start.md#get-the-code), this verifies the `positive` case of the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json) and then checks every case against its expected checks. Inside the checkout `@bsv/dpp-credentials` resolves to the workspace build; the same code gives the same answers against the published `@bsv/dpp-credentials` 0.2.0-beta.5.
 
 ```sh
 node --input-type=module <<'JS'
 import { readFileSync } from 'node:fs'
-import { createExternalDocumentLoader, verifyExternalCredential } from '@bsv/vsc/exchange'
+import { createExternalDocumentLoader, verifyExternalCredential } from '@bsv/dpp-credentials/exchange'
 
 const { vectors } = JSON.parse(readFileSync('fixtures/vectors/dpp/interoperability/external-credential/v1.json', 'utf8'))
 
@@ -75,7 +75,7 @@ node examples/verify-external-credential.mjs
 [`examples/verify-external-credential.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-external-credential.mjs) prints the ten checks of `positive`, each `Holds`, then `tampered-subject`, whose line `FAILS: proof (proof_failed: ...)` is the expected answer for a credential altered after signing. It ends with the digests of the issued bytes and of a re-serialised copy, which differ while both proofs still verify: only the issued bytes are what an anchor commits to. The command exits 0.
 
 ```sh
-npm run test -w @bsv/vsc -- test/exchange.test.ts test/exchange-vectors.test.ts
+npm run test -w @bsv/dpp-credentials -- test/exchange.test.ts test/exchange-vectors.test.ts
 ```
 
 It runs 60 tests, all passing, with fixture documents and published test keys, including unsupported formats, altered proofs and missing evidence. Neither command contacts an issuer's live status service or assesses a product.
@@ -100,7 +100,7 @@ The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab
 | Integration task | Source |
 |---|---|
 | Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
-| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/src/exchange.ts) |
+| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/src/exchange.ts) |
 | Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) |
 | Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability) |
 

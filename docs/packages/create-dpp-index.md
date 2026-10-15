@@ -2,15 +2,15 @@
 
 Start here to operate your own index alongside your application. `@bsv/create-dpp-index` generates an editable project with persistent MongoDB, scoped tokens, deployment files and an app connection helper. One service handles passport history and attestation anchors.
 
-**Use the starter once. It includes the index runtime.** You do not separately install `@bsv/dpp-overlay-topics` or create another service for it.
+**Use the starter once. It includes the index runtime.** You do not separately install `@bsv/dpp-overlay` or create another service for it.
 
 | Part | What it does | Your action |
 | --- | --- | --- |
 | `@bsv/create-dpp-index` | Creates your project | Run the setup command below |
 | Your generated project | Holds configuration, deployment files and a pinned runtime dependency | Run its commands to start and maintain your index |
-| `@bsv/dpp-overlay-topics` | Runs the index inside that project | Included automatically with the project's dependencies |
+| `@bsv/dpp-overlay` | Runs the index inside that project | Included automatically with the project's dependencies |
 
-If your app uses an existing compatible index, obtain its URL and access settings from its operator. You need neither package just to connect over HTTP. Direct runtime installation is for [custom or embedded integrations](dpp-overlay-topics.md).
+If your app uses an existing compatible index, obtain its URL and access settings from its operator. You need neither package just to connect over HTTP. Direct runtime installation is for [custom or embedded integrations](dpp-overlay.md).
 
 ## Create your project
 

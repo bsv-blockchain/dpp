@@ -106,7 +106,7 @@ describe('GET /evidence-package', () => {
       genesis: { txid: F.txs[0].id('hex'), outputIndex: F.outputIndexes[0] },
       selectedTip: { txid: F.txs[5].id('hex'), outputIndex: F.outputIndexes[5] },
       exportedAt: NOW.toISOString(),
-      exporter: { id: EXPORTER, role: 'overlay', software: expect.stringContaining('@bsv/dpp-overlay-topics@') },
+      exporter: { id: EXPORTER, role: 'overlay', software: expect.stringContaining('@bsv/dpp-overlay@') },
       profiles: ['single-operator@1'],
       policyId: 'reference-node-environment',
       disclosure: { scope: 'public', recoveryBackup: false },

@@ -81,7 +81,7 @@ export function operatorProfileFor(policy: PublisherPolicyConfig | undefined, sy
 
 /**
  * The VSC seal representation this node indexes commitments to. Its rules live
- * in the `@bsv/vsc` workspace, which this package does not depend on, so the
+ * in the `@bsv/dpp-credentials` workspace, which this package does not depend on, so the
  * two identifiers are repeated here; a test holds them equal to
  * `conformance/baseline-native-1.json`.
  */

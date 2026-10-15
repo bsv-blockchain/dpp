@@ -13,7 +13,7 @@ Start by deciding which services your organisation owns and which it obtains fro
 | Supply a registry | [Registry implementation](../implement/roles/registry.md) | The complete selected role, including storage and retrieval; no released registry image is available |
 | Prepare a production release | [Production readiness](production-readiness.md) | Evidence for the chosen product and operating model, with owners for outstanding dependencies |
 
-The starter handles the index runtime dependency; you do not separately install `@bsv/dpp-overlay-topics`. Its guide records the publication prerequisite. Direct installation and the repository's deployment recipe are [advanced alternatives](../packages/dpp-overlay-topics.md).
+The starter handles the index runtime dependency; you do not separately install `@bsv/dpp-overlay`. Its guide records the publication prerequisite. Direct installation and the repository's deployment recipe are [advanced alternatives](../packages/dpp-overlay.md).
 
 Check [known limitations](limitations.md) against the exact package release or source revision you deploy. A feature on `main` may not be in a published package or running on a hosted service.
 

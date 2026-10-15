@@ -68,7 +68,7 @@ describe('the capability document', () => {
     expect(Object.keys(document).sort()).toEqual(Object.keys(example).sort())
     expect(document.implementation.name).toBe(example.implementation.name)
     expect(document.implementation.baselineId).toBe(example.implementation.baselineId)
-    expect(document.implementation.version).toBe(readJson('packages/overlay-topics/package.json').version)
+    expect(document.implementation.version).toBe(readJson('packages/dpp-overlay/package.json').version)
     expect(document.roles).toEqual(example.roles)
     expect(ids(document.protocols)).toEqual(ids(example.protocols))
     expect(document.profiles.map((p) => [p.id, p.version, p.kind])).toEqual(example.profiles.map((p: any) => [p.id, p.version, p.kind]))

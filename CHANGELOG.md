@@ -12,6 +12,12 @@ The beta.8 core and profiles packages and the beta.10 overlay package, the first
 
 ## Repository history
 
+### 2026-10-15, name the index runtime dpp-overlay and the credentials package dpp-credentials
+
+- Move the index runtime to `@bsv/dpp-overlay` under `packages/dpp-overlay`, and the credentials package to `@bsv/dpp-credentials` under `packages/dpp-credentials`. Entry points, executables and APIs are unchanged; only the names and directories move.
+- Update the starters, examples, Docker build, conformance references and active documentation to the new names. Retain historical names in publication receipts, release records, frozen profile manifests, fixture provenance and pinned source URLs, and redirect the old documentation pages.
+- Prepare `dpp-release-2026-10-9`: protocol and profiles at `0.3.0-beta.9`, overlay at `0.4.0-beta.11` and credentials at `0.2.0-beta.5`, the same versions as the superseded `dpp-release-2026-10-8` under the new names. Nothing is yet published under them.
+
 ### 2026-10-11, one protocol package for both starters
 
 - Migrate the application starter to `@bsv/dpp-protocol` and the same `dpp-release-2026-10-8` runtime set as the index starter. Keep the existing application workflows and SDK version.

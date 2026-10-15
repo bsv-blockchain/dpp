@@ -2,7 +2,7 @@
 
 Use this page if you hold EPCIS 2.0 supply-chain events, from a manufacturing, logistics or traceability system, and want them as evidence beside a passport. It shows how to take a document in without changing it and how to map each event to a credential view; an import never writes a passport state.
 
-Electronic Product Code Information Services (EPCIS) is the GS1 standard for event observations, such as an item made, packed or shipped. Two profiles apply: `epcis-json@1` takes an EPCIS 2.0.1 JSON or JSON-LD document in and keeps it exactly as received, and `epcis-vsc@1` maps each event to an unsigned SEAL credential, the event credential of the Verifiable Supply Chain (VSC) profile, which a separately authorised issuer may then sign. Both are implemented in `@bsv/vsc`.
+Electronic Product Code Information Services (EPCIS) is the GS1 standard for event observations, such as an item made, packed or shipped. Two profiles apply: `epcis-json@1` takes an EPCIS 2.0.1 JSON or JSON-LD document in and keeps it exactly as received, and `epcis-vsc@1` maps each event to an unsigned SEAL credential, the event credential of the Verifiable Supply Chain (VSC) profile, which a separately authorised issuer may then sign. Both are implemented in `@bsv/dpp-credentials`.
 
 ## Parse before mapping
 
@@ -14,7 +14,7 @@ Run this local fixture exercise at the root of a checkout, after [setup](../quic
 node --input-type=module <<'JS'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { parseEpcisSource, validateEpcisDocument } from '@bsv/vsc/epcis-source'
+import { parseEpcisSource, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 const fixture = JSON.parse(readFileSync('fixtures/vectors/dpp/interoperability/epcis/v1.json', 'utf8'))
 const vector = fixture.vectors.find(item => item.id === 'five-event-document')
 const bytes = new TextEncoder().encode(JSON.stringify(vector.input.document))
@@ -30,22 +30,22 @@ The document passes schema validation, and a table prints seven events with thei
 
 ## Map the events
 
-`mapEpcisEventWithReport(event, options, { sourceReference, validation })` from the root `@bsv/vsc` maps one event, and returns one of four outcomes:
+`mapEpcisEventWithReport(event, options, { sourceReference, validation })` from the root `@bsv/dpp-credentials` maps one event, and returns one of four outcomes:
 
 - `lossless`: the mapping keeps all of the event's information; the report carries an unsigned SEAL.
 - `transformed`: the SEAL carries the event, but some of its meaning survives only in the round-trip extension, and `unmapped` names what.
 - `unsupported`: the profile cannot express the event, or a mapping decision is missing, and `missing` names it.
 - `insufficient-data`: the source lacks an input the mapping never invents, and `missing` names it.
 
-A valid source document can therefore remain retained evidence without producing a credential. `mapEpcisEvent` is the plain mapping without the report; both are exported from the root `@bsv/vsc`, not from `@bsv/vsc/epcis-source`, which carries the parsing functions and artefacts.
+A valid source document can therefore remain retained evidence without producing a credential. `mapEpcisEvent` is the plain mapping without the report; both are exported from the root `@bsv/dpp-credentials`, not from `@bsv/dpp-credentials/epcis-source`, which carries the parsing functions and artefacts.
 
 This maps every event of the same fixture, at the root of the checkout:
 
 ```sh
 node --input-type=module <<'JS'
 import { readFileSync } from 'node:fs'
-import { mapEpcisEventWithReport } from '@bsv/vsc'
-import { epcisSourceReference, parseEpcisSource, pinnedContextDigests, validateEpcisDocument } from '@bsv/vsc/epcis-source'
+import { mapEpcisEventWithReport } from '@bsv/dpp-credentials'
+import { epcisSourceReference, parseEpcisSource, pinnedContextDigests, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 const fixture = JSON.parse(readFileSync('fixtures/vectors/dpp/interoperability/epcis/v1.json', 'utf8'))
 const vector = fixture.vectors.find(item => item.id === 'five-event-document')
 const parsed = parseEpcisSource(new TextEncoder().encode(JSON.stringify(vector.input.document)), { mediaType: vector.input.media_type })
@@ -68,7 +68,7 @@ JS
 
 It prints one line per event. The two `TransformationEvent`s read `unsupported`, because a transformation has no EPCIS action and these options make no `transformationAction` decision; the first `ObjectEvent` reads `lossless`; the others read `transformed`, naming what only the round-trip extension keeps, such as `multi-product-event` or `business-transactions, source-destination-parties`. The issuer, status entry and custody chain are synthetic; nothing is signed or issued.
 
-[`examples/import-epcis.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/import-epcis.mjs) does the whole import in one sentence per finding, with a `transformationAction` of `ADD`: the source digest, the contexts, schema validation, each event's identity and body digest, and its mapping outcome. Run `node examples/import-epcis.mjs`, or `node examples/import-epcis.mjs <document.json>` for any EPCIS 2.0.1 document; it ends with `Nothing was retained, issued, anchored or written to a token by this example.` The package's own mapping tests run with `npm run test -w @bsv/vsc -- test/epcis.test.ts test/epcis-source.test.ts test/epcis-report.test.ts` (49 tests, all passing).
+[`examples/import-epcis.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/import-epcis.mjs) does the whole import in one sentence per finding, with a `transformationAction` of `ADD`: the source digest, the contexts, schema validation, each event's identity and body digest, and its mapping outcome. Run `node examples/import-epcis.mjs`, or `node examples/import-epcis.mjs <document.json>` for any EPCIS 2.0.1 document; it ends with `Nothing was retained, issued, anchored or written to a token by this example.` The package's own mapping tests run with `npm run test -w @bsv/dpp-credentials -- test/epcis.test.ts test/epcis-source.test.ts test/epcis-report.test.ts` (49 tests, all passing).
 
 ## Keep the source with the result
 
@@ -87,7 +87,7 @@ Each event has a body digest: the SHA-256 of the RFC 8785 canonical JSON of the 
 | Select parsing, digest and mapping behaviour | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md) |
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) |
 | Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) |
-| Use reference parsing and mapping | [VSC package](../packages/vsc.md) |
+| Use reference parsing and mapping | [VSC package](../packages/dpp-credentials.md) |
 | Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json) |
 
 The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records which import and pull outcomes have been exercised. Next: [verifiable credentials](../learn/verifiable-credentials.md), to issue and anchor a mapped SEAL.

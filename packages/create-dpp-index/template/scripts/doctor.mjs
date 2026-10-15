@@ -12,7 +12,7 @@ try {
   const project = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
   let policy
   if (!errors.length) {
-    const runtime = await import('@bsv/dpp-overlay-topics')
+    const runtime = await import('@bsv/dpp-overlay')
     policy = runtime.publisherPolicyFromEnvironment()
     runtime.syncSettingsFromEnvironment()
     runtime.discoverySettingsFromEnvironment(env.NETWORK)
@@ -28,7 +28,7 @@ try {
       if (health.status !== 'ok') errors.push('Index health is not ok')
       if (health.network !== env.NETWORK) errors.push('Index network differs from NETWORK')
       if (caps.unsupported?.some(item => item.id === 'retraction-network-check')) errors.push('Index has disabled its network checks; do not use a fixture runtime for live traffic')
-      const expected = project.dpp.packages['@bsv/dpp-overlay-topics']
+      const expected = project.dpp.packages['@bsv/dpp-overlay']
       if (caps.implementation?.version !== expected) errors.push(`Index runtime differs from the pinned version ${expected}`)
       for (const topic of ['tm_dpp', 'tm_attestation']) if (!caps.topics?.includes(topic)) errors.push(`Missing topic ${topic}`)
       for (const service of ['ls_dpp', 'ls_attestation']) if (!caps.services?.includes(service)) errors.push(`Missing lookup service ${service}`)

@@ -1,12 +1,12 @@
 # Index runtime (advanced)
 
-`@bsv/dpp-overlay-topics` is the runtime that admits passport states and claim anchors and answers lookups for them. It supplies both reusable library components and an HTTP server.
+`@bsv/dpp-overlay` is the runtime that admits passport states and claim anchors and answers lookups for them. It supplies both reusable library components and an HTTP server.
 
 **Setting up a new index? Start with [Create an index](create-dpp-index.md).** The starter includes this runtime and installs it with the generated project's dependencies. You do not need a second installation or service.
 
 This reference is for custom integrations, embedded indexes and runtime configuration. An app that only connects to an existing index over HTTP needs its URL and access settings, without this hosting package.
 
-**Experimental prerelease:** `@bsv/dpp-overlay-topics` 0.4.0-beta.11 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-overlay` 0.4.0-beta.11 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## Words on this page
 
@@ -20,7 +20,7 @@ This reference is for custom integrations, embedded indexes and runtime configur
 
 ## Library or service
 
-The source candidate exports the component library at `@bsv/dpp-overlay-topics` and the HTTP host at `@bsv/dpp-overlay-topics/server`. Importing either starts nothing. The `dpp-index` executable runs the configured operator process. Earlier published versions require the repository or container startup path. The [starter guide](create-dpp-index.md) records the publication status of the generated-project route.
+The source candidate exports the component library at `@bsv/dpp-overlay` and the HTTP host at `@bsv/dpp-overlay/server`. Importing either starts nothing. The `dpp-index` executable runs the configured operator process. Earlier published versions require the repository or container startup path. The [starter guide](create-dpp-index.md) records the publication status of the generated-project route.
 
 | Route | Use it when | Start here |
 |---|---|---|
@@ -36,10 +36,10 @@ Install directly only when your own code embeds or configures the runtime. A pro
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay-topics@0.4.0-beta.11 @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
+npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.11 @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
-The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay-topics` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
+The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.
 
 ## Embed an index
 
@@ -49,7 +49,7 @@ Save this as `embed-index.mjs`. It builds an index from a topic manager, a looku
 import { CachedKeyDeriver, LockingScript, MerklePath, PrivateKey, ProtoWallet, Transaction, UnlockingScript } from '@bsv/sdk'
 import { Engine } from '@bsv/overlay'
 import { buildLockingScript, completeState, ownerBlobHash, ownerKeyFromDeriver } from '@bsv/dpp-protocol'
-import { DppLookupService, DppTopicManager, InMemoryDppStorage, InMemoryOverlayStorage } from '@bsv/dpp-overlay-topics'
+import { DppLookupService, DppTopicManager, InMemoryDppStorage, InMemoryOverlayStorage } from '@bsv/dpp-overlay'
 
 // Two test keys: the writer who signs the state, and the publisher whose countersignature the index accepts.
 const writer = PrivateKey.fromHex('11'.repeat(32))
@@ -95,7 +95,7 @@ admitted outputs [ 0 ]
 lookup found 1 output: the state just stored
 ```
 
-`engine.submit` answers with the outputs each topic admitted, and `engine.lookup` with each matching output and the BEEF it arrived in; BEEF is the transaction format that carries a transaction with its ancestors and their block proofs. The engine checks every input against its source transaction, which is why the example funds the state from an output it builds itself. A state the topic manager refuses, such as one countersigned by another publisher, comes back with `outputsToAdmit` empty and is not found. The package's [engine test](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/test/engine.test.ts) adds a second state that spends the first, and a repeated submission.
+`engine.submit` answers with the outputs each topic admitted, and `engine.lookup` with each matching output and the BEEF it arrived in; BEEF is the transaction format that carries a transaction with its ancestors and their block proofs. The engine checks every input against its source transaction, which is why the example funds the state from an output it builds itself. A state the topic manager refuses, such as one countersigned by another publisher, comes back with `outputsToAdmit` empty and is not found. The package's [engine test](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/test/engine.test.ts) adds a second state that spends the first, and a repeated submission.
 
 To embed the claim rail as well, add `tm_attestation: new AttestationTopicManager()` and `ls_attestation: new AttestationLookupService(new InMemoryAttestationStorage())` beside the passport pair. An empty list of anchoring services admits any well-formed anchor; name the services you accept on anything a stranger can reach.
 
@@ -106,7 +106,7 @@ To see the admission rules without an engine, offer the topic manager the reposi
 ```js
 import { readFileSync } from 'node:fs'
 import { Beef, Transaction } from '@bsv/sdk'
-import { DppTopicManager } from '@bsv/dpp-overlay-topics'
+import { DppTopicManager } from '@bsv/dpp-overlay'
 
 const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
 const topic = new DppTopicManager(chain.custodianKey, { managedAcceptance: true })
@@ -138,7 +138,7 @@ The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /
 Choose one of these when you want to work from the repository directly. They replace the starter setup; they are not additional steps for a generated project.
 
 - **With the repository's Compose preset.** Follow [run an index from source](../operate/README.md): it explains the publisher key, the tokens, storage and the first health and capability checks. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
-- **From a checkout.** At the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay-topics` starts it on port 8080 with in-memory storage, and `GET /health` answers `"status":"ok"`. It warns at start for every protection left off; set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS` on anything a stranger can reach. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/README.md) lists every variable.
+- **From a checkout.** At the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` starts it on port 8080 with in-memory storage, and `GET /health` answers `"status":"ok"`. It warns at start for every protection left off; set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS` on anything a stranger can reach. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/README.md) lists every variable.
 
 **Tokens.** `POST /submit` and `POST /retract` need the operator's submit token, and `POST /arc-ingest` its callback token, when the operator sets them, as the hosted reference does. A writer gets each token from that index's operator.
 
@@ -148,11 +148,11 @@ Choose one of these when you want to work from the repository directly. They rep
 
 | Integration | Source |
 |---|---|
-| Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/src/lib.ts) |
-| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/src/index.ts) |
+| Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/src/lib.ts) |
+| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/src/index.ts) |
 | Read a historical UORA anchor | `tryParseUoraAnchor` and `expectedLockingKey`, as [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) shows for `uora-anchor-v3`; it refuses `uora-anchor-v2` and does not read `uora-anchor-v1` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)) |
 | Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) |
-| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/overlay-topics/README.md) |
+| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/README.md) |
 
 ## Next
 

@@ -55,7 +55,7 @@
  * transactions are built unsent from a made-up funding output; the index is
  * started in this process on a loopback port, with in-memory storage and a
  * publisher key policy naming the writer's key, from the built
- * @bsv/dpp-overlay-topics and its host. Both states are checked, announced
+ * @bsv/dpp-overlay and its host. Both states are checked, announced
  * and shown admitted, the index is asked for the lineage and a verification
  * report is made over what it returns, and then a state the record model
  * refuses is shown refused by the writer's own check and by the index. Nothing
@@ -548,8 +548,8 @@ async function startLocalIndex(publisherKey) {
   let overlay, topics, host
   try {
     overlay = await import('@bsv/overlay')
-    topics = await import('@bsv/dpp-overlay-topics')
-    host = await import(pathToFileURL(join(here, '..', 'packages', 'overlay-topics', 'dist', 'index.js')).href)
+    topics = await import('@bsv/dpp-overlay')
+    host = await import(pathToFileURL(join(here, '..', 'packages', 'dpp-overlay', 'dist', 'index.js')).href)
   } catch (cause) {
     throw new Error(`the in-process index could not be loaded (${cause.message}); run npm ci and npm run build in the repository first`)
   }

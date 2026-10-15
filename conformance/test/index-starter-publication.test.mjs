@@ -7,9 +7,9 @@ import { assertApproval, NPM_REGISTRY } from '../../scripts/lib/publication.mjs'
 import { checkIndexStarterRegistry, indexStarterPlan, starterRuntimePackages } from '../../scripts/lib/index-starter-publication.mjs'
 
 function fixture() {
-  const pins = { '@bsv/dpp-overlay-topics': '0.4.0-beta.11', '@bsv/dpp-profiles': '0.3.0-beta.9', '@bsv/dpp-protocol': '0.3.0-beta.9' }
+  const pins = { '@bsv/dpp-overlay': '0.4.0-beta.11', '@bsv/dpp-profiles': '0.3.0-beta.9', '@bsv/dpp-protocol': '0.3.0-beta.9' }
   const manifest = { name: '@bsv/create-dpp-index', version: '0.1.0-beta.1', publishConfig: { access: 'public', registry: NPM_REGISTRY, tag: 'next' }, dpp: { releaseSet: 'dpp-release-test', packages: pins } }
-  const template = { dependencies: { '@bsv/dpp-overlay-topics': pins['@bsv/dpp-overlay-topics'] } }
+  const template = { dependencies: { '@bsv/dpp-overlay': pins['@bsv/dpp-overlay'] } }
   const set = { releaseSet: manifest.dpp.releaseSet, status: 'candidate', packages: Object.entries(pins).map(([name, version]) => ({ name, version })) }
   const files = new Map()
   const candidates = [{ name: manifest.name, version: manifest.version }, ...set.packages].map(pkg => {
@@ -34,7 +34,7 @@ test('the starter release has one publication target and three separately publis
 
 test('a mismatched template or release pin cannot be packaged as the selected starter', () => {
   for (const change of [
-    f => { f.template.dependencies['@bsv/dpp-overlay-topics'] = '^0.4.0' },
+    f => { f.template.dependencies['@bsv/dpp-overlay'] = '^0.4.0' },
     f => { f.template.dependencies['@bsv/dpp-protocol'] = '0.3.0-beta.9' },
     f => { delete f.manifest.dpp.packages['@bsv/dpp-profiles'] },
     f => { f.manifest.dpp.packages['@bsv/dpp-protocol'] = '0.3.0-beta.8' },
@@ -113,7 +113,7 @@ test('all dependency archives must match before a new starter can publish or an 
   const plan = indexStarterPlan(f.input)
   assert.equal((await checkIndexStarterRegistry(plan, registry(f, { missing: new Set([f.manifest.name]) }).fetcher))[0].action, 'publish')
   assert.equal((await checkIndexStarterRegistry(plan, registry(f).fetcher))[0].action, 'already-published')
-  await assert.rejects(checkIndexStarterRegistry(plan, registry(f, { changed: new Set(['@bsv/dpp-overlay-topics']) }).fetcher), /downloaded bytes differ/)
+  await assert.rejects(checkIndexStarterRegistry(plan, registry(f, { changed: new Set(['@bsv/dpp-overlay']) }).fetcher), /downloaded bytes differ/)
 })
 
 test('execution without an exact approval fails before building or packing', () => {

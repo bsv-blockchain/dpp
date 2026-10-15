@@ -20,8 +20,8 @@ export interface DevIndex {
 
 export async function startDevIndex(publisherKey: string): Promise<DevIndex> {
   const overlay = await import('@bsv/overlay')
-  const topics = await import('@bsv/dpp-overlay-topics')
-  const host = await import('@bsv/dpp-overlay-topics/server')
+  const topics = await import('@bsv/dpp-overlay')
+  const host = await import('@bsv/dpp-overlay/server')
 
   // The policy chain of spec/services.md section 1: one operator signs a genesis naming the platform wallet as a state publisher.
   const operatorKey = PrivateKey.fromHex('44'.repeat(32))

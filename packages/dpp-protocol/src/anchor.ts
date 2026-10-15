@@ -5,7 +5,7 @@ import { CachedKeyDeriver, LockingScript, PublicKey, Signature, Utils, type Wall
  * (`spec/rules.md` §5 and §6). It lives in the core rather than in the overlay
  * package because a reader in a browser verifies anchors without a database or
  * an overlay engine, and `verifyPassportEvidence` (evidence.ts) reports the
- * anchor rail beside the token rail from one package. `@bsv/dpp-overlay-topics`
+ * anchor rail beside the token rail from one package. `@bsv/dpp-overlay`
  * re-exports every name below unchanged.
  */
 

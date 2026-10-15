@@ -99,7 +99,7 @@ Done when the recipient's acceptance is committed in the `TRANSFER` and the read
 
 ## Run an index
 
-1. [Create an index](../packages/create-dpp-index.md): generate your project, start it with Docker and check its configuration. The starter includes the runtime; there is no separate `@bsv/dpp-overlay-topics` installation step.
+1. [Create an index](../packages/create-dpp-index.md): generate your project, start it with Docker and check its configuration. The starter includes the runtime; there is no separate `@bsv/dpp-overlay` installation step.
 2. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): how proofs reach your index.
 3. [Export, import and recovery](../operate/export-import-recovery.md): back up and restore.
 4. [Known limitations](../operate/limitations.md#index-host): what the index does not do yet.

@@ -2,7 +2,7 @@
 
 This project runs one index with persistent MongoDB. It admits and serves passport histories (`tm_dpp` / `ls_dpp`) and attestation anchors (`tm_attestation` / `ls_attestation`). Both topics share one service. Legacy UORA lookup remains available for compatibility.
 
-The starter has already added `@bsv/dpp-overlay-topics` to this project's dependencies. Follow the project commands below to run it. There is no separate runtime installation or second index to set up, and the starter itself does not need to keep running.
+The starter has already added `@bsv/dpp-overlay` to this project's dependencies. Follow the project commands below to run it. There is no separate runtime installation or second index to set up, and the starter itself does not need to keep running.
 
 The index is separate from your application. Your app owns its wallet, funds and broadcasts transactions, stores application data and delivers proofs. A registry stores claim bytes. An index does not replace either of those services.
 
@@ -49,7 +49,7 @@ Do not copy MongoDB maintenance credentials or the export signing key to the app
 
 | Component or choice | Default | When to change it |
 | --- | --- | --- |
-| Included index runtime | Pinned `@bsv/dpp-overlay-topics`, installed with this project's dependencies; it brings protocol and profiles | Upgrade as a compatible release set |
+| Included index runtime | Pinned `@bsv/dpp-overlay`, installed with this project's dependencies; it brings protocol and profiles | Upgrade as a compatible release set |
 | Index storage | Authenticated MongoDB with a named volume | Use a managed MongoDB with credentials and TLS if preferred |
 | Passport publisher | Your app's public key | Use a signed policy for multiple publishers or rotation |
 | Anchor publishers | Same key as the app publisher | Add the registry's anchor publisher public key if it signs under a different key |
@@ -83,7 +83,7 @@ test/                  Offline configuration checks
 OPERATIONS.md          Automation commands and operating boundaries
 ```
 
-The server implementation stays in the maintained overlay package. For deeper customisation, `@bsv/dpp-overlay-topics/server` exports the HTTP host and `runFromEnvironment`. Importing it starts nothing. `dpp-index --env-file .env` is also a supported runtime command, but `npm start` adds this project's configuration checks.
+The server implementation stays in the maintained overlay package. For deeper customisation, `@bsv/dpp-overlay/server` exports the HTTP host and `runFromEnvironment`. Importing it starts nothing. `dpp-index --env-file .env` is also a supported runtime command, but `npm start` adds this project's configuration checks.
 
 To run Node directly with an existing MongoDB, set `MONGO_URL` to the address reachable from your machine, keep `HOST=127.0.0.1`, and run `npm start`. The generated URI's `mongo` hostname belongs to Compose and will not resolve on the host.
 

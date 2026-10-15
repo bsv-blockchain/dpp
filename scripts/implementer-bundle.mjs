@@ -40,7 +40,7 @@ copy('packages/dpp-profiles/manifests', 'profiles/manifests')
 copy('packages/dpp-profiles/schemas', 'profiles/schemas')
 copy('packages/dpp-profiles/generated', 'profiles/generated')
 copy('packages/dpp-profiles/frozen.json', 'profiles/frozen.json')
-copy('packages/vsc/artifacts', 'profiles/vsc-artifacts')
+copy('packages/dpp-credentials/artifacts', 'profiles/vsc-artifacts')
 // Carry the complete guide navigation and archived publication plans, excluding local review material.
 cpSync(join(root, 'docs'), join(out, 'docs'), {
   recursive: true,

@@ -100,7 +100,7 @@ try {
     '@bsv/dpp-profiles/schemas/*': 'profile-manifest.schema.json',
     '@bsv/dpp-profiles/generated/*': 'payload-schema/battery@2.public.schema.json',
     '@bsv/dpp-profiles/frozen.json': '',
-    '@bsv/vsc/artifacts/*': 'profile-0.1.0.json',
+    '@bsv/dpp-credentials/artifacts/*': 'profile-0.1.0.json',
   }
   const dataSpecifiers = data.map((d) => (d.specifier.endsWith('/*') ? d.specifier.slice(0, -1) + (dataSamples[d.specifier] ?? '') : d.specifier))
   for (const name of readdirSync(join(root, 'contracts')).filter((name) => name.endsWith('.schema.json'))) {
@@ -130,13 +130,13 @@ for (const specifier of ${JSON.stringify(dataSpecifiers)}) {
   catch (e) { out.push(['data entry point ' + specifier + ' reads: ' + String(e.message).split('\\n')[0], false]) }
 }
 const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAcceptanceToState, findDppOutputs, STANDARD_VERSION_V2, FIELD_COUNT_V2, STANDARD_VERSION_V3, FIELD_COUNT_V3 } = await import('@bsv/dpp-protocol')
-const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities, joinEvidenceExport } = await import('@bsv/dpp-overlay-topics')
-const host = await import('@bsv/dpp-overlay-topics/server')
+const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities, joinEvidenceExport } = await import('@bsv/dpp-overlay')
+const host = await import('@bsv/dpp-overlay/server')
 out.push(['overlay/server: importing starts no process and exposes the host', typeof host.startOverlayService === 'function' && typeof host.runFromEnvironment === 'function'])
 const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData } = await import('@bsv/dpp-profiles')
-const vsc = await import('@bsv/vsc')
-const exchange = await import('@bsv/vsc/exchange')
-const epcisSource = await import('@bsv/vsc/epcis-source')
+const vsc = await import('@bsv/dpp-credentials')
+const exchange = await import('@bsv/dpp-credentials/exchange')
+const epcisSource = await import('@bsv/dpp-credentials/epcis-source')
 const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
 const txs = chain.states.map((s) => Transaction.fromHex(s.rawTx))
 const result = await verifyChain(txs, { chainTracker: 'scripts only', managedAcceptance: true, serverIdentityKey: chain.custodianKey })
@@ -188,7 +188,7 @@ out.push(['vsc: root exports the SEAL verifier and document loader', typeof vsc.
 out.push(['vsc/exchange: verifies the external representation', typeof exchange.verifyExternalCredential === 'function' && exchange.EXTERNAL_REPRESENTATIONS.includes('vc-di-ecdsa-rdfc-2019@1')])
 const parsed = epcisSource.parseEpcisSource(new TextEncoder().encode(JSON.stringify({ '@context': ['https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld'], type: 'EPCISDocument', schemaVersion: '2.0', creationDate: '2026-09-06T00:00:00Z', epcisBody: { eventList: [] } })), { mediaType: 'application/json' })
 out.push(['vsc/epcis-source: parses an empty document', parsed.ok === true])
-out.push(['vsc: the pinned EPCIS schema is inside the installed package', existsSync(join('node_modules', '@bsv', 'vsc', 'artifacts', 'epcis', 'epcis-json-schema-2.0.1.json'))])
+out.push(['dpp-credentials: the pinned EPCIS schema is inside the installed package', existsSync(join('node_modules', '@bsv', 'dpp-credentials', 'artifacts', 'epcis', 'epcis-json-schema-2.0.1.json'))])
 console.log(JSON.stringify(out))
 `)
   const outcome = JSON.parse(run(['node', 'consumer.mjs'], dir).trim().split('\n').at(-1))
@@ -219,12 +219,12 @@ console.log(JSON.stringify(out))
   writeFileSync(join(dir, 'types.ts'), `
 import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, EvidencePackageManifest } from '@bsv/dpp-protocol'
 import { verifyChain } from '@bsv/dpp-protocol'
-import { DppTopicManager, type DppRecordStore, type EvidenceExportPart } from '@bsv/dpp-overlay-topics'
-import { startOverlayService, type OverlayHttpOptions } from '@bsv/dpp-overlay-topics/server'
+import { DppTopicManager, type DppRecordStore, type EvidenceExportPart } from '@bsv/dpp-overlay'
+import { startOverlayService, type OverlayHttpOptions } from '@bsv/dpp-overlay/server'
 import { readManifest, type ProfileManifest, type InteroperabilityProfileId } from '@bsv/dpp-profiles'
-import { verifySeal, type Seal } from '@bsv/vsc'
-import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/vsc/exchange'
-import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/vsc/epcis-source'
+import { verifySeal, type Seal } from '@bsv/dpp-credentials'
+import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
+import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
 import type { Transaction } from '@bsv/sdk'
 export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
 export const startHost: typeof startOverlayService = startOverlayService
@@ -250,7 +250,7 @@ export async function credentials(seal: Seal, bytes: Uint8Array, policy: Externa
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))
   try {
     run(['npx', 'tsc', '-p', 'tsconfig.json'], dir)
-    say(true, 'the declarations of @bsv/dpp-protocol, @bsv/dpp-overlay-topics, @bsv/dpp-profiles, @bsv/vsc, @bsv/vsc/exchange and @bsv/vsc/epcis-source resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
+    say(true, 'the declarations of @bsv/dpp-protocol, @bsv/dpp-overlay, @bsv/dpp-profiles, @bsv/dpp-credentials, @bsv/dpp-credentials/exchange and @bsv/dpp-credentials/epcis-source resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
   } catch (error) {
     say(false, `type-check failed: ${String(error.stdout ?? error.message).split('\n').slice(0, 8).join(' | ')}`)
   }

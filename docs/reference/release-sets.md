@@ -4,18 +4,18 @@ A release set is a declared combination of package versions, wire and contract v
 
 ## The current set
 
-| | `dpp-release-2026-10-8` |
+| | `dpp-release-2026-10-9` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-8.json`; its source revision is recorded when a publication plan binds it |
-| Status | Candidate. The renamed protocol package and changed consumers are not yet published |
-| Main packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-overlay-topics@0.4.0-beta.11`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/vsc@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
+| Declaration | `release/dpp-release-2026-10-9.json`; its source revision is recorded when a publication plan binds it |
+| Status | Candidate. The renamed packages are not yet published |
+| Main packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.11`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-credentials@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
 | Intended npm tag | `latest` when published; install exact versions and retain the lockfile |
 | Source revision | Recorded at publication |
 | Receipt | None for this candidate. The [beta.10 receipt](beta-10-publication.md) records the latest complete publication documented here |
-| Selection | `conformance/selections/dpp-release-2026-10-8.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
+| Selection | `conformance/selections/dpp-release-2026-10-9.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
 
-Compared with the superseded `dpp-release-2026-10-7`, this set renames the shared library to `@bsv/dpp-protocol` and updates the consuming packages. Both starters pin this set, and existing consumers must migrate their imports and schema paths. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
+Compared with the superseded `dpp-release-2026-10-8`, this set renames the index runtime to `@bsv/dpp-overlay` and the credentials package to `@bsv/dpp-credentials`, at the same versions; `dpp-release-2026-10-8` had renamed the shared library to `@bsv/dpp-protocol` and updates the consuming packages. Both starters pin this set, and existing consumers must migrate their imports and schema paths. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
 
 The preceding published set introduced record version 3, the token carrier: a seventeen-field body behind a BRC-162 token prefix, representing one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)). Versions 1 and 2 remain readable. It also added optional index discovery, advertising and retries ([federation](../operate/federation.md)), and the `single-operator@2` operator profile. Those changes remain part of this candidate; the package rename adds no wire-format change.
 
@@ -41,7 +41,7 @@ These steps check that the packages on npm are the bytes the approved plan names
 
    ```sh
    npm init -y
-   npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3
+   npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/dpp-credentials@0.2.0-beta.3
    npm audit signatures
    ```
 
@@ -50,7 +50,7 @@ These steps check that the packages on npm are the bytes the approved plan names
 2. **Compare each archive with the approved plan.** From the root of a checkout on `main`, print the registry's integrity for each package and the integrity the [approved plan](beta-4-publication-plan.json) recorded:
 
    ```sh
-   for p in @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3; do echo "$p $(npm view "$p" dist.integrity)"; done
+   for p in @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/dpp-credentials@0.2.0-beta.3; do echo "$p $(npm view "$p" dist.integrity)"; done
    node -e "for (const c of require('./docs/reference/beta-4-publication-plan.json').candidates) console.log(c.name + '@' + c.version, c.integrity)"
    ```
 

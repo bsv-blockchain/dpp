@@ -24,7 +24,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Hash, LockingScript, Utils } from '@bsv/sdk'
 import { canonicalBytes, canonicalString } from '@bsv/dpp-protocol'
-import { identityKeyFromDidKey, tryParseUoraAnchor, expectedLockingKey } from '@bsv/dpp-overlay-topics'
+import { identityKeyFromDidKey, tryParseUoraAnchor, expectedLockingKey } from '@bsv/dpp-overlay'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const file = process.argv[2] ?? join(here, '..', 'fixtures', 'anchor-v3.json')

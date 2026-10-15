@@ -26,7 +26,7 @@ describe('the exchange and operator profile catalogue', () => {
 
   it('records the owned VSC artefacts with the digests the VSC package publishes', () => {
     const vsc = readExchangeProfile('vsc-draft-compat@0.1.0') as { artefacts: Array<{ id: string; digest?: string }> }
-    const manifest = read('../vsc/artifacts/profile-0.1.0.json') as { artifactDigests: Record<string, string> }
+    const manifest = read('../dpp-credentials/artifacts/profile-0.1.0.json') as { artifactDigests: Record<string, string> }
     const digest = (id: string): string | undefined => vsc.artefacts.find((a) => a.id === id)?.digest
     expect(digest('owned-context')).toBe(manifest.artifactDigests['context-0.1.0.jsonld'])
     expect(digest('owned-seal-schema')).toBe(manifest.artifactDigests['seal-0.1.0.schema.json'])

@@ -21,7 +21,7 @@ For live writes, arrange access before configuring the writer. An index being pu
 
 For a new application, start with **[the application skeleton](../packages/build-an-application.md#start-with-an-application-skeleton)**. `@bsv/create-dpp-app` creates the app and declares its selected dependencies. For deployment, choose an existing index provider or a separate index project.
 
-For a new reference index, start with **[Create an index](../packages/create-dpp-index.md)**. `@bsv/create-dpp-index` creates your project and includes `@bsv/dpp-overlay-topics` as its runtime dependency. There is one setup path; you do not install the runtime separately. The starter guide identifies its current publication prerequisite.
+For a new reference index, start with **[Create an index](../packages/create-dpp-index.md)**. `@bsv/create-dpp-index` creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is one setup path; you do not install the runtime separately. The starter guide identifies its current publication prerequisite.
 
 If your app will use an existing compatible index, obtain its URL and access settings from the operator. You need neither index package just to connect over HTTP.
 
@@ -31,8 +31,8 @@ The reference libraries below are components for your code. An included dependen
 |---|---|---|
 | `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers | Your application uses these reference helpers |
 | `@bsv/dpp-profiles` | Product profile manifests, payload schemas and supported profile helpers | You use its product data or interoperability tooling |
-| `@bsv/dpp-overlay-topics` | Index runtime, topics and lookup services | Included by the index starter; install directly only for a custom or embedded index |
-| `@bsv/vsc` | Supported verifiable-credential and exchange features | Your selected feature uses those formats; native lifecycle claims do not require it |
+| `@bsv/dpp-overlay` | Index runtime, topics and lookup services | Included by the index starter; install directly only for a custom or embedded index |
+| `@bsv/dpp-credentials` | Supported verifiable-credential and exchange features | Your selected feature uses those formats; native lifecycle claims do not require it |
 
 Use the exact versions in [install the selected release](../packages/README.md). Declare `@bsv/sdk` directly if your code imports it. The reference runtime is Node.js 22 or later with ESM. Check the [supported entry points](../packages/support-table.md) before choosing a browser deployment; browser module support is not established merely because a package is JavaScript. Profile JSON/schema assets have their own packaging instructions.
 

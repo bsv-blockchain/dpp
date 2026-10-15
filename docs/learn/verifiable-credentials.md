@@ -12,12 +12,12 @@ A native lifecycle claim is a different format. Signing one does not produce a W
 
 ## What the packages support
 
-`@bsv/vsc` implements two credential representations. Each selects its own data model, proof suite and identity rules, and each has its own entry point.
+`@bsv/dpp-credentials` implements two credential representations. Each selects its own data model, proof suite and identity rules, and each has its own entry point.
 
 | Representation | What you can do | Entry point and functions | Ledger status |
 |---|---|---|---|
-| Verifiable Supply Chain (VSC) SEAL, profile `vsc-draft-compat/0.1.0` | Issue and verify, with `Ed25519Signature2020` or `bbs-2023` proofs | `@bsv/vsc`: `issueSealEd25519`, `issueSealBbs`, `verifySeal` | `tested`: rows `VSC-2-structure`, `VSC-3-proofs` |
-| External passport credential, profile `vc-di-ecdsa-rdfc-2019@1` | Verify only, with `ecdsa-rdfc-2019` proofs; this profile has no issuance API | `@bsv/vsc/exchange`: `verifyExternalCredential`, and `externalCredentialVerifierFor` to feed the passport report | `tested`: rows `EXTC-1-representation`, `EXTC-5-registry-intake` |
+| Verifiable Supply Chain (VSC) SEAL, profile `vsc-draft-compat/0.1.0` | Issue and verify, with `Ed25519Signature2020` or `bbs-2023` proofs | `@bsv/dpp-credentials`: `issueSealEd25519`, `issueSealBbs`, `verifySeal` | `tested`: rows `VSC-2-structure`, `VSC-3-proofs` |
+| External passport credential, profile `vc-di-ecdsa-rdfc-2019@1` | Verify only, with `ecdsa-rdfc-2019` proofs; this profile has no issuance API | `@bsv/dpp-credentials/exchange`: `verifyExternalCredential`, and `externalCredentialVerifierFor` to feed the passport report | `tested`: rows `EXTC-1-representation`, `EXTC-5-registry-intake` |
 
 The terms in that table:
 
@@ -26,7 +26,7 @@ The terms in that table:
 - **`bbs-2023`** is a BBS signature that lets a holder later present only some of the claims, through a derived proof bound to one presentation request. Proving that the presenter is the holder, and an HTTPS transport for presentations, are not implemented.
 - **`ecdsa-rdfc-2019`** is an ECDSA signature with a P-256 key over the credential's canonical form. The external profile uses it with VC Data Model 2.0 and `did:web` issuers.
 
-`verifyExternalCredential` comes from `@bsv/vsc/exchange`, not from the root entry point: importing it from `@bsv/vsc` gives `undefined`.
+`verifyExternalCredential` comes from `@bsv/dpp-credentials/exchange`, not from the root entry point: importing it from `@bsv/dpp-credentials` gives `undefined`.
 
 The ledger rows are in the [conformance ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json); [conformance and the ledger](../reference/conformance.md) explains how to read and check them.
 
@@ -35,8 +35,8 @@ The ledger rows are in the [conformance ledger](https://github.com/bsv-blockchai
 From the root of a checkout, after `npm ci` and `npm run build` ([quick start](../quick-start.md#get-the-code)):
 
 ```sh
-npm run test -w @bsv/vsc -- test/crypto.test.ts test/verification.test.ts
-npm run test -w @bsv/vsc -- test/exchange.test.ts test/exchange-vectors.test.ts
+npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts
+npm run test -w @bsv/dpp-credentials -- test/exchange.test.ts test/exchange-vectors.test.ts
 ```
 
 The first command exercises SEAL issuance, proof verification and the evidence checks, and ends `Tests  20 passed (20)`. The second exercises the external profile with valid, altered, expired, revoked and unsupported credentials, and ends `Tests  60 passed (60)`. The tests supply identity documents and status evidence locally, and the passes include refusals of deliberately invalid inputs. No wallet or funds are needed.
@@ -45,11 +45,11 @@ The first command exercises SEAL issuance, proof verification and the evidence c
 
 ## Connect an issuer or verifier
 
-1. Install the package at its exact version: `npm install --save-exact @bsv/vsc@0.2.0-beta.5`. It runs on Node 22 or later, server side only ([@bsv/vsc](../packages/vsc.md)).
-2. **To issue a SEAL**, prepare the event, the product subject, the issuer's DID document, a status entry and a signing key the DID document authorises for assertion. Call `issueSealEd25519` or `issueSealBbs` from `@bsv/vsc`. These suites use their own keys: your wallet's BSV key is not an interchangeable input. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/vsc/README.md#issuance-and-verification) shows the call with its document loader and policies.
-3. **To verify a SEAL**, call `verifySeal` from `@bsv/vsc` with the credential, a document loader for the contexts and the issuer's documents, the observation time, a status policy and an authority policy.
-4. **To verify an external credential**, keep the exact bytes you received and call `verifyExternalCredential` from `@bsv/vsc/exchange`. [External credential verification](../interoperability/external-credentials.md) has the complete call with its policy, and how to map the vector file onto it.
-5. **To show the result in a passport report**, pass the credential's exact bytes in the `externalCredentials` evidence of `verifyPassportEvidence`, and give its policy a `credentialVerifier` made with `externalCredentialVerifierFor` from `@bsv/vsc/exchange`.
+1. Install the package at its exact version: `npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5`. It runs on Node 22 or later, server side only ([@bsv/dpp-credentials](../packages/dpp-credentials.md)).
+2. **To issue a SEAL**, prepare the event, the product subject, the issuer's DID document, a status entry and a signing key the DID document authorises for assertion. Call `issueSealEd25519` or `issueSealBbs` from `@bsv/dpp-credentials`. These suites use their own keys: your wallet's BSV key is not an interchangeable input. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/README.md#issuance-and-verification) shows the call with its document loader and policies.
+3. **To verify a SEAL**, call `verifySeal` from `@bsv/dpp-credentials` with the credential, a document loader for the contexts and the issuer's documents, the observation time, a status policy and an authority policy.
+4. **To verify an external credential**, keep the exact bytes you received and call `verifyExternalCredential` from `@bsv/dpp-credentials/exchange`. [External credential verification](../interoperability/external-credentials.md) has the complete call with its policy, and how to map the vector file onto it.
+5. **To show the result in a passport report**, pass the credential's exact bytes in the `externalCredentials` evidence of `verifyPassportEvidence`, and give its policy a `credentialVerifier` made with `externalCredentialVerifierFor` from `@bsv/dpp-credentials/exchange`.
 
 Whichever you verify, take the expected product identifier from your own request, not from the credential, and read proof, issuer authority, subject binding, time and status as separate findings. Missing status or authority evidence leaves a finding `unknown` even when the proof verifies ([evidence and its limits](evidence-and-freshness.md)). If you anchor a credential, anchor the original secured bytes: a derived presentation or a reformatted copy is a different byte sequence and a different commitment.
 
@@ -73,5 +73,5 @@ The [VSC profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a
 | You are | Go to |
 |---|---|
 | Verifying a partner's credential | [External credential verification](../interoperability/external-credentials.md) |
-| Building with the packages | [@bsv/vsc](../packages/vsc.md), then [gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) to add credentials to a report |
+| Building with the packages | [@bsv/dpp-credentials](../packages/dpp-credentials.md), then [gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) to add credentials to a report |
 | Implementing a verifier yourself | [Attestation verifier](../implement/roles/attestation-verifier.md) |

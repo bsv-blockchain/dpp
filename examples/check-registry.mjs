@@ -31,7 +31,7 @@
 import { readFileSync } from 'node:fs'
 import { Hash, LockingScript, MerklePath, PushDrop, Signature, Transaction, Utils, WhatsOnChain } from '@bsv/sdk'
 import { inspectAttestationAnchor, verifyLifecycleClaim } from '@bsv/dpp-protocol'
-import { tryParseUoraAnchor } from '@bsv/dpp-overlay-topics'
+import { tryParseUoraAnchor } from '@bsv/dpp-overlay'
 
 const args = process.argv.slice(2)
 const option = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3)
@@ -224,7 +224,7 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
   }
 
   // 2. The claim's own signature. A native claim is checked with
-  // verifyLifecycleClaim; a SEAL credential needs @bsv/vsc.
+  // verifyLifecycleClaim; a SEAL credential needs @bsv/dpp-credentials.
   let claim = proof.attestation
   if (proof.representation === 'dpp-lifecycle-json-v1') {
     claim = JSON.parse(proof.securedBytes)
@@ -234,7 +234,7 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
   } else if (proof.representation === 'legacy-uora-json') {
     say('unknown', 'claim signature', 'not checked here: this example checks a legacy UORA record by its digest and its anchor')
   } else {
-    say('unknown', 'claim signature', `not checked here: ${proof.representation} needs its own verifier, such as @bsv/vsc for a SEAL credential`)
+    say('unknown', 'claim signature', `not checked here: ${proof.representation} needs its own verifier, such as @bsv/dpp-credentials for a SEAL credential`)
   }
   if (subject != null) {
     say(claim?.passportId === subject ? 'pass' : 'fail', 'subject', `the claim names ${claim?.passportId}${claim?.passportId === subject ? ', the passport asked about' : `, not ${subject}`}`)

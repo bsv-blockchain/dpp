@@ -2,7 +2,7 @@
 
 Scaffolded by `@bsv/create-dpp-app`. Brands issue product passports as records on the BSV blockchain, hand them on along the supply chain, and anyone verifies a passport from its label. The records follow the open DPP standard; this application is one way of building what the standard requires, and every opinion it takes is yours to change.
 
-The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-10-8` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
+The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-10-9` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
 
 ## What you have
 
@@ -126,7 +126,7 @@ Things this starter leaves to you, each a known path:
 - **A registry of your own.** Claims are sent to `REGISTRY_URL`; the hosted reference validates without credentials and stores with permission. Running your own is the registry role of the standard.
 - **Server-rendered passport pages.** The public page renders in the browser. If crawlers or no-JavaScript readers matter, serve a plain HTML view at the identifier route from the API.
 - **Self-custody.** Let a brand or a holder sign from their own BRC-100 wallet: implement a `Party` backed by a wallet connection in the browser, and let a transfer go to a key the holder's wallet derived.
-- **Credentials, EPCIS, federation.** The `@bsv/vsc` package, the interoperability profiles and a second index that synchronises with yours are all documented in the standard.
+- **Credentials, EPCIS, federation.** The `@bsv/dpp-credentials` package, the interoperability profiles and a second index that synchronises with yours are all documented in the standard.
 - **A wallet storage server.** For several API instances, replace the SQLite file with the toolbox client against a wallet storage server.
 
 ## Versions
