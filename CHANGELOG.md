@@ -8,9 +8,13 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Publication status
 
-The beta.8 core and profiles packages and the beta.10 overlay package, the first to read and write record version 3, were published under `latest` on 9 October 2026 ([receipt](docs/reference/beta-10-publication.md)). The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.6 packages were published under `latest` on 2 October 2026 ([receipt](docs/reference/beta-6-publication.md)), the beta.7 packages the same day ([receipt](docs/reference/beta-7-publication.md)), the beta.8 overlay package after them ([receipt](docs/reference/beta-8-publication.md)), and the beta.9 overlay package on 3 October 2026 ([receipt](docs/reference/beta-9-publication.md)).
+The renamed packages, protocol and profiles beta.9, overlay beta.12 and credentials beta.5, were published under `latest` on 16 October 2026 ([receipt](docs/reference/beta-11-publication.md)). The beta.8 core and profiles packages and the beta.10 overlay package, the first to read and write record version 3, were published under `latest` on 9 October 2026 ([receipt](docs/reference/beta-10-publication.md)). The beta.5 packages, the first under the Apache 2.0 licence, were published on 2 October 2026. The [publication receipt](docs/reference/beta-5-publication.md) identifies their exact source, approved plan and verification results, and the [beta.4 receipt](docs/reference/beta-4-publication.md) records the preceding publication. The dated repository history below also includes subsequent tooling and documentation work that is not part of those published archives. The beta.6 packages were published under `latest` on 2 October 2026 ([receipt](docs/reference/beta-6-publication.md)), the beta.7 packages the same day ([receipt](docs/reference/beta-7-publication.md)), the beta.8 overlay package after them ([receipt](docs/reference/beta-8-publication.md)), and the beta.9 overlay package on 3 October 2026 ([receipt](docs/reference/beta-9-publication.md)).
 
 ## Repository history
+
+### 2026-10-17, record the beta.11 publication
+
+- Record the publication of `dpp-release-2026-10-10` under `latest` on 16 October 2026: protocol and profiles beta.9 and credentials beta.5 by hand with the approved bytes, overlay beta.12 by the workflow with provenance ([receipt](docs/reference/beta-11-publication.md)). Archive the approved plan and point the release pages at the published set.
 
 ### 2026-10-17, overlay beta.12 after the first publication under the new names
 

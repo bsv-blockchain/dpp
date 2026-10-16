@@ -19,9 +19,8 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 
 | Fact | Value |
 |---|---|
-| Published set | `dpp-release-2026-10-7`, under `latest` since 9 and 10 October 2026: the protocol library as `@bsv/dpp-core@0.3.0-beta.8` (its name before the rename to `@bsv/dpp-protocol`), `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay@0.4.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` ([receipt](../reference/beta-10-publication.md)) |
-| Source candidate | `dpp-release-2026-10-10`, publication pending; [release status and receipts](../reference/release-sets.md) distinguish it from the earlier published packages |
-| Candidate packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` |
+| Published set | `dpp-release-2026-10-10`, under `latest` since 16 October 2026: `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` ([receipt](../reference/beta-11-publication.md)) |
+| Former names | `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/vsc` stay at their historical versions; the [migration guide](../migration.md) maps each to its new name |
 | Install | Use the [local candidate archives](../packages/README.md#use-the-renamed-source-candidate) until publication. Pin exact versions and retain the lockfile; do not infer publication from a source version or a dist-tag |
 | Runtime | Node.js 22 or later, ECMAScript modules |
 | Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |

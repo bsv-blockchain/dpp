@@ -1,0 +1,47 @@
+{
+  "releaseSet": "dpp-release-2026-10-10",
+  "releaseSetSha256": "e733985cdafb48d1f9acc19699fe003de128389cf727e58e769223f8d39b9b8f",
+  "sourceRevision": "0e45ac32da351c1e877431d55e2e9c0c41f54c33",
+  "sourceState": "committed",
+  "selection": "conformance/selections/dpp-release-2026-10-10.json",
+  "selectionSha256": "2cbc94bf41c8c4214efd7cd1a816a189984bfa4bc4e464ec5346652e505ed9d9",
+  "changelogSha256": "38f76d38a8006d58884a9d435d1c53261855c7aeeb85ec217714b2e728197d67",
+  "registry": "https://registry.npmjs.org/",
+  "access": "public",
+  "tag": "latest",
+  "provenance": true,
+  "candidates": [
+    {
+      "name": "@bsv/dpp-protocol",
+      "version": "0.3.0-beta.9",
+      "filename": "bsv-dpp-protocol-0.3.0-beta.9.tgz",
+      "sha256": "53bbb50b484b06461b79621e57941f5b9c65ff2a288626ee2122ffc84279f16f",
+      "integrity": "sha512-nsHKhlMdbh41bz3LbmzLEDZAJ1kjZ5inFZJvjO0mA8ulkVzBdkEKmh1FaXo/uHwlxCUaWPhvzEe18iPG1APmLQ==",
+      "size": 125726
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.9",
+      "filename": "bsv-dpp-profiles-0.3.0-beta.9.tgz",
+      "sha256": "81fc08b254544904a7f4c8873f37115676497da776449dbb5a01a09ba7da7ea6",
+      "integrity": "sha512-GB8fbf1B+zxV54cMIkdyqZ2RB4lMM5+AlQZp9ROdbtBJcU2Rt89qEvCBLJl1ZuoOGobunn8ofuoaQobYUKUZeQ==",
+      "size": 359044
+    },
+    {
+      "name": "@bsv/dpp-overlay",
+      "version": "0.4.0-beta.12",
+      "filename": "bsv-dpp-overlay-0.4.0-beta.12.tgz",
+      "sha256": "194dec081511d592d5a31f5f3cb6d09c7146241621be5e85f36217276da87629",
+      "integrity": "sha512-1qsw+ucJqrdXLcqmSx+0yJjlxnTECaOLk9ysDreZR0KqEl6tkceyzAeZwID7zudGukTIXB2Kx+B62gbowR6lFg==",
+      "size": 179698
+    },
+    {
+      "name": "@bsv/dpp-credentials",
+      "version": "0.2.0-beta.5",
+      "filename": "bsv-dpp-credentials-0.2.0-beta.5.tgz",
+      "sha256": "04718f23d44d6d15f2783661d44933dba2df70d8da1a804d37bd00a4258b5b16",
+      "integrity": "sha512-ZIMKfK0sW/Qhwm6lStl+IIuXneLvXctSTWJ752B/M5TmDbrwma4AxXrKYjiT1aUmaN7ppFPpwDucF0zwc3SYHg==",
+      "size": 101844
+    }
+  ]
+}

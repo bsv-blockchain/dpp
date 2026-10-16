@@ -40,7 +40,7 @@ For a published release, use the exact packages below and keep `@bsv/dpp-core` i
 
 ## Install from npm
 
-The latest complete publication with a receipt in this documentation is the earlier `dpp-release-2026-10-7`: overlay beta.10, core and profiles beta.8, and VSC beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.10 publication receipt](../reference/beta-10-publication.md).
+The latest complete publication with a receipt in this documentation is the current set, `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.11 publication receipt](../reference/beta-11-publication.md).
 
 A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with core:
 
