@@ -12,6 +12,10 @@ The beta.8 core and profiles packages and the beta.10 overlay package, the first
 
 ## Repository history
 
+### 2026-10-17, overlay beta.12 after the first publication under the new names
+
+- Prepare `dpp-release-2026-10-10`: overlay at `0.4.0-beta.12` from the same source as `dpp-release-2026-10-9`, beside the unchanged protocol and profiles `0.3.0-beta.9` and credentials `0.2.0-beta.5`. Those three were published under their new names on 16 October 2026 with the approved bytes; the overlay archive published as beta.11 differed from the approved bytes in one file mode, so beta.11 is deprecated and the approved bytes publish as beta.12. Both starters pin the new set.
+
 ### 2026-10-15, both starters as beta prereleases on latest
 
 - Version `@bsv/create-dpp-app` as `0.1.0-beta.1` and publish both starters under the `latest` tag, as the runtime packages are. The bare `npm create @bsv/dpp-app` and `npm create @bsv/dpp-index` commands then resolve without a version, and every package of the set carries the same beta convention until launch.

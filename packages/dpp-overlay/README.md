@@ -13,7 +13,7 @@ For a custom integration, install the runtime directly. If you used the starter,
 **Publication pending:** [install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this version. The following npm command applies after publication.
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.11
+npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.12
 ```
 
 This is a Node >=22 library for overlay operators and server integrations. Importing it does not start an HTTP service. Applications using a remote overlay do not need this package in their browser bundle. No repository checkout or package build is needed after installation.

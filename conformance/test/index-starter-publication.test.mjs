@@ -7,7 +7,7 @@ import { assertApproval, NPM_REGISTRY } from '../../scripts/lib/publication.mjs'
 import { checkIndexStarterRegistry, indexStarterPlan, starterRuntimePackages } from '../../scripts/lib/index-starter-publication.mjs'
 
 function fixture() {
-  const pins = { '@bsv/dpp-overlay': '0.4.0-beta.11', '@bsv/dpp-profiles': '0.3.0-beta.9', '@bsv/dpp-protocol': '0.3.0-beta.9' }
+  const pins = { '@bsv/dpp-overlay': '0.4.0-beta.12', '@bsv/dpp-profiles': '0.3.0-beta.9', '@bsv/dpp-protocol': '0.3.0-beta.9' }
   const manifest = { name: '@bsv/create-dpp-index', version: '0.1.0-beta.1', publishConfig: { access: 'public', registry: NPM_REGISTRY, tag: 'latest' }, dpp: { releaseSet: 'dpp-release-test', packages: pins } }
   const template = { dependencies: { '@bsv/dpp-overlay': pins['@bsv/dpp-overlay'] } }
   const set = { releaseSet: manifest.dpp.releaseSet, status: 'candidate', packages: Object.entries(pins).map(([name, version]) => ({ name, version })) }

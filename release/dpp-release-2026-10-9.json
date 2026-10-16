@@ -1,6 +1,6 @@
 {
   "releaseSet": "dpp-release-2026-10-9",
-  "status": "candidate",
+  "status": "superseded",
   "distTag": "latest",
   "description": "Experimental prerelease candidate that renames two packages: the index runtime @bsv/dpp-overlay-topics becomes @bsv/dpp-overlay at 0.4.0-beta.11, and the credentials package @bsv/vsc becomes @bsv/dpp-credentials at 0.2.0-beta.5. It keeps @bsv/dpp-protocol 0.3.0-beta.9, the name of the shared protocol library introduced by dpp-release-2026-10-8, and @bsv/dpp-profiles 0.3.0-beta.9. This set changes package names and dependencies only, with the same record versions, wire formats, custody rules, profiles and conformance claims as dpp-release-2026-10-8. None of the renamed packages is yet published. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
