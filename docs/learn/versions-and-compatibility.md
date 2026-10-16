@@ -4,7 +4,7 @@ Several parts of a DPP deployment carry their own version: the packages, the rec
 
 ## What carries a version
 
-A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current source candidate is `dpp-release-2026-10-10`, declared in `release/dpp-release-2026-10-10.json`; its overlay package is not yet published. The latest documented npm publication is the earlier `dpp-release-2026-10-7`, published on 9 and 10 October 2026; its [beta.10 receipt](../reference/beta-10-publication.md) preserves the approved plan and source revision. The table describes the candidate: each part's value, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The last column gives the exact spelling to check.
+A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current set is `dpp-release-2026-10-10`, declared in `release/dpp-release-2026-10-10.json` and published on 16 October 2026; its [beta.11 receipt](../reference/beta-11-publication.md) preserves the approved plan and source revision. The table describes the set: each part's value, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The last column gives the exact spelling to check.
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|

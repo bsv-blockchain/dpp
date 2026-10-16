@@ -1,6 +1,6 @@
 # Release history
 
-These earlier releases are retained for upgrades, verification and audit. For a new implementation, choose the [current source candidate](release-sets.md#the-current-set) or the [latest published set](beta-10-publication.md). Each archived receipt records the packages, source revision and verification steps for that publication.
+These earlier releases are retained for upgrades, verification and audit. For a new implementation, choose the [current set](release-sets.md#the-current-set), whose [beta.11 receipt](beta-11-publication.md) records its publication. Each archived receipt records the packages, source revision and verification steps for that publication.
 
 ## Earlier sets
 
@@ -8,8 +8,8 @@ Each earlier set is superseded, and each link opens its JSON at a recorded revis
 
 | Set | State | Receipt |
 |---|---|---|
-| [dpp-release-2026-10-9](https://github.com/bsv-blockchain/dpp/blob/ced766212d597deeac5e2ec1512924481cef2da6/release/dpp-release-2026-10-9.json) | Superseded by the source candidate; protocol and profiles beta.9 and credentials beta.5 were published under their new names on 16 October 2026 with the approved bytes, and overlay beta.11 was published with an archive that differed from the approved bytes in one file mode and is deprecated | |
-| [dpp-release-2026-10-7](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/release/dpp-release-2026-10-7.json) | Superseded by the source candidate; core and profiles beta.8 and overlay beta.10 were published under `latest` on 9 and 10 October 2026, with unchanged VSC beta.5 | [Beta.10 publication receipt](beta-10-publication.md) |
+| [dpp-release-2026-10-9](https://github.com/bsv-blockchain/dpp/blob/ced766212d597deeac5e2ec1512924481cef2da6/release/dpp-release-2026-10-9.json) | Superseded; its protocol and profiles beta.9 and credentials beta.5 packages were published under their new names on 16 October 2026 with the approved bytes and are the ones the current set names; its overlay beta.11 archive differed from the approved bytes in one file mode and no set names it | [Beta.11 publication receipt](beta-11-publication.md) |
+| [dpp-release-2026-10-7](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/release/dpp-release-2026-10-7.json) | Superseded; core and profiles beta.8 and overlay beta.10 were published under `latest` on 9 and 10 October 2026, with unchanged VSC beta.5, the last publication under the former names | [Beta.10 publication receipt](beta-10-publication.md) |
 | [dpp-release-2026-10-6](https://github.com/bsv-blockchain/dpp/blob/488baaefb5bda535e360fd1c1895124387408816/release/dpp-release-2026-10-6.json) | Superseded; its beta.9 overlay package was published under `latest` on 3 October 2026 beside beta.7 of core and profiles and beta.5 of VSC | [Beta.9 publication receipt](beta-9-publication.md) |
 | [dpp-release-2026-10-5](https://github.com/bsv-blockchain/dpp/blob/a8db9b6018c61d933596e21797ce2d67ddb5a33e/release/dpp-release-2026-10-5.json) | Superseded; its beta.8 overlay package was published under `latest` on 2 October 2026 beside beta.7 of core and profiles and beta.5 of VSC | [Beta.8 publication receipt](beta-8-publication.md) |
 | [dpp-release-2026-10-4](https://github.com/bsv-blockchain/dpp/blob/25fabf755090442b98c6714abfae54ec48fee029/release/dpp-release-2026-10-4.json) | Superseded; its beta.7 packages (VSC beta.5) were published under `latest` on 2 October 2026 | [Beta.7 publication receipt](beta-7-publication.md) |

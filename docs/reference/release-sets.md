@@ -6,13 +6,13 @@ A release set is a declared combination of package versions, wire and contract v
 
 | | `dpp-release-2026-10-10` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-10.json`; its source revision is recorded when a publication plan binds it |
-| Status | Candidate. Protocol, profiles and credentials are on npm at these versions under their new names since 16 October 2026; the overlay package at beta.12 is not yet published |
+| Declaration | `release/dpp-release-2026-10-10.json`, bound at source revision `0e45ac32da351c1e877431d55e2e9c0c41f54c33` |
+| Status | Published on 16 October 2026 under `latest` ([beta.11 receipt](beta-11-publication.md)) |
 | Main packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-credentials@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
-| Intended npm tag | `latest` when published; install exact versions and retain the lockfile |
-| Source revision | Recorded at publication |
-| Receipt | None for this candidate. The [beta.10 receipt](beta-10-publication.md) records the latest complete publication documented here |
+| npm tag | `latest`; install exact versions and retain the lockfile |
+| Source revision | `0e45ac32da351c1e877431d55e2e9c0c41f54c33` |
+| Receipt | [Beta.11 publication receipt](beta-11-publication.md), with the approved plan and verification results |
 | Selection | `conformance/selections/dpp-release-2026-10-10.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-9`, this set moves only the overlay package, to `0.4.0-beta.12`, from the same source: the archive published as `0.4.0-beta.11` on 16 October 2026 differed from its approved bytes in one file mode, so beta.11 is deprecated and the approved bytes publish as beta.12. The three other packages are the ones `dpp-release-2026-10-9` declared and published under their new names on 16 October 2026; `dpp-release-2026-10-9` had renamed the index runtime to `@bsv/dpp-overlay` and the credentials package to `@bsv/dpp-credentials`, and `dpp-release-2026-10-8` the shared library to `@bsv/dpp-protocol`. Both starters pin this set, and existing consumers must migrate their imports and schema paths. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
@@ -21,7 +21,7 @@ The preceding published set introduced record version 3, the token carrier: a se
 
 ## Use the current set
 
-1. [Build and install the local candidate archives](../packages/README.md#use-the-renamed-source-candidate). The overlay package at beta.12 is not yet on npm.
+1. Install the exact public versions, or [build and install the local candidate archives](../packages/README.md#use-the-renamed-source-candidate) to test unpublished source.
 2. Record package versions, source revision and lockfile alongside the configuration of each service you run or use.
 3. Review the [migration guide](../migration.md) before upgrading an existing deployment. Installing a new profile package does not activate a new writer profile ([updating applications](../profiles/updating-applications.md)).
 
@@ -29,9 +29,9 @@ These are experimental prereleases: APIs may change during testing. Package vers
 
 ## Verify a published release
 
-The latest documented npm publication is the earlier `dpp-release-2026-10-7`: core and profiles beta.8, overlay beta.10 and unchanged VSC beta.5, published under `latest` on 9 and 10 October 2026. Its [beta.10 receipt](beta-10-publication.md) records the approved source revision `1b7a922616f5943f884ec07a39e8b966ecc8a42d`, original release-set input, archive digests and verification results.
+The latest npm publication is the current set, `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5 under their new names, on `latest` since 16 October 2026. Its [beta.11 receipt](beta-11-publication.md) records the approved source revision `0e45ac32da351c1e877431d55e2e9c0c41f54c33`, original release-set input, archive digests and verification results.
 
-Follow that receipt's [verification steps](beta-10-publication.md#verification) to reproduce the published packages. The newer source candidate has no publication receipt yet.
+Follow that receipt's [verification steps](beta-11-publication.md#verification) to reproduce the published packages.
 
 The worked example below reproduces the historical beta.4 publication. Its package versions and source revision belong to that archived set.
 

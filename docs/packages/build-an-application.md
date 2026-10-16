@@ -51,7 +51,7 @@ These are prerequisites for the full live route, not for the offline dry run. Do
 
 Commands on this page use the packages the checkout links. In your own application, install these exact versions, so an upgrade is your choice:
 
-First [pack the source candidate](README.md#use-the-renamed-source-candidate). Replace `/absolute/path/to/dpp` with that checkout's path; the renamed packages are not yet published.
+First [pack the source candidate](README.md#use-the-renamed-source-candidate). Replace `/absolute/path/to/dpp` with that checkout's path; this exercises the source rather than the published versions.
 
 ```sh
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10

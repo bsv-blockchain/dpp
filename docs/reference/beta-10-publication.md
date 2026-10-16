@@ -1,3 +1,11 @@
+---
+hidden: true
+---
+
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
+
+The set is now superseded by a later one, which [release sets](release-sets.md) names; this receipt stays the record of what beta.10 published.
+
 # Beta.10 publication receipt
 
 The three packages that changed in `dpp-release-2026-10-7`, `@bsv/dpp-core@0.3.0-beta.8`, `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10`, were published to the public npm registry on **9 and 10 October 2026**, using GitHub OIDC trusted publishing with provenance, under the `latest` tag. The fourth, `@bsv/vsc@0.2.0-beta.5`, was already published, and its archive matched the approved bytes. With them a reader, a writer and an index handle record version 3, the token carrier, and an index finds peers through the overlay discovery protocols, advertises itself and declares `single-operator@2` when configured. Every downloaded archive matched the approved bytes. Publication took three runs of one approved plan: the first published the core package and stopped on its ten-minute wait for npm to expose the profiles package; four further runs stopped before publishing while the image registry the smoke step pulls its base image from was in a partial outage; the run that completed, dispatched on a branch pointing at the same source revision after the default branch had moved on, published the overlay package.

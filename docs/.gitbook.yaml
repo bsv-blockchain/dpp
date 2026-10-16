@@ -107,6 +107,7 @@ redirects:
   package-reference/application-service: packages/application-service.md
   package-reference/stack: stack.md
   releases-and-conformance/release-sets: reference/release-sets.md
+  releases-and-conformance/beta-10-publication: reference/beta-10-publication.md
   releases-and-conformance/beta-9-publication: reference/beta-9-publication.md
   releases-and-conformance/beta-8-publication: reference/beta-8-publication.md
   releases-and-conformance/beta-7-publication: reference/beta-7-publication.md
