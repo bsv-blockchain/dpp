@@ -6,7 +6,7 @@
 
 This reference is for custom integrations, embedded indexes and runtime configuration. An app that only connects to an existing index over HTTP needs its URL and access settings, without this hosting package.
 
-**Experimental prerelease:** `@bsv/dpp-overlay` 0.4.0-beta.11 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-overlay` 0.4.0-beta.12 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established. Version 0.4.0-beta.11 on npm is deprecated: its archive differed from the approved bytes in one file mode, and beta.12 publishes the same source with the approved bytes.
 
 ## Words on this page
 
@@ -36,7 +36,7 @@ Install directly only when your own code embeds or configures the runtime. A pro
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.11 @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
+npm install --save-exact @bsv/dpp-overlay@0.4.0-beta.12 @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10 @bsv/overlay@2.3.1
 ```
 
 The package depends on `@bsv/overlay` 2.3.1 already; install it by name because the examples import its `Engine`. A bare `npm install @bsv/dpp-overlay` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The [support table](support-table.md) lists versions and runtime dependencies.

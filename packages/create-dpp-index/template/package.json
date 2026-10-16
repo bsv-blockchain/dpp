@@ -14,6 +14,6 @@
     "down": "docker compose down",
     "logs": "docker compose logs -f index"
   },
-  "dependencies": { "@bsv/dpp-overlay": "0.4.0-beta.11" },
+  "dependencies": { "@bsv/dpp-overlay": "0.4.0-beta.12" },
   "overrides": { "@bsv/overlay": { "@bsv/sdk": "2.8.10" } }
 }

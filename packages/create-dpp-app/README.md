@@ -36,7 +36,7 @@ Every opinion is a file you can change. The standard itself prefers none of them
 
 ## Versions
 
-Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-10-9`: protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.11` and SDK `2.8.10`, matching the index starter. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
+Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-10-10`: protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12` and SDK `2.8.10`, matching the index starter. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
 
 ## Development
 

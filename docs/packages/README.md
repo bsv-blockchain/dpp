@@ -34,7 +34,7 @@ This builds the packages, packs their archives and tests them in a separate proj
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
 ```
 
-Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.11.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
+Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.12.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
 
 For a published release, use the exact packages below and keep `@bsv/dpp-core` in its imports. Those earlier versions do not provide the new package name. Change imports to `@bsv/dpp-protocol` when adopting the renamed candidate or its eventual published release.
 

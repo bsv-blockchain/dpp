@@ -2,7 +2,7 @@
 
 Scaffolded by `@bsv/create-dpp-app`. Brands issue product passports as records on the BSV blockchain, hand them on along the supply chain, and anyone verifies a passport from its label. The records follow the open DPP standard; this application is one way of building what the standard requires, and every opinion it takes is yours to change.
 
-The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-10-9` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
+The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-10-10` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
 
 ## What you have
 

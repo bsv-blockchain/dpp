@@ -1,6 +1,6 @@
 {
   "name": "@bsv/dpp-overlay",
-  "version": "0.4.0-beta.11",
+  "version": "0.4.0-beta.12",
   "description": "Experimental prerelease: DPP overlay index components, a supported HTTP host and dpp-index executable, with passport and attestation topics, persistent storage, evidence export and peer synchronisation",
   "license": "Apache-2.0",
   "type": "module",
