@@ -2,7 +2,7 @@
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
-The source candidate uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. Existing consumers must migrate their imports and schema paths; the active release uses only the new name. Publication of the renamed packages is pending; use the source route below to run this documentation's current examples. See [migration](../migration.md#rename-dpp-core-to-dpp-protocol) for existing applications.
+The published release uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. Existing consumers must migrate their imports and schema paths; the active release uses only the new name. The renamed packages are available from npm at the exact versions below; use the source route to test unpublished changes. See [migration](../migration.md#rename-dpp-core-to-dpp-protocol) for existing applications.
 
 Use [choose packages and services](../start/choose-components-and-services.md) to select your components. The [release status](../reference/release-sets.md) distinguishes the source candidate from published releases, and the [support table](support-table.md) describes the candidate's entry points.
 
@@ -16,7 +16,7 @@ Use [choose packages and services](../start/choose-components-and-services.md) t
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the starter |
 
-Both starters are source candidates pending publication. Their guides explain how to check them today. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
+Both starters are published at `0.1.0-beta.1`. Their guides explain how to create a project from npm or check a source candidate. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
 
 ## Use the renamed source candidate
 
@@ -36,29 +36,29 @@ npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protoc
 
 Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.12.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
 
-For a published release, use the exact packages below and keep `@bsv/dpp-core` in its imports. Those earlier versions do not provide the new package name. Change imports to `@bsv/dpp-protocol` when adopting the renamed candidate or its eventual published release.
+For the published release, use the exact packages below and change imports to the renamed packages. Existing installations pinned to earlier releases keep their original names and bytes.
 
 ## Install from npm
 
 The latest complete publication with a receipt in this documentation is the current set, `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.11 publication receipt](../reference/beta-11-publication.md).
 
-A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with core:
+A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with the protocol library:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.8
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9
 ```
 
 | Add when needed | Exact package | Purpose |
 |---|---|---|
-| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.8` | Profile manifests, payload schemas and supported projection/discovery helpers |
+| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.9` | Profile manifests, payload schemas and supported projection/discovery helpers |
 | Your code imports wallet or transaction APIs | `@bsv/sdk@2.8.10` | Declare direct imports as direct dependencies |
 | Your selected credential or exchange feature uses VSC | `@bsv/dpp-credentials@0.2.0-beta.5` | Supported credential/exchange formats; not needed just to sign a native lifecycle claim |
-| You embed index components in your own code | `@bsv/dpp-overlay@0.4.0-beta.10` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
+| You embed index components in your own code | `@bsv/dpp-overlay@0.4.0-beta.12` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
 
 For a published installation using the protocol helpers, profiles and the SDK:
 
 ```sh
-npm install --save-exact @bsv/dpp-core@0.3.0-beta.8 @bsv/dpp-profiles@0.3.0-beta.8 @bsv/sdk@2.8.10
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/dpp-profiles@0.3.0-beta.9 @bsv/sdk@2.8.10
 ```
 
 A hosted writer's wallet toolbox must accept that SDK version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. All four DPP packages use ECMAScript modules. Releases publish to the `latest` tag until version 1.0; exact versions and the consumer lockfile define the tested installation. An [independent implementation](../implement/README.md) need not use any of these packages.

@@ -15,7 +15,7 @@ npm ci
 npm run build
 ```
 
-These commands detach the current source checkout and print its exact revision. Keep that revision with your lockfile and test results so you can reproduce the run. The examples use the packages that checkout builds, including the candidate rename to `@bsv/dpp-protocol`; the new name is not yet published to npm. Use [source access](packages/README.md#source-access) for a published release's recorded revision. A `Cannot find module` error means the build did not finish: run `npm run build` again and read its first error.
+These commands detach the current source checkout and print its exact revision. Keep that revision with your lockfile and test results so you can reproduce the run. The examples use the packages that checkout builds, under the published names `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay` and `@bsv/dpp-credentials`. Use [source access](packages/README.md#source-access) for a published release's recorded revision. A `Cannot find module` error means the build did not finish: run `npm run build` again and read its first error.
 
 **How to read the output.** Every check prints one sentence. A line starting `ok:` or `Holds:` is a check that held, including where a deliberately broken input is refused, as it should be. A line starting `FAIL:` or `FAILS:` means something is wrong, and the command then exits with a non-zero status.
 

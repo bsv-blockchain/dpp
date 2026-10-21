@@ -23,9 +23,9 @@ To migrate, replace the package names in your dependencies and imports: `@bsv/dp
 
 ## Rename dpp-core to dpp-protocol
 
-The candidate `dpp-release-2026-10-8` introduces `@bsv/dpp-protocol@0.3.0-beta.9` as the name of the shared protocol library. The name reflects its passport tokens, custody rules, native lifecycle claims, anchors and evidence verification. Its implementation moved to `packages/dpp-protocol`.
+The candidate `dpp-release-2026-10-8` introduced `@bsv/dpp-protocol@0.3.0-beta.9` as the name of the shared protocol library, and `dpp-release-2026-10-10` published it on 16 October 2026 ([receipt](reference/beta-11-publication.md)). The name reflects its passport tokens, custody rules, native lifecycle claims, anchors and evidence verification. Its implementation moved to `packages/dpp-protocol`.
 
-**Publication is pending.** Use the [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test the transition. Earlier published `@bsv/dpp-core` versions keep their original names and bytes, and installations pinned to them continue using those versions.
+Install the published version from npm, or use the [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test unpublished source. Earlier published `@bsv/dpp-core` versions keep their original names and bytes, and installations pinned to them continue using those versions.
 
 This is a breaking package rename: the active release contains only `@bsv/dpp-protocol`, with no compatibility wrapper. Both the application and index starters use the renamed release set. Upgrading an existing generated application requires the same dependency and import changes as any other consumer; generating a new project does not update existing projects.
 

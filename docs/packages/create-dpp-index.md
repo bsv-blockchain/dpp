@@ -14,7 +14,7 @@ If your app uses an existing compatible index, obtain its URL and access setting
 
 ## Create your project
 
-**Publication pending.** This starter and its pinned runtime are source candidates. The command below applies after their publication. From the current reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing anything. Maintainers publish the runtime first, then the starter; the release workflow checks the public npm setup separately before a release is announced.
+The starter is published at `0.1.0-beta.1` and pins the published index runtime `@bsv/dpp-overlay@0.4.0-beta.12`. The command below installs from npm. From the current reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing anything. Maintainers publish the runtime first, then the starter; the release workflow checks the public npm setup separately before a release is announced.
 
 ```sh
 npm create @bsv/dpp-index@0.1.0-beta.1 my-index

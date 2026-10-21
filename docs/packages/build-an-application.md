@@ -8,7 +8,13 @@ For a complete production platform, first make [your platform brief](../start/pl
 
 `@bsv/create-dpp-app` creates an editable application with React and Vite, an Express API, MongoDB configuration and Better Auth. It includes passport workflows and an offline lifecycle exercise. Follow the generated README from the first run through deployment, then use the rest of this guide when customising the writer or integrating the libraries into existing code.
 
-The starter is a source candidate pending publication. To try it now, run these commands from the DPP repository root with Node 22 or later, choosing a new directory for the app:
+With Node 22 or later, create an application from the published starter:
+
+```sh
+npm create @bsv/dpp-app@0.1.0-beta.1 my-app
+```
+
+This installs the generated application's dependencies from npm. Follow its README for development and deployment. To test a source candidate instead, run these commands from the DPP repository root, choosing a new directory for the app:
 
 ```sh
 npm ci
@@ -16,9 +22,7 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-10-10`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test before publication and do not establish that the public npm command works.
-
-After the runtime and starter are published, `npm create @bsv/dpp-app@0.1.0-beta.1 my-app` creates the same application and installs its dependencies from npm. Follow the generated README for development and deployment.
+This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-10-10`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test unpublished source changes independently of the public npm command.
 
 For deployment, connect to an existing compatible index or create a separate project with [the index starter](create-dpp-index.md). The app's Compose file starts its application database. The index starter includes its own maintained runtime, so there is no additional overlay installation step. A successful offline exercise does not establish readiness for production; complete the generated guide and [production checks](../operate/production-readiness.md).
 
