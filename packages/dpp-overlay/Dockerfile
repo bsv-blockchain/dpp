@@ -12,13 +12,14 @@
 
 # The base image is a build argument so the same Docker Official Image can
 # come from a mirror: the repository workflows pass the Amazon ECR Public
-# mirror (public.ecr.aws/docker/library/node:22-slim), which serves the same
+# mirror (public.ecr.aws/docker/library/node:22.23.4-slim), which serves the same
 # manifest digests as Docker Hub, so a Docker Hub rate limit or outage cannot
 # block a release gate. The default below keeps platform and local builds
 # exactly as before.
-ARG BASE_IMAGE=node:22-slim
+ARG BASE_IMAGE=node:22.23.4-slim
 
 FROM ${BASE_IMAGE} AS build
+RUN test "$(node --version)" = "v22.23.4"
 WORKDIR /repo
 
 # Manifests first, so a dependency change is the only thing that busts the
@@ -40,6 +41,7 @@ COPY packages ./packages
 RUN npm run build -w @bsv/dpp-protocol -w @bsv/dpp-profiles -w @bsv/dpp-overlay
 
 FROM ${BASE_IMAGE}
+RUN test "$(node --version)" = "v22.23.4"
 WORKDIR /repo
 ENV NODE_ENV=production
 
