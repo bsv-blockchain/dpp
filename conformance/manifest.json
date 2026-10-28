@@ -490,7 +490,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "d4cf41043b40af9ff5fe8a514954930c3b956682703624eb1155501293f5e896"
+      "digest": "b234a5a6bbbbc3cd409a8866e2d094e7bb30987cfcbddb1e5cb67c517afc63fc"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -4322,7 +4322,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-08",
+      "reviewedAt": "2026-10-28",
       "reviewOwner": "dpp maintainers",
       "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands."
     },

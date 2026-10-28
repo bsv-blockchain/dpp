@@ -30,7 +30,7 @@ The archived plan includes each archive's SHA-256, SHA-512 npm integrity and byt
 
 Publishing sets one tag, so `next` stays where it was. Until version 1.0 every release publishes to `latest`; from 1.0, `latest` carries stable releases only and prereleases publish to `next`. Pin exact versions and retain the consuming application's lockfile.
 
-The former names stay on npm at their historical versions: `@bsv/dpp-core` up to `0.3.0-beta.8`, `@bsv/dpp-overlay-topics` up to `0.4.0-beta.10` and `@bsv/vsc` at `0.2.0-beta.5`. The [migration guide](../migration.md) maps each to its new name. A deprecation notice on the former names, on `@bsv/dpp-overlay@0.4.0-beta.11` and on the `0.0.0-stage` placeholder versions that the manual publication created on the three renamed packages is pending; none of those versions is named by any release set.
+The former names stay on npm at their historical versions: `@bsv/dpp-core` up to `0.3.0-beta.8`, `@bsv/dpp-overlay-topics` up to `0.4.0-beta.10` and `@bsv/vsc` at `0.2.0-beta.5`. The [migration guide](../migration.md) maps each to its new name. As verified against npm on 21 October 2026, the former names carry rename notices, `@bsv/dpp-overlay@0.4.0-beta.11` directs consumers to beta.12, and the `0.0.0-stage` placeholder versions on the three renamed packages carry placeholder notices. Neither overlay beta.11 nor the placeholder versions is named by a release set.
 
 ## Verification
 
