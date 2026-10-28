@@ -17,10 +17,10 @@ jobs:
   packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: npm run build
@@ -55,10 +55,10 @@ jobs:
   consumer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: node scripts/release-candidates.mjs
@@ -71,12 +71,12 @@ jobs:
   image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # The base image comes from the Docker Official Images mirror on Amazon
       # ECR Public, which serves the same digests as Docker Hub, so a Docker
       # Hub rate limit or outage cannot fail this job; the Dockerfile default
-      # stays node:22-slim for platform and local builds.
-      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-slim -f packages/dpp-overlay/Dockerfile -t dpp-overlay:ci .
+      # stays node:22.23.4-slim for platform and local builds.
+      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22.23.4-slim -f packages/dpp-overlay/Dockerfile -t dpp-overlay:ci .
       # A versioned smoke of the image: it boots on configuration alone,
       # answers /health and names its capabilities.
       - run: |
@@ -98,10 +98,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [22, 24]
+        node: ['22.23.4', '24.22.1']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -114,17 +114,17 @@ jobs:
   starter-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: npm run build
       - run: npm run starter:check -- --prepare-only --directory /tmp/my-dpp
       # The base image comes from the same Amazon ECR Public mirror as the
       # overlay image above, so a Docker Hub rate limit cannot fail this job.
-      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim -f /tmp/my-dpp/.candidate.Dockerfile -t my-dpp /tmp/my-dpp
+      - run: docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22.23.4-bookworm-slim -f /tmp/my-dpp/.candidate.Dockerfile -t my-dpp /tmp/my-dpp
       - run: |
           set -euo pipefail
           docker run -d --name app -p 3000:3000 -e MONGO_URL=mongodb://127.0.0.1:1 -e PASSPORT_HOST=localhost:3000 my-dpp

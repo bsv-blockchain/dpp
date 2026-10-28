@@ -37,10 +37,10 @@ jobs:
       PROVENANCE: ${{ inputs.provenance }}
       GITHUB_REPOSITORY_VISIBILITY: ${{ github.event.repository.visibility }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           registry-url: https://registry.npmjs.org
       - run: npm install --global npm@11.19.0
       - name: Validate publication inputs
@@ -89,7 +89,7 @@ jobs:
       - name: Build and smoke the operator image locally
         run: |
           set -euo pipefail
-          docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-slim -f packages/dpp-overlay/Dockerfile -t dpp-overlay:release-check .
+          docker build --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22.23.4-slim -f packages/dpp-overlay/Dockerfile -t dpp-overlay:release-check .
           trap 'docker rm -f smoke >/dev/null 2>&1 || true' EXIT
           docker run -d --name smoke -p 18080:8080 \
             -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
