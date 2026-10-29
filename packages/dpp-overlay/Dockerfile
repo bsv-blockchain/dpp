@@ -11,11 +11,11 @@
 # .env files out of the context.
 
 # The base image is a build argument so the same Docker Official Image can
-# come from a mirror: the repository workflows pass the Amazon ECR Public
-# mirror (public.ecr.aws/docker/library/node:22-slim), which serves the same
-# manifest digests as Docker Hub, so a Docker Hub rate limit or outage cannot
-# block a release gate. The default below keeps platform and local builds
-# exactly as before.
+# come from a mirror: the repository workflows take it from the first of
+# Google's Docker Hub mirror (mirror.gcr.io), Amazon ECR Public or Docker Hub
+# that serves it. All three serve the same manifest digests, so one
+# registry's pull limit or outage cannot block a release gate. The default
+# below keeps platform and local builds exactly as before.
 ARG BASE_IMAGE=node:22-slim
 
 FROM ${BASE_IMAGE} AS build
