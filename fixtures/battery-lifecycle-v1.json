@@ -954,6 +954,12 @@
         "status": "unknown",
         "reasonCode": "schema-unavailable",
         "evidenceRefs": [
+          "8b62f89ce02185d7505248c3ab9ec8151757bc23c406e0abe1948f87a2650015:0",
+          "22281ca7a28f86c3db73e16cac4559f928d7e072626e7387a649f9fefe6a14b6:0",
+          "78be7f3693c7a6e45ac19b8000111eac2b8c4f93658b075edae6b90d3e15a722:0",
+          "252ad06e0ddddd3aefcee92ba2a0fa30e545a882b0a60cd71032077f091090f3:0",
+          "39fc2dd5c8aa70047de1804ae596e9fb6dc5087526281daa305d820298c85a3c:0",
+          "957497021da4900a355c0d8f405a2b032e809fd461b9e2446fd0fa1f0db7afd2:0",
           "sha256:0e9601d65d182a5e29a10208fc4b675baf171aa9542371429e3b5dd6d35a9c9b",
           "sha256:c1992f7add3e8919f930360cbccb80f4a12ee60a1e39d2b12a4f58498a457c7f",
           "sha256:dc6465594dc5baac3b8b5002b03d4bdb9c7298058d055e22cd6ef04d755f397e",
@@ -962,6 +968,12 @@
           "sha256:4f2aa2ec3e67ef9b3d82898e6b85f9f141fbc6ab2c01a7167ef909b1dae1422f"
         ],
         "detail": [
+          "battery@2",
+          "battery@2",
+          "battery@2",
+          "battery@2",
+          "battery@2",
+          "battery@2",
           "battery@2",
           "battery@2",
           "battery@2",

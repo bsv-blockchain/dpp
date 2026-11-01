@@ -18,7 +18,7 @@ The standard is a working draft before version 1.0. Its beta.7 packages, under t
 
 - nothing tells a reader which index or registry holds a publisher's records;
 - a later proof does not follow synchronisation;
-- the report does not check a payload against its profile;
+- the report checks a payload against its profile only when the caller supplies the profiles package's validator;
 - identity assurance is Ring 0: nobody checks a brand's legal identity.
 
 ## Conformance evidence

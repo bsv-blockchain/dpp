@@ -170,7 +170,7 @@ latest state observed
 
 Both `unknown` checks are expected for this passport:
 
-- `schema`: the policy gives no `profileValidator`. A native claim names a profile but carries no product data, so there is nothing yet for one to check.
+- `schema`: the policy gives no `payloadValidator` and no `profileValidator`. A token state's payload is checked only through the former, and the fixture payloads declare no profile, so the check reads `unknown` with `profile-undeclared`.
 - `evidenceAvailability`: the passport's `TRANSFER` commits to a managed acceptance record that only the custodian keeps, and no index or registry route serves it yet.
 
 If `inclusion` reads `unknown` with `header-source-unavailable`, WhatsOnChain limited the header checks: run it again or set `WOC_API_KEY`. If the first lookup throws `the index holds nothing`, the index does not hold that passport; check the identifier character for character.
@@ -226,6 +226,7 @@ Set `passportId` to the identifier you were asked about, from the scan, label or
 | `managedAcceptance` | `{ required: true }` demands an acceptance commitment on every version 2 `TRANSFER` | `linkage`; fails with `acceptance-commitment-absent` for a transfer without one |
 | `ownerConsent`, `controlAuthorities` | The owner-signed transfer for version 1 states, and the identity keys whose version 2 `UPDATE`, `TRANSFER` or `RETIRE` passes without a control proof, such as a recovery authority | `linkage` |
 | `credentialVerifier` | Verifies an external credential's exact bytes and its status, such as `externalCredentialVerifierFor(policy)` from `@bsv/dpp-credentials/exchange` ([external credentials](../interoperability/external-credentials.md)) | `externalCredentialProof` and each credential's part of `schema`, `credentialTime`, `credentialStatus` and `issuerAuthority`, which read `unknown` with `verifier-not-supplied` without it |
+| `payloadValidator` | Checks a token state's `payload_public` against the profile it declares; `profilePayloadValidator()` from `@bsv/dpp-profiles` is one | `schema` for token states |
 | `profileValidator` | Checks a native claim against its declared profile | `schema` for native claims |
 | `policyId` | A name for this policy | `report.policyId` |
 | `checkedAt` | The report's time, for a reproducible report; defaults to now | The observation time, and the instant credential validity is judged at |
@@ -306,7 +307,7 @@ console.log(schema.$id)
 
 ## Limits
 
-- The report does not check a state's `payload_public`, the product data it carries on chain, against its declared profile. Check it with [the profiles package](dpp-profiles.md#check-a-payload-against-its-profile), or in a checkout with `node examples/sample-payload.mjs --check <profile@version> <file>`.
+- The report checks a state's `payload_public`, the product data it carries on chain, against its declared profile only through the `payloadValidator` the policy supplies; this package holds no profile schema. Pass `profilePayloadValidator()` from [the profiles package](dpp-profiles.md#check-a-payload-against-its-profile). Without it `schema` reads `unknown` with `schema-unavailable`, and a payload that declares no `profile` and `profile_version` reads `unknown` with `profile-undeclared` either way.
 - Registries do not exchange claims, and no passport state, anchor or capability document names the registry that holds a claim. Learn it from the passport's publisher ([the registry guide](../implement/roles/registry.md#the-minimum-a-registry-serves)).
 - Identity is at Ring 0: a key identifies a party, and only the platform account vouches for who holds it. Nothing yet binds a key to a legal entity or certifies a party's role ([identity and authority](../learn/identity-and-authority.md)).
 

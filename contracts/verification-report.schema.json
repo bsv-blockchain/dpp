@@ -201,6 +201,7 @@
         "authority-unavailable",
         "schema-invalid",
         "schema-unavailable",
+        "profile-undeclared",
         "not-yet-valid",
         "expired",
         "time-invalid",

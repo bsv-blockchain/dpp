@@ -24,7 +24,7 @@ import {
   type SignedLifecycleClaim,
 } from '@bsv/dpp-protocol'
 import { idKey, makeData, makerPriv, makerWallet, owner1Priv, owner1Wallet, owner2Priv, owner2Wallet, owner3Priv, owner3Wallet, serverPriv, signedState, stateTx } from '../../dpp-protocol/test/helpers.js'
-import { buildGs1DigitalLink, gs1CheckDigit, isDemonstrationGtin, mapNativeOperation, parseGs1DigitalLink, readManifest, readPublicPayloadSchema, type LifecycleEvidence, type MappingResult, type NativeOperation } from '../src/index.js'
+import { profilePayloadValidator, buildGs1DigitalLink, gs1CheckDigit, isDemonstrationGtin, mapNativeOperation, parseGs1DigitalLink, readManifest, readPublicPayloadSchema, type LifecycleEvidence, type MappingResult, type NativeOperation } from '../src/index.js'
 
 const FIXTURE_PATH = new URL('../../../fixtures/battery-lifecycle-v1.json', import.meta.url)
 const CHECKED_AT = '2036-06-02T12:00:00Z'
@@ -212,7 +212,7 @@ export async function buildBatteryLifecycle(): Promise<Record<string, unknown>> 
   const report = await verifyPassportEvidence(
     { tokenHistory: txs, nativeClaims: states.map((s) => s.claim) },
     { passportId: PASSPORT_ID, source: 'request-context' },
-    { publisherKeys: [idKey(serverPriv)], chainTracker: 'scripts only', checkedAt: CHECKED_AT }
+    { publisherKeys: [idKey(serverPriv)], chainTracker: 'scripts only', checkedAt: CHECKED_AT, payloadValidator: profilePayloadValidator() }
   )
 
   return {

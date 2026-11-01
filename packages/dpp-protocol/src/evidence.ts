@@ -146,6 +146,20 @@ export interface PassportEvidence {
   acceptanceRecords?: unknown[]
 }
 
+/** A token state's public payload with the profile it declares, as handed to `EvidencePolicy.payloadValidator`. */
+export interface DeclaredPayload {
+  /** The `profile` stamp of the payload. */
+  profile: string
+  /** The `profile_version` stamp of the payload. */
+  profileVersion: number
+  /** The exact `payload_public` string of the state. */
+  payloadPublic: string
+  /** The state's outpoint as `txid:outputIndex`. */
+  ref: string
+  /** The state's position in the supplied history, genesis first. */
+  stateIndex: number
+}
+
 /** A check's answer from a pluggable verifier, before the report names and orders it. */
 export interface PartialCheck {
   status: CheckStatus
@@ -246,12 +260,34 @@ export interface EvidencePolicy {
   credentialVerifier?: ExternalCredentialVerifier
   /** Validates a native claim's payload against its declared profile and version; absent means `schema` is unknown for native claims. */
   profileValidator?: (claim: SignedLifecycleClaim) => Promise<PartialCheck>
+  /**
+   * Validates a token state's `payload_public` against the schema the
+   * profile and version it declares select (`spec/verification.md` §4,
+   * `schema`; `spec/profiles.md` §3). The core is dependency-light and
+   * holds no profile schema, so the caller supplies the validator, and
+   * `profilePayloadValidator` in `@bsv/dpp-profiles` is one. Absent, every
+   * state that declares a profile answers `unknown` with
+   * `schema-unavailable`; a state whose payload declares no profile answers
+   * `unknown` with `profile-undeclared` either way, because no schema is
+   * selected for it.
+   */
+  payloadValidator?: (payload: DeclaredPayload) => Promise<PartialCheck>
   observers?: LatestStateObserver[]
   /** The observation time, injected for reproducibility. Defaults to now. */
   checkedAt?: string
 }
 
 const outpointRef = (o: Outpoint): string => `${o.txid}:${o.outputIndex}`
+
+/** The `profile` and `profile_version` stamps a public payload declares (`spec/profiles.md` §3), or null when it declares none or declares them malformed. */
+function declaredProfile(payloadPublic: string): { profile: string; profileVersion: number } | null {
+  let parsed: unknown
+  try { parsed = JSON.parse(payloadPublic) } catch { return null }
+  if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+  const { profile, profile_version: version } = parsed as Record<string, unknown>
+  if (typeof profile !== 'string' || profile.length === 0 || !Number.isSafeInteger(version) || (version as number) < 1) return null
+  return { profile, profileVersion: version as number }
+}
 const digestRef = (hex: string): string => `sha256:${hex}`
 const sameOutpoint = (a: Outpoint, b: Outpoint): boolean => a.txid === b.txid && a.outputIndex === b.outputIndex
 
@@ -852,8 +888,24 @@ export async function verifyPassportEvidence(
     issuerAuthority = combine('issuerAuthority', parts, check('issuerAuthority', 'unknown', 'no-evidence', authorityRefs))
   }
 
-  // Schema, time and status, across native claims and external credentials.
+  // Schema, across token payloads, native claims and external credentials.
+  // A state's payload selects its schema by the profile it declares; one
+  // that declares none selects nothing, which is unknown and never a pass.
   const schemaParts: PartialCheck[] = []
+  for (const s of token.inspection?.states ?? []) {
+    const ref = outpointRef({ txid: s.txid, outputIndex: s.outputIndex })
+    const declared = declaredProfile(s.state.payloadPublic)
+    if (declared == null) {
+      schemaParts.push({ status: 'unknown', reasonCode: 'profile-undeclared', evidenceRefs: [ref], detail: `state ${s.index} declares no profile in its public payload` })
+      continue
+    }
+    const payload: DeclaredPayload = { ...declared, payloadPublic: s.state.payloadPublic, ref, stateIndex: s.index }
+    if (policy.payloadValidator == null) {
+      schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [ref], detail: `${declared.profile}@${declared.profileVersion}` })
+      continue
+    }
+    try { schemaParts.push({ ...(await policy.payloadValidator(payload)), evidenceRefs: [ref] }) } catch (cause) { schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [ref], detail: cause instanceof Error ? cause.message : String(cause) }) }
+  }
   for (const c of native.claims) {
     if (policy.profileValidator == null) schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [c.ref], detail: `${c.claim.profile}@${c.claim.profile_version}` })
     else {
