@@ -19,7 +19,7 @@ For live writes, arrange access before configuring the writer. An index being pu
 
 ## Pick only the packages your task uses
 
-For a new application, start with **[the application skeleton](../packages/build-an-application.md#start-with-an-application-skeleton)**. `@bsv/create-dpp-app` creates the app and declares its selected dependencies. For deployment, choose an existing index provider or a separate index project.
+For a new application, start with **[the application starter](../packages/create-dpp-app.md)**. `@bsv/create-dpp-app` creates the app and declares its selected dependencies. For deployment, choose an existing index provider or a separate index project.
 
 For a new reference index, start with **[Create an index](../packages/create-dpp-index.md)**. `@bsv/create-dpp-index` creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is one setup path; you do not install the runtime separately. The starter guide identifies its current publication prerequisite.
 

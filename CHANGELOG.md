@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-01, a page for the application starter
+
+- Add `docs/packages/create-dpp-app.md`, the application starter's page beside the index starter's, and point the application guide, the packages overview and the component chooser at it. Drop `@bsv/dpp-core` from the pins listed in the profile publication steps; the package left the workspace in the rename.
+
 ### 2026-10-29, the token id is a direct push
 
 - Refuse a carried token id pushed with `PUSHDATA1`, `PUSHDATA2` or `PUSHDATA4` (`the token id is a direct 32-byte push`); the reader previously accepted those bytes as the id where the token protocol reads no token id. Move the BRC-162 pin in `spec/token-carrier.md` from `8268c20` to `5362fed`, the revision that states the rule. `fixtures/record-v3.json` and `fixtures/vectors/dpp/record/v3.json` gain the refusal `tokenIdNonMinimalPush`; every pinned script was re-checked against the token protocol's published reference codec.

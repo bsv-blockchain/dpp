@@ -6,7 +6,7 @@ For a complete production platform, first make [your platform brief](../start/pl
 
 ## Start with an application skeleton
 
-`@bsv/create-dpp-app` creates an editable application with React and Vite, an Express API, MongoDB configuration and Better Auth. It includes passport workflows and an offline lifecycle exercise. Follow the generated README from the first run through deployment, then use the rest of this guide when customising the writer or integrating the libraries into existing code.
+`@bsv/create-dpp-app` creates an editable application with React and Vite, an Express API, MongoDB configuration and Better Auth. It includes passport workflows and an offline lifecycle exercise; [create an application](create-dpp-app.md) describes the starter. Follow the generated README from the first run through deployment, then use the rest of this guide when customising the writer or integrating the libraries into existing code.
 
 With Node 22 or later, create an application from the published starter:
 
