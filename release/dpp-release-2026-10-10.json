@@ -1,6 +1,6 @@
 {
   "releaseSet": "dpp-release-2026-10-10",
-  "status": "candidate",
+  "status": "superseded",
   "distTag": "latest",
   "description": "Experimental prerelease candidate that moves the index runtime @bsv/dpp-overlay to 0.4.0-beta.12 and keeps @bsv/dpp-protocol 0.3.0-beta.9, @bsv/dpp-profiles 0.3.0-beta.9 and @bsv/dpp-credentials 0.2.0-beta.5, the versions of dpp-release-2026-10-9 published under their new names on 16 October 2026 with the approved archive bytes. The overlay archive published as 0.4.0-beta.12 differed from its approved bytes in one file mode, so this set republishes the same source as 0.4.0-beta.12 and leaves beta.11 deprecated. The code, record versions, wire formats, custody rules, profiles and conformance claims are those of dpp-release-2026-10-9. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",

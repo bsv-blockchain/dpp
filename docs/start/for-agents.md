@@ -19,6 +19,7 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 
 | Fact | Value |
 |---|---|
+| Source candidate | `dpp-release-2026-11`, publication pending: `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` ([release sets](../reference/release-sets.md)) |
 | Published set | `dpp-release-2026-10-10`, under `latest` since 16 October 2026: `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12`, `@bsv/dpp-credentials@0.2.0-beta.5`, with `@bsv/sdk@2.8.10` ([receipt](../reference/beta-11-publication.md)) |
 | Former names | `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/vsc` stay at their historical versions; the [migration guide](../migration.md) maps each to its new name |
 | Install | Use the [local candidate archives](../packages/README.md#use-the-renamed-source-candidate) until publication. Pin exact versions and retain the lockfile; do not infer publication from a source version or a dist-tag |

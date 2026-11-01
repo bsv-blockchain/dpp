@@ -14,7 +14,7 @@ The application connects to an index over HTTP. Use an existing compatible index
 
 ## Create your project
 
-The starter is published at `0.1.0-beta.1` and pins `dpp-release-2026-10-10`: protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12` and SDK `2.8.10`, the same set as the index starter. With Node 22 or later:
+The published starter, `0.1.0-beta.1`, pins the superseded `dpp-release-2026-10-10`, the last published set: protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12` and SDK `2.8.10`, the same set as the index starter. The source starter pins the current candidate `dpp-release-2026-11`, protocol and profiles `0.3.0-beta.10` and overlay `0.4.0-beta.13`, not yet published. With Node 22 or later:
 
 ```sh
 npm create @bsv/dpp-app@0.1.0-beta.1 my-app

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Attestation registry API
-  version: 0.4.0
+  version: 0.5.0
   summary: Verified native lifecycle claims and VSC SEAL credentials with independent BSV anchors.
   description: |
     Current intake uses explicit signed native or VSC representations. Missing proof,

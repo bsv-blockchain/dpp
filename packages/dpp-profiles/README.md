@@ -9,7 +9,7 @@ This is a pre-1.0 candidate. Install the exact published version from npm:
 **Publication pending:** [install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this version. The following npm command applies after publication.
 
 ```sh
-npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.9
+npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10
 ```
 
 The runtime requires Node >=22 and ECMAScript modules. The JSON data exports can be read in other runtimes. No repository checkout or package build is needed after installation.
