@@ -62,7 +62,7 @@ Step 1 of [build an application](../../packages/build-an-application.md#1-read-a
 These are gaps in the standard and the reference package, not faults in your reader; [known limitations](../../operate/limitations.md) lists the reference service's limits.
 
 - **Acceptance records.** A version 2 `TRANSFER` under `managed-custody@1` commits to an acceptance record that only its custodian keeps, and no index or registry route serves one yet. For a transfer someone else wrote, `evidenceAvailability` therefore reads `unknown` with `referenced-artefact-unavailable`; the fixture case `v2-valid-lineage` shows it.
-- **Payload against profile.** The reference report checks a state's `payload_public` against its declared profile through the `payloadValidator` its policy supplies; pass `profilePayloadValidator()` from the profiles package, as [check a payload against its profile](../../packages/dpp-profiles.md#check-a-payload-against-its-profile) shows. Without one, `schema` reads `unknown` with `schema-unavailable`, and the fixtures, whose payloads predate the `profile` stamp, pin `unknown` with `profile-undeclared`.
+- **Payload against profile.** The reference report checks a state's `payload_public` against its declared profile through the `payloadValidator` its policy supplies; pass `profilePayloadValidator(ajv)` from the profiles package, as [check a payload against its profile](../../packages/dpp-profiles.md#check-a-payload-against-its-profile) shows. Without one, `schema` reads `unknown` with `schema-unavailable`, and the fixtures, whose payloads predate the `profile` stamp, pin `unknown` with `profile-undeclared`.
 
 ## Exact implementation sources
 

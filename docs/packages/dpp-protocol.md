@@ -228,7 +228,7 @@ Set `passportId` to the identifier you were asked about, from the scan, label or
 | `managedInstruction` | `{ required: true }` demands an instruction commitment on every version 2 `UPDATE` or `RETIRE` after a committed `TRANSFER`, unless a control authority made it | `linkage`; fails with `instruction-commitment-absent` for a state without one |
 | `ownerConsent`, `controlAuthorities` | The owner-signed transfer for version 1 states, and the identity keys whose version 2 `UPDATE`, `TRANSFER` or `RETIRE` passes without a control proof, such as a recovery authority | `linkage` |
 | `credentialVerifier` | Verifies an external credential's exact bytes and its status, such as `externalCredentialVerifierFor(policy)` from `@bsv/dpp-credentials/exchange` ([external credentials](../interoperability/external-credentials.md)) | `externalCredentialProof` and each credential's part of `schema`, `credentialTime`, `credentialStatus` and `issuerAuthority`, which read `unknown` with `verifier-not-supplied` without it |
-| `payloadValidator` | Checks a token state's `payload_public` against the profile it declares; `profilePayloadValidator()` from `@bsv/dpp-profiles` is one | `schema` for token states |
+| `payloadValidator` | Checks a token state's `payload_public` against the profile it declares; `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` is one | `schema` for token states |
 | `profileValidator` | Checks a native claim against its declared profile | `schema` for native claims |
 | `policyId` | A name for this policy | `report.policyId` |
 | `checkedAt` | The report's time, for a reproducible report; defaults to now | The observation time, and the instant credential validity is judged at |
@@ -313,7 +313,7 @@ console.log(schema.$id)
 
 ## Limits
 
-- The report checks a state's `payload_public`, the product data it carries on chain, against its declared profile only through the `payloadValidator` the policy supplies; this package holds no profile schema. Pass `profilePayloadValidator()` from [the profiles package](dpp-profiles.md#check-a-payload-against-its-profile). Without it `schema` reads `unknown` with `schema-unavailable`, and a payload that declares no `profile` and `profile_version` reads `unknown` with `profile-undeclared` either way.
+- The report checks a state's `payload_public`, the product data it carries on chain, against its declared profile only through the `payloadValidator` the policy supplies; this package holds no profile schema. Pass `profilePayloadValidator(ajv)` from [the profiles package](dpp-profiles.md#check-a-payload-against-its-profile). Without it `schema` reads `unknown` with `schema-unavailable`, and a payload that declares no `profile` and `profile_version` reads `unknown` with `profile-undeclared` either way.
 - Registries do not exchange claims, and no passport state, anchor or capability document names the registry that holds a claim. Learn it from the passport's publisher ([the registry guide](../implement/roles/registry.md#the-minimum-a-registry-serves)).
 - Identity is at Ring 0: a key identifies a party, and only the platform account vouches for who holds it. Nothing yet binds a key to a legal entity or certifies a party's role ([identity and authority](../learn/identity-and-authority.md)).
 

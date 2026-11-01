@@ -109,13 +109,17 @@ if (!validate({ name: 'Example chair' })) {
 
 Compile each profile's schema once and reuse it, with `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`. Every state of a lineage declares the same profile, `readPublicPayloadSchema` returns a fresh copy on every call, and Ajv refuses to compile a second copy of an `$id` it already holds.
 
-To have a verification report make the same check, pass `profilePayloadValidator()` as the `payloadValidator` of the policy given to `verifyPassportEvidence`. The report's `schema` check then reads `pass` or `fail` with `schema-invalid` and one sentence per problem for every token state that declares a published profile, `unknown` with `schema-unavailable` for a profile this package does not publish, and `unknown` with `profile-undeclared` for a payload without the two stamps:
+To have a verification report make the same check, pass `profilePayloadValidator(ajv)` as the `payloadValidator` of the policy given to `verifyPassportEvidence`, with the same Ajv instance as above; the package brings no validator library of its own. The report's `schema` check then reads `pass` or `fail` with `schema-invalid` and one sentence per problem for every token state that declares a published profile, `unknown` with `schema-unavailable` for a profile this package does not publish, and `unknown` with `profile-undeclared` for a payload without the two stamps:
 
 ```js
+import Ajv2020 from 'ajv/dist/2020.js'
+import addFormats from 'ajv-formats'
 import { verifyPassportEvidence } from '@bsv/dpp-protocol'
 import { profilePayloadValidator } from '@bsv/dpp-profiles'
 
-const report = await verifyPassportEvidence(evidence, expected, { ...policy, payloadValidator: profilePayloadValidator() })
+const ajv = new Ajv2020({ allErrors: true, strict: false })
+addFormats(ajv)
+const report = await verifyPassportEvidence(evidence, expected, { ...policy, payloadValidator: profilePayloadValidator(ajv) })
 ```
 
 In a repository checkout, `node examples/sample-payload.mjs general@2` prints a passing payload, `--demonstration` starts it with a demonstration record's `notice`, and `node examples/sample-payload.mjs --check <profile@version> <file>` explains each problem in a payload file in a sentence.

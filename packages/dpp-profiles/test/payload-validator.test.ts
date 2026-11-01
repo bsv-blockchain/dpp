@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import { Ajv2020 } from 'ajv/dist/2020.js'
+import addFormats from 'ajv-formats'
 import { profilePayloadValidator } from '../src/index.js'
 
 // The validator a verifier plugs into verifyPassportEvidence as
 // `payloadValidator` (spec/verification.md section 4, `schema`): the public
 // payload of a token state against the schema its declared profile selects.
-const validate = profilePayloadValidator()
+const ajv = new Ajv2020({ allErrors: true, strict: false })
+addFormats(ajv)
+const validate = profilePayloadValidator(ajv)
 const at = (payloadPublic: string, profile = 'general', profileVersion = 2) => validate({ profile, profileVersion, payloadPublic, ref: 'aa:0', stateIndex: 0 })
 
 describe('profilePayloadValidator', () => {

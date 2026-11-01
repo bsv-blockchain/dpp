@@ -81,7 +81,7 @@ Match a limit to the version you use. Unless a row says otherwise, the implement
 
 | Limit | What it means for you | What to do now |
 |---|---|---|
-| The report checks a payload against its profile only with a validator from the caller | Without `payloadValidator` in the policy, `schema` reads `unknown` for every token state, and a state whose payload declares no profile reads `unknown` with `profile-undeclared` either way | Pass `profilePayloadValidator()` from `@bsv/dpp-profiles` as `payloadValidator` ([profiles](../packages/dpp-profiles.md#check-a-payload-against-its-profile)), and declare `profile` and `profile_version` in every payload |
+| The report checks a payload against its profile only with a validator from the caller | Without `payloadValidator` in the policy, `schema` reads `unknown` for every token state, and a state whose payload declares no profile reads `unknown` with `profile-undeclared` either way | Pass `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` as `payloadValidator` ([profiles](../packages/dpp-profiles.md#check-a-payload-against-its-profile)), and declare `profile` and `profile_version` in every payload |
 | Identity assurance is Ring 0 | The platform vouches for an account and its brand name; nobody checks a brand's legal identity | Treat the brand name as the platform's statement ([identity and authority](../learn/identity-and-authority.md)) |
 
 ## The hosted reference

@@ -4,7 +4,14 @@
  * checked against the public schema the profile and version it declares
  * select (`spec/profiles.md` §3). The protocol package holds no schema, so
  * the check lives here, beside the schemas, and a caller passes the result
- * of `profilePayloadValidator()` as `payloadValidator` in its evidence policy.
+ * of `profilePayloadValidator(ajv)` as `payloadValidator` in its evidence
+ * policy.
+ *
+ * This package takes no validator library of its own, as the rest of it
+ * takes none: the caller brings the JSON Schema 2020-12 compiler it already
+ * installed, Ajv's 2020 build with `ajv-formats` and `strict: false`, exactly
+ * as the package page shows, and this module asks it for one compiled
+ * validator per profile and keeps them.
  *
  * The answer is one of the report's own: `pass` when the payload validates,
  * `fail` with `schema-invalid` and one sentence per problem when it does
@@ -12,15 +19,46 @@
  * does not publish, because an unknown profile selects no schema here and
  * guessing one would be a pass nobody earned.
  */
-import { Ajv2020, type ErrorObject, type ValidateFunction } from 'ajv/dist/2020.js'
-import addFormats from 'ajv-formats'
-import type { DeclaredPayload, PartialCheck } from '@bsv/dpp-protocol'
 import { PROFILE_IDS, readPublicPayloadSchema, type ProfileId } from './index.js'
+
+/** One problem a compiled validator reports, in the shape Ajv gives. */
+export interface SchemaProblem {
+  instancePath: string
+  keyword: string
+  message?: string
+  params: Record<string, unknown>
+}
+
+/** A compiled validator: Ajv's `ValidateFunction`, structurally. */
+export interface CompiledSchema {
+  (data: unknown): boolean
+  errors?: SchemaProblem[] | null
+}
+
+/** The compiler the caller supplies: an Ajv 2020 instance with formats added, structurally. */
+export interface SchemaCompiler {
+  compile(schema: Record<string, unknown>): CompiledSchema
+  getSchema(id: string): CompiledSchema | undefined
+}
+
+/** The part of a token state's payload the validator reads: what `verifyPassportEvidence` hands to `payloadValidator`. */
+export interface PayloadToValidate {
+  profile: string
+  profileVersion: number
+  payloadPublic: string
+}
+
+/** The validator's answer, in the report's own words: a partial check for `schema`. */
+export interface PayloadValidation {
+  status: 'pass' | 'fail' | 'unknown'
+  reasonCode?: 'schema-invalid' | 'schema-unavailable'
+  detail?: string | string[]
+}
 
 const isProfileId = (value: string): value is ProfileId => (PROFILE_IDS as readonly string[]).includes(value)
 
 /** One sentence per schema problem, naming the field, as `examples/sample-payload.mjs` prints them. */
-export function describeSchemaProblems(errors: ErrorObject[] | null | undefined): string[] {
+export function describeSchemaProblems(errors: SchemaProblem[] | null | undefined): string[] {
   return (errors ?? []).map((e) => {
     const where = e.instancePath === '' ? 'the payload' : `\`${e.instancePath.replace(/^\//, '').replace(/\//g, '.')}\``
     if (e.keyword === 'required') return `${where} is missing the required field \`${String(e.params.missingProperty)}\`.`
@@ -31,20 +69,19 @@ export function describeSchemaProblems(errors: ErrorObject[] | null | undefined)
 }
 
 /**
- * A validator over the published public payload schemas. Schemas compile on
- * first use and are kept; the Ajv instance asserts formats and fixes the
- * 2020-12 dialect, which is what every published schema declares.
+ * A validator over the published public payload schemas, compiled by the
+ * compiler the caller supplies. Schemas compile on first use and are kept,
+ * and a schema the compiler already holds by `$id` is reused rather than
+ * compiled twice, which Ajv refuses.
  */
-export function profilePayloadValidator(): (payload: DeclaredPayload) => Promise<PartialCheck> {
-  const ajv = new Ajv2020({ allErrors: true, strict: false });
-  (addFormats as unknown as (a: Ajv2020) => void)(ajv)
-  const compiled = new Map<ProfileId, ValidateFunction>()
-  const validatorFor = (profile: ProfileId): ValidateFunction => {
+export function profilePayloadValidator(compiler: SchemaCompiler): (payload: PayloadToValidate) => Promise<PayloadValidation> {
+  const compiled = new Map<ProfileId, CompiledSchema>()
+  const validatorFor = (profile: ProfileId): CompiledSchema => {
     const kept = compiled.get(profile)
     if (kept != null) return kept
     const schema = readPublicPayloadSchema(profile)
-    const known = typeof schema.$id === 'string' ? ajv.getSchema(schema.$id) : undefined
-    const v: ValidateFunction = known ?? ajv.compile(schema)
+    const known = typeof schema.$id === 'string' ? compiler.getSchema(schema.$id) : undefined
+    const v = known ?? compiler.compile(schema)
     compiled.set(profile, v)
     return v
   }
