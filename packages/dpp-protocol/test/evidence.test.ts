@@ -56,7 +56,7 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
       externalCredentialProof: 'not-applicable:no-external-credential',
       subjectBinding: 'pass',
       issuerAuthority: 'unknown:policy-missing',
-      schema: 'unknown:no-evidence',
+      schema: 'unknown:profile-undeclared',
       credentialTime: 'unknown:no-evidence',
       credentialStatus: 'unknown:no-evidence',
       evidenceAvailability: 'pass',
@@ -356,5 +356,45 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(report.checks.filter((c) => c.status === 'pass')).toHaveLength(0)
     expect(byName(report, 'publisherSignatures').status).toBe('not-applicable')
     expect(byName(report, 'externalCredentialProof').status).toBe('not-applicable')
+  })
+})
+
+describe('the schema check over token payloads (spec/verification.md §4, spec/profiles.md §3)', () => {
+  const asked: ExpectedSubject = { passportId: 'https://dpp.bsvb.net/01/09521000000018/21/SCHEMA-0001', source: 'request-context' }
+  const declared = JSON.stringify({ profile: 'general', profile_version: 2, name: 'Chair' })
+  async function lineage(payloadPublic: string): Promise<Transaction[]> {
+    const s0 = await signedState(makeData({ passportId: asked.passportId, payloadPublic }))
+    return [stateTx(s0, serverPriv.toPublicKey())]
+  }
+
+  it('hands each state that declares a profile to the policy validator and reports its answer', async () => {
+    const seen: Array<{ profile: string; profileVersion: number; stateIndex: number }> = []
+    const chain = await lineage(declared)
+    const report = await verifyPassportEvidence({ tokenHistory: chain }, asked, {
+      checkedAt: CHECKED_AT, chainTracker: 'scripts only',
+      payloadValidator: async (p) => { seen.push({ profile: p.profile, profileVersion: p.profileVersion, stateIndex: p.stateIndex }); return { status: 'fail', reasonCode: 'schema-invalid', detail: ['the payload is missing the required field `category`.'] } },
+    })
+    expect(seen).toEqual([{ profile: 'general', profileVersion: 2, stateIndex: 0 }])
+    const schema = report.checks.find((c) => c.name === 'schema')!
+    expect(schema.status).toBe('fail')
+    expect(schema.reasonCode).toBe('schema-invalid')
+    expect(schema.evidenceRefs).toEqual([`${chain[0].id('hex')}:0`])
+  })
+
+  it('passes when the validator passes, and reads schema-unavailable without one', async () => {
+    const chain = await lineage(declared)
+    const passed = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only', payloadValidator: async () => ({ status: 'pass' }) })
+    expect(statuses(passed).schema).toBe('pass')
+    const without = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only' })
+    expect(statuses(without).schema).toBe('unknown:schema-unavailable')
+  })
+
+  it('reads profile-undeclared for a payload without the stamps, and never calls the validator for it', async () => {
+    let calls = 0
+    const chain = await lineage(JSON.stringify({ name: 'Chair' }))
+    const report = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only', payloadValidator: async () => { calls += 1; return { status: 'pass' } } })
+    expect(calls).toBe(0)
+    expect(statuses(report).schema).toBe('unknown:profile-undeclared')
+    expect(report.limits).toContain('schema was not established: profile-undeclared.')
   })
 })

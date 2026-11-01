@@ -23,6 +23,7 @@ export * from './manifest-v2.js'
 export * from './profile-changes.js'
 export * from './profile-data-review.js'
 export * from './gs1-resolution.js'
+export * from './payload-validator.js'
 
 export type ValueType = 'id' | 'text' | 'enum' | 'multi' | 'decimal' | 'integer' | 'percent' | 'monthYear' | 'date' | 'url' | 'document' | 'graphic' | 'country' | 'record' | 'any'
 export type AccessTier = 'public' | 'owner' | 'legitimate' | 'authority'

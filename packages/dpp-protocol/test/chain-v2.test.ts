@@ -34,7 +34,7 @@ const prefixPlus = (r: { appendAfter: number; rawTx: string }) => [...raw.slice(
 const refusal = (name: string) => {
   const r = F.refusals.find((x: { name: string }) => x.name === name)
   if (r == null) throw new Error(`no refusal ${name}`)
-  return r as { name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; acceptedUnder?: { authorities: string[] } }
+  return r as { name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; managedInstruction?: true; acceptedUnder?: { authorities: string[] } }
 }
 
 describe('chain-v2 fixture: the writer reproduces every byte', () => {
@@ -110,13 +110,18 @@ describe('chain-v2 fixture: the reader accepts the lineage and verifies it', () 
 describe('chain-v2 fixture: the reader refuses every broken link', () => {
   it.each(F.refusals.map((r: { name: string }) => [r.name, r] as const))('refuses %s', async (_name, r: ReturnType<typeof refusal>) => {
     const chain = fromHex(prefixPlus(r))
-    const result = await verifyChain(chain, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true })
+    const result = await verifyChain(chain, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true || r.managedInstruction === true, managedInstruction: r.managedInstruction === true })
     expect(result.valid).toBe(false)
     expect(result.error).toContain(r.error)
     if (r.managedAcceptance) {
       const off = await verifyChain(chain, { chainTracker: 'scripts only' })
       expect(off.error).toBeUndefined()
       expect(off.valid).toBe(true)
+    }
+    if (r.managedInstruction) {
+      const acceptanceOnly = await verifyChain(chain, { chainTracker: 'scripts only', managedAcceptance: true })
+      expect(acceptanceOnly.error).toBeUndefined()
+      expect(acceptanceOnly.valid).toBe(true)
     }
     if (r.acceptedUnder != null) {
       const accepted = await verifyChain(chain, { chainTracker: 'scripts only', controlAuthorities: r.acceptedUnder.authorities })
@@ -134,6 +139,7 @@ describe('chain-v2 fixture: the reader refuses every broken link', () => {
     expect(F.refusals.filter((r: { acceptedUnder?: unknown }) => r.acceptedUnder != null).map((r: { name: string }) => r.name)).toEqual(['recoveryWithoutAuthority'])
     expect(refusal('controlNotProven').error).toBe(CONTROL_REFUSALS.notProven)
     expect(refusal('transferWithoutCommitment').error).toBe(ACCEPTANCE_COMMITMENT_REFUSAL)
+    expect(F.refusals.filter((r: { managedInstruction?: true }) => r.managedInstruction).map((r: { name: string }) => r.name)).toEqual(['updateAfterTransferWithoutInstruction'])
   })
 
   it('control: every refusal is one rule, and no two vectors are the same bytes', () => {

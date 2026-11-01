@@ -1272,13 +1272,30 @@ components:
         claimFormat: { const: dpp-lifecycle-v1 }
         eventType: { enum: [Origin, Transfer, Transformation, Disposition] }
         passportId: { type: string, minLength: 1 }
-        recordId: { type: string, minLength: 1 }
+        recordId: { type: string, pattern: '^[0-9a-f]{64}:(0|[1-9][0-9]*)$', description: 'The outpoint of the state the claim is about, <txid>:<outputIndex> (spec/rules.md section 3).' }
         timestamp: { type: string, format: date-time }
         issuer: { type: string, minLength: 1 }
         issuerKeyId: { type: string, minLength: 1 }
         issuerKeyDid: { type: string, description: Requires configured authenticated issuer-to-key binding for non-key issuer identifiers. }
         profile: { type: string, minLength: 1 }
         profile_version: { type: integer, minimum: 1 }
+        evidence:
+          type: object
+          description: The evidence facets of spec/rules.md section 2 the claim carries, each a reference to a record; present only with at least one facet.
+          minProperties: 1
+          additionalProperties: false
+          properties:
+            facility: { type: string, minLength: 1 }
+            time: { type: string, minLength: 1 }
+            responsibleParty: { type: string, minLength: 1 }
+            source: { type: string, minLength: 1 }
+            destination: { type: string, minLength: 1 }
+            custodyRecord: { type: string, minLength: 1 }
+            workDone: { type: string, minLength: 1 }
+            performedBy: { type: string, minLength: 1 }
+            performedAt: { type: string, minLength: 1 }
+            dispositionKind: { enum: [disposal, process-with-outputs] }
+            outputs: { type: array, minItems: 1, items: { type: string, minLength: 1 } }
         signature: { type: string, pattern: '^[0-9a-f]+$' }
     NativeLifecycleSubmission:
       allOf:

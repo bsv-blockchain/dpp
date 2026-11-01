@@ -44,7 +44,10 @@ x-dpp-profile:
       unless its actor is the previous owner, by equality or by
       owner_linkage, or a configured transfer authority. When deployed for
       managed-custody@1 (spec/managed-custody.md), a version 2 TRANSFER is
-      refused without its acceptance commitment. A seventeen-field body
+      refused without its acceptance commitment, and when the profile's
+      instruction rule is selected, a version 2 UPDATE or RETIRE after a
+      committed TRANSFER is refused without its instruction commitment
+      unless a control authority made it. A seventeen-field body
       behind the BRC-162 token prefix is version 3 (spec/token-carrier.md),
       read under the version 2 rules with the version 3 string and signed
       under its own protocol; the prefix is checked before the body: a
@@ -238,6 +241,7 @@ paths:
                   token-id-mismatch: 'The token id a version 3 value output names is not the lineage genesis this index traced, or the genesis could not be traced to check it.'
                   consent-not-proven: 'The index runs the owner-signed transfer, and the TRANSFER''s actor does not prove it is the previous owner.'
                   acceptance-commitment-absent: 'The index runs managed-custody@1, and the version 2 or 3 TRANSFER carries no authorisation_commitment.'
+                  instruction-commitment-absent: 'The index runs the instruction rule of managed-custody@1, and the version 2 or 3 UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment.'
                   genesis-spends-passport-output: 'A genesis state spends a passport output this index admitted.'
                   predecessor-not-admitted: 'The state does not spend the tip this index holds. Announce the predecessor first, oldest state first.'
                   predecessor-unavailable: 'The state spends the tip, but neither the BEEF nor this index holds the predecessor''s bytes. Include them in the BEEF.'

@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-10-09",
+  "updatedAt": "2026-11-01",
   "sources": [
     {
       "id": "spec-record-model",
@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "f67789d8e2f2038fd071b74b748d007a8f7cfbcc359aa5181f6b02bf4306c987"
+      "digest": "92be415b29f0488c35eec82e7ec59581821336fe6610384368ec7b10bd0e89db"
     },
     {
       "id": "spec-record-model-v2",
@@ -32,7 +32,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/rules.md",
-      "digest": "e430230837a2f6a6ad122bb14617bb9199f3569b66738d4da5ba69b06409ebc7"
+      "digest": "e87236bd6d0145a487b9e02f2acadd6e4747605fc82de5421ecd420153b89935"
     },
     {
       "id": "spec-identity",
@@ -56,7 +56,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/managed-custody.md",
-      "digest": "827ce2e20e06930b2fff889792571976ab894b0cc79448ca2daac6fbc5e6bc02"
+      "digest": "92149b0cfd0139deea73e6f2811234090e3e326f874a4de1c6b2fd29a4992c01"
     },
     {
       "id": "spec-writing",
@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "4053d267b982c36f5df4e7dbfa6a605c7e2e182ddb76ab7c89e9c663d3a19bad"
+      "digest": "ec4b558e2c17dbf0c4417f22884cc76bc434da79b59313bb5599b52b70e88496"
     },
     {
       "id": "spec-conformance",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "18cf32e4036a056b8ee7ff7dd7cb7ff2ef061364442fea7381b7405030b650e5"
+      "digest": "fd2aa84d5d6216370c299a25670651afcd4291b18c75db58a6c04b175ee24f90"
     },
     {
       "id": "contract-registry",
@@ -120,7 +120,7 @@
       "version": "0.4.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "8cbbc7e77de6fe5e04bcb9ec784e5d0443ba09e0a3157ca8657936c7e536cf76"
+      "digest": "2656ce87cac2420e837712c71fbc6d839e27aeb6b69f3d2db5213f44b5108d33"
     },
     {
       "id": "contract-report-schema",
@@ -128,7 +128,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/verification-report.schema.json",
-      "digest": "e4d01fed1523bc3bd9c3bf60234d63e108a1cc112b8a3ecce6d0160b084726e5"
+      "digest": "6d2bfa73e28a5b0d83be35a1769a3feb97669799a2ee3bff070c2474d3892fb2"
     },
     {
       "id": "contract-capabilities-schema",
@@ -144,7 +144,7 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "2865dab45d3f29020552b8cc9114a86f4e5cd709daa95f358099122fc1063bc3"
+      "digest": "a2c8beb61288351917b2e1173e5e7e99f2177d2e3c3a11b98b7690fa67ec4e2b"
     },
     {
       "id": "baseline-native-2",
@@ -152,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "ac996c6f2d23bf6fa530d91e373ee5ade004bd7886723dad17e4f66fb49a41df"
+      "digest": "1f80825bac1b6a7811c0b6d3b724eb633e5446eeb1a73d9a032dabe0445af181"
     },
     {
       "id": "spec-profiles",
@@ -160,7 +160,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "48908ca596730dd8e753056422d0bf091befa475424d8a7066802910dc4c43ac"
+      "digest": "7c850639b9f294bd46e92c729375e9ffab6a45a6e76e69514becde37eef45a5d"
     },
     {
       "id": "profiles-manifest-schema",
@@ -442,7 +442,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/portable-evidence.md",
-      "digest": "1a7a50b7b26ccaf5f795899614c4f2715ef6a7fd44541ba542c53d02e0a6e888"
+      "digest": "2566750d20abe4224749f3c7c912554268135a80a0e2dd93d144ec7ea5eda246"
     },
     {
       "id": "contract-evidence-package",
@@ -498,7 +498,7 @@
       "version": "1",
       "kind": "local",
       "path": "fixtures/battery-lifecycle-v1.json",
-      "digest": "d2335a18a6e3e8d7d84e001bc2332a8ec04d04a9c516f5d559829aa162914d24"
+      "digest": "34b09502621d13ad4313cdad5dd14a8ed35654e685640d451fe3d4fbce6f21eb"
     },
     {
       "id": "vectors-publisher-policy",
@@ -909,6 +909,33 @@
       "status": "tested",
       "reviewedAt": "2026-09-05",
       "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "RM-7-tier-disclosure",
+      "sourceId": "spec-record-model",
+      "sourceUri": "spec/record-model.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "Every restricted field of every tier forms one object encrypted to the owner under one commitment; a legitimate or authority reader receives a disclosure, the fields of its tiers and no others, re-encrypted under the same protocol and key identifier with the reader's identity key as counterparty; a disclosure is not committed on chain and never carries a field of a tier the reader is not entitled to.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when a profile declares a tier beyond owner",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport-v2.mjs",
+        "docs/packages/how-the-writer-works.md"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [
+        "docs/profiles/README.md"
+      ],
+      "status": "unassessed",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#86): one owner blob, re-encrypted per reader. The writer example shows the owner tier's encryption; the disclosure call is shown on the writer page and not yet exercised by a test."
     },
     {
       "id": "RM-8-verifier",
@@ -1633,6 +1660,32 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "layer": "profile",
+      "profileId": "managed-custody@1",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "id": "MC-2-lock-placement",
+      "clause": "§2",
+      "summary": "Every state is locked to its own field-6 controller key and spent by the PushDrop unlock from the wallet that holds the controller's root: the custodian's for a managed identity, the recipient's own after a TRANSFER to a key their wallet derived; a verifier does not see the lock.",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when a custodian or wallet spends a tip under managed-custody@1",
+      "implementationRefs": [
+        "examples/lifecycle-v2.mjs",
+        "docs/packages/build-an-application.md"
+      ],
+      "testRefs": [
+        "examples/lifecycle-v2.mjs"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#79): the lock follows custody.md §3. The lifecycle example locks each state to its controller key; the pinned chain-v2 fixture still locks to the custodian's identity key, a build's choice the record model does not see, and says so."
+    },
+    {
       "id": "MC-4-transfer-binding",
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
@@ -1724,12 +1777,134 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "id": "MC-5-package-carriage",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§5",
+      "summary": "The custodian includes every acceptance record it signs in every evidence package it exports, under authority as dpp-managed-acceptance@1 keyed by commitment; another exporter includes what it holds and declares the rest absent by commitment; a reader takes the records from the package as the history's acceptance records; no route serves a record on its own.",
+      "layer": "profile",
+      "roles": [
+        "registry",
+        "overlay",
+        "passport-reader"
+      ],
+      "applicability": "when managed-custody@1 is selected and evidence leaves an operator",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/evidencePackage.ts#acceptanceRecordsInPackage"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/evidencePackage.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#85): the package is the route. The core reads the records out of a package; the reference custodian's export (bsv-blockchain-demos/dpp-app) does not yet include them, and the overlay's export cannot, because an index holds no records."
+    },
+    {
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "layer": "profile",
+      "profileId": "managed-custody@1",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "id": "MC-6-instruction-record",
+      "clause": "§6",
+      "summary": "The dpp-managed-instruction@1 record: its exact properties and bounds, the nested canonical form, the custodian's direct signature, and the commitment an UPDATE or RETIRE carries in field 15; structure, signature and binding reported apart.",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when managed-custody@1 is selected and a custodian writes for a holder after a committed TRANSFER",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/instruction.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/managed-instruction-v1.json",
+        "fixtures/vectors/dpp/managed-instruction/v1.json"
+      ],
+      "status": "independently-tested",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#92): writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the six refusals from the fixture."
+    },
+    {
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "layer": "profile",
+      "profileId": "managed-custody@1",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "id": "MC-6-instruction-binding",
+      "clause": "§6",
+      "summary": "A record binds to a state on operation, passport, lineage, predecessor, holder, commitment and time order, from the record and the state alone; every mismatch is named state-mismatch with its reason.",
+      "roles": [
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "when an instruction record is presented with the state that commits to it",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/instruction.ts#bindInstructionToState"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/managed-instruction-v1.json#refusals",
+        "fixtures/evidence-v2.json#cases.v2-instruction-mismatch"
+      ],
+      "status": "independently-tested"
+    },
+    {
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "layer": "profile",
+      "profileId": "managed-custody@1",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "id": "MC-6-instruction-rule",
+      "clause": "§6",
+      "summary": "Under the rule, every UPDATE and RETIRE after a committed TRANSFER carries an instruction commitment unless a control authority made it; a verifier or index that selects the rule refuses one without, as instruction-commitment-absent on linkage, and the same bytes pass with the rule off; the report's limits say the evidence is custody-dependent.",
+      "roles": [
+        "passport-reader",
+        "overlay"
+      ],
+      "applicability": "when a deployment declares instructionCommitment required",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/verifyChain.ts",
+        "packages/dpp-protocol/src/evidence.ts",
+        "packages/dpp-overlay/src/tmDpp.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/fixture-json.test.ts",
+        "packages/dpp-overlay/test/tmDppV2.test.ts",
+        "conformance/independent/python/dpp_verify.py",
+        "examples/lifecycle-v2.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/chain-v2.json#refusals.updateAfterTransferWithoutInstruction",
+        "fixtures/evidence-v2.json#cases.v2-instruction-required-absent",
+        "fixtures/evidence-v2.json#cases.v2-valid-with-instruction",
+        "fixtures/evidence-v2.json#cases.v2-instruction-not-supplied"
+      ],
+      "status": "independently-tested",
+      "notes": "The reference index selects the rule with INSTRUCTION_COMMITMENT=required and declares it as instructionCommitment in its custody profile entry; the hosted index and the reference application do not yet select it (bsv-blockchain-demos/dpp-app records no instructions), so the hosted declaration stays not-selected until they do."
+    },
+    {
       "id": "MC-7-declaration",
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "clause": "§7",
-      "summary": "An index or verifier declares the profile as a custody profile entry managed-custody@1 with acceptanceCommitment required and its control authorities, or record-model-baseline@2 when it does not require the commitment; the reference index selects it with ACCEPTANCE_COMMITMENT=required and names authorities with CONTROL_AUTHORITIES.",
+      "summary": "An index or verifier declares the profile as a custody profile entry managed-custody@1 with acceptanceCommitment required and its control authorities, or record-model-baseline@2 when it does not require the commitment; the reference index selects it with ACCEPTANCE_COMMITMENT=required and names authorities with CONTROL_AUTHORITIES; and instructionCommitment as required or not-selected.",
       "layer": "role",
       "roles": [
         "overlay"
@@ -1748,7 +1923,7 @@
         "conformance/examples/capabilities-reference-node.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1757,7 +1932,7 @@
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "The native claim's exact properties and bounds; signature over the restricted canonical JSON excluding signature under [1, 'dpp attestation v1'] with passportId; a nominated issuerKeyDid never authenticates a resolvable issuer.",
+      "summary": "The native claim's exact properties and bounds, recordId as the outpoint of the state the claim is about, the optional evidence object of §2's facets; signature over the canonical JSON of §4 excluding signature under [1, 'dpp attestation v1'] with passportId; a nominated issuerKeyDid never authenticates a resolvable issuer.",
       "layer": "core",
       "roles": [
         "attestation-issuer",
@@ -1770,14 +1945,19 @@
         "packages/dpp-protocol/src/attestation.ts"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/attestation.test.ts"
+        "packages/dpp-protocol/test/attestation.test.ts",
+        "packages/dpp-overlay/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
-        "fixtures/attestation-anchor-v1.json#claim"
+        "fixtures/attestation-anchor-v1.json#claim",
+        "fixtures/attestation-anchor-v1.json#claimWithEvidence",
+        "fixtures/vectors/dpp/attestation-anchor/v1.json"
       ],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "status": "independently-tested",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#87, #88): recordId is <txid>:<outputIndex>, and the facets of §2 live under evidence. Both are shapes both implementing parties produce; the fixture moved with them, and the Python verifier reproduces the bytes, the digest of the claim with evidence and the two refusals. Written acceptance by the second implementing party is pending under GOVERNANCE.md."
     },
     {
       "id": "RULES-2-version-2-vocabulary",
@@ -1810,7 +1990,7 @@
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
       "clause": "§4",
-      "summary": "Two representations with distinct hashed bytes: canonical complete signed native claim, exact UTF-8 VSC credential; duplicate JSON keys refused; a presentation never inherits the anchored digest.",
+      "summary": "Two representations with distinct hashed bytes: canonical complete signed native claim, exact UTF-8 VSC credential; duplicate JSON keys refused; a presentation never inherits the anchored digest; the native canonical rule sorts at every level, so a claim with evidence nests one object and a claim without one keeps its flat bytes.",
       "layer": "core",
       "roles": [
         "attestation-issuer",
@@ -1833,7 +2013,7 @@
         "fixtures/attestation-anchor-v1.json#representationHex"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2591,6 +2771,42 @@
       "status": "tested",
       "reviewedAt": "2026-09-05",
       "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "VER-4-token-payload-schema",
+      "sourceId": "spec-verification",
+      "sourceUri": "spec/verification.md",
+      "sourceVersion": "working draft",
+      "clause": "§4",
+      "summary": "schema covers every token state's payload_public under the profile and version it declares, through the validator the caller supplies; a payload that declares no profile is unknown with profile-undeclared, a declared profile without a schema is unknown with schema-unavailable, and a validator's fail is schema-invalid with one sentence per problem.",
+      "layer": "core",
+      "roles": [
+        "passport-reader",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/evidence.ts",
+        "packages/dpp-profiles/src/payload-validator.ts",
+        "contracts/verification-report.schema.json#/$defs/sharedReasonCode"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/evidence.test.ts",
+        "packages/dpp-profiles/test/payload-validator.test.ts",
+        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/evidence-v1.json",
+        "fixtures/evidence-v2.json",
+        "fixtures/evidence-v3.json",
+        "fixtures/battery-lifecycle-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#90): validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states pass under the profiles package's validator."
     },
     {
       "id": "VER-5-observations",
@@ -3752,6 +3968,32 @@
       "reviewOwner": "dpp maintainers"
     },
     {
+      "id": "PROF-3-access-tiers",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The four access tiers and who is entitled to each: owner fields reach the owner alone, legitimate fields the owner and the parties with a legitimate interest, authority fields those and the authorities; a disclosure to an authority may carry legitimate fields, one to a party with a legitimate interest never carries authority or owner fields; a disclosure is a subset of the restricted object checked against the same schema.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when a profile declares restricted fields",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/index.ts#readRestrictedPayloadSchema"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/payload-schema.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "unassessed",
+      "reviewedAt": "2026-11-01",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it."
+    },
+    {
       "id": "PROF-4-freeze",
       "sourceId": "spec-profiles",
       "sourceUri": "spec/profiles.md",
@@ -4210,9 +4452,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "notes": "`mapNativeOperation` in @bsv/dpp-profiles evaluates a profile's eventMappings against structured evidence facets and returns one of the four outcomes with a loss list; a property test holds that no non-lossless result comes without one. The registry returns lifecycleMapping beside a native claim on its report, history and validate routes, reading facets under the eleven names; a native claim carrying no facets maps TRANSFER to insufficient-data with custodyRecord missing."
+      "notes": "`mapNativeOperation` in @bsv/dpp-profiles evaluates a profile's eventMappings against structured evidence facets and returns one of the four outcomes with a loss list; a property test holds that no non-lossless result comes without one. The registry returns lifecycleMapping beside a native claim on its report, history and validate routes, reading facets under the eleven names; a native claim carrying no facets maps TRANSFER to insufficient-data with custodyRecord missing. From 2026-11-01 a native claim carries the facets under evidence (rules.md §3), so a mapping can read them from the claim itself."
     },
     {
       "id": "MAP-1-row-level-inventory",
@@ -5208,10 +5450,10 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-06",
+      "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "8cbbc7e77de6fe5e04bcb9ec784e5d0443ba09e0a3157ca8657936c7e536cf76",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested)."
+      "sourceDigest": "2656ce87cac2420e837712c71fbc6d839e27aeb6b69f3d2db5213f44b5108d33",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged."
     },
     {
       "id": "PROJ-1-source-revisions",
@@ -5486,9 +5728,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-07",
+      "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "48908ca596730dd8e753056422d0bf091befa475424d8a7066802910dc4c43ac"
+      "sourceDigest": "7c850639b9f294bd46e92c729375e9ffab6a45a6e76e69514becde37eef45a5d",
+      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged."
     },
     {
       "id": "PROF-4-frozen-unchanged",

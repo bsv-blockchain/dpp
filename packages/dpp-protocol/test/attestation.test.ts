@@ -20,7 +20,7 @@ describe('native lifecycle claim v1', () => {
   })
 
   it.each([
-    { eventType: 'Transfer' }, { profile_version: 2 }, { recordId: 'different-state' },
+    { eventType: 'Transfer' }, { profile_version: 3 }, { recordId: 'different-state' }, { recordId: 'aa'.repeat(32) },
     { passportId: 'different-product' }, { claimFormat: 'legacy' },
     { signature: '00'.repeat(64) }, { uora_type: 'Origin' },
     { issuerKeyDid: fixture.claim.issuer }, { nested: { proof: true } },
@@ -44,5 +44,33 @@ describe('native lifecycle claim v1', () => {
 
   it.each(['did:', 'did:web:', 'did:WEB:issuer.example', 'did:web:issuer.example#key', 'did:web:bad%escape'])('refuses malformed issuer %s even with a usable signing key', async issuer => {
     await expect(signLifecycleClaim({ ...fixture.unsignedClaim, issuer, issuerKeyDid: fixture.claim.issuer }, wallet)).rejects.toThrow('issuer must be a DID')
+  })
+
+  it('carries evidence facets under the nested canonical form and pins the fixture claim with evidence (rules.md §2 to §4)', async () => {
+    const F = fixture.claimWithEvidence
+    expect(verifyLifecycleClaim(F.claim)).toEqual({ signature: 'verified', identityBinding: 'key-identified', issuerKey: fixture.issuerKey })
+    expect(Utils.toHex(lifecycleClaimBytes(F.claim))).toBe(F.representationHex)
+    expect(lifecycleClaimDigest(F.claim)).toBe(F.digest)
+    expect(await signLifecycleClaim(F.unsignedClaim, wallet)).toEqual(F.claim)
+    // A claim without evidence canonicalises to the flat bytes, unchanged.
+    expect(Utils.toHex(lifecycleClaimBytes(fixture.claim))).toBe(Utils.toHex(canonicalBytes(fixture.claim)))
+  })
+
+  it.each([
+    { evidence: {} },
+    { evidence: { proof: 'x' } },
+    { evidence: { workDone: '' } },
+    { evidence: { outputs: [] } },
+    { evidence: { dispositionKind: 'burned' } },
+    { evidence: 'sha256:' + 'ab'.repeat(32) },
+  ])('refuses evidence that is not the facets of rules.md §2: %j', async (change) => {
+    await expect(signLifecycleClaim({ ...fixture.unsignedClaim, ...change } as never, wallet)).rejects.toThrow(/evidence/)
+  })
+
+  it('requires recordId to be the outpoint of the state the claim is about', async () => {
+    await expect(signLifecycleClaim({ ...fixture.unsignedClaim, recordId: 'state-1' }, wallet)).rejects.toThrow('recordId must be the outpoint')
+    await expect(signLifecycleClaim({ ...fixture.unsignedClaim, recordId: 'aa'.repeat(32) }, wallet)).rejects.toThrow('recordId must be the outpoint')
+    await expect(signLifecycleClaim({ ...fixture.unsignedClaim, recordId: `${'aa'.repeat(32)}:01` }, wallet)).rejects.toThrow('recordId must be the outpoint')
+    expect(verifyLifecycleClaim({ ...fixture.claim, recordId: `${'aa'.repeat(32)}:0` }).signature).toBe('invalid')
   })
 })

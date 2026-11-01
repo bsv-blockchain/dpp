@@ -29,7 +29,8 @@ export class Claims {
     const claim: LifecycleClaim = {
       claimFormat: 'dpp-lifecycle-v1',
       passportId: args.passport.passportId,
-      recordId: tip.txid,
+      // The state the claim is about, by its outpoint (rules.md section 3).
+      recordId: `${tip.txid}:${tip.outputIndex}`,
       eventType: args.eventType,
       timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
       issuer: args.issuer.did,

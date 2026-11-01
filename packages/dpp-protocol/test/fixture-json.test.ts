@@ -16,6 +16,8 @@ import { chainV2Fixture } from './chain-v2-fixture.js'
 import { chainV2Vectors } from './chain-v2-vectors.js'
 import { managedAcceptanceV1Fixture } from './managed-acceptance-v1-fixture.js'
 import { managedAcceptanceV1Vectors } from './managed-acceptance-v1-vectors.js'
+import { managedInstructionV1Fixture } from './managed-instruction-v1-fixture.js'
+import { managedInstructionV1Vectors } from './managed-instruction-v1-vectors.js'
 import { evidenceV2Fixture } from './evidence-v2-fixture.js'
 import { recordV3Fixture } from './record-v3-fixture.js'
 import { recordV3Vectors } from './record-v3-vectors.js'
@@ -140,6 +142,14 @@ describe('the published fixture files', () => {
     expectPublished('managed-acceptance-v1.json', generated)
     const vectors = managedAcceptanceV1Vectors(generated)
     expectPublished('vectors/dpp/managed-acceptance/v1.json', vectors)
+    expectStackShape(vectors as never)
+  })
+
+  it('managed-instruction-v1.json is managedInstructionV1Fixture(), verbatim, and vectors/dpp/managed-instruction/v1.json its vector form', async () => {
+    const generated = await managedInstructionV1Fixture()
+    expectPublished('managed-instruction-v1.json', generated)
+    const vectors = managedInstructionV1Vectors(generated)
+    expectPublished('vectors/dpp/managed-instruction/v1.json', vectors)
     expectStackShape(vectors as never)
   })
 

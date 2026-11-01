@@ -551,8 +551,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -601,7 +616,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -1140,8 +1155,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -1189,7 +1219,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -1673,8 +1703,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -1723,7 +1768,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -2051,8 +2096,17 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -2101,7 +2155,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -2519,8 +2573,19 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -2576,7 +2641,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -2892,8 +2957,17 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -2942,7 +3016,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -3323,8 +3397,13 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -3371,7 +3450,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -3762,8 +3841,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "cd29d8655862b806d84d0d3dd1003691760c4defb5fa3112006ffb712d504738:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -3812,7 +3906,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -4304,8 +4398,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -4354,7 +4463,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -4813,8 +4922,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -4865,7 +4989,7 @@
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "subjectBinding was not established: subject-not-independent.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -5342,8 +5466,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -5398,7 +5537,7 @@
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "subjectBinding was not established: genesis-ambiguous.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -5876,8 +6015,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -5931,7 +6085,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -6405,8 +6559,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
+              "3b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e8:1",
+              "aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57:0",
+              "a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46:0",
+              "e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc:0",
+              "a52757533e49209d970708f091d7a9719a42a37954d5f1b5fee30e17e67b2199:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -6454,7 +6623,7 @@
           "anchorSignature was not established: no-evidence.",
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -6466,7 +6635,7 @@
       "evidence": {
         "anchors": [
           {
-            "lockingScript": "21038ceeb36eb2307fdb0e578639515090c2b82a34ae46fb46684d6e8727442b032aac196273762d6174746573746174696f6e2d616e63686f722d763140303762303431353936333230343531663261316566663630616337636366323965656665363466616562396135353333623331386266343739363832376536384b75726e3a7368613235363a30376230343135393633323034353166326131656666363061633763636632396565666536346661656239613535333362333138626634373936383237653638396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2a68747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f666978747572652d31064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100ba4537dec544da0875d28c5ad9af7532b40461fd93bf16dfa48c7eb293b8eaa102202b41d84c3fc07f3e2a55876b39eca440b04cd391b2f81c0ec7b88947ace11fa76d6d6d6d6d",
+            "lockingScript": "2102fbb5a8834887259342eabdb6a4138484975d9e24c0ec507f884c8d6fda7f2099ac196273762d6174746573746174696f6e2d616e63686f722d763140643963336139393237393734373333663961626434306166323038653333323232386464356164343532363963626264336135353165326131616435616135334b75726e3a7368613235363a64396333613939323739373437333366396162643430616632303865333332323238646435616434353236396362626433613535316532613161643561613533396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a3268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100d5ec02af7c7703c46237b93d08b645f4a01096b006093c14aff43069e45253f40220352b734c96a7b9e9e18988ad9a1e889df11afc6b47b122b4d8bb50995e60c0026d6d6d6d6d",
             "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "outputIndex": 0
           }
@@ -6477,17 +6646,17 @@
             "eventType": "Origin",
             "issuer": "did:key:zQ3shNu2oFTbeqexYeunD36my3aQNqEWq8mWD2ACRqQLEipcz",
             "issuerKeyId": "fixture-issuer-key",
-            "passportId": "https://id.example.test/products/fixture-1",
-            "profile": "generic",
-            "profile_version": 1,
-            "recordId": "state-1",
+            "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
+            "profile": "general",
+            "profile_version": 2,
+            "recordId": "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
             "timestamp": "2026-09-05T00:00:00.000Z",
-            "signature": "3044022069516c93d507ce39fb9d42716b69ff36b010b0acfc99cddca4111a19a3968aa5022024ddc9777d513939d24b71d2bc30fb84d7d4344684fffab62667a64200d8d509"
+            "signature": "3044022054e91a7ea4abc7e5e8418118873020170e90902a83aa730a540edd24381e44990220154c493203b6f57852894c236b20d1292005ad21b5613a7a9d5604e316c9105c"
           }
         ]
       },
       "expectedSubject": {
-        "passportId": "https://id.example.test/products/fixture-1",
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
         "source": "request-context"
       },
       "policy": {
@@ -6497,7 +6666,7 @@
         "reportVersion": "1",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
-          "passportId": "https://id.example.test/products/fixture-1",
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
           "source": "request-context"
         },
         "suppliedTip": null,
@@ -6537,7 +6706,7 @@
             "name": "nativeAttestationSignature",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -6559,7 +6728,7 @@
             "status": "pass",
             "evidenceRefs": [
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -6572,7 +6741,7 @@
             "name": "subjectBinding",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68",
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53",
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0"
             ]
           },
@@ -6587,17 +6756,17 @@
             "status": "unknown",
             "reasonCode": "schema-unavailable",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
-              "generic@1"
+              "general@2"
             ]
           },
           {
             "name": "credentialTime",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
               "2026-09-05T00:00:00.000Z"
@@ -6608,7 +6777,7 @@
             "status": "not-applicable",
             "reasonCode": "format-defines-no-status",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -6616,7 +6785,7 @@
             "status": "pass",
             "evidenceRefs": [
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           }
         ],
@@ -6645,7 +6814,7 @@
       "evidence": {
         "anchors": [
           {
-            "lockingScript": "21038ceeb36eb2307fdb0e578639515090c2b82a34ae46fb46684d6e8727442b032aac196273762d6174746573746174696f6e2d616e63686f722d763140303762303431353936333230343531663261316566663630616337636366323965656665363466616562396135353333623331386266343739363832376536384b75726e3a7368613235363a30376230343135393633323034353166326131656666363061633763636632396565666536346661656239613535333362333138626634373936383237653638396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2a68747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f666978747572652d31064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100ba4537dec544da0875d28c5ad9af7532b40461fd93bf16dfa48c7eb293b8eaa102202b41d84c3fc07f3e2a55876b39eca440b04cd391b2f81c0ec7b88947ace11fa76d6d6d6d6d",
+            "lockingScript": "2102fbb5a8834887259342eabdb6a4138484975d9e24c0ec507f884c8d6fda7f2099ac196273762d6174746573746174696f6e2d616e63686f722d763140643963336139393237393734373333663961626434306166323038653333323232386464356164343532363963626264336135353165326131616435616135334b75726e3a7368613235363a64396333613939323739373437333366396162643430616632303865333332323238646435616434353236396362626433613535316532613161643561613533396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a3268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100d5ec02af7c7703c46237b93d08b645f4a01096b006093c14aff43069e45253f40220352b734c96a7b9e9e18988ad9a1e889df11afc6b47b122b4d8bb50995e60c0026d6d6d6d6d",
             "txid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "outputIndex": 0
           }
@@ -6656,17 +6825,17 @@
             "eventType": "Origin",
             "issuer": "did:key:zQ3shNu2oFTbeqexYeunD36my3aQNqEWq8mWD2ACRqQLEipcz",
             "issuerKeyId": "fixture-issuer-key",
-            "passportId": "https://id.example.test/products/fixture-1",
-            "profile": "generic",
-            "profile_version": 1,
-            "recordId": "state-1",
+            "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
+            "profile": "general",
+            "profile_version": 2,
+            "recordId": "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
             "timestamp": "2026-09-05T00:00:00.000Z",
-            "signature": "3044022069516c93d507ce39fb9d42716b69ff36b010b0acfc99cddca4111a19a3968aa5022024ddc9777d513939d24b71d2bc30fb84d7d4344684fffab62667a64200d8d509"
+            "signature": "3044022054e91a7ea4abc7e5e8418118873020170e90902a83aa730a540edd24381e44990220154c493203b6f57852894c236b20d1292005ad21b5613a7a9d5604e316c9105c"
           }
         ]
       },
       "expectedSubject": {
-        "passportId": "https://id.example.test/products/fixture-1",
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
         "source": "request-context"
       },
       "policy": {
@@ -6686,7 +6855,7 @@
         "reportVersion": "1",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
-          "passportId": "https://id.example.test/products/fixture-1",
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
           "source": "request-context"
         },
         "suppliedTip": null,
@@ -6726,7 +6895,7 @@
             "name": "nativeAttestationSignature",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -6748,7 +6917,7 @@
             "status": "pass",
             "evidenceRefs": [
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -6761,7 +6930,7 @@
             "name": "subjectBinding",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68",
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53",
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0"
             ]
           },
@@ -6769,7 +6938,7 @@
             "name": "issuerAuthority",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68",
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53",
               "urn:dpp:fixture:policy:anchor",
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0"
             ]
@@ -6779,17 +6948,17 @@
             "status": "unknown",
             "reasonCode": "schema-unavailable",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
-              "generic@1"
+              "general@2"
             ]
           },
           {
             "name": "credentialTime",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
               "2026-09-05T00:00:00.000Z"
@@ -6800,7 +6969,7 @@
             "status": "not-applicable",
             "reasonCode": "format-defines-no-status",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -6808,7 +6977,7 @@
             "status": "pass",
             "evidenceRefs": [
               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           }
         ],
@@ -6836,13 +7005,13 @@
       "evidence": {
         "anchors": [
           {
-            "lockingScript": "21038ceeb36eb2307fdb0e578639515090c2b82a34ae46fb46684d6e8727442b032aac196273762d6174746573746174696f6e2d616e63686f722d763140303762303431353936333230343531663261316566663630616337636366323965656665363466616562396135353333623331386266343739363832376536384b75726e3a7368613235363a30376230343135393633323034353166326131656666363061633763636632396565666536346661656239613535333362333138626634373936383237653638396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2a68747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f666978747572652d31064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100ba4537dec544da0875d28c5ad9af7532b40461fd93bf16dfa48c7eb293b8eaa102202b41d84c3fc07f3e2a55876b39eca440b04cd391b2f81c0ec7b88947ace11fa76d6d6d6d6d",
-            "securedBytes": "{\"claimFormat\":\"dpp-lifecycle-v1\",\"eventType\":\"Transfer\",\"issuer\":\"did:key:zQ3shNu2oFTbeqexYeunD36my3aQNqEWq8mWD2ACRqQLEipcz\",\"issuerKeyId\":\"fixture-issuer-key\",\"passportId\":\"https://id.example.test/products/fixture-1\",\"profile\":\"generic\",\"profile_version\":1,\"recordId\":\"state-1\",\"signature\":\"3044022069516c93d507ce39fb9d42716b69ff36b010b0acfc99cddca4111a19a3968aa5022024ddc9777d513939d24b71d2bc30fb84d7d4344684fffab62667a64200d8d509\",\"timestamp\":\"2026-09-05T00:00:00.000Z\"}"
+            "lockingScript": "2102fbb5a8834887259342eabdb6a4138484975d9e24c0ec507f884c8d6fda7f2099ac196273762d6174746573746174696f6e2d616e63686f722d763140643963336139393237393734373333663961626434306166323038653333323232386464356164343532363963626264336135353165326131616435616135334b75726e3a7368613235363a64396333613939323739373437333366396162643430616632303865333332323238646435616434353236396362626433613535316532613161643561613533396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a3268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100d5ec02af7c7703c46237b93d08b645f4a01096b006093c14aff43069e45253f40220352b734c96a7b9e9e18988ad9a1e889df11afc6b47b122b4d8bb50995e60c0026d6d6d6d6d",
+            "securedBytes": "{\"claimFormat\":\"dpp-lifecycle-v1\",\"eventType\":\"Transfer\",\"issuer\":\"did:key:zQ3shNu2oFTbeqexYeunD36my3aQNqEWq8mWD2ACRqQLEipcz\",\"issuerKeyId\":\"fixture-issuer-key\",\"passportId\":\"https://id.gs1.org/01/09506000134352/21/JERSEY-001\",\"profile\":\"general\",\"profile_version\":2,\"recordId\":\"4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0\",\"signature\":\"3044022054e91a7ea4abc7e5e8418118873020170e90902a83aa730a540edd24381e44990220154c493203b6f57852894c236b20d1292005ad21b5613a7a9d5604e316c9105c\",\"timestamp\":\"2026-09-05T00:00:00.000Z\"}"
           }
         ]
       },
       "expectedSubject": {
-        "passportId": "https://id.example.test/products/fixture-1",
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
         "source": "request-context"
       },
       "policy": {
@@ -6852,7 +7021,7 @@
         "reportVersion": "1",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
-          "passportId": "https://id.example.test/products/fixture-1",
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
           "source": "request-context"
         },
         "suppliedTip": null,
@@ -6914,7 +7083,7 @@
             "reasonCode": "digest-mismatch",
             "evidenceRefs": [
               "anchor:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
               "supplied bytes are not a verified native claim with this digest"
@@ -6993,7 +7162,7 @@
       "evidence": {
         "anchors": [
           {
-            "lockingScript": "21038ceeb36eb2307fdb0e578639515090c2b82a34ae46fb46684d6e8727442b032aac196273762d6174746573746174696f6e2d616e63686f722d763140303762303431353936333230343531663261316566663630616337636366323965656665363466616562396135353333623331386266343739363832376536384b75726e3a7368613235363a30376230343135393633323034353166326131656666363061633763636632396565666536346661656239613535333362333138626634373936383237653638396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2668747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f6f74686572064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e4230333739363264343562333865386263663832666138656661383433326130316632306339613533653234633764336631316466313937636238653730393236646146304402200c5a9b1e62283dec14ac9172586a51173d5a26cb5dab5fb2d9faffed75e5d79a0220654fbfd041b01c336d5b35c4ea9a4b44b12f77218bd9ee992a4ac9ed4fae31296d6d6d6d6d"
+            "lockingScript": "2102fbb5a8834887259342eabdb6a4138484975d9e24c0ec507f884c8d6fda7f2099ac196273762d6174746573746174696f6e2d616e63686f722d763140643963336139393237393734373333663961626434306166323038653333323232386464356164343532363963626264336135353165326131616435616135334b75726e3a7368613235363a64396333613939323739373437333366396162643430616632303865333332323238646435616434353236396362626433613535316532613161643561613533396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2668747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f6f74686572064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100e9ad838339a8fbd43d53ebb4f7135260daddca78904fefe145c019c384baf4b7022047123026b64bc98eb62574d276df3d5561c7cb4ffba4ab26ecc034e1a442cfa96d6d6d6d6d"
           }
         ],
         "nativeClaims": [
@@ -7002,17 +7171,17 @@
             "eventType": "Origin",
             "issuer": "did:key:zQ3shNu2oFTbeqexYeunD36my3aQNqEWq8mWD2ACRqQLEipcz",
             "issuerKeyId": "fixture-issuer-key",
-            "passportId": "https://id.example.test/products/fixture-1",
-            "profile": "generic",
-            "profile_version": 1,
-            "recordId": "state-1",
+            "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
+            "profile": "general",
+            "profile_version": 2,
+            "recordId": "4566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba6331:0",
             "timestamp": "2026-09-05T00:00:00.000Z",
-            "signature": "3044022069516c93d507ce39fb9d42716b69ff36b010b0acfc99cddca4111a19a3968aa5022024ddc9777d513939d24b71d2bc30fb84d7d4344684fffab62667a64200d8d509"
+            "signature": "3044022054e91a7ea4abc7e5e8418118873020170e90902a83aa730a540edd24381e44990220154c493203b6f57852894c236b20d1292005ad21b5613a7a9d5604e316c9105c"
           }
         ]
       },
       "expectedSubject": {
-        "passportId": "https://id.example.test/products/fixture-1",
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
         "source": "request-context"
       },
       "policy": {
@@ -7022,7 +7191,7 @@
         "reportVersion": "1",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
-          "passportId": "https://id.example.test/products/fixture-1",
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
           "source": "request-context"
         },
         "suppliedTip": null,
@@ -7062,7 +7231,7 @@
             "name": "nativeAttestationSignature",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -7085,7 +7254,7 @@
             "reasonCode": "metadata-mismatch",
             "evidenceRefs": [
               "anchor:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
               [
@@ -7104,7 +7273,7 @@
             "status": "fail",
             "reasonCode": "subject-mismatch",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68",
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53",
               "anchor:0"
             ],
             "detail": [
@@ -7125,17 +7294,17 @@
             "status": "unknown",
             "reasonCode": "schema-unavailable",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
-              "generic@1"
+              "general@2"
             ]
           },
           {
             "name": "credentialTime",
             "status": "pass",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ],
             "detail": [
               "2026-09-05T00:00:00.000Z"
@@ -7146,7 +7315,7 @@
             "status": "not-applicable",
             "reasonCode": "format-defines-no-status",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -7154,7 +7323,7 @@
             "status": "pass",
             "evidenceRefs": [
               "anchor:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           }
         ],
@@ -7183,13 +7352,13 @@
       "evidence": {
         "anchors": [
           {
-            "lockingScript": "210258379dd51d728dc7f20e2d59bcc5f96752653825b1a0de0f98bab0ca55e07beaac196273762d6174746573746174696f6e2d616e63686f722d763140346430353331643739326532333830663931326536396230613832626439376532363835303635633365346666666436643537616531326436643665353937644b75726e3a7368613235363a34643035333164373932653233383066393132653639623061383262643937653236383530363563336534666666643664353761653132643664366535393764396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2a68747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f666978747572652d3107556e6b6e6f776e13782d756e6b6e6f776e2d666f726d61742d7639186170706c69636174696f6e2f6f637465742d73747265616d42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461463044022011c27e5ea848420e2e1e100e86a89de6baede3ffada3ac629cfb5a4117c44051022026b1b89aafb1073c82779bfdd51c38577807475d37b1f238faf49c36683e58bd6d6d6d6d6d",
+            "lockingScript": "210258379dd51d728dc7f20e2d59bcc5f96752653825b1a0de0f98bab0ca55e07beaac196273762d6174746573746174696f6e2d616e63686f722d763140346430353331643739326532333830663931326536396230613832626439376532363835303635633365346666666436643537616531326436643665353937644b75726e3a7368613235363a34643035333164373932653233383066393132653639623061383262643937653236383530363563336534666666643664353761653132643664366535393764396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a3268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d30303107556e6b6e6f776e13782d756e6b6e6f776e2d666f726d61742d7639186170706c69636174696f6e2f6f637465742d73747265616d4230333739363264343562333865386263663832666138656661383433326130316632306339613533653234633764336631316466313937636238653730393236646146304402202536badfc01285714517abd17081561420bdfab38a41a6d809c5e54dcb9917c00220332d52bbbf3b08eedd694fc9aaf630fd18e4aaaff61a1dc1301b395d22bab3566d6d6d6d6d",
             "securedBytes": "opaque bytes of a format this verifier does not know"
           }
         ]
       },
       "expectedSubject": {
-        "passportId": "https://id.example.test/products/fixture-1",
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
         "source": "request-context"
       },
       "policy": {
@@ -7199,7 +7368,7 @@
         "reportVersion": "1",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
-          "passportId": "https://id.example.test/products/fixture-1",
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
           "source": "request-context"
         },
         "suppliedTip": null,
@@ -7350,12 +7519,12 @@
       "evidence": {
         "anchors": [
           {
-            "lockingScript": "21038ceeb36eb2307fdb0e578639515090c2b82a34ae46fb46684d6e8727442b032aac196273762d6174746573746174696f6e2d616e63686f722d763140303762303431353936333230343531663261316566663630616337636366323965656665363466616562396135353333623331386266343739363832376536384b75726e3a7368613235363a30376230343135393633323034353166326131656666363061633763636632396565666536346661656239613535333362333138626634373936383237653638396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a2a68747470733a2f2f69642e6578616d706c652e746573742f70726f64756374732f666978747572652d31064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100ba4537dec544da0875d28c5ad9af7532b40461fd93bf16dfa48c7eb293b8eaa102202b41d84c3fc07f3e2a55876b39eca440b04cd391b2f81c0ec7b88947ace11fa76d6d6d6d6d"
+            "lockingScript": "2102fbb5a8834887259342eabdb6a4138484975d9e24c0ec507f884c8d6fda7f2099ac196273762d6174746573746174696f6e2d616e63686f722d763140643963336139393237393734373333663961626434306166323038653333323232386464356164343532363963626264336135353165326131616435616135334b75726e3a7368613235363a64396333613939323739373437333366396162643430616632303865333332323238646435616434353236396362626433613535316532613161643561613533396469643a6b65793a7a513373684e75326f465462657165785965756e4433366d793361514e71455771386d57443241435271514c456970637a3268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031064f726967696e156470702d6c6966656379636c652d6a736f6e2d7631106170706c69636174696f6e2f6a736f6e42303337393632643435623338653862636638326661386566613834333261303166323063396135336532346337643366313164663139376362386537303932366461473045022100d5ec02af7c7703c46237b93d08b645f4a01096b006093c14aff43069e45253f40220352b734c96a7b9e9e18988ad9a1e889df11afc6b47b122b4d8bb50995e60c0026d6d6d6d6d"
           }
         ]
       },
       "expectedSubject": {
-        "passportId": "https://id.example.test/products/fixture-1",
+        "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
         "source": "request-context"
       },
       "policy": {
@@ -7365,7 +7534,7 @@
         "reportVersion": "1",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
-          "passportId": "https://id.example.test/products/fixture-1",
+          "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
           "source": "request-context"
         },
         "suppliedTip": null,
@@ -7427,7 +7596,7 @@
             "reasonCode": "secured-bytes-absent",
             "evidenceRefs": [
               "anchor:0",
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           },
           {
@@ -7472,7 +7641,7 @@
             "status": "unknown",
             "reasonCode": "referenced-artefact-unavailable",
             "evidenceRefs": [
-              "sha256:07b041596320451f2a1eff60ac7ccf29eefe64faeb9a5533b318bf4796827e68"
+              "sha256:d9c3a9927974733f9abd40af208e332228dd5ad45269cbbd3a551e2a1ad5aa53"
             ]
           }
         ],

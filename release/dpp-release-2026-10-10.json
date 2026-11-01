@@ -335,17 +335,17 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "ac996c6f2d23bf6fa530d91e373ee5ade004bd7886723dad17e4f66fb49a41df",
+      "sha256": "1f80825bac1b6a7811c0b6d3b724eb633e5446eeb1a73d9a032dabe0445af181",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "18cf32e4036a056b8ee7ff7dd7cb7ff2ef061364442fea7381b7405030b650e5",
+      "sha256": "fd2aa84d5d6216370c299a25670651afcd4291b18c75db58a6c04b175ee24f90",
       "pins": "the index's HTTP contract"
     },
     {
       "path": "contracts/verification-report.schema.json",
-      "sha256": "e4d01fed1523bc3bd9c3bf60234d63e108a1cc112b8a3ecce6d0160b084726e5",
+      "sha256": "6d2bfa73e28a5b0d83be35a1769a3feb97669799a2ee3bff070c2474d3892fb2",
       "pins": "the report schema and reason codes"
     },
     {
@@ -415,12 +415,12 @@
     },
     {
       "path": "fixtures/evidence-v3.json",
-      "sha256": "ff8ed81946ba3fcc1190035dd092fea9c925d3183dcfb05109b40fc95d0d37c7",
+      "sha256": "dbe4a7775191c40fb338b580452187dca5e4128307892f07b4759cefcf900225",
       "pins": "the verification report for nine carried evidence cases"
     },
     {
       "path": "conformance/baseline-native-3.json",
-      "sha256": "b665b2113c92a854442a2c80b167e0eacd8f9ddfbdd765ec72f8cdaf7a6ec286",
+      "sha256": "fde17c192759644f7614a115ebb4baaa1313725d6f41437055f5d2a8b71f2fb1",
       "pins": "the proposed baseline for the carried record, with every fixture digest"
     }
   ],

@@ -35,7 +35,7 @@ Under `managed-custody@1` the recipient becomes the passport's holder, and the c
 - **How the holder leaves managed custody.** The custodian writes a `TRANSFER` to a `destinationKey`, a key the holder's own wallet derived, and from then on the holder proves control from their own wallet (section 7).
 - **What the acceptance screen says.** Tell the holder how to ask for a change or a further hand on, whether they can see the owner tier, and how to take the passport into a wallet of their own.
 
-The standard does not yet say whether a custodian may write a state for a holder without the holder's request, or how such a request would be recorded. Until it does, an application that lets its own team update or retire a passport it has handed on makes that decision itself, and should tell the holder.
+- **What authorises a change after a hand on.** The holder's recorded instruction. The custodian records the request, signs it and keeps it, and the `UPDATE` or `RETIRE` it writes commits to that record in field 15, as the `TRANSFER` commits to the acceptance (section 6). An index or reader that selects the profile's instruction rule refuses a change written for a holder without one, unless a named control authority made it. An application's own team therefore cannot quietly update or retire a passport it has handed on: it records whose request it acted on, or it acts as a control authority, visibly.
 
 ## Keys and secrets
 

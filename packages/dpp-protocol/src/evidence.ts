@@ -11,6 +11,7 @@ import { didKeyFromIdentityKey } from './did.js'
 import { inspectChain, type ChainInspection, type StateInspection } from './verifyChain.js'
 import { verifyPolicyChain, type PublisherPolicy } from './publisherPolicy.js'
 import { bindAcceptanceToState, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
+import { bindInstructionToState, inspectManagedInstruction, type ManagedInstructionRecord } from './instruction.js'
 import type { Outpoint, SeventeenFieldState } from './types.js'
 
 /**
@@ -144,6 +145,27 @@ export interface PassportEvidence {
    * record supplied leaves `evidenceAvailability` unknown, never passed.
    */
   acceptanceRecords?: unknown[]
+  /**
+   * Managed instruction records (`spec/managed-custody.md` §6) the custodian
+   * retained for the version 2 or 3 UPDATEs and RETIREs that commit to one.
+   * As with acceptance records, a commitment with no record supplied leaves
+   * `evidenceAvailability` unknown, never passed.
+   */
+  instructionRecords?: unknown[]
+}
+
+/** A token state's public payload with the profile it declares, as handed to `EvidencePolicy.payloadValidator`. */
+export interface DeclaredPayload {
+  /** The `profile` stamp of the payload. */
+  profile: string
+  /** The `profile_version` stamp of the payload. */
+  profileVersion: number
+  /** The exact `payload_public` string of the state. */
+  payloadPublic: string
+  /** The state's outpoint as `txid:outputIndex`. */
+  ref: string
+  /** The state's position in the supplied history, genesis first. */
+  stateIndex: number
 }
 
 /** A check's answer from a pluggable verifier, before the report names and orders it. */
@@ -241,17 +263,47 @@ export interface EvidencePolicy {
    * either way, and the custodian's authority is the `authority` policy's.
    */
   managedAcceptance?: { required?: boolean }
+  /**
+   * The instruction rule of the same profile (`spec/managed-custody.md` §6).
+   * `required` makes every version 2 or 3 UPDATE or RETIRE after a committed
+   * TRANSFER carry an instruction commitment unless a control authority made
+   * it; the commitments are otherwise read but not demanded. Supplied
+   * instruction records are verified either way.
+   */
+  managedInstruction?: { required?: boolean }
   chainTracker?: ChainTracker | 'scripts only'
   authority?: AuthorityPolicy
   credentialVerifier?: ExternalCredentialVerifier
   /** Validates a native claim's payload against its declared profile and version; absent means `schema` is unknown for native claims. */
   profileValidator?: (claim: SignedLifecycleClaim) => Promise<PartialCheck>
+  /**
+   * Validates a token state's `payload_public` against the schema the
+   * profile and version it declares select (`spec/verification.md` §4,
+   * `schema`; `spec/profiles.md` §3). The core is dependency-light and
+   * holds no profile schema, so the caller supplies the validator, and
+   * `profilePayloadValidator` in `@bsv/dpp-profiles` is one. Absent, every
+   * state that declares a profile answers `unknown` with
+   * `schema-unavailable`; a state whose payload declares no profile answers
+   * `unknown` with `profile-undeclared` either way, because no schema is
+   * selected for it.
+   */
+  payloadValidator?: (payload: DeclaredPayload) => Promise<PartialCheck>
   observers?: LatestStateObserver[]
   /** The observation time, injected for reproducibility. Defaults to now. */
   checkedAt?: string
 }
 
 const outpointRef = (o: Outpoint): string => `${o.txid}:${o.outputIndex}`
+
+/** The `profile` and `profile_version` stamps a public payload declares (`spec/profiles.md` §3), or null when it declares none or declares them malformed. */
+function declaredProfile(payloadPublic: string): { profile: string; profileVersion: number } | null {
+  let parsed: unknown
+  try { parsed = JSON.parse(payloadPublic) } catch { return null }
+  if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+  const { profile, profile_version: version } = parsed as Record<string, unknown>
+  if (typeof profile !== 'string' || profile.length === 0 || !Number.isSafeInteger(version) || (version as number) < 1) return null
+  return { profile, profileVersion: version as number }
+}
 const digestRef = (hex: string): string => `sha256:${hex}`
 const sameOutpoint = (a: Outpoint, b: Outpoint): boolean => a.txid === b.txid && a.outputIndex === b.outputIndex
 
@@ -346,7 +398,7 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
     failure?.kind === 'linkage'
       ? check('linkage', 'fail', linkageReasonCode(failure.message), refs, { scope: { stateIndex: failure.index }, detail: failure.message })
       : failure?.kind === 'consent'
-        ? check('linkage', 'fail', failure.message.includes('authorisation_commitment') ? 'acceptance-commitment-absent' : 'consent-not-proven', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
+        ? check('linkage', 'fail', failure.message.includes('after a committed TRANSFER') ? 'instruction-commitment-absent' : failure.message.includes('authorisation_commitment') ? 'acceptance-commitment-absent' : 'consent-not-proven', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
         : heldOrNotInspected('linkage')
 
   let inclusion: EvidenceCheck
@@ -537,6 +589,7 @@ export async function verifyPassportEvidence(
     ownerConsent: policy.ownerConsent,
     ...(policy.controlAuthorities == null ? {} : { controlAuthorities: policy.controlAuthorities }),
     managedAcceptance: policy.managedAcceptance?.required === true,
+    managedInstruction: policy.managedInstruction?.required === true,
   }
   const inspection = txs != null && txs.length > 0 ? await inspectChain(txs, chainOptions) : undefined
   const token = tokenChecks(txs, inspection, policy)
@@ -816,6 +869,38 @@ export async function verifyPassportEvidence(
     limits.push('An acceptance commitment binds a transfer to acceptance evidence the custodian retained and signed; it is custody-dependent evidence, not a signature made with a key the recipient controls.')
   }
 
+  // Managed instructions (`spec/managed-custody.md` §6): every version 2 or 3
+  // UPDATE or RETIRE that commits to an instruction record references an
+  // artefact, reported exactly as an acceptance commitment is.
+  const committedWrites = (token.inspection?.states ?? []).filter(
+    (s): s is StateInspection & { state: SeventeenFieldState } => s.state.version !== '1' && (s.state.op === 'UPDATE' || s.state.op === 'RETIRE') && s.state.authorisationCommitment !== ''
+  )
+  const suppliedInstructions = (evidence.instructionRecords ?? []).map((value, index) => ({ index, value, inspection: inspectManagedInstruction(value) }))
+  for (const write of committedWrites) {
+    const ref = `instruction:sha256:${write.state.authorisationCommitment}`
+    const stateRef = outpointRef({ txid: write.txid, outputIndex: write.outputIndex })
+    const supplied = suppliedInstructions.find((a) => a.inspection.commitment === write.state.authorisationCommitment)
+    if (supplied == null) {
+      acceptanceParts.push({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable', evidenceRefs: [stateRef, ref], detail: `the instruction record ${stateRef} commits to was not supplied` })
+      continue
+    }
+    const failures = [...supplied.inspection.failures]
+    if (supplied.inspection.signatureValid === true) failures.push(...bindInstructionToState(supplied.value as ManagedInstructionRecord, write.state))
+    if (failures.length > 0) {
+      acceptanceParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: [stateRef, ref], detail: failures.map((f) => f.detail) })
+      continue
+    }
+    acceptanceParts.push({ status: 'pass', evidenceRefs: [stateRef, ref] })
+    acceptanceCustodianQuestions.push({ role: 'acceptance-custodian', identity: (supplied.value as ManagedInstructionRecord).custodian, at: (supplied.value as ManagedInstructionRecord).requestedAt, ref })
+  }
+  for (const orphan of suppliedInstructions) {
+    if (committedWrites.some((w) => w.state.authorisationCommitment === orphan.inspection.commitment)) continue
+    acceptanceParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: [`instruction:${orphan.index}`], detail: orphan.inspection.commitment == null ? orphan.inspection.failures.map((f) => f.detail) : 'no supplied UPDATE or RETIRE commits to this instruction record' })
+  }
+  if (committedWrites.length > 0) {
+    limits.push('An instruction commitment binds a state to a request the custodian recorded and signed on the holder\'s behalf; it is custody-dependent evidence, not a signature made with a key the holder controls.')
+  }
+
   // Authority, role by role, on the policy's lists or verifier.
   let issuerAuthority: EvidenceCheck
   const authorityRefs = [...subjectRefs]
@@ -852,8 +937,24 @@ export async function verifyPassportEvidence(
     issuerAuthority = combine('issuerAuthority', parts, check('issuerAuthority', 'unknown', 'no-evidence', authorityRefs))
   }
 
-  // Schema, time and status, across native claims and external credentials.
+  // Schema, across token payloads, native claims and external credentials.
+  // A state's payload selects its schema by the profile it declares; one
+  // that declares none selects nothing, which is unknown and never a pass.
   const schemaParts: PartialCheck[] = []
+  for (const s of token.inspection?.states ?? []) {
+    const ref = outpointRef({ txid: s.txid, outputIndex: s.outputIndex })
+    const declared = declaredProfile(s.state.payloadPublic)
+    if (declared == null) {
+      schemaParts.push({ status: 'unknown', reasonCode: 'profile-undeclared', evidenceRefs: [ref], detail: `state ${s.index} declares no profile in its public payload` })
+      continue
+    }
+    const payload: DeclaredPayload = { ...declared, payloadPublic: s.state.payloadPublic, ref, stateIndex: s.index }
+    if (policy.payloadValidator == null) {
+      schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [ref], detail: `${declared.profile}@${declared.profileVersion}` })
+      continue
+    }
+    try { schemaParts.push({ ...(await policy.payloadValidator(payload)), evidenceRefs: [ref] }) } catch (cause) { schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [ref], detail: cause instanceof Error ? cause.message : String(cause) }) }
+  }
   for (const c of native.claims) {
     if (policy.profileValidator == null) schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [c.ref], detail: `${c.claim.profile}@${c.claim.profile_version}` })
     else {

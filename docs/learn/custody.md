@@ -23,7 +23,7 @@ The custody specification describes three ways to distribute the keys, and recor
 
 | | Possession | Split custody | Operator custody | `managed-custody@1` |
 |---|---|---|---|---|
-| Who holds the lock | The owner's wallet, as the controller key itself | An operator | An operator | The custodian |
+| Who holds the lock | The owner's wallet, as the controller key itself | An operator | An operator | The controller key itself; the custodian's wallet spends it for a managed identity, and a recipient who supplied their own key spends it themselves |
 | Who holds the controller key | The owner's wallet | The owner's wallet | The operator, for the owner | The custodian, for the holder |
 | What a recipient needs | A BRC-100 wallet, with funds or a publisher that pays | A BRC-100 wallet | An account | Nothing: no wallet, identifier or funds |
 | What a stranger can check about a transfer | The owner's spend, which the network enforces | The owner's linkage proof, when the profile asks for it | Nothing beyond the operator's word | That the custodian signed and kept a record of the recipient's acceptance, and that the transfer commits to it |
@@ -60,7 +60,7 @@ For a recipient, being handed a passport under `managed-custody@1` goes like thi
 1. **You receive an offer.** The platform sends you a claim code outside the passport, or addresses the offer to an identity of yours.
 2. **You accept.** You read the terms and accept. You sign nothing: the custodian records your acceptance, signs that record and keeps it.
 3. **You are the holder.** The custodian keeps the passport's keys for you, under an identity it holds on your behalf unless you gave it one of your own.
-4. **Everything next goes through the custodian.** To change the passport, hand it on or retire it, you ask the platform. To hand it on, the platform makes a new offer and the same three steps follow.
+4. **Everything next goes through the custodian, on your instruction.** To change the passport, hand it on or retire it, you ask the platform. The custodian records your request, signs that record and keeps it, and the state it writes commits to the record the way a transfer commits to your acceptance ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) section 6). A reader applying the profile's instruction rule refuses a change the custodian wrote for you without one. To hand it on, the platform makes a new offer and the same three steps follow.
 
 A platform should answer these questions on its acceptance screen, so that a holder knows what comes next:
 

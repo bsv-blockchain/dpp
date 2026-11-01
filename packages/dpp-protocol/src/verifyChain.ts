@@ -47,6 +47,13 @@ export interface VerifyChainOptions {
    * record model alone is checked and the commitment is read but not required.
    */
   managedAcceptance?: boolean
+  /**
+   * The instruction rule of the same profile (`spec/managed-custody.md` §6):
+   * when selected, every version 2 or 3 UPDATE or RETIRE after a committed
+   * TRANSFER must carry an `authorisation_commitment`, unless its actor is a
+   * control authority. Off by default, and read but not required otherwise.
+   */
+  managedInstruction?: boolean
 }
 
 export interface DppOutputRef {
@@ -59,6 +66,8 @@ export interface DppOutputRef {
 
 /** What a reader reports when the managed-custody profile is selected and a version 2 TRANSFER carries no commitment. */
 export const ACCEPTANCE_COMMITMENT_REFUSAL = `TRANSFER carries no authorisation_commitment under ${MANAGED_CUSTODY_PROFILE}`
+/** The refusal of a version 2 or 3 UPDATE or RETIRE after a committed TRANSFER with no instruction commitment, under the profile. */
+export const INSTRUCTION_COMMITMENT_REFUSAL = `UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under ${MANAGED_CUSTODY_PROFILE}`
 
 /**
  * Locate THE DPP output of a transaction (§6 invariant 1: exactly one).
@@ -175,6 +184,7 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
 
   let prev: { state: DppState; txid: string; outputIndex: number } | null = null
   let genesis: Outpoint | undefined
+  let committedTransferSeen = false
   for (let i = 0; i < txs.length; i++) {
     const tx = txs[i]
     const txid = tx.id('hex')
@@ -236,6 +246,14 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
         consentError = ACCEPTANCE_COMMITMENT_REFUSAL
       }
     }
+    // The instruction rule (`spec/managed-custody.md` §6): once a TRANSFER has
+    // committed to an acceptance, the holder is a recipient the custodian
+    // acts for, and every later UPDATE or RETIRE commits to the holder's
+    // instruction, unless a named control authority made it.
+    if (prev != null && linkError == null && state.version !== '1' && (state.op === 'UPDATE' || state.op === 'RETIRE') && options.managedInstruction === true && committedTransferSeen && state.authorisationCommitment === '' && !controlAuthorities.includes(state.actorIdentityKey)) {
+      consentError = INSTRUCTION_COMMITMENT_REFUSAL
+    }
+    if (state.version !== '1' && state.op === 'TRANSFER' && state.authorisationCommitment !== '') committedTransferSeen = true
 
     let spv: StateCheck['spv']
     let spvReason: StateInspection['spvReason']

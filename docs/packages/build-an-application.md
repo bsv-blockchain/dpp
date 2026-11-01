@@ -198,6 +198,7 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
 | `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects `managed-custody@1`: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
+| `INSTRUCTION_COMMITMENT` | `required`, or unset | Selects the profile's instruction rule: after a committed `TRANSFER`, an `UPDATE` or `RETIRE` is admitted only with its instruction commitment, unless a control authority made it. Needs `ACCEPTANCE_COMMITMENT=required` |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
 `SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run an index from source](../operate/README.md) explains the other settings.
@@ -302,7 +303,7 @@ To build the same writer into your own application, follow [how the writer examp
 
 A lifecycle claim is a signed statement about a passport, such as a repair or a recycling. It travels on its own track and never spends the passport:
 
-1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`. A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
+1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`, the state it is about by its outpoint in `recordId`, and under `evidence` the references a mapping needs, such as what a repair did and who did it ([add a claim](add-a-claim.md)). A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
 2. A registry validates it (`POST /validate` is open on the hosted registry) and, if you run one or hold its write token, stores it.
 3. An anchoring service builds `buildAttestationAnchor` over `lifecycleClaimDigest(claim)` with `attestationId` `urn:sha256:<digest>`, and announces and sends it like a passport state on `tm_attestation`, the index's topic for anchors. The anchor transaction comes from the service's own wallet, and `anchoredBy` names its key.
 
@@ -353,10 +354,8 @@ An index on an earlier release, or another implementation, may answer `none` wit
 
 These are open in the standard, and a writer must not guess them. The [known limitations](../operate/limitations.md) list the rest.
 
-- How the `owner`, `legitimate` and `authority` tiers are each disclosed. One ciphertext reaches whoever holds its key, so a passport with several audiences has no agreed answer yet.
-- Whether a custodian may write a state for a holder without the holder's request.
+- Which parties have a legitimate interest in a passport, and how they prove it to the owner before a disclosure. How a disclosure is made is settled ([how the writer example works](how-the-writer-works.md#the-owner-tier)); who is owed one is not.
 - Which `eventData` properties an `UPDATE` or a `RETIRE` carries.
-- How an acceptance record reaches a reader, since no index or registry serves it yet.
 
 ## Where to go next
 

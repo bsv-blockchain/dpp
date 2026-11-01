@@ -131,6 +131,8 @@ export interface CapabilityInput {
   controlAuthorities?: string[]
   /** ACCEPTANCE_COMMITMENT=required: the managed-custody profile is selected, so a version 2 TRANSFER must carry its acceptance commitment. */
   managedAcceptance?: boolean
+  /** INSTRUCTION_COMMITMENT=required: the profile's instruction rule is selected, so an UPDATE or RETIRE after a committed TRANSFER must carry its instruction commitment. */
+  managedInstruction?: boolean
   /** Whether EXPORT_SIGNING_KEY is set. */
   exportAvailable: boolean
   /** Whether EXPORT_TOKEN is set, so GET /evidence-export needs a bearer. */
@@ -197,6 +199,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   const transferAuthorities = typeof input.ownerConsent === 'object' ? [...input.ownerConsent.authorities] : []
   const controlAuthorities = input.controlAuthorities ?? transferAuthorities
   const managedAcceptance = input.managedAcceptance === true
+  const managedInstruction = managedAcceptance && input.managedInstruction === true
 
   const unsupported: CapabilityDocument['unsupported'] = [
     ...(input.syncDiscovery === true
@@ -278,6 +281,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
         kind: 'custody',
         options: {
           acceptanceCommitment: managedAcceptance ? 'required' : 'not-selected',
+          instructionCommitment: managedInstruction ? 'required' : 'not-selected',
           controlAuthorities,
         },
       },

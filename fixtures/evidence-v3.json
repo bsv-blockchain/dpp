@@ -504,8 +504,21 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -553,7 +566,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -1067,8 +1080,21 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -1124,7 +1150,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -1627,8 +1653,23 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0",
+              "fe2f11c04b1da3682ef8bd9fee599b3678e50f36631d9872155e80987754b8b2:1",
+              "0c70132e8d155c51d2470f12f6935ecc26ee9d157d4a9df93673d151404824e5:0",
+              "f91bdaab525c4a744480a54097935e5c962858a776433f2f0f50bb7d51762429:0",
+              "1115abd5b67c5865c9f27eb2aeb572a1e4d828c197eba57d2356e98bfbf27626:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload",
+              "state 2 declares no profile in its public payload",
+              "state 3 declares no profile in its public payload",
+              "state 4 declares no profile in its public payload",
+              "state 5 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -1677,7 +1718,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -1928,8 +1969,15 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "3c31d3a5a8c9d4b4d8c21a1a60b0087faf327c2e25787f454f46a3f66b4240d0:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -1974,7 +2022,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -2162,8 +2210,13 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "5e7c19d6cf8c0dda6f27964c19ba6b66be5f893b096c85de4eff787097075432:1"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -2207,7 +2260,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -2458,8 +2511,15 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "39dcc4bc3449ad9641589e03e91b1854f6162abac497f346b3fa8a0717575f0b:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -2504,7 +2564,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -2755,8 +2815,15 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "c9ef573f907dd578b597f7d5d1baa27da12527ab28175b0d0f3891dafc5665ea:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -2801,7 +2868,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -3006,8 +3073,13 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -3054,7 +3126,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]
@@ -3322,8 +3394,15 @@
           {
             "name": "schema",
             "status": "unknown",
-            "reasonCode": "no-evidence",
-            "evidenceRefs": []
+            "reasonCode": "profile-undeclared",
+            "evidenceRefs": [
+              "f7c13894b8719440b89026aa434017b12ec08166f083cddb0c7a4766bf5a9ca1:0",
+              "593b014f64f638b9f0d2067b15ad8a09b4d80e0b4a4d4bf731fc84ed8759e96f:0"
+            ],
+            "detail": [
+              "state 0 declares no profile in its public payload",
+              "state 1 declares no profile in its public payload"
+            ]
           },
           {
             "name": "credentialTime",
@@ -3371,7 +3450,7 @@
           "anchorKeyDerivation was not established: no-evidence.",
           "anchorDigestAndMetadataBinding was not established: no-evidence.",
           "issuerAuthority was not established: policy-missing.",
-          "schema was not established: no-evidence.",
+          "schema was not established: profile-undeclared.",
           "credentialTime was not established: no-evidence.",
           "credentialStatus was not established: no-evidence."
         ]

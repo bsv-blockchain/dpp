@@ -1,5 +1,5 @@
 import { CachedKeyDeriver, Hash, Signature, Utils, type WalletProtocol } from '@bsv/sdk'
-import { canonicalBytes } from './canonical.js'
+import { canonicalJson } from './canonicalJson.js'
 import { identityKeyFromDidKey } from './did.js'
 import type { DataSigner } from './signatures.js'
 
@@ -8,6 +8,32 @@ export const LIFECYCLE_CLAIM_PROTOCOL: WalletProtocol = [1, 'dpp attestation v1'
 export const LIFECYCLE_REPRESENTATION = 'dpp-lifecycle-json-v1' as const
 export const LIFECYCLE_MEDIA_TYPE = 'application/json' as const
 export type LifecycleEventType = 'Origin' | 'Transfer' | 'Transformation' | 'Disposition'
+
+/** The facets a mapping asks for (`spec/rules.md` §2), each a reference to a record and never a bare flag. */
+export const LIFECYCLE_EVIDENCE_FACETS = ['facility', 'time', 'responsibleParty', 'source', 'destination', 'custodyRecord', 'workDone', 'performedBy', 'performedAt', 'dispositionKind', 'outputs'] as const
+export type LifecycleEvidenceFacet = (typeof LIFECYCLE_EVIDENCE_FACETS)[number]
+
+/**
+ * The evidence a native claim carries for the mapping of its event
+ * (`spec/rules.md` §2 and §3): references to records by facet. Omitted when
+ * the claim carries none; never present and empty.
+ */
+export interface LifecycleClaimEvidence {
+  facility?: string
+  time?: string
+  responsibleParty?: string
+  source?: string
+  destination?: string
+  custodyRecord?: string
+  workDone?: string
+  performedBy?: string
+  performedAt?: string
+  dispositionKind?: 'disposal' | 'process-with-outputs'
+  outputs?: string[]
+}
+
+/** The form of `recordId`: the outpoint of the state the claim is about, `<txid>:<outputIndex>` (`spec/rules.md` §3). */
+export const RECORD_ID_PATTERN = /^[0-9a-f]{64}:(0|[1-9][0-9]*)$/
 
 /** Native token-operation evidence. This is a different format from a VSC SEAL. */
 export interface LifecycleClaim {
@@ -21,6 +47,7 @@ export interface LifecycleClaim {
   issuerKeyDid?: string
   profile: string
   profile_version: number
+  evidence?: LifecycleClaimEvidence
 }
 
 export interface SignedLifecycleClaim extends LifecycleClaim { signature: string }
@@ -34,8 +61,9 @@ export interface LifecycleClaimVerification {
 
 const allowed = new Set([
   'claimFormat', 'passportId', 'recordId', 'eventType', 'timestamp', 'issuer',
-  'issuerKeyId', 'issuerKeyDid', 'profile', 'profile_version', 'signature',
+  'issuerKeyId', 'issuerKeyDid', 'profile', 'profile_version', 'evidence', 'signature',
 ])
+const facets = new Set<string>(LIFECYCLE_EVIDENCE_FACETS)
 const types = new Set(['Origin', 'Transfer', 'Transformation', 'Disposition'])
 const anyone = new CachedKeyDeriver('anyone')
 
@@ -55,6 +83,25 @@ function validate(value: unknown, signed: boolean): asserts value is LifecycleCl
   }
   if (claim.claimFormat !== LIFECYCLE_CLAIM_FORMAT) throw new Error('unsupported claimFormat')
   for (const field of ['passportId', 'recordId', 'issuer'] as const) text(claim[field], field, 512)
+  if (!RECORD_ID_PATTERN.test(claim.recordId as string)) throw new Error('recordId must be the outpoint of the state the claim is about, <txid>:<outputIndex>')
+  if (claim.evidence !== undefined) {
+    const evidence = claim.evidence
+    if (evidence === null || typeof evidence !== 'object' || Array.isArray(evidence)) throw new Error('evidence must be an object')
+    const keys = Object.keys(evidence as Record<string, unknown>)
+    if (keys.length === 0) throw new Error('evidence must carry at least one facet or be omitted')
+    for (const key of keys) {
+      if (!facets.has(key)) throw new Error(`unsupported evidence facet ${key}`)
+      const value = (evidence as Record<string, unknown>)[key]
+      if (key === 'outputs') {
+        if (!Array.isArray(value) || value.length === 0) throw new Error('evidence.outputs must be a non-empty list of references')
+        for (const [i, item] of value.entries()) text(item, `evidence.outputs[${i}]`, 512)
+      } else if (key === 'dispositionKind') {
+        if (value !== 'disposal' && value !== 'process-with-outputs') throw new Error('evidence.dispositionKind must be disposal or process-with-outputs')
+      } else {
+        text(value, `evidence.${key}`, 512)
+      }
+    }
+  }
   for (const field of ['issuerKeyId', 'profile'] as const) text(claim[field], field, 256)
   if (typeof claim.eventType !== 'string' || !types.has(claim.eventType)) throw new Error('unsupported eventType')
   if (!Number.isSafeInteger(claim.profile_version) || (claim.profile_version as number) < 1) throw new Error('invalid profile_version')
@@ -76,7 +123,7 @@ function validate(value: unknown, signed: boolean): asserts value is LifecycleCl
     const signature = Signature.fromDER(claim.signature, 'hex')
     if (Utils.toHex(signature.toDER() as number[]) !== claim.signature) throw new Error('signature must use canonical DER')
   }
-  canonicalBytes(claim)
+  canonicalJson(claim)
 }
 
 export function assertSignedLifecycleClaim(value: unknown): asserts value is SignedLifecycleClaim {
@@ -86,7 +133,7 @@ export function assertSignedLifecycleClaim(value: unknown): asserts value is Sig
 export async function signLifecycleClaim(claim: LifecycleClaim, signer: DataSigner): Promise<SignedLifecycleClaim> {
   validate(claim, false)
   const { signature } = await signer.createSignature({
-    data: canonicalBytes(claim), protocolID: LIFECYCLE_CLAIM_PROTOCOL,
+    data: claimBytes(claim), protocolID: LIFECYCLE_CLAIM_PROTOCOL,
     keyID: claim.passportId, counterparty: 'anyone',
   })
   const signed = { ...claim, signature: Utils.toHex(signature) }
@@ -106,7 +153,7 @@ export function verifyLifecycleClaim(
     const issuerKey = identityKeyFromDidKey(value.issuerKeyDid ?? value.issuer)
     const { signature, ...claim } = value
     const publicKey = anyone.derivePublicKey(LIFECYCLE_CLAIM_PROTOCOL, value.passportId, issuerKey)
-    if (!publicKey.verify(canonicalBytes(claim), Signature.fromDER(signature, 'hex'))) throw new Error('native claim signature does not verify')
+    if (!publicKey.verify(claimBytes(claim), Signature.fromDER(signature, 'hex'))) throw new Error('native claim signature does not verify')
     return {
       signature: 'verified', issuerKey,
       identityBinding: value.issuer.startsWith('did:key:') ? 'key-identified' : 'requires-resolution',
@@ -116,10 +163,18 @@ export function verifyLifecycleClaim(
   }
 }
 
+/**
+ * The canonical bytes of a claim (`spec/rules.md` §4): keys sorted by code
+ * point at every level, no whitespace, strings and safe integers, and under
+ * `evidence` an object and the `outputs` list. For a claim without `evidence`
+ * these are exactly the flat bytes of `canonicalBytes`.
+ */
+const claimBytes = (claim: object): number[] => Utils.toArray(canonicalJson(claim), 'utf8')
+
 /** The commitment includes the signature. Signing and anchoring have different preimages. */
 export function lifecycleClaimBytes(claim: SignedLifecycleClaim): number[] {
   assertSignedLifecycleClaim(claim)
-  return canonicalBytes(claim)
+  return claimBytes(claim)
 }
 
 export function lifecycleClaimDigest(claim: SignedLifecycleClaim): string {

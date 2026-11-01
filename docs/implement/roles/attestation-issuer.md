@@ -34,7 +34,7 @@ It prints `The signed claim matches the fixture.` An application supplies its ow
 
 [Rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) sections 3 and 4 define the claim, and `fixtures/attestation-anchor-v1.json` gives a value to compare at each step:
 
-1. Build the claim with exactly the properties of rules section 3 except `signature`: `claimFormat` (`dpp-lifecycle-v1`), `passportId`, `recordId`, `eventType`, `timestamp`, `issuer`, `issuerKeyId`, `profile`, `profile_version`, and `issuerKeyDid` only when the issuer is not a `did:key`. Compare with `unsignedClaim`.
+1. Build the claim with exactly the properties of rules section 3 except `signature`: `claimFormat` (`dpp-lifecycle-v1`), `passportId`, `recordId`, `eventType`, `timestamp`, `issuer`, `issuerKeyId`, `profile`, `profile_version`, `issuerKeyDid` only when the issuer is not a `did:key`, and `evidence` when the claim carries the facets of rules section 2. Compare with `unsignedClaim`, and with `claimWithEvidence.unsignedClaim` for the facets.
 2. Serialise it as restricted canonical JSON: property names sorted, no whitespace, only string and safe-integer values. Compare with `canonicalUnsignedClaim`.
 3. Sign the SHA-256 of those bytes with the BRC-42 child of your identity key for protocol `[1, 'dpp attestation v1']`, key identifier the claim's `passportId`, counterparty `anyone` (invoice number `1-dpp attestation v1-<passportId>`), using a deterministic RFC 6979 nonce. Encode the DER signature as lower-case hex and compare with `claim.signature`; the test private key is `issuerPrivateKey`. A BRC-100 wallet does this as `createSignature` with the canonical bytes as `data`.
 4. Add `signature` and serialise the complete claim the same way. Those bytes are the secured representation `dpp-lifecycle-json-v1`: compare with `representationBytes`. Their SHA-256 is `digest`, the value an anchor commits to.
@@ -70,10 +70,10 @@ It prints `step 2 true`, `step 3 true` and `step 4 true true`. `child.sign` hash
 
 The fixture's values are test values. Do not copy these into a live claim:
 
-- **`recordId`** must be the "exact native state reference" (rules section 3), and its spelling is not settled: the fixture's `state-1` is no live form, and the repository's own examples use two others, the transaction identifier alone in `examples/lifecycle-v2.mjs` and `txid:outputIndex` in `fixtures/battery-lifecycle-v1.json`. Record which form you use.
-- **`profile`** names the passport's product data profile and **`profile_version`** its version, such as `battery` and `2` for a `battery@2` passport. The fixture's `generic` is no live profile.
+- **`recordId`** is the outpoint of the state the claim is about, `<txid>:<outputIndex>` (rules section 3); the fixture's names the genesis of `fixtures/chain-v1.json`. Any other spelling is refused.
+- **`profile`** names the passport's product data profile and **`profile_version`** its version, such as `battery` and `2` for a `battery@2` passport; the fixture declares `general@2`.
 - **The registry identifier** of a native claim is `urn:sha256:` followed by your claim's own `digest` (rules section 6); the fixture anchor's `attestationId` is the fixture claim's.
-- **A native claim has no payload**: it carries the event type and time, not what was done, so a mapping that needs evidence facets cannot find them in it.
+- **`evidence`** carries what was done, by whom and when, as references under the facet names of rules section 2; without it a claim is the event type and time alone, and a mapping that needs the facets reads it as insufficient data. The fixture's `claimWithEvidence` shows the repair facets and the nested canonical bytes they produce.
 
 These are open questions in the standard; [known limitations](../../operate/limitations.md) lists the reference service's limits. An issuer's identity and its authority to make the claim remain separate evidence questions for the verifier.
 

@@ -68,7 +68,7 @@ No fixture case alters the native claim's own signature; add one to your own tes
 
 ## What not to copy from the fixtures
 
-- The fixture claim's `recordId` `state-1` and `profile` `generic` are test values, not live forms ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
+- The fixture claim is about the genesis of `fixtures/chain-v1.json`, named by its outpoint, under `general@2`; `claimWithEvidence` is a second claim carrying the repair facets, whose canonical form nests one object ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
 
 ## Run an anchor proof page
 

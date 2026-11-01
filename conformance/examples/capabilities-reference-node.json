@@ -46,6 +46,7 @@
       "kind": "custody",
       "options": {
         "acceptanceCommitment": "not-selected",
+          "instructionCommitment": "not-selected",
         "controlAuthorities": []
       }
     }

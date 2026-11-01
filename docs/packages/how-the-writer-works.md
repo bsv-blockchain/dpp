@@ -9,7 +9,7 @@ A passport is a lineage of states, from the genesis, the `ISSUE`, to the tip, th
 Check these before you build anything, as the example does. A mistake costs nothing now and cannot be undone once a state is mined.
 
 - **The identifier.** Parse it with `parseGs1DigitalLink` from `@bsv/dpp-profiles`, and refuse it if its check digit fails or its GTIN is not under prefix 952 (`identifierProblems`).
-- **The payloads.** Check each public payload against its profile's schema and each owner-tier object against the restricted schema, as [check a payload against its profile](dpp-profiles.md#check-a-payload-against-its-profile) shows. The report never does this, so nothing else will. The example starts from `node examples/sample-payload.mjs general@2 --demonstration` and revises one field in the `UPDATE`. Check your own file with `node examples/sample-payload.mjs --check general@2 payload.json`.
+- **The payloads.** Check each public payload against its profile's schema and each owner-tier object against the restricted schema, as [check a payload against its profile](dpp-profiles.md#check-a-payload-against-its-profile) shows. A reader's report checks the public payload only when it is given the profiles package's validator, so check before you write. The example starts from `node examples/sample-payload.mjs general@2 --demonstration` and revises one field in the `UPDATE`. Check your own file with `node examples/sample-payload.mjs --check general@2 payload.json`.
 - **The keys.** Read your keys and reveal the linkage before the first spend, so a refused approval costs nothing. Signing and spending approvals come with each transaction.
 - **The index.** `GET /capabilities` must name your publisher key, and `POST /lookup` must find nothing for your identifier, so the `ISSUE` is the genesis and not a second one.
 
@@ -67,7 +67,23 @@ for (const state of journal.states) {
 }
 ```
 
-Restricted fields in more than one tier raise an open question, listed under [what is not settled](build-an-application.md#what-is-not-settled).
+**Disclosing a tier to another party.** The `legitimate` and `authority` fields are part of the one object you encrypted to yourself; they reach the parties entitled to them by a disclosure, the same `encrypt` call over only their fields with that party's identity key as counterparty ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). For a market-surveillance authority whose identity key is `authorityKey`, with `restrictedFields` the object you sealed:
+
+```js
+const manifest = readManifest(profile)
+const tiersFor = new Set(['legitimate', 'authority'])
+const disclosed = Object.fromEntries(
+  Object.entries(restrictedFields).filter(([key]) => tiersFor.has(manifest.fields.find((f) => f.pointer === `/${key}`)?.accessTier)),
+)
+const { ciphertext: disclosure } = await wallet.encrypt({
+  plaintext: Utils.toArray(JSON.stringify(disclosed), 'utf8'),
+  protocolID: [2, 'dpp owner data v1'],
+  keyID: passportId,
+  counterparty: authorityKey,
+})
+```
+
+Hand `disclosure` over off chain; the authority decrypts it with your identity key as counterparty. A party with a legitimate interest gets the `legitimate` fields alone. A disclosure is not committed on chain: it is your statement of what the committed tier holds, which the derivation attributes to you. Who is entitled to a tier, and how they show it before you disclose, is your deployment's rule ([what is not settled](build-an-application.md#what-is-not-settled)).
 
 ## Issue
 
@@ -207,7 +223,7 @@ const signed = await wallet.signAction({
 
 The custodian holds a passport's keys for holders and recipients with no wallet of their own. For a platform that gives its users passports without wallets, it is the platform's own service. The custodian offers the passport against the current tip, the recipient accepts, and the custodian signs the acceptance as a record with `signManagedAcceptance`.
 
-The `TRANSFER` moves field 6 to the recipient's controller key and carries `acceptanceCommitment(record)` in `authorisationCommitment`. `bindAcceptanceToState(record, state)` must return no failures before you send. Keep the record: a reader needs it to check the transfer, and no index or registry route serves it yet.
+The `TRANSFER` moves field 6 to the recipient's controller key, locks the new output to that same key, the `destinationKey` of the acceptance, and carries `acceptanceCommitment(record)` in `authorisationCommitment`. From then on the wallet that holds the recipient's root spends the tip: yours for a managed identity, the recipient's own when they supplied a key their wallet derived ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) section 2). `bindAcceptanceToState(record, state)` must return no failures before you send. Keep the record: a reader needs it to check the transfer, and no index or registry route serves it yet.
 
 Under `managed-custody@1` the custodian's identity key itself signs the record. A BRC-100 wallet does not expose that key, so for now the custodian holds it outside its wallet. `examples/lifecycle-v2.mjs` runs the offer, the acceptance and the transfer without a network, and [managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) holds the rules.
 

@@ -27,6 +27,7 @@ Fill in these settings before starting the containers:
 | `ARC_CALLBACK_TOKEN` | A separate secret for the proof-ingestion caller or broadcaster callback. |
 | `NETWORK` | The blockchain network used by the wallet and header lookups. The preset defaults to `main`. |
 | `ACCEPTANCE_COMMITMENT` | The preset selects `required`, so clients need the managed-custody acceptance commitment for version 2 transfers. |
+| `INSTRUCTION_COMMITMENT` | Unset in the preset. `required` selects the profile's instruction rule: after a committed transfer, an update or retirement needs the holder's instruction commitment unless a control authority made it. Turn it on once every writer of the index records instructions. |
 
 For an empty local fixture rehearsal, the fixture's publisher public key is available with:
 

@@ -157,6 +157,7 @@ function materialise(c) {
     ...(c.evidence.alternativeHistories == null ? {} : { alternativeHistories: c.evidence.alternativeHistories.map((h) => h.map((hex) => Transaction.fromHex(hex))) }),
     ...(c.evidence.nativeClaims == null ? {} : { nativeClaims: c.evidence.nativeClaims }),
     ...(c.evidence.acceptanceRecords == null ? {} : { acceptanceRecords: c.evidence.acceptanceRecords }),
+    ...(c.evidence.instructionRecords == null ? {} : { instructionRecords: c.evidence.instructionRecords }),
     ...(c.evidence.anchors == null ? {} : { anchors: c.evidence.anchors.map((a) => ({ ...a, lockingScript: LockingScript.fromHex(a.lockingScript) })) }),
   }
   let chainTracker = 'scripts only'
@@ -181,6 +182,7 @@ function materialise(c) {
     ...(c.policy.ownerConsent == null ? {} : { ownerConsent: c.policy.ownerConsent }),
     ...(c.policy.controlAuthorities == null ? {} : { controlAuthorities: c.policy.controlAuthorities }),
     ...(c.policy.managedAcceptance == null ? {} : { managedAcceptance: c.policy.managedAcceptance }),
+    ...(c.policy.managedInstruction == null ? {} : { managedInstruction: c.policy.managedInstruction }),
     ...(c.policy.authority == null ? {} : { authority: c.policy.authority }),
     ...(observers.length === 0 ? {} : { observers }),
   }
@@ -305,11 +307,15 @@ if (fixtureMode && versionTwo) {
   for (const r of fixture.refusals) {
     const prefix = fixture.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
     const attempt = [...prefix, Transaction.fromHex(r.rawTx)]
-    const refused = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true })
+    const refused = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true, managedInstruction: r.managedInstruction === true })
     say(!refused.valid && (refused.error ?? '').includes(r.error), `the verifier refuses ${r.name}: ${r.error}.`)
     if (r.managedAcceptance) {
       const without = await verifyChain(attempt, { chainTracker: 'scripts only' })
       say(without.valid, 'and accepts the same bytes with the managed-custody profile off, as the record model alone requires.')
+    }
+    if (r.managedInstruction) {
+      const without = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: true })
+      say(without.valid, "and accepts the same bytes with the profile's instruction rule off, as the acceptance rule alone requires.")
     }
     if (r.acceptedUnder != null) {
       const under = await verifyChain(attempt, { chainTracker: 'scripts only', controlAuthorities: r.acceptedUnder.authorities })

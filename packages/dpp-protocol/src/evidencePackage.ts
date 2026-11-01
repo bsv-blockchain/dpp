@@ -9,6 +9,7 @@
  */
 import { Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
+import { MANAGED_ACCEPTANCE_FORMAT, inspectManagedAcceptance } from './acceptance.js'
 
 export const EVIDENCE_PACKAGE_FORMAT = 'dpp-evidence-package'
 export const EVIDENCE_PACKAGE_VERSION = '1'
@@ -217,4 +218,46 @@ export function inspectEvidencePackage(manifest: EvidencePackageManifest, files:
     declaredAbsent: Array.isArray(manifest.completeness?.absent) ? [...manifest.completeness.absent] : [],
     recoveryBackup: manifest.disclosure?.recoveryBackup === true,
   }
+}
+
+/** The representation an inventory entry carries for a managed acceptance record (`spec/managed-custody.md` §5). */
+export const ACCEPTANCE_RECORD_REPRESENTATION = MANAGED_ACCEPTANCE_FORMAT
+
+export interface PackagedAcceptanceRecord {
+  path: string
+  /** The commitment the entry's `represents` names, as `sha256:<hex>`, or undefined when it names none. */
+  represents?: string
+  /** The parsed record, present only when the file is JSON and its commitment matches `represents` where one is named. */
+  record?: unknown
+  /** Why the entry yields no record: one sentence. */
+  failure?: string
+}
+
+/**
+ * The acceptance records an evidence package carries (`spec/managed-custody.md`
+ * §5, `spec/portable-evidence.md` §2): every `authority` entry whose
+ * representation is `dpp-managed-acceptance@1`, parsed, so a reader can hand
+ * them to `verifyPassportEvidence` as the history's `acceptanceRecords`.
+ *
+ * The package is the route, and this reads it without trusting it: an entry
+ * whose bytes are not JSON, whose record does not canonicalise to a
+ * commitment, or whose commitment differs from the one `represents` names,
+ * is returned with its failure and no record. The records themselves are
+ * verified by the report, not here; this only says what the package holds.
+ */
+export function acceptanceRecordsInPackage(manifest: EvidencePackageManifest, files: Map<string, number[]>): PackagedAcceptanceRecord[] {
+  const out: PackagedAcceptanceRecord[] = []
+  for (const entry of Array.isArray(manifest.inventory) ? manifest.inventory : []) {
+    if (entry?.category !== 'authority' || entry.representation !== ACCEPTANCE_RECORD_REPRESENTATION) continue
+    const represents = typeof entry.represents === 'string' ? entry.represents : undefined
+    const bytes = files.get(entry.path)
+    if (bytes == null) { out.push({ path: entry.path, represents, failure: `${entry.path} is listed and not present` }); continue }
+    let record: unknown
+    try { record = JSON.parse(Utils.toUTF8(bytes)) } catch { out.push({ path: entry.path, represents, failure: `${entry.path} is not JSON` }); continue }
+    const inspection = inspectManagedAcceptance(record)
+    if (inspection.commitment == null) { out.push({ path: entry.path, represents, failure: `${entry.path} is not a managed acceptance record: ${inspection.failures.map((f) => f.detail).join('; ')}` }); continue }
+    if (represents != null && represents !== `sha256:${inspection.commitment}`) { out.push({ path: entry.path, represents, failure: `${entry.path} commits to sha256:${inspection.commitment}, not ${represents}` }); continue }
+    out.push({ path: entry.path, represents, record })
+  }
+  return out
 }

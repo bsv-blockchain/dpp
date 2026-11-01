@@ -160,9 +160,10 @@ export interface NodeComponents {
   serviceIdentityKey?: string
   anchorServiceKeys?: string[]
   ownerConsent?: boolean | { authorities: string[] }
-  /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
+  /** CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT and INSTRUCTION_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
+  managedInstruction?: boolean
   /**
    * SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the
    * Engine holds the same peers as its syncConfiguration. With discovery,
@@ -701,6 +702,7 @@ async function handle(
         ownerConsent: components?.ownerConsent,
         controlAuthorities: components?.controlAuthorities,
         managedAcceptance: components?.managedAcceptance,
+        managedInstruction: components?.managedInstruction,
         exportAvailable: options.exportSigner != null,
         completeExportBearer: options.exportToken != null,
         networkOracleConfigured: options.knownOnChain != null,
@@ -988,6 +990,7 @@ async function handle(
         ownerConsent: options.components.ownerConsent,
         controlAuthorities: options.components.controlAuthorities,
         managedAcceptance: options.components.managedAcceptance,
+        managedInstruction: options.components.managedInstruction,
         chainTracker: options.chainTracker,
         now: options.now(),
         software: options.software,
@@ -1232,19 +1235,30 @@ export function ownerConsentPolicy(): boolean | { authorities: string[] } {
  * acceptance commitment. CONTROL_AUTHORITIES names, comma-separated, the
  * identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted without
  * a control proof; absent, the TRANSFER_AUTHORITIES serve both versions.
- * Public keys only, validated when the topic manager is built; any other value
- * of ACCEPTANCE_COMMITMENT fails the boot.
+ * INSTRUCTION_COMMITMENT=required selects the profile's instruction rule
+ * (`spec/managed-custody.md` §6): after a committed TRANSFER, an UPDATE or
+ * RETIRE is admitted only with its instruction commitment; it needs the
+ * acceptance commitment to be required too, because the rule is defined on
+ * the profile and not on the baseline. Public keys only, validated when the
+ * topic manager is built; any other value of either setting fails the boot.
  */
-export function versionTwoAdmission(): { managedAcceptance: boolean; controlAuthorities?: string[] } {
+export function versionTwoAdmission(): { managedAcceptance: boolean; managedInstruction: boolean; controlAuthorities?: string[] } {
   const declared = (process.env.ACCEPTANCE_COMMITMENT ?? '').trim()
   if (declared !== '' && declared !== 'required') {
     throw new Error(`ACCEPTANCE_COMMITMENT must be "required" or unset, got "${declared}"`)
+  }
+  const instruction = (process.env.INSTRUCTION_COMMITMENT ?? '').trim()
+  if (instruction !== '' && instruction !== 'required') {
+    throw new Error(`INSTRUCTION_COMMITMENT must be "required" or unset, got "${instruction}"`)
+  }
+  if (instruction === 'required' && declared !== 'required') {
+    throw new Error('INSTRUCTION_COMMITMENT=required needs ACCEPTANCE_COMMITMENT=required: the instruction rule belongs to the managed-custody profile')
   }
   const authorities = (process.env.CONTROL_AUTHORITIES ?? '')
     .split(',')
     .map((key) => key.trim())
     .filter((key) => key !== '')
-  return { managedAcceptance: declared === 'required', ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }) }
+  return { managedAcceptance: declared === 'required', managedInstruction: instruction === 'required', ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }) }
 }
 
 /**
@@ -1382,6 +1396,9 @@ async function engineFromEnvironment(
       ? `${TOPIC} admits a version 2 TRANSFER only with its acceptance commitment (ACCEPTANCE_COMMITMENT=required, the managed-custody profile)`
       : `${TOPIC} admits a version 2 TRANSFER with or without an acceptance commitment (ACCEPTANCE_COMMITMENT is unset)`
   )
+  if (versionTwo.managedInstruction) {
+    console.log(`${TOPIC} admits a version 2 UPDATE or RETIRE after a committed TRANSFER only with its instruction commitment (INSTRUCTION_COMMITMENT=required)`)
+  }
   if (versionTwo.controlAuthorities != null) {
     console.log(`${TOPIC} admits version 2 states by the control authorities ${versionTwo.controlAuthorities.join(', ')} without a control proof`)
   }
@@ -1445,6 +1462,7 @@ async function engineFromEnvironment(
     anchorServiceKeys: acceptedAnchorServices,
     ownerConsent,
     managedAcceptance: versionTwo.managedAcceptance,
+    managedInstruction: versionTwo.managedInstruction,
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
     sync: { peers: [...sync.peers], staticPeers: [...sync.peers], intervalMs: sync.intervalMs, legacy: sync.legacy, ...(discovery.enabled ? { discovery } : {}) },
   }
@@ -1538,6 +1556,7 @@ export async function runFromEnvironment(): Promise<void> {
           ownerConsent: components.ownerConsent,
           controlAuthorities: components.controlAuthorities,
           managedAcceptance: components.managedAcceptance,
+          managedInstruction: components.managedInstruction,
           exportAvailable: signingKey != null,
           completeExportBearer: exportToken != null && exportToken !== '',
           networkOracleConfigured: knownOnChain != null,

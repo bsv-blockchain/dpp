@@ -109,6 +109,19 @@ if (!validate({ name: 'Example chair' })) {
 
 Compile each profile's schema once and reuse it, with `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`. Every state of a lineage declares the same profile, `readPublicPayloadSchema` returns a fresh copy on every call, and Ajv refuses to compile a second copy of an `$id` it already holds.
 
+To have a verification report make the same check, pass `profilePayloadValidator(ajv)` as the `payloadValidator` of the policy given to `verifyPassportEvidence`, with the same Ajv instance as above; the package brings no validator library of its own. The report's `schema` check then reads `pass` or `fail` with `schema-invalid` and one sentence per problem for every token state that declares a published profile, `unknown` with `schema-unavailable` for a profile this package does not publish, and `unknown` with `profile-undeclared` for a payload without the two stamps:
+
+```js
+import Ajv2020 from 'ajv/dist/2020.js'
+import addFormats from 'ajv-formats'
+import { verifyPassportEvidence } from '@bsv/dpp-protocol'
+import { profilePayloadValidator } from '@bsv/dpp-profiles'
+
+const ajv = new Ajv2020({ allErrors: true, strict: false })
+addFormats(ajv)
+const report = await verifyPassportEvidence(evidence, expected, { ...policy, payloadValidator: profilePayloadValidator(ajv) })
+```
+
 In a repository checkout, `node examples/sample-payload.mjs general@2` prints a passing payload, `--demonstration` starts it with a demonstration record's `notice`, and `node examples/sample-payload.mjs --check <profile@version> <file>` explains each problem in a payload file in a sentence.
 
 ## Show a stored payload under its profile
@@ -167,7 +180,7 @@ Each entry in `manifest.fields` describes one value, with these properties in ma
 | `granularity` | `model`, `batch`, `item` | Whether the value is entered per model, batch or item |
 | `provenance.capture` | `form`, `brand`, `platform`, `event`, `derived`, `deferred` | Who supplies the value: `form`, `brand` and `platform` at registration, the only ones `missingRequired` counts; `event` a later lifecycle event; `derived` a calculation from others; `deferred` a later addition, such as a declaration of conformity |
 | `provenance.kind` | `fact`, `declaration`, `calculation`, `assessment` | What kind of statement the value is |
-| `accessTier` | `public`, `owner`, `legitimate`, `authority` | Who may read it. `public` is on chain in `payload_public`; the others are encrypted and held off chain, each described in the manifest's `accessTiers`. The standard has not yet settled how each restricted tier is encrypted, or to whom ([known limitations](../operate/limitations.md)) |
+| `accessTier` | `public`, `owner`, `legitimate`, `authority` | Who may read it. `public` is on chain in `payload_public`; the others form one object encrypted to the owner and held off chain, each tier described in the manifest's `accessTiers`, and a `legitimate` or `authority` reader receives its tier re-encrypted to its own key ([choose an industry profile](../profiles/README.md)) |
 | `obligation`, `legalBasis` | `required`, `recommended`, `optional`; a citation or the statement that none applies | Whether to insist on the value, and why. A field can be required with no legal basis |
 | `applicability` | `{ rule: 'always' }`, `{ rule: 'category-in', categories }`, `{ rule: 'needs-review', condition }` | When the field applies, as `fieldsFor(manifest, category)` evaluates it. Never treat a `needs-review` field as satisfied or always required |
 | `group`, `parts` | A group identifier; for a `record`, its parts | The form section, one of the manifest's `groups`, and a `record`'s inputs. `battery@2` lists groups but assigns none to its fields |
