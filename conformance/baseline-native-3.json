@@ -392,12 +392,12 @@
     },
     {
       "path": "fixtures/attestation-anchor-v1.json",
-      "sha256": "5779692240113cb9fb08086ac76802cd98985ccab4495e283a53a4d00bddf2f3",
+      "sha256": "10cd3047b0ee5b07a1a09bf35093919d87a29e21d339156184f522cf075ac933",
       "pins": "the current signed native claim, its complete representation, digest and ten-field anchor"
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "f4a8bcf9f584a0bf3d361251978f815111796eea83a262bbb71b446195c1847a",
+      "sha256": "a9fd955d2113610d9c918c7b3caf620bf953d8b2804f29ffb00f81053f5f4e1a",
       "pins": "the verification report for twenty-one evidence cases"
     },
     {
@@ -417,7 +417,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
-      "sha256": "f3884bebba3474754298c7a482703342be73deb983eef50fe63efbbf39fe209a",
+      "sha256": "ae14a48bc904effb0dade71d0eae5593f69d6aff2ec3215fa98dd89c8c264ce2",
       "pins": "the current anchor in the stack's vector format"
     },
     {
@@ -427,7 +427,7 @@
     },
     {
       "path": "fixtures/chain-v2.json",
-      "sha256": "d13be45f2b8de7dab23fe78cfcfd606c6c6e1dbc46392ec3d6cd4ea49ad4f592",
+      "sha256": "e454bba0edbfa5507453e26d4b1614c20abee39250c42a5080538ea7738b90af",
       "pins": "a five-state version 2 lineage, the control proof in both forms, the acceptance commitment, retirement, twenty-two refusals and the upgrade over the version 1 chain"
     },
     {
@@ -437,7 +437,7 @@
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "fd4e31c85d99d9ca7cc4f143815c81287d865c75b72121c4091713dda064080c",
+      "sha256": "a90e029b7f89d43790d0400bb9825a602458a64b5aadb45fcd533740ba50df89",
       "pins": "the verification report for thirteen version 2 evidence cases"
     },
     {
@@ -447,7 +447,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/chain/v2.json",
-      "sha256": "dde06e49f0ca6586b089c5ee1c60176250ae8ec92e5a7aa9e75b0b40233a303c",
+      "sha256": "e43fd52fe0ff0028786964838261015d69a66fafb6c1580cf04344772b9a1188",
       "pins": "the version 2 chain fixture in the stack's vector format"
     },
     {
@@ -467,7 +467,7 @@
     },
     {
       "path": "fixtures/evidence-v3.json",
-      "sha256": "ff8ed81946ba3fcc1190035dd092fea9c925d3183dcfb05109b40fc95d0d37c7",
+      "sha256": "dbe4a7775191c40fb338b580452187dca5e4128307892f07b4759cefcf900225",
       "pins": "the verification report for nine carried evidence cases"
     },
     {
