@@ -11,6 +11,7 @@ import { didKeyFromIdentityKey } from './did.js'
 import { inspectChain, type ChainInspection, type StateInspection } from './verifyChain.js'
 import { verifyPolicyChain, type PublisherPolicy } from './publisherPolicy.js'
 import { bindAcceptanceToState, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
+import { bindInstructionToState, inspectManagedInstruction, type ManagedInstructionRecord } from './instruction.js'
 import type { Outpoint, SeventeenFieldState } from './types.js'
 
 /**
@@ -144,6 +145,13 @@ export interface PassportEvidence {
    * record supplied leaves `evidenceAvailability` unknown, never passed.
    */
   acceptanceRecords?: unknown[]
+  /**
+   * Managed instruction records (`spec/managed-custody.md` §6) the custodian
+   * retained for the version 2 or 3 UPDATEs and RETIREs that commit to one.
+   * As with acceptance records, a commitment with no record supplied leaves
+   * `evidenceAvailability` unknown, never passed.
+   */
+  instructionRecords?: unknown[]
 }
 
 /** A token state's public payload with the profile it declares, as handed to `EvidencePolicy.payloadValidator`. */
@@ -255,6 +263,14 @@ export interface EvidencePolicy {
    * either way, and the custodian's authority is the `authority` policy's.
    */
   managedAcceptance?: { required?: boolean }
+  /**
+   * The instruction rule of the same profile (`spec/managed-custody.md` §6).
+   * `required` makes every version 2 or 3 UPDATE or RETIRE after a committed
+   * TRANSFER carry an instruction commitment unless a control authority made
+   * it; the commitments are otherwise read but not demanded. Supplied
+   * instruction records are verified either way.
+   */
+  managedInstruction?: { required?: boolean }
   chainTracker?: ChainTracker | 'scripts only'
   authority?: AuthorityPolicy
   credentialVerifier?: ExternalCredentialVerifier
@@ -382,7 +398,7 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
     failure?.kind === 'linkage'
       ? check('linkage', 'fail', linkageReasonCode(failure.message), refs, { scope: { stateIndex: failure.index }, detail: failure.message })
       : failure?.kind === 'consent'
-        ? check('linkage', 'fail', failure.message.includes('authorisation_commitment') ? 'acceptance-commitment-absent' : 'consent-not-proven', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
+        ? check('linkage', 'fail', failure.message.includes('after a committed TRANSFER') ? 'instruction-commitment-absent' : failure.message.includes('authorisation_commitment') ? 'acceptance-commitment-absent' : 'consent-not-proven', refs, { scope: { stateIndex: failure.index }, detail: failure.message })
         : heldOrNotInspected('linkage')
 
   let inclusion: EvidenceCheck
@@ -573,6 +589,7 @@ export async function verifyPassportEvidence(
     ownerConsent: policy.ownerConsent,
     ...(policy.controlAuthorities == null ? {} : { controlAuthorities: policy.controlAuthorities }),
     managedAcceptance: policy.managedAcceptance?.required === true,
+    managedInstruction: policy.managedInstruction?.required === true,
   }
   const inspection = txs != null && txs.length > 0 ? await inspectChain(txs, chainOptions) : undefined
   const token = tokenChecks(txs, inspection, policy)
@@ -850,6 +867,38 @@ export async function verifyPassportEvidence(
   }
   if (committedTransfers.length > 0) {
     limits.push('An acceptance commitment binds a transfer to acceptance evidence the custodian retained and signed; it is custody-dependent evidence, not a signature made with a key the recipient controls.')
+  }
+
+  // Managed instructions (`spec/managed-custody.md` §6): every version 2 or 3
+  // UPDATE or RETIRE that commits to an instruction record references an
+  // artefact, reported exactly as an acceptance commitment is.
+  const committedWrites = (token.inspection?.states ?? []).filter(
+    (s): s is StateInspection & { state: SeventeenFieldState } => s.state.version !== '1' && (s.state.op === 'UPDATE' || s.state.op === 'RETIRE') && s.state.authorisationCommitment !== ''
+  )
+  const suppliedInstructions = (evidence.instructionRecords ?? []).map((value, index) => ({ index, value, inspection: inspectManagedInstruction(value) }))
+  for (const write of committedWrites) {
+    const ref = `instruction:sha256:${write.state.authorisationCommitment}`
+    const stateRef = outpointRef({ txid: write.txid, outputIndex: write.outputIndex })
+    const supplied = suppliedInstructions.find((a) => a.inspection.commitment === write.state.authorisationCommitment)
+    if (supplied == null) {
+      acceptanceParts.push({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable', evidenceRefs: [stateRef, ref], detail: `the instruction record ${stateRef} commits to was not supplied` })
+      continue
+    }
+    const failures = [...supplied.inspection.failures]
+    if (supplied.inspection.signatureValid === true) failures.push(...bindInstructionToState(supplied.value as ManagedInstructionRecord, write.state))
+    if (failures.length > 0) {
+      acceptanceParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: [stateRef, ref], detail: failures.map((f) => f.detail) })
+      continue
+    }
+    acceptanceParts.push({ status: 'pass', evidenceRefs: [stateRef, ref] })
+    acceptanceCustodianQuestions.push({ role: 'acceptance-custodian', identity: (supplied.value as ManagedInstructionRecord).custodian, at: (supplied.value as ManagedInstructionRecord).requestedAt, ref })
+  }
+  for (const orphan of suppliedInstructions) {
+    if (committedWrites.some((w) => w.state.authorisationCommitment === orphan.inspection.commitment)) continue
+    acceptanceParts.push({ status: 'fail', reasonCode: 'referenced-artefact-mismatch', evidenceRefs: [`instruction:${orphan.index}`], detail: orphan.inspection.commitment == null ? orphan.inspection.failures.map((f) => f.detail) : 'no supplied UPDATE or RETIRE commits to this instruction record' })
+  }
+  if (committedWrites.length > 0) {
+    limits.push('An instruction commitment binds a state to a request the custodian recorded and signed on the holder\'s behalf; it is custody-dependent evidence, not a signature made with a key the holder controls.')
   }
 
   // Authority, role by role, on the policy's lists or verifier.

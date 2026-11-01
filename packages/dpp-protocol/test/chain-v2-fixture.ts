@@ -2,6 +2,7 @@ import { CachedKeyDeriver, ProtoWallet, PublicKey, Transaction, Utils } from '@b
 import {
   ACCEPTANCE_COMMITMENT_REFUSAL,
   CONTROL_REFUSALS,
+  INSTRUCTION_COMMITMENT_REFUSAL,
   DPP_PROTOCOL_ID,
   OWNER_PROTOCOL_ID,
   buildLockingScript,
@@ -65,6 +66,8 @@ interface Refusal {
   rawTx: string
   error: string
   managedAcceptance?: true
+  /** Breaks the instruction rule of the managed-custody profile (`spec/managed-custody.md` §6): a valid chain when the rule is off. */
+  managedInstruction?: true
   acceptedUnder?: { authorities: string[] }
 }
 
@@ -205,6 +208,13 @@ export async function chainV2Fixture() {
       op: 'TRANSFER', timestamp: '2026-09-08T10:30:00Z', ownerIdentityKey: controllerKeyOf(recipientPriv), payloadPublic: PAYLOAD_V2_2, payloadOwnerHash: ownerBlobHash(BLOB_V2_2),
       controlLinkage: controlLinkageOf(issuerPriv), ...link(1),
     })), ACCEPTANCE_COMMITMENT_REFUSAL, { managedAcceptance: true })
+  refuse('updateAfterTransferWithoutInstruction', "The recipient's UPDATE after the committed TRANSFER, by linkage from the recipient's managed identity, with an empty authorisation_commitment: valid under the record model and the acceptance rule, refused when the profile's instruction rule is selected.", 2,
+    await append(2, makeDataV2({
+      op: 'UPDATE', timestamp: '2026-10-01T08:30:00Z', ownerIdentityKey: controllerKeyOf(recipientPriv), actorIdentityKey: idKey(recipientPriv), actorKeyId: 'recipient account',
+      eventData: JSON.stringify({ eventType: 'Transformation', note: 'cell balanced' }), payloadPublic: PAYLOAD_V2_2, payloadOwnerHash: ownerBlobHash(BLOB_V2_2), controlLinkage: controlLinkageOf(recipientPriv),
+      ...link(2),
+    }), new ProtoWallet(recipientPriv)),
+    INSTRUCTION_COMMITMENT_REFUSAL, { managedInstruction: true })
 
   // The upgrade of the version 1 fixture chain: a version 2 UPDATE by the
   // first owner, who holds the sixth state's controller key, spending its tip.

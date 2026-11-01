@@ -55,6 +55,7 @@ Edit `deploy/operator-b.env`:
 | `SYNC_PEERS` | `http://host.docker.internal:8080` when both indexes run on this machine. On separate hosts, the first index's base URL as the second container reaches it. |
 | `WOC_API_KEY` | Your WhatsOnChain API key. |
 | `ACCEPTANCE_COMMITMENT` | The first index's value, `required` in the example file. A stricter one refuses version 2 transfers the first admitted. |
+| `INSTRUCTION_COMMITMENT` | The first index's value. An index that selects the instruction rule refuses updates and retirements after a hand on that the first admitted without a commitment. |
 | `ANCHOR_SERVICE_KEYS` | The first index's value, so the second admits the anchors the first admitted. Empty admits a well-formed anchor from any anchoring service, as the hosted reference does. |
 | `SYNC_LEGACY` | `1` to pull the historical `tm_uora_dpp` topic as well, which the hosted reference holds. Empty pulls only `tm_dpp` and `tm_attestation`. |
 | `EXPORT_SIGNING_KEY`, `EXPORT_TOKEN` | Optional. If set, use the second index's own values, never the first's ([export, import and recovery](export-import-recovery.md)). |

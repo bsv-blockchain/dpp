@@ -70,8 +70,8 @@ describe('tm_dpp admits the version 2 fixture lineage', () => {
 
   it('refuses every fixture refusal, keeping the offered coin, and names the version 2 reasons in its log', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-    for (const r of V2.refusals as Array<{ name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; acceptedUnder?: { authorities: string[] } }>) {
-      const tm = new DppTopicManager(CUSTODIAN, { managedAcceptance: r.managedAcceptance === true })
+    for (const r of V2.refusals as Array<{ name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; managedInstruction?: true; acceptedUnder?: { authorities: string[] } }>) {
+      const tm = new DppTopicManager(CUSTODIAN, { managedAcceptance: r.managedAcceptance === true || r.managedInstruction === true, managedInstruction: r.managedInstruction === true })
       const prefix = v2Raw.slice(0, r.appendAfter + 1)
       const { beefs } = proven([...prefix, r.rawTx], 820_000)
       for (const [i, beef] of beefs.slice(0, -1).entries()) await tm.identifyAdmissibleOutputs(beef, i === 0 ? [] : [0])
@@ -89,8 +89,14 @@ describe('tm_dpp admits the version 2 fixture lineage', () => {
         for (const [i, beef] of beefs.slice(0, -1).entries()) await baseline.identifyAdmissibleOutputs(beef, i === 0 ? [] : [0])
         expect((await baseline.identifyAdmissibleOutputs(beefs[beefs.length - 1], previousCoins)).outputsToAdmit, `${r.name} without the profile`).toEqual([0])
       }
+      if (r.managedInstruction) {
+        const acceptanceOnly = new DppTopicManager(CUSTODIAN, { managedAcceptance: true })
+        for (const [i, beef] of beefs.slice(0, -1).entries()) await acceptanceOnly.identifyAdmissibleOutputs(beef, i === 0 ? [] : [0])
+        expect((await acceptanceOnly.identifyAdmissibleOutputs(beefs[beefs.length - 1], previousCoins)).outputsToAdmit, `${r.name} without the instruction rule`).toEqual([0])
+      }
     }
     expect(warn.mock.calls.some((c) => String(c[0]).includes(ACCEPTANCE_COMMITMENT_REFUSAL))).toBe(true)
+    expect(warn.mock.calls.some((c) => String(c[0]).includes('after a committed TRANSFER carries no authorisation_commitment'))).toBe(true)
     expect(warn.mock.calls.some((c) => String(c[0]).includes('retired'))).toBe(true)
   })
 

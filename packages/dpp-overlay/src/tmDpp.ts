@@ -2,6 +2,7 @@ import { Beef, LockingScript, Transaction, type TransactionInput } from '@bsv/sd
 import type { AdmittanceInstructions, Storage, TopicManager } from '@bsv/overlay'
 import {
   ACCEPTANCE_COMMITMENT_REFUSAL,
+  INSTRUCTION_COMMITMENT_REFUSAL,
   MANAGED_CUSTODY_PROFILE,
   checkCarrier,
   checkGenesisState,
@@ -43,6 +44,7 @@ export const DPP_REFUSAL_CODES = [
   'token-id-mismatch',
   'consent-not-proven',
   'acceptance-commitment-absent',
+  'instruction-commitment-absent',
   'genesis-spends-passport-output',
   'predecessor-not-admitted',
   'predecessor-unavailable',
@@ -147,6 +149,13 @@ export interface DppAdmissionOptions {
    */
   managedAcceptance?: boolean
   /**
+   * The instruction rule of the same profile (`spec/managed-custody.md` §6):
+   * when selected, a version 2 or 3 UPDATE or RETIRE after a committed
+   * TRANSFER is admitted only when it carries an `authorisation_commitment`,
+   * unless its actor is a control authority. Off by default.
+   */
+  managedInstruction?: boolean
+  /**
    * The engine's own storage, so the manager can read an admitted
    * predecessor's locking script when the BEEF it is handed does not carry
    * the predecessor's bytes. Two callers hand it such a BEEF: a writer that
@@ -164,6 +173,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
   private readonly authorities: string[]
   private readonly controlAuthorities: string[]
   private readonly managedAcceptance: boolean
+  private readonly managedInstruction: boolean
   private readonly policy?: PublisherPolicy[]
   private readonly admitted?: Pick<Storage, 'findOutput'> & Partial<Pick<Storage, 'findOutputsForTransaction'>>
   /** States inspected recently, by txid: the predecessor a synchronisation pass showed one call ago. */
@@ -182,6 +192,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
         : []
     this.controlAuthorities = options.controlAuthorities != null ? normaliseTransferAuthorities(options.controlAuthorities) : this.authorities
     this.managedAcceptance = options.managedAcceptance === true
+    this.managedInstruction = options.managedInstruction === true
     this.policy = options.publisherPolicy != null && options.publisherPolicy.length > 0 ? options.publisherPolicy : undefined
     this.admitted = options.admittedOutputs
   }
@@ -292,6 +303,34 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
       outputIndex = earlier.outputIndex
     }
     return undefined
+  }
+
+  /**
+   * Whether a TRANSFER carrying an acceptance commitment precedes this state
+   * in its lineage (`spec/managed-custody.md` §6): the predecessor itself, or
+   * any earlier version 2 or 3 state, walked back through the same sources
+   * as `lineageGenesisFor`. A walk that cannot be completed answers false,
+   * because the rule refuses only what the index can see was a managed
+   * hand-on; the lineage rule has already refused what it cannot trace.
+   */
+  private async committedTransferPrecedes(
+    prev: DppState,
+    prevTxid: string,
+    prevOutputIndex: number,
+    parsedBeef: Beef | undefined,
+    historical: boolean
+  ): Promise<boolean> {
+    let state: DppState = prev
+    void prevTxid
+    void prevOutputIndex
+    for (let hops = 0; hops < MAX_LINEAGE_WALK; hops++) {
+      if (state.version !== '1' && state.op === 'TRANSFER' && state.authorisationCommitment !== '') return true
+      if (state.previousTxid === '' || state.version === '1') return false
+      const earlier = await this.stateAt(state.previousTxid, parsedBeef, historical)
+      if (earlier == null) return false
+      state = earlier.state
+    }
+    return false
   }
 
   /** The admitted DPP state a transaction carries, by txid, from the BEEF, the engine's storage or recent memory. */
@@ -511,6 +550,17 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
         console.warn(`${DPP_TOPIC} refused ${txid}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
         return refuse('acceptance-commitment-absent')
       }
+      // The instruction rule (`spec/managed-custody.md` §6): after a committed
+      // TRANSFER the holder is a recipient the custodian acts for, so an
+      // UPDATE or RETIRE commits to the holder's instruction unless a control
+      // authority made it. Whether a committed TRANSFER precedes this state
+      // is read from the lineage this index traced for the predecessor.
+      if (state.version !== '1' && (state.op === 'UPDATE' || state.op === 'RETIRE') && this.managedInstruction && state.authorisationCommitment === '' && !this.controlAuthorities.includes(state.actorIdentityKey)) {
+        if (await this.committedTransferPrecedes(prev.state, prevTxid, input.sourceOutputIndex, parsedBeef, historical)) {
+          console.warn(`${DPP_TOPIC} refused ${txid}: ${INSTRUCTION_COMMITMENT_REFUSAL}`)
+          return refuse('instruction-commitment-absent')
+        }
+      }
       return admit({ outputsToAdmit: [outputIndex], coinsToRetain: [inputIndex] })
     }
 
@@ -613,6 +663,12 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
       this.managedAcceptance
         ? 'This index is deployed for the managed-custody profile (spec/managed-custody.md): a version 2 or 3 TRANSFER is admitted only when its authorisation_commitment names the acceptance record the custodian retained.'
         : 'Not enforced by this index, which admits a version 2 or 3 TRANSFER with an empty authorisation_commitment: the record model baseline. The managed-custody profile is switched on when the topic manager is configured for it (ACCEPTANCE_COMMITMENT=required).'
+    )
+    lines.push(
+      '',
+      this.managedInstruction
+        ? "The profile's instruction rule is selected (spec/managed-custody.md section 6): after a TRANSFER that commits to an acceptance, a version 2 or 3 UPDATE or RETIRE is admitted only when its authorisation_commitment names the instruction record the custodian retained, unless a control authority made it."
+        : "The profile's instruction rule is not selected: a version 2 or 3 UPDATE or RETIRE after a committed TRANSFER is admitted with an empty authorisation_commitment. It is switched on with INSTRUCTION_COMMITMENT=required."
     )
     lines.push('', '## The owner-signed transfer (version 1)', '')
     if (this.consentSelected) {

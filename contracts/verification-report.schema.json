@@ -177,6 +177,7 @@
         "link-broken",
         "consent-not-proven",
         "acceptance-commitment-absent",
+        "instruction-commitment-absent",
         "version-transition-invalid",
         "control-not-proven",
         "lineage-retired",

@@ -99,12 +99,14 @@ export function chainV2Vectors(F: ChainV2FixtureFile) {
     input: {
       raw_tx_hex: [...F.states.slice(0, r.appendAfter + 1).map((s) => s.rawTx), r.rawTx],
       ...(r.managedAcceptance == null ? {} : { managed_acceptance: true }),
+      ...(r.managedInstruction == null ? {} : { managed_acceptance: true, managed_instruction: true }),
     },
     expected: {
       accepted: false,
       stage: 'chain',
       reason: r.error,
       ...(r.managedAcceptance == null ? {} : { accepted_without_managed_acceptance: true }),
+      ...(r.managedInstruction == null ? {} : { accepted_without_managed_instruction: true }),
       ...(r.acceptedUnder == null ? {} : { accepted_with_authorities: r.acceptedUnder.authorities }),
     },
     tags: ['error-case'],

@@ -28,10 +28,11 @@
  * per check, never a score, as GOVERNANCE.md requires of every conformance
  * surface.
  */
-import { CachedKeyDeriver, Hash, PrivateKey, ProtoWallet, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
+import { CachedKeyDeriver, Hash, PrivateKey, ProtoWallet, PublicKey, Transaction, UnlockingScript, Utils } from '@bsv/sdk'
 import {
   ACCEPTANCE_COMMITMENT_REFUSAL,
   EVIDENCE_CHECK_LABELS,
+  INSTRUCTION_COMMITMENT_REFUSAL,
   LIFECYCLE_MEDIA_TYPE,
   LIFECYCLE_REPRESENTATION,
   acceptanceCommitment,
@@ -44,6 +45,10 @@ import {
   findDppOutputs,
   inspectAttestationAnchor,
   inspectManagedAcceptance,
+  inspectManagedInstruction,
+  instructionCommitment,
+  bindInstructionToState,
+  signManagedInstruction,
   lifecycleClaimDigest,
   ownerBlobHash,
   ownerKeyFromDeriver,
@@ -81,7 +86,10 @@ const passportId = `https://dpp.bsvb.net/01/09521000000018/21/LIFECYCLE-${Date.n
 // The controller key of a party for this passport, and the scalar that proves the party derived it (spec/custody.md §2, §4).
 const controllerKeyOf = (priv) => ownerKeyFromDeriver(passportId, new CachedKeyDeriver(priv))
 const controlLinkageOf = (priv) => ownerLinkageFromDeriver(passportId, new CachedKeyDeriver(priv))
-const lockKey = custodianPriv.toPublicKey() // the custodian holds the lock (spec/managed-custody.md §2)
+// The lock sits on each state's controller key, the field-6 key, as custody.md §3 pins and
+// managed-custody.md §2 selects: the custodian's wallet spends it for a managed identity, and a
+// recipient who supplied their own key spends it themselves. A raw key stands in for the wallet here.
+const lockKeyFor = (d) => PublicKey.fromString(d.ownerIdentityKey)
 
 console.log(`Passport ${passportId}`)
 console.log(`Issuer ${idKey(issuerPriv).slice(0, 12)}..., custodian ${idKey(custodianPriv).slice(0, 12)}..., recipient ${idKey(recipientPriv).slice(0, 12)}... (managed identity).`)
@@ -123,7 +131,7 @@ async function write(d, actorWallet, { keep = true, prev = txs.length === 0 ? nu
   const state = await completeState(d, actorWallet, custodianWallet)
   const tx = new Transaction()
   if (prev != null) tx.addInput({ sourceTransaction: prev.tx, sourceOutputIndex: prev.outputIndex, unlockingScript: new UnlockingScript([]) })
-  tx.addOutput({ satoshis: 1, lockingScript: buildLockingScript(state, lockKey) })
+  tx.addOutput({ satoshis: 1, lockingScript: buildLockingScript(state, lockKeyFor(d)) })
   if (keep) { txs.push(tx); outputIndexes.push(0) }
   return { state, tx }
 }
@@ -131,7 +139,7 @@ async function write(d, actorWallet, { keep = true, prev = txs.length === 0 ? nu
 const checked = (chain, options = {}) => verifyChain(chain, { chainTracker: 'scripts only', serverIdentityKey: idKey(custodianPriv), ...options })
 
 // ------------------------------------------------------------ the lifecycle
-step('ISSUE: the issuer opens the passport; the custodian holds the lock and derives the issuer\'s controller key.')
+step('ISSUE: the issuer opens the passport; the custodian derives the issuer\'s controller key and locks the state to it.')
 await write(data({ op: 'ISSUE', ownerIdentityKey: controllerKeyOf(issuerPriv), actorIdentityKey: idKey(issuerPriv) }), issuerWallet)
 say((await checked(txs)).valid, 'the genesis verifies alone: ISSUE with empty predecessor, lineage and linkage.')
 
@@ -163,9 +171,28 @@ const transfer = await write(data({ op: 'TRANSFER', ownerIdentityKey: controller
 say(bindAcceptanceToState(record, transfer.state).length === 0, 'the record binds to the TRANSFER: passport, lineage, predecessor, destination, holder, commitment and time order.')
 say((await checked(txs, { managedAcceptance: true })).valid, 'three states verify under managed-custody@1: the TRANSFER carries its commitment.')
 
-step('RETIRE: the recipient ends the lineage, proving control from the identity the custodian keeps for them.')
-await write(data({ op: 'RETIRE', ownerIdentityKey: controllerKeyOf(recipientPriv), actorIdentityKey: idKey(recipientPriv), controlLinkage: controlLinkageOf(recipientPriv), eventData: JSON.stringify({ reason: 'recycled' }), payloadPublic: PAYLOAD_2, payloadOwnerHash: ownerBlobHash(BLOB_2), ...link() }), recipientWallet)
-const whole = await checked(txs, { managedAcceptance: true })
+step('Instruction: the recipient, now the holder, asks the custodian to retire the passport; the custodian records, signs and retains the request.')
+const request = { ask: 'retire', reason: 'recycled' }
+const instruction = await signManagedInstruction({
+  instructionFormat: 'dpp-managed-instruction@1',
+  requestId: `request-${Date.now().toString(36)}`,
+  passportId,
+  lineageGenesis: genesis(),
+  expectedPredecessor: outpoint(tip().tx, tip().outputIndex),
+  operation: 'RETIRE',
+  holderIdentityKey: idKey(recipientPriv),
+  requestDigest: sha256hex(canonicalJson(request)),
+  requestedAt: instant(-1),
+  evidenceKind: 'custodian-attested',
+  custodian: idKey(custodianPriv),
+}, custodianSigner)
+const instructionInspection = inspectManagedInstruction(instruction, { custodians: [idKey(custodianPriv)] })
+say(instructionInspection.structureValid && instructionInspection.signatureValid && instructionInspection.failures.length === 0, `the instruction record is well formed and custodian-signed; its commitment is ${instructionInspection.commitment.slice(0, 16)}...`)
+
+step('RETIRE: the custodian ends the lineage for the holder, proving control from the identity it keeps for them and committing to the instruction in field 15.')
+const retire = await write(data({ op: 'RETIRE', ownerIdentityKey: controllerKeyOf(recipientPriv), actorIdentityKey: idKey(recipientPriv), controlLinkage: controlLinkageOf(recipientPriv), eventData: JSON.stringify({ reason: 'recycled' }), payloadPublic: PAYLOAD_2, payloadOwnerHash: ownerBlobHash(BLOB_2), authorisationCommitment: instructionCommitment(instruction), ...link() }), recipientWallet)
+say(bindInstructionToState(instruction, retire.state).length === 0, 'the record binds to the RETIRE: operation, passport, lineage, predecessor, holder, commitment and time order.')
+const whole = await checked(txs, { managedAcceptance: true, managedInstruction: true })
 say(whole.valid, `the four-state lineage verifies as a whole; operations ${txs.map((tx) => findDppOutputs(tx)[0].state.op).join(' -> ')}.`)
 for (const [i, s] of whole.states.entries()) {
   console.log(`  state ${i + 1} (${s.op}, ${s.txid.slice(0, 12)}): actor signature ${s.userSignatureValid ? 'verifies' : 'FAILS'}; publisher signature ${s.serverSignatureValid === false ? 'FAILS' : 'verifies'}; linkage ${s.linkageValid ? 'holds' : 'FAILS'}; inclusion ${s.spv}.`)
@@ -174,14 +201,14 @@ for (const [i, s] of whole.states.entries()) {
 // ----------------------------------------------------------- the report
 step('The report a stranger produces from the bytes and the acceptance record, under a policy naming the custodian.')
 const report = await verifyPassportEvidence(
-  { tokenHistory: txs, acceptanceRecords: [record] },
+  { tokenHistory: txs, acceptanceRecords: [record], instructionRecords: [instruction] },
   { passportId, source: 'request-context' },
-  { policyId: 'managed-custody@1/example', publisherKeys: [idKey(custodianPriv)], managedAcceptance: { required: true }, chainTracker: 'scripts only', authority: { required: true, genesisIssuers: [idKey(issuerPriv)], acceptanceCustodians: [idKey(custodianPriv)] } }
+  { policyId: 'managed-custody@1/example', publisherKeys: [idKey(custodianPriv)], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts only', authority: { required: true, genesisIssuers: [idKey(issuerPriv)], acceptanceCustodians: [idKey(custodianPriv)] } }
 )
 for (const c of report.checks) console.log(`  ${EVIDENCE_CHECK_LABELS[c.name]}: ${c.status}${c.reasonCode == null ? '' : ` (${c.reasonCode})`} [${c.name}]`)
 const status = (name) => report.checks.find((c) => c.name === name).status
 say(status('recordEncoding') === 'pass' && status('actorSignatures') === 'pass' && status('publisherSignatures') === 'pass' && status('linkage') === 'pass', 'the token rail passes: encoding, both signatures and linkage with control proven on every non-genesis state.')
-say(status('evidenceAvailability') === 'pass', 'the acceptance record the TRANSFER commits to was supplied and binds, so availability passes.')
+say(status('evidenceAvailability') === 'pass', 'the acceptance record the TRANSFER commits to and the instruction record the RETIRE commits to were supplied and bind, so availability passes.')
 say(status('issuerAuthority') === 'pass', 'the custodian is one the policy names as an acceptance custodian.')
 say(status('inclusion') === 'unknown', 'inclusion is unknown, because nothing here was mined and no header source was asked.')
 say(report.limits.some((l) => l.includes('custody-dependent')), 'the limits say the commitment is custody-dependent evidence and not a recipient signature.')
@@ -193,6 +220,11 @@ const uncommitted = await write(data({ op: 'TRANSFER', ownerIdentityKey: control
 const refusedUncommitted = await checked([...prefix, uncommitted.tx], { managedAcceptance: true })
 say(!refusedUncommitted.valid && (refusedUncommitted.error ?? '').includes(ACCEPTANCE_COMMITMENT_REFUSAL), `a TRANSFER without a commitment is refused under the profile: ${refusedUncommitted.error}.`)
 say((await checked([...prefix, uncommitted.tx])).valid, 'and accepted with the profile off, as the record model alone requires.')
+
+const uninstructed = await write(data({ op: 'RETIRE', ownerIdentityKey: controllerKeyOf(recipientPriv), actorIdentityKey: idKey(recipientPriv), controlLinkage: controlLinkageOf(recipientPriv), eventData: JSON.stringify({ reason: 'recycled' }), payloadPublic: PAYLOAD_2, payloadOwnerHash: ownerBlobHash(BLOB_2), previousTxid: transfer.tx.id('hex'), previousOutputIndex: 0, lineageGenesis: genesis() }), recipientWallet, { keep: false, prev: { tx: transfer.tx, outputIndex: 0 } })
+const refusedUninstructed = await checked([...txs.slice(0, 3), uninstructed.tx], { managedAcceptance: true, managedInstruction: true })
+say(!refusedUninstructed.valid && (refusedUninstructed.error ?? '').includes(INSTRUCTION_COMMITMENT_REFUSAL), `a RETIRE for the holder without an instruction commitment is refused under the profile's instruction rule: ${refusedUninstructed.error}.`)
+say((await checked([...txs.slice(0, 3), uninstructed.tx], { managedAcceptance: true })).valid, 'and accepted with the instruction rule off, as the acceptance rule alone requires.')
 
 const elsewhere = { ...record, acceptance: { ...record.acceptance, destinationKey: controllerKeyOf(strangerPriv) } }
 const resigned = await signManagedAcceptance((({ signature: _s, ...c }) => c)(elsewhere), custodianSigner)
@@ -253,7 +285,7 @@ const anchor = await buildAttestationAnchor(
 )
 const anchorInspection = inspectAttestationAnchor(anchor)
 say(anchorInspection.keyDerivationValid === true && anchorInspection.signatureValid === true && anchorInspection.metadata?.digest === digest, 'the anchoring service\'s output commits to the claim\'s complete bytes and its key derives from the service it names: a separate rail, a separate authority, and the passport token untouched.')
-say(!(await checked([...txs, afterRetire.tx], { managedAcceptance: true })).valid, 'and the token rail still refuses any state after the RETIRE: a claim on the other rail moves nothing here.')
+say(!(await checked([...txs, afterRetire.tx], { managedAcceptance: true, managedInstruction: true })).valid, 'and the token rail still refuses any state after the RETIRE: a claim on the other rail moves nothing here.')
 
 console.log(failures === 0 ? 'Every sentence above holds.' : 'At least one sentence above does not hold.')
 process.exit(failures === 0 ? 0 : 1)

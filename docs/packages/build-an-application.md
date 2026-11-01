@@ -198,6 +198,7 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
 | `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects `managed-custody@1`: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
+| `INSTRUCTION_COMMITMENT` | `required`, or unset | Selects the profile's instruction rule: after a committed `TRANSFER`, an `UPDATE` or `RETIRE` is admitted only with its instruction commitment, unless a control authority made it. Needs `ACCEPTANCE_COMMITMENT=required` |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
 `SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run an index from source](../operate/README.md) explains the other settings.
@@ -354,7 +355,6 @@ An index on an earlier release, or another implementation, may answer `none` wit
 These are open in the standard, and a writer must not guess them. The [known limitations](../operate/limitations.md) list the rest.
 
 - Which parties have a legitimate interest in a passport, and how they prove it to the owner before a disclosure. How a disclosure is made is settled ([how the writer example works](how-the-writer-works.md#the-owner-tier)); who is owed one is not.
-- Whether a custodian may write a state for a holder without the holder's request.
 - Which `eventData` properties an `UPDATE` or a `RETIRE` carries.
 
 ## Where to go next
