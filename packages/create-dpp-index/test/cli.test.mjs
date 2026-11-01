@@ -111,7 +111,8 @@ test('connection file uses the app contract, hides credentials and stays private
     assert.equal(JSON.parse(result.stdout).ok, true)
     assert.ok(!result.stdout.includes(env.SUBMIT_TOKEN))
     const app = parseEnv(readFileSync(join(target, '.app.env'), 'utf8'))
-    assert.deepEqual(app, { NETWORK: 'main', INDEX_URL: 'https://index.example.org', INDEX_SUBMIT_TOKEN: env.SUBMIT_TOKEN, INDEX_CALLBACK_TOKEN: env.ARC_CALLBACK_TOKEN })
+    // parseEnv returns a null-prototype object from Node 26; the spread compares the entries, not the prototype.
+    assert.deepEqual({ ...app }, { NETWORK: 'main', INDEX_URL: 'https://index.example.org', INDEX_SUBMIT_TOKEN: env.SUBMIT_TOKEN, INDEX_CALLBACK_TOKEN: env.ARC_CALLBACK_TOKEN })
     if (process.platform !== 'win32') assert.equal(statSync(join(target, '.app.env')).mode & 0o777, 0o600)
   }
 })
