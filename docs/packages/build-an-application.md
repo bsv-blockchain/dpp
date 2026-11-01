@@ -353,7 +353,7 @@ An index on an earlier release, or another implementation, may answer `none` wit
 
 These are open in the standard, and a writer must not guess them. The [known limitations](../operate/limitations.md) list the rest.
 
-- How the `owner`, `legitimate` and `authority` tiers are each disclosed. One ciphertext reaches whoever holds its key, so a passport with several audiences has no agreed answer yet.
+- Which parties have a legitimate interest in a passport, and how they prove it to the owner before a disclosure. How a disclosure is made is settled ([how the writer example works](how-the-writer-works.md#the-owner-tier)); who is owed one is not.
 - Whether a custodian may write a state for a holder without the holder's request.
 - Which `eventData` properties an `UPDATE` or a `RETIRE` carries.
 - How an acceptance record reaches a reader, since no index or registry serves it yet.

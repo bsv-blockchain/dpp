@@ -67,7 +67,23 @@ for (const state of journal.states) {
 }
 ```
 
-Restricted fields in more than one tier raise an open question, listed under [what is not settled](build-an-application.md#what-is-not-settled).
+**Disclosing a tier to another party.** The `legitimate` and `authority` fields are part of the one object you encrypted to yourself; they reach the parties entitled to them by a disclosure, the same `encrypt` call over only their fields with that party's identity key as counterparty ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). For a market-surveillance authority whose identity key is `authorityKey`, with `restrictedFields` the object you sealed:
+
+```js
+const manifest = readManifest(profile)
+const tiersFor = new Set(['legitimate', 'authority'])
+const disclosed = Object.fromEntries(
+  Object.entries(restrictedFields).filter(([key]) => tiersFor.has(manifest.fields.find((f) => f.pointer === `/${key}`)?.accessTier)),
+)
+const { ciphertext: disclosure } = await wallet.encrypt({
+  plaintext: Utils.toArray(JSON.stringify(disclosed), 'utf8'),
+  protocolID: [2, 'dpp owner data v1'],
+  keyID: passportId,
+  counterparty: authorityKey,
+})
+```
+
+Hand `disclosure` over off chain; the authority decrypts it with your identity key as counterparty. A party with a legitimate interest gets the `legitimate` fields alone. A disclosure is not committed on chain: it is your statement of what the committed tier holds, which the derivation attributes to you. Who is entitled to a tier, and how they show it before you disclose, is your deployment's rule ([what is not settled](build-an-application.md#what-is-not-settled)).
 
 ## Issue
 

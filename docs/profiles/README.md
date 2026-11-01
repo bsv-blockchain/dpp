@@ -4,7 +4,7 @@ An industry profile defines the product data a passport carries: the fields, wha
 
 Each profile is published in `@bsv/dpp-profiles` as a manifest, a JSON file that lists every field, and the package generates two JSON Schemas from each manifest. A profile is named `id@version`, such as `battery@2`, and that number is the **profile version**. Two other version numbers are different things: the **record version** is version 1 or 2 of the passport record format, which fixes what an on-chain [state](../README.md#words-you-will-meet) holds, and the **manifest format** (`manifestVersion`, `1` or `2`) is the shape of the manifest file itself.
 
-Each field has an access tier, which says who may read it: `public` fields go on chain in the public payload, and the `owner`, `legitimate` and `authority` tiers form the restricted payload, held off chain and encrypted, with only its hash on chain ([how the writer example works](../packages/how-the-writer-works.md#the-owner-tier) shows the encryption).
+Each field has an access tier, which says who may read it: `public` fields go on chain in the public payload, and the `owner`, `legitimate` and `authority` tiers form the restricted payload, held off chain and encrypted once to the owner, with only its hash on chain. A party entitled to the `legitimate` or `authority` tier receives those fields re-encrypted to its own identity key ([how the writer example works](../packages/how-the-writer-works.md#the-owner-tier) shows both).
 
 ## Choose a profile
 
@@ -46,7 +46,7 @@ Run these in the root of a checkout of this repository at the reviewed example r
    FAIL: the payload is missing the required field `name`.
    FAIL: the payload has a field the profile does not define: `colour`.
    ```
-4. Check the restricted payload, the `owner`, `legitimate` and `authority` fields together in one object, against `readRestrictedPayloadSchema(profile)` before you encrypt it. In your own project, without a checkout, validate both parts with the generated schemas, as [@bsv/dpp-profiles](../packages/dpp-profiles.md) shows.
+4. Check the restricted payload, the `owner`, `legitimate` and `authority` fields together in one object, against `readRestrictedPayloadSchema(profile)` before you encrypt it. A disclosure of one tier to another party is a subset of that object and is checked against the same schema. In your own project, without a checkout, validate both parts with the generated schemas, as [@bsv/dpp-profiles](../packages/dpp-profiles.md) shows.
 
 Besides the profile's public fields, every public schema accepts five properties that the manifest calls stamps: `profile` and `profile_version`, which are required; `notice`; `object_did`, an optional physical-object DID; and `dataCarrier`, a data-carrier identifier such as a chip UID, which an index can look up beside the passport identifier. The schema refuses any other property.
 
@@ -68,7 +68,7 @@ The passport verification report from `@bsv/dpp-protocol` checks `payload_public
 ## Not defined yet
 
 - No profile defines `event_data` properties for `UPDATE` or `RETIRE`, such as the reason for a retirement or whether an update was a repair, so there is no agreed name for them yet.
-- How the `legitimate` and `authority` tiers reach the parties entitled to read them is not settled. Only the owner tier's encryption is defined.
+- Which parties count as having a legitimate interest, and how they establish it to the owner before a disclosure, is each deployment's to decide; the standard fixes only how a disclosure is encrypted and that it carries no field of a tier the reader is not entitled to.
 
 Both are gaps in the standard rather than in these pages ([known limitations](../operate/limitations.md)).
 
