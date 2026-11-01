@@ -400,13 +400,13 @@
     },
     {
       "path": "spec/token-carrier.md",
-      "sha256": "81435a6fd406ed47de8e55c11bc4094adfa6c5a6e567910806d0529a3e6f39de",
+      "sha256": "e012ef0ffcd83599e536b37987c68c0eea4c786f8c756d8c57c75729f93e949d",
       "pins": "the carried record: the token prefix, the version 3 body, the token id, the burn and the migration rule"
     },
     {
       "path": "fixtures/record-v3.json",
-      "sha256": "835a15b762be7017989106027ea45bd23835476f3028ef0a7b45fd8e6b92165c",
-      "pins": "one carried genesis and value output of record version 3 with twelve refusals"
+      "sha256": "ef41fd9f6d122dd23b5653f1f5a294c67ba6af06d56c758511ee698b7efa6dd4",
+      "pins": "one carried genesis and value output of record version 3 with thirteen refusals"
     },
     {
       "path": "fixtures/chain-v3.json",
@@ -420,7 +420,7 @@
     },
     {
       "path": "conformance/baseline-native-3.json",
-      "sha256": "aa6548d7dc3b402a71c596076f8cbcd804a62252116ea1f2c39e8cb0146ba6ec",
+      "sha256": "b665b2113c92a854442a2c80b167e0eacd8f9ddfbdd765ec72f8cdaf7a6ec286",
       "pins": "the proposed baseline for the carried record, with every fixture digest"
     }
   ],

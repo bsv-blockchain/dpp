@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-10-29, the token id is a direct push
+
+- Refuse a carried token id pushed with `PUSHDATA1`, `PUSHDATA2` or `PUSHDATA4` (`the token id is a direct 32-byte push`); the reader previously accepted those bytes as the id where the token protocol reads no token id. Move the BRC-162 pin in `spec/token-carrier.md` from `8268c20` to `5362fed`, the revision that states the rule. `fixtures/record-v3.json` and `fixtures/vectors/dpp/record/v3.json` gain the refusal `tokenIdNonMinimalPush`; every pinned script was re-checked against the token protocol's published reference codec.
+
 ### 2026-10-17, record the beta.11 publication
 
 - Record the publication of `dpp-release-2026-10-10` under `latest` on 16 October 2026: protocol and profiles beta.9 and credentials beta.5 by hand with the approved bytes, overlay beta.12 by the workflow with provenance ([receipt](docs/reference/beta-11-publication.md)). Archive the approved plan and point the release pages at the published set.

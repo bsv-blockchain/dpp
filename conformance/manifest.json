@@ -24,7 +24,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/token-carrier.md",
-      "digest": "81435a6fd406ed47de8e55c11bc4094adfa6c5a6e567910806d0529a3e6f39de"
+      "digest": "e012ef0ffcd83599e536b37987c68c0eea4c786f8c756d8c57c75729f93e949d"
     },
     {
       "id": "spec-rules",
@@ -1272,11 +1272,12 @@
         "fixtures/record-v3.json#refusals.amountZero",
         "fixtures/record-v3.json#refusals.tokenIdWrongLength",
         "fixtures/record-v3.json#refusals.tokenIdThirtySixBytes",
+        "fixtures/record-v3.json#refusals.tokenIdNonMinimalPush",
         "fixtures/record-v3.json#refusals.payloadOnValueOutput",
         "fixtures/record-v3.json#refusals.payloadOnGenesis"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-09",
+      "reviewedAt": "2026-10-29",
       "reviewOwner": "dpp maintainers"
     },
     {
