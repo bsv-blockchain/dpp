@@ -27,7 +27,9 @@ import { BLOB_V3_1, PAYLOAD_V3_2, controlLinkageV3, custodianPriv, issuerPriv, m
  * the amount of one as a one-byte data push rather than OP_1, which the token
  * protocol refuses as non-minimal; an amount of two and an amount of zero,
  * which the token protocol reads as a value of two and an authority and this
- * document refuses outright; a token id of the wrong length; an empty
+ * document refuses outright; a token id of the wrong length; the right id
+ * behind PUSHDATA1 rather than a direct push, which the token protocol
+ * refuses as no token id and this reader once read as one; an empty
  * payload slot on a value output, which the token protocol accepts and this
  * document does not; a version 2 body behind the prefix and a version 3 body
  * without one, so one version has one layout; a drop tail one short; and the
@@ -84,6 +86,7 @@ export async function recordV3Fixture() {
   const amountZero = rechunk(valueScript, (c) => [c[0], { op: 0 }, ...c.slice(2)])
   const tokenIdWrongLength = rechunk(valueScript, (c) => [{ op: 31, data: Array<number>(31).fill(0xab) }, ...c.slice(1)])
   const tokenIdThirtySixBytes = rechunk(valueScript, (c) => [{ op: 36, data: [...tokenIdWireBytes(genesis.txid), 0, 0, 0, 0] }, ...c.slice(1)])
+  const tokenIdNonMinimalPush = rechunk(valueScript, (c) => [{ op: 0x4c, data: tokenIdWireBytes(genesis.txid) }, ...c.slice(1)])
   const payloadOnValueOutput = rechunk(valueScript, (c) => [c[0], c[1], c[2], { op: 0 }, { op: OP.OP_DROP }, ...c.slice(3)])
   const payloadOnGenesis = rechunk(genesisScript, (c) => [c[0], c[1], c[2], { op: 2, data: [0xa0, 0x00] }, { op: OP.OP_DROP }, ...c.slice(3)])
   const versionTwoBehindPrefix = rechunk(valueScript, (c) => {
@@ -130,6 +133,7 @@ export async function recordV3Fixture() {
       { name: 'amountZero', reason: 'the token amount is 1', lockingScript: amountZero },
       { name: 'tokenIdWrongLength', reason: 'not a DPP output: missing 33-byte locking key push', lockingScript: tokenIdWrongLength },
       { name: 'tokenIdThirtySixBytes', reason: 'the token id is the 32-byte deploy txid', lockingScript: tokenIdThirtySixBytes },
+      { name: 'tokenIdNonMinimalPush', reason: 'the token id is a direct 32-byte push', lockingScript: tokenIdNonMinimalPush },
       { name: 'payloadOnValueOutput', reason: 'a value output carries no payload', lockingScript: payloadOnValueOutput },
       { name: 'payloadOnGenesis', reason: 'a genesis carries no payload beyond an empty slot', lockingScript: payloadOnGenesis },
       { name: 'versionTwoBehindPrefix', reason: 'version "2" is not carried behind a token prefix', lockingScript: versionTwoBehindPrefix },

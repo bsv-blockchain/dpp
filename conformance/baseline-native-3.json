@@ -457,7 +457,7 @@
     },
     {
       "path": "fixtures/record-v3.json",
-      "sha256": "835a15b762be7017989106027ea45bd23835476f3028ef0a7b45fd8e6b92165c",
+      "sha256": "ef41fd9f6d122dd23b5653f1f5a294c67ba6af06d56c758511ee698b7efa6dd4",
       "pins": "one carried genesis and one value output of record version 3 with their prefixes, framed preimages, signatures, keys, the token id in both byte orders, one accepted variant and twelve refusals"
     },
     {
@@ -472,7 +472,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/record/v3.json",
-      "sha256": "28555af2b82dfc608f2b8da34b827c78278a6b26794d216e5dd7de574cb9985c",
+      "sha256": "e3cb86424e81f30ca6c02a1def1cfa96feeff46e40ec3b1f11f4479ede9df706",
       "pins": "the version 3 record fixture in the stack's vector format"
     },
     {

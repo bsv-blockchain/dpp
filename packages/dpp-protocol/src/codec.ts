@@ -537,9 +537,10 @@ const isPushChunk = (c: ScriptChunk): boolean => c.op === 0 || (c.op >= 1 && c.o
  * (`spec/token-carrier.md` §2, §3), or report that the script carries none.
  * A script whose first chunk is a 33-byte push is a bare body and is read as
  * one; a first chunk of OP_0 or a 32- or 36-byte push is a prefix attempt
- * and is held to the carrier's rules: the id is the 32-byte deploy txid, the
- * amount is one unit as OP_1, then OP_2DROP, then no payload except an empty
- * slot on a deploy. Returns the prefix and the index the body starts at.
+ * and is held to the carrier's rules: the id is the 32-byte deploy txid as a
+ * direct push, the amount is one unit as OP_1, then OP_2DROP, then no payload
+ * except an empty slot on a deploy. Returns the prefix and the index the body
+ * starts at.
  */
 function readCarrierPrefix(chunks: ScriptChunk[]): { carrier: CarrierPrefix; bodyStart: number } | null {
   const first = chunks[0]
@@ -549,6 +550,10 @@ function readCarrierPrefix(chunks: ScriptChunk[]): { carrier: CarrierPrefix; bod
   if (!prefixAttempt) return null
   if (chunks.length < 3) throw new DppFormatError('not a DPP output: malformed token prefix')
   if (idLength === 36) throw new DppFormatError('the token id is the 32-byte deploy txid')
+  // BRC-162 writes the id as a direct push of its bytes (opcode 0x20); the
+  // same 32 bytes behind PUSHDATA1, 2 or 4 name no token to the protocol's
+  // reader, so they name none here either.
+  if (first.op !== 0 && first.op !== idLength) throw new DppFormatError('the token id is a direct 32-byte push')
   const amount = chunks[1]
   if (amount.op !== 0x50 + CARRIER_AMOUNT) {
     if (amount.data?.length === 1 && amount.data[0] === CARRIER_AMOUNT) {
