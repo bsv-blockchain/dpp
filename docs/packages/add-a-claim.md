@@ -33,13 +33,14 @@ Use exactly these fields. `signLifecycleClaim` refuses any other with `unsupport
 |---|---|
 | `claimFormat` | Always `dpp-lifecycle-v1` |
 | `passportId` | The passport identifier exactly as the product carries it, at most 512 bytes |
-| `recordId` | The passport state the claim is about. Until the specification fixes the spelling, use that state's transaction identifier, 64 hex characters, as the reference application does. The example below uses the latest state. Do not copy the test fixture's `state-1` |
+| `recordId` | The outpoint of the passport state the claim is about, written `<txid>:<outputIndex>`: the transaction identifier, a colon and the output index, such as `4566f1de…6331:0`. `signLifecycleClaim` refuses any other spelling. The example below uses the latest state |
 | `eventType` | One of `Origin`, `Transfer`, `Transformation` or `Disposition`. A repair is `Transformation` and a recycling `Disposition` ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 2) |
 | `timestamp` | When the event happened: an ISO date-time with a time zone, such as `2026-10-01T09:30:00Z` |
 | `issuer` | Your DID. With a wallet key, `didKeyFromIdentityKey(identityKey)` |
 | `issuerKeyId` | A label for the signing role, such as `repair bench 1`, at most 256 bytes. It does not select a key |
 | `issuerKeyDid` | Omit it when `issuer` is a `did:key`. Otherwise, the `did:key` of the signing key |
 | `profile`, `profile_version` | The product data profile, normally the one the passport's payload declares, such as `battery` and `2` |
+| `evidence` | Optional. The references a mapping needs to read the event as more than a metadata change ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 2): for a repair `workDone`, `performedBy` and `performedAt`; for an origin `facility`, `time` and `responsibleParty`; for a transfer `source` and `destination` or a `custodyRecord`; for a disposition `dispositionKind` and, for a process, `outputs`. Each is a reference to a record, such as a document digest, a DID or an outpoint, never a bare flag. Leave it out when you have none; an empty object is refused |
 
 ## 2. Sign it, have a registry check it and prepare the anchor
 
@@ -67,21 +68,24 @@ if (lookup.outputs.length === 0) throw new Error(`the index holds nothing for ${
 const merged = Beef.fromBinary(lookup.outputs[0].beef)
 for (const output of lookup.outputs.slice(1)) merged.mergeBeef(output.beef)
 const tip = chainFromBeef(merged, passportId).at(-1)
-const payload = JSON.parse(findDppOutputs(tip)[0].state.payloadPublic)
+const { state, outputIndex } = findDppOutputs(tip)[0]
+const payload = JSON.parse(state.payloadPublic)
 
 // 1. Fill in and sign the claim.
 const claim = await signLifecycleClaim({
   claimFormat: 'dpp-lifecycle-v1',
   passportId,
-  recordId: tip.id('hex'),
+  recordId: `${tip.id('hex')}:${outputIndex}`,
   eventType: 'Transformation',
   timestamp: new Date().toISOString(),
   issuer: didKeyFromIdentityKey(identityKey),
   issuerKeyId: 'repair bench 1',
   profile: payload.profile,
   profile_version: payload.profile_version,
+  // What was done, by whom and when, each as a reference: here the digest of the job sheet, the bench's DID and the state itself.
+  evidence: { workDone: 'sha256:<digest of the job sheet>', performedBy: didKeyFromIdentityKey(identityKey), performedAt: `${tip.id('hex')}:${outputIndex}` },
 }, wallet)
-console.log('signed by', claim.issuer, 'about state', claim.recordId.slice(0, 12))
+console.log('signed by', claim.issuer, 'about state', claim.recordId)
 console.log('signature', verifyLifecycleClaim(claim, { passportId }).signature)
 
 // 2. Ask the registry to check it. Validation is open and stores nothing.

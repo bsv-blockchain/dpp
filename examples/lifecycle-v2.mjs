@@ -258,7 +258,8 @@ const lifecycleClaim = await signLifecycleClaim(
   {
     claimFormat: 'dpp-lifecycle-v1',
     passportId,
-    recordId: txs[txs.length - 1].id('hex'),
+    recordId: `${txs[txs.length - 1].id('hex')}:0`,
+    evidence: { dispositionKind: 'process-with-outputs', outputs: [`${passportId}-CELLS-1`] },
     eventType: 'Disposition',
     timestamp: instant(),
     issuer: didKeyFromIdentityKey(idKey(recyclerPriv)),

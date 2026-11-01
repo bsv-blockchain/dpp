@@ -1,21 +1,38 @@
+import { readFileSync } from 'node:fs'
 import { LockingScript, PrivateKey, ProtoWallet, PublicKey, Utils } from '@bsv/sdk'
 import { canonicalString, didKeyFromIdentityKey, lifecycleClaimBytes, lifecycleClaimDigest, signLifecycleClaim, type LifecycleClaim } from '@bsv/dpp-protocol'
 import { ATTESTATION_ANCHOR_PREFIX, ATTESTATION_ANCHOR_PROTOCOL, attestationAnchorFields, attestationAnchorSigningPreimage, buildAttestationAnchor, decodeAttestationAnchor } from '../src/attestationAnchor.js'
 
-/** Published synthetic keys. Independent implementations reproduce these bytes. */
+/**
+ * Published synthetic keys. Independent implementations reproduce these bytes.
+ * The claim is about the genesis of `fixtures/chain-v1.json`, so its
+ * `recordId` is a real outpoint in the spelling `spec/rules.md` §3 fixes and
+ * its `passportId` a real identifier; a second claim carries `evidence`, the
+ * facets of §2, so both parties pin the nested canonical form too.
+ */
 export async function attestationV1Fixture() {
   const anchoringPrivateKey = '77'.repeat(32)
   const issuerPrivateKey = '88'.repeat(32)
   const issuerKey = PrivateKey.fromHex(issuerPrivateKey).toPublicKey().toString()
   const issuer = didKeyFromIdentityKey(issuerKey)
+  const chainV1 = JSON.parse(readFileSync(new URL('../../../fixtures/chain-v1.json', import.meta.url), 'utf8')) as { states: Array<{ txid: string; outputIndex: number; data: { passportId: string } }> }
+  const genesis = chainV1.states[0]
   const unsignedClaim: LifecycleClaim = {
     claimFormat: 'dpp-lifecycle-v1', eventType: 'Origin', issuer,
-    issuerKeyId: 'fixture-issuer-key', passportId: 'https://id.example.test/products/fixture-1',
-    profile: 'generic', profile_version: 1, recordId: 'state-1', timestamp: '2026-09-05T00:00:00.000Z',
+    issuerKeyId: 'fixture-issuer-key', passportId: genesis.data.passportId,
+    profile: 'general', profile_version: 2, recordId: `${genesis.txid}:${genesis.outputIndex}`, timestamp: '2026-09-05T00:00:00.000Z',
   }
   const claim = await signLifecycleClaim(unsignedClaim, new ProtoWallet(PrivateKey.fromHex(issuerPrivateKey)))
   const representationBytes = Utils.toUTF8(lifecycleClaimBytes(claim))
   const digest = lifecycleClaimDigest(claim)
+  const repaired = chainV1.states[3]
+  const unsignedClaimWithEvidence: LifecycleClaim = {
+    claimFormat: 'dpp-lifecycle-v1', eventType: 'Transformation', issuer,
+    issuerKeyId: 'fixture-issuer-key', passportId: genesis.data.passportId,
+    profile: 'general', profile_version: 2, recordId: `${repaired.txid}:${repaired.outputIndex}`, timestamp: '2026-09-06T00:00:00.000Z',
+    evidence: { workDone: `sha256:${'ab'.repeat(32)}`, performedBy: issuer, performedAt: `${repaired.txid}:${repaired.outputIndex}` },
+  }
+  const claimWithEvidence = await signLifecycleClaim(unsignedClaimWithEvidence, new ProtoWallet(PrivateKey.fromHex(issuerPrivateKey)))
   const anchor = {
     digest, attestationId: `urn:sha256:${digest}`, issuer,
     subject: unsignedClaim.passportId, attestationType: unsignedClaim.eventType,
@@ -31,6 +48,12 @@ export async function attestationV1Fixture() {
     anchoringPrivateKey, issuerPrivateKey, issuerKey, anchor, unsignedClaim, claim,
     canonicalUnsignedClaim: canonicalString(unsignedClaim), representationBytes,
     representationHex: Utils.toHex(lifecycleClaimBytes(claim)), digest,
+    claimWithEvidence: {
+      description: 'A Transformation claim about the fourth pinned state, carrying the repair facets of rules.md section 2 under evidence; its canonical form nests one object, sorted at every level.',
+      unsignedClaim: unsignedClaimWithEvidence, claim: claimWithEvidence,
+      representationBytes: Utils.toUTF8(lifecycleClaimBytes(claimWithEvidence)),
+      representationHex: Utils.toHex(lifecycleClaimBytes(claimWithEvidence)), digest: lifecycleClaimDigest(claimWithEvidence),
+    },
     fields: fields.map(field => Utils.toUTF8(field)), fieldHex: fields.map(field => Utils.toHex(field)),
     signingPreimage: Utils.toHex(attestationAnchorSigningPreimage(fields)),
     signature: Utils.toHex(decoded.signature), lockingKey: decoded.lockingKey, lockingScript: script.toHex(),
@@ -53,6 +76,11 @@ export function attestationV1Vectors(fixture: Awaited<ReturnType<typeof attestat
         id: 'signed-claim-to-anchor', description: 'Sign the native claim, hash its complete canonical signed representation, frame nine metadata fields and create the ten-field anchor.',
         input: { unsigned_claim: fixture.unsignedClaim, anchor: fixture.anchor, issuer_private_key_hex: fixture.issuerPrivateKey, anchoring_private_key_hex: fixture.anchoringPrivateKey },
         expected: { claim: fixture.claim, secured_bytes_hex: fixture.representationHex, digest_hex: fixture.digest, signing_preimage_hex: fixture.signingPreimage, signature_hex: fixture.signature, locking_key_hex: fixture.lockingKey, locking_script_hex: fixture.lockingScript }, tags: ['happy-path'],
+      },
+      {
+        id: 'signed-claim-with-evidence', description: 'Sign a native claim that carries evidence facets: canonicalise with keys sorted at every level and the outputs list in order, sign, then hash the complete signed representation.',
+        input: { unsigned_claim: fixture.claimWithEvidence.unsignedClaim, issuer_private_key_hex: fixture.issuerPrivateKey },
+        expected: { claim: fixture.claimWithEvidence.claim, secured_bytes_hex: fixture.claimWithEvidence.representationHex, digest_hex: fixture.claimWithEvidence.digest }, tags: ['happy-path'],
       },
       {
         id: 'script-to-metadata', description: 'Verify the anchoring service signature, derivation and exact layout. This does not verify issuer authority or VSC conformance.',
