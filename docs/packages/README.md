@@ -10,7 +10,7 @@ Use [choose packages and services](../start/choose-components-and-services.md) t
 
 | You want to | Start here | What to install |
 | --- | --- | --- |
-| Create a new application | [Application skeleton](build-an-application.md#start-with-an-application-skeleton) | Use `@bsv/create-dpp-app`. It includes the application files and selected dependencies |
+| Create a new application | [Create an application](create-dpp-app.md) | Use `@bsv/create-dpp-app`. It includes the application files and selected dependencies |
 | Run a new index | [Create an index](create-dpp-index.md) | Use `@bsv/create-dpp-index`. It includes `@bsv/dpp-overlay` in the generated project's dependencies |
 | Connect your app to an existing index | [Choose index access](../start/choose-components-and-services.md#decide-which-services-to-run-or-use) | Neither index package is needed just for HTTP access; obtain the URL and scoped access settings |
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |

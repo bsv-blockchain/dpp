@@ -17,6 +17,7 @@
 * [Build or integrate](start/build-and-integrate.md)
   * [Verify your first passport](quick-start.md)
   * [What your application supplies](packages/what-an-application-offers.md)
+  * [Create an application](packages/create-dpp-app.md)
   * [Issue and update passports](packages/build-an-application.md)
     * [How the writer works](packages/how-the-writer-works.md)
   * [Add a lifecycle claim](packages/add-a-claim.md)
