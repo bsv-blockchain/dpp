@@ -14,7 +14,7 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ### 2026-11-01, prepare dpp-release-2026-11
 
-- Prepare `dpp-release-2026-11`: `@bsv/dpp-protocol` and `@bsv/dpp-profiles` at `0.3.0-beta.10` and `@bsv/dpp-overlay` at `0.4.0-beta.13`, beside the unchanged `@bsv/dpp-credentials` `0.2.0-beta.5`, carrying the seven stack B decisions of bsv-blockchain/dpp#177. The index contract moves to `0.12.0-draft` for the `instruction-commitment-absent` refusal and the registry contract to `0.5.0` for the claim schema. `native-baseline@2` pins `fixtures/managed-instruction-v1.json` and its vectors, and the set pins the regenerated anchor fixture, the instruction fixture and the registry contract. Both starters pin the new set; `dpp-release-2026-10-10` is superseded and stays the last published set.
+- Prepare `dpp-release-2026-11`: `@bsv/dpp-protocol` and `@bsv/dpp-profiles` at `0.3.0-beta.10` and `@bsv/dpp-overlay` at `0.4.0-beta.13`, beside the unchanged `@bsv/dpp-credentials` `0.2.0-beta.5`, carrying the seven stack B decisions of bsv-blockchain/dpp#177. The index contract moves to `0.12.0-draft` for the `instruction-commitment-absent` refusal and the registry contract to `0.5.0` for the claim schema. `native-baseline@2` pins `fixtures/managed-instruction-v1.json` and its vectors, and the set pins the regenerated anchor fixture, the instruction fixture and the registry contract. Both starters pin the new set and move to `0.1.0-beta.2`, because the application starter's template now signs its claims with the outpoint `recordId`; `dpp-release-2026-10-10` is superseded and stays the last published set.
 
 ### 2026-11-01, the schema check covers token payloads, tiers are disclosed per reader, acceptance records travel in packages
 

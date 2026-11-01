@@ -1,6 +1,6 @@
 {
   "name": "@bsv/create-dpp-index",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "Scaffold a standalone DPP index with persistent MongoDB, operator configuration and an application connection file",
   "license": "Apache-2.0",
   "type": "module",

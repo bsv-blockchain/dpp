@@ -16,7 +16,7 @@ Use [choose packages and services](../start/choose-components-and-services.md) t
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the starter |
 
-Both starters are published at `0.1.0-beta.1`. Their guides explain how to create a project from npm or check a source candidate. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
+Both starters are published at `0.1.0-beta.1`; the source carries `0.1.0-beta.2`, which pins the current candidate and is not yet published. Their guides explain how to create a project from npm or check a source candidate. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
 
 ## Use the renamed source candidate
 

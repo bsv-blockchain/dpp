@@ -85,7 +85,7 @@ An index is where your passports become findable: the app announces every state 
 **Operate your own index.** Use `@bsv/create-dpp-index` in a separate directory. It includes the persistent runtime, MongoDB configuration, tokens and deployment files. This starter is a source candidate pending publication; after its release, from the directory containing your app project:
 
 ```sh
-npm create @bsv/dpp-index@0.1.0-beta.1 my-index
+npm create @bsv/dpp-index@0.1.0-beta.2 my-index
 cd my-index
 npm test
 npm run up

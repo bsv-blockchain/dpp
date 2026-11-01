@@ -7,7 +7,7 @@ If your app uses an existing compatible index, obtain its URL and access setting
 This source candidate has not been published. After the starter and its pinned dependencies are published, this single command creates the project and installs its dependencies:
 
 ```sh
-npm create @bsv/dpp-index@0.1.0-beta.1 my-index
+npm create @bsv/dpp-index@0.1.0-beta.2 my-index
 ```
 
 The guided path explains what an index does, then asks for the publisher key and the network. The publisher key is the line `npm run wallet` prints in the app; it is a public key, not the app user's identity or a private wallet key. Custody follows the app starter, managed custody, and is not asked.
@@ -15,7 +15,7 @@ The guided path explains what an index does, then asks for the publisher key and
 For scripts and agents:
 
 ```sh
-npx @bsv/create-dpp-index@0.1.0-beta.1 my-index --publisher-key "$PUBLISHER_PUBLIC_KEY" --network main --yes --no-install --json
+npx @bsv/create-dpp-index@0.1.0-beta.2 my-index --publisher-key "$PUBLISHER_PUBLIC_KEY" --network main --yes --no-install --json
 ```
 
 `--config settings.json` accepts `publisherKey`, `anchorKeys`, `network`, `port` and `publicUrl`. Flags override the file. Invalid or missing settings and non-empty targets fail without overwriting existing work. `--no-install` scaffolds offline; dependency installation requires registry access. Installation failure returns non-zero and preserves the generated project for retry. `--help` lists all options.

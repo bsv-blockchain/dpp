@@ -5,13 +5,13 @@
   "components": [
     {
       "name": "@bsv/create-dpp-app",
-      "version": "0.1.0-beta.1",
+      "version": "0.1.0-beta.2",
       "licence": "Apache-2.0",
       "dependencies": []
     },
     {
       "name": "@bsv/create-dpp-index",
-      "version": "0.1.0-beta.1",
+      "version": "0.1.0-beta.2",
       "licence": "Apache-2.0",
       "dependencies": []
     },
