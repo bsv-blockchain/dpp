@@ -8,7 +8,7 @@ A release set is one tested combination of all these parts, declared in a file u
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
-| Packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-credentials@0.2.0-beta.5` | `packages` | `implementation`: the index's own package and version |
+| Packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-credentials@0.2.0-beta.6` | `packages` | `implementation`: the index's own package and version |
 | Runtime | Node 22 or later, `@bsv/sdk` 2.8.10 | `runtime` | Not advertised |
 | Passport records | Version 1 (14 fields), version 2 (17 fields) and version 3 (the version 2 body behind a token prefix) | `wire.records` | `protocols`: `dpp-record` version `1`, version `2` and version `3` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |

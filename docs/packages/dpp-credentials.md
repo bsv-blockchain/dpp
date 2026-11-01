@@ -2,7 +2,7 @@
 
 `@bsv/dpp-credentials` issues and verifies supply-chain credentials in W3C formats, and reads supply-chain event documents in the GS1 EPCIS format. Use it if your application exchanges SEALs or other W3C verifiable credentials with partners, or imports EPCIS events; a passport reader or writer that uses only passports and native claims does not need it.
 
-**Experimental prerelease:** `@bsv/dpp-credentials` 0.2.0-beta.5 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
+**Experimental prerelease:** `@bsv/dpp-credentials` 0.2.0-beta.6 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
 ## What it is and whether you need it
 
@@ -24,10 +24,10 @@ The package does not fund a wallet, move a passport or find records through an i
 In your project, with Node 22 or later:
 
 ```sh
-npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
+npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 ```
 
-Each package numbers its own prereleases. `@bsv/dpp-credentials` 0.2.0-beta.5 is unchanged in the current source candidate, `dpp-release-2026-11`, beside protocol and profiles beta.10 and overlay beta.13. The [release page](../reference/release-sets.md) distinguishes that candidate from the latest published set. A bare `npm install @bsv/dpp-credentials` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
+Each package numbers its own prereleases. `@bsv/dpp-credentials` 0.2.0-beta.6 in the current source candidate, `dpp-release-2026-11`, is beta.5 repacked with no code change, beside protocol and profiles beta.10 and overlay beta.13. The [release page](../reference/release-sets.md) distinguishes that candidate from the latest published set. A bare `npm install @bsv/dpp-credentials` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
 
 ## Entry points and their main functions
 

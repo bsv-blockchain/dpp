@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-11",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, beside the unchanged @bsv/dpp-credentials 0.2.0-beta.5. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; a managed custodian writes for a holder only on a committed dpp-managed-instruction@1 record, refused as instruction-commitment-absent where an index selects the rule; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.12.0-draft and the registry contract 0.5.0. The custody profile is managed-custody@2: the custodian signs its acceptance and instruction records with a derived key through the wallet's createSignature (bsv-blockchain/dpp-issues#78), and dpp-managed-acceptance@1 records are read and never written. Record versions and the other conformance claims are those of dpp-release-2026-10-10. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, a repack of beta.5 with no code change. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; a managed custodian writes for a holder only on a committed dpp-managed-instruction@1 record, refused as instruction-commitment-absent where an index selects the rule; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.12.0-draft and the registry contract 0.5.0. The custody profile is managed-custody@2: the custodian signs its acceptance and instruction records with a derived key through the wallet's createSignature (bsv-blockchain/dpp-issues#78), and dpp-managed-acceptance@1 records are read and never written. Record versions and the other conformance claims are those of dpp-release-2026-10-10. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-11.json",
   "runtime": {
@@ -197,7 +197,7 @@
     },
     {
       "name": "@bsv/dpp-credentials",
-      "version": "0.2.0-beta.5",
+      "version": "0.2.0-beta.6",
       "directory": "packages/dpp-credentials",
       "role": "the VSC draft compatibility profile with its owned context and schema artefacts and the two proof suites; the EPCIS source helpers with the pinned EPCIS 2.0.1 artefacts (./epcis-source) and the external ecdsa-rdfc-2019 credential verifier (./exchange)",
       "entryPoints": [
