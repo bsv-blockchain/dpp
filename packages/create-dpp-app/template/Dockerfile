@@ -4,11 +4,12 @@
 #
 # The base image is a build argument so a build can take the same Docker
 # Official Image from a mirror, for example
-# --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22-bookworm-slim
+# --build-arg BASE_IMAGE=public.ecr.aws/docker/library/node:22.23.4-bookworm-slim
 # where Docker Hub rate limits apply. The default is Docker Hub's.
-ARG BASE_IMAGE=node:22-bookworm-slim
+ARG BASE_IMAGE=node:22.23.4-bookworm-slim
 
 FROM ${BASE_IMAGE} AS build
+RUN test "$(node --version)" = "v22.23.4"
 RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json package-lock.json* ./
@@ -20,6 +21,7 @@ COPY . .
 RUN npm run build && npm prune --omit=dev
 
 FROM ${BASE_IMAGE}
+RUN test "$(node --version)" = "v22.23.4"
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build /app/node_modules ./node_modules

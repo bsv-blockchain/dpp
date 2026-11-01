@@ -17,10 +17,10 @@ jobs:
   packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: npm run build
@@ -55,10 +55,10 @@ jobs:
   consumer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: node scripts/release-candidates.mjs
@@ -71,19 +71,19 @@ jobs:
   image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # The base image comes from the first registry that serves it: Google's
       # Docker Hub mirror, Amazon ECR Public, then Docker Hub. All three serve
       # the same manifest digests, so one registry's anonymous pull limit or
-      # outage cannot fail this job; the Dockerfile default stays node:22-slim
+      # outage cannot fail this job; the Dockerfile default stays node:22.23.4-slim
       # for platform and local builds.
       - run: |
           set -euo pipefail
           base=""
           for registry in mirror.gcr.io/library public.ecr.aws/docker/library docker.io/library; do
-            if docker pull -q "$registry/node:22-slim"; then base="$registry/node:22-slim"; break; fi
+            if docker pull -q "$registry/node:22.23.4-slim"; then base="$registry/node:22.23.4-slim"; break; fi
           done
-          [ -n "$base" ] || { echo "No registry served node:22-slim" >&2; exit 1; }
+          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
           docker build --build-arg BASE_IMAGE="$base" -f packages/dpp-overlay/Dockerfile -t dpp-overlay:ci .
       # A versioned smoke of the image: it boots on configuration alone,
       # answers /health and names its capabilities.
@@ -106,10 +106,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [22, 24]
+        node: ['22.23.4', '24.22.2']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -122,10 +122,10 @@ jobs:
   starter-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: npm
       - run: npm ci
       - run: npm run build
@@ -136,9 +136,9 @@ jobs:
           set -euo pipefail
           base=""
           for registry in mirror.gcr.io/library public.ecr.aws/docker/library docker.io/library; do
-            if docker pull -q "$registry/node:22-bookworm-slim"; then base="$registry/node:22-bookworm-slim"; break; fi
+            if docker pull -q "$registry/node:22.23.4-bookworm-slim"; then base="$registry/node:22.23.4-bookworm-slim"; break; fi
           done
-          [ -n "$base" ] || { echo "No registry served node:22-bookworm-slim" >&2; exit 1; }
+          [ -n "$base" ] || { echo "No registry served node:22.23.4-bookworm-slim" >&2; exit 1; }
           docker build --build-arg BASE_IMAGE="$base" -f /tmp/my-dpp/.candidate.Dockerfile -t my-dpp /tmp/my-dpp
       - run: |
           set -euo pipefail

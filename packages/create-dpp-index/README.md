@@ -57,7 +57,7 @@ The generator is released separately from the protocol release set named under `
 
 ## Prepare a release
 
-Use Node 22.23.3 and npm 11.19.0, matching `.github/workflows/publish-index-starter.yaml`. From the repository root:
+Use Node 22.23.4 and npm 11.19.0, matching `.github/workflows/publish-index-starter.yaml`. From the repository root:
 
 ```sh
 npm run index-starter:check
