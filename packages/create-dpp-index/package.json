@@ -1,6 +1,6 @@
 {
   "name": "@bsv/create-dpp-index",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "Scaffold a standalone DPP index with persistent MongoDB, operator configuration and an application connection file",
   "license": "Apache-2.0",
   "type": "module",
@@ -13,11 +13,11 @@
     "scaffold:check": "node scripts/scaffold-check.mjs"
   },
   "dpp": {
-    "releaseSet": "dpp-release-2026-10-10",
+    "releaseSet": "dpp-release-2026-11",
     "packages": {
-      "@bsv/dpp-overlay": "0.4.0-beta.12",
-      "@bsv/dpp-protocol": "0.3.0-beta.9",
-      "@bsv/dpp-profiles": "0.3.0-beta.9"
+      "@bsv/dpp-overlay": "0.4.0-beta.13",
+      "@bsv/dpp-protocol": "0.3.0-beta.10",
+      "@bsv/dpp-profiles": "0.3.0-beta.10"
     }
   },
   "repository": {

@@ -5,13 +5,13 @@
   "components": [
     {
       "name": "@bsv/create-dpp-app",
-      "version": "0.1.0-beta.1",
+      "version": "0.1.0-beta.2",
       "licence": "Apache-2.0",
       "dependencies": []
     },
     {
       "name": "@bsv/create-dpp-index",
-      "version": "0.1.0-beta.1",
+      "version": "0.1.0-beta.2",
       "licence": "Apache-2.0",
       "dependencies": []
     },
@@ -108,19 +108,19 @@
     },
     {
       "name": "@bsv/dpp-overlay",
-      "version": "0.4.0-beta.12",
+      "version": "0.4.0-beta.13",
       "licence": "Apache-2.0",
       "dependencies": [
         {
           "name": "@bsv/dpp-protocol",
-          "range": "0.3.0-beta.9",
-          "version": "0.3.0-beta.9",
+          "range": "0.3.0-beta.10",
+          "version": "0.3.0-beta.10",
           "licence": "Apache-2.0"
         },
         {
           "name": "@bsv/dpp-profiles",
-          "range": "0.3.0-beta.9",
-          "version": "0.3.0-beta.9",
+          "range": "0.3.0-beta.10",
+          "version": "0.3.0-beta.10",
           "licence": "Apache-2.0"
         },
         {
@@ -145,7 +145,7 @@
     },
     {
       "name": "@bsv/dpp-profiles",
-      "version": "0.3.0-beta.9",
+      "version": "0.3.0-beta.10",
       "licence": "Apache-2.0",
       "dependencies": [
         {
@@ -158,7 +158,7 @@
     },
     {
       "name": "@bsv/dpp-protocol",
-      "version": "0.3.0-beta.9",
+      "version": "0.3.0-beta.10",
       "licence": "Apache-2.0",
       "dependencies": [
         {

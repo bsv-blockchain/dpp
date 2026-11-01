@@ -2,7 +2,7 @@
 
 Scaffolded by `@bsv/create-dpp-app`. Brands issue product passports as records on the BSV blockchain, hand them on along the supply chain, and anyone verifies a passport from its label. The records follow the open DPP standard; this application is one way of building what the standard requires, and every opinion it takes is yours to change.
 
-The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-10-10` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
+The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-11` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
 
 ## What you have
 
@@ -85,7 +85,7 @@ An index is where your passports become findable: the app announces every state 
 **Operate your own index.** Use `@bsv/create-dpp-index` in a separate directory. It includes the persistent runtime, MongoDB configuration, tokens and deployment files. This starter is a source candidate pending publication; after its release, from the directory containing your app project:
 
 ```sh
-npm create @bsv/dpp-index@0.1.0-beta.1 my-index
+npm create @bsv/dpp-index@0.1.0-beta.2 my-index
 cd my-index
 npm test
 npm run up

@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "fd2aa84d5d6216370c299a25670651afcd4291b18c75db58a6c04b175ee24f90"
+      "digest": "c12647297de80de3cfa13bd895feb371ecc92ddda25c5f12065e9636d481a1ac"
     },
     {
       "id": "contract-registry",
@@ -120,7 +120,7 @@
       "version": "0.4.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "2656ce87cac2420e837712c71fbc6d839e27aeb6b69f3d2db5213f44b5108d33"
+      "digest": "8f993a1e94639da7540e56d523c90ee21355fefb21ec94eee432b8d1dff81cc0"
     },
     {
       "id": "contract-report-schema",
@@ -152,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "1f80825bac1b6a7811c0b6d3b724eb633e5446eeb1a73d9a032dabe0445af181"
+      "digest": "308514bec869ea38d7d1f0994eaf3b44d4efe4e15d5814ccf5604bb5807dedb2"
     },
     {
       "id": "spec-profiles",
@@ -5452,8 +5452,8 @@
       "status": "tested",
       "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "2656ce87cac2420e837712c71fbc6d839e27aeb6b69f3d2db5213f44b5108d33",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged."
+      "sourceDigest": "8f993a1e94639da7540e56d523c90ee21355fefb21ec94eee432b8d1dff81cc0",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise."
     },
     {
       "id": "PROJ-1-source-revisions",

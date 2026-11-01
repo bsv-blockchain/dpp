@@ -22,7 +22,7 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-10-10`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test unpublished source changes independently of the public npm command.
+This candidate check installs the packed generator, creates the app, installs local runtime archives, then builds, typechecks and tests it. The generated project is kept at the chosen directory. Both starters pin `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives let you test unpublished source changes independently of the public npm command.
 
 For deployment, connect to an existing compatible index or create a separate project with [the index starter](create-dpp-index.md). The app's Compose file starts its application database. The index starter includes its own maintained runtime, so there is no additional overlay installation step. A successful offline exercise does not establish readiness for production; complete the generated guide and [production checks](../operate/production-readiness.md).
 
@@ -58,7 +58,7 @@ Commands on this page use the packages the checkout links. In your own applicati
 First [pack the source candidate](README.md#use-the-renamed-source-candidate). Replace `/absolute/path/to/dpp` with that checkout's path; this exercises the source rather than the published versions.
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
 ```
 
 Before issuing, validate the payload against its declared profile with the [profile checker](dpp-profiles.md#check-a-payload-against-its-profile). Signature and linkage checks alone do not validate product data. Keep the application journal and retained evidence from steps 3 and 5; the packages do not supply your full application, permissions or background scheduler.

@@ -395,6 +395,16 @@
       "path": "fixtures/vectors/dpp/managed-acceptance/v1.json",
       "sha256": "f8b03a497f80a0e666b8928e4af9c60f938898eb54fe72c2caa34d6b45eb2d5a",
       "pins": "the managed acceptance fixture in the stack's vector format"
+    },
+    {
+      "path": "fixtures/managed-instruction-v1.json",
+      "sha256": "a1caa9272dbd120806c252d8d93439da6c985beac7e2229ba3a84d0f73532834",
+      "pins": "one dpp-managed-instruction@1 record with its canonical bytes, signature and commitment, the UPDATE that commits to it, and six refusals"
+    },
+    {
+      "path": "fixtures/vectors/dpp/managed-instruction/v1.json",
+      "sha256": "35c6d8e844ee0d27c07b12687373964d3e1449850d2f79a57479f901740700c2",
+      "pins": "the same record in the stack vector format"
     }
   ],
   "dependencies": [

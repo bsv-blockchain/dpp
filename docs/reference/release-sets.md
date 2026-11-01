@@ -4,18 +4,17 @@ A release set is a declared combination of package versions, wire and contract v
 
 ## The current set
 
-| | `dpp-release-2026-10-10` |
+| | `dpp-release-2026-11` |
 |---|---|
-| Declaration | `release/dpp-release-2026-10-10.json`, bound at source revision `0e45ac32da351c1e877431d55e2e9c0c41f54c33` |
-| Status | Published on 16 October 2026 under `latest` ([beta.11 receipt](beta-11-publication.md)) |
-| Main packages | `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-credentials@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
+| Declaration | `release/dpp-release-2026-11.json`; its source revision is recorded when a publication plan binds it |
+| Status | Candidate. Nothing of it is published; the last published set is `dpp-release-2026-10-10`, under `latest` since 16 October 2026 ([beta.11 receipt](beta-11-publication.md)) |
+| Main packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
 | npm tag | `latest`; install exact versions and retain the lockfile |
-| Source revision | `0e45ac32da351c1e877431d55e2e9c0c41f54c33` |
-| Receipt | [Beta.11 publication receipt](beta-11-publication.md), with the approved plan and verification results |
-| Selection | `conformance/selections/dpp-release-2026-10-10.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
+| Receipt | None yet; the [beta.11 receipt](beta-11-publication.md) covers the last published set |
+| Selection | `conformance/selections/dpp-release-2026-11.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
 
-Compared with the superseded `dpp-release-2026-10-9`, this set moves only the overlay package, to `0.4.0-beta.12`, from the same source: the archive published as `0.4.0-beta.11` on 16 October 2026 differed from its approved bytes in one file mode, so beta.11 is deprecated and the approved bytes publish as beta.12. The three other packages are the ones `dpp-release-2026-10-9` declared and published under their new names on 16 October 2026; `dpp-release-2026-10-9` had renamed the index runtime to `@bsv/dpp-overlay` and the credentials package to `@bsv/dpp-credentials`, and `dpp-release-2026-10-8` the shared library to `@bsv/dpp-protocol`. Both starters pin this set, and existing consumers must migrate their imports and schema paths. It keeps the same record versions, signing rules, claim and anchor formats, profiles and index contract `0.11.0-draft`. See [migrate the package name](../migration.md#rename-dpp-core-to-dpp-protocol).
+Compared with the superseded `dpp-release-2026-10-10`, this set carries the seven decisions of bsv-blockchain/dpp#177. The verification report checks every token payload against its declared profile through a validator the caller supplies, with `profilePayloadValidator(ajv)` in the profiles package and the reason `profile-undeclared` for a payload without the profile stamps. The `legitimate` and `authority` tiers reach their readers as a disclosure re-encrypted to each reader's key under the one owner commitment. Acceptance records travel in the evidence package under `authority`, read back by `acceptanceRecordsInPackage`. Under managed custody the lock sits on each state's controller key, and after a committed transfer a custodian writes for the holder only on a `dpp-managed-instruction@1` record committed in field 15, which an index selecting the rule with `INSTRUCTION_COMMITMENT=required` refuses as `instruction-commitment-absent` when absent. The native claim names its state by outpoint in `recordId` and may carry evidence facets under `evidence`, with the canonical rule stated at every level; the anchor fixture is regenerated around the chain-v1 genesis. The index contract moves to `0.12.0-draft` for the new refusal and the registry contract to `0.5.0` for the claim schema. Both starters pin the new set, and the application starter signs its claims with the outpoint.
 
 The preceding published set introduced record version 3, the token carrier: a seventeen-field body behind a BRC-162 token prefix, representing one unit ([the specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/token-carrier.md)). Versions 1 and 2 remain readable. It also added optional index discovery, advertising and retries ([federation](../operate/federation.md)), and the `single-operator@2` operator profile. Those changes remain part of this candidate; neither the package renames nor the overlay republication adds a wire-format change.
 

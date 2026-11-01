@@ -5,7 +5,7 @@ Scaffold a Digital Product Passport application on BSV in one command.
 This starter and its renamed protocol dependency are source candidates pending publication. The npm command below applies after both are published; use the development commands below to test them from this checkout.
 
 ```sh
-npm create @bsv/dpp-app@0.1.0-beta.1 my-app
+npm create @bsv/dpp-app@0.1.0-beta.2 my-app
 cd my-app
 npm test
 npm run dev
@@ -36,7 +36,7 @@ Every opinion is a file you can change. The standard itself prefers none of them
 
 ## Versions
 
-Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-10-10`: protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12` and SDK `2.8.10`, matching the index starter. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
+Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and SDK `2.8.10`, matching the index starter. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
 
 ## Development
 

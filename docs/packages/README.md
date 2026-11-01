@@ -16,7 +16,7 @@ Use [choose packages and services](../start/choose-components-and-services.md) t
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the starter |
 
-Both starters are published at `0.1.0-beta.1`. Their guides explain how to create a project from npm or check a source candidate. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
+Both starters are published at `0.1.0-beta.1`; the source carries `0.1.0-beta.2`, which pins the current candidate and is not yet published. Their guides explain how to create a project from npm or check a source candidate. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
 
 ## Use the renamed source candidate
 
@@ -31,16 +31,16 @@ node scripts/consumer-check.mjs
 This builds the packages, packs their archives and tests them in a separate project. It publishes nothing. To try the protocol library and profiles in your own application, replace `/absolute/path/to/dpp` with the checkout's absolute path:
 
 ```sh
-npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.9.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.9.tgz @bsv/sdk@2.8.10
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
 ```
 
-Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.12.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
+Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.13.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
 
 For the published release, use the exact packages below and change imports to the renamed packages. Existing installations pinned to earlier releases keep their original names and bytes.
 
 ## Install from npm
 
-The latest complete publication with a receipt in this documentation is the current set, `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.11 publication receipt](../reference/beta-11-publication.md).
+The latest complete publication with a receipt in this documentation is `dpp-release-2026-10-10`, the set the current source candidate `dpp-release-2026-11` supersedes: protocol and profiles beta.9, overlay beta.12 and credentials beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.11 publication receipt](../reference/beta-11-publication.md).
 
 A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with the protocol library:
 
