@@ -171,7 +171,7 @@ latest state observed
 Both `unknown` checks are expected for this passport:
 
 - `schema`: the policy gives no `payloadValidator` and no `profileValidator`. A token state's payload is checked only through the former, and the fixture payloads declare no profile, so the check reads `unknown` with `profile-undeclared`.
-- `evidenceAvailability`: the passport's `TRANSFER` commits to a managed acceptance record that only the custodian keeps, and no index or registry route serves it yet.
+- `evidenceAvailability`: the passport's `TRANSFER` commits to a managed acceptance record that only the custodian keeps; it reaches a reader in the custodian's evidence package, and no index or registry route serves it on its own.
 
 If `inclusion` reads `unknown` with `header-source-unavailable`, WhatsOnChain limited the header checks: run it again or set `WOC_API_KEY`. If the first lookup throws `the index holds nothing`, the index does not hold that passport; check the identifier character for character.
 
@@ -184,7 +184,7 @@ If `inclusion` reads `unknown` with `header-source-unavailable`, WhatsOnChain li
 | `tokenHistory` | The lineage's transactions, genesis first | `chainFromBeef` over the merged BEEFs (transactions with their ancestors and block proofs) from the index's `ls_dpp` lookup |
 | `nativeClaims` | Signed lifecycle claims, as objects | The registry: `GET /attestations?subject=<passportId>` lists them; each `GET /attestations/{attestationId}/proof` carries one as `attestation` |
 | `anchors` | `{ lockingScript, txid, outputIndex, securedBytes }` for each anchor output | The index's `ls_attestation` lookup with `{ subject: passportId }`; `securedBytes` comes from the proof of the claim the anchor's `txid` matches |
-| `acceptanceRecords` | The managed acceptance records version 2 transfers commit to | The custodian that wrote the transfer; no route serves them yet |
+| `acceptanceRecords` | The managed acceptance records version 2 transfers commit to | The custodian's evidence package, under `authority`: `acceptanceRecordsInPackage(manifest, files)` returns them. No route serves a record on its own |
 | `externalCredentials` | `{ representation, mediaType, bytes }`, the exact bytes of a credential in another format | Its issuer |
 | `alternativeHistories` | Other lineages under the same identifier, such as a second genesis | The index, when it answers with more than one lineage |
 
