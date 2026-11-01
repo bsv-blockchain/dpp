@@ -15,7 +15,7 @@ The standard provides shared rules, reference packages and implementation guides
 | Run services or use a provider | [Deploy and operate](operate/overview.md) | Service choices, access requirements, deployment and recovery guidance |
 | Find the precise rules or implement independently | [Technical reference](reference/README.md) | Specifications, contracts, package interfaces and conformance evidence |
 
-Unsure which pieces you need? [Choose packages and services](start/choose-components-and-services.md). An AI agent should also read [the agent guide](start/for-agents.md). Returning readers can use [all tasks](start/choose-your-path.md).
+Starting from nothing? [Create an application](packages/create-dpp-app.md) and [create an index](packages/create-dpp-index.md) each generate a project in one command. Unsure which pieces you need? [Choose packages and services](start/choose-components-and-services.md). An AI agent should also read [the agent guide](start/for-agents.md). Returning readers can use [all tasks](start/choose-your-path.md).
 
 ## Try the hosted demonstration
 

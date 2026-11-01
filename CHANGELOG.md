@@ -14,7 +14,7 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ### 2026-11-01, a page for the application starter
 
-- Add `docs/packages/create-dpp-app.md`, the application starter's page beside the index starter's, and point the application guide, the packages overview and the component chooser at it. Drop `@bsv/dpp-core` from the pins listed in the profile publication steps; the package left the workspace in the rename.
+- Add `docs/packages/create-dpp-app.md`, the application starter's page beside the index starter's, and point the application guide, the packages overview, the component chooser, the documentation entry page and the repository README at it; the README no longer calls the starters and the protocol name unpublished. Drop `@bsv/dpp-core` from the pins listed in the profile publication steps; the package left the workspace in the rename.
 
 ### 2026-10-29, the token id is a direct push
 

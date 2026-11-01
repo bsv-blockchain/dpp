@@ -12,6 +12,7 @@ A digital product passport records information about a product and its history, 
 |---|---|
 | Understand the design | [Architecture](docs/start/architecture.md) |
 | Build with the reference packages | [Package guide](docs/packages/README.md) |
+| Build a new application | [Create an application](docs/packages/create-dpp-app.md) |
 | Implement the standard independently | [Implementer guide](docs/implement/README.md) |
 | Run your own index | [Create an index](docs/packages/create-dpp-index.md) |
 | Define product data for an industry | [Industry profiles](docs/profiles/README.md) |
@@ -68,9 +69,9 @@ Records can remain verifiable after a provider disappears if their transactions,
 
 ## Reference packages
 
-For a new application, use [`@bsv/create-dpp-app`](packages/create-dpp-app/README.md). It creates the web app, API and application database configuration. Connect to an existing compatible index or create a separate index project.
+For a new application, use [`@bsv/create-dpp-app`](docs/packages/create-dpp-app.md). It creates the web app, API and application database configuration. Connect to an existing compatible index or create a separate index project.
 
-For a new index, use [`@bsv/create-dpp-index`](packages/create-dpp-index/README.md). It creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is no separate runtime installation step. Both starters are source candidates pending publication.
+For a new index, use [`@bsv/create-dpp-index`](docs/packages/create-dpp-index.md). It creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is no separate runtime installation step. Both starters are published at `0.1.0-beta.1`.
 
 The packages below are reusable components. Select them directly when integrating their APIs into your own code. An application using an existing index over HTTP needs neither the index starter nor the hosting runtime.
 
@@ -81,7 +82,7 @@ The packages below are reusable components. Select them directly when integratin
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data schemas for batteries, textiles and general products, plus identifier, mapping and projection helpers. |
 | [`@bsv/dpp-credentials`](packages/dpp-credentials/README.md) | Sign and verify credentials under the supported draft compatibility profile, map EPCIS events and verify supported external credentials. |
 
-The source candidate names the shared library `@bsv/dpp-protocol`. The new name is not yet published; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test it. Existing applications migrate their imports and schema paths from `@bsv/dpp-core`; the active release uses only the new name. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
+The shared library is published as `@bsv/dpp-protocol`, the new name for `@bsv/dpp-core`; [install local candidate archives](docs/packages/README.md#use-the-renamed-source-candidate) to test unpublished changes. Existing applications migrate their imports and schema paths from `@bsv/dpp-core`; the active release uses only the new name. See [migration](docs/migration.md#rename-dpp-core-to-dpp-protocol).
 
 Build from this checkout or use the packed candidates described in the [release guide](release/README.md), which records compatible package and protocol versions.
 
@@ -95,7 +96,7 @@ Optional interoperability profiles cover GS1 Digital Link discovery, EPCIS event
 
 ## Run an index
 
-Start with [Create an index](docs/packages/create-dpp-index.md). The starter includes the runtime, persistent MongoDB configuration, deployment files, checks and application connection settings. Follow the generated project's README for startup and maintenance. It is a source candidate; its guide explains how to test the packed packages before publication.
+Start with [Create an index](docs/packages/create-dpp-index.md). The starter includes the runtime, persistent MongoDB configuration, deployment files, checks and application connection settings. Follow the generated project's README for startup and maintenance; its guide explains how to test the packed source candidate before a publication.
 
 ### Advanced alternative: run from source
 
