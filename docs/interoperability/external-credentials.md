@@ -15,7 +15,7 @@ Use the `@bsv/dpp-credentials/exchange` entry point. The root `@bsv/dpp-credenti
 
 ## Verify the vector file's credentials
 
-At the root of a checkout, after [setup](../quick-start.md#get-the-code), this verifies the `positive` case of the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json) and then checks every case against its expected checks. Inside the checkout `@bsv/dpp-credentials` resolves to the workspace build; the same code gives the same answers against the published `@bsv/dpp-credentials` 0.2.0-beta.5.
+At the root of a checkout, after [setup](../quick-start.md#get-the-code), this verifies the `positive` case of the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json) and then checks every case against its expected checks. Inside the checkout `@bsv/dpp-credentials` resolves to the workspace build; the same code gives the same answers against `@bsv/dpp-credentials` 0.2.0-beta.6, the version the current candidate names.
 
 ```sh
 node --input-type=module <<'JS'

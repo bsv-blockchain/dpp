@@ -8,7 +8,7 @@ A release set is a declared combination of package versions, wire and contract v
 |---|---|
 | Declaration | `release/dpp-release-2026-11.json`; its source revision is recorded when a publication plan binds it |
 | Status | Candidate. Nothing of it is published; the last published set is `dpp-release-2026-10-10`, under `latest` since 16 October 2026 ([beta.11 receipt](beta-11-publication.md)) |
-| Main packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.5`, on `@bsv/sdk@2.8.10` and Node 22 |
+| Main packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.6`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
 | npm tag | `latest`; install exact versions and retain the lockfile |
 | Receipt | None yet; the [beta.11 receipt](beta-11-publication.md) covers the last published set |
