@@ -113,6 +113,14 @@
       ],
       "keyId": "attestationId",
       "counterparty": "anyone"
+    },
+    "managedRecordSignature": {
+      "protocolId": [
+        1,
+        "dpp managed record v1"
+      ],
+      "keyId": "requestId",
+      "counterparty": "anyone"
     }
   },
   "representations": [
@@ -131,7 +139,13 @@
     {
       "id": "dpp-managed-acceptance-v1",
       "mediaType": "application/json",
-      "bytesHashed": "canonical JSON (nested, code-unit sorted, no whitespace, strings and safe integers only) of the complete signed acceptance record, including signature; the custodian signs the same form without signature",
+      "bytesHashed": "canonical JSON (nested, code-unit sorted, no whitespace, strings and safe integers only) of the complete signed acceptance record, including signature; the custodian signs the same form without signature; superseded: signed with the custodian key directly, read under spec/managed-custody.md section 9 and never written",
+      "specification": "spec/managed-custody.md#3-the-acceptance-record"
+    },
+    {
+      "id": "dpp-managed-acceptance-v2",
+      "mediaType": "application/json",
+      "bytesHashed": "canonical JSON (nested, code-unit sorted, no whitespace, strings and safe integers only) of the complete signed acceptance record, including signature; the custodian signs the same form without signature with the managedRecordSignature derivation",
       "specification": "spec/managed-custody.md#3-the-acceptance-record"
     }
   ],
@@ -176,8 +190,10 @@
       "optional": [
         "CUST-4-owner-consent",
         "MC-3-acceptance-record",
+        "MC-3-custodian-signing",
         "MC-4-transfer-binding",
-        "MC-5-verification-report"
+        "MC-5-verification-report",
+        "MC-9-version-1-records"
       ],
       "testTargets": [
         "fixtures/record-v1.json",
@@ -186,6 +202,7 @@
         "examples/verify-passport.mjs --fixture --report",
         "fixtures/record-v2.json",
         "fixtures/chain-v2.json",
+        "fixtures/managed-acceptance-v2.json",
         "fixtures/managed-acceptance-v1.json",
         "fixtures/evidence-v2.json",
         "examples/verify-passport.mjs --fixture --version=2 --report"
@@ -244,6 +261,7 @@
         "GS1-check-digit-written",
         "GS1-952-demonstration",
         "MC-3-acceptance-record",
+        "MC-3-custodian-signing",
         "MC-4-transfer-binding",
         "MC-4-offer-lifecycle"
       ],
@@ -368,17 +386,22 @@
     },
     {
       "path": "fixtures/chain-v2.json",
-      "sha256": "e454bba0edbfa5507453e26d4b1614c20abee39250c42a5080538ea7738b90af",
+      "sha256": "e4a44c898f86cef72e5e545e09fded3413da1297e2ec156553c7cd6d0a831222",
       "pins": "a five-state version 2 lineage, the control proof in both forms, the acceptance commitment, retirement, twenty-two refusals and the upgrade over the version 1 chain"
+    },
+    {
+      "path": "fixtures/managed-acceptance-v2.json",
+      "sha256": "93bd39f22d8d05a8a3e2b4f3e3082fd9b02726d101d86b4ce80e85e0b573b55f",
+      "pins": "one managed acceptance record signed with the custodian's derived key, with its canonical bytes, signature, commitment, the transfer that commits to it and seven refusals"
     },
     {
       "path": "fixtures/managed-acceptance-v1.json",
       "sha256": "335539e82dec85a230de4799a3533fb3a5231ced7c14ec673b708dcaa280058b",
-      "pins": "one managed acceptance record with its canonical bytes, signature, commitment, the transfer that commits to it and six refusals"
+      "pins": "the superseded version 1 managed acceptance record, signed with the custodian key directly, with its canonical bytes, signature, commitment, the transfer that committed to it and six refusals; frozen"
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "a90e029b7f89d43790d0400bb9825a602458a64b5aadb45fcd533740ba50df89",
+      "sha256": "0dc6e2206990b9aa57a460f675eeed5476b0318fc274beacd2ca081838dd4500",
       "pins": "the verification report for thirteen version 2 evidence cases"
     },
     {
@@ -388,7 +411,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/chain/v2.json",
-      "sha256": "e43fd52fe0ff0028786964838261015d69a66fafb6c1580cf04344772b9a1188",
+      "sha256": "c79478ebc0342bc84059e034e4ebabb875dc66fabca130c45e0eb1958a1654e2",
       "pins": "the version 2 chain fixture in the stack's vector format"
     },
     {
@@ -397,13 +420,18 @@
       "pins": "the managed acceptance fixture in the stack's vector format"
     },
     {
+      "path": "fixtures/vectors/dpp/managed-acceptance/v2.json",
+      "sha256": "29cb9f8fa4a2260e8f0062479aba174d9fd3427d7753f27687619b5ef08d0905",
+      "pins": "the version 2 managed acceptance fixture in the stack's vector format, with the derivation published"
+    },
+    {
       "path": "fixtures/managed-instruction-v1.json",
-      "sha256": "a1caa9272dbd120806c252d8d93439da6c985beac7e2229ba3a84d0f73532834",
-      "pins": "one dpp-managed-instruction@1 record with its canonical bytes, signature and commitment, the UPDATE that commits to it, and six refusals"
+      "sha256": "20d38ee1ecd2d94a0a28b6f5468758f24f57a4789720a8b738f7b2a9e8e7af66",
+      "pins": "one dpp-managed-instruction@1 record with its canonical bytes, signature and commitment, the UPDATE that commits to it, and seven refusals"
     },
     {
       "path": "fixtures/vectors/dpp/managed-instruction/v1.json",
-      "sha256": "35c6d8e844ee0d27c07b12687373964d3e1449850d2f79a57479f901740700c2",
+      "sha256": "a4913f07a1b5ff64e85e18d623b0aafcb38a1cc0eafc75710940f82a02c44e2f",
       "pins": "the same record in the stack vector format"
     }
   ],
@@ -460,7 +488,7 @@
     {
       "role": "overlay",
       "command": "docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .",
-      "needs": "a service identity key; ACCEPTANCE_COMMITMENT=required to declare managed-custody@1; MongoDB for persistence, memory otherwise"
+      "needs": "a service identity key; ACCEPTANCE_COMMITMENT=required to declare managed-custody@2; MongoDB for persistence, memory otherwise"
     }
   ]
 }

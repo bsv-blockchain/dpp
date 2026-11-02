@@ -6,8 +6,8 @@ export function managedInstructionV1Vectors(F: ManagedInstructionV1Fixture) {
   const sign = {
     id: 'sign-and-commit',
     description:
-      'Canonicalise the record without its signature (object keys sorted by code point, no whitespace, strings, booleans and safe integers only), sign SHA-256 of those bytes with the custodian key directly (no derivation), then canonicalise the signed record and hash it: that digest is what the UPDATE or RETIRE carries in field 15 (spec managed-custody.md section 6).',
-    input: { claim: { ...F.record, signature: undefined }, custodian_private_key_hex: '22'.repeat(32), signature_nonce: 'rfc6979' },
+      'Canonicalise the record without its signature (object keys sorted by code point, no whitespace, strings, booleans and safe integers only), sign SHA-256 of those bytes with the BRC-42 child of the custodian key for protocol [1, "dpp managed record v1"], key identifier requestId and counterparty anyone (the BRC-100 createSignature operation), then canonicalise the signed record and hash it: that digest is what the UPDATE or RETIRE carries in field 15 (spec managed-custody.md section 6).',
+    input: { claim: { ...F.record, signature: undefined }, custodian_private_key_hex: '22'.repeat(32), derivation: { protocol_id: [1, 'dpp managed record v1'], key_id: F.record.requestId, counterparty: 'anyone' }, signature_nonce: 'rfc6979' },
     expected: { signing_preimage_hex: F.signingPreimageHex, signature_hex: F.record.signature, commitment_hex: F.commitment },
     tags: ['happy-path'],
   }

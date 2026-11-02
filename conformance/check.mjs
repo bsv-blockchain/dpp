@@ -45,6 +45,7 @@ import {
   CARRIER_TOKEN_ID_BYTES,
   DPP_PROTOCOL_ID,
   DPP_PROTOCOL_ID_V2,
+  MANAGED_RECORD_PROTOCOL_ID,
   DPP_PROTOCOL_ID_V3,
   EVIDENCE_CHECK_NAMES,
   FIELD_COUNT,
@@ -181,7 +182,7 @@ const checkBaseline = (path, record) => {
     else defect(`${baseline.baselineId} fixture ${f.path} has digest ${actual.slice(0, 12)}…, not the recorded ${f.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
   }
 }
-const versionTwoDerivations = { actorSignatureV2: DPP_PROTOCOL_ID_V2, publisherSignatureV2: DPP_PROTOCOL_ID_V2, controllerKey: OWNER_PROTOCOL_ID }
+const versionTwoDerivations = { actorSignatureV2: DPP_PROTOCOL_ID_V2, publisherSignatureV2: DPP_PROTOCOL_ID_V2, controllerKey: OWNER_PROTOCOL_ID, managedRecordSignature: MANAGED_RECORD_PROTOCOL_ID }
 checkBaseline('conformance/baseline-native-1.json', { version: STANDARD_VERSION, fieldCount: FIELD_COUNT })
 checkBaseline('conformance/baseline-native-2.json', { version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2, alsoReads: { version: STANDARD_VERSION, fieldCount: FIELD_COUNT }, derivations: versionTwoDerivations })
 checkBaseline('conformance/baseline-native-3.json', {

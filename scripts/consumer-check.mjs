@@ -111,7 +111,7 @@ try {
   for (const d of data) say(dataSamples[d.specifier] != null, `data entry point ${d.specifier} has a sample this check reads (${dataSamples[d.specifier] === '' ? 'the file itself' : dataSamples[d.specifier] ?? 'none named; add one'}).`)
 
   mkdirSync(join(dir, 'fixtures'), { recursive: true })
-  for (const f of ['chain-v2.json', 'managed-acceptance-v1.json', 'chain-v1.json', 'chain-v3.json']) cpSync(join(root, 'fixtures', f), join(dir, 'fixtures', f))
+  for (const f of ['chain-v2.json', 'managed-acceptance-v2.json', 'managed-acceptance-v1.json', 'chain-v1.json', 'chain-v3.json']) cpSync(join(root, 'fixtures', f), join(dir, 'fixtures', f))
   writeFileSync(join(dir, 'consumer.mjs'), `
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -140,9 +140,11 @@ const epcisSource = await import('@bsv/dpp-credentials/epcis-source')
 const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
 const txs = chain.states.map((s) => Transaction.fromHex(s.rawTx))
 const result = await verifyChain(txs, { chainTracker: 'scripts only', managedAcceptance: true, serverIdentityKey: chain.custodianKey })
-out.push(['reader path: chain-v2 valid under managed-custody@1', result.valid === true])
-const acceptance = JSON.parse(readFileSync('fixtures/managed-acceptance-v1.json', 'utf8'))
-out.push(['reader path: acceptance record signature valid', inspectManagedAcceptance(acceptance.record).signatureValid === true])
+out.push(['reader path: chain-v2 valid under managed-custody@2', result.valid === true])
+const acceptance = JSON.parse(readFileSync('fixtures/managed-acceptance-v2.json', 'utf8'))
+out.push(['reader path: acceptance record signature valid under the derived custodian key', inspectManagedAcceptance(acceptance.record).signatureValid === true])
+const acceptanceV1 = JSON.parse(readFileSync('fixtures/managed-acceptance-v1.json', 'utf8'))
+out.push(['reader path: the superseded version 1 acceptance record still reads under its own rule', inspectManagedAcceptance(acceptanceV1.record).signatureValid === true])
 out.push(['reader path: acceptance binds to the transfer', bindAcceptanceToState(acceptance.record, findDppOutputs(txs[2])[0].state).length === 0])
 const report = await verifyPassportEvidence({ tokenHistory: txs, acceptanceRecords: [acceptance.record] }, { passportId: chain.states[0].data.passportId, source: 'request-context' }, { chainTracker: 'scripts only', publisherKeys: [chain.custodianKey], managedAcceptance: { required: true } })
 out.push(['reader path: report linkage pass and inclusion unknown without a header source', report.checks.find((c) => c.name === 'linkage').status === 'pass' && report.checks.find((c) => c.name === 'inclusion').status !== 'pass'])
@@ -154,7 +156,7 @@ out.push(['protocol constants: version 3 is 17 fields behind the token prefix', 
 const tm = new DppTopicManager(chain.custodianKey, { managedAcceptance: true })
 out.push(['overlay: topic manager documentation names version 2', (await tm.getDocumentation()).includes('record-model-v2')])
 const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorServiceKeys: [], ownerConsent: false, managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: new Date() })
-out.push(['overlay: capabilities name managed-custody@1', caps.profiles.some((p) => p.id === 'managed-custody')])
+out.push(['overlay: capabilities name the managed-custody profile', caps.profiles.some((p) => p.id === 'managed-custody')])
 out.push(['overlay: lookup service constructs over in-memory storage', new DppLookupService(new InMemoryDppStorage()) != null])
 out.push(['overlay: the complete export join is exported', typeof joinEvidenceExport === 'function'])
 const battery = readManifest('battery@2')

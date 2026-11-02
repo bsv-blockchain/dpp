@@ -1,5 +1,6 @@
 import { Hash, ProtoWallet, Utils } from '@bsv/sdk'
 import {
+  MANAGED_RECORD_PROTOCOL_ID,
   canonicalJson,
   instructionCommitment,
   instructionSigningPreimage,
@@ -16,7 +17,7 @@ import {
   controlLinkageOf,
   controllerKeyOf,
   custodianPriv,
-  custodianSigner,
+  custodianWallet,
   idKey,
   makeDataV2,
   outpointOf,
@@ -24,6 +25,7 @@ import {
   signedStateV2,
   stateTxV2,
   strangerPriv,
+  strangerWallet,
 } from './helpers-v2.js'
 
 /**
@@ -38,6 +40,10 @@ import {
  * holder by linkage from the holder's managed identity, committing to the
  * record in field 15. The pinned lineage's own fourth and fifth states carry
  * no commitment, which is what the instruction rule refuses when selected.
+ *
+ * The custodian signs with its wallet: the BRC-42 child of its identity key
+ * under the managed record protocol, key identifier `requestId`, counterparty
+ * 'anyone'. A record signed with the identity key directly is refused.
  */
 export async function managedInstructionV1Fixture() {
   const { txs, outputIndexes } = await buildChainV2Fixture()
@@ -59,7 +65,7 @@ export async function managedInstructionV1Fixture() {
     evidenceKind: 'custodian-attested',
     custodian: idKey(custodianPriv),
   }
-  const record = await signManagedInstruction(claim, custodianSigner)
+  const record = await signManagedInstruction(claim, custodianWallet)
 
   const update = await signedStateV2(
     makeDataV2({
@@ -84,11 +90,12 @@ export async function managedInstructionV1Fixture() {
 
   const resign = async (edit: (r: ManagedInstructionRecord) => ManagedInstructionRecord): Promise<ManagedInstructionRecord> => {
     const { signature: _s, ...c } = edit({ ...record })
-    return await signManagedInstruction(c, custodianSigner)
+    return await signManagedInstruction(c, custodianWallet)
   }
-  const stranger = { sign: (preimage: number[]) => strangerPriv.sign(preimage).toDER() as number[] }
+  const derivedBy = async (wallet: ProtoWallet, preimage: number[]): Promise<string> => Utils.toHex((await wallet.createSignature({ data: preimage, protocolID: MANAGED_RECORD_PROTOCOL_ID, keyID: record.requestId, counterparty: 'anyone' })).signature)
   const tampered: ManagedInstructionRecord = { ...record, requestDigest: 'ff'.repeat(32) }
-  const strangerSigned: ManagedInstructionRecord = { ...record, signature: Utils.toHex(stranger.sign(instructionSigningPreimage(record))) }
+  const strangerSigned: ManagedInstructionRecord = { ...record, signature: await derivedBy(strangerWallet, instructionSigningPreimage(record)) }
+  const directlySigned: ManagedInstructionRecord = { ...record, signature: Utils.toHex(custodianPriv.sign(instructionSigningPreimage(record)).toDER() as number[]) }
   const operationMismatch = await resign((r) => ({ ...r, operation: 'RETIRE' }))
   const predecessorMismatch = await resign((r) => ({ ...r, expectedPredecessor: genesis }))
   const holderMismatch = await resign((r) => ({ ...r, holderIdentityKey: idKey(strangerPriv) }))
@@ -114,7 +121,8 @@ export async function managedInstructionV1Fixture() {
     },
     refusals: [
       { name: 'tamperedRequest', description: 'requestDigest changed after signing.', record: tampered, expected: { structureValid: true, signatureValid: false, reason: 'signature-invalid' } },
-      { name: 'strangerSigned', description: 'Signed by a key other than the custodian the record names.', record: strangerSigned, expected: { structureValid: true, signatureValid: false, reason: 'signature-invalid' } },
+      { name: 'strangerSigned', description: 'Signed under the managed record protocol from a root other than the custodian the record names.', record: strangerSigned, expected: { structureValid: true, signatureValid: false, reason: 'signature-invalid' } },
+      { name: 'directlySigned', description: "Signed with the custodian's identity key directly, with no derivation: the signature of the superseded acceptance format, never valid for an instruction record.", record: directlySigned, expected: { structureValid: true, signatureValid: false, reason: 'signature-invalid' } },
       { name: 'operationMismatch', description: 'A well-formed, custodian-signed record asking for a RETIRE, presented with the UPDATE: it does not describe this state.', record: operationMismatch, expected: { structureValid: true, signatureValid: true, reason: 'state-mismatch', bindingFails: true } },
       { name: 'predecessorMismatch', description: 'A well-formed, custodian-signed record naming the genesis as the expected predecessor.', record: predecessorMismatch, expected: { structureValid: true, signatureValid: true, reason: 'state-mismatch', bindingFails: true } },
       { name: 'holderMismatch', description: 'A well-formed, custodian-signed record naming a stranger as the holder who asked.', record: holderMismatch, expected: { structureValid: true, signatureValid: true, reason: 'state-mismatch', bindingFails: true } },

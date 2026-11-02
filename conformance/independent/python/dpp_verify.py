@@ -610,9 +610,9 @@ def verify_chain(raw_txs: list[str], server_key_hex: str | None = None, consent:
             if (prev["txid"], prev["outputIndex"]) not in tx["inputs"]:
                 return f"state {index}: does not spend the previous tip output"
             if managed_acceptance and state["op"] == "TRANSFER" and state["authorisationCommitment"] == "":
-                return f"state {index}: TRANSFER carries no authorisation_commitment under managed-custody@1"
+                return f"state {index}: TRANSFER carries no authorisation_commitment under the managed-custody profile"
             if managed_instruction and state["op"] in ("UPDATE", "RETIRE") and state["authorisationCommitment"] == "" and committed_transfer_seen and state["actorIdentityKey"] not in control_keys:
-                return f"state {index}: UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under managed-custody@1"
+                return f"state {index}: UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under the managed-custody profile"
         else:
             p = prev["state"]
             if p["version"] == "2":
@@ -785,11 +785,11 @@ ISO_TZ = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\
 
 
 def acceptance_structure(record: dict) -> str | None:
-    """The shape of a dpp-managed-acceptance@1 record (managed-custody.md section 3), and its own time order."""
+    """The shape of a dpp-managed-acceptance@2 record, or of the superseded @1 (managed-custody.md sections 3 and 9), and its own time order."""
     allowed = {"acceptanceFormat", "requestId", "passportId", "lineageGenesis", "expectedPredecessor", "termsDigest", "offer", "acceptance", "custodian", "signature"}
     if not isinstance(record, dict) or set(record) - allowed:
         return "unsupported property"
-    if record.get("acceptanceFormat") != "dpp-managed-acceptance@1":
+    if record.get("acceptanceFormat") not in ("dpp-managed-acceptance@2", "dpp-managed-acceptance@1"):
         return "acceptanceFormat"
     for key, bound in (("requestId", 128), ("passportId", 512)):
         value = record.get(key)
@@ -833,9 +833,26 @@ def acceptance_structure(record: dict) -> str | None:
     return None
 
 
+MANAGED_RECORD_PROTOCOL = "dpp managed record v1"
+
+
+def managed_record_key(record: dict) -> Point:
+    """The key a version 2 acceptance record or an instruction record verifies under (managed-custody.md sections 3 and 6): the
+    BRC-42 child of the custodian's identity key for [1, 'dpp managed record v1'], the record's requestId and counterparty anyone."""
+    return brc42_child(canonical_key_hex(record["custodian"]), invoice(1, MANAGED_RECORD_PROTOCOL, record["requestId"]))
+
+
 def acceptance_signature_valid(record: dict) -> bool:
+    """Under the format literal's own rule: the derived child for @2, the custodian key directly for the superseded @1 (section 9)."""
     unsigned = {k: v for k, v in record.items() if k != "signature"}
-    return ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(record["signature"]), canonical_key_hex(record["custodian"]))
+    key = canonical_key_hex(record["custodian"]) if record["acceptanceFormat"] == "dpp-managed-acceptance@1" else managed_record_key(record)
+    return ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(record["signature"]), key)
+
+
+def instruction_signature_valid(record: dict) -> bool:
+    """Always the derived child: the instruction record has only ever been signed that way."""
+    unsigned = {k: v for k, v in record.items() if k != "signature"}
+    return ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(record["signature"]), managed_record_key(record))
 
 
 def acceptance_commitment(record: dict) -> str:
@@ -960,7 +977,7 @@ def check_version_two(root: Path) -> None:
     say(acceptance_structure(rec) is None, "managed-acceptance-v1: the pinned record is well formed and its times are in order.")
     unsigned = {k: v for k, v in rec.items() if k != "signature"}
     say(nested_canonical(unsigned).hex() == acceptance["signingPreimageHex"], "managed-acceptance-v1: the canonical JSON of the unsigned record is the pinned signing preimage.")
-    say(acceptance_signature_valid(rec), "managed-acceptance-v1: the custodian's signature verifies under the custodian key directly.")
+    say(acceptance_signature_valid(rec), "managed-acceptance-v1: the custodian's signature verifies under the custodian key directly, the superseded rule of section 9.")
     say(acceptance_commitment(rec) == acceptance["commitment"] == acceptance["transfer"]["authorisationCommitment"], "managed-acceptance-v1: the SHA-256 of the canonical signed record is the commitment the TRANSFER carries.")
     transfer_tx = parse_tx(acceptance["transfer"]["rawTx"])
     transfer_index, transfer_state = dpp_outputs(transfer_tx)[0]
@@ -973,12 +990,32 @@ def check_version_two(root: Path) -> None:
         binds = structure_ok and signature_ok and acceptance_binds(r, transfer_state, transfer_state["timestamp"])
         say(structure_ok == expected["structureValid"] and signature_ok == expected["signatureValid"] and not binds, f"managed-acceptance-v1: {refusal['name']} is refused as {expected['reason']} (structure {structure_ok}, signature {signature_ok}, binding {binds}).")
 
+    acceptance2 = load(root, "fixtures/managed-acceptance-v2.json")
+    rec2 = acceptance2["record"]
+    say(rec2["acceptanceFormat"] == "dpp-managed-acceptance@2" and acceptance_structure(rec2) is None, "managed-acceptance-v2: the pinned record is well formed and its times are in order.")
+    unsigned2 = {k: v for k, v in rec2.items() if k != "signature"}
+    say(nested_canonical(unsigned2).hex() == acceptance2["signingPreimageHex"], "managed-acceptance-v2: the canonical JSON of the unsigned record is the pinned signing preimage.")
+    say(acceptance_signature_valid(rec2), "managed-acceptance-v2: the custodian's signature verifies under this reader's BRC-42 child of the custodian key for [1, 'dpp managed record v1'] and the requestId.")
+    say(not ecdsa_verify(nested_canonical(unsigned2), bytes.fromhex(rec2["signature"]), canonical_key_hex(rec2["custodian"])), "managed-acceptance-v2: the same signature does not verify under the custodian key directly: it is one derivation from the root.")
+    say(acceptance_commitment(rec2) == acceptance2["commitment"] == acceptance2["transfer"]["authorisationCommitment"], "managed-acceptance-v2: the SHA-256 of the canonical signed record is the commitment the TRANSFER carries.")
+    transfer2_tx = parse_tx(acceptance2["transfer"]["rawTx"])
+    transfer2_index, transfer2_state = dpp_outputs(transfer2_tx)[0]
+    say(transfer2_tx["txid"] == chain["states"][2]["txid"], "managed-acceptance-v2: the TRANSFER is the third pinned state of chain-v2.")
+    say(transfer2_index == acceptance2["transfer"]["outputIndex"] and acceptance_binds(rec2, transfer2_state, transfer2_state["timestamp"]), "managed-acceptance-v2: the record binds to the TRANSFER: passport, lineage, predecessor, destination, holder, commitment and time order.")
+    for refusal in acceptance2["refusals"]:
+        r = refusal["record"]
+        expected = refusal["expected"]
+        structure_ok = acceptance_structure(r) is None
+        signature_ok = acceptance_signature_valid(r) if structure_ok else None
+        binds = structure_ok and signature_ok and acceptance_binds(r, transfer2_state, transfer2_state["timestamp"])
+        say(structure_ok == expected["structureValid"] and signature_ok == expected["signatureValid"] and not binds, f"managed-acceptance-v2: {refusal['name']} is refused as {expected['reason']} (structure {structure_ok}, signature {signature_ok}, binding {binds}).")
+
     instruction = load(root, "fixtures/managed-instruction-v1.json")
     irec = instruction["record"]
     say(instruction_structure(irec) is None, "managed-instruction-v1: the pinned record is well formed.")
     iunsigned = {k: v for k, v in irec.items() if k != "signature"}
     say(nested_canonical(iunsigned).hex() == instruction["signingPreimageHex"], "managed-instruction-v1: the canonical JSON of the unsigned record is the pinned signing preimage.")
-    say(acceptance_signature_valid(irec), "managed-instruction-v1: the custodian's signature verifies under the custodian key directly.")
+    say(instruction_signature_valid(irec), "managed-instruction-v1: the custodian's signature verifies under the derived custodian child for the managed record protocol and the requestId.")
     say(acceptance_commitment(irec) == instruction["commitment"] == instruction["update"]["authorisationCommitment"], "managed-instruction-v1: the SHA-256 of the canonical signed record is the commitment the UPDATE carries.")
     update_tx = parse_tx(instruction["update"]["rawTx"])
     update_index, update_state = dpp_outputs(update_tx)[0]
@@ -989,7 +1026,7 @@ def check_version_two(root: Path) -> None:
         r = refusal["record"]
         expected = refusal["expected"]
         structure_ok = instruction_structure(r) is None
-        signature_ok = acceptance_signature_valid(r) if structure_ok else None
+        signature_ok = instruction_signature_valid(r) if structure_ok else None
         binds = structure_ok and signature_ok and instruction_binds(r, update_state, update_state["timestamp"])
         say(structure_ok == expected["structureValid"] and signature_ok == expected["signatureValid"] and not binds, f"managed-instruction-v1: {refusal['name']} is refused as {expected['reason']} (structure {structure_ok}, signature {signature_ok}, binding {binds}).")
 
@@ -1010,15 +1047,16 @@ def check_version_two(root: Path) -> None:
                 tx = parse_tx(expected["raw_tx_hex"])
                 outs = dpp_outputs(tx)
                 say(tx["txid"] == expected["txid_hex"] and len(outs) == 1 and outs[0][0] == expected["output_index"], f"{label}: {vector['id']} hashes to its txid and carries one DPP output at the pinned index.")
-    acceptance_vectors = load(root, "fixtures/vectors/dpp/managed-acceptance/v1.json")
-    for vector in acceptance_vectors["vectors"]:
-        expected = vector["expected"]
-        if "record" not in vector["input"]:
-            continue
-        r = vector["input"]["record"]
-        structure_ok = acceptance_structure(r) is None
-        signature_ok = acceptance_signature_valid(r) if structure_ok else None
-        say(structure_ok == expected["structure_valid"] and signature_ok == expected["signature_valid"], f"managed acceptance vectors: {vector['id']} structure and signature verdicts are as expected.")
+    for version in ("v1", "v2"):
+        acceptance_vectors = load(root, f"fixtures/vectors/dpp/managed-acceptance/{version}.json")
+        for vector in acceptance_vectors["vectors"]:
+            expected = vector["expected"]
+            if "record" not in vector["input"]:
+                continue
+            r = vector["input"]["record"]
+            structure_ok = acceptance_structure(r) is None
+            signature_ok = acceptance_signature_valid(r) if structure_ok else None
+            say(structure_ok == expected["structure_valid"] and signature_ok == expected["signature_valid"], f"managed acceptance {version} vectors: {vector['id']} structure and signature verdicts are as expected.")
 
 
 # ------------------------------------------------------------------ the run

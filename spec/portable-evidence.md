@@ -31,7 +31,7 @@ The manifest names the format and version, the exact passport identifier, genesi
 | `external-credentials` | Original secured credentials in their exact bytes, with their representation and media type. |
 | `evidence` | Evidence files the claims reference, encrypted where restricted. |
 | `schemas` | The schemas and contexts the credentials were validated against, pinned. |
-| `authority` | Historical publisher and authority records: which keys were authorised when, under which policy; and the acceptance records the lineage's `TRANSFER`s commit to under [`managed-custody.md`](managed-custody.md) §3, one file per record with `representation` `dpp-managed-acceptance@1` and `represents` the commitment as `sha256:<hex>`. |
+| `authority` | Historical publisher and authority records: which keys were authorised when, under which policy; and the acceptance records the lineage's `TRANSFER`s commit to under [`managed-custody.md`](managed-custody.md) §3, one file per record with `representation` the record's own `acceptanceFormat`, `dpp-managed-acceptance@2` or the superseded `dpp-managed-acceptance@1`, and `represents` the commitment as `sha256:<hex>`. |
 | `status` | The status observations made at export, with their retrieval times and the documents read. |
 | `reports` | Verification reports produced at export, in the shape [`verification.md`](verification.md) defines. |
 

@@ -27,7 +27,7 @@ import {
   type WalletInterface,
   type WalletProtocol,
 } from '@bsv/sdk'
-import { OWNER_PROTOCOL_ID, type AcceptanceSigner, type DataSigner } from '@bsv/dpp-protocol'
+import { OWNER_PROTOCOL_ID, type DataSigner } from '@bsv/dpp-protocol'
 import type { Network } from './config.js'
 
 export interface Tip {
@@ -75,8 +75,8 @@ export interface PlatformWallet {
   network: Network
   identityKey: string
   publisher: PublisherWallet
-  /** Signs acceptance records with the identity key itself, which no BRC-100 call provides. */
-  acceptanceSigner: AcceptanceSigner
+  /** Signs acceptance and instruction records with createSignature under the managed record protocol: the same wallet that publishes, one derivation from its root. */
+  custodian: DataSigner
   adapter: WriterAdapter
   fundingAddress(): Promise<FundingAddress>
   /** Take in a payment made to a funding address, by its transaction id, once it is on the network. */
@@ -235,7 +235,7 @@ export async function openToolboxWallet(options: ToolboxWalletOptions): Promise<
     network: chain,
     identityKey,
     publisher: brc100 as unknown as PublisherWallet,
-    acceptanceSigner: { sign: (preimage) => rootKey.sign(preimage).toDER() as number[] },
+    custodian: brc100 as unknown as DataSigner,
     adapter,
     async fundingAddress() {
       const derivationPrefix = Utils.toBase64(Random(8))
@@ -329,7 +329,7 @@ export function openTestWallet(rootKeyHex = '11'.repeat(32), network: Network = 
     network,
     identityKey,
     publisher: wallet,
-    acceptanceSigner: { sign: (preimage) => rootKey.sign(preimage).toDER() as number[] },
+    custodian: wallet,
     adapter,
     async fundingAddress() {
       return { address: rootKey.toPublicKey().toAddress(network === 'test' ? 'testnet' : 'mainnet'), derivationPrefix: 'test', derivationSuffix: 'test', senderIdentityKey: ANYONE_IDENTITY_KEY }

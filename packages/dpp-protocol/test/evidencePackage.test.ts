@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { PrivateKey, Utils } from '@bsv/sdk'
 import { readFileSync } from 'node:fs'
-import { acceptanceRecordsInPackage, inspectEvidencePackage, inventoryEntry, manifestSigningPreimage, pathProblem, signEvidenceManifest, type EvidencePackageManifest, type UnsignedEvidenceManifest } from '../src/evidencePackage.js'
+import { ACCEPTANCE_RECORD_REPRESENTATION, ACCEPTANCE_RECORD_REPRESENTATIONS, acceptanceRecordsInPackage, inspectEvidencePackage, inventoryEntry, manifestSigningPreimage, pathProblem, signEvidenceManifest, type EvidencePackageManifest, type UnsignedEvidenceManifest } from '../src/evidencePackage.js'
+import { acceptanceCommitment, signManagedAcceptance, type ManagedAcceptanceRecord } from '../src/acceptance.js'
+import { custodianWallet } from './helpers-v2.js'
 
 const ACCEPTANCE = JSON.parse(readFileSync(new URL('../../../fixtures/managed-acceptance-v1.json', import.meta.url), 'utf8'))
 
@@ -125,5 +127,37 @@ describe('the evidence package (portable-evidence.md §2)', () => {
     expect(records[1].failure).toContain(`commits to sha256:${ACCEPTANCE.commitment}`)
     expect(records[2].failure).toContain('is not JSON')
     expect(acceptanceRecordsInPackage(manifest, files)).toEqual([])
+  })
+
+  it('reads a version 2 record under its own representation and refuses an entry whose representation is not the record\'s format (managed-custody.md §5)', async () => {
+    const { manifest, files } = await build()
+    const { signature: _s, ...claim } = ACCEPTANCE.record as ManagedAcceptanceRecord
+    const v2 = await signManagedAcceptance({ ...claim, acceptanceFormat: 'dpp-managed-acceptance@2' }, custodianWallet)
+    const v2Bytes = Utils.toArray(JSON.stringify(v2), 'utf8')
+    const v1Bytes = Utils.toArray(JSON.stringify(ACCEPTANCE.record), 'utf8')
+    const good = `authority/acceptance-${acceptanceCommitment(v2)}.json`
+    const mislabelledV2 = 'authority/acceptance-v2-as-v1.json'
+    const mislabelledV1 = 'authority/acceptance-v1-as-v2.json'
+    files.set(good, v2Bytes)
+    files.set(mislabelledV2, v2Bytes)
+    files.set(mislabelledV1, v1Bytes)
+    expect(ACCEPTANCE_RECORD_REPRESENTATION).toBe('dpp-managed-acceptance@2')
+    expect(ACCEPTANCE_RECORD_REPRESENTATIONS).toEqual(['dpp-managed-acceptance@1', 'dpp-managed-acceptance@2'])
+    const unsigned: UnsignedEvidenceManifest = {
+      ...manifest,
+      inventory: [
+        ...manifest.inventory,
+        inventoryEntry(good, 'authority', 'application/json', v2Bytes, { representation: 'dpp-managed-acceptance@2', represents: `sha256:${acceptanceCommitment(v2)}` }),
+        inventoryEntry(mislabelledV2, 'authority', 'application/json', v2Bytes, { representation: 'dpp-managed-acceptance@1', represents: `sha256:${acceptanceCommitment(v2)}` }),
+        inventoryEntry(mislabelledV1, 'authority', 'application/json', v1Bytes, { representation: 'dpp-managed-acceptance@2', represents: `sha256:${ACCEPTANCE.commitment}` }),
+      ],
+      signature: { suite: 'bsv-ecdsa-der', signer: exporter.toPublicKey().toString() },
+    }
+    const signed = await signEvidenceManifest(unsigned, signer)
+    const records = acceptanceRecordsInPackage(signed, files)
+    expect(records.map((r) => [r.path, r.record != null])).toEqual([[good, true], [mislabelledV2, false], [mislabelledV1, false]])
+    expect(records[0].record).toEqual(v2)
+    expect(records[1].failure).toContain('listed as dpp-managed-acceptance@1 and holds a dpp-managed-acceptance@2 record')
+    expect(records[2].failure).toContain('listed as dpp-managed-acceptance@2 and holds a dpp-managed-acceptance@1 record')
   })
 })

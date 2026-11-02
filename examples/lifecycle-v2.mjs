@@ -79,7 +79,6 @@ const issuerWallet = new ProtoWallet(issuerPriv)
 const custodianWallet = new ProtoWallet(custodianPriv)
 const recipientWallet = new ProtoWallet(recipientPriv)
 const strangerWallet = new ProtoWallet(strangerPriv)
-const custodianSigner = { sign: (preimage) => custodianPriv.sign(preimage).toDER() }
 
 // A demonstration identifier under GS1 prefix 952 (spec/record-model.md §3), serialised per run.
 const passportId = `https://dpp.bsvb.net/01/09521000000018/21/LIFECYCLE-${Date.now().toString(36).toUpperCase()}`
@@ -151,7 +150,7 @@ step('Offer: the custodian fixes the tip, the terms and an expiry, and issues a 
 const terms = { word: 'Passed on', note: 'Handed to the recipient at the counter' }
 const claimCode = Utils.toHex(PrivateKey.fromRandom().toArray().slice(0, 8))
 const claim = {
-  acceptanceFormat: 'dpp-managed-acceptance@1',
+  acceptanceFormat: 'dpp-managed-acceptance@2',
   requestId: `offer-${Date.now().toString(36)}`,
   passportId,
   lineageGenesis: genesis(),
@@ -162,14 +161,14 @@ const claim = {
   custodian: idKey(custodianPriv),
 }
 step('Acceptance: the recipient redeems the code; the custodian records, signs and retains the acceptance.')
-const record = await signManagedAcceptance(claim, custodianSigner)
+const record = await signManagedAcceptance(claim, custodianWallet)
 const inspection = inspectManagedAcceptance(record, { custodians: [idKey(custodianPriv)] })
 say(inspection.structureValid && inspection.signatureValid && inspection.failures.length === 0, `the acceptance record is well formed, custodian-signed, in time order; its commitment is ${inspection.commitment.slice(0, 16)}...`)
 
 step('TRANSFER: the custodian writes the transfer for the holder, moving control to the accepted destination and committing to the record in field 15.')
 const transfer = await write(data({ op: 'TRANSFER', ownerIdentityKey: controllerKeyOf(recipientPriv), actorIdentityKey: idKey(issuerPriv), controlLinkage: controlLinkageOf(issuerPriv), eventData: JSON.stringify({ word: terms.word }), payloadPublic: PAYLOAD_2, payloadOwnerHash: ownerBlobHash(BLOB_2), authorisationCommitment: acceptanceCommitment(record), ...link() }), issuerWallet)
 say(bindAcceptanceToState(record, transfer.state).length === 0, 'the record binds to the TRANSFER: passport, lineage, predecessor, destination, holder, commitment and time order.')
-say((await checked(txs, { managedAcceptance: true })).valid, 'three states verify under managed-custody@1: the TRANSFER carries its commitment.')
+say((await checked(txs, { managedAcceptance: true })).valid, 'three states verify under managed-custody@2: the TRANSFER carries its commitment.')
 
 step('Instruction: the recipient, now the holder, asks the custodian to retire the passport; the custodian records, signs and retains the request.')
 const request = { ask: 'retire', reason: 'recycled' }
@@ -185,7 +184,7 @@ const instruction = await signManagedInstruction({
   requestedAt: instant(-1),
   evidenceKind: 'custodian-attested',
   custodian: idKey(custodianPriv),
-}, custodianSigner)
+}, custodianWallet)
 const instructionInspection = inspectManagedInstruction(instruction, { custodians: [idKey(custodianPriv)] })
 say(instructionInspection.structureValid && instructionInspection.signatureValid && instructionInspection.failures.length === 0, `the instruction record is well formed and custodian-signed; its commitment is ${instructionInspection.commitment.slice(0, 16)}...`)
 
@@ -203,7 +202,7 @@ step('The report a stranger produces from the bytes and the acceptance record, u
 const report = await verifyPassportEvidence(
   { tokenHistory: txs, acceptanceRecords: [record], instructionRecords: [instruction] },
   { passportId, source: 'request-context' },
-  { policyId: 'managed-custody@1/example', publisherKeys: [idKey(custodianPriv)], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts only', authority: { required: true, genesisIssuers: [idKey(issuerPriv)], acceptanceCustodians: [idKey(custodianPriv)] } }
+  { policyId: 'managed-custody@2/example', publisherKeys: [idKey(custodianPriv)], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts only', authority: { required: true, genesisIssuers: [idKey(issuerPriv)], acceptanceCustodians: [idKey(custodianPriv)] } }
 )
 for (const c of report.checks) console.log(`  ${EVIDENCE_CHECK_LABELS[c.name]}: ${c.status}${c.reasonCode == null ? '' : ` (${c.reasonCode})`} [${c.name}]`)
 const status = (name) => report.checks.find((c) => c.name === name).status
@@ -227,7 +226,7 @@ say(!refusedUninstructed.valid && (refusedUninstructed.error ?? '').includes(INS
 say((await checked([...txs.slice(0, 3), uninstructed.tx], { managedAcceptance: true })).valid, 'and accepted with the instruction rule off, as the acceptance rule alone requires.')
 
 const elsewhere = { ...record, acceptance: { ...record.acceptance, destinationKey: controllerKeyOf(strangerPriv) } }
-const resigned = await signManagedAcceptance((({ signature: _s, ...c }) => c)(elsewhere), custodianSigner)
+const resigned = await signManagedAcceptance((({ signature: _s, ...c }) => c)(elsewhere), custodianWallet)
 const mismatches = bindAcceptanceToState(resigned, transfer.state)
 say(mismatches.length > 0, `a custodian-signed record naming another destination does not bind to the TRANSFER: ${mismatches[0].detail}.`)
 
@@ -242,7 +241,7 @@ say(!refusedAfterRetire.valid && (refusedAfterRetire.error ?? '').includes('reti
 
 let expiredRefused = false
 try {
-  await signManagedAcceptance({ ...claim, acceptance: { ...claim.acceptance, acceptedAt: instant(8 * 24 * 3600) } }, custodianSigner)
+  await signManagedAcceptance({ ...claim, acceptance: { ...claim.acceptance, acceptedAt: instant(8 * 24 * 3600) } }, custodianWallet)
 } catch (error) {
   expiredRefused = String(error.message).includes('expired')
 }

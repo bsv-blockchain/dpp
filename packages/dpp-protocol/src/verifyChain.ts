@@ -1,6 +1,5 @@
 import { Beef, PublicKey, Transaction, type ChainTracker } from '@bsv/sdk'
 import { tryParseDppOutput } from './codec.js'
-import { MANAGED_CUSTODY_PROFILE } from './constants.js'
 import { verifyServerSignature, verifyUserSignature } from './signatures.js'
 import { publisherKeysAt, type PublisherPolicy } from './publisherPolicy.js'
 import { checkControl, checkOwnerConsent, normaliseTransferAuthorities } from './owner.js'
@@ -64,10 +63,10 @@ export interface DppOutputRef {
   carrier?: CarrierPrefix
 }
 
-/** What a reader reports when the managed-custody profile is selected and a version 2 TRANSFER carries no commitment. */
-export const ACCEPTANCE_COMMITMENT_REFUSAL = `TRANSFER carries no authorisation_commitment under ${MANAGED_CUSTODY_PROFILE}`
+/** What a reader reports when the managed-custody profile is selected and a version 2 TRANSFER carries no commitment. The text names no version: the rule is the same under every version of the profile. */
+export const ACCEPTANCE_COMMITMENT_REFUSAL = 'TRANSFER carries no authorisation_commitment under the managed-custody profile'
 /** The refusal of a version 2 or 3 UPDATE or RETIRE after a committed TRANSFER with no instruction commitment, under the profile. */
-export const INSTRUCTION_COMMITMENT_REFUSAL = `UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under ${MANAGED_CUSTODY_PROFILE}`
+export const INSTRUCTION_COMMITMENT_REFUSAL = 'UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under the managed-custody profile'
 
 /**
  * Locate THE DPP output of a transaction (§6 invariant 1: exactly one).

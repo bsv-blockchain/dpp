@@ -4,7 +4,7 @@
  * must: each state built unsent, checked with the reader's own rules,
  * announced to the writer's own index before it is sent, sent and answered
  * for, proven, and kept. The lineage is an ISSUE genesis and one UPDATE that
- * spends it, under managed-custody@1 and the record model of
+ * spends it, under managed-custody@2 and the record model of
  * spec/record-model-v2.md.
  *
  *   node examples/write-passport-v2.mjs --dry-run [passportId]
@@ -119,7 +119,7 @@ const journalDirectory = flag('journal')
 const PROFILE = 'general@2'
 /** BRC-43 protocol the owner tier is encrypted under (spec/record-model.md section 7); dpp-protocol does not export it. */
 const OWNER_DATA_PROTOCOL = [2, 'dpp owner data v1']
-const CUSTODY_PROFILE = 'managed-custody@1'
+const CUSTODY_PROFILE = 'managed-custody@2'
 const ANYONE = new LockingScript([{ op: 0x51 }])
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 

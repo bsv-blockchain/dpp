@@ -1,6 +1,7 @@
-import { Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
+import { CachedKeyDeriver, Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
-import { MANAGED_CUSTODY_PROFILE } from './constants.js'
+import { MANAGED_CUSTODY_PROFILE, MANAGED_CUSTODY_PROFILE_V1, MANAGED_RECORD_PROTOCOL_ID } from './constants.js'
+import type { DataSigner } from './signatures.js'
 import type { Outpoint, SeventeenFieldState } from './types.js'
 
 /**
@@ -23,15 +24,25 @@ import type { Outpoint, SeventeenFieldState } from './types.js'
  * contact details. The recipient is named by the identity key the destination
  * derives from, and a claim code by its SHA-256, so the record can be exported
  * with the passport's public evidence.
+ *
+ * Two format versions exist and a reader tells them apart by the literal.
+ * `dpp-managed-acceptance@2` is signed with the BRC-42 child of the
+ * custodian's identity key under `MANAGED_RECORD_PROTOCOL_ID`, key identifier
+ * `requestId`, counterparty 'anyone', so a BRC-100 wallet signs it with
+ * `createSignature` and a stranger derives the verification key from
+ * `custodian`. `dpp-managed-acceptance@1` was signed with the identity key
+ * directly, which no BRC-100 wallet can do; it is superseded, its records
+ * keep verifying under its own rule, and this module writes version 2 only.
  */
 
-export const MANAGED_ACCEPTANCE_FORMAT = 'dpp-managed-acceptance@1' as const
-export { MANAGED_CUSTODY_PROFILE }
+export const MANAGED_ACCEPTANCE_FORMAT = 'dpp-managed-acceptance@2' as const
+export const MANAGED_ACCEPTANCE_FORMAT_V1 = 'dpp-managed-acceptance@1' as const
+export { MANAGED_CUSTODY_PROFILE, MANAGED_CUSTODY_PROFILE_V1 }
 
 export type OfferMechanism = 'claim-code' | 'named-recipient'
 
 export interface ManagedAcceptanceClaim {
-  acceptanceFormat: typeof MANAGED_ACCEPTANCE_FORMAT
+  acceptanceFormat: typeof MANAGED_ACCEPTANCE_FORMAT | typeof MANAGED_ACCEPTANCE_FORMAT_V1
   /** Unique per offer; a retry names the same request and never a second one. */
   requestId: string
   passportId: string
@@ -63,12 +74,20 @@ export interface ManagedAcceptanceClaim {
 }
 
 export interface ManagedAcceptanceRecord extends ManagedAcceptanceClaim {
-  /** DER ECDSA, lowercase hex, over SHA-256 of the canonical JSON of the record without this property. */
+  /** DER ECDSA, lowercase hex, over SHA-256 of the canonical JSON of the record without this property: by the derived key under version 2, by the identity key directly under version 1. */
   signature: string
 }
 
-export interface AcceptanceSigner {
-  sign(preimage: number[]): Promise<number[]> | number[]
+/** Deriver for counterparty-'anyone' verification keys: the verifier's own key is 1, so anyone computes the child. */
+const anyone = new CachedKeyDeriver('anyone')
+
+/**
+ * The key a version 2 record's signature verifies under: the BRC-42 child of
+ * the custodian's identity key for `MANAGED_RECORD_PROTOCOL_ID`, the record's
+ * `requestId` and counterparty 'anyone'. Shared by the instruction record.
+ */
+export function managedRecordVerificationKey(custodian: string, requestId: string): PublicKey {
+  return anyone.derivePublicKey(MANAGED_RECORD_PROTOCOL_ID, requestId, custodian)
 }
 
 const KEY = /^0[23][0-9a-f]{64}$/
@@ -124,7 +143,7 @@ function structure(value: unknown, failures: AcceptanceFailure[]): value is Mana
   const r = value as Record<string, unknown>
   const allowed = new Set(['acceptanceFormat', 'requestId', 'passportId', 'lineageGenesis', 'expectedPredecessor', 'termsDigest', 'offer', 'acceptance', 'custodian', 'signature'])
   for (const key of Object.keys(r)) if (!allowed.has(key)) fail('format', `unsupported property ${key}`)
-  if (r.acceptanceFormat !== MANAGED_ACCEPTANCE_FORMAT) fail('format', `acceptanceFormat is not ${MANAGED_ACCEPTANCE_FORMAT}`)
+  if (r.acceptanceFormat !== MANAGED_ACCEPTANCE_FORMAT && r.acceptanceFormat !== MANAGED_ACCEPTANCE_FORMAT_V1) fail('format', `acceptanceFormat is not ${MANAGED_ACCEPTANCE_FORMAT} or ${MANAGED_ACCEPTANCE_FORMAT_V1}`)
   if (!text(r.requestId, MAX_REQUEST_ID)) fail('format', `requestId must be printable text of at most ${MAX_REQUEST_ID} bytes`)
   if (!text(r.passportId, 512)) fail('format', 'passportId must be printable text of at most 512 bytes')
   if (!outpointOk(r.lineageGenesis)) fail('format', 'lineageGenesis must be an outpoint')
@@ -175,9 +194,10 @@ function structure(value: unknown, failures: AcceptanceFailure[]): value is Mana
 }
 
 /**
- * Inspect a record on its own: structure, the custodian's signature and, when
- * the caller names the custodians it trusts, whether the signer is one of
- * them. Binding to the TRANSFER that commits to it is `bindAcceptanceToState`.
+ * Inspect a record on its own: structure, the custodian's signature under the
+ * rule its format literal names and, when the caller names the custodians it
+ * trusts, whether the signer is one of them. Binding to the TRANSFER that
+ * commits to it is `bindAcceptanceToState`.
  */
 export function inspectManagedAcceptance(value: unknown, options: { custodians?: readonly string[] } = {}): AcceptanceInspection {
   const failures: AcceptanceFailure[] = []
@@ -188,13 +208,16 @@ export function inspectManagedAcceptance(value: unknown, options: { custodians?:
   let commitment: string | undefined
   try {
     const preimage = acceptanceSigningPreimage(record)
-    signatureValid = PublicKey.fromString(record.custodian).verify(preimage, Signature.fromDER(Utils.toArray(record.signature, 'hex')))
+    const key = record.acceptanceFormat === MANAGED_ACCEPTANCE_FORMAT_V1 ? PublicKey.fromString(record.custodian) : managedRecordVerificationKey(record.custodian, record.requestId)
+    signatureValid = key.verify(preimage, Signature.fromDER(Utils.toArray(record.signature, 'hex')))
     commitment = acceptanceCommitment(record)
   } catch (error) {
     signatureValid = error instanceof CanonicalJsonError ? null : false
     if (signatureValid === null) failures.push({ reason: 'format', detail: error instanceof Error ? error.message : 'the record has no canonical form' })
   }
-  if (signatureValid === false) failures.push({ reason: 'signature-invalid', detail: `the signature does not verify under custodian ${record.custodian}` })
+  if (signatureValid === false) {
+    failures.push({ reason: 'signature-invalid', detail: record.acceptanceFormat === MANAGED_ACCEPTANCE_FORMAT_V1 ? `the signature does not verify under custodian ${record.custodian} directly` : `the signature does not verify under the child of custodian ${record.custodian} for the managed record protocol and request ${record.requestId}` })
+  }
   if (options.custodians != null && !options.custodians.includes(record.custodian)) {
     failures.push({ reason: 'custodian-unexpected', detail: `signed by ${record.custodian}, not a custodian the policy names` })
   }
@@ -221,14 +244,21 @@ export function bindAcceptanceToState(record: ManagedAcceptanceRecord, state: Se
   return failures
 }
 
-/** Sign a claim as the custodian. The signer's key must be `claim.custodian`; the result is checked before it is returned. */
-export async function signManagedAcceptance(claim: ManagedAcceptanceClaim, signer: AcceptanceSigner): Promise<ManagedAcceptanceRecord> {
+/**
+ * Sign a version 2 claim as the custodian: `createSignature` under
+ * `MANAGED_RECORD_PROTOCOL_ID`, the claim's `requestId` and counterparty
+ * 'anyone', from the wallet whose identity key is `claim.custodian`. The
+ * result is checked before it is returned, so a wallet that holds another
+ * root is refused. A version 1 claim is refused: nothing writes version 1.
+ */
+export async function signManagedAcceptance(claim: ManagedAcceptanceClaim, signer: DataSigner): Promise<ManagedAcceptanceRecord> {
   const failures: AcceptanceFailure[] = []
+  if (claim.acceptanceFormat !== MANAGED_ACCEPTANCE_FORMAT) throw new Error(`a custodian writes ${MANAGED_ACCEPTANCE_FORMAT}; ${String(claim.acceptanceFormat)} is read only`)
   // A well-formed placeholder (r = 1, s = 1) stands in for the signature while the claim's own shape is checked.
   if (!structure({ ...claim, signature: '3006020101020101' }, failures)) {
     throw new Error(`acceptance record is not well formed: ${failures.map((f) => f.detail).join('; ')}`)
   }
-  const der = await signer.sign(acceptanceSigningPreimage(claim))
+  const { signature: der } = await signer.createSignature({ data: acceptanceSigningPreimage(claim), protocolID: MANAGED_RECORD_PROTOCOL_ID, keyID: claim.requestId, counterparty: 'anyone' })
   const record: ManagedAcceptanceRecord = { ...claim, signature: Utils.toHex(der) }
   const inspection = inspectManagedAcceptance(record)
   if (inspection.signatureValid !== true) throw new Error('the signer does not hold the custodian key the record names')
