@@ -127,7 +127,8 @@ test('connection issues the app\'s per-publisher tokens into the token file, hid
     assert.deepEqual(live.map(entry => [entry.use, entry.label, entry.publisherKey]).sort(), [['callback', 'app:callback', publisher], ['submit', 'app:submit', publisher]])
     assert.ok(!JSON.stringify(file).includes(app.INDEX_SUBMIT_TOKEN))
     assert.equal(live.find(entry => entry.use === 'submit').sha256, createHash('sha256').update(app.INDEX_SUBMIT_TOKEN).digest('hex'))
-    if (previous) assert.deepEqual(app, previous)
+    // parseEnv returns a null-prototype object from Node 26; the spread compares the entries, not the prototype.
+    if (previous) assert.deepEqual({ ...app }, { ...previous })
     if (process.platform !== 'win32') assert.equal(statSync(join(target, 'config', 'publisher-tokens.json')).mode & 0o777, 0o644)
     previous = app
     if (process.platform !== 'win32') assert.equal(statSync(join(target, '.app.env')).mode & 0o777, 0o600)
