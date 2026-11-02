@@ -9,7 +9,7 @@
  */
 import { Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
-import { MANAGED_ACCEPTANCE_FORMAT, inspectManagedAcceptance } from './acceptance.js'
+import { MANAGED_ACCEPTANCE_FORMAT, MANAGED_ACCEPTANCE_FORMAT_V1, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
 
 export const EVIDENCE_PACKAGE_FORMAT = 'dpp-evidence-package'
 export const EVIDENCE_PACKAGE_VERSION = '1'
@@ -221,7 +221,10 @@ export function inspectEvidencePackage(manifest: EvidencePackageManifest, files:
 }
 
 /** The representation an inventory entry carries for a managed acceptance record (`spec/managed-custody.md` §5). */
+/** The representation a custodian writes for the records it signs today: the record's own format literal. */
 export const ACCEPTANCE_RECORD_REPRESENTATION = MANAGED_ACCEPTANCE_FORMAT
+/** Every representation an acceptance record may be listed under: its format literal, one per version a reader reads. */
+export const ACCEPTANCE_RECORD_REPRESENTATIONS = [MANAGED_ACCEPTANCE_FORMAT_V1, MANAGED_ACCEPTANCE_FORMAT] as const
 
 export interface PackagedAcceptanceRecord {
   path: string
@@ -236,19 +239,21 @@ export interface PackagedAcceptanceRecord {
 /**
  * The acceptance records an evidence package carries (`spec/managed-custody.md`
  * §5, `spec/portable-evidence.md` §2): every `authority` entry whose
- * representation is `dpp-managed-acceptance@1`, parsed, so a reader can hand
- * them to `verifyPassportEvidence` as the history's `acceptanceRecords`.
+ * representation is an acceptance record format literal, parsed, so a reader
+ * can hand them to `verifyPassportEvidence` as the history's
+ * `acceptanceRecords`.
  *
  * The package is the route, and this reads it without trusting it: an entry
  * whose bytes are not JSON, whose record does not canonicalise to a
- * commitment, or whose commitment differs from the one `represents` names,
- * is returned with its failure and no record. The records themselves are
+ * commitment, whose format literal is not the representation it is listed
+ * under, or whose commitment differs from the one `represents` names, is
+ * returned with its failure and no record. The records themselves are
  * verified by the report, not here; this only says what the package holds.
  */
 export function acceptanceRecordsInPackage(manifest: EvidencePackageManifest, files: Map<string, number[]>): PackagedAcceptanceRecord[] {
   const out: PackagedAcceptanceRecord[] = []
   for (const entry of Array.isArray(manifest.inventory) ? manifest.inventory : []) {
-    if (entry?.category !== 'authority' || entry.representation !== ACCEPTANCE_RECORD_REPRESENTATION) continue
+    if (entry?.category !== 'authority' || !(ACCEPTANCE_RECORD_REPRESENTATIONS as readonly string[]).includes(String(entry.representation))) continue
     const represents = typeof entry.represents === 'string' ? entry.represents : undefined
     const bytes = files.get(entry.path)
     if (bytes == null) { out.push({ path: entry.path, represents, failure: `${entry.path} is listed and not present` }); continue }
@@ -256,6 +261,8 @@ export function acceptanceRecordsInPackage(manifest: EvidencePackageManifest, fi
     try { record = JSON.parse(Utils.toUTF8(bytes)) } catch { out.push({ path: entry.path, represents, failure: `${entry.path} is not JSON` }); continue }
     const inspection = inspectManagedAcceptance(record)
     if (inspection.commitment == null) { out.push({ path: entry.path, represents, failure: `${entry.path} is not a managed acceptance record: ${inspection.failures.map((f) => f.detail).join('; ')}` }); continue }
+    const format = (record as ManagedAcceptanceRecord).acceptanceFormat
+    if (format !== entry.representation) { out.push({ path: entry.path, represents, failure: `${entry.path} is listed as ${String(entry.representation)} and holds a ${format} record` }); continue }
     if (represents != null && represents !== `sha256:${inspection.commitment}`) { out.push({ path: entry.path, represents, failure: `${entry.path} commits to sha256:${inspection.commitment}, not ${represents}` }); continue }
     out.push({ path: entry.path, represents, record })
   }

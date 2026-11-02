@@ -1,6 +1,8 @@
-import { Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
+import { Hash, Signature, Utils } from '@bsv/sdk'
+import { managedRecordVerificationKey } from './acceptance.js'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
-import { MANAGED_CUSTODY_PROFILE } from './constants.js'
+import { MANAGED_CUSTODY_PROFILE, MANAGED_RECORD_PROTOCOL_ID } from './constants.js'
+import type { DataSigner } from './signatures.js'
 import type { Outpoint, SeventeenFieldState } from './types.js'
 
 /**
@@ -17,6 +19,11 @@ import type { Outpoint, SeventeenFieldState } from './types.js'
  * custodian attested to a request matching the state it wrote, and the record
  * says so in `evidenceKind`. What the holder asked, in the custodian's own
  * words or form, is committed by `requestDigest` and never carried.
+ *
+ * The signature is the one a version 2 acceptance record carries: the BRC-42
+ * child of the custodian's identity key under `MANAGED_RECORD_PROTOCOL_ID`,
+ * key identifier `requestId`, counterparty 'anyone', made with the BRC-100
+ * `createSignature` operation and verified by anyone from `custodian`.
  */
 
 export const MANAGED_INSTRUCTION_FORMAT = 'dpp-managed-instruction@1' as const
@@ -46,12 +53,8 @@ export interface ManagedInstructionClaim {
 }
 
 export interface ManagedInstructionRecord extends ManagedInstructionClaim {
-  /** DER ECDSA, lowercase hex, over SHA-256 of the canonical JSON of the record without this property. */
+  /** DER ECDSA, lowercase hex, over SHA-256 of the canonical JSON of the record without this property, by the derived key. */
   signature: string
-}
-
-export interface InstructionSigner {
-  sign(preimage: number[]): Promise<number[]> | number[]
 }
 
 const KEY = /^0[23][0-9a-f]{64}$/
@@ -137,13 +140,13 @@ export function inspectManagedInstruction(value: unknown, options: { custodians?
   let commitment: string | undefined
   try {
     const preimage = instructionSigningPreimage(record)
-    signatureValid = PublicKey.fromString(record.custodian).verify(preimage, Signature.fromDER(Utils.toArray(record.signature, 'hex')))
+    signatureValid = managedRecordVerificationKey(record.custodian, record.requestId).verify(preimage, Signature.fromDER(Utils.toArray(record.signature, 'hex')))
     commitment = instructionCommitment(record)
   } catch (error) {
     signatureValid = error instanceof CanonicalJsonError ? null : false
     if (signatureValid === null) failures.push({ reason: 'format', detail: error instanceof Error ? error.message : 'the record has no canonical form' })
   }
-  if (signatureValid === false) failures.push({ reason: 'signature-invalid', detail: `the signature does not verify under custodian ${record.custodian}` })
+  if (signatureValid === false) failures.push({ reason: 'signature-invalid', detail: `the signature does not verify under the child of custodian ${record.custodian} for the managed record protocol and request ${record.requestId}` })
   if (options.custodians != null && !options.custodians.includes(record.custodian)) {
     failures.push({ reason: 'custodian-unexpected', detail: `signed by ${record.custodian}, not a custodian the policy names` })
   }
@@ -170,13 +173,19 @@ export function bindInstructionToState(record: ManagedInstructionRecord, state: 
   return failures
 }
 
-/** Sign a claim as the custodian. The signer's key must be `claim.custodian`; the result is checked before it is returned. */
-export async function signManagedInstruction(claim: ManagedInstructionClaim, signer: InstructionSigner): Promise<ManagedInstructionRecord> {
+/**
+ * Sign a claim as the custodian: `createSignature` under
+ * `MANAGED_RECORD_PROTOCOL_ID`, the claim's `requestId` and counterparty
+ * 'anyone', from the wallet whose identity key is `claim.custodian`. The
+ * result is checked before it is returned, so a wallet holding another root
+ * is refused.
+ */
+export async function signManagedInstruction(claim: ManagedInstructionClaim, signer: DataSigner): Promise<ManagedInstructionRecord> {
   const failures: InstructionFailure[] = []
   if (!structure({ ...claim, signature: '3006020101020101' }, failures)) {
     throw new Error(`instruction record is not well formed: ${failures.map((f) => f.detail).join('; ')}`)
   }
-  const der = await signer.sign(instructionSigningPreimage(claim))
+  const { signature: der } = await signer.createSignature({ data: instructionSigningPreimage(claim), protocolID: MANAGED_RECORD_PROTOCOL_ID, keyID: claim.requestId, counterparty: 'anyone' })
   const record: ManagedInstructionRecord = { ...claim, signature: Utils.toHex(der) }
   const inspection = inspectManagedInstruction(record)
   if (inspection.signatureValid !== true) throw new Error('the signer does not hold the custodian key the record names')

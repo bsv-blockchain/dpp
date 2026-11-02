@@ -1,0 +1,431 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.managedacceptance.v2",
+  "name": "DPP managed acceptance record v2: the custodian-attested acceptance a version 2 TRANSFER commits to, signed with a derived key",
+  "brc": [],
+  "version": "1.0.0",
+  "reference_impl": "dpp-protocol@0.3.0",
+  "parity_class": "required",
+  "vectors": [
+    {
+      "id": "sign-and-commit",
+      "description": "Canonicalise the record without its signature (object keys sorted by code point, no whitespace, strings, booleans and safe integers only), sign SHA-256 of those bytes with the BRC-42 child of the custodian key for protocol [1, \"dpp managed record v1\"], key identifier requestId and counterparty anyone (the BRC-100 createSignature operation), then canonicalise the signed record and hash it: that digest is what the TRANSFER carries in field 15 (spec managed-custody.md section 3).",
+      "input": {
+        "claim": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+        },
+        "custodian_private_key_hex": "2222222222222222222222222222222222222222222222222222222222222222",
+        "derivation": {
+          "protocol_id": [
+            1,
+            "dpp managed record v1"
+          ],
+          "key_id": "offer-0001",
+          "counterparty": "anyone"
+        },
+        "signature_nonce": "rfc6979"
+      },
+      "expected": {
+        "signing_preimage_hex": "7b22616363657074616e6365223a7b2261636365707465644174223a22323032362d30392d30385431303a30303a30305a222c2264657374696e6174696f6e4b6579223a22303333373132633663626133656664656235656262643362636664313138323665623161333538313438643261333035626139376235613335336634396231383166222c2265766964656e63654b696e64223a22637573746f6469616e2d6174746573746564222c22726563697069656e744964656e746974794b6579223a22303233633732616464623466646630396166393466306339346437666539326133383661376537306366386131643835393136333836626232353335633762316231227d2c22616363657074616e6365466f726d6174223a226470702d6d616e616765642d616363657074616e63654032222c22637573746f6469616e223a22303234363664376663616535363365356362303961306431383730626235383033343438303436313738373961313439343963663232323835663162616533663237222c2265787065637465645072656465636573736f72223a7b226f7574707574496e646578223a302c2274786964223a2264633439336332613238376634303138353634373565646236313765653934633336323066313534303261643264653734646634393164633865373833656537227d2c226c696e6561676547656e65736973223a7b226f7574707574496e646578223a302c2274786964223a2261333961383766666361343137623030623337646233346465346132323165646264613932386465663133353663396462323964643738323431373439643237227d2c226f66666572223a7b22637265617465644174223a22323032362d30392d30385430393a30303a30305a222c22657870697265734174223a22323032362d30392d31355430393a30303a30305a222c22686f6c6465724964656e746974794b6579223a22303334663335356264636237636330616637323865663363636562393631356439303638346262356232636135663835396162306630623730343037353837316161222c226d656368616e69736d223a22636c61696d2d636f6465222c22726563697069656e74526566223a2236626635396536323734356632636138366336306361626432363739616435343038356663306261643738653964313266323966666331643535383730316264227d2c2270617373706f72744964223a2268747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031222c22726571756573744964223a226f666665722d30303031222c227465726d73446967657374223a2265313461633331613734643833303361633138376230363238633330333362303932323063353733363464343335653131653766336161656137356438383664227d",
+        "signature_hex": "3045022100c5008f0a25104231dcc43e0a349d53c41347714d09c66460075c91afb58baa0d022013e4d6318ffe10146d56d7b6fe72adaecbb9b0b4bcde3fb10a3dd6d3c7650c1a",
+        "commitment_hex": "6d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3"
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "bind-to-transfer",
+      "description": "Verify the record against the child of its custodian property and bind it to the TRANSFER that commits to it: same passport and lineage, the tip the offer named as the spent predecessor, the accepted destination as the new controller key, the offering holder as the actor, the commitment in field 15, and an acceptance no later than the state.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "3045022100c5008f0a25104231dcc43e0a349d53c41347714d09c66460075c91afb58baa0d022013e4d6318ffe10146d56d7b6fe72adaecbb9b0b4bcde3fb10a3dd6d3c7650c1a"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": true,
+        "commitment_hex": "6d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3",
+        "binding_valid": true
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "refuse-tampered-terms",
+      "description": "termsDigest changed after signing.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "3045022100c5008f0a25104231dcc43e0a349d53c41347714d09c66460075c91afb58baa0d022013e4d6318ffe10146d56d7b6fe72adaecbb9b0b4bcde3fb10a3dd6d3c7650c1a"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": false,
+        "binding_valid": false,
+        "reason": "signature-invalid"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-stranger-signed",
+      "description": "Signed under the managed record protocol from a root other than the custodian the record names.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "30450221009c53bd7d22f0676c0376a366cfbe60b27bb01b49e288fb86f8f7b019ca5798c902207a6a738daa91e19e5888b3bf16e74d846f1f586f6601ecdf628dc3e9b81d02e3"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": false,
+        "binding_valid": false,
+        "reason": "signature-invalid"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-directly-signed",
+      "description": "Signed with the custodian's identity key directly, with no derivation, as version 1 was: not a version 2 signature.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "304502210095da60413a21a9b66d25f42552acefea581a5fc3d9921f4f77392046cfe289ca02200530f29460c446571f15cc9a7d4c9435347e16dfd9764e128beb2dff021e2600"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": false,
+        "binding_valid": false,
+        "reason": "signature-invalid"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-accepted-after-expiry",
+      "description": "acceptedAt after expiresAt, signed by the custodian: the offer had expired.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-16T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "3045022100bdd1605f99d1615e4354f25b33ac88e495f3c949218ba8b727767e6ce02f0c2902203ce0fb07108000b3edb56162e22c8425f3171e82615a21a96ddacecd7fcb1319"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": false,
+        "signature_valid": null,
+        "binding_valid": false,
+        "reason": "time-order"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-destination-mismatch",
+      "description": "A well-formed, custodian-signed record naming another destination: it does not describe this TRANSFER.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "0218cabeeadee43e5b917cd963ade4fb5481d207e48c69bec4054f6093ed4ec5f3",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "304502210098d36f285edf264c85648a76287a9d76dc41b7c0e66c03a2cad5594b5dc09b6a022052fa19a0393ff047850468ee584291664a28b7403f1a5b116ac0d3d5de45b627"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": true,
+        "binding_valid": false,
+        "reason": "state-mismatch"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-predecessor-mismatch",
+      "description": "A well-formed, custodian-signed record naming the genesis as the expected predecessor.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "3044022009f1b58039f4fe0c6fd72049c001f73e2bb7982f0909a436c33ee1e2295af3cf022060bca68272f81e34fe2680d84277def94838354a3b05951ba3c274454153f040"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": true,
+        "binding_valid": false,
+        "reason": "state-mismatch"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-holder-mismatch",
+      "description": "A well-formed, custodian-signed record naming a stranger as the offering holder.",
+      "input": {
+        "record": {
+          "acceptanceFormat": "dpp-managed-acceptance@2",
+          "requestId": "offer-0001",
+          "passportId": "https://dpp.bsvb.net/01/09521000000018/21/V2-0001",
+          "lineageGenesis": {
+            "txid": "a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d27",
+            "outputIndex": 0
+          },
+          "expectedPredecessor": {
+            "txid": "dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee7",
+            "outputIndex": 0
+          },
+          "termsDigest": "e14ac31a74d8303ac187b0628c3033b09220c57364d435e11e7f3aaea75d886d",
+          "offer": {
+            "holderIdentityKey": "032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991",
+            "createdAt": "2026-09-08T09:00:00Z",
+            "expiresAt": "2026-09-15T09:00:00Z",
+            "mechanism": "claim-code",
+            "recipientRef": "6bf59e62745f2ca86c60cabd2679ad54085fc0bad78e9d12f29ffc1d558701bd"
+          },
+          "acceptance": {
+            "recipientIdentityKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+            "destinationKey": "033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f",
+            "acceptedAt": "2026-09-08T10:00:00Z",
+            "evidenceKind": "custodian-attested"
+          },
+          "custodian": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27",
+          "signature": "304402204efca8c23633ab815a59febce5f0e3b7e94fd4afcfe70fc7fb3309473678778002202110f9f12911d4e609ee918fcdbd4b2d1ece783457e316d950b4494d04a54533"
+        },
+        "transfer_raw_tx_hex": "0100000001e73e788edc91f44de72dad0254f120364ce97e61db5e475618407f282a3c49dc0000000000ffffffff02000000000000000002006a0100000000000000fd81022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d30303031085452414e5346455214323032362d30392d30385431303a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0e6973737565722062617463682031147b22776f7264223a22506173736564206f6e227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024dc493c2a287f401856475edb617ee94c3620f15402ad2de74df491dc8e783ee70000000020eff45c2dcf3b15042ac9275de6dd8a43c37340ad7233ff91dec9c9458426d968206d5ada5b4900b6f89a80f17387d293fc81da3a0b120d514bdee5ae439a8439e3463044022043c48edef7becb0b27282797c2bd2949714e221c7825679bc82a347363b3b41902204fafb180fe6f4eeb92d68b97ee80a1694f7cbcd75b2fdfc3997494ac4ce2a2f84630440220236dc11f277a945226b844ad266e459dd912560a18c9486c1d899008c51ae8bf0220315e567ce4f5b216561a2765687a0a9b019a1f9197fe1a5fe9a5c63dc0ea50f66d6d6d6d6d6d6d6d7500000000",
+        "transfer_output_index": 1
+      },
+      "expected": {
+        "structure_valid": true,
+        "signature_valid": true,
+        "binding_valid": false,
+        "reason": "state-mismatch"
+      },
+      "tags": [
+        "error-case"
+      ]
+    }
+  ]
+}

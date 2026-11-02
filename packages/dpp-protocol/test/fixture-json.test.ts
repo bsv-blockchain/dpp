@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Hash, Utils } from '@bsv/sdk'
-import { canonicalBytes, canonicalString } from '../src/index.js'
+import { canonicalBytes, canonicalString, inspectManagedAcceptance } from '../src/index.js'
 import { RECORD_V1_FIXTURE } from './record-v1-fixture.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
 import { recordV1Vectors } from './record-v1-vectors.js'
@@ -14,8 +14,8 @@ import { recordV2Fixture } from './record-v2-fixture.js'
 import { recordV2Vectors } from './record-v2-vectors.js'
 import { chainV2Fixture } from './chain-v2-fixture.js'
 import { chainV2Vectors } from './chain-v2-vectors.js'
-import { managedAcceptanceV1Fixture } from './managed-acceptance-v1-fixture.js'
-import { managedAcceptanceV1Vectors } from './managed-acceptance-v1-vectors.js'
+import { managedAcceptanceV2Fixture } from './managed-acceptance-v2-fixture.js'
+import { managedAcceptanceV2Vectors } from './managed-acceptance-v2-vectors.js'
 import { managedInstructionV1Fixture } from './managed-instruction-v1-fixture.js'
 import { managedInstructionV1Vectors } from './managed-instruction-v1-vectors.js'
 import { evidenceV2Fixture } from './evidence-v2-fixture.js'
@@ -137,11 +137,22 @@ describe('the published fixture files', () => {
     expectStackShape(vectors as never)
   })
 
-  it('managed-acceptance-v1.json is managedAcceptanceV1Fixture(), verbatim, and vectors/dpp/managed-acceptance/v1.json its vector form', async () => {
-    const generated = await managedAcceptanceV1Fixture()
-    expectPublished('managed-acceptance-v1.json', generated)
-    const vectors = managedAcceptanceV1Vectors(generated)
-    expectPublished('vectors/dpp/managed-acceptance/v1.json', vectors)
+  it('managed-acceptance-v1.json and vectors/dpp/managed-acceptance/v1.json are frozen: the superseded format, read under its own rule and never regenerated', () => {
+    // No generator: nothing writes dpp-managed-acceptance@1 any more, and the
+    // published bytes are the pin of what a reader must still verify (§9).
+    const published = JSON.parse(readFileSync(join(FIXTURES, 'managed-acceptance-v1.json'), 'utf8'))
+    expect(published.record.acceptanceFormat).toBe('dpp-managed-acceptance@1')
+    expect(inspectManagedAcceptance(published.record)).toMatchObject({ structureValid: true, signatureValid: true, commitment: published.commitment, failures: [] })
+    const vectors = JSON.parse(readFileSync(join(FIXTURES, 'vectors', 'dpp', 'managed-acceptance', 'v1.json'), 'utf8'))
+    expect(vectors.id).toBe('dpp.managedacceptance.v1')
+    expectStackShape(vectors as never)
+  })
+
+  it('managed-acceptance-v2.json is managedAcceptanceV2Fixture(), verbatim, and vectors/dpp/managed-acceptance/v2.json its vector form', async () => {
+    const generated = await managedAcceptanceV2Fixture()
+    expectPublished('managed-acceptance-v2.json', generated)
+    const vectors = managedAcceptanceV2Vectors(generated)
+    expectPublished('vectors/dpp/managed-acceptance/v2.json', vectors)
     expectStackShape(vectors as never)
   })
 

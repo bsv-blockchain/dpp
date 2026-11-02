@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-11",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, beside the unchanged @bsv/dpp-credentials 0.2.0-beta.5. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; a managed custodian writes for a holder only on a committed dpp-managed-instruction@1 record, refused as instruction-commitment-absent where an index selects the rule; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.12.0-draft and the registry contract 0.5.0. Record versions, the custody profile and the conformance claims are those of dpp-release-2026-10-10. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, beside the unchanged @bsv/dpp-credentials 0.2.0-beta.5. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; a managed custodian writes for a holder only on a committed dpp-managed-instruction@1 record, refused as instruction-commitment-absent where an index selects the rule; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.12.0-draft and the registry contract 0.5.0. The custody profile is managed-custody@2: the custodian signs its acceptance and instruction records with a derived key through the wallet's createSignature (bsv-blockchain/dpp-issues#78), and dpp-managed-acceptance@1 records are read and never written. Record versions and the other conformance claims are those of dpp-release-2026-10-10. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-11.json",
   "runtime": {
@@ -295,15 +295,16 @@
     ],
     "nativeClaim": "dpp-lifecycle-v1",
     "anchor": "bsv-attestation-anchor-v1",
-    "acceptanceRecord": "dpp-managed-acceptance@1",
+    "acceptanceRecord": "dpp-managed-acceptance@2",
     "verificationReport": "1",
     "overlayContract": "0.12.0-draft"
   },
   "custody": {
-    "selected": "managed-custody@1",
+    "selected": "managed-custody@2",
     "profile": "custody",
     "specification": "spec/managed-custody.md",
     "alsoSupported": [
+      "managed-custody@1 records, read under spec/managed-custody.md section 9 and never written",
       "record-model-baseline@2",
       "owner-signed transfer (spec/custody.md section 4) for version 1 lineages"
     ]
@@ -335,7 +336,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "308514bec869ea38d7d1f0994eaf3b44d4efe4e15d5814ccf5604bb5807dedb2",
+      "sha256": "22a77b0832449008ac72fa3a4a9dadf4a3618091abc592966d495f2a7e71d45e",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
@@ -420,17 +421,27 @@
     },
     {
       "path": "conformance/baseline-native-3.json",
-      "sha256": "fde17c192759644f7614a115ebb4baaa1313725d6f41437055f5d2a8b71f2fb1",
+      "sha256": "fb4a157c3129c83dc8bbd405e55d4fb39cd154a7c8b5afada86b77f7c66b9762",
       "pins": "the proposed baseline for the carried record, with every fixture digest"
     },
     {
+      "path": "fixtures/managed-acceptance-v2.json",
+      "sha256": "93bd39f22d8d05a8a3e2b4f3e3082fd9b02726d101d86b4ce80e85e0b573b55f",
+      "pins": "the acceptance record a managed custodian signs with its derived key, with its binding and seven refusals"
+    },
+    {
+      "path": "fixtures/vectors/dpp/managed-acceptance/v2.json",
+      "sha256": "29cb9f8fa4a2260e8f0062479aba174d9fd3427d7753f27687619b5ef08d0905",
+      "pins": "the same record in the stack vector format"
+    },
+    {
       "path": "fixtures/managed-instruction-v1.json",
-      "sha256": "a1caa9272dbd120806c252d8d93439da6c985beac7e2229ba3a84d0f73532834",
-      "pins": "the instruction record a managed custodian commits to after a hand on, with its binding and six refusals"
+      "sha256": "20d38ee1ecd2d94a0a28b6f5468758f24f57a4789720a8b738f7b2a9e8e7af66",
+      "pins": "the instruction record a managed custodian commits to after a hand on, with its binding and seven refusals"
     },
     {
       "path": "fixtures/vectors/dpp/managed-instruction/v1.json",
-      "sha256": "35c6d8e844ee0d27c07b12687373964d3e1449850d2f79a57479f901740700c2",
+      "sha256": "a4913f07a1b5ff64e85e18d623b0aafcb38a1cc0eafc75710940f82a02c44e2f",
       "pins": "the same record in the stack vector format"
     },
     {

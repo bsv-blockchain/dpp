@@ -75,6 +75,16 @@
       "disposition": "required"
     },
     {
+      "id": "managed-custody-2",
+      "kind": "component",
+      "disposition": "required"
+    },
+    {
+      "id": "managed-custody-2-writer",
+      "kind": "component",
+      "disposition": "required"
+    },
+    {
       "id": "gs1-discovery-1",
       "kind": "component",
       "disposition": "required"

@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-01",
+  "updatedAt": "2026-11-02",
   "sources": [
     {
       "id": "spec-record-model",
@@ -48,7 +48,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/custody.md",
-      "digest": "d2878f986eaac18ff7fd3daa828f109f7cdd639f2970193a092b56e045ad568f"
+      "digest": "38dbc4f474eccdcde890d27746c33578ef786e9ab3d7e7dbce95652eb5092a74"
     },
     {
       "id": "spec-managed-custody",
@@ -56,7 +56,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/managed-custody.md",
-      "digest": "92149b0cfd0139deea73e6f2811234090e3e326f874a4de1c6b2fd29a4992c01"
+      "digest": "4f354d0cdb88e9201e67330d8197b7dc9d6937ec787d56970dc3baa3460e0840"
     },
     {
       "id": "spec-writing",
@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "a994194af83a135c670ea9d1ac7107d06ffa790d6e2d2418a551ca2cb6e9f066"
+      "digest": "0946571580545320573ad08371ceab84257a20d161e90d7967dde8cac7204ead"
     },
     {
       "id": "spec-verification",
@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "ec4b558e2c17dbf0c4417f22884cc76bc434da79b59313bb5599b52b70e88496"
+      "digest": "8dbb2085df152bcddfd8b68f52ca9b7e94511d145230466a219e88e48e43e89e"
     },
     {
       "id": "spec-conformance",
@@ -152,7 +152,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "308514bec869ea38d7d1f0994eaf3b44d4efe4e15d5814ccf5604bb5807dedb2"
+      "digest": "22a77b0832449008ac72fa3a4a9dadf4a3618091abc592966d495f2a7e71d45e"
     },
     {
       "id": "spec-profiles",
@@ -442,7 +442,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/portable-evidence.md",
-      "digest": "2566750d20abe4224749f3c7c912554268135a80a0e2dd93d144ec7ea5eda246"
+      "digest": "68ce9a38630c2f23005fe3fc740ac9cd6b37d398af21a617975b49e034a3ff46"
     },
     {
       "id": "contract-evidence-package",
@@ -1633,15 +1633,15 @@
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "The dpp-managed-acceptance@1 record: its exact properties and bounds, the nested canonical JSON, the custodian's direct signature over the unsigned form, the SHA-256 commitment over the signed form, the time order and the named-recipient consistency, with structure, signature and time order reported separately.",
+      "summary": "The dpp-managed-acceptance@2 record: its exact properties and bounds, the nested canonical JSON, the custodian's signature over the unsigned form under the derived key of §3, the SHA-256 commitment over the signed form, the time order and the named-recipient consistency, with structure, signature and time order reported separately; the superseded dpp-managed-acceptance@1 is read under §9.",
       "layer": "profile",
       "roles": [
         "passport-reader",
         "passport-writer",
         "registry"
       ],
-      "applicability": "when managed-custody@1 is selected",
-      "profileId": "managed-custody@1",
+      "applicability": "when managed-custody@2 is selected",
+      "profileId": "managed-custody@2",
       "implementationRefs": [
         "packages/dpp-protocol/src/acceptance.ts#inspectManagedAcceptance",
         "packages/dpp-protocol/src/acceptance.ts#acceptanceCommitment",
@@ -1652,20 +1652,59 @@
         "conformance/independent/python/dpp_verify.py"
       ],
       "evidenceRefs": [
-        "fixtures/managed-acceptance-v1.json",
-        "fixtures/vectors/dpp/managed-acceptance/v1.json"
+        "fixtures/managed-acceptance-v2.json",
+        "fixtures/vectors/dpp/managed-acceptance/v2.json"
       ],
-      "status": "tested",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers"
+      "status": "independently-tested",
+      "reviewedAt": "2026-11-02",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#78): the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. The Python verifier reproduces the preimage, the derived verification key, the signature, the commitment, the binding and the seven refusals from the fixture."
+    },
+    {
+      "id": "MC-3-custodian-signing",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "The custodian signs acceptance and instruction records with the BRC-42 child of its identity key for [1, 'dpp managed record v1'], key identifier requestId and counterparty anyone, the BRC-100 createSignature operation, one derivation from its root with no key export; a verifier derives the key from the record's custodian property; a record signed with the identity key directly, or from another root, is refused as signature-invalid.",
+      "layer": "profile",
+      "roles": [
+        "passport-writer",
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "when managed-custody@2 is selected",
+      "profileId": "managed-custody@2",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/constants.ts#MANAGED_RECORD_PROTOCOL_ID",
+        "packages/dpp-protocol/src/acceptance.ts#managedRecordVerificationKey",
+        "packages/dpp-protocol/src/acceptance.ts#signManagedAcceptance",
+        "packages/dpp-protocol/src/instruction.ts#signManagedInstruction"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/acceptance.test.ts",
+        "packages/dpp-protocol/test/instruction.test.ts",
+        "conformance/independent/python/dpp_verify.py",
+        "examples/lifecycle-v2.mjs"
+      ],
+      "evidenceRefs": [
+        "fixtures/managed-acceptance-v2.json#refusals.directlySigned",
+        "fixtures/managed-acceptance-v2.json#refusals.strangerSigned",
+        "fixtures/managed-instruction-v1.json#refusals.directlySigned",
+        "fixtures/vectors/dpp/managed-acceptance/v2.json"
+      ],
+      "status": "independently-tested",
+      "reviewedAt": "2026-11-02",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#78). The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim."
     },
     {
       "sourceId": "spec-managed-custody",
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "layer": "profile",
-      "profileId": "managed-custody@1",
-      "reviewedAt": "2026-11-01",
+      "profileId": "managed-custody@2",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "id": "MC-2-lock-placement",
       "clause": "§2",
@@ -1673,7 +1712,7 @@
       "roles": [
         "passport-writer"
       ],
-      "applicability": "when a custodian or wallet spends a tip under managed-custody@1",
+      "applicability": "when a custodian or wallet spends a tip under managed-custody@2",
       "implementationRefs": [
         "examples/lifecycle-v2.mjs",
         "docs/packages/build-an-application.md"
@@ -1698,8 +1737,8 @@
         "passport-writer",
         "overlay"
       ],
-      "applicability": "when managed-custody@1 is selected",
-      "profileId": "managed-custody@1",
+      "applicability": "when managed-custody@2 is selected",
+      "profileId": "managed-custody@2",
       "implementationRefs": [
         "packages/dpp-protocol/src/acceptance.ts#bindAcceptanceToState",
         "packages/dpp-protocol/src/verifyChain.ts",
@@ -1716,7 +1755,7 @@
         "fixtures/chain-v2.json#refusals.transferWithoutCommitment"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1730,8 +1769,8 @@
       "roles": [
         "passport-writer"
       ],
-      "applicability": "when managed-custody@1 is selected",
-      "profileId": "managed-custody@1",
+      "applicability": "when managed-custody@2 is selected",
+      "profileId": "managed-custody@2",
       "implementationRefs": [
         "examples/lifecycle-v2.mjs"
       ],
@@ -1740,7 +1779,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "notes": "A writer duty, self-reported one sentence per rule as GOVERNANCE.md describes; the example demonstrates the sequence and the refusals from fresh keys, and the consuming application's handover service implements the idempotency, decline and expiry in its own suite."
     },
@@ -1756,8 +1795,8 @@
         "passport-reader",
         "registry"
       ],
-      "applicability": "when managed-custody@1 is selected",
-      "profileId": "managed-custody@1",
+      "applicability": "when managed-custody@2 is selected",
+      "profileId": "managed-custody@2",
       "implementationRefs": [
         "packages/dpp-protocol/src/evidence.ts"
       ],
@@ -1773,7 +1812,7 @@
         "fixtures/evidence-v2.json#cases.v2-transfer-without-commitment"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1782,15 +1821,15 @@
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "clause": "§5",
-      "summary": "The custodian includes every acceptance record it signs in every evidence package it exports, under authority as dpp-managed-acceptance@1 keyed by commitment; another exporter includes what it holds and declares the rest absent by commitment; a reader takes the records from the package as the history's acceptance records; no route serves a record on its own.",
+      "summary": "The custodian includes every acceptance record it signs in every evidence package it exports, under authority with the record's own format literal as its representation, keyed by commitment; another exporter includes what it holds and declares the rest absent by commitment; a reader takes the records from the package as the history's acceptance records; no route serves a record on its own.",
       "layer": "profile",
       "roles": [
         "registry",
         "overlay",
         "passport-reader"
       ],
-      "applicability": "when managed-custody@1 is selected and evidence leaves an operator",
-      "profileId": "managed-custody@1",
+      "applicability": "when managed-custody@2 is selected and evidence leaves an operator",
+      "profileId": "managed-custody@2",
       "implementationRefs": [
         "packages/dpp-protocol/src/evidencePackage.ts#acceptanceRecordsInPackage"
       ],
@@ -1799,7 +1838,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-01",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#85): the package is the route. The core reads the records out of a package; the reference custodian's export (bsv-blockchain-demos/dpp-app) does not yet include them, and the overlay's export cannot, because an index holds no records."
     },
@@ -1808,17 +1847,17 @@
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "layer": "profile",
-      "profileId": "managed-custody@1",
-      "reviewedAt": "2026-11-01",
+      "profileId": "managed-custody@2",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "id": "MC-6-instruction-record",
       "clause": "§6",
-      "summary": "The dpp-managed-instruction@1 record: its exact properties and bounds, the nested canonical form, the custodian's direct signature, and the commitment an UPDATE or RETIRE carries in field 15; structure, signature and binding reported apart.",
+      "summary": "The dpp-managed-instruction@1 record: its exact properties and bounds, the nested canonical form, the custodian's signature under the derived key of §3, and the commitment an UPDATE or RETIRE carries in field 15; structure, signature and binding reported apart.",
       "roles": [
         "passport-writer",
         "passport-reader"
       ],
-      "applicability": "when managed-custody@1 is selected and a custodian writes for a holder after a committed TRANSFER",
+      "applicability": "when managed-custody@2 is selected and a custodian writes for a holder after a committed TRANSFER",
       "implementationRefs": [
         "packages/dpp-protocol/src/instruction.ts"
       ],
@@ -1828,7 +1867,8 @@
       ],
       "evidenceRefs": [
         "fixtures/managed-instruction-v1.json",
-        "fixtures/vectors/dpp/managed-instruction/v1.json"
+        "fixtures/vectors/dpp/managed-instruction/v1.json",
+        "fixtures/managed-instruction-v1.json#refusals.directlySigned"
       ],
       "status": "independently-tested",
       "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#92): writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the six refusals from the fixture."
@@ -1838,8 +1878,8 @@
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "layer": "profile",
-      "profileId": "managed-custody@1",
-      "reviewedAt": "2026-11-01",
+      "profileId": "managed-custody@2",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "id": "MC-6-instruction-binding",
       "clause": "§6",
@@ -1867,8 +1907,8 @@
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "layer": "profile",
-      "profileId": "managed-custody@1",
-      "reviewedAt": "2026-11-01",
+      "profileId": "managed-custody@2",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "id": "MC-6-instruction-rule",
       "clause": "§6",
@@ -1904,13 +1944,13 @@
       "sourceUri": "spec/managed-custody.md",
       "sourceVersion": "working draft",
       "clause": "§7",
-      "summary": "An index or verifier declares the profile as a custody profile entry managed-custody@1 with acceptanceCommitment required and its control authorities, or record-model-baseline@2 when it does not require the commitment; the reference index selects it with ACCEPTANCE_COMMITMENT=required and names authorities with CONTROL_AUTHORITIES; and instructionCommitment as required or not-selected.",
+      "summary": "An index or verifier declares the profile as a custody profile entry managed-custody@2 (managed-custody@1 names the superseded version) with acceptanceCommitment required and its control authorities, or record-model-baseline@2 when it does not require the commitment; the reference index selects it with ACCEPTANCE_COMMITMENT=required and names authorities with CONTROL_AUTHORITIES; and instructionCommitment as required or not-selected.",
       "layer": "role",
       "roles": [
         "overlay"
       ],
       "applicability": "when version 2 states are admitted",
-      "profileId": "managed-custody@1",
+      "profileId": "managed-custody@2",
       "implementationRefs": [
         "packages/dpp-overlay/src/capabilities.ts",
         "packages/dpp-overlay/src/index.ts#versionTwoAdmission"
@@ -1923,8 +1963,39 @@
         "conformance/examples/capabilities-reference-node.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-01",
+      "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "MC-9-version-1-records",
+      "sourceId": "spec-managed-custody",
+      "sourceUri": "spec/managed-custody.md",
+      "sourceVersion": "working draft",
+      "clause": "§9",
+      "summary": "A dpp-managed-acceptance@1 record is read under its own rule, the signature verified against the custodian property directly, with every other check of §3 and §4 unchanged; no new record is written under it; a deployment declaring managed-custody@1 runs the superseded version.",
+      "layer": "profile",
+      "roles": [
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "when a dpp-managed-acceptance@1 record is presented",
+      "profileId": "managed-custody@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/acceptance.ts#inspectManagedAcceptance"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/acceptance.test.ts",
+        "packages/dpp-protocol/test/fixture-json.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/managed-acceptance-v1.json",
+        "fixtures/vectors/dpp/managed-acceptance/v1.json"
+      ],
+      "status": "independently-tested",
+      "reviewedAt": "2026-11-02",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The version 1 fixture is frozen and never regenerated: it is the pin of what a reader must still verify."
     },
     {
       "id": "RULES-3-native-claim",
@@ -6139,9 +6210,9 @@
     {
       "id": "managed-custody-1",
       "minimumStatus": "tested",
-      "description": "The managed-custody@1 profile as this repository implements and verifies it: the acceptance record, its binding to the TRANSFER, the report, the index's admission and declaration. The offer lifecycle is a writer duty and is a separate, self-reported claim.",
+      "description": "The superseded managed-custody@1 profile: records signed with the custodian's identity key directly, read under spec/managed-custody.md §9, with the acceptance record's binding, the report, the index's admission and declaration as version 2 defines them. Demonstrated in September 2026; nothing writes version 1 any more.",
       "requires": [
-        "MC-3-acceptance-record",
+        "MC-9-version-1-records",
         "MC-4-transfer-binding",
         "MC-5-verification-report",
         "MC-7-declaration",
@@ -6154,9 +6225,37 @@
       "id": "managed-custody-1-writer",
       "role": "passport-writer",
       "minimumStatus": "implemented",
-      "description": "A writer under managed-custody@1: offers idempotent by request, one acceptance per offer, no chain state on decline or expiry, one TRANSFER per acceptance; self-reported beside the reference example.",
+      "description": "A writer under the superseded managed-custody@1: offers idempotent by request, one acceptance per offer, no chain state on decline or expiry, one TRANSFER per acceptance; self-reported beside the reference example, which now writes version 2.",
       "requires": [
         "MC-4-offer-lifecycle",
+        "MC-4-transfer-binding",
+        "WR-2-verify-before-send",
+        "WR-4-one-writer"
+      ]
+    },
+    {
+      "id": "managed-custody-2",
+      "minimumStatus": "tested",
+      "description": "The managed-custody@2 profile as this repository implements and verifies it: the acceptance record signed with the custodian's derived key, its binding to the TRANSFER, the report, the index's admission and declaration. The offer lifecycle is a writer duty and is a separate, self-reported claim.",
+      "requires": [
+        "MC-3-acceptance-record",
+        "MC-3-custodian-signing",
+        "MC-4-transfer-binding",
+        "MC-5-verification-report",
+        "MC-7-declaration",
+        "SVC-2-version-2-admission",
+        "RM2-6-control-proof",
+        "RM2-8-commitment"
+      ]
+    },
+    {
+      "id": "managed-custody-2-writer",
+      "role": "passport-writer",
+      "minimumStatus": "implemented",
+      "description": "A writer under managed-custody@2: offers idempotent by request, one acceptance per offer, no chain state on decline or expiry, one TRANSFER per acceptance, every record signed through the wallet's createSignature; self-reported beside the reference example.",
+      "requires": [
+        "MC-4-offer-lifecycle",
+        "MC-3-custodian-signing",
         "MC-4-transfer-binding",
         "WR-2-verify-before-send",
         "WR-4-one-writer"

@@ -203,8 +203,31 @@ export const MAX_PAYLOAD_PUBLIC_BYTES_V2 = 65535
 /** An outpoint field: the 32-byte txid in display order, then the output index as four big-endian bytes. */
 export const OUTPOINT_FIELD_BYTES = 36
 
-/** The custody profile Part B delivers: managed custody with explicit recipient acceptance (`spec/managed-custody.md`). */
-export const MANAGED_CUSTODY_PROFILE = 'managed-custody@1'
+/**
+ * The managed custody profile (`spec/managed-custody.md`): a custodian holds
+ * the keys for parties who have no wallet, records the recipient's acceptance
+ * and the holder's instructions, and commits to those records on chain.
+ * Version 2 signs the records with a derived key (below); version 1 signed
+ * them with the custodian's identity key directly, which a BRC-100 wallet
+ * cannot do, and is superseded. A reader supports both; a writer writes
+ * version 2.
+ */
+export const MANAGED_CUSTODY_PROFILE = 'managed-custody@2'
+export const MANAGED_CUSTODY_PROFILE_V1 = 'managed-custody@1'
+
+/**
+ * The protocol under which a custodian signs its acceptance and instruction
+ * records (`spec/managed-custody.md` §3 and §6): the BRC-42 child of the
+ * custodian's identity key for this protocol identifier, the record's
+ * `requestId` as key identifier and counterparty 'anyone', made with the
+ * BRC-100 `createSignature` operation. One derivation from the root and no
+ * key export, so the custody constraint of `spec/custody.md` §1 holds for
+ * the custodian as it does for every other key role, and any third party
+ * derives the verification key from the record's `custodian` property alone.
+ * One identifier serves both record kinds: each record's signed bytes carry
+ * its own format literal, and the two shapes share no canonical form.
+ */
+export const MANAGED_RECORD_PROTOCOL_ID: WalletProtocol = [1, 'dpp managed record v1']
 
 /*
  * DPP Token Standard version 3, the token carrier (`spec/token-carrier.md`).

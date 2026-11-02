@@ -131,7 +131,7 @@ export class Custody {
     }
 
     const claim: ManagedAcceptanceClaim = {
-      acceptanceFormat: 'dpp-managed-acceptance@1',
+      acceptanceFormat: 'dpp-managed-acceptance@2',
       requestId: offer.requestId,
       passportId: offer.passportId,
       lineageGenesis: { txid: passport.states[0].txid, outputIndex: passport.states[0].outputIndex },
@@ -152,7 +152,7 @@ export class Custody {
       },
       custodian: wallet.identityKey,
     }
-    const record = await signManagedAcceptance(claim, wallet.acceptanceSigner)
+    const record = await signManagedAcceptance(claim, wallet.custodian)
     const inspection = inspectManagedAcceptance(record, { custodians: [wallet.identityKey] })
     if (!inspection.structureValid || !inspection.signatureValid || inspection.failures.length > 0) throw new WriteRefused('acceptance-invalid', `the acceptance record does not inspect clean: ${inspection.failures.map((f) => f.detail).join('; ')}`)
     offer.status = 'accepted'

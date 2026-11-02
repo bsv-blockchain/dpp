@@ -2,7 +2,7 @@ import { LockingScript, PrivateKey, Transaction, UnlockingScript, Utils } from '
 import { verifyPassportEvidence, type ExpectedSubject } from '../src/index.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
 import { chainV2Fixture } from './chain-v2-fixture.js'
-import { managedAcceptanceV1Fixture } from './managed-acceptance-v1-fixture.js'
+import { managedAcceptanceV2Fixture } from './managed-acceptance-v2-fixture.js'
 import { managedInstructionV1Fixture } from './managed-instruction-v1-fixture.js'
 import { materialise, type EvidenceCase } from './evidence-v1-fixture.js'
 import { PASSPORT_ID_V2, custodianPriv, idKey, issuerPriv } from './helpers-v2.js'
@@ -14,14 +14,14 @@ import { PASSPORT_ID_V2, custodianPriv, idKey, issuerPriv } from './helpers-v2.j
  * a state under a version this reader does not know. The report version is
  * unchanged; what is new is the evidence. **Duplicated verbatim** as
  * `fixtures/evidence-v2.json`, built from `chain-v2.json`,
- * `managed-acceptance-v1.json` and `chain-v1.json` and their published test
+ * `managed-acceptance-v2.json` and `chain-v1.json` and their published test
  * keys, so every case is reproducible with no wallet and no network.
  */
 export const EVIDENCE_V2_CHECKED_AT = '2027-06-01T12:00:00Z'
 
 export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; description: string; checkedAt: string; cases: EvidenceCase[] }> {
   const chain = await chainV2Fixture()
-  const acceptance = await managedAcceptanceV1Fixture()
+  const acceptance = await managedAcceptanceV2Fixture()
   const instruction = await managedInstructionV1Fixture()
   const raw = chain.states.map((s) => s.rawTx)
   const asked: ExpectedSubject = { passportId: PASSPORT_ID_V2, source: 'request-context' }
@@ -64,7 +64,7 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
       description: 'The same lineage with the acceptance record supplied and an authority policy naming the issuer and the custodian: the record binds to the TRANSFER, availability passes, and the custodian is an authorised acceptance custodian.',
       evidence: { tokenHistory: raw, acceptanceRecords: [acceptance.record] },
       expectedSubject: asked,
-      policy: { policyId: 'managed-custody@1/demonstration', publisherKeys: [custodian], managedAcceptance: { required: true }, chainTracker: 'scripts-only', authority: { required: true, genesisIssuers: [issuer], acceptanceCustodians: [custodian] } },
+      policy: { policyId: 'managed-custody@2/demonstration', publisherKeys: [custodian], managedAcceptance: { required: true }, chainTracker: 'scripts-only', authority: { required: true, genesisIssuers: [issuer], acceptanceCustodians: [custodian] } },
     },
     {
       id: 'v2-retired-tip-observed',
@@ -135,7 +135,7 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
       description: "The first three states followed by the holder's UPDATE that commits to the pinned instruction record, with both records supplied under an authority policy naming the custodian: linkage passes under both rules, both references are available and bind, and the custodian is authorised for both.",
       evidence: { tokenHistory: [...raw.slice(0, 3), instruction.update.rawTx], acceptanceRecords: [acceptance.record], instructionRecords: [instruction.record] },
       expectedSubject: asked,
-      policy: { policyId: 'managed-custody@1/demonstration', publisherKeys: [custodian], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts-only', authority: { required: true, genesisIssuers: [issuer], acceptanceCustodians: [custodian] } },
+      policy: { policyId: 'managed-custody@2/demonstration', publisherKeys: [custodian], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts-only', authority: { required: true, genesisIssuers: [issuer], acceptanceCustodians: [custodian] } },
     },
     {
       id: 'v2-instruction-not-supplied',

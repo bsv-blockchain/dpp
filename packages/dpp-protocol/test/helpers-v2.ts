@@ -114,13 +114,10 @@ export function termsDigestOf(terms: unknown): string {
 export const CLAIM_CODE = 'demo-claim-code-0001'
 export const claimCodeRef = (): string => Utils.toHex(Hash.sha256(Utils.toArray(CLAIM_CODE, 'utf8')))
 
-/** The custodian signing with its identity key, the same key that publishes. */
-export const custodianSigner = { sign: (preimage: number[]) => custodianPriv.sign(preimage).toDER() as number[] }
-
 /** The one acceptance record the fixture chain's TRANSFER commits to. */
 export async function fixtureAcceptanceClaim(genesis: Outpoint, predecessor: Outpoint): Promise<ManagedAcceptanceClaim> {
   return {
-    acceptanceFormat: 'dpp-managed-acceptance@1',
+    acceptanceFormat: 'dpp-managed-acceptance@2',
     requestId: 'offer-0001',
     passportId: PASSPORT_ID_V2,
     lineageGenesis: genesis,
@@ -184,7 +181,7 @@ export async function buildChainV2Fixture(): Promise<ChainV2Fixture> {
   const tx1 = stateTxV2(s1, lockKey, { tx: tx0, outputIndex: 0 })
   txs.push(tx1); states.push(s1); outputIndexes.push(0)
 
-  const acceptance = await signManagedAcceptance(await fixtureAcceptanceClaim(genesis, outpointOf(tx1, 0)), custodianSigner)
+  const acceptance = await signManagedAcceptance(await fixtureAcceptanceClaim(genesis, outpointOf(tx1, 0)), custodianWallet)
   const s2 = await signedStateV2(
     makeDataV2({
       op: 'TRANSFER',
