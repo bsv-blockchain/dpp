@@ -110,7 +110,7 @@ Template release set: ${manifest.dpp.releaseSet}.`)
       PORT: String(port), PUBLIC_URL: url, MONGO_DB: database,
       MONGO_INDEX_PASSWORD: mongoPassword, MONGO_ROOT_PASSWORD: randomBytes(32).toString('hex'),
       MONGO_URL: `mongodb://dpp_index:${mongoPassword}@mongo:27017/${database}?authSource=${database}`,
-      SUBMIT_TOKEN: randomBytes(32).toString('hex'), ARC_CALLBACK_TOKEN: randomBytes(32).toString('hex'),
+      PUBLISHER_TOKENS_FILE: 'config/publisher-tokens.json',
       EXPORT_TOKEN: randomBytes(32).toString('hex'), EXPORT_SIGNING_KEY: exporter.getPrivateKey().toString('hex').padStart(64, '0'),
     }
     const example = readFileSync(join(target, '.env.example'), 'utf8')

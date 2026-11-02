@@ -23,8 +23,9 @@ Fill in these settings before starting the containers:
 | Setting | Value to supply and why |
 |---|---|
 | `SERVICE_IDENTITY_KEY` | The publisher's compressed public identity key. The index uses it to check admitted passport signatures; it does not need the private key. |
-| `SUBMIT_TOKEN` | A secret shared with authorised writers for submission and retraction. |
-| `ARC_CALLBACK_TOKEN` | A separate secret for the proof-ingestion caller or broadcaster callback. |
+| `PUBLISHER_TOKENS_FILE` | A JSON file of per-publisher write tokens, hashed: each belongs to one publisher or anchoring key and one use, submit or callback. Without a file, an index with MongoDB keeps them in its database, which is this preset's case: issue them inside the container with `docker compose exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher <key> --use submit`. |
+| `SUBMIT_TOKEN` | An optional operator-wide secret for submission and retraction, accepted for any publisher beside the per-publisher tokens. |
+| `ARC_CALLBACK_TOKEN` | An optional operator-wide secret for the proof-ingestion caller or broadcaster callback. |
 | `NETWORK` | The blockchain network used by the wallet and header lookups. The preset defaults to `main`. |
 | `ACCEPTANCE_COMMITMENT` | The preset selects `required`, so clients need the managed-custody acceptance commitment for version 2 transfers. |
 | `INSTRUCTION_COMMITMENT` | Unset in the preset. `required` selects the profile's instruction rule: after a committed transfer, an update or retirement needs the holder's instruction commitment unless a control authority made it. Turn it on once every writer of the index records instructions. |
@@ -39,7 +40,7 @@ console.log(fixture.custodianKey)
 JS
 ```
 
-That key belongs to synthetic data; choose the actual publisher key for a deployment. Generate each bearer token separately, for example with `openssl rand -hex 32`, and put the values in the local environment file. Each of `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN` and `EXPORT_TOKEN` is one shared secret: everyone you give it to holds the same value, the index cannot tell them apart, and taking access away from one means replacing the value for all ([known limitations](limitations.md#index-host)). Leave `SERVER_PRIVATE_KEY` empty.
+That key belongs to synthetic data; choose the actual publisher key for a deployment. Give each writer its own tokens: `docker compose exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher <key> --use submit`, and the same with `--use callback`, print a token once and store its SHA-256 in the preset's MongoDB (`PUBLISHER_TOKENS_FILE` names a mounted file instead, where an operator prefers one); the index accepts a token only for states that key countersigned or anchors naming it, answers `403 token-publisher-mismatch` otherwise, and `tokens revoke` takes one writer's access away without touching the others. `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` remain as operator-wide secrets that everyone you give them to shares, and `EXPORT_TOKEN` is one such secret for the complete export; generate those with `openssl rand -hex 32` ([known limitations](limitations.md#index-host)). Leave `SERVER_PRIVATE_KEY` empty.
 
 ## Start and inspect
 

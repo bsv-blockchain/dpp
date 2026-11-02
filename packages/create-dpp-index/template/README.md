@@ -32,8 +32,8 @@ Copy the settings from `.app.env` into the app's server-side `.env`:
 | --- | --- | --- |
 | `NETWORK` | `NETWORK` | Must match the application wallet |
 | `INDEX_URL` | `PUBLIC_URL` | Address reachable from the app server |
-| `INDEX_SUBMIT_TOKEN` | `SUBMIT_TOKEN` | Submit and retract transactions |
-| `INDEX_CALLBACK_TOKEN` | `ARC_CALLBACK_TOKEN` | Deliver verified Merkle proofs |
+| `INDEX_SUBMIT_TOKEN` | Issued by `connection` into `config/publisher-tokens.json` | Submit and retract transactions the app's publisher key signed |
+| `INDEX_CALLBACK_TOKEN` | Issued by `connection` into `config/publisher-tokens.json` | Deliver verified Merkle proofs for those transactions |
 
 These are the settings used by the app starter. Keep tokens out of browser environment variables and client code. The index public key must equal the application's **publisher wallet identity key**, which the app's `npm run wallet` prints. An end user's sign-in or brand identity is a different role.
 
@@ -43,7 +43,7 @@ An app in a container cannot use `localhost` to reach another container. Set the
 npm run connection -- --url https://index.example.org
 ```
 
-Do not copy MongoDB maintenance credentials or the export signing key to the app. Re-run `connection` after changing tokens; it replaces `.app.env`. Restart the app after applying its new settings. If the app already starts its own index in Compose, run that app's required services without its bundled index so ports and routing are unambiguous.
+Do not copy MongoDB maintenance credentials or the export signing key to the app. Each token belongs to the app's publisher key and one use; the index stores their SHA-256 in `config/publisher-tokens.json`, reads the file without a restart, and accepts a token only for what that key signed. Re-run `connection` to rotate them: it revokes the app's earlier records, issues new ones and replaces `.app.env`. Another publisher gets its own tokens with `npm run tokens -- issue --publisher <key> --use submit` and the same with `--use callback`; `npm run tokens -- list` and `npm run tokens -- revoke --sha256 <digest>` manage them. The script reads `.env` for the file's path. Restart the app after applying its new settings. If the app already starts its own index in Compose, run that app's required services without its bundled index so ports and routing are unambiguous.
 
 ## Required and optional
 

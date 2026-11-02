@@ -12,7 +12,7 @@ node scripts/connection.mjs --json
 
 The Node commands produce JSON and return a non-zero status on failure. `doctor` is read-only. Offline success checks configuration; online success adds HTTP capabilities. Neither establishes successful application writes, settlement, database durability after a failure, or production readiness.
 
-`connection` creates or replaces `.app.env` with private server-side settings. It does not print tokens. Do not paste `.env`, `.app.env`, MongoDB URIs, export keys or advertiser keys into logs, reports or browser code. Read environment variable names from `.env.example` without exposing their populated values.
+`connection` issues the application's per-publisher tokens into `config/publisher-tokens.json` (hashed) and creates or replaces `.app.env` with private server-side settings. It does not print tokens. Do not paste `.env`, `.app.env`, MongoDB URIs, export keys or advertiser keys into logs, reports or browser code. Read environment variable names from `.env.example` without exposing their populated values.
 
 Keep header verification enabled. Do not resolve admission failures by bypassing it, clearing publisher restrictions or adding control authorities. Match the app's publisher key, network, custody profile and token scopes, then inspect the actual refusal.
 

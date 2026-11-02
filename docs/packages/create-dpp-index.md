@@ -35,7 +35,7 @@ npm run connection
 
 The generator installs dependencies unless you pass `--no-install`. `up` builds from your lockfile and starts the index and MongoDB. The HTTP port is published on loopback; MongoDB's port remains private. `doctor` checks the running network, version, topics, custody profile and publisher keys.
 
-`connection` saves a private `.app.env` with `INDEX_URL`, `INDEX_SUBMIT_TOKEN`, `INDEX_CALLBACK_TOKEN` and `NETWORK`, using the app starter's existing settings. Copy those into the app's server environment and restart it. For separate hosts, use `npm run connection -- --url https://index.example.org`. An app in a container needs an address reachable from that container; its `localhost` is its own container.
+`connection` issues the application's submit and callback tokens for the index's publisher key into `config/publisher-tokens.json`, hashed, which the running index reads without a restart, and saves a private `.app.env` with `INDEX_URL`, `INDEX_SUBMIT_TOKEN`, `INDEX_CALLBACK_TOKEN` and `NETWORK`, using the app starter's existing settings. Copy those into the app's server environment and restart it. For separate hosts, use `npm run connection -- --url https://index.example.org`. An app in a container needs an address reachable from that container; its `localhost` is its own container.
 
 ## What is included
 
@@ -43,7 +43,7 @@ The generator installs dependencies unless you pass `--no-install`. `up` builds 
 | --- | --- |
 | Passport and attestation topics on one service | Publisher public keys and network |
 | Persistent MongoDB with a dedicated user | Bundled Docker MongoDB or a managed database |
-| Separate submit, proof-delivery and complete-export tokens | Which trusted service receives each scope |
+| Per-publisher submit and callback tokens, and a separate complete-export token | Which application holds each token; one is revoked without touching the others |
 | Managed custody admission, as the app starter writes | Admitting self-custody states, by environment setting; no starter app writes them yet |
 | Header verification enabled | Header-source credentials and quota |
 | Evidence export with a separate signing key | Disable exports if you do not provide them |

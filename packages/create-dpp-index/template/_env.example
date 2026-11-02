@@ -21,9 +21,13 @@ MONGO_INDEX_PASSWORD=
 # Maintenance credentials for the bundled MongoDB, never given to the index.
 MONGO_ROOT_PASSWORD=
 
-# Three separate scopes. The generator supplies independent random tokens.
+# Write access is per publisher: `npm run connection` issues the application's
+# submit and callback tokens into this file, hashed; the running index reads it.
+PUBLISHER_TOKENS_FILE=config/publisher-tokens.json
+# Optional operator-wide tokens beside the per-publisher ones; normally empty.
 SUBMIT_TOKEN=
 ARC_CALLBACK_TOKEN=
+# The complete-export route's own token. The generator supplies a random value.
 EXPORT_TOKEN=
 # A separate key signs portable evidence packages. It is not a publisher/wallet key.
 EXPORT_SIGNING_KEY=

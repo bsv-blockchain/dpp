@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -40,7 +41,10 @@ test('a fresh project has private independent secrets, pins and no secret output
   assert.equal(env.ANCHOR_SERVICE_KEYS, publisher)
   assert.equal(env.ACCEPTANCE_COMMITMENT, 'required')
   assert.equal(env.CHAIN_TRACKER, '')
-  const secrets = ['SUBMIT_TOKEN', 'ARC_CALLBACK_TOKEN', 'EXPORT_TOKEN', 'EXPORT_SIGNING_KEY', 'MONGO_INDEX_PASSWORD', 'MONGO_ROOT_PASSWORD'].map(key => env[key])
+  assert.equal(env.PUBLISHER_TOKENS_FILE, 'config/publisher-tokens.json')
+  assert.equal(env.SUBMIT_TOKEN, '')
+  assert.equal(env.ARC_CALLBACK_TOKEN, '')
+  const secrets = ['EXPORT_TOKEN', 'EXPORT_SIGNING_KEY', 'MONGO_INDEX_PASSWORD', 'MONGO_ROOT_PASSWORD'].map(key => env[key])
   assert.equal(new Set(secrets).size, secrets.length)
   for (const secret of secrets) {
     assert.match(secret, /^[0-9a-f]{64}$/)
@@ -55,7 +59,7 @@ test('a fresh project has private independent secrets, pins and no secret output
   assert.ok(!readdirSync(target).some(name => name.startsWith('_')))
   const second = join(parent, 'second')
   assert.equal(create(second).status, 0)
-  assert.notEqual(parseEnv(readFileSync(join(second, '.env'), 'utf8')).SUBMIT_TOKEN, env.SUBMIT_TOKEN)
+  assert.notEqual(parseEnv(readFileSync(join(second, '.env'), 'utf8')).EXPORT_TOKEN, env.EXPORT_TOKEN)
   const tests = spawnSync(process.execPath, ['--test', 'test/config.test.mjs'], { cwd: target, encoding: 'utf8' })
   assert.equal(tests.status, 0, tests.stdout + tests.stderr)
 })
@@ -101,17 +105,31 @@ test('existing work and symlink targets are preserved', t => {
   }
 })
 
-test('connection file uses the app contract, hides credentials and stays private on refresh', t => {
+test('connection issues the app\'s per-publisher tokens into the token file, hides them, and keeps them on refresh', t => {
   const target = directory(t)
   assert.equal(create(target).status, 0)
-  const env = parseEnv(readFileSync(join(target, '.env'), 'utf8'))
+  let previous
   for (let pass = 0; pass < 2; pass++) {
     const result = spawnSync(process.execPath, ['scripts/connection.mjs', '--json', '--url', 'https://index.example.org'], { cwd: target, encoding: 'utf8' })
     assert.equal(result.status, 0, result.stderr)
     assert.equal(JSON.parse(result.stdout).ok, true)
-    assert.ok(!result.stdout.includes(env.SUBMIT_TOKEN))
     const app = parseEnv(readFileSync(join(target, '.app.env'), 'utf8'))
-    assert.deepEqual(app, { NETWORK: 'main', INDEX_URL: 'https://index.example.org', INDEX_SUBMIT_TOKEN: env.SUBMIT_TOKEN, INDEX_CALLBACK_TOKEN: env.ARC_CALLBACK_TOKEN })
+    assert.deepEqual(Object.keys(app).sort(), ['INDEX_CALLBACK_TOKEN', 'INDEX_SUBMIT_TOKEN', 'INDEX_URL', 'NETWORK'])
+    assert.equal(app.NETWORK, 'main')
+    assert.equal(app.INDEX_URL, 'https://index.example.org')
+    for (const token of [app.INDEX_SUBMIT_TOKEN, app.INDEX_CALLBACK_TOKEN]) {
+      assert.match(token, /^[0-9a-f]{64}$/)
+      assert.ok(!result.stdout.includes(token))
+    }
+    const file = JSON.parse(readFileSync(join(target, 'config', 'publisher-tokens.json'), 'utf8'))
+    assert.equal(file.format, 'dpp-publisher-tokens@1')
+    const live = file.tokens.filter(entry => !entry.revokedAt)
+    assert.deepEqual(live.map(entry => [entry.use, entry.label, entry.publisherKey]).sort(), [['callback', 'app:callback', publisher], ['submit', 'app:submit', publisher]])
+    assert.ok(!JSON.stringify(file).includes(app.INDEX_SUBMIT_TOKEN))
+    assert.equal(live.find(entry => entry.use === 'submit').sha256, createHash('sha256').update(app.INDEX_SUBMIT_TOKEN).digest('hex'))
+    if (previous) assert.deepEqual(app, previous)
+    if (process.platform !== 'win32') assert.equal(statSync(join(target, 'config', 'publisher-tokens.json')).mode & 0o777, 0o644)
+    previous = app
     if (process.platform !== 'win32') assert.equal(statSync(join(target, '.app.env')).mode & 0o777, 0o600)
   }
 })

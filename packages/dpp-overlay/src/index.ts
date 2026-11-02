@@ -84,7 +84,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { timingSafeEqual } from 'node:crypto'
 import { realpathSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { MongoClient } from 'mongodb'
+import { MongoClient, type Db } from 'mongodb'
 import {
   MerklePath,
   PrivateKey,
@@ -98,6 +98,10 @@ import { Engine, type LookupService } from '@bsv/overlay'
 import { DppTopicManager, DPP_TOPIC, type AdmissionRefusals } from './tmDpp.js'
 import { DppLookupService, DPP_SERVICE } from './lsDpp.js'
 import { InMemoryDppStorage, MongoDppStorage, type DppRecordStore } from './storage.js'
+import { findDppOutputs, verifyServerSignature } from '@bsv/dpp-protocol'
+import { tokenDigest, tokenStoreFromEnvironment, writeAccessWarnings, type PublisherTokenStore, type TokenUse } from './publisherTokens.js'
+import { identityKeyFromDidKey, tryParseUoraAnchor } from './uoraAnchor.js'
+import { decodeAttestationAnchor } from './attestationAnchor.js'
 import { InMemoryOverlayStorage, MongoOverlayStorage, type RetractableStorage } from './engineStorage.js'
 import { UoraAnchorTopicManager } from './tmUoraDpp.js'
 import { UoraAnchorLookupService, UORA_SERVICE, UORA_TOPIC } from './lsUoraDpp.js'
@@ -173,6 +177,13 @@ export interface NodeComponents {
   sync?: Pick<SyncSettings, 'peers' | 'intervalMs'> & { legacy?: boolean; staticPeers?: string[]; discovery?: DiscoverySettings }
   /** ADVERTISE=1, reported by the capability document. */
   advertising?: boolean
+  /**
+   * The per-publisher write tokens (`publisherTokens.ts`): a bearer bound to
+   * one key and one use, checked on POST /submit, /retract and /arc-ingest
+   * beside the legacy operator-wide tokens. Absent on a node built without
+   * stores, which then has the legacy tokens only.
+   */
+  publisherTokens?: PublisherTokenStore
 }
 
 /** Whether a node pulls from peers it names or discovers, as its capability document and evidence packages reckon it. */
@@ -365,17 +376,97 @@ function secretsEqual(given: string, expected: string): boolean {
   return timingSafeEqual(a, b)
 }
 
-/**
- * The callback token as an ARC-compatible broadcaster presents it: the token
- * given at submission comes back as `Authorization: Bearer`, and the overlay
- * host upstream also reads `X-Callback-Token`, so both are accepted.
- */
-function callbackTokenAccepted(request: IncomingMessage, expected: string): boolean {
-  if (bearerAccepted(request, expected)) return true
+/** The bearer a request presents, or undefined: the scheme by fixed-width prefix, the token trimmed, no regex over the value. */
+function bearerToken(request: IncomingMessage): string | undefined {
+  const header = request.headers.authorization
+  const raw = Array.isArray(header) ? header[0] : header
+  if (raw == null) return undefined
+  const trimmed = raw.trim()
+  if (trimmed.length < 7 || trimmed.slice(0, 6).toLowerCase() !== 'bearer' || !/\s/.test(trimmed[6])) return undefined
+  const token = trimmed.slice(7).trim()
+  return token === '' ? undefined : token
+}
+
+/** The token a callback presents: the bearer, else X-Callback-Token. */
+function callbackToken(request: IncomingMessage): string | undefined {
+  const bearer = bearerToken(request)
+  if (bearer != null) return bearer
   const header = request.headers['x-callback-token']
   const raw = Array.isArray(header) ? header[0] : header
-  if (raw == null) return false
-  return secretsEqual(raw.trim(), expected)
+  const token = raw?.trim() ?? ''
+  return token === '' ? undefined : token
+}
+
+/** Who a write request is from: the operator (a legacy token), one publisher (a per-publisher token), nobody in particular (an open route), or refused. */
+type Writer = 'operator' | 'open' | { publisherKey: string } | { refused: string } | { unavailable: true }
+
+/** The answer every write route gives when the token store cannot be read: fixed words, no path, no detail. */
+const STORE_UNAVAILABLE = 'token store unavailable; try again'
+
+/**
+ * Resolve the writer before the body is read (`publisherTokens.ts`). The
+ * legacy token for the route, when set, is compared constant-time and names
+ * the operator, who may write anything. Otherwise the per-publisher store is
+ * asked: an unknown, revoked or wrong-use token is refused by name. With
+ * neither a legacy token nor a store the route is open.
+ */
+async function resolveWriter(
+  request: IncomingMessage,
+  route: string,
+  use: TokenUse,
+  legacy: string | undefined,
+  store: PublisherTokenStore | undefined,
+  legacyDescription: string
+): Promise<Writer> {
+  const token = use === 'callback' ? callbackToken(request) : bearerToken(request)
+  if (legacy != null && token != null && secretsEqual(token, legacy)) return 'operator'
+  if (store == null) return legacy == null ? 'open' : { refused: legacyDescription }
+  if (token == null) return { refused: `${route} requires a ${use} token` }
+  let record
+  try {
+    record = await store.find(tokenDigest(token))
+  } catch (cause) {
+    // A corrupt or unreadable store is the operator's problem, logged here;
+    // the caller learns only that the service cannot answer now.
+    console.warn(`${route}: the token store could not be read:`, cause instanceof Error ? cause.message : cause)
+    return { unavailable: true }
+  }
+  if (record == null) return { refused: `${route} requires a ${use} token` }
+  if (record.revokedAt != null) return { refused: `${route}: this token was revoked at ${record.revokedAt}` }
+  if (record.use !== use) return { refused: `${route} requires a ${use} token; this is a ${record.use} token` }
+  return { publisherKey: record.publisherKey }
+}
+
+/**
+ * Whether every passport state and every anchor among a transaction's outputs
+ * (or the one at `onlyIndex`) was signed by the key a token belongs to: the
+ * state's publisher countersignature verifies under it, or the anchor names
+ * it as its anchoring service. Returns the first mismatch, one sentence, or
+ * undefined. Outputs that are neither are not this check's business.
+ */
+function signerMismatch(tx: Transaction, publisherKey: string, onlyIndex?: number): string | undefined {
+  const key = publisherKey.toLowerCase()
+  const states = new Map(findDppOutputs(tx).map((o) => [o.outputIndex, o.state]))
+  for (let index = 0; index < tx.outputs.length; index += 1) {
+    if (onlyIndex != null && index !== onlyIndex) continue
+    const script = tx.outputs[index].lockingScript
+    const state = states.get(index)
+    if (state != null) {
+      if (!verifyServerSignature(state, key)) return `output ${index} is a passport state whose publisher signature does not verify under the token's key ${key}`
+      continue
+    }
+    const anchor = decodeAttestationAnchor(script)
+    if (anchor != null) {
+      if (anchor.anchoredBy.toLowerCase() !== key) return `output ${index} is an anchor by ${anchor.anchoredBy}, not the token's key ${key}`
+      continue
+    }
+    const legacyAnchor = tryParseUoraAnchor(script)
+    if (legacyAnchor != null) {
+      const by = legacyAnchor.anchoredBy.startsWith('did:key:') ? identityKeyFromDidKey(legacyAnchor.anchoredBy) : legacyAnchor.anchoredBy
+      if ((by ?? '').toLowerCase() !== key) return `output ${index} is a legacy anchor by ${legacyAnchor.anchoredBy}, not the token's key ${key}`
+    }
+  }
+  return undefined
 }
 
 /**
@@ -745,9 +836,15 @@ async function handle(
       // Checked before the body is buffered: an unauthorised caller should not
       // get to spend memory here, let alone the header quota that
       // Engine.submit's SPV check spends downstream.
-      if (options.submitToken != null && !bearerAccepted(request, options.submitToken)) {
+      const writer = await resolveWriter(request, 'POST /submit', 'submit', options.submitToken, options.components?.publisherTokens, 'POST /submit requires a bearer token')
+      if (typeof writer === 'object' && 'unavailable' in writer) {
         request.resume()
-        json(response, 401, { status: 'error', description: 'POST /submit requires a bearer token' })
+        json(response, 503, { status: 'error', description: STORE_UNAVAILABLE })
+        return
+      }
+      if (typeof writer === 'object' && 'refused' in writer) {
+        request.resume()
+        json(response, 401, { status: 'error', description: writer.refused })
         return
       }
       const body = await readBody(request)
@@ -757,6 +854,13 @@ async function handle(
       }
       const topics = topicsFrom(request)
       const { beef, offChainValues } = splitBody(request, body)
+      if (typeof writer === 'object' && 'publisherKey' in writer) {
+        // A per-publisher token writes what its key signed and nothing else
+        // (publisherTokens.ts): checked here, before the engine spends header
+        // quota on it, against every state and anchor the transaction carries.
+        const mismatch = signerMismatch(Transaction.fromBEEF(beef), writer.publisherKey)
+        if (mismatch != null) throw new NamedError(403, 'token-publisher-mismatch', mismatch)
+      }
       const steak = await engine.submit({ beef, topics, offChainValues })
       let outcomes = topics
         .filter((topic) => steak[topic] != null)
@@ -800,15 +904,28 @@ async function handle(
       // proof and a broadcaster whose callback URL points here send the same
       // body (spec/writing.md section 7). The token is checked before the body
       // is read, as on /submit.
-      if (options.proofToken != null && !callbackTokenAccepted(request, options.proofToken)) {
+      const writer = await resolveWriter(request, 'POST /arc-ingest', 'callback', options.proofToken, options.components?.publisherTokens, 'POST /arc-ingest requires the callback token')
+      if (typeof writer === 'object' && 'unavailable' in writer) {
         request.resume()
-        json(response, 401, {
-          status: 'error',
-          description: 'POST /arc-ingest requires the callback token',
-        })
+        json(response, 503, { status: 'error', description: STORE_UNAVAILABLE })
+        return
+      }
+      if (typeof writer === 'object' && 'refused' in writer) {
+        request.resume()
+        json(response, 401, { status: 'error', description: writer.refused })
         return
       }
       const callback = parseProofCallback(await readBody(request))
+      if (typeof writer === 'object' && 'publisherKey' in writer && options.components != null) {
+        // A per-publisher callback token delivers proofs for the states its
+        // key signed: every held output of the transaction is checked. A
+        // transaction this index does not hold is answered as before, 404.
+        for (const held of await options.components.engineStorage.findOutputsForTransaction(callback.txid, true)) {
+          if (held.beef == null) continue
+          const mismatch = signerMismatch(Transaction.fromBEEF(held.beef), writer.publisherKey, held.outputIndex)
+          if (mismatch != null) throw new NamedError(403, 'token-publisher-mismatch', mismatch)
+        }
+      }
       if (callback.merklePath === undefined) {
         // A status-only callback (seen, rejected) carries no proof and is not
         // an error: answering 200 keeps a broadcaster from retrying it forever.
@@ -1043,9 +1160,15 @@ async function handle(
       // A writer announced before sending, as the writing rules allow, and the
       // network refused the transaction; the index holds a phantom tip. The
       // same bearer as /submit: whoever may add a state may withdraw one.
-      if (options.submitToken != null && !bearerAccepted(request, options.submitToken)) {
+      const writer = await resolveWriter(request, 'POST /retract', 'submit', options.submitToken, options.components?.publisherTokens, 'POST /retract requires the /submit bearer token')
+      if (typeof writer === 'object' && 'unavailable' in writer) {
         request.resume()
-        json(response, 401, { status: 'error', description: 'POST /retract requires the /submit bearer token' })
+        json(response, 503, { status: 'error', description: STORE_UNAVAILABLE })
+        return
+      }
+      if (typeof writer === 'object' && 'refused' in writer) {
+        request.resume()
+        json(response, 401, { status: 'error', description: writer.refused })
         return
       }
       if (options.components == null) {
@@ -1053,6 +1176,16 @@ async function handle(
         throw new NamedError(503, 'retraction-unavailable', 'this node was started without its stores; POST /retract is not served')
       }
       const { txid, outputIndex, reason } = parseRetraction(await readBody(request))
+      if (typeof writer === 'object' && 'publisherKey' in writer) {
+        // Whoever may add a state may withdraw one: the per-publisher token
+        // withdraws only an output its key signed. An output this index does
+        // not hold is answered by the retraction itself, 404.
+        const held = await options.components.engineStorage.findOutput(txid, outputIndex, TOPIC, undefined, true)
+        if (held?.beef != null) {
+          const mismatch = signerMismatch(Transaction.fromBEEF(held.beef), writer.publisherKey, outputIndex)
+          if (mismatch != null) throw new NamedError(403, 'token-publisher-mismatch', mismatch)
+        }
+      }
       const retraction = await retractOutput({
         storage: options.components.engineStorage,
         lookupServices: options.components.lookupServices,
@@ -1344,11 +1477,12 @@ async function engineFromEnvironment(
   let attestations: AttestationStore
   let engineStorage: InMemoryOverlayStorage | MongoOverlayStorage
   let close = async (): Promise<void> => {}
+  let db: Db | undefined
 
   if (mongoUrl != null && mongoUrl !== '') {
     const client = new MongoClient(mongoUrl)
     await client.connect()
-    const db = client.db(process.env.MONGO_DB)
+    db = client.db(process.env.MONGO_DB)
     const mongoRecords = new MongoDppStorage(db)
     // Indexes and the sequence numbering of rows older than the field, before
     // a request can ask for a page (storage.ts).
@@ -1372,6 +1506,20 @@ async function engineFromEnvironment(
       'MONGO_URL is unset: overlay state is in memory and is lost on restart. ' +
         'Fine locally, never hosted.'
     )
+  }
+  const tokensFile = (process.env.PUBLISHER_TOKENS_FILE ?? '').trim()
+  // A store only where one is configured: with neither a file nor a database
+  // the node has the legacy operator-wide tokens alone, and a write route
+  // without one stays open, as it always has on the memory-only node.
+  const publisherTokens = tokensFile !== '' || db != null ? tokenStoreFromEnvironment(process.env, db) : undefined
+  if (publisherTokens != null && tokensFile !== '') {
+    const held = (await publisherTokens.list()).filter((t) => t.revokedAt == null).length
+    console.log(
+      `per-publisher tokens are read from PUBLISHER_TOKENS_FILE ${tokensFile}` +
+        (held === 0 ? ', which holds no live token yet: a per-publisher bearer is refused until one is issued (dpp-index tokens issue)' : `, which holds ${held} live token${held === 1 ? '' : 's'}`)
+    )
+  } else if (db != null) {
+    console.log('per-publisher tokens are read from the publisherTokensV1 collection (dpp-index tokens issue)')
   }
 
   const acceptedAnchorServices = anchorServiceKeys()
@@ -1465,6 +1613,7 @@ async function engineFromEnvironment(
     managedInstruction: versionTwo.managedInstruction,
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
     sync: { peers: [...sync.peers], staticPeers: [...sync.peers], intervalMs: sync.intervalMs, legacy: sync.legacy, ...(discovery.enabled ? { discovery } : {}) },
+    ...(publisherTokens == null ? {} : { publisherTokens }),
   }
   return { engine, components, close }
 }
@@ -1476,21 +1625,9 @@ export async function runFromEnvironment(): Promise<void> {
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('PORT must be an integer from 0 to 65535')
   if (network !== 'main' && network !== 'test') throw new Error('NETWORK must be main or test')
   const submitToken = process.env.SUBMIT_TOKEN
-  if (submitToken == null || submitToken === '') {
-    console.warn(
-      'SUBMIT_TOKEN is unset: POST /submit and POST /retract accept requests from anyone. ' +
-        'Set it on any deployment a stranger can reach.'
-    )
-  }
-
   const proofToken = process.env.ARC_CALLBACK_TOKEN
-  if (proofToken == null || proofToken === '') {
-    console.warn(
-      'ARC_CALLBACK_TOKEN is unset: POST /arc-ingest accepts proofs from anyone. Each is still ' +
-        'verified against block headers before it is stored, so an open route costs header quota, ' +
-        'not truth; set it on any deployment a stranger can reach.'
-    )
-  }
+  // Whether a write route is open depends on the token store too, which the
+  // engine's environment selects below; the warnings follow it.
 
   const tracker = chainTracker(network)
   const knownOnChain = tracker === 'scripts only'
@@ -1511,6 +1648,7 @@ export async function runFromEnvironment(): Promise<void> {
   const advertising = advertisingSettingsFromEnvironment()
   const { engine, components, close } = await engineFromEnvironment(network, tracker)
   if (advertising.enabled) components.advertising = true
+  for (const warning of writeAccessWarnings({ submitToken, proofToken, store: components.publisherTokens != null })) console.warn(warning)
   const service = await startOverlayService(engine, {
     port,
     host: process.env.HOST,

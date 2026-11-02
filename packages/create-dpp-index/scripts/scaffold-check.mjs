@@ -137,8 +137,18 @@ try {
   assert.equal(doctor.ok, true)
   run(process.execPath, ['scripts/connection.mjs', '--json'], project)
   const app = parseEnv(readFileSync(join(project, '.app.env'), 'utf8'))
-  assert.equal(app.INDEX_SUBMIT_TOKEN, config.SUBMIT_TOKEN)
-  assert.equal(app.INDEX_CALLBACK_TOKEN, config.ARC_CALLBACK_TOKEN)
+  // The app's two tokens belong to the project's publisher key and are kept
+  // hashed in the token file the running index reads without a restart.
+  for (const token of [app.INDEX_SUBMIT_TOKEN, app.INDEX_CALLBACK_TOKEN]) assert.match(token, /^[0-9a-f]{64}$/)
+  const tokenFile = read(join(project, 'config', 'publisher-tokens.json'))
+  assert.equal(tokenFile.format, 'dpp-publisher-tokens@1')
+  assert.deepEqual(tokenFile.tokens.filter(entry => !entry.revokedAt).map(entry => [entry.use, entry.publisherKey]).sort(), [['callback', config.SERVICE_IDENTITY_KEY.toLowerCase()], ['submit', config.SERVICE_IDENTITY_KEY.toLowerCase()]])
+  assert.ok(!JSON.stringify(tokenFile).includes(app.INDEX_SUBMIT_TOKEN))
+  // The anchoring service gets its own submit token through the operator
+  // command, which prints the token once; the index accepts it only for anchors
+  // that name that key.
+  const anchorToken = run(process.execPath, ['node_modules/@bsv/dpp-overlay/dist/cli.js', 'tokens', 'issue', '--publisher', anchor.anchor.anchoredBy, '--use', 'submit', '--label', 'anchoring service'], project, { PUBLISHER_TOKENS_FILE: 'config/publisher-tokens.json' }).trim()
+  assert.match(anchorToken, /^[0-9a-f]{64}$/)
   let appClient
   if (values['app-project']) {
     const appProject = resolve(values['app-project'])
@@ -172,9 +182,12 @@ try {
   attestation.addInput({ sourceTransaction: funding, sourceOutputIndex: 0, unlockingScript: new UnlockingScript([]) })
   attestation.addOutput({ satoshis: 1, lockingScript: LockingScript.fromHex(anchor.lockingScript) })
   attestation.merklePath = MerklePath.fromCoinbaseTxidAndHeight(attestation.id('hex'), 800000)
-  const submit = (tx, topic) => request('/submit', { method: 'POST', headers: { Authorization: `Bearer ${app.INDEX_SUBMIT_TOKEN}`, 'Content-Type': 'application/octet-stream', 'X-Topics': JSON.stringify([topic]) }, body: new Uint8Array(tx.toBEEF()) })
-  for (const [tx, topic] of [[passport, 'tm_dpp'], [attestation, 'tm_attestation']]) {
-    const response = await submit(tx, topic)
+  const submit = (tx, topic, token = app.INDEX_SUBMIT_TOKEN) => request('/submit', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/octet-stream', 'X-Topics': JSON.stringify([topic]) }, body: new Uint8Array(tx.toBEEF()) })
+  // The app's token does not write the anchoring service's anchor, and the reverse.
+  assert.equal((await submit(attestation, 'tm_attestation')).status, 403)
+  assert.equal((await submit(passport, 'tm_dpp', anchorToken)).status, 403)
+  for (const [tx, topic, token] of [[passport, 'tm_dpp', app.INDEX_SUBMIT_TOKEN], [attestation, 'tm_attestation', anchorToken]]) {
+    const response = await submit(tx, topic, token)
     assert.equal(response.status, 200, await response.text())
     assert.ok(!response.headers.get('x-admission')?.includes('none'), `${topic}: ${response.headers.get('x-admission-refusal')}\n${output}`)
   }

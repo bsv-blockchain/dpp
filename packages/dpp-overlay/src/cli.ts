@@ -3,32 +3,55 @@ import { loadEnvFile } from 'node:process'
 import { readFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 
-try {
-  const { values } = parseArgs({ options: {
-    help: { type: 'boolean', short: 'h' },
-    version: { type: 'boolean', short: 'v' },
-    'env-file': { type: 'string' },
-  } })
-  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
-  if (values.help) {
-    console.log(`dpp-index ${manifest.version}: run the DPP reference index.
+const HELP = (version: string): string => `dpp-index ${version}: run the DPP reference index.
 
 Usage: dpp-index [--env-file <path>]
+       dpp-index tokens issue --publisher <compressed key> --use submit|callback [--label <text>] [--env-file <path>]
+       dpp-index tokens revoke --sha256 <digest> [--env-file <path>]
+       dpp-index tokens list [--env-file <path>]
 
 Configuration uses environment variables. An explicit env file supplies missing
 values; the process environment takes precedence. No file is loaded by default.
 
 Set SERVICE_IDENTITY_KEY to the publisher's public key, MONGO_URL and MONGO_DB
-for persistent storage, SUBMIT_TOKEN and ARC_CALLBACK_TOKEN for write access.
+for persistent storage. Write access is per publisher: "tokens issue" prints a
+token once for one key and one use (submit covers POST /submit and /retract,
+callback covers POST /arc-ingest) and stores its SHA-256 in PUBLISHER_TOKENS_FILE
+or, without one, in the index's MongoDB database. SUBMIT_TOKEN and
+ARC_CALLBACK_TOKEN remain accepted as operator-wide tokens.
 NETWORK is main or test. PORT defaults to 8080; HOST defaults to all interfaces.
 For a configured operator project, use @bsv/create-dpp-index.
-See the package README for publisher policies, exports and optional peers.`)
+See the package README for publisher policies, exports and optional peers.`
+
+try {
+  const { values, positionals } = parseArgs({
+    allowPositionals: true,
+    options: {
+      help: { type: 'boolean', short: 'h' },
+      version: { type: 'boolean', short: 'v' },
+      'env-file': { type: 'string' },
+      publisher: { type: 'string' },
+      use: { type: 'string' },
+      label: { type: 'string' },
+      sha256: { type: 'string' },
+    },
+  })
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
+  if (values.help) {
+    console.log(HELP(manifest.version))
   } else if (values.version) {
     console.log(manifest.version)
   } else {
     if (values['env-file']) loadEnvFile(values['env-file'])
-    const { runFromEnvironment } = await import('./index.js')
-    await runFromEnvironment()
+    if (positionals[0] === 'tokens') {
+      const { runTokensCommand } = await import('./tokensCommand.js')
+      await runTokensCommand(positionals.slice(1), values, process.env)
+    } else if (positionals.length > 0) {
+      throw new Error(`unknown command ${positionals.join(' ')}; see --help`)
+    } else {
+      const { runFromEnvironment } = await import('./index.js')
+      await runFromEnvironment()
+    }
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'The index could not start')
