@@ -10,7 +10,7 @@ function valid() {
     ANCHOR_SERVICE_KEYS: publisher.getPublicKey('hex', 'compressed'), NETWORK: 'main',
     PORT: '8080', HOST: '127.0.0.1', PUBLIC_URL: 'http://localhost:8080',
     MONGO_URL: 'mongodb://127.0.0.1:27017', MONGO_DB: 'index_test',
-    SUBMIT_TOKEN: 'a'.repeat(64), ARC_CALLBACK_TOKEN: 'b'.repeat(64),
+    PUBLISHER_TOKENS_FILE: 'config/publisher-tokens.json',
     ACCEPTANCE_COMMITMENT: 'required' }
 }
 
@@ -25,12 +25,19 @@ test('missing persistence, header bypass and publisher private keys stop startup
   }
 })
 
-test('write scopes need separate tokens and errors never contain the secret', () => {
+test('write access needs per-publisher tokens or both operator-wide tokens, and errors never contain a secret', () => {
   const env = valid()
-  env.ARC_CALLBACK_TOKEN = env.SUBMIT_TOKEN
+  env.PUBLISHER_TOKENS_FILE = ''
+  assert.ok(validateConfiguration(env).some(error => error.includes('PUBLISHER_TOKENS_FILE')))
+  env.SUBMIT_TOKEN = 'a'.repeat(64)
+  env.ARC_CALLBACK_TOKEN = 'a'.repeat(64)
   const errors = validateConfiguration(env)
   assert.ok(errors.some(error => error.includes('separate secrets')))
   assert.ok(!errors.join('\n').includes(env.SUBMIT_TOKEN))
+  env.ARC_CALLBACK_TOKEN = 'b'.repeat(64)
+  assert.deepEqual(validateConfiguration(env), [])
+  assert.ok(validateConfiguration({ ...valid(), PUBLISHER_TOKENS_FILE: '/etc/tokens.json' }).length)
+  assert.ok(validateConfiguration({ ...valid(), SUBMIT_TOKEN: 'short' }).length)
 })
 
 test('hosted origins require HTTPS and valid publisher keys', () => {

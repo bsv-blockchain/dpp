@@ -6,8 +6,8 @@ Generated from `release/dpp-release-2026-11.json` in the documentation build for
 |---|---|---|---|---|---|---|---|---|
 | `@bsv/dpp-protocol` 0.3.0-beta.10 | `.` | module | Node >=22 | Untested | Yes | None | none | `dist/`, `schemas/` |
 | `@bsv/dpp-protocol` 0.3.0-beta.10 | `./schemas/*` | data | Any | Plain data | No | None | none | `schemas/*.schema.json` |
-| `@bsv/dpp-overlay` 0.4.0-beta.13 | `.` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:http`, `node:process`, `node:util`, `node:url` | `dist/` |
-| `@bsv/dpp-overlay` 0.4.0-beta.13 | `./server` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:http`, `node:process`, `node:util`, `node:url` | `dist/` |
+| `@bsv/dpp-overlay` 0.4.0-beta.13 | `.` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:http`, `node:path`, `node:process`, `node:util`, `node:url` | `dist/` |
+| `@bsv/dpp-overlay` 0.4.0-beta.13 | `./server` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs`, `node:http`, `node:path`, `node:process`, `node:util`, `node:url` | `dist/` |
 | `@bsv/dpp-profiles` 0.3.0-beta.10 | `.` | module | Node >=22 | Unsupported | Yes | None | `node:crypto`, `node:fs` | `dist/`, `manifests/`, `schemas/`, `generated/`, `frozen.json` |
 | `@bsv/dpp-profiles` 0.3.0-beta.10 | `./manifests/*` | data | Any | Plain data | No | None | none | `manifests/<id>@<version>.json`, `manifests/exchange/*.json`, `manifests/operator/*.json`, `manifests/interoperability/*.json` |
 | `@bsv/dpp-profiles` 0.3.0-beta.10 | `./schemas/*` | data | Any | Plain data | No | None | none | `schemas/*.schema.json`, `schemas/gs1/*` |

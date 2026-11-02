@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.12.0-draft
+  version: 0.13.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -109,7 +109,10 @@ x-dpp-profile:
       routes (POST /requestSyncResponse, POST /requestForeignGASPNode) and
       pulls from the static peers SYNC_PEERS names, judging every offered
       output by the same topic managers as /submit.
-    - Require a bearer token on /submit; /lookup and /health stay open.
+    - Require a write token on /submit, /retract and /arc-ingest: a per-publisher
+      token bound to one publisher or anchoring key and one use, accepted only
+      for what that key signed (403 token-publisher-mismatch otherwise), or the
+      operator-wide token; /lookup and /health stay open.
     - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
     - >-
       Enforce the owner-signed transfer invariant (spec/custody.md section 4)
@@ -250,6 +253,8 @@ paths:
           $ref: '#/components/responses/error'
         '401':
           $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/namedError'
         '413':
           $ref: '#/components/responses/error'
   /lookup:
@@ -358,6 +363,8 @@ paths:
           $ref: '#/components/responses/error'
         '401':
           $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/namedError'
         '404':
           $ref: '#/components/responses/error'
         '503':
@@ -711,6 +718,8 @@ paths:
           $ref: '#/components/responses/error'
         '401':
           $ref: '#/components/responses/error'
+        '403':
+          $ref: '#/components/responses/namedError'
         '404':
           $ref: '#/components/responses/namedError'
         '409':
@@ -850,9 +859,15 @@ components:
       type: http
       scheme: bearer
       description: >-
-        Required on /submit, /arc-ingest and /evidence-export only when the
-        deployment configures a token for each; the three are different
-        secrets.
+        Required on /submit, /retract, /arc-ingest and /evidence-export when the
+        deployment configures tokens. A write token belongs to one publisher
+        or anchoring key and one use, submit (for /submit and /retract) or
+        callback (for /arc-ingest): the index accepts it only for a state that
+        key countersigned or an anchor naming that key as its anchoring
+        service, and answers 403 token-publisher-mismatch otherwise, 401 for an
+        unknown, revoked or wrong-use token. A deployment may keep one
+        operator-wide token per route beside them. The export token is a
+        separate secret.
     callbackToken:
       type: apiKey
       in: header

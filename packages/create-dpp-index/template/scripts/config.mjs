@@ -27,7 +27,7 @@ export function validateConfiguration(env) {
   const errors = []
   const value = name => (env[name] ?? '').trim()
   const check = fn => { try { fn() } catch (error) { errors.push(error.message) } }
-  for (const name of ['SERVICE_IDENTITY_KEY', 'NETWORK', 'PORT', 'HOST', 'PUBLIC_URL', 'MONGO_URL', 'MONGO_DB', 'SUBMIT_TOKEN', 'ARC_CALLBACK_TOKEN', 'EXPORT_TOKEN', 'EXPORT_SIGNING_KEY', 'ACCEPTANCE_COMMITMENT']) {
+  for (const name of ['SERVICE_IDENTITY_KEY', 'NETWORK', 'PORT', 'HOST', 'PUBLIC_URL', 'MONGO_URL', 'MONGO_DB', 'PUBLISHER_TOKENS_FILE', 'SUBMIT_TOKEN', 'ARC_CALLBACK_TOKEN', 'EXPORT_TOKEN', 'EXPORT_SIGNING_KEY', 'ACCEPTANCE_COMMITMENT']) {
     if (env[name] != null && env[name] !== value(name)) errors.push(`${name} must not have leading or trailing whitespace`)
   }
   check(() => publicKey(value('SERVICE_IDENTITY_KEY'), 'SERVICE_IDENTITY_KEY'))
@@ -40,7 +40,11 @@ export function validateConfiguration(env) {
   check(() => baseUrl(value('PUBLIC_URL'), 'PUBLIC_URL'))
   if (!/^mongodb(?:\+srv)?:\/\/[^\s]+$/.test(value('MONGO_URL'))) errors.push('MONGO_URL must name persistent MongoDB storage; memory-only storage is not selected by this starter')
   if (!/^[a-zA-Z0-9_-]{1,63}$/.test(value('MONGO_DB'))) errors.push('MONGO_DB must name the index database using letters, digits, underscores or hyphens')
-  const tokens = ['SUBMIT_TOKEN', 'ARC_CALLBACK_TOKEN', ...(value('EXPORT_SIGNING_KEY') ? ['EXPORT_TOKEN'] : [])]
+  const tokensFile = value('PUBLISHER_TOKENS_FILE')
+  if (tokensFile && !/^config\/[A-Za-z0-9._-]+\.json$/.test(tokensFile)) errors.push('PUBLISHER_TOKENS_FILE must name a JSON file under config/, the directory the container mounts')
+  const legacy = ['SUBMIT_TOKEN', 'ARC_CALLBACK_TOKEN'].filter(name => value(name))
+  if (!tokensFile && legacy.length < 2) errors.push('Set PUBLISHER_TOKENS_FILE for per-publisher write tokens, or both SUBMIT_TOKEN and ARC_CALLBACK_TOKEN as operator-wide tokens')
+  const tokens = [...legacy, ...(value('EXPORT_SIGNING_KEY') ? ['EXPORT_TOKEN'] : [])]
   for (const token of tokens) {
     if (!/^[a-zA-Z0-9_-]{32,}$/.test(value(token))) errors.push(`${token} must contain at least 32 URL-safe characters; generate an independent random secret`)
   }

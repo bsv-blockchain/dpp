@@ -27,7 +27,7 @@
     },
     {
       "id": "overlay-http",
-      "version": "0.12.0-draft"
+      "version": "0.13.0-draft"
     }
   ],
   "profiles": [

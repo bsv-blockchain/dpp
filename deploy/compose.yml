@@ -48,6 +48,8 @@ services:
       SERVER_PRIVATE_KEY: ${SERVER_PRIVATE_KEY:-}
       SUBMIT_TOKEN: ${SUBMIT_TOKEN:?set SUBMIT_TOKEN in the env file}
       ARC_CALLBACK_TOKEN: ${ARC_CALLBACK_TOKEN:?set ARC_CALLBACK_TOKEN in the env file}
+      # Optional: per-publisher write tokens, hashed, issued with dpp-index tokens issue.
+      PUBLISHER_TOKENS_FILE: ${PUBLISHER_TOKENS_FILE:-}
       CHAIN_TRACKER: ${CHAIN_TRACKER:-}
       WOC_API_KEY: ${WOC_API_KEY:-}
       PUBLIC_URL: ${PUBLIC_URL:-}

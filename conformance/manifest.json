@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "0946571580545320573ad08371ceab84257a20d161e90d7967dde8cac7204ead"
+      "digest": "5db5f9aaf034cd9df3334ac1422f5a1be1827b777b4ba83743e0220d741ec3a4"
     },
     {
       "id": "spec-verification",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "c12647297de80de3cfa13bd895feb371ecc92ddda25c5f12065e9636d481a1ac"
+      "digest": "747e88c4845c47e61c1f6fbfd4dee0e81700ed73faba13cd7481562b251f128a"
     },
     {
       "id": "contract-registry",
@@ -2752,6 +2752,36 @@
       "status": "tested",
       "reviewedAt": "2026-09-05",
       "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-6-write-credentials",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§6",
+      "summary": "An index may issue write credentials each bound to one publisher or anchoring key and one use; a state is accepted under one only when that key countersigned it, an anchor only when it names that key as anchoring service, with a named 403 otherwise; credentials are stored hashed, revocable, never listed, and an operator-wide token may stand beside them.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when a deployment issues per-publisher tokens",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-overlay/src/publisherTokens.ts",
+        "packages/dpp-overlay/src/index.ts (resolveWriter, signerMismatch)",
+        "packages/dpp-overlay/src/tokensCommand.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-overlay/test/publisherTokensHttp.test.ts",
+        "packages/dpp-overlay/test/publisherTokens.test.ts"
+      ],
+      "evidenceRefs": [
+        "contracts/overlay.yaml#components.securitySchemes.bearer"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-02",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-02 (bsv-blockchain/dpp-issues#118): the first step of the default index chain; self-service registration (#119) issues through the same store."
     },
     {
       "id": "VER-2-report",

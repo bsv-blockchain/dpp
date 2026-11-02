@@ -7,3 +7,4 @@ node_modules/
 backups/
 *.tgz
 .DS_Store
+config/publisher-tokens.json
