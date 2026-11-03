@@ -27,7 +27,7 @@
     },
     {
       "id": "overlay-http",
-      "version": "0.13.0-draft"
+      "version": "0.14.0-draft"
     }
   ],
   "profiles": [
@@ -37,7 +37,8 @@
       "kind": "operator",
       "options": {
         "discovery": "none",
-        "gasp": false
+        "gasp": false,
+        "registration": "off"
       }
     },
     {
@@ -142,6 +143,10 @@
     {
       "id": "publisher-key-rotation",
       "reason": "No publisher policy is configured (PUBLISHER_POLICY_FILE or PUBLISHER_POLICY_JSON): the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp."
+    },
+    {
+      "id": "self-service-registration",
+      "reason": "REGISTRATION is unset, so POST /register answers 404 registration-unavailable; a publisher is added by the operator signing a policy version."
     },
     {
       "id": "evidence-package-export",

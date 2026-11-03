@@ -15,7 +15,7 @@
  * A policy nests objects and arrays, so it uses the canonical JSON of
  * canonicalJson.ts rather than the flat restricted form of native claims.
  */
-import { Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
+import { Hash, PrivateKey, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
 
 export const PUBLISHER_POLICY_FORMAT = 'dpp-publisher-policy@1'
@@ -220,4 +220,72 @@ export function publisherKeysAt(chain: PublisherPolicy[], at: string | Date, rol
   if (policy == null) return []
   const t = typeof at === 'string' ? instant(at) : at.getTime()
   return [...new Set(policy.publishers.filter((p) => (role == null || p.role === role) && entryActiveAt(p, t)).map((p) => p.key))]
+}
+
+export interface PublisherChange {
+  /** A key to add, active from the new version's issue. */
+  add?: { key: string; role: PublisherRole }
+  /** A key to retire at the new version's issue; its entry stays with its window closed. */
+  retire?: string
+}
+
+const MAX_PUBLISHERS = 256
+
+/**
+ * The next version of a single-operator chain after one publisher is added
+ * or retired (`spec/services.md` section 2): `policyVersion + 1`, issued at
+ * `now`, superseding the newest version by digest, a rotation that keeps the
+ * scope and every existing entry, signed by the operator's identity key
+ * directly as the chain rules require. The extended chain is verified before
+ * the version is returned, so what comes back is what `verifyPolicyChain`
+ * accepts or an error naming why not.
+ *
+ * Only a `single-operator@1` scope, where a rotation needs no
+ * countersignature, and only the operator's own key: an active publisher
+ * key may sign a rotation under the chain rules, but registration is the
+ * operator admitting a stranger, and it is the operator who signs.
+ */
+export function appendPublisherVersion(
+  chain: PublisherPolicy[],
+  operatorIdentityKeys: Record<string, string>,
+  change: PublisherChange,
+  signer: PrivateKey,
+  now: Date
+): PublisherPolicy {
+  const newest = chain[chain.length - 1]
+  if (newest == null) throw new Error('an empty chain has no version to append to')
+  if (newest.scope.operatorProfile !== 'single-operator@1') throw new Error(`registration appends to a single-operator@1 scope; this chain is ${newest.scope.operatorProfile}`)
+  const signerKey = signer.toPublicKey().toString()
+  if (!newest.scope.operators.some((op) => operatorIdentityKeys[op] === signerKey)) throw new Error('the signer is not the identity key of an operator in the scope')
+  if (change.add == null && change.retire == null) throw new Error('a change names a key to add or retire')
+  const issuedAt = now.toISOString()
+  if (!(instant(issuedAt) > instant(newest.issuedAt))) throw new Error(`the new version must be issued after the newest, ${newest.issuedAt}`)
+  const at = now.getTime()
+  const publishers: PublisherEntry[] = newest.publishers.map((entry) => ({ ...entry }))
+  if (change.add != null) {
+    if (!KEY.test(change.add.key)) throw new Error('the key to add must be a compressed public key in lower-case hex')
+    if (publishers.some((entry) => entry.key === change.add!.key && entryActiveAt(entry, at))) throw new Error(`publisher ${change.add.key} is already active`)
+    if (publishers.length >= MAX_PUBLISHERS) throw new Error(`a policy version holds at most ${MAX_PUBLISHERS} publisher entries and this one is full`)
+    publishers.push({ key: change.add.key, role: change.add.role, activeFrom: issuedAt })
+  }
+  if (change.retire != null) {
+    const entry = publishers.find((candidate) => candidate.key === change.retire && entryActiveAt(candidate, at))
+    if (entry == null) throw new Error(`publisher ${change.retire} is not active`)
+    entry.retiredAt = issuedAt
+  }
+  const unsigned: PublisherPolicy = {
+    policyFormat: PUBLISHER_POLICY_FORMAT,
+    policyVersion: newest.policyVersion + 1,
+    scope: { ...newest.scope, operators: [...newest.scope.operators], ...(newest.scope.topics == null ? {} : { topics: [...newest.scope.topics] }) },
+    issuedAt,
+    supersedes: { policyVersion: newest.policyVersion, sha256: policyDigest(newest) },
+    publishers,
+    authorisation: { kind: 'rotation', signer: signerKey, suite: 'bsv-ecdsa-der', value: '' },
+  }
+  const { value: _value, ...authorisation } = unsigned.authorisation
+  const value = Utils.toHex(signer.sign(policySigningPreimage({ ...unsigned, authorisation: authorisation as PolicyAuthorisation })).toDER() as number[])
+  const version: PublisherPolicy = { ...unsigned, authorisation: { ...authorisation, value } }
+  const result = verifyPolicyChain([...chain, version], operatorIdentityKeys)
+  if (!result.ok) throw new Error(`the appended version does not verify: ${result.failure?.reason}: ${result.failure?.detail}`)
+  return version
 }

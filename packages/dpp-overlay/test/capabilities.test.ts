@@ -123,7 +123,7 @@ describe('the capability document', () => {
     const after = buildCapabilities({ publisherPolicy: policy, exportAvailable: true, networkOracleConfigured: true, at: new Date('2026-07-01T00:00:00Z') })
     expect(after.publisherPolicy).toMatchObject({ policyVersion: '2', publisherKeys: [pub(K2)], anchoringServices: [pub(A1)] })
     expect(ids(after.unsupported)).not.toContain('publisher-key-rotation')
-    expect(after.profiles[0].options).toEqual({ discovery: 'none', gasp: false, operators: Object.keys(OPERATORS) })
+    expect(after.profiles[0].options).toEqual({ discovery: 'none', gasp: false, operators: Object.keys(OPERATORS), registration: 'off' })
     expect(after.synchronisation.profile).toBe('single-operator@1')
   })
 

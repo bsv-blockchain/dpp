@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/index-registration.schema.json",
+  "title": "dpp-index-registration@1",
+  "description": "The request an application's wallet signs to register its publisher key with an index (spec/services.md section 2). Canonical form: object keys sorted by code point, no whitespace, string values only. The signature is DER ECDSA over SHA-256 of the canonical JSON of the request without the signature property, by the BRC-42 child of publisherKey for protocol [1, 'dpp index registration v1'], key identifier indexUrl and counterparty 'anyone' (the BRC-100 createSignature operation), so the verification key derives from the request alone and a request signed for one index is useless at another.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["registrationFormat", "indexUrl", "publisherKey", "network", "custodyProfile", "label", "requestedAt", "signature"],
+  "properties": {
+    "registrationFormat": { "const": "dpp-index-registration@1" },
+    "indexUrl": {
+      "type": "string",
+      "pattern": "^https?://[^\\s/?#]+(?:[/?#][^\\s]*)?$",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The index's public address as the application configured it. The index compares it with its own PUBLIC_URL, ignoring one trailing slash and host case."
+    },
+    "publisherKey": {
+      "type": "string",
+      "pattern": "^0[23][0-9a-f]{64}$",
+      "description": "The key the application's states are countersigned by: compressed, lower-case hex."
+    },
+    "network": { "enum": ["main", "test"] },
+    "custodyProfile": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The custody profile the application writes under, which must be the one the index declares in its capability document, for example managed-custody@2 or record-model-baseline@2."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "The application's name for the operator's eyes: printable text, at most 128 bytes."
+    },
+    "requestedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 with a timezone; an index accepts a request within its clock window, ten minutes by default."
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{2}){8,72}$",
+      "description": "Canonical DER ECDSA, lower-case hex, by the derived key."
+    }
+  }
+}

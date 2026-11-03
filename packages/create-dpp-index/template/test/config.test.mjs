@@ -60,3 +60,19 @@ test('evidence export requires its own key and access token', () => {
   env.EXPORT_SIGNING_KEY = '0'.repeat(64)
   assert.ok(validateConfiguration(env).length)
 })
+
+test('self-service registration needs a mode it knows, the policy file, the operator keys and the signing key, and the signing key alone is refused', () => {
+  const signingKey = 'c'.repeat(64)
+  assert.ok(validateConfiguration({ ...valid(), REGISTRATION: 'yes' }).some(error => error.includes('REGISTRATION must be open, approval or empty')))
+  const errors = validateConfiguration({ ...valid(), REGISTRATION: 'open' })
+  assert.ok(errors.some(error => error.includes('PUBLISHER_POLICY_FILE')))
+  assert.ok(errors.some(error => error.includes('OPERATOR_IDENTITY_KEYS')))
+  assert.ok(errors.some(error => error.includes('OPERATOR_SIGNING_KEY')))
+  const complete = { ...valid(), REGISTRATION: 'approval', PUBLISHER_POLICY_FILE: 'config/publisher-policy.json', OPERATOR_IDENTITY_KEYS: `did:example:op=${valid().SERVICE_IDENTITY_KEY}`, OPERATOR_SIGNING_KEY: signingKey }
+  assert.deepEqual(validateConfiguration(complete), [])
+  assert.ok(validateConfiguration({ ...complete, REGISTRATION_RATE_LIMIT: 'many' }).some(error => error.includes('REGISTRATION_RATE_LIMIT')))
+  assert.deepEqual(validateConfiguration({ ...complete, REGISTRATION_RATE_LIMIT: '3' }), [])
+  const stray = validateConfiguration({ ...valid(), OPERATOR_SIGNING_KEY: signingKey })
+  assert.ok(stray.some(error => error.includes('without REGISTRATION')))
+  assert.ok(!stray.join('\n').includes(signingKey))
+})

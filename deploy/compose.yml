@@ -50,6 +50,10 @@ services:
       ARC_CALLBACK_TOKEN: ${ARC_CALLBACK_TOKEN:?set ARC_CALLBACK_TOKEN in the env file}
       # Optional: per-publisher write tokens, hashed, issued with dpp-index tokens issue.
       PUBLISHER_TOKENS_FILE: ${PUBLISHER_TOKENS_FILE:-}
+      REGISTRATION: ${REGISTRATION:-}
+      OPERATOR_SIGNING_KEY: ${OPERATOR_SIGNING_KEY:-}
+      REGISTRATION_RATE_LIMIT: ${REGISTRATION_RATE_LIMIT:-}
+      TRUST_PROXY: ${TRUST_PROXY:-}
       CHAIN_TRACKER: ${CHAIN_TRACKER:-}
       WOC_API_KEY: ${WOC_API_KEY:-}
       PUBLIC_URL: ${PUBLIC_URL:-}

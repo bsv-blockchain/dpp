@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "5db5f9aaf034cd9df3334ac1422f5a1be1827b777b4ba83743e0220d741ec3a4"
+      "digest": "eb250d09e236caeea5cdcd7f30ec4d91544e8bb266defc62667af68ecf6bd69e"
     },
     {
       "id": "spec-verification",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "747e88c4845c47e61c1f6fbfd4dee0e81700ed73faba13cd7481562b251f128a"
+      "digest": "e079d2ad5aff50df0b43b1aea494ac442a55c0dcdc2405e4d8d51e334b63360b"
     },
     {
       "id": "contract-registry",
@@ -2670,6 +2670,45 @@
       "status": "tested",
       "reviewedAt": "2026-09-05",
       "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "SVC-2-registration",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "An index may register a publisher key on a dpp-index-registration@1 request signed by the wallet's derived key and verified from the request alone; it checks address, network, custody profile and clock, appends an operator-signed rotation it serves and admits under at once, returns the key's write credentials and never the operator key, holds or admits per the operator's mode, and registers a key once.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when a deployment sets REGISTRATION",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/registration.ts",
+        "packages/dpp-protocol/src/publisherPolicy.ts#appendPublisherVersion",
+        "packages/dpp-overlay/src/registration.ts",
+        "packages/dpp-overlay/src/index.ts (POST /register)",
+        "packages/dpp-overlay/src/registrationsCommand.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/registration.test.ts",
+        "packages/dpp-protocol/test/publisherPolicy.test.ts",
+        "packages/dpp-overlay/test/registrationHttp.test.ts",
+        "packages/dpp-overlay/test/registration.test.ts",
+        "packages/dpp-overlay/test/registrationsCommand.test.ts",
+        "conformance/independent/python/dpp_verify.py"
+      ],
+      "evidenceRefs": [
+        "fixtures/index-registration-v1.json",
+        "fixtures/vectors/dpp/index-registration/v1.json",
+        "contracts/index-registration.schema.json",
+        "contracts/overlay.yaml#paths./register"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-02",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-02 (bsv-blockchain/dpp-issues#119): the default index registers a newcomer from the quick start; the Python verifier reproduces the derived key and every refusal."
     },
     {
       "id": "SVC-3-registry-bytes",

@@ -114,11 +114,13 @@ import {
   type UoraAnchorStore,
 } from './anchorStorage.js'
 import { MAX_BODY_BYTES, MAX_PAGE_SIZE } from './limits.js'
-import { buildCapabilities, implementationIdentity, operatorProfileFor } from './capabilities.js'
+import { buildCapabilities, declaredCustodyProfile, implementationIdentity, operatorProfileFor } from './capabilities.js'
 import { HistoryError, HistoryPaginator } from './history.js'
 import { buildEvidenceExportPart, buildEvidencePackage } from './evidenceExport.js'
 import { RetractionRefused, retractOutput } from './retraction.js'
 import { policyKeysFor, publisherPolicyFromEnvironment, type PublisherPolicyConfig } from './policyConfig.js'
+import { inspectRegistration } from '@bsv/dpp-protocol'
+import { RegistrationRateLimiter, processRegistration, refreshPolicyChain, registrationSettingsFromEnvironment, registrationStoreFromEnvironment, sameIndexUrl, sourceAddress, type RegistrationSettings } from './registration.js'
 import { startPeerSynchronisation, syncConfigurationFor, syncSettingsFromEnvironment, type SyncSettings } from './sync.js'
 import { discoverySettingsFromEnvironment, shipAdvertLookup, startPeerDiscovery, type DiscoverySettings } from './discovery.js'
 import { advertiseIndex, advertiserWallet, advertisingSettingsFromEnvironment } from './advertise.js'
@@ -184,6 +186,12 @@ export interface NodeComponents {
    * stores, which then has the legacy tokens only.
    */
   publisherTokens?: PublisherTokenStore
+  /**
+   * REGISTRATION=open|approval (`registration.ts`): POST /register appends a
+   * policy version for a registering publisher and issues its tokens. Absent,
+   * the route answers 404 and the capability document says so.
+   */
+  registration?: RegistrationSettings
 }
 
 /** Whether a node pulls from peers it names or discovers, as its capability document and evidence packages reckon it. */
@@ -682,6 +690,7 @@ export function createRequestHandler(
     options.proofToken != null && options.proofToken !== '' ? options.proofToken : undefined
   const chainTracker = options.chainTracker
   const now = options.now ?? (() => new Date())
+  const registrationLimiter = options.components?.registration == null ? undefined : new RegistrationRateLimiter(options.components.registration.rateLimitPerHour)
   const components = options.components
   // The paginator holds this process's cursor secret, so it lives as long as
   // the handler: one per node, drawn at boot.
@@ -706,6 +715,7 @@ export function createRequestHandler(
     exportSigner,
     exportToken,
     knownOnChain: options.knownOnChain,
+    ...(registrationLimiter == null ? {} : { registrationLimiter }),
     software: `${identity.name}@${identity.version}`,
   }
   return (request, response) => {
@@ -726,6 +736,7 @@ interface HandlerOptions {
   exportToken?: string
   knownOnChain?: (txid: string) => Promise<boolean>
   software: string
+  registrationLimiter?: RegistrationRateLimiter
 }
 
 async function handle(
@@ -771,8 +782,9 @@ async function handle(
       // The chain, and never the operator keys that authorise it: a reader
       // takes those from the operator, because a chain checked against keys
       // the same index supplied proves nothing (spec/services.md section 1).
-      const chain = options.components?.publisherPolicy?.chain
-      if (chain == null) {
+      const policy = options.components?.publisherPolicy
+      const chain = policy?.chain
+      if (policy == null || chain == null) {
         json(response, 404, {
           status: 'error',
           code: 'no-publisher-policy',
@@ -780,6 +792,10 @@ async function handle(
         })
         return
       }
+      // A version the operator's command line appended, or another process
+      // registered, is taken up here, so what is served is what the store holds.
+      const registration = options.components?.registration
+      if (registration != null) await refreshPolicyChain(policy, registration.store)
       json(response, 200, chain)
       return
     }
@@ -794,6 +810,7 @@ async function handle(
         controlAuthorities: components?.controlAuthorities,
         managedAcceptance: components?.managedAcceptance,
         managedInstruction: components?.managedInstruction,
+        registration: components?.registration?.mode,
         exportAvailable: options.exportSigner != null,
         completeExportBearer: options.exportToken != null,
         networkOracleConfigured: options.knownOnChain != null,
@@ -896,6 +913,62 @@ async function handle(
         'Access-Control-Expose-Headers': 'X-Admission, X-Admission-Refusal',
       })
       return
+    }
+
+    if (route === 'POST /register') {
+      // A publisher key registers itself (spec/services.md section 2,
+      // registration.ts): the request is checked from itself before the
+      // index's own expectations, each refusal is named, and a limiter per
+      // source address bounds what a stranger can make the operator key sign.
+      const registration = options.components?.registration
+      const tokens = options.components?.publisherTokens
+      const policy = options.components?.publisherPolicy
+      if (registration == null || tokens == null || policy == null) {
+        request.resume()
+        throw new NamedError(404, 'registration-unavailable', 'this index does not register publishers itself; its operator adds a publisher by signing a policy version')
+      }
+      const source = sourceAddress(request.headers, request.socket.remoteAddress, registration.trustProxy)
+      if (options.registrationLimiter != null && !options.registrationLimiter.allow(source, options.now())) {
+        request.resume()
+        throw new NamedError(429, 'registration-rate-limited', `at most ${registration.rateLimitPerHour} registration requests per source address per hour`)
+      }
+      const body = await readBody(request)
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(body.toString('utf8'))
+      } catch {
+        throw new NamedError(400, 'registration-malformed', 'the body must be a dpp-index-registration@1 JSON object')
+      }
+      const inspection = inspectRegistration(parsed, { now: options.now(), network: options.network, custodyProfile: registration.custodyProfile })
+      const failure = inspection.failures[0]
+      if (failure != null) {
+        const detail = inspection.failures.map((f) => f.detail).join('; ')
+        if (failure.reason === 'format') throw new NamedError(400, 'registration-malformed', detail)
+        if (failure.reason === 'signature-invalid') throw new NamedError(401, 'registration-signature-invalid', detail)
+        if (failure.reason === 'request-stale') throw new NamedError(400, 'request-stale', detail, 'sign a fresh request: requestedAt must be within ten minutes of the index clock')
+        throw new NamedError(409, failure.reason, detail)
+      }
+      const signed = inspection.request!
+      if (!sameIndexUrl(signed.indexUrl, registration.indexUrl)) {
+        throw new NamedError(400, 'index-url-mismatch', `the request is for ${signed.indexUrl}; this index is ${registration.indexUrl}`)
+      }
+      const outcome = await processRegistration({ settings: registration, policy, tokens }, signed, options.now())
+      switch (outcome.kind) {
+        case 'registered':
+          json(response, 201, { status: 'registered', policyVersion: outcome.policyVersion, tokens: outcome.tokens })
+          return
+        case 'pending':
+          json(response, 202, { status: 'pending' })
+          return
+        case 'already-registered':
+          throw new NamedError(409, 'already-registered', 'this publisher key is registered and its tokens were handed over; ask the operator to reissue them')
+        case 'refused':
+          throw new NamedError(403, 'registration-refused', 'the operator refused this publisher key')
+        case 'revoked':
+          throw new NamedError(403, 'registration-revoked', 'the operator revoked this publisher key')
+        case 'full':
+          throw new NamedError(503, 'registration-unavailable', 'this index cannot register another publisher: its policy version holds as many entries as a policy may; ask the operator')
+      }
     }
 
     if (route === 'POST /arc-ingest') {
@@ -1522,6 +1595,15 @@ async function engineFromEnvironment(
     console.log('per-publisher tokens are read from the publisherTokensV1 collection (dpp-index tokens issue)')
   }
 
+  // The versions registration appended, from the store the environment
+  // selects, merged into the configured chain before the topic managers are
+  // built: a restart serves and admits under what was registered.
+  const registrationStore = publisherPolicy == null ? undefined : registrationStoreFromEnvironment(process.env, db)
+  if (publisherPolicy != null && registrationStore != null) {
+    const added = await refreshPolicyChain(publisherPolicy, registrationStore)
+    if (added.length > 0) console.log(`publisher policy versions ${added.join(', ')} were appended by registration and are admitted under too`)
+  }
+
   const acceptedAnchorServices = anchorServiceKeys()
   // A policy restricts the anchor rail only where its scope covers the topic;
   // elsewhere the static list is in charge, and an empty static list admits
@@ -1539,6 +1621,17 @@ async function engineFromEnvironment(
 
   const ownerConsent = ownerConsentPolicy()
   const versionTwo = versionTwoAdmission()
+  const registration = registrationSettingsFromEnvironment(process.env, publisherPolicy, registrationStore, declaredCustodyProfile(versionTwo.managedAcceptance))
+  if (registration != null && publisherTokens == null) {
+    throw new Error('REGISTRATION needs a per-publisher token store for the credentials it hands out: set PUBLISHER_TOKENS_FILE, or MONGO_URL and MONGO_DB')
+  }
+  if (registration != null) {
+    console.log(
+      `POST /register is ${registration.mode}: a publisher key registers against ${registration.indexUrl} under ${registration.custodyProfile}` +
+        (registration.mode === 'open' ? ' and is admitted at once' : ' and waits for dpp-index registrations approve') +
+        `, at most ${registration.rateLimitPerHour} requests per source address per hour`
+    )
+  }
   console.log(
     versionTwo.managedAcceptance
       ? `${TOPIC} admits a version 2 TRANSFER only with its acceptance commitment (ACCEPTANCE_COMMITMENT=required, the managed-custody profile)`
@@ -1614,6 +1707,7 @@ async function engineFromEnvironment(
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
     sync: { peers: [...sync.peers], staticPeers: [...sync.peers], intervalMs: sync.intervalMs, legacy: sync.legacy, ...(discovery.enabled ? { discovery } : {}) },
     ...(publisherTokens == null ? {} : { publisherTokens }),
+    ...(registration == null ? {} : { registration }),
   }
   return { engine, components, close }
 }
@@ -1695,6 +1789,7 @@ export async function runFromEnvironment(): Promise<void> {
           controlAuthorities: components.controlAuthorities,
           managedAcceptance: components.managedAcceptance,
           managedInstruction: components.managedInstruction,
+          registration: components.registration?.mode,
           exportAvailable: signingKey != null,
           completeExportBearer: exportToken != null && exportToken !== '',
           networkOracleConfigured: knownOnChain != null,
