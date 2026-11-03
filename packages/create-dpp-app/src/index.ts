@@ -9,6 +9,7 @@
  * installing the dependencies does. Every version the template pins comes
  * from one DPP release set, named in this package's manifest under "dpp".
  */
+import { randomBytes } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -80,6 +81,33 @@ function restoreDotfiles(dir: string): void {
 }
 restoreDotfiles(target)
 
+// Secrets exist from the first run: .env is written from .env.example with
+// fresh values, so nothing is copied from an example file and the API's
+// placeholder check never fires on a scaffolded project. The wallet root key
+// stays empty: the first go-live generates it. The default index is the
+// hosted testnet one, which go-live registers with.
+const envPath = join(target, '.env')
+if (existsSync(envPath)) {
+  console.error(`${envPath} already exists; it was not touched.`)
+} else {
+  const example = readFileSync(join(target, '.env.example'), 'utf8')
+  const generated: Record<string, string> = {
+    AUTH_SECRET: randomBytes(32).toString('hex'),
+    BRAND_ROOT_SECRET: randomBytes(32).toString('hex'),
+    MANAGED_IDENTITY_SECRET: randomBytes(32).toString('hex'),
+    NETWORK: 'test',
+    INDEX_URL: 'https://dpp-overlay-testnet.bsvb.net',
+  }
+  const env = example
+    .split('\n')
+    .map((line) => {
+      const match = /^([A-Z_]+)=/.exec(line)
+      return match != null && generated[match[1]] != null ? `${match[1]}=${generated[match[1]]}` : line
+    })
+    .join('\n')
+  writeFileSync(envPath, env, { mode: 0o600 })
+}
+
 const rootManifestPath = join(target, 'package.json')
 const rootManifest = JSON.parse(readFileSync(rootManifestPath, 'utf8')) as Record<string, unknown>
 rootManifest.name = projectName
@@ -99,10 +127,10 @@ Done. Next:
 
   cd ${positional[0] ?? 'my-dpp'}${install ? '' : '\n  npm install'}
   npm test            # the offline dry run: issue, update, hand on, retire, claim; no wallet, funds or Docker
-  cp .env.example .env
-  npm run dev         # web on http://localhost:5173, API on http://localhost:3000, a local index in-process
+  npm run dev         # web on http://localhost:5173, API on http://localhost:3000, an index in this process
+  npm run go-live     # register with the testnet index, check wallet, funds and admission, then publish for real
 
-For deployment you need an index: the service your app announces passports to and readers look them up in.
-Connect to one that exists, or create your own with @bsv/create-dpp-index (README, Connect an index).
-The app's Compose file starts only its database. No separate overlay installation is needed.
-Read README.md for the live route: a funded wallet, index access, and the identifier you will write under.`)
+.env holds fresh secrets and points at the default testnet index; go-live makes the wallet key and stores the tokens.
+An index is the service your app announces passports to and readers look them up in. The default one is hosted;
+npm run connect-index takes another provider's, npm run add-index creates your own beside this app.
+Read README.md for what go-live checks and for mainnet.`)

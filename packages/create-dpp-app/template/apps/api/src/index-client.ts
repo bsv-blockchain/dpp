@@ -40,6 +40,13 @@ export class IndexClient {
     return await fetch(`${this.url}${path}`, init)
   }
 
+  /** The index's own health answer, which names the network it serves. */
+  async health(): Promise<{ status: string; network: string }> {
+    const response = await this.request('/health')
+    if (!response.ok) throw new Error(`the index answered HTTP ${response.status} to GET /health`)
+    return (await response.json()) as { status: string; network: string }
+  }
+
   async capabilities(): Promise<CapabilityDocument> {
     const response = await this.request('/capabilities')
     if (!response.ok) throw new Error(`the index answered HTTP ${response.status} to GET /capabilities`)

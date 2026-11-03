@@ -47,6 +47,19 @@ export function RequireAccount({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
+/** While nothing is live, say so on every page and name the command that changes it. */
+function DevelopmentBanner() {
+  const { health } = useHealth()
+  if (health == null || health.livePublishing) return null
+  return (
+    <div className="border-b bg-muted/50">
+      <div className="mx-auto w-full max-w-5xl px-4 py-2 text-sm text-muted-foreground">
+        Nothing here is on the chain: this app writes drafts to {health.index.inProcess ? 'an index in this process' : 'its index'}. Run <code className="font-mono">npm run go-live</code> to publish for real.
+      </div>
+    </div>
+  )
+}
+
 export function Layout() {
   const account = useAccount()
   const { error } = useHealth()
@@ -107,6 +120,7 @@ export function Layout() {
           </div>
         </div>
       </header>
+      <DevelopmentBanner />
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         <Outlet />
       </main>

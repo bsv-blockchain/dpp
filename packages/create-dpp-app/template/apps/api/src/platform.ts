@@ -19,6 +19,8 @@ export interface Platform {
   config: Config
   store: Store
   db?: Db
+  /** The index in this process, when the app has not joined one. */
+  devIndex?: DevIndex
   wallet: PlatformWallet
   parties: Parties
   index: IndexClient
@@ -64,20 +66,37 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     }
   }
 
+  // DPP_TEST_WALLET=1 is the scaffold check's switch: the test wallet on the
+  // configured root key, so go-live registers the key .env holds without a
+  // funded wallet. A user never sets it; live mode says so when it is set.
+  const testWalletRequested = config.testWallet && config.wallet.rootKeyHex != null
   const wallet =
     mode === 'test' || config.wallet.rootKeyHex == null
       ? openTestWallet(undefined, config.network)
-      : await openToolboxWallet({ network: config.network, rootKeyHex: config.wallet.rootKeyHex, filePath: config.wallet.filePath, wocApiKey: config.wallet.wocApiKey, arcUrl: config.wallet.arcUrl })
-  if (mode === 'live' && wallet.kind === 'test') log('WALLET_ROOT_KEY is not set: a test wallet with fixed keys stands in, and nothing can be written to the chain.')
+      : testWalletRequested
+        ? openTestWallet(config.wallet.rootKeyHex, config.network)
+        : await openToolboxWallet({ network: config.network, rootKeyHex: config.wallet.rootKeyHex, filePath: config.wallet.filePath, wocApiKey: config.wallet.wocApiKey, arcUrl: config.wallet.arcUrl })
+  if (mode === 'live' && wallet.kind === 'test') {
+    log(testWalletRequested ? 'DPP_TEST_WALLET=1: the test wallet stands in on the configured root key, with made-up funds; nothing can be written to the chain.' : 'WALLET_ROOT_KEY is not set: a test wallet with fixed keys stands in, and nothing can be written to the chain.')
+  }
 
   let devIndex: DevIndex | undefined
   let index: IndexClient
-  if (config.index.url != null) {
-    index = new IndexClient({ url: config.index.url, submitToken: config.index.submitToken, callbackToken: config.index.callbackToken })
+  if (config.index.joined) {
+    index = new IndexClient({ url: config.index.url!, submitToken: config.index.submitToken, callbackToken: config.index.callbackToken })
   } else {
-    devIndex = await startDevIndex(wallet.identityKey)
+    // An address with no tokens is an index this app has not joined yet: it
+    // would answer 401 to every write. The in-process index stands in until
+    // go-live registers the key and stores the tokens.
+    devIndex = await startDevIndex({ publisherKey: wallet.identityKey, network: config.network })
     index = new IndexClient({ url: devIndex.url, submitToken: devIndex.submitToken, callbackToken: devIndex.callbackToken })
-    if (mode === 'live') log(`INDEX_URL is not set: an index runs in this process at ${devIndex.url} with in-memory storage; it forgets everything on restart and claims no inclusion.`)
+    if (mode === 'live') {
+      log(
+        config.index.url == null
+          ? `INDEX_URL is not set: an index runs in this process at ${devIndex.url} with in-memory storage; it forgets everything on restart and claims no inclusion.`
+          : `This app has not joined ${config.index.url} yet (no tokens): an index runs in this process at ${devIndex.url} with in-memory storage until npm run go-live registers the publisher key.`
+      )
+    }
   }
 
   const parties = managedParties({ brandRootSecret: config.brandRootSecret, managedIdentitySecret: config.managedIdentitySecret })
@@ -93,12 +112,13 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
   const custody = new Custody({ store, wallet, parties, writer })
   const claims = new Claims({ store, registry: config.registry.url == null ? undefined : { url: config.registry.url, token: config.registry.token } })
   // Inclusion can only be checked against a header source; the in-process index and the test wallet mine nothing.
-  const chainTracker: ChainTracker | 'scripts only' = wallet.kind === 'toolbox' && config.index.url != null ? headerSource(config.network, config.wallet.wocApiKey) : 'scripts only'
+  const chainTracker: ChainTracker | 'scripts only' = wallet.kind === 'toolbox' && config.index.joined ? headerSource(config.network, config.wallet.wocApiKey) : 'scripts only'
 
   return {
     config,
     store,
     db,
+    ...(devIndex == null ? {} : { devIndex }),
     wallet,
     parties,
     index,
