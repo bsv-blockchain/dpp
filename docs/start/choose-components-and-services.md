@@ -1,86 +1,100 @@
 # Choose packages and services
 
-Start with what your application needs to do. Then choose which parts to implement and which services to operate or obtain from a provider.
+Application teams and operators can use this page to select packages and assign service responsibilities for their chosen passport features. Decide what to implement, operate or obtain from a provider.
 
-The standard defines roles and the rules they follow. Packages implement some of those rules. Services run capabilities that applications use. A required capability does not necessarily mean another server to run, and no DPP npm package is mandatory for an independent implementation.
+The standard defines roles and rules; packages implement some rules; services run capabilities applications use. A capability need not require another server. No DPP npm package is mandatory for an independent implementation.
+
+## Before you start
+
+| Input | Where to obtain it |
+|---|---|
+| Required outcomes | Your product scope or [platform brief](plan-your-platform.md) |
+| Package or source version | [Release sets](../reference/release-sets.md): choose published packages or a reviewed source commit |
+| Existing index connection | Operator-supplied URL and access settings |
+| Live-write access | Operator agreement before writer configuration. Public reads do not permit submissions; an admitted public publisher key does not supply its private signing capability. |
 
 ## Choose your outcome
 
-| You want to | You need | You can leave out initially |
+| Outcome | Required capabilities | Leave out initially unless selected |
 |---|---|---|
-| Check supplied passport evidence | A reader and the evidence needed for its checks | Wallet funding, live publishing, your own index and a registry |
-| Read live passports | A reader, an index that holds the records, referenced evidence and any required header/proof source | Your own index, writer and registry unless your selected features need them |
-| Issue or update passports | Authorised issuer and publisher signing, the selected custody behaviour, valid data and identifier, a funded write path, an admitting index and retained evidence | Claims, credential exchange and additional peer indexes unless selected |
-| Add native lifecycle claims | Native claim signing/verification; registry and anchoring arrangements for the published storage workflow | VSC unless the chosen credential or exchange format calls for it |
-| Operate an index | A compatible index implementation, admission policy, storage, evidence checking and operational controls | A passport user interface and a registry if they are outside your service scope |
-| Implement independently | The selected role's specifications, contracts, fixtures and evidence report | The reference libraries |
-
-For live writes, arrange access before configuring the writer. An index being publicly readable does not give you permission to submit records, and an admitted public publisher key does not give you its private signing capability.
+| Check supplied passport evidence | Reader and evidence for its checks | Wallet funding, live publishing, own index and registry |
+| Read live passports | Reader, index holding records, referenced evidence, required header/proof source | Own index, writer and registry |
+| Issue or update passports | Authorised issuer and publisher signing, selected custody behaviour, valid data and identifier, funded write path, admitting index, retained evidence | Claims, credential exchange, additional peer indexes |
+| Add native lifecycle claims | Native signing/verification; registry and anchoring for the published storage workflow | VSC, unless the credential or exchange format requires it |
+| Operate an index | Compatible implementation, admission policy, storage, evidence checking, operational controls | Passport user interface and registry outside your service scope |
+| Implement independently | Role specifications, contracts, fixtures and evidence report | Reference libraries |
 
 ## Pick only the packages your task uses
 
-For a new application, start with **[the application starter](../packages/create-dpp-app.md)**. `@bsv/create-dpp-app` creates the app and declares its selected dependencies. For deployment, choose an existing index provider or a separate index project.
+1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or a separate index project.
+2. For a new reference index, use [Create an index](../packages/create-dpp-index.md). `@bsv/create-dpp-index` includes `@bsv/dpp-overlay` as the generated project's runtime dependency. Follow that one setup path; do not install the runtime separately. The guide identifies its current publication prerequisite.
+3. To connect to an existing compatible index over HTTP, use its operator-supplied connection settings. Neither index package is needed.
 
-For a new reference index, start with **[Create an index](../packages/create-dpp-index.md)**. `@bsv/create-dpp-index` creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is one setup path; you do not install the runtime separately. The starter guide identifies its current publication prerequisite.
+These libraries are code components. Dependencies included by a starter or another package are already supplied.
 
-If your app will use an existing compatible index, obtain its URL and access settings from the operator. You need neither index package just to connect over HTTP.
+| Package | Purpose and selection rule |
+|---|---|
+| `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers; select when using these reference helpers |
+| `@bsv/dpp-profiles` | Profile manifests, payload schemas and supported helpers; select for its product data or interoperability tooling |
+| `@bsv/dpp-overlay` | Index runtime, topics and lookups; included by the index starter, installed directly only for a custom or embedded index |
+| `@bsv/dpp-credentials` | Supported credential and exchange features; select for those formats. Native lifecycle claims do not require it. |
 
-The reference libraries below are components for your code. An included dependency is already supplied by the starter or package that uses it:
+### Runtime and version choice
 
-| Package | Purpose | Needed when |
-|---|---|---|
-| `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers | Your application uses these reference helpers |
-| `@bsv/dpp-profiles` | Product profile manifests, payload schemas and supported profile helpers | You use its product data or interoperability tooling |
-| `@bsv/dpp-overlay` | Index runtime, topics and lookup services | Included by the index starter; install directly only for a custom or embedded index |
-| `@bsv/dpp-credentials` | Supported verifiable-credential and exchange features | Your selected feature uses those formats; native lifecycle claims do not require it |
+| Decision | Requirement |
+|---|---|
+| Installation | Use exact versions from [install the selected release](../packages/README.md) |
+| Published or source | The published set is `dpp-release-2026-10-10`; `dpp-release-2026-11` is an unpublished source candidate. Check [release sets](../reference/release-sets.md). |
+| SDK | Declare `@bsv/sdk` directly when your code imports it |
+| Runtime | Node.js 22 or later with ESM |
+| Browser | Check [supported entry points](../packages/support-table.md); JavaScript alone does not establish browser module support |
+| Profile assets | Follow the separate JSON/schema asset-packaging instructions |
 
-Use the exact versions in [install the selected release](../packages/README.md). Declare `@bsv/sdk` directly if your code imports it. The reference runtime is Node.js 22 or later with ESM. Check the [supported entry points](../packages/support-table.md) before choosing a browser deployment; browser module support is not established merely because a package is JavaScript. Profile JSON/schema assets have their own packaging instructions.
-
-There is no released turnkey application service or registry package. The [application responsibilities](../packages/what-an-application-offers.md) and [registry implementation guide](../implement/roles/registry.md) describe what you must supply if you choose those roles.
+There is no released turnkey application service or registry package. [Application responsibilities](../packages/what-an-application-offers.md) and the [registry implementation guide](../implement/roles/registry.md) describe what those roles require you to supply.
 
 ## Decide which services to run or use
 
-| Service or capability | When it is needed | Your choices |
+| Capability | When needed | Arrangement |
 |---|---|---|
-| Index, also called overlay | The documented live lookup and publication workflow | Use a compatible provider with agreed access, or [create your own index](../packages/create-dpp-index.md) |
-| Wallet and broadcast | Funding and submitting live transactions | Integrate a suitable wallet or connect to one; the reference writer uses BRC-100. Every reader does not need a funded wallet |
-| Header and proof source | Checking blockchain inclusion where applicable | Obtain the required evidence through a compatible source. The reference index currently uses WhatsOnChain |
-| Publisher countersigning | Issuing or updating a passport | Supply authorised signing through your application or an agreed service. Running an index does not automatically supply it |
-| Claims registry and anchoring | The selected claim storage and publication workflow | Arrange a compatible registry, or implement its contract. Registry storage and transaction anchoring are separate responsibilities |
-| GS1 resolution service | The chosen resolution profile needs link selection, linksets or related resolution behaviour | Implement or arrange that service. A GS1-shaped passport identifier alone does not mean every platform must run a resolver |
-| DID resolution | The chosen identity method requires it | Follow the method's supported resolution; `did:key` can be resolved locally |
-| Additional index peers | Your replication, availability or interoperability goals require them | Agree compatible admission and data flow with other operators; peers are not a prerequisite for every first integration |
-| Product and restricted-evidence storage | The data and referenced artefacts your platform promises to retain | Application storage or an appropriate provider, with access and recovery arrangements |
+| Index, also called overlay | Documented live lookup and publication workflow | Compatible provider with agreed access, or [your own index](../packages/create-dpp-index.md) |
+| Wallet and broadcast | Funding and submitting live transactions | Integrate or connect a suitable wallet; the reference writer uses BRC-100. A reader does not need a funded wallet. |
+| Header and proof source | Blockchain inclusion checks where applicable | Compatible evidence source; the reference index currently uses WhatsOnChain |
+| Publisher countersigning | Issuing or updating | Authorised application signing or agreed service; running an index does not supply it automatically |
+| Claims registry and anchoring | Selected claim storage and publication workflow | Compatible registry or your implementation of its contract. Storage and transaction anchoring are separate responsibilities. |
+| GS1 resolution service | Selected profile needs link selection, linksets or related resolution | Implement or arrange it. A GS1-shaped identifier does not require every platform to run a resolver. |
+| DID resolution | Selected identity method requires it | Supported method resolution; `did:key` resolves locally |
+| Additional index peers | Replication, availability or interoperability goals require them | Agree admission compatibility and data flow with operators. Not required for every first integration. |
+| Product and restricted-evidence storage | Promised retention of data and referenced artefacts | Application storage or provider, with access and recovery arrangements |
 
-One deployment may supply several capabilities. MongoDB is part of the reference index preset, not a database mandated for every implementation of the standard.
+One deployment can supply several capabilities. MongoDB belongs to the reference index preset; the standard does not mandate it for every implementation.
 
 ## What the existing hosted services allow
 
-| Address | What it provides | Access to establish before relying on it |
+| Address | Capability | Access and limits |
 |---|---|---|
-| `https://dpp-overlay.bsvb.net` | Reference index with public lookup, history, capabilities and bounded evidence packages | Submission/retraction, proof callbacks and complete exports use distinct operator tokens. General write access is not offered by the documentation |
-| `https://dpp-resolver.bsvb.net` | Attestation registry with public validation and reads | Storing claims needs operator permission. This is not a GS1 resolver |
-| `https://dpp.bsvb.net` | Demonstration application and verifier | It is for sample data. Its verifier reads the hosted index; it is not a general verifier for your private deployment |
-| `https://dpp-proof.bsvb.net` | Optional proof view for claims and their anchors | It does not replace the registry, index or your own evidence handling |
+| `https://dpp-overlay.bsvb.net` | Public lookup, history, capabilities and bounded evidence packages | Distinct operator tokens for submission/retraction, proof callbacks and complete exports. Documentation offers no general write access. |
+| `https://dpp-resolver.bsvb.net` | Attestation registry with public validation and reads | Storing claims requires operator permission. Not a GS1 resolver. |
+| `https://dpp.bsvb.net` | Sample-data demonstration and verifier | Verifier reads the hosted index; it is not a general verifier for private deployments |
+| `https://dpp-proof.bsvb.net` | Optional claim and anchor proof view | Does not replace registry, index or your evidence handling |
 
-The [hosted reference guide](../deployment.md) records the exact routes, access rules, published trust keys, observations and limitations. Public read access can be useful for evaluation. For production use, arrange the necessary write access and operating commitments or choose your own deployment. Do not assume a hosted URL comes with a production service agreement.
+The [hosted reference guide](../deployment.md) records routes, access rules, published trust keys, observations and limitations. Public reads support evaluation. Production requires agreed write access and operating commitments, or your own deployment. A hosted URL implies no production service agreement.
 
 ## Record the service decision
 
-For each chosen provider or service you operate, record:
+For each provider or operated service, record:
 
-- Its role, base URL, network and supported contracts/profiles.
-- Who may read, submit, deliver proofs and export, with the correct credential for each action.
-- The independently trusted operator identity and the relevant publisher or anchoring keys. For an index, verify the signed publisher policy and its validity windows.
-- Who retains product data, claim bytes, restricted evidence, keys and complete history.
-- Who delivers later proofs, handles failed writes, supports incidents and restores the service.
+1. Role, base URL, network and supported contracts/profiles.
+2. Read, submit, proof-delivery and export permissions, with the correct credentials.
+3. Independently trusted operator identity and publisher or anchoring keys. For an index, verify its signed publisher policy and validity windows.
+4. Owners retaining product data, claim bytes, restricted evidence, keys and complete history.
+5. Owners delivering later proofs, handling failed writes, supporting incidents and restoring service.
 
-Keep secrets scoped to their intended endpoint. Do not send one service's token to another service or to a discovered peer. A capability document is a statement by a service, not proof of its identity or of a particular record's validity.
+Scope secrets to their endpoint. Never send a service's token to another service or discovered peer. A capability document is a service's statement, not proof of identity or record validity.
 
 ## Keep your version choice consistent
 
-Choose either the selected published packages or a specific reviewed source commit. Examples built from a repository checkout can include work beyond the published package, even when the version string has not changed. A hosted deployment can differ from both.
+Checkout examples may include changes beyond published packages, even with unchanged version strings. Hosted deployments can differ from both. Keep the published-package or reviewed-source choice made above consistent.
 
-Use [release sets](../reference/release-sets.md), [the hosted reference](../deployment.md) and the relevant [known limitations](../operate/limitations.md) together. Do not mix their capabilities without checking.
+Check [release sets](../reference/release-sets.md), [the hosted reference](../deployment.md) and [known limitations](../operate/limitations.md) together before combining capabilities.
 
-Next, [build your selected features](build-and-integrate.md) or [plan the services you will operate](../operate/overview.md). If you are still defining the whole product, complete [your platform brief](plan-your-platform.md).
+Next, [build selected features](build-and-integrate.md) or [plan service operation](../operate/overview.md). If product scope remains open, complete [your platform brief](plan-your-platform.md).

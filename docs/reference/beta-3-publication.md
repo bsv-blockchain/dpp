@@ -6,7 +6,19 @@ hidden: true
 
 > Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
 
-Three packages selected by `dpp-release-2026-09-5` were published to the public npm registry on **27 September 2026**, using GitHub OIDC trusted publishing with provenance. The fourth, `@bsv/vsc@0.2.0-beta.2`, is unchanged: its archive repacked byte for byte and the publisher verified the existing registry version instead of uploading it. Every downloaded archive matched the approved bytes, and the final public-registry consumer check passed. The set has since been superseded by `dpp-release-2026-10`; this receipt records the beta.3 publication as it happened.
+Release reviewers and consumers can check this beta.3 publication against its approved source and archive bytes here. Three packages in `dpp-release-2026-09-5` were published to public npm on **27 September 2026**, using GitHub OIDC trusted publishing with provenance; the fourth was reused, as recorded below. Every downloaded archive matched the approved bytes, and the final public-registry consumer check passed. The set was superseded by `dpp-release-2026-10`; this receipt preserves the publication record.
+
+## Before reproducing the verification
+
+For optional reproduction:
+
+| Input | Source and requirement |
+|---|---|
+| Checkout | Source commit recorded below; run from its checkout root. |
+| Toolchain | git, Node 22 and npm 11.19.0, matching the recorded toolchain. |
+| Verification inputs | Public access to `https://registry.npmjs.org/` and the approved plan below. |
+
+Keep the checkout clean. Any file written inside it, including a log, makes candidates record `sourceState: working-tree` and changes the plan digest.
 
 ## Exact source and approval
 
@@ -22,7 +34,7 @@ Three packages selected by `dpp-release-2026-09-5` were published to the public 
 | Toolchain | Node 22, npm 11.19.0 |
 | Registry and access | `https://registry.npmjs.org/`, public |
 
-The archived plan includes each archive's SHA-256, SHA-512 npm integrity and byte length, as well as the release-set, selection and changelog digests. The dry run and the release produced the same plan. Later changes to documentation or publication tooling do not alter this approved plan or identify a new package publication.
+The plan records each archive's SHA-256, SHA-512 npm integrity and byte length, plus release-set, selection and changelog digests. Dry run and release produced the same plan. Later documentation or publication-tooling changes neither alter it nor identify a new package publication.
 
 ## Published packages
 
@@ -33,13 +45,23 @@ The archived plan includes each archive's SHA-256, SHA-512 npm integrity and byt
 | [@bsv/dpp-profiles](https://www.npmjs.com/package/@bsv/dpp-profiles/v/0.3.0-beta.3) | `0.3.0-beta.3` | `0.3.0-beta.1` | [Attestation](https://registry.npmjs.org/-/npm/v1/attestations/@bsv%2fdpp-profiles@0.3.0-beta.3) |
 | [@bsv/vsc](https://www.npmjs.com/package/@bsv/vsc/v/0.2.0-beta.2) | `0.2.0-beta.2`, unchanged | `0.2.0-beta.1` | [Attestation of the beta.2 publication](https://registry.npmjs.org/-/npm/v1/attestations/@bsv%2fvsc@0.2.0-beta.2) |
 
-These tags record the outcome of this publication, not a promise that tags never move. Pin exact versions and retain the consuming application's lockfile.
+Tags record this publication and may move. Pin exact versions and retain the consuming application's lockfile.
 
 ## Verification
 
-The workflow passed build, type checks, tests, candidate consumer checks, selected-claim qualification and the local operator-image smoke test. After the three uploads became available, it installed the exact public npm versions into a clean consumer and checked archive integrity, runtime entry points, packaged schemas and artefacts, and strict TypeScript declaration resolution with `skipLibCheck` disabled. Each upload was verified before the next began, and no resumption was needed.
+The workflow passed build, type checks, tests, candidate consumer checks, selected-claim qualification and the local operator-image smoke test.
 
-To reproduce verification, check out the recorded source revision with the same toolchain, then run the commands below. Keep the checkout clean: any file written inside it, a log included, makes the candidates record `sourceState: working-tree` and changes the plan's digest.
+### Recorded outcomes
+
+| Stage | Recorded outcome |
+|---|---|
+| Changed packages | Three uploads became available, each verified before the next began; no resumption needed. |
+| Unchanged package | `@bsv/vsc@0.2.0-beta.2` repacked byte for byte. The publisher verified the existing registry version instead of uploading it. |
+| Clean consumer | After uploads became available, installed the exact public npm versions and passed archive integrity, runtime entry points, packaged schemas and artefacts, and strict TypeScript declaration resolution with `skipLibCheck` disabled. |
+
+### Reproduce the checks
+
+1. Run these commands in order. Require matching npm archive bytes and a passing public-registry consumer check.
 
 ```sh
 npm ci
@@ -48,12 +70,14 @@ node scripts/publish-candidates.mjs --verify-registry
 node scripts/consumer-check.mjs --registry
 ```
 
-Compare the `release/publication-plan.json` that `publish-candidates.mjs --verify-registry`, the third command, writes with the [archived plan](beta-3-publication-plan.json) on the default branch; it is not in the source revision's tree. These commands check existing registry packages and do not publish or change tags.
+2. Compare `release/publication-plan.json`, written by `publish-candidates.mjs --verify-registry`, the third command, with the [archived plan](beta-3-publication-plan.json). It is on the default branch, absent from the source revision. Require the same plan and digest.
+
+Stop on mismatches or failed checks. These commands verify existing registry packages without publishing or changing tags.
 
 ## What publication does and does not change
 
-The release-set JSON retains `status: candidate` because it is an input whose exact digest was approved. This receipt records completed npm publication without rewriting that evidence.
+The release-set JSON retains `status: candidate`: its exact input digest was approved. This receipt records completed npm publication without rewriting that evidence.
 
 The packages carry the index synchronisation and publisher policy changes of 27 September 2026 and move to `@bsv/sdk` 2.8.10. Publication does not upgrade the reference application or registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
-The [publication guide](publishing-profile-updates.md) describes the process for future releases and recovery from delays. The [beta.2 receipt](beta-2-publication.md) records the preceding publication.
+The [publication guide](publishing-profile-updates.md) covers future releases and recovery from delays. The [beta.2 receipt](beta-2-publication.md) records the preceding publication.

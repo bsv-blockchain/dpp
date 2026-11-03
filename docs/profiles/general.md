@@ -1,23 +1,32 @@
 # General
 
-The general profile, `general@2`, is the product data for a product that no sector profile covers, such as a bicycle, a watch or a piece of furniture. Use this page to start a payload from a sample that passes, see the categories and fields the profile defines, and inspect them in code.
+Passport writers and readers can use `general@2` for products no sector profile covers, such as bicycles, watches or furniture. Start with a valid sample, choose a category and inspect the product fields before integrating them.
 
 The profile claims no regulation. Choosing it does not mean battery or textile rules stop applying to a product they cover; for those products use [battery](battery.md) or [textile](textile.md).
 
+## Before you start
+
+| Task | Input and source |
+|---|---|
+| Run examples | Node.js 22 or later; see [runtime requirements](../start/for-agents.md#facts-to-rely-on) |
+| Generate and check samples | [Repository checkout](../quick-start.md) at the reviewed example revision, prepared with `npm ci` and `npm run build`; run commands at its root |
+| Inspect fields without a checkout | A project with `@bsv/dpp-profiles@0.3.0-beta.7` installed; alternatively use the checkout after `npm run build` |
+| Replace sample data | Product data and a category from the list below |
+
 ## Versions
 
-A version on this page is the profile version, the number after `@`, which a payload declares in `profile_version`. It is not the record version of the passport format or the manifest format ([choose an industry profile](README.md) explains all three).
+The number after `@` is the profile version declared by `profile_version`, separate from the record version and manifest format ([version names](README.md)).
 
 | Version | Status | Use it to |
 |---|---|---|
 | `general@2` | `current` | Write new records |
 | `general@1` | `superseded` | Read records that declare it. It defines no fields, so a reader has no labels to show for such a record's values |
 
-Each manifest's `status` field says which version is which, and it is the answer to trust in code.
+Use the manifest's `status` as the version status in code.
 
 ## Categories
 
-The payload's `category` field says what kind of object the passport describes. The list is open: the schema accepts any non-empty text, but use one of these values so that other readers can label it. Every `general@2` field applies to every category.
+`category` identifies the object type. This open list accepts any non-empty text; choose a listed value so readers can label it. Every `general@2` field applies to every category.
 
 | Value | Label |
 |---|---|
@@ -33,14 +42,14 @@ The payload's `category` field says what kind of object the passport describes. 
 
 ## Start from a sample payload
 
-Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)):
+1. Generate the sample with the first command:
 
 ```sh
 node examples/sample-payload.mjs general@2 --demonstration > payload.json
 node examples/sample-payload.mjs --check general@2 payload.json
 ```
 
-The first command writes this sample:
+Generated sample:
 
 ```json
 {
@@ -61,22 +70,30 @@ The first command writes this sample:
 }
 ```
 
-`--demonstration` adds `notice`, the sentence a person reads first on a test or demonstration record, one that describes no real product and uses the GS1 demonstration prefix 952 ([identifiers](../identifiers.md)). Leave the flag out for a real product: a record about a real product must not carry `notice`.
+2. Replace every placeholder with product data and choose `category` from the list above.
+3. Run the second command. Resolve every reported problem and check again before using the payload.
 
-Replace every placeholder with the product's own data and set `category` to one of the values above. Keep `profile` and `profile_version` as they are. The second command then prints `ok: payload.json is a valid general@2 public payload.` If anything is wrong it prints one `FAIL:` line per problem, such as a missing field, and exits with status 1.
+| Input or result | Rule |
+|---|---|
+| `--demonstration` | Adds `notice` as the sentence shown first; use it for tests or demonstrations with no real product and GS1 prefix 952 ([identifiers](../identifiers.md)) |
+| Real product | Omit the flag; the record must not carry `notice` |
+| `profile`, `profile_version` | Keep their generated values |
+| Success | `ok: payload.json is a valid general@2 public payload.` |
+| Failure | One `FAIL:` line per problem, such as a missing field; exit status 1 |
+
 
 ## What the profile defines
 
 | What | Count |
 |---|---|
 | Fields in the `general@2` manifest | 40: 34 public and 6 restricted (4 `owner`, 2 `legitimate`) |
-| Properties the public schema accepts | 39: the 34 public fields, plus the five stamps every public payload may carry (`notice`, `profile`, `profile_version`, `object_did`, `dataCarrier`) |
-| Properties the public schema requires | 8: six fields (`careNote`, `category`, `manufacturer`, `manufacturerContact`, `materials`, `name`) plus `profile` and `profile_version`. The sample fills exactly these |
-| Properties the restricted schema accepts | 6, the restricted fields. It requires none |
+| Accepted public properties | 39: the 34 public fields, plus five public payload stamps (`notice`, `profile`, `profile_version`, `object_did`, `dataCarrier`) |
+| Required public properties | 8: six fields (`careNote`, `category`, `manufacturer`, `manufacturerContact`, `materials`, `name`) plus `profile` and `profile_version`. The sample fills exactly these |
+| Accepted restricted properties | 6, the restricted fields. It requires none |
 
 ## Inspect the fields
 
-Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.7` installed, or in the root of a checkout after `npm run build`:
+Inspect the fields:
 
 ```sh
 node --input-type=module <<'JS'
@@ -98,7 +115,7 @@ It prints a table of the 40 fields, then:
 furniture: 40 apply, 0 do not, 0 need review
 ```
 
-Put your own category in place of `'furniture'`. In the table, `label` is what to show a person, `accessTier` says who may read the value and `obligation` says whether to insist on it (`required`, `recommended` or `optional`). The field reference on [@bsv/dpp-profiles](../packages/dpp-profiles.md) explains every field property.
+Replace `'furniture'` with your category. Display `label` to the reader; `accessTier` identifies allowed readers, and `obligation` is `required`, `recommended` or `optional`. The [package field reference](../packages/dpp-profiles.md) explains every property.
 
 ## If something fails
 

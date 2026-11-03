@@ -1,21 +1,26 @@
 # External credential verification
 
-Use this page to verify a W3C Verifiable Credential that another party issued about a product, and to fold the result into the passport report. The packages verify this profile, `vc-di-ecdsa-rdfc-2019@1`; they do not issue it, so an issuer needs issuing software of its own.
+Application teams can use this page to verify another party's W3C Verifiable Credential about a product and include the findings in a passport report. The packages verify `vc-di-ecdsa-rdfc-2019@1`; they do not issue it. An issuer needs its own issuing software.
 
-The profile accepts a VC Data Model 2.0 credential from a `did:web` issuer, with one identified subject and a Data Integrity proof under the `ecdsa-rdfc-2019` suite with a P-256 key. The [verifiable credential guide](../learn/verifiable-credentials.md) explains what a credential carries and which issuance and verification paths exist, and [BSV DIDs](../learn/dids.md) explains issuer identity; this profile selects `did:web`, not the BSV method.
+This profile accepts VC Data Model 2.0, a `did:web` issuer, one identified subject and a Data Integrity `ecdsa-rdfc-2019` proof using P-256. See [verifiable credentials](../learn/verifiable-credentials.md) for contents and issuance/verification paths, and [BSV DIDs](../learn/dids.md) for issuer identity. This profile selects `did:web`, not the BSV method.
 
 ## What you need
 
-- The credential's exact received bytes. The proof is computed over the credential's meaning, not its bytes, so keep the bytes: they are what an anchor commits to.
-- The product identifier your caller expects, from your own context.
-- The issuer's DID document, retrieved in advance or through a bounded `did:web` resolver you configure, and the JSON-LD contexts the credential uses, pinned in advance: the verifier never fetches a context from a URL the credential names.
-- The evaluation time, a status policy with a way to fetch status lists, and an authority policy naming the issuers you trust, or saying explicitly that you require none.
+| Input or setup | Source and requirement |
+|---|---|
+| Example runtime | Node 22 or later; [set up the checkout](../quick-start.md#get-the-code) with `npm ci` and `npm run build`. Run the commands from its root. |
+| Package provenance | In the checkout, `@bsv/dpp-credentials` resolves to the workspace build. The same code gives the same answers against candidate version 0.2.0-beta.6. |
+| Credential bytes | Keep the exact received bytes from the issuer. A proof covers meaning; an anchor commits to these bytes. |
+| Expected product identifier | Your caller's own context. |
+| Issuer DID document | Retrieve it in advance or use a bounded `did:web` resolver you configure. |
+| JSON-LD contexts | Pin the credential's contexts in advance. The verifier never fetches a context from a URL the credential names. |
+| Evaluation and trust policies | Supply the evaluation time, a status policy and status-list fetcher, and an authority policy naming trusted issuers or explicitly requiring none. |
 
-Use the `@bsv/dpp-credentials/exchange` entry point. The root `@bsv/dpp-credentials` entry verifies SEAL credentials of the Verifiable Supply Chain (VSC) profile, a different representation with different rules. Handing a credential to whichever verifier happens to parse JSON is not representation selection.
+Use `@bsv/dpp-credentials/exchange`. The root `@bsv/dpp-credentials` verifies Verifiable Supply Chain (VSC) SEAL credentials, a different representation with different rules. JSON parsing alone does not select the representation.
 
 ## Verify the vector file's credentials
 
-At the root of a checkout, after [setup](../quick-start.md#get-the-code), this verifies the `positive` case of the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json) and then checks every case against its expected checks. Inside the checkout `@bsv/dpp-credentials` resolves to the workspace build; the same code gives the same answers against `@bsv/dpp-credentials` 0.2.0-beta.6, the version the current candidate names.
+1. Run this to verify `positive` in the [credential vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/external-credential/v1.json), then compare all cases with their expected checks.
 
 ```sh
 node --input-type=module <<'JS'
@@ -60,9 +65,24 @@ for (const vector of vectors) {
 JS
 ```
 
-It prints the ten checks of the `positive` case, from `parse verified` to `availability verified`, then one line for each of the 20 cases, each reading `gives its expected checks`.
+2. Check the output: ten checks for `positive`, beginning and ending as shown, followed by 20 cases each reading `gives its expected checks`.
 
-The vector file names its policy differently from the call. Its `authority`, `status` and `subjectBinding` are the call's `authorityPolicy`, `statusPolicy` and `subjectBindingPolicy`; `statusOptional` passes through unchanged; and its `status` carries no `resolve`. Give `statusPolicy` a `resolve` that throws when a list cannot be fetched, so an unavailable list reads `indeterminate`. Leave out `statusOptional`, and the line for `status-missing-optional` reads `differs on status`: it gives `indeterminate` where the file expects `not-required`.
+```text
+parse verified
+...
+availability verified
+```
+
+The vector file and API use different policy names:
+
+| Vector field | API field or rule |
+|---|---|
+| `authority` | `authorityPolicy` |
+| `status` | `statusPolicy`; add `resolve`, which the vector omits |
+| `subjectBinding` | `subjectBindingPolicy` |
+| `statusOptional` | Pass through unchanged |
+| Status fetch failure | `resolve` must throw so an unavailable list reads `indeterminate`. Returning nothing gives a different answer. |
+| Omitted `statusOptional` | `status-missing-optional` prints `differs on status`: `indeterminate` instead of the expected `not-required`. |
 
 `verifyExternalCredential` evaluates the credential's own checks; `externalCredentialVerifierFor` adapts them to the shared passport report, where they answer `externalCredentialProof`, `schema`, `credentialTime`, `credentialStatus`, `issuerAuthority` and `evidenceAvailability`. Missing status or authority sources can leave those findings `unknown` even when the proof verifies.
 
@@ -72,7 +92,13 @@ The vector file names its policy differently from the call. Its `authority`, `st
 node examples/verify-external-credential.mjs
 ```
 
-[`examples/verify-external-credential.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-external-credential.mjs) prints the ten checks of `positive`, each `Holds`, then `tampered-subject`, whose line `FAILS: proof (proof_failed: ...)` is the expected answer for a credential altered after signing. It ends with the digests of the issued bytes and of a re-serialised copy, which differ while both proofs still verify: only the issued bytes are what an anchor commits to. The command exits 0.
+[`examples/verify-external-credential.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-external-credential.mjs) prints ten `Holds` checks for `positive`, then the intentional refusal for `tampered-subject`:
+
+```text
+FAILS: proof (proof_failed: ...)
+```
+
+This intentional refusal confirms a post-signing change; the exercise exits 0. It ends with different digests for issued and re-serialised bytes, although both proofs verify. Only the issued bytes are what an anchor commits to.
 
 ```sh
 npm run test -w @bsv/dpp-credentials -- test/exchange.test.ts test/exchange-vectors.test.ts
@@ -82,7 +108,23 @@ It runs 60 tests, all passing, with fixture documents and published test keys, i
 
 ## Connect an application
 
-Retain the exact bytes and the proof result separately: a reformatted credential can need a different exact-byte finding even where its proof evaluates the same way. Show the [per-check report](../learn/evidence-and-freshness.md), and use [the attestation verifier guide](../implement/roles/attestation-verifier.md) for the surrounding evidence workflow. A resolved DID document establishes a key relationship, not accreditation, and live identity assurance is Ring 0, where the platform vouches only for the account and brand label ([identity and authority](../learn/identity-and-authority.md)).
+1. Put the issuer's exact bytes in the report evidence's `externalCredentials`, with their `representation` and `mediaType`.
+2. Build the exchange policy from the inputs and mappings above.
+3. Pass `externalCredentialVerifierFor(policy)` as the report policy's `credentialVerifier` when calling `verifyPassportEvidence(evidence, expected, reportPolicy)`.
+
+This wiring fragment assumes `evidence`, `expected`, `reportPolicy` and the exchange `policy` are already prepared. The [complete report example](../packages/dpp-protocol.md#what-the-report-takes) supplies the surrounding evidence workflow.
+
+```js
+import { verifyPassportEvidence } from '@bsv/dpp-protocol'
+import { externalCredentialVerifierFor } from '@bsv/dpp-credentials/exchange'
+
+const report = await verifyPassportEvidence(evidence, expected, {
+  ...reportPolicy,
+  credentialVerifier: externalCredentialVerifierFor(policy),
+})
+```
+
+Keep exact bytes and proof results separately: reformatting can change the exact-byte finding without changing the proof result. Show the [per-check report](../learn/evidence-and-freshness.md); follow [the attestation verifier guide](../implement/roles/attestation-verifier.md) for evidence handling. A resolved DID establishes a key relationship, not accreditation. Live assurance is Ring 0: the platform vouches only for account and brand label ([identity and authority](../learn/identity-and-authority.md)).
 
 ## If you implement it yourself
 

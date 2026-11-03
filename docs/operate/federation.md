@@ -1,8 +1,8 @@
 # Federation with static peers
 
-Use this page to make one index hold another's records: a second index of yours, another operator's, or the hosted reference. Part one sets up a named peer. [Find peers automatically](#find-peers-automatically) and [advertise your index](#advertise-your-index) add the indexes that advertise themselves, and the last part, [when a record does not arrive](#when-a-record-does-not-arrive), finds out why a record did not reach a peer.
+Index operators can use this page to replicate and compare records with a second index, another operator or the hosted reference. Start with a named peer, then optionally [find peers automatically](#find-peers-automatically) or [advertise your index](#advertise-your-index). Diagnose missing records under [when a record does not arrive](#when-a-record-does-not-arrive).
 
-Peer exchange is a choice for your operating model, not a prerequisite for every passport reader or writer. This page's setup names its peers, which every release supports. Overlay `0.4.0-beta.10` adds three things an index on beta.9 lacks: finding advertised indexes, advertising its own, and asking again for an output it left behind. Read an index's `GET /capabilities`, which names its package version, before relying on any of the three.
+Peer exchange is optional for readers and writers. Every release supports the named-peer setup below. Overlay `0.4.0-beta.10` adds discovery, advertising and retry of outputs left behind, which beta.9 lacks. Check the package version in `GET /capabilities` before relying on those features.
 
 | Word | Meaning on this page |
 |---|---|
@@ -14,26 +14,42 @@ Peer exchange is a choice for your operating model, not a prerequisite for every
 | Key window | When a key admits states: from its `activeFrom`, until its `retiredAt` if retired. |
 | Checkpoint | How far an index has read a peer, stored per peer and topic. |
 
+## Prerequisites by operating mode
+
+| Mode | Inputs and source |
+|---|---|
+| All checkout procedures | [Reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`. Run every command from its root. |
+| Static-peer rehearsal | First index from the Compose preset at `http://localhost:8080` ([run a service](README.md)), started with `--build` at least once. The second preset has no build step and uses the first's `dpp-overlay:local` image. Obtain the first index's admission settings and publisher keys from its operator. |
+| Header checks | Your WhatsOnChain API key. Synchronisation asks the header source once per admitted state; without a key it paces itself to about three requests a second. |
+| Another operator | Its reachable base URL, publisher keys and their oldest state times; independently obtain its identity key to check a signed policy. |
+| Optional discovery | A release supporting discovery, your `PUBLIC_URL`, and optionally chosen tracker URLs and a host limit. |
+| Optional advertising | Public HTTPS URL, separate advertiser private key and HTTPS wallet-storage address. Fund that key's wallet at that storage server before the first start: at most six one-satoshi tokens plus the transaction fee. A small balance is enough; a start with all adverts present spends nothing. |
+
 ## Which way records flow
 
-An index only pulls. Each round it asks the peers its own `SYNC_PEERS` names what they hold, and admits only what passes its own topic managers and publisher policy. Naming a peer gives that peer nothing, so records flow both ways only when each operator names the other.
+An index pulls from its `SYNC_PEERS` and admits records through its own topic managers and publisher policy. Naming a peer sends it nothing. For two-way exchange, each operator must name the other.
 
-Each index pulls `tm_dpp` and `tm_attestation`, and the historical `tm_uora_dpp` only when `SYNC_LEGACY=1`. Two indexes that pull from each other hold the same records only when their settings admit the same things: the publisher policy for passport states, `ANCHOR_SERVICE_KEYS` for anchors (or the policy's anchor-publisher keys when it covers `tm_attestation`), and `SYNC_LEGACY` for the historical topic. An index that names fewer anchoring services than its peer refuses the anchors the peer took from the others, and the two differ for as long as that holds. A peer's `GET /capabilities` names the anchoring services it admits under `publisherPolicy.anchoringServices`; an empty list means it admits any, as its `anchoring-service-restriction` entry under `unsupported` says.
+Both indexes must admit the same records to agree:
 
-Named peers are not the only source. The [services specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/services.md) section 1 asks a public index to advertise itself through SHIP and SLAP, the BSV overlay protocols that tell a client which hosts carry a topic or answer a lookup service. With `SYNC_DISCOVERY=ship` an index also pulls from the indexes that advertise its topics ([find peers automatically](#find-peers-automatically)), and with `ADVERTISE=1` it advertises itself ([advertise your index](#advertise-your-index)). Both are off unless set, and neither changes what is admitted.
+| Topic | Selection or admission rule |
+|---|---|
+| `tm_dpp` | Always pulled; passport states must pass the publisher policy. |
+| `tm_attestation` | Always pulled; anchors must pass `ANCHOR_SERVICE_KEYS`, or the policy's anchor-publisher keys if its scope covers this topic. |
+| Historical `tm_uora_dpp` | Pulled only with `SYNC_LEGACY=1`. |
+
+An index admitting fewer anchoring services refuses the others' anchors and keeps differing. Check `publisherPolicy.anchoringServices` in the peer's `GET /capabilities`: an empty list admits any, as `anchoring-service-restriction` under `unsupported` confirms.
+
+The [services specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/services.md) section 1 asks public indexes to advertise through SHIP and SLAP, the BSV overlay protocols identifying topic hosts and lookup services. `SYNC_DISCOVERY=ship` adds advertised peers; `ADVERTISE=1` advertises this index. Both default off and neither changes admission.
 
 ### Discovery in the reviewed source
 
-Discovery, advertising and the retry for outputs left behind entered the source between 7 and 9 October 2026 and are published in overlay `0.4.0-beta.10`, so this page describes them as released: [find peers automatically](#find-peers-automatically) and [advertise your index](#advertise-your-index) are the parts to read. The recipe below names its peers and works without either.
+Discovery, advertising and retry entered source between 7 and 9 October 2026 and were published in overlay `0.4.0-beta.10`. This page therefore describes them as released. The named-peer recipe works without discovery or advertising.
 
 ## Part one: set up
 
 ### Before you start
 
-- A first index running from the Compose preset at `http://localhost:8080` ([run a service](README.md)), started with `--build` at least once. The second preset has no build step and runs the first one's image, `dpp-overlay:local`.
-- The [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`. Run every command here from its root, with discovery left off for this static-peer recipe.
-- A WhatsOnChain API key. A synchronising index asks the header source once per state it admits, and without a key paces itself to about three requests a second.
-- A choice of admission: the first index's single publisher key (steps 1, 2 and 4), or a publisher policy naming each key with its window (add step 3). Only a policy admits more than one key, which you need to pull from the hosted reference or another operator.
+Use the static-peer inputs above and leave discovery off for this recipe. Choose the first index's single publisher key for steps 1, 2 and 4, or add step 3 for a signed publisher policy. Only a policy admits multiple keys, needed when pulling from the hosted reference or another operator.
 
 ### 1. Create the second environment file
 
@@ -84,7 +100,7 @@ Keep the private value secret, outside the repository. Save the unsigned policy 
 }
 ```
 
-Set each `activeFrom` at or before the oldest state you want from that key. A key admits no state dated earlier, even one the index you pull from holds. If you do not know that time, use an instant before the key could have signed anything, as `2026-01-01T00:00:00Z` does here; an earlier instant admits nothing the key did not sign. Do not copy another operator's window for its key: an index keeps states it admitted before loading its policy, so its window can start after states it still serves.
+Set `activeFrom` no later than the oldest wanted state; earlier states are refused even if the peer holds them. If that time is unknown, choose an instant before the key could have signed anything, as `2026-01-01T00:00:00Z` does here. An earlier instant admits nothing unsigned by that key. Do not copy another operator's window: it may start after states that index admitted before loading its policy and still serves.
 
 Three more rules:
 
@@ -114,7 +130,11 @@ PUBLISHER_POLICY_FILE=/config/policy-b.json
 OPERATOR_IDENTITY_KEYS=example-operator=<the public value>
 ```
 
-Give each index's chain its own file name, since both presets mount the same `deploy/config/`. The checkout path `deploy/config/policy-b.json` does not exist inside the container and stops the boot with `PUBLISHER_POLICY_FILE deploy/config/policy-b.json could not be read: ENOENT`. Without `OPERATOR_IDENTITY_KEYS` the boot stops with `policy version 1 refused, genesis-signer-not-operator`.
+| Configuration check | Expected result or stop |
+|---|---|
+| One chain file per index | Both presets mount `deploy/config/`, so use different file names. |
+| Container path | Use `/config/policy-b.json`. The checkout path stops boot with `PUBLISHER_POLICY_FILE deploy/config/policy-b.json could not be read: ENOENT`. |
+| Trusted operator key | Without `OPERATOR_IDENTITY_KEYS`, boot stops with `policy version 1 refused, genesis-signer-not-operator`. |
 
 Where a host cannot mount a file, set `PUBLISHER_POLICY_JSON` instead of `PUBLISHER_POLICY_FILE`, never both. An env file value is one line, so print the chain on one line and paste it as `PUBLISHER_POLICY_JSON='<the line>'`:
 
@@ -140,10 +160,74 @@ docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-
 
 ### 5. Put a passport on the first index and watch it arrive
 
-If your writer already announces to the first index, look one of its passports up on both indexes (item 3). To rehearse without a wallet, copy a live passport from the hosted reference into the first index:
+If your writer announces to the first index, look up one of its passports on both indexes (item 3). For a wallet-free rehearsal, save the following files at the built checkout root. They select the hosted reference's five-state passport; the bounded package is suitable only for passports with no more than 500 states.
+
+Save as `restore-package.mjs`. Its source URL, passport and expected export signer default to the hosted reference. It stops on inspection failures or incomplete coverage before submitting anything:
+
+```js
+// Copy one passport from an index's bounded evidence package into another index.
+import { inspectEvidencePackage } from '@bsv/dpp-protocol'
+
+const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
+const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
+const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+// The key the source index signs its packages with. This default is the hosted reference's.
+const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
+
+const response = await fetch(`${source}/evidence-package?${new URLSearchParams({ passportId })}`)
+if (!response.ok) throw new Error(`GET /evidence-package answered ${response.status}: ${await response.text()}`)
+const envelope = await response.json()
+const files = new Map(Object.entries(envelope.files).map(([path, b64]) => [path, [...Buffer.from(b64, 'base64')]]))
+
+const inspection = inspectEvidencePackage(envelope.manifest, files, { expectedPassportId: passportId, expectedSigner })
+if (inspection.failures.length > 0) throw new Error(`package refused: ${inspection.failures.map((f) => f.reason).join(', ')}`)
+if (!envelope.manifest.completeness.snapshots[0].completeForSnapshot) {
+  throw new Error('the package stops at its 500-state bound and lacks the oldest states: use the complete export instead')
+}
+console.log(`package checked: signed by ${expectedSigner}, complete for its snapshot`)
+
+for (const [path, bytes] of files) {
+  if (!path.startsWith('proofs/')) continue
+  const answer = await fetch(`${replacement}/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/octet-stream', 'X-Topics': '["tm_dpp"]', Authorization: `Bearer ${process.env.SUBMIT_TOKEN}` },
+    body: new Uint8Array(bytes),
+  })
+  if (!answer.ok) throw new Error(`POST /submit answered ${answer.status} for ${path}: ${await answer.text()}`)
+  console.log(path, answer.status, answer.headers.get('x-admission'))
+}
+```
+
+Save as `lookup.mjs`:
+
+```js
+// Ask an index for every state it holds for one passport.
+import { Transaction } from '@bsv/sdk'
+
+const indexUrl = process.env.INDEX_URL ?? 'https://dpp-overlay.bsvb.net'
+const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+
+const response = await fetch(new URL('/lookup', indexUrl), {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ service: 'ls_dpp', query: { passportId } }),
+})
+if (!response.ok) throw new Error(`POST /lookup answered ${response.status}: ${await response.text()}`)
+const answer = await response.json()
+console.log(`${answer.type} with ${answer.outputs.length} outputs from ${indexUrl}`)
+for (const output of answer.outputs) console.log(`  ${Transaction.fromBEEF(output.beef).id('hex')} output ${output.outputIndex}`)
+```
+
+Then copy the live passport into the first index:
 
 1. Make both indexes admit the hosted reference application's publisher key. On a rehearsal first index, set `SERVICE_IDENTITY_KEY=0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24` in `deploy/operator.env` and apply it with `docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d`. The second needs the same key or the step 3 policy.
-2. Run the [package restore](export-import-recovery.md#restore-a-passport-from-the-bounded-package) with `REPLACEMENT_INDEX=http://localhost:8080` and the first index's `SUBMIT_TOKEN`. Expect five lines ending `200 tm_dpp=admitted`.
+2. Run the [package restore](export-import-recovery.md#restore-a-passport-from-the-bounded-package) with the first index's `SUBMIT_TOKEN`. Its default is `REPLACEMENT_INDEX=http://localhost:8080`:
+
+   ```sh
+   SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs
+   ```
+
+   Expect a checked package and five lines ending `200 tm_dpp=admitted`. Stop on a failure before comparing indexes.
 3. After the second index's next round, a minute at most, run the [passport lookup](../reference/contracts.md#find-passport-records) against each index:
 
    ```sh
@@ -158,14 +242,14 @@ The copy stays in both indexes until `down -v` on a preset removes everything th
 
 ### 6. Exchange records both ways
 
-1. Each operator sets `SYNC_PEERS` to the other's base URL. On one machine, only the second preset maps `host.docker.internal` to the host. Docker Desktop provides the name anyway; on Linux, give the first index a host address its container can reach.
+1. Each operator sets `SYNC_PEERS` to the other's base URL and applies the environment change by rerunning that index's `up -d` command. On one machine, only the second preset maps `host.docker.internal` to the host. Docker Desktop supplies it anyway; on Linux, give the first container a reachable host address.
 2. Each publisher policy names the other's state-publisher keys, with windows that cover the states to exchange.
 3. Each reads the other's `GET /capabilities`: `synchronisation.discovery` is `static-peers` and `synchronisation.peers` lists its own URL.
 4. Each writes a state and looks it up on the other after the next round.
 
 ### 7. Confirm both hold the same records
 
-Each index lists what it holds for a topic on `POST /requestSyncResponse`, the route its peers pull from: at most 500 outputs a page, each with a score, and the next page starts at the last score, which it repeats. That route lists current outputs only, so a passport counts once, by its newest state; the script below also compares each passport's whole history from `GET /history`, spent states included. Save this as `compare-indexes.mjs` at the root of the checkout, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
+`POST /requestSyncResponse` lists current outputs by topic: at most 500 per page, each with a score; the next page repeats the last score. A passport counts once by its tip. This script also compares whole histories from `GET /history`, including spent states. Save it as `compare-indexes.mjs` at the checkout root, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
 
 ```js
 // Compare what two indexes hold on every topic, and each passport's whole history, and fail on a difference older than the grace period:
@@ -297,7 +381,19 @@ histories: 103 passports compared
 the two indexes agree
 ```
 
-A difference prints as `pending` until it has been seen for longer than `GRACE_MINUTES`, 120 by default, because a new state reaches a peer only once its proof arrives, up to about an hour after it was written. The time each difference was first seen is kept in `compare-indexes-state.json` (or the file `STATE_FILE` names), so run the script from the same directory each time. A difference older than that prints as `DIFFERENT` and the script exits with 1. An index that does not answer stops it with `not compared:` and exit code 2, so a silent peer never reads as agreement. Run it on a schedule, hourly for example, to notice a peer that stopped or fell behind. A difference that stays has its cause in the receiving index's log ([when a record does not arrive](#when-a-record-does-not-arrive)) or in settings that admit different things ([which way records flow](#which-way-records-flow)). An index that does not serve a topic answers 400 for it, which the script reports as a difference.
+#### Read comparison outcomes
+
+A difference prints as `pending` until it has been seen for longer than `GRACE_MINUTES`, 120 by default, because a new state reaches a peer only once its proof arrives, up to about an hour after it was written.
+
+| Result or setting | Meaning |
+|---|---|
+| `pending` | Difference is within the grace period. |
+| `DIFFERENT`, exit 1 | Difference is older than the grace period. |
+| `not compared:`, exit code 2 | An index did not answer. A silent peer never counts as agreement. |
+| Topic returns 400 | Index does not serve it; reported as a difference. |
+| `compare-indexes-state.json`, or `STATE_FILE` | Records when each difference first appeared. Run from the same directory each time. |
+
+Schedule the script, hourly for example, to detect stopped or lagging peers. Investigate persistent differences in the receiving index's log ([when a record does not arrive](#when-a-record-does-not-arrive)) or mismatched admission settings ([which way records flow](#which-way-records-flow)).
 
 ### Peer with the hosted reference or another operator
 
@@ -315,9 +411,9 @@ Ask about proofs in the same message. A state the reference pulls from you reads
 
 ### Tell operators apart
 
-Before naming another operator's keys in your policy, compare the keys themselves, then ask the operator for its identity key and signed chain. An index with a policy serves its chain on `GET /publisher-policy`, and with an export key also as `authority/publisher-policy.json` in every evidence package. Take the identity key from the operator, never from the chain: the chain names its own signer, so checking it against itself proves nothing.
+Before adding another operator's keys, compare them and obtain its identity key and signed chain. An index with a policy serves the chain at `GET /publisher-policy` and, with an export key, as `authority/publisher-policy.json` in every evidence package. Obtain the trusted identity key from the operator, never the chain: checking the chain against its own signer proves nothing.
 
-Capability documents cannot tell operators apart. The operator name is text bound to no key, and `publisherPolicy` has the policy version and keys but no chain digest or signer, so two indexes naming the same operator and keys may be one operator's two indexes or a copy.
+Capabilities cannot distinguish operators: the operator name is unbound text, and `publisherPolicy` gives the version and keys without a chain digest or signer. Matching names and keys may mean two indexes under one operator, or a copy.
 
 Save this as `check-policy-chain.mjs` at the root of the checkout, or in a project with `@bsv/dpp-protocol@0.3.0-beta.9` installed:
 
@@ -341,13 +437,21 @@ Run `node check-policy-chain.mjs <chain file> <operator name as the chain's scop
 
 ### What two indexes demonstrate
 
-An index declares one of three operator profiles in its capability document and its evidence packages. `single-operator@1` means it neither pulls from peers nor discovers them. `single-operator@2` means one administration whose index pulls from peers it names or discovers: it exchanges records and claims nothing about independent replication, however many peers it has, which its `unsupported` list says as `independent-replication`. `federated-operators@1` is declared only when the index synchronises and the newest version of its publisher policy names two or more operators. That claims support, not independent operation. Two indexes under one administration, such as the two presets on one machine, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/deploy/README.md#a-second-operator)).
+Capability documents and evidence packages declare one of three operator profiles:
+
+| Profile | Declaration and evidence boundary |
+|---|---|
+| `single-operator@1` | Neither pulls from peers nor discovers them. |
+| `single-operator@2` | One administration; pulls from named or discovered peers. However many peers it has, it claims no independent replication: `unsupported` includes `independent-replication`. |
+| `federated-operators@1` | Declared only when synchronising and the newest publisher policy names at least two operators. Claims support, not independent operation. |
+
+Two indexes under one administration, including the local presets, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/deploy/README.md#a-second-operator)).
 
 A publisher policy's own `scope.operatorProfile` names the administration the policy governs, `single-operator@1` or `federated-operators@1`, and does not change when the index adds peers or turns discovery on. The step 3 policy stays as written while the index it governs declares `single-operator@2` ([services specification](https://github.com/bsv-blockchain/dpp/blob/647d6eb38ffe3eacab05b5784a2a4393f63a92e0/spec/services.md) section 6).
 
 ## Find peers automatically
 
-With `SYNC_DISCOVERY=ship`, an index pulls from the indexes that advertise its topics as well as from the peers `SYNC_PEERS` names, and it works with `SYNC_PEERS` empty. Nothing else changes: a discovered index's records pass the same topic managers and publisher policy as a named peer's, so match the admission settings first ([which way records flow](#which-way-records-flow)).
+`SYNC_DISCOVERY=ship` adds hosts advertising the index's topics to its named peers; `SYNC_PEERS` may be empty. Match admission settings first ([which way records flow](#which-way-records-flow)): discovered records pass the same topic managers and publisher policy.
 
 ### Turn it on
 
@@ -360,27 +464,52 @@ Add to the index's environment file:
 | `SYNC_MAX_DISCOVERED` | Optional. The most discovered hosts a round pulls from, a positive integer; `16` when unset. |
 | `PUBLIC_URL` | Your index's own base URL, so that it is left out of the hosts it discovers. |
 
-`SLAP_TRACKERS` or `SYNC_MAX_DISCOVERED` without `SYNC_DISCOVERY` is a warning at start and discovers nothing. Apply the change with `up -d`; the start log then reads `synchronising tm_dpp and tm_attestation from <named peers> and at most 16 hosts found from SHIP adverts through <trackers> every 60000 ms`.
+`SLAP_TRACKERS` or `SYNC_MAX_DISCOVERED` without `SYNC_DISCOVERY` warns at start and discovers nothing. Apply the change with the same `up -d` command used to start that index (step 4 for the second preset). Expect `synchronisation.discovery: ship-slap` and `gasp: true`; the start log reads `synchronising tm_dpp and tm_attestation from <named peers> and at most 16 hosts found from SHIP adverts through <trackers> every 60000 ms`.
 
 ### What a round does
 
-Before its first round, and before any round once ten minutes have passed since the last look, the index asks the trackers for the SHIP adverts of each topic it synchronises: `tm_dpp`, `tm_attestation`, and `tm_uora_dpp` with `SYNC_LEGACY=1`. An advert counts only when the SDK's `OverlayAdminTokenTemplate.decodeAndVerify` accepts its token, when it names the topic asked about, and when its address starts with `https://`; a tracker's answer is read 1,000 adverts a topic at most. The index's own `PUBLIC_URL` and every `SYNC_PEERS` entry are left out of the discovered hosts. When the trackers cannot be asked, the last answer stands. A look logs `peer discovery: hosts advertising tm_dpp: <hosts>; tm_attestation: <hosts>` when the answer changed, and counts the adverts it ignored.
+| Discovery stage | Timing, limits and outcome |
+|---|---|
+| Tracker lookup | Before the first round, then before a round once ten minutes have passed since the last lookup. Ask for `tm_dpp`, `tm_attestation` and, with `SYNC_LEGACY=1`, `tm_uora_dpp`. |
+| Accepted adverts | `OverlayAdminTokenTemplate.decodeAndVerify` must accept the token; it must name the requested topic and an `https://` address. Read at most 1,000 adverts per topic from a tracker answer. |
+| Excluded addresses | Leave out this index's `PUBLIC_URL` and every `SYNC_PEERS` entry. |
+| Tracker unavailable | Keep the last answer. |
+| Changed answer | Log `peer discovery: hosts advertising tm_dpp: <hosts>; tm_attestation: <hosts>` and count ignored adverts. |
+| Named peers | Ask every round. |
+| Discovered peers | Ask at most `SYNC_MAX_DISCOVERED` per round. Rotate through excess hosts so each is asked in time. |
+| Capability fetch | Before asking a discovered host for anything, read `GET /capabilities`, bounded to ten seconds and 1 MiB. Cache for ten minutes. |
 
-The named peers are asked every round. Of the discovered hosts, at most `SYNC_MAX_DISCOVERED` are asked in a round; when more advertise, they are taken in turn round by round, so each is asked in time.
+Exclude only definite admission mismatches:
 
-Before a discovered host is asked for anything, the index reads its `GET /capabilities`, ten seconds and 1 MiB at most, and keeps the answer ten minutes. The host is not asked for `tm_dpp` when both documents name publisher keys and share none, and not for `tm_attestation` when both restrict anchoring services and share none; an index whose `anchoringServices` is empty beside an `anchoring-service-restriction` entry under `unsupported` restricts nothing and is asked. Only a certain mismatch excludes a host, so a document without a readable `publisherPolicy` excludes nothing. Each exclusion is logged once per host and topic as `peer discovery: <host> admits nothing this index admits for tm_dpp, so it is not asked for tm_dpp`. Asking anyway would cost a header check for every graph and end in refusals.
+| Topic or document | Rule |
+|---|---|
+| `tm_dpp` | Do not ask when both documents name publisher keys and share none. |
+| `tm_attestation` | Do not ask when both restrict anchoring services and share none. Empty `anchoringServices` with `anchoring-service-restriction` under `unsupported` means unrestricted, so ask. |
+| Unreadable or absent `publisherPolicy` | Excludes nothing. |
 
-A host whose capability document could not be read, or whose offered outputs could not be read during the round, sits out: one round the first time, then twice as many each time it fails again, up to a day of rounds, 1,440 at the default interval. A host that answers again is forgiven. The log says `peer discovery: <host> could not be read this round; it sits out 2 rounds`.
+Each exclusion logs once per host and topic: `peer discovery: <host> admits nothing this index admits for tm_dpp, so it is not asked for tm_dpp`. Asking would otherwise cost a header check per graph before refusal.
 
-A discovered address is a lead, never trust. The token proves that the key it names signed the advert and nothing about who runs the host, and discovery authorises no publisher: a state a discovered index offers is admitted only under your publisher policy, and an anchor only under your anchoring settings, exactly as from a named peer. [When a record does not arrive](#when-a-record-does-not-arrive) applies to a discovered peer as to a named one, and its checkpoint is stored under the address the advert names, without a trailing slash, which is what [move a checkpoint back](#move-a-checkpoint-back) deletes.
+| Host failure | Back-off |
+|---|---|
+| Cannot read capabilities or offered outputs | Sit out one round, doubling on each repeated failure up to a day of rounds: 1,440 at the default interval. |
+| Host answers again | Forgive previous failures. |
+| Example log | `peer discovery: <host> could not be read this round; it sits out 2 rounds` |
+
+A discovered address is only a lead. Its token proves the named key signed the advert, not who runs the host. Discovery authorises no publisher: your policy still governs states and your anchoring settings govern anchors. [Missing-record diagnosis](#when-a-record-does-not-arrive) applies equally. Checkpoints use the advertised address without a trailing slash; [move a checkpoint back](#move-a-checkpoint-back) deletes that entry.
 
 ### The capability document with discovery on
 
-`synchronisation.discovery` is `ship-slap`, `gasp` is `true` from the start, before any host is found, and `peers` lists every peer the last round asked, the named ones first; the operator profile entry under `profiles` carries the same values. With discovery on and advertising off, `unsupported` carries `ship-slap-advertising`: this node finds peers from SHIP adverts but advertises nothing of its own, and other indexes reach it only by naming it. The profile is `single-operator@2` under a one-operator policy and `federated-operators@1` under a policy naming two or more ([what two indexes demonstrate](#what-two-indexes-demonstrate)).
+| Capability | Value with discovery on |
+|---|---|
+| `synchronisation.discovery` | `ship-slap` |
+| `gasp` | `true` from start, before any host is found |
+| `peers` | Every peer the last round asked, named peers first; the operator entry under `profiles` carries the same values |
+| `unsupported` with advertising off | `ship-slap-advertising`: finds peers but advertises nothing; other indexes must name it |
+| Operator profile | `single-operator@2` for one operator; `federated-operators@1` for two or more in the policy ([what two indexes demonstrate](#what-two-indexes-demonstrate)) |
 
 ### What it does not bound
 
-The index sets no page or time budget of its own on a discovered peer: a round reads what the overlay SDK's synchronisation asks for and fetches every graph behind it with no time limit, and rounds do not overlap, so a large or slow discovered peer lengthens every round ([known limitations](limitations.md#synchronisation)). Lower `SYNC_MAX_DISCOVERED`, or name trackers you choose in `SLAP_TRACKERS`, to narrow who is asked. The [discovery source](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/discovery.ts) defines every rule above.
+The index adds no page or time budget to the overlay SDK's synchronisation: it fetches every requested graph without a time limit. Rounds cannot overlap, so a large or slow peer lengthens every round ([known limitations](limitations.md#synchronisation)). Lower `SYNC_MAX_DISCOVERED` or choose `SLAP_TRACKERS` to narrow the hosts asked. The [discovery source](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/discovery.ts) defines these rules.
 
 ## Advertise your index
 
@@ -397,15 +526,22 @@ With `ADVERTISE=1`, an index creates the SHIP and SLAP adverts that let an index
 
 A missing or malformed value stops the boot with a message naming the variable. `ADVERTISER_PRIVATE_KEY` or `ADVERTISER_STORAGE_URL` without `ADVERTISE` is a warning at start and advertises nothing.
 
-Fund the advertiser's wallet at that storage server before the first start. A start creates at most six tokens, one each for `tm_dpp`, `tm_attestation`, `tm_uora_dpp`, `ls_dpp`, `ls_attestation` and `ls_uora_dpp`, of one satoshi each plus the transaction fee, so a small balance is enough, and a start with every advert present spends nothing.
+The funded-wallet prerequisite covers at most one token each for `tm_dpp`, `tm_attestation`, `tm_uora_dpp`, `ls_dpp`, `ls_attestation` and `ls_uora_dpp`. Apply the settings with the same `up -d` command used to start this index (step 4 for the second preset). With advertising on, `unsupported` no longer carries `ship-slap-advertising`; check the start log for the actual advertising result.
 
 ### What a start does
 
-Once the socket listens, the index asks the overlay SDK's default trackers for `NETWORK`, whatever `SLAP_TRACKERS` says, which SHIP and SLAP adverts its advertiser key already has at `PUBLIC_URL`, and creates only the missing ones, in one transaction its wallet funds and hands to the hosts of `tm_ship` and `tm_slap`. The log then reads `advertising: SHIP tm_dpp, SHIP tm_attestation, ... at <PUBLIC_URL> under <identity key>, in <txid>`, or `advertising: every topic and lookup service is already advertised at <PUBLIC_URL> under <identity key>`. When the trackers cannot say which adverts exist, nothing is created.
+1. After the socket listens, the index asks the overlay SDK's default trackers for `NETWORK`, regardless of `SLAP_TRACKERS`, which SHIP and SLAP adverts this key holds at `PUBLIC_URL`.
+2. It creates missing adverts in one wallet-funded transaction handed to `tm_ship` and `tm_slap` hosts. If trackers cannot establish existing adverts, it creates nothing.
+3. Check the log:
 
-A failure after the boot is a log line, `advertising failed, so other indexes find this one only if they name it: <reason>`, and the index keeps serving and pulling. Advertising is tried once per start, so fix the cause and restart.
+| Result | Log |
+|---|---|
+| Created adverts | `advertising: SHIP tm_dpp, SHIP tm_attestation, ... at <PUBLIC_URL> under <identity key>, in <txid>` |
+| All present | `advertising: every topic and lookup service is already advertised at <PUBLIC_URL> under <identity key>` |
 
-Nothing revokes an advert. An index that moves host, or stops for good, leaves its old adverts in place; the trackers keep returning them, and indexes that discover the old address find nothing there and back off. To take them down, spend the tokens with the advertiser's wallet; the index never does ([known limitations](limitations.md#index-host)).
+Failure logs `advertising failed, so other indexes find this one only if they name it: <reason>`; serving and pulling continue. Advertising runs once per start: fix the cause and restart.
+
+The index never revokes adverts. After a move or shutdown, trackers still return the old address; discovered peers find nothing and back off. Remove adverts by spending their tokens with the advertiser's wallet ([known limitations](limitations.md#index-host)).
 
 ### The wallet library
 
@@ -417,7 +553,7 @@ With advertising on, `unsupported` no longer carries `ship-slap-advertising`. Wi
 
 ## When a record does not arrive
 
-Only the synchronising index knows why a record did not arrive. The index that offered it logs only its answer, such as a 404 for a transaction it does not hold. No route serves either log, so a writer whose state has not reached a peer asks that peer's operator.
+Only the receiving index logs why a record failed to arrive. The sender logs its response, such as 404 for an absent transaction. Neither log has a route; ask the receiving operator.
 
 ### Read the synchronising index's log
 
@@ -431,7 +567,15 @@ After each round the index compares what each peer offered with what arrived, an
 peer synchronisation round 1: 17 of 97 outputs offered by https://dpp-overlay.bsvb.net for tm_dpp did not arrive; checkpoint held at 1787744549666 so they are offered again
 ```
 
-An output still missing after five rounds is left behind and named: `left behind after 5 rounds, offered by <peer> for tm_dpp and never admitted: <txid>.<output>; asked for again in 60 rounds`. The checkpoint moves past it, so the rounds in between do not offer it. After about an hour of rounds, 60 at the default interval, the index holds the checkpoint at it once more and logs `asking <peer> again for 1 output left behind for tm_dpp`; each time the output is left behind again the wait doubles, up to about a day of rounds. The retry fixes nothing by itself: a state your own admission refused is refused again, and a graph the peer could not serve stays missing until the peer can serve it. The schedule lives in memory, at most 10,000 outputs per peer and topic, and a restart forgets it and resumes from the stored checkpoint. After fixing the cause, [move the checkpoint back](#move-a-checkpoint-back) rather than waiting; [the synchroniser](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/sync.ts) defines the schedule. An index on beta.9 names the output once and never asks again, so there the checkpoint procedure is the only way.
+| Retry stage | Behaviour |
+|---|---|
+| Missing after five rounds | Log `left behind after 5 rounds, offered by <peer> for tm_dpp and never admitted: <txid>.<output>; asked for again in 60 rounds`. Move the checkpoint past it; intervening rounds do not offer it. |
+| After about an hour, 60 rounds at the default interval | Hold the checkpoint there again and log `asking <peer> again for 1 output left behind for tm_dpp`. |
+| Left behind again | Double the wait, up to about a day of rounds. |
+| Schedule storage | Memory only, at most 10,000 outputs per peer and topic. Restart forgets it and resumes from the stored checkpoint. |
+| beta.9 | Logs the output once and never retries; moving the checkpoint is the only recovery procedure. |
+
+Retry repairs nothing: admission still refuses an unacceptable state, and a graph stays missing until its peer can serve it. After fixing the cause, [move the checkpoint back](#move-a-checkpoint-back) instead of waiting. The [synchroniser](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/sync.ts) defines the schedule.
 
 ### Find the cause
 
@@ -459,7 +603,7 @@ A mined transaction's proof does not depend on any peer. WhatsOnChain serves it 
 
 ### Move a checkpoint back
 
-Once the cause is fixed, delete that peer's checkpoints; no setting re-synchronises from a chosen point. The next round asks the peer for everything it holds again, and outputs already held are admitted as no-ops. Each checkpoint is a document `{ host, topic, since }` in the `overlayInteractions` collection, with `host` exactly as `SYNC_PEERS` names the peer, without a trailing slash. For the second preset, whose database is `dpp` unless `MONGO_DB` says otherwise:
+After fixing the cause, delete the peer's checkpoints. No setting selects a restart point. Next round asks for everything again; existing outputs are admitted as no-ops. Each `{ host, topic, since }` document is in `overlayInteractions`; `host` matches `SYNC_PEERS` without a trailing slash. For the second preset, using database `dpp` unless `MONGO_DB` overrides it:
 
 ```sh
 docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env exec mongo-b mongosh dpp --quiet --eval 'db.overlayInteractions.deleteMany({ host: "http://host.docker.internal:8080" })'

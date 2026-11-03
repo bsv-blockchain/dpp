@@ -1,16 +1,22 @@
 # Attestation issuer
 
-An issuer signs a lifecycle claim about a product, such as a repair, a test, a certification or a recycling, without touching the passport's control. This page is for an assessment, repair or recycling system adding claim issuance, in its own code or with the packages.
+Assessment, repair and recycling systems can use this guide to act as an attestation issuer, or claim issuer. Sign a product's repair, test, certification or recycling claim with the packages or your own code, then prepare its bytes for storage and anchoring without changing passport control.
 
-An issuer needs:
+## Prerequisites and signing inputs
 
-- the passport identifier of the product actually assessed, read from the item or the request, not from whichever record a lookup happened to return;
-- the event, its time, and the passport's profile and profile version;
-- an issuer identity and a key to sign with. A `did:key` made from your identity key is enough today ([BSV DIDs](../../learn/dids.md)). Live identity assurance is Ring 0, where the platform vouches only for the account and brand label, and no higher ring that binds an issuer to a legal entity or certifies its role is live yet ([identity and authority](../../learn/identity-and-authority.md)).
+| Input or exercise | Requirement and source |
+|---|---|
+| Passport identifier | Read it from the assessed item or the request, not whichever record a lookup returned. |
+| Claim details | The event and its time from the assessment; profile and profile version from the passport. |
+| Issuer and signing key | Your issuer identity and authorised signing access. A `did:key` made from your identity key is enough today ([BSV DIDs](../../learn/dids.md)). |
+| Both fixture exercises | Node.js 22 or later, npm and git; complete [setup](../../quick-start.md#get-the-code), including `npm ci` and `npm run build`, then work from the checkout root. Inputs and published test keys come from `fixtures/attestation-anchor-v1.json`. |
+| Live signing | Your application's BRC-100 wallet or other authorised signing access. Never reuse the fixture key. |
+
+Live identity assurance is Ring 0: the platform vouches only for the account and brand label. No higher ring binding an issuer to a legal entity or certifying its role is live ([identity and authority](../../learn/identity-and-authority.md)).
 
 ## Sign one claim with the packages
 
-`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` signs a claim with anything that offers the BRC-100 `createSignature` call: your BRC-100 wallet in an application, or `ProtoWallet` from `@bsv/sdk` in a test. This signs the fixture's claim with its published test key, at the root of a checkout after [setup](../../quick-start.md#get-the-code):
+`signLifecycleClaim(unsignedClaim, wallet)` from `@bsv/dpp-protocol` needs BRC-100 `createSignature`: use your application's wallet or, for tests, `ProtoWallet` from `@bsv/sdk`. Sign the fixture claim:
 
 ```sh
 node --input-type=module <<'JS'
@@ -28,18 +34,28 @@ console.log('The signed claim matches the fixture.')
 JS
 ```
 
-It prints `The signed claim matches the fixture.` An application supplies its own authorised signing access and never reuses the fixture key.
+Expect `The signed claim matches the fixture.` Stop if either assertion fails.
 
 ## Sign one claim in your own code
 
 [Rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) sections 3 and 4 define the claim, and `fixtures/attestation-anchor-v1.json` gives a value to compare at each step:
 
-1. Build the claim with exactly the properties of rules section 3 except `signature`: `claimFormat` (`dpp-lifecycle-v1`), `passportId`, `recordId`, `eventType`, `timestamp`, `issuer`, `issuerKeyId`, `profile`, `profile_version`, `issuerKeyDid` only when the issuer is not a `did:key`, and `evidence` when the claim carries the facets of rules section 2. Compare with `unsignedClaim`, and with `claimWithEvidence.unsignedClaim` for the facets.
+| Field | Source or rule | Fixture comparison |
+|---|---|---|
+| `claimFormat` | `dpp-lifecycle-v1` | `unsignedClaim` |
+| `passportId`, `recordId` | Expected passport identifier and the assessed state's outpoint | `unsignedClaim` |
+| `eventType`, `timestamp` | The assessment's event and time | `unsignedClaim` |
+| `issuer`, `issuerKeyId` | Issuer identity and signing-key identifier | `unsignedClaim` |
+| `profile`, `profile_version` | The passport's declared product profile | `unsignedClaim` |
+| `issuerKeyDid` | Include only when the issuer is not a `did:key` | Rules section 3 |
+| `evidence` | Include when carrying the facets of rules section 2 | `claimWithEvidence.unsignedClaim` |
+
+1. Build the claim with exactly the properties of rules section 3 except `signature`, using the table. Compare with `unsignedClaim`, and with `claimWithEvidence.unsignedClaim` for the facets.
 2. Serialise it as restricted canonical JSON: property names sorted, no whitespace, only string and safe-integer values. Compare with `canonicalUnsignedClaim`.
 3. Sign the SHA-256 of those bytes with the BRC-42 child of your identity key for protocol `[1, 'dpp attestation v1']`, key identifier the claim's `passportId`, counterparty `anyone` (invoice number `1-dpp attestation v1-<passportId>`), using a deterministic RFC 6979 nonce. Encode the DER signature as lower-case hex and compare with `claim.signature`; the test private key is `issuerPrivateKey`. A BRC-100 wallet does this as `createSignature` with the canonical bytes as `data`.
 4. Add `signature` and serialise the complete claim the same way. Those bytes are the secured representation `dpp-lifecycle-json-v1`: compare with `representationBytes`. Their SHA-256 is `digest`, the value an anchor commits to.
 
-This runs the four steps with only `@bsv/sdk`, a BSV SDK that a second implementation may use, at the root of the checkout:
+Run all four steps using only `@bsv/sdk`, a BSV SDK permitted for a second implementation:
 
 ```sh
 node --input-type=module <<'JS'
@@ -68,18 +84,20 @@ It prints `step 2 true`, `step 3 true` and `step 4 true true`. `child.sign` hash
 
 ## Fields for a live claim
 
-The fixture's values are test values. Do not copy these into a live claim:
+The fixture's values are test values. Replace them for a live claim:
 
-- **`recordId`** is the outpoint of the state the claim is about, `<txid>:<outputIndex>` (rules section 3); the fixture's names the genesis of `fixtures/chain-v1.json`. Any other spelling is refused.
-- **`profile`** names the passport's product data profile and **`profile_version`** its version, such as `battery` and `2` for a `battery@2` passport; the fixture declares `general@2`.
-- **The registry identifier** of a native claim is `urn:sha256:` followed by your claim's own `digest` (rules section 6); the fixture anchor's `attestationId` is the fixture claim's.
-- **`evidence`** carries what was done, by whom and when, as references under the facet names of rules section 2; without it a claim is the event type and time alone, and a mapping that needs the facets reads it as insufficient data. The fixture's `claimWithEvidence` shows the repair facets and the nested canonical bytes they produce.
+| Field | Live value and limit | Fixture value |
+|---|---|---|
+| `recordId` | State outpoint, `<txid>:<outputIndex>` (rules section 3). Any other spelling is refused. | Genesis of `fixtures/chain-v1.json` |
+| `profile`, `profile_version` | Product profile and version, such as `battery` and `2` for `battery@2` | `general@2` |
+| Registry identifier | `urn:sha256:` followed by your claim's own `digest` (rules section 6) | The anchor's `attestationId` identifies the fixture claim. |
+| `evidence` | References describing what was done, by whom and when, under rules section 2's facet names. Without them, a claim gives only event type and time; mappings needing facets report insufficient data. | `claimWithEvidence` shows repair facets and their nested canonical bytes. |
 
 These are open questions in the standard; [known limitations](../../operate/limitations.md) lists the reference service's limits. An issuer's identity and its authority to make the claim remain separate evidence questions for the verifier.
 
 ## Next: store and anchor it
 
-Keep the secured bytes exactly as signed: reformatting or removing content after signing changes the bytes another component verifies or commits to. Then:
+Keep the secured bytes exactly as signed. Reformatting or removing content changes the bytes another component verifies or commits to. Then:
 
 1. A registry validates the claim (`POST /validate` is open on the hosted registry) and stores it with `POST /attestations` if you run one or hold its write token ([registry](registry.md)).
 2. An anchoring service builds a `bsv-attestation-anchor-v1` output over `digest` with `attestationId` `urn:sha256:<digest>`, and announces and sends it on topic `tm_attestation`, as step 4 of [build an application](../../packages/build-an-application.md#4-sign-and-anchor-a-lifecycle-claim) shows.

@@ -1,45 +1,66 @@
 # Review profile and application readiness
 
-This page is for compliance reviewers, profile maintainers and application owners who compare a profile and an application with the regulations, standards or external validators that apply to a product. It sets out a review in five parts: fix the baseline, cross-reference in both directions, separate representation from missing information, gather four kinds of evidence, and turn the findings into a reviewed successor.
+Compliance reviewers, profile maintainers and application owners can use this five-stage review to compare a profile and application with applicable regulations, standards or external validators. The result records what the application can represent, which obligations apply, evidence for its values and whether the deployment handles required interactions. A schema pass answers only part of this question.
 
-A review should answer which product information the application can represent, which obligations apply, what evidence supports the values and whether the deployed system handles the required interactions. A passing schema check answers only part of that question. Nothing on this page runs code; it is a process, and the commands it relies on are on the pages it links.
+Use the process when a profile changes, a source is revised or an application adopts a release. Keep unresolved findings visible until evidence is available. This page describes the review; linked guides explain the commands it relies on.
 
-Use this process when an industry profile changes, a source is revised or an application adopts a new release. Keep unresolved findings visible until the relevant evidence is available.
+## Review inputs
+
+| Input | Source and scope |
+|---|---|
+| Profile baseline | Exact version, such as `battery@2`, and generated schema digests from its manifest; the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records digests for every version. Record the installed package version too. |
+| Application baseline | Application revision and evaluation date from the deployment being assessed. |
+| External sources | Each source's edition, retrieval date and role: legislation, standard, guidance, proposal or test-tool implementation. Obtain the actual compared files and hosted-run schema selection as well as documentation. |
+| Product scope | Product classification, use case and market that determine applicability. |
+| Changed-profile review | Checkout containing both versions and its change report; see [evaluate the version 4 drafts](version-4-drafts.md#try-a-draft-in-your-application). |
 
 ## Establish the comparison baseline
 
-Record the exact profile version (such as `battery@2`), package version, generated schema digests, application revision and evaluation date. Each manifest records its schema digests, and the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records them for every version. For each external source, record its edition, retrieval date and role: legislation, standard, guidance, proposal or test-tool implementation. Publication, legal application and software deployment dates can differ.
+**Stage 1: record the comparison baseline.** Publication, legal application and software deployment dates can differ. Pin each source artefact actually compared: a hosted validator's help page may describe a different schema revision from its downloadable repository. Record the schema selected for each hosted run. If you cannot verify that selection, leave equivalence with the local check unconfirmed.
 
-Check the source artefacts as well as their documentation. For example, a hosted validator's help page can describe a different schema revision from its downloadable repository. Pin the files actually compared and record the schema selected for each hosted run. If that selection cannot be verified, leave equivalence with the local check unconfirmed.
+| Product | Applicability check |
+|---|---|
+| Batteries | Review classification and use case before choosing a category-specific schema. Industrial batteries can differ in capacity, management system and reporting duties. |
+| Textiles | Review sources for the selected product and market. Do not transfer battery-specific obligations into the profile. |
 
-For batteries, review the relevant product classification and use case before selecting a category-specific schema. Do not assume every industrial battery has the same capacity, management system or reporting duties. For textiles, review the sources applicable to the selected product and market; do not transfer battery-specific obligations into a textile profile.
+The stage ends with a dated baseline naming the files, deployment and product scope, including unconfirmed equivalence.
 
 ## Build a cross-reference in both directions
 
-Start the profile side of the table from the generated mapping inventory, one row per field with its semantic field, legal basis, applicability and access tier, for example [battery@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/battery@2.md). When the review is about a changed profile, start from its change report as well: `npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4` in a checkout lists every added, changed and removed field ([evaluate the version 4 drafts](version-4-drafts.md#try-a-draft-in-your-application) shows it). Then create a row for each external requirement or data attribute, including fields nested inside records. Record:
+**Stage 2: build the comparison record.** Start from the generated mapping inventory, such as [battery@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/battery@2.md): one row per field, including semantic field, legal basis, applicability and access tier.
 
-| Review dimension | Question to resolve |
-|---|---|
-| Meaning and subject | Does the value describe the same product, model, batch or individual item? |
-| Shape and units | Do types, precision, units, code lists and measurement conditions agree? |
-| Applicability | Does it apply to this category, jurisdiction, date and lifecycle state? |
-| Disclosure | Who may read and update it, for which purpose and with what evidence? |
-| Source and evidence | Is this a declaration, measurement, calculation or assessment, and what supports it? |
-| Implementation | Is the information in the profile, another record, an application service or still missing? |
+For a changed profile, also run `npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4` in the checkout to list every added, changed and removed field:
 
-Then reverse the comparison: account for every field in the selected profile, including application additions and fields without an external equivalent. Distinguish an exact mapping, a transformation, additional evidence needed, a confirmed gap and an unresolved interpretation. Similar labels alone do not establish equivalence.
+```sh
+npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
+```
 
-An external field absent from the battery or textile manifest may belong to passport identity, operator information or publication context. Inspect those existing mechanisms before adding duplicate fields or new infrastructure. [Projections](../interoperability/projections.md) explain how multiple sources can contribute to a view while retaining their provenance.
+Create a row for each external requirement or data attribute, including nested fields. Copy this row template:
+
+| External requirement or attribute | Profile field and legal basis | Meaning and subject | Shape and units | Applicability | Disclosure | Source and evidence | Implementation | Mapping outcome |
+|---|---|---|---|---|---|---|---|---|
+| Source reference | Semantic field, including nested fields | Product, model, batch or item | Type, precision, units, code list, measurement conditions | Category, jurisdiction, date, lifecycle state | Read/update permissions, purpose, evidence, access tier | Declaration, measurement, calculation or assessment; supporting evidence | Profile, other record, application service or missing | Exact mapping, transformation, evidence needed, confirmed gap or unresolved interpretation |
+
+Reverse the comparison and account for every selected-profile field, including application additions and fields without an external equivalent. Similar labels do not establish equivalence.
+
+Before adding duplicate fields or infrastructure, check whether an external field absent from a battery or textile manifest belongs to passport identity, operator information or publication context. [Projections](../interoperability/projections.md) combine sources while retaining provenance. The stage ends with both directions accounted for in the comparison record.
 
 ## Separate representation from missing information
 
-Some differences can be handled by an explicit export mapping. A mass stored in kilograms can be wrapped in the target's value/unit object without changing its meaning. Other differences require new evidence: one power value cannot establish two measurements taken at different states of charge.
+**Stage 3: classify each mismatch and assign its resolution owner.**
 
-Do not round away precision, invent a manufacturing day, substitute a brand name for a verified operator identifier or expose restricted data merely to make an external validator pass. Record the mismatch and its resolution owner. The external schema's required list is an implementation constraint; establish its regulatory basis separately. Conversely, an optional field can still be conditionally required for a particular product.
+| Difference | Treatment |
+|---|---|
+| Representation only | An explicit export mapping can wrap kilograms in a target value/unit object without changing meaning. |
+| Missing evidence | One power value cannot establish two measurements at different states of charge. Obtain the evidence. |
+| Unsupported substitution | Do not round away precision, invent a manufacturing day, replace a verified operator identifier with a brand name or expose restricted data to pass validation. Record the mismatch. |
+| Required or optional field | An external schema's required list is an implementation constraint; assess its regulatory basis separately. An optional field can still be conditionally required for a product. |
 
-An export adapter should validate the declared input profile, apply reviewed transformations, retain source references and validate the resulting target representation. It should report unmapped or unsupported values explicitly. Such an adapter must be implemented and tested for the chosen external format; loading a profile does not provide one automatically.
+An export adapter should validate the declared input profile, apply reviewed transformations, retain source references and validate the target representation. It should explicitly report unmapped or unsupported values. Implement and test it for the chosen format; loading a profile does not provide an adapter. Retain the classified mismatches and owners as this stage's output.
 
 ## Gather four distinct kinds of evidence
+
+**Stage 4: collect evidence within its stated scope.**
 
 | Check | What a successful result establishes | What still needs assessment |
 |---|---|---|
@@ -48,12 +69,17 @@ An export adapter should validate the declared input profile, apply reviewed tra
 | Interface and scenario testing | An identified deployment handled the exercised interactions | Untested roles, failure paths and operational conditions |
 | Regulatory and standards assessment | The stated scope has been reviewed against identified sources | Anything outside that scope or changed since the assessment |
 
-Use synthetic fixtures first, including missing evidence, boundary values, unsupported categories and unauthorised access. Exercise actual application authorisation, update, recovery and history behaviour separately from data-file validation. Access annotations inside a schema do not enforce a server's permissions.
+Start with synthetic fixtures covering missing evidence, boundary values, unsupported categories and unauthorised access. Separately exercise application authorisation, update, recovery and history behaviour. Schema access annotations do not enforce server permissions.
 
-Retain the input digest, selected schema digest, evaluator version, scenario, result and known exclusions for each run. A test-tool pass should be reported with that scope, without turning it into a broader certification claim. [Requirements and evidence reporting](../implement/reporting.md) explains how to preserve the distinction between a claim and its evidence.
+For each run, retain input digest, selected schema digest, evaluator version, scenario, result and known exclusions. Report a test-tool pass with that scope, without a broader certification claim. The output is scoped run evidence; [requirements and evidence reporting](../implement/reporting.md) explains how to distinguish claims from evidence.
 
 ## Turn findings into a reviewed successor
 
-Assign each finding to the source reviewer, profile maintainer or application owner who can resolve it. Confirm the interpretation before changing types, applicability or access. Add representative fixtures and document what existing consumers must change.
+**Stage 5: assign and resolve findings before promotion.**
 
-Follow [profile authoring](authoring.md) for generation and freezing, then [consumer adoption](updating-applications.md) for notification, UI/backend integration and activation. Keep historical definitions available and retain unresolved assessment findings. Reopen affected rows when the law, standard, guidance, external test schema or implementation changes, and review them again before promoting a successor.
+1. Assign each finding to a source reviewer, profile maintainer or application owner.
+2. Confirm interpretations before changing types, applicability or access. Add representative fixtures and document required consumer changes.
+3. Follow [profile authoring](authoring.md) for generation and freezing, then [consumer adoption](updating-applications.md) for notification, UI/backend integration and activation.
+4. Keep historical definitions and unresolved assessment findings. Reopen affected rows when law, standards, guidance, external test schemas or implementation change, and review them before promoting a successor.
+
+The result is a reviewed successor with consumer changes documented and outstanding findings retained.

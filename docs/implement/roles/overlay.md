@@ -1,8 +1,22 @@
 # Overlay
 
-An index, the component the standard's overlay role describes, admits passport and anchor transactions under its topic rules, keeps what it admitted and answers lookups, so a reader can find a passport's records without scanning the blockchain. This page is for anyone building one, or adding the DPP topics to an overlay they already run; a lookup answer is never a verification result, because the reader checks everything it receives.
+Index implementers can use this guide to build the standard's overlay role or add DPP topics to an existing overlay. An index admits passport and anchor transactions under topic rules, retains them and answers lookups so readers can find records without scanning the blockchain. A lookup answer is never verification: readers check everything received.
 
-Three terms recur. A topic is a named set of admission rules: `tm_dpp` for passport states and `tm_attestation` for claim anchors. A lookup service answers queries over what a topic admitted: `ls_dpp` and `ls_attestation`. BEEF (Background Evaluation Extended Format, [BRC-62](https://bsv.brc.dev/transactions/0062)) is the binary form that carries a transaction with its ancestors and merkle proofs, and it is what writers submit and lookups return.
+## Prerequisites and implementation target
+
+| Work | Input and source |
+|---|---|
+| Implementation | Choose the runtime or contract route below, and record the package set or contract revision. |
+| Admission and lookup | Persistent storage and your operator's publisher policy or single publisher key. |
+| Offline checks | Repository fixtures and predecessor states for their BEEFs. These raw transactions are not mined. |
+| Proof checks | A mined transaction's merkle path and header source, or a stub header source in your own tests. |
+| End-to-end service checks | Your index URL and its configured submission and callback tokens; the selected transaction's BEEF and passport identifier. |
+
+| Term | Meaning and fixed names |
+|---|---|
+| Topic | Named admission rules: `tm_dpp` for passport states, `tm_attestation` for claim anchors. |
+| Lookup service | Queries admitted records: `ls_dpp` and `ls_attestation`. |
+| BEEF | Background Evaluation Extended Format ([BRC-62](https://bsv.brc.dev/transactions/0062)), the binary form carrying a transaction, its ancestors and merkle proofs, submitted by writers and returned by lookups. |
 
 ## Two ways to build one
 
@@ -11,7 +25,7 @@ To operate the reference index, start with [Create an index](../../packages/crea
 - **Reuse the runtime in your own integration.** `@bsv/dpp-overlay` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [runtime reference](../../packages/dpp-overlay.md) shows, and an HTTP host you can [run from source](../../operate/README.md). These are advanced alternatives to the starter.
 - **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
 
-Either way, the steps below are the order to build and test in.
+Use the build order below for either route.
 
 ## What an index must serve
 
@@ -35,18 +49,33 @@ The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay rol
 ## Build order
 
 1. **Admission and storage.** Implement `tm_dpp` and `tm_attestation` with persistent storage before anything else. Keep the admission decision apart from the HTTP status and from the transaction's network status.
-2. **Start offline with the fixtures.** Their states are raw transactions that are not mined, so wrap each in a BEEF with the states before it and check admission against the topic rules first, as the [overlay package page](../../packages/dpp-overlay.md) shows for the version 2 lineage. The reference host runs without a header source when `CHAIN_TRACKER=scripts-only`, for local development only; a proof update needs a merkle path from a mined transaction, or a stub header source in your own tests.
+2. **Start offline with the fixtures.** Wrap each unmined raw transaction in a BEEF with its predecessors, then check topic admission ([version 2 lineage](../../packages/dpp-overlay.md)). The reference host's `CHAIN_TRACKER=scripts-only` setting omits a header source for local development only. Proof updates need the proof inputs listed above.
 3. **Lookup.** Serve `ls_dpp` and `ls_attestation` over what was admitted ([find passport records](../../reference/contracts.md#find-passport-records)).
 4. **One transaction end to end.** Exercise submission, lookup and proof ingestion with the same admitted transaction. A later proof must stay with the right record. Test duplicates and refused records, then restart the service and repeat the lookup.
 5. **History and export.** Add `GET /history`, pages of a passport's complete history over a stable snapshot ([paginated history schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/paginated-history.schema.json)), then `GET /evidence-package` and `GET /evidence-export`. Check pagination, a resumed request and an expired cursor.
 6. **Retraction.** Add `POST /retract`, which withdraws a state the network refused after it was announced, behind the `/submit` token.
 7. **Federation.** Synchronise with a peer ([federation](../../operate/federation.md)), including a record a peer offers but local policy refuses. A peer having a record is never a reason to bypass local admission.
 
-The [HTTP guide](../../reference/contracts.md) gives the request sequence.
+For step 4, use the same index and admitted state throughout this sequence from the [HTTP guide](../../reference/contracts.md):
+
+| Order | Request | Expected result and stop point |
+|---|---|---|
+| 1. Submit | `POST /submit`: BEEF including the predecessor, `Content-Type: application/octet-stream`, `X-Topics: ["tm_dpp"]`; bearer `SUBMIT_TOKEN` when set. | HTTP 200 carries a STEAK. Check `X-Admission`: `tm_dpp=admitted` confirms admission; 200 alone does not. Stop on refusal and inspect `X-Admission-Refusal`. |
+| 2. Look up | `POST /lookup`: `{ "service": "ls_dpp", "query": { "passportId": "..." } }`. | HTTP 200 JSON `output-list` containing the admitted output. |
+| 3. Ingest proof | `POST /arc-ingest`: JSON fields `txid`, `merklePath`, `blockHeight`; BRC-74 BUMP hex for the path. Supply `ARC_CALLBACK_TOKEN` when set, as bearer or `X-Callback-Token`. | HTTP 200 `{ "status": "applied" }`. Stop on a refused proof. |
+
+Repeat lookup, then restart and look up again. Confirm the proof remains with its record. Fixtures need a mined proof or a stub header source to complete this step.
 
 ## Publisher policy
 
-An index admits a passport state only when its publisher signature verifies under a key the index's policy names. The keys enter in one of two ways: `SERVICE_IDENTITY_KEY`, one key, or a signed publisher policy chain that names several keys, each with an `activeFrom` time and authorised by the operator's identity key ([sign a publisher policy](../../operate/federation.md#3-sign-a-publisher-policy); [schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json); vectors in `fixtures/vectors/dpp/publisher-policy/v1.json`). The capability document's `publisherPolicy` lists the keys but not their windows, so a writer can see that a key is listed but not that it is active at a state's time; the windows are in the operator's signed chain.
+An index admits a state only when its publisher signature verifies under a key named by its policy.
+
+| Configuration | Keys and evidence to inspect |
+|---|---|
+| `SERVICE_IDENTITY_KEY` | One publisher key. |
+| Signed publisher policy chain | Several keys, each with `activeFrom`, authorised by the operator's identity key. Inspect the signed chain for activity windows. |
+
+Use [sign a publisher policy](../../operate/federation.md#3-sign-a-publisher-policy), the [schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json) and `fixtures/vectors/dpp/publisher-policy/v1.json`. The capability document's `publisherPolicy` lists keys without their windows. It shows membership, not whether a key was active at a state's time.
 
 ## Known gaps for a new operator
 

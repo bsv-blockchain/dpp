@@ -1,68 +1,91 @@
 # Build with the open DPP standard
 
-Build your own digital product passport platform, add passport features to an existing application, or provide services other implementations can use. Start by choosing what you want to deliver.
+Application teams and service owners can use this guide to choose a route: build a digital product passport platform, add passport features to an application, or supply services other implementations can use.
 
-A digital product passport connects a product to information about its history. This standard records changes on the BSV blockchain so a reader can check the signed records and their evidence independently of the application displaying them. Your organisation chooses the product experience, data, permissions and services around those records.
+A digital product passport connects a product to its history. This standard records changes on the BSV blockchain so readers can check signed records and evidence independently of the application displaying them. Your organisation supplies the product experience, data, permissions and services.
 
-The standard provides shared rules, reference packages and implementation guides. You can use the packages or implement the published rules yourself. You do not need every package or every service.
+The standard provides shared rules, reference packages and implementation guides. Use the packages or implement the published rules yourself; you do not need every package or service.
+
+## Before you start
+
+Choose your intended outcome from the routes below. Optional demonstration access depends on the mode:
+
+| Mode | Access required | Blockchain writes and cost |
+|---|---|---|
+| Read the sample passport or verifier | Browser | Reading does not publish a transaction |
+| Explore the three open sample brands | Browser | Write nothing to the blockchain |
+| Create a brand and publish its sample passports | Signed-in user; demonstration publishing must be open | Real BSV mainnet transactions costing satoshis |
 
 ## Start here
 
-| Your goal | Start with | What you will get |
+| Your goal | Start with | Outcome |
 |---|---|---|
-| Plan our own production platform | [Plan your platform](start/plan-your-platform.md) | A platform brief covering scope, services, responsibilities and delivery decisions |
-| Add passport features to an application | [Build or integrate](start/build-and-integrate.md) | A path to reading, issuing or updating passports, with clear prerequisites |
+| Plan a production platform | [Plan your platform](start/plan-your-platform.md) | A brief covering scope, services, responsibilities and delivery decisions |
+| Add passport features | [Build or integrate](start/build-and-integrate.md) | A route to reading, issuing or updating, with prerequisites |
 | Run services or use a provider | [Deploy and operate](operate/overview.md) | Service choices, access requirements, deployment and recovery guidance |
-| Find the precise rules or implement independently | [Technical reference](reference/README.md) | Specifications, contracts, package interfaces and conformance evidence |
+| Find precise rules or implement independently | [Technical reference](reference/README.md) | Specifications, contracts, package interfaces and conformance evidence |
 
-Starting from nothing? [Create an application](packages/create-dpp-app.md) and [create an index](packages/create-dpp-index.md) each generate a project in one command. Unsure which pieces you need? [Choose packages and services](start/choose-components-and-services.md). An AI agent should also read [the agent guide](start/for-agents.md). Returning readers can use [all tasks](start/choose-your-path.md).
+Starting from nothing? [Create an application](packages/create-dpp-app.md) or [create an index](packages/create-dpp-index.md): each generates a project in one command. Use [choose packages and services](start/choose-components-and-services.md) to select the pieces. AI agents should also read [the agent guide](start/for-agents.md); returning readers can use [all tasks](start/choose-your-path.md).
 
 ## Try the hosted demonstration
 
-You can explore [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) and [the verifier](https://dpp.bsvb.net/verify) in a browser. This is an optional way to see the experience before planning your own application.
+Optionally explore [a sample passport](https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8) and [the verifier](https://dpp.bsvb.net/verify) before planning your application. The demonstration uses mock brands, products and data.
 
-The demonstration uses mock brands, products and data. Its three open sample brands write nothing to the blockchain. A signed-in user can create a brand whose sample passports are real BSV mainnet transactions while demonstration publishing is open. Those writes cost satoshis. The demonstration is not a service for real products or a conformance reference for a complete application; the conformance ledger assesses the packages. See [the hosted services and their limits](deployment.md).
+The demonstration is not a service for real products or a conformance reference for a complete application. The conformance ledger assesses the packages. Read [hosted services and their limits](deployment.md) before relying on a service.
 
 ## How it works
 
-- **A passport has an ordered history.** Each state is a transaction that spends the previous state, signed by the party making the change and the publisher.
-- **An index finds records.** Also called an overlay, it returns states and evidence. A reader checks the evidence rather than treating the response as proof, and still depends on the source for freshness.
-- **Claims are separate.** A repairer or recycler can sign a claim about a product. Its own blockchain anchor lets a reader check the committed claim without changing the passport.
-- **Verification produces a report.** Checks can pass, fail, be unknown because evidence is missing, or be not applicable.
+| Part | What it does |
+|---|---|
+| Passport | An ordered history. Each state is a transaction that spends the previous state, signed by the party making the change and the publisher. |
+| Index | Also called an overlay. Finds states and evidence; readers check that evidence and still depend on the source for freshness. Its response is not proof. |
+| Claim | A repairer or recycler can sign a separate statement. Its own blockchain anchor lets readers check the committed claim without changing the passport. |
+| Verification report | Checks pass, fail, are unknown when evidence is missing, or are not applicable. |
 
 [The passport model](start/architecture.md) explains how these parts fit together.
 
 ## What it does not claim
 
-A valid signature shows which key signed the bytes. It does not establish that a product is genuine, that a statement is true or that the signer is authorised to make it.
+A valid signature identifies the key that signed the bytes. It does not establish product authenticity, the statement's truth or the signer's authority.
 
-The battery and textile profiles map fields to the EU Batteries Regulation (EU) 2023/1542 and the Ecodesign for Sustainable Products Regulation (EU) 2024/1781. Those mappings have not been assessed. The standard claims no conformity with either regulation and does not qualify a product. Your platform needs its own data, authority and readiness decisions.
+Battery and textile profiles include these field mappings:
+
+| Regulation | Mapping status |
+|---|---|
+| EU Batteries Regulation (EU) 2023/1542 | Not assessed |
+| Ecodesign for Sustainable Products Regulation (EU) 2024/1781 | Not assessed |
+
+The standard claims no conformity with either regulation and does not qualify a product. Your platform needs its own data, authority and readiness decisions.
 
 ## Words you will meet
 
 | Word | Meaning |
 |---|---|
-| Passport identifier | A product's web address, commonly `https://<host>/01/<GTIN>/21/<serial>` |
-| State | One signed record in a passport's history |
-| Index or overlay | A service that admits records and answers lookups |
-| Publisher key | A key used to countersign a passport state; the index's policy decides which keys it admits |
-| Registry | A service that validates and stores claims |
-| Anchor | A transaction committing to a claim's exact bytes |
-| Wallet | Holds keys and funds and provides signing and broadcasting functions; the reference writer uses a BRC-100 wallet |
-| Proof | The merkle path used to check a transaction's inclusion in a block |
-| Tip | The latest state, which the next change spends |
-| Claim or attestation | A signed statement about a product, separate from the passport |
+| Passport identifier | Product web address, commonly `https://<host>/01/<GTIN>/21/<serial>` |
+| State | Signed record in a passport's history |
+| Index | Service that admits records and answers lookups |
+| Publisher key | Countersigns a state; the index policy decides which keys it admits |
+| Registry | Validates and stores claims |
+| Anchor | Transaction committing to a claim's exact bytes |
+| Wallet | Holds keys and funds; signs and broadcasts. The reference writer uses a BRC-100 wallet. |
+| Proof | Merkle path used to check a transaction's block inclusion |
+| Tip | Latest state, spent by the next change |
+| Claim or attestation | Signed statement about a product, separate from the passport |
 
-Use the [glossary](start/glossary.md) when you meet another term. You do not need to learn them all before choosing a route.
+Consult the [glossary](start/glossary.md) as needed; you need not learn every term before choosing a route.
 
 ## Where things stand
 
-The standard is a working draft before version 1.0. Reference packages are published under the Apache 2.0 licence. Pin the exact versions in the [selected release](reference/release-sets.md); the latest repository source can contain changes that are not yet published or deployed.
+| Fact | Status |
+|---|---|
+| Standard | Working draft before version 1.0 |
+| Reference packages | Published under the Apache 2.0 licence |
+| Version choice | Pin exact versions from the [selected release](reference/release-sets.md); repository source may contain unpublished or undeployed changes |
 
-Read [current status](start/status.md) and the limits relevant to your route before committing to a production design. [Plan your platform](start/plan-your-platform.md) makes those dependencies part of the initial brief.
+Before committing to a production design, read [current status](start/status.md) and your route's limits. [Plan your platform](start/plan-your-platform.md) puts those dependencies in the initial brief.
 
 ## Everything else
 
-Find [product profiles](profiles/README.md), [connections to other standards](interoperability/README.md), and [how to contribute](contribute/README.md) through the task routes or [all tasks](start/choose-your-path.md).
+Task routes and [all tasks](start/choose-your-path.md) lead to [product profiles](profiles/README.md), [connections to other standards](interoperability/README.md) and [how to contribute](contribute/README.md).
 
-The [source repository](https://github.com/bsv-blockchain/dpp) is public. Documentation is built from `main`; links to implementation and normative source files are pinned to a reviewed commit. The [documentation history](https://github.com/bsv-blockchain/dpp/commits/main/docs) records changes.
+The [source repository](https://github.com/bsv-blockchain/dpp) is public. Documentation is built from `main`; implementation and normative source links are pinned to a reviewed commit. The [documentation history](https://github.com/bsv-blockchain/dpp/commits/main/docs) records changes.

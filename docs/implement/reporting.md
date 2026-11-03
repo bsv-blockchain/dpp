@@ -1,11 +1,20 @@
 # Requirements and evidence reporting
 
-This page is for implementers who have run the fixtures and now need to report what their implementation does, so a reviewer can rerun every result. It gives the rules a report follows, what it contains, how to declare what you support, and where to send it.
+Implementers who have run the fixtures can use this page to report their results, declare supported capabilities and give reviewers enough evidence to rerun every result. A conformance claim names a set of requirements; it is separate from a product's signed lifecycle claim.
+
+## Gather the report inputs
+
+| Input | Source |
+|---|---|
+| Fixture results and revision | Your retained run, including refusals and missing evidence. |
+| Implementation identity | Build commit, language, authorship record and dependency names with exact versions. |
+| Scope | Selected release, baseline, roles, profiles and applied policy. |
+| Capability validation | Node.js 22 or later, npm and git; complete [checkout setup](../quick-start.md#get-the-code), including `npm ci` and `npm run build`. Save your declaration at the checkout root as described below. |
 
 ## The rules
 
-1. **One sentence per check, zeros included.** Each check answers in its own sentence, including the checks that did not pass. There is no aggregate verdict and no score: [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) says a report that says "12 of 13" invites exactly the argument a conformance suite exists to end.
-2. **Writers add one sentence per writing rule.** No byte vector can show that a state was checked before it was sent or that its proof was kept. Writer conformance is therefore self-reported, one sentence per rule that [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11 lists, and a report that passes every fixture says nothing about a writer until those sentences stand beside it. [Passport writer](roles/passport-writer.md#prove-it-the-writers-self-report) lists the six rules.
+1. **One sentence per check, zeros included.** Include checks that did not pass. Give no aggregate verdict or score: [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) says a report that says "12 of 13" invites exactly the argument a conformance suite exists to end.
+2. **Writers add one sentence per writing rule.** Vectors cannot show that a state was checked before sending or its proof retained. Writers self-report each rule that [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11 lists. Passing every fixture says nothing about a writer without those sentences. [Passport writer](roles/passport-writer.md#prove-it-the-writers-self-report) lists the six rules.
 3. **Say what kind of evidence each sentence is.** A local fixture result, a fresh-record exchange with another implementation and a deployed service are different facts.
 4. **Claim only what the test shows.** A passing native-signature test is evidence about that signature check. It does not establish issuer authority, inclusion or an independent deployment. If a run had no header source, say so beside the checks that passed.
 
@@ -37,7 +46,14 @@ The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab19
 
 ## Declare what you support
 
-A capability document is a JSON file, conforming to the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json), that says what an implementation supports and, required, what it does not. It is a claim of support that a reviewer checks against the ledger, not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) section 4). An index serves it at `GET /capabilities`; a library or a tool publishes it with its report. The required fields are `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `representations`, `proofSuites`, `anchorFormats` and `unsupported`. A service also fills `topics`, `services`, `publisherPolicy`, `synchronisation` and `limits` where they apply, as the [reference index's document](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/examples/capabilities-reference-node.json) does.
+A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) section 4). An index serves it at `GET /capabilities`; a library or tool publishes it with its report.
+
+| Requiredness | Fields |
+|---|---|
+| Required | `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `representations`, `proofSuites`, `anchorFormats`, `unsupported` |
+| Services, where applicable | `topics`, `services`, `publisherPolicy`, `synchronisation`, `limits` |
+
+The [reference index's document](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/examples/capabilities-reference-node.json) shows service fields.
 
 A reader that verifies passport history and acceptance records, but neither anchors nor external credentials, could declare:
 
@@ -81,11 +97,17 @@ console.log(validate(document) ? 'valid' : validate.errors)
 JS
 ```
 
-It prints `valid`, or the list of fields that break the schema. For a registry, which document `GET /capabilities` answers with is not settled yet ([registry](roles/registry.md)).
+Expect `valid`. If it prints fields that break the schema, fix them and rerun before publishing the declaration. For a registry, which document `GET /capabilities` answers with is not settled yet ([registry](roles/registry.md)).
 
 ## Send it
 
-Publish the report and its commands where a reviewer can rerun them, then send it by the route on [report a disagreement](../contribute/disagreements.md): an issue on the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues) for a non-sensitive technical report, which needs only a GitHub account. To take part in the trial, or to arrange an exchange with the hosted reference, use the [BSV Association contact form](https://bsvassociation.org/contact/) ([implementing parties](../contribute/implementing-parties.md)). A security problem goes privately, never in an issue, as the [security policy](https://github.com/bsv-blockchain/dpp/security/policy) describes.
+Publish the report and commands where reviewers can rerun them, then select the [reporting route](../contribute/disagreements.md):
+
+| Report or request | Destination |
+|---|---|
+| Non-sensitive technical report | [Repository issue tracker](https://github.com/bsv-blockchain/dpp/issues); requires only a GitHub account. |
+| Trial or hosted-reference exchange | [BSV Association contact form](https://bsvassociation.org/contact/) ([implementing parties](../contribute/implementing-parties.md)). |
+| Security problem | Private route in the [security policy](https://github.com/bsv-blockchain/dpp/security/policy), never an issue. |
 
 ## Disagreements
 

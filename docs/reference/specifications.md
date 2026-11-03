@@ -1,16 +1,28 @@
 # Specification index
 
-This page lists the specification documents, grouped by subject, with when to read each. It is for implementers who need the exact rules behind a guide; the guides themselves start from the [passport model](../start/architecture.md), the [quick start](../quick-start.md) and the [implementer start](../implement/README.md).
+Implementers can use this index to select rules for their release. For an introduction, use the [passport model](../start/architecture.md), [quick start](../quick-start.md) or [implementer start](../implement/README.md).
+
+## Before selecting a source
+
+| Target | Source to use |
+|---|---|
+| Reviewed November source candidate | Links below describe `dpp-release-2026-11`, not yet published |
+| Installed package | Specification and contract revisions in its [release set and publication receipt](release-sets.md) |
+| Published October set | Still selects `managed-custody@1` |
 
 ## What is normative
 
-Once published, the contents of `spec/`, `contracts/` and `fixtures/` are normative: an implementation conforms to them or it does not ([governance](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/GOVERNANCE.md#what-is-normative)). Every document below is a working draft before version 1.0 unless its status says otherwise. While the draft is before 1.0, the reference implementation breaks ties between the text and the code, except where the specification names a defect. The [contracts page](contracts.md) maps the machine-readable interfaces, and [conformance](conformance.md) explains the requirement ledger.
+| Rule | Meaning |
+|---|---|
+| Normative material | Once published, `spec/`, `contracts/` and `fixtures/` are normative: an implementation conforms or does not ([governance](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/GOVERNANCE.md#what-is-normative)) |
+| Document status | Working draft before version 1.0 unless the document says otherwise |
+| Text/code disagreement before 1.0 | Reference implementation breaks the tie, except where the specification names a defect |
 
-If a fixture disagrees with the text, keep the failing input and both readings, and report it as [report a disagreement](../contribute/disagreements.md) describes. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists the known conflicts; the documentation does not silently choose a new rule.
+The [contracts page](contracts.md) maps machine-readable interfaces; [conformance](conformance.md) explains the requirement ledger.
+
+If a fixture disagrees with text, retain the input, both readings and selected revision; [report the disagreement](../contribute/disagreements.md). The [fixture guide](../implement/fixture-runner.md#source-gaps) lists known conflicts. Documentation does not silently choose a new rule.
 
 ## The documents
-
-The links below describe the reviewed November source candidate, `dpp-release-2026-11`, which is not yet published. For an installed package, use the specification and contract revisions in its [release set and publication receipt](release-sets.md); the published October set still selects `managed-custody@1`.
 
 | Group | Document | Read when |
 |---|---|---|

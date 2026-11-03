@@ -1,26 +1,44 @@
 # @bsv/dpp-profiles
 
-`@bsv/dpp-profiles` holds the industry profiles, the published lists of product fields a passport's payload carries, with code to read them, find the fields that apply to a product and check a payload against its profile. Use it to build a passport's product data, or to show someone else's.
+Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and label passport product data. It publishes industry field lists and helpers to read them, find applicable fields and check payloads against their declared profiles.
 
 **Experimental prerelease:** `@bsv/dpp-profiles` 0.3.0-beta.10 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
+## Runtime and example prerequisites
+
+| Procedure | Input and source |
+|---|---|
+| All module examples | Node 22 or later and this package installed in your project. |
+| Candidate installation | A source checkout containing `packages/dpp-protocol`, from [source access](README.md#source-access). |
+| Payload validation | `ajv@8.20.0` and `ajv-formats@3.0.1`, installed below. The package supplies no validator library. |
+| Report fragment | `@bsv/dpp-protocol@0.3.0-beta.10`; your reader's `evidence`, `expected` and `policy` ([report reference](dpp-protocol.md#what-the-report-takes)). |
+| Stored payload example | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/sdk@2.8.10` and access to the hosted index named in `show-payload.mjs`. |
+| Commands naming `examples/` | Repository checkout after `npm ci` and `npm run build`; run from its root. |
+
 ## Install
 
-**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now. The npm command below applies once these exact versions have been published.
+**Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now:
 
-In your project, with Node 22 or later:
+1. At the checkout root, run `npm ci`, `node scripts/release-candidates.mjs` and `node scripts/consumer-check.mjs` to build, pack and test archives in a separate project. Nothing is published.
+2. In your application, install profiles plus protocol/SDK for the stored-payload example below. Replace `/absolute/path/to/dpp` with the checkout's absolute path; retain archives and lockfile.
+
+```sh
+npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
+```
+
+The npm command below applies once these exact versions have been published. Run it in your project:
 
 ```sh
 npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10
 ```
 
-Use 0.3.0-beta.4 or later; earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta; pin the exact version anyway so upgrades are your choice, keep the lockfile, and review compatibility before upgrading. The [support table](support-table.md) separates the Node module from the data entry points.
+Use 0.3.0-beta.4 or later: earlier readers accept identifiers the package does not publish. A bare `npm install @bsv/dpp-profiles` selects `latest`, the newest beta. Pin versions, keep the lockfile and review compatibility before upgrading. The [support table](support-table.md) distinguishes Node modules from data entry points.
 
 Each JavaScript example below is a complete file: save it under the name given and run `node <name>.mjs` in that project. Only commands naming `examples/` need a repository checkout.
 
 ## Three versions you will meet
 
-A manifest is a profile's definition file: its fields, their labels, tiers and obligations, and when each applies.
+A manifest defines a profile's fields, labels, tiers, obligations and applicability.
 
 | Version | Where you see it | What it means |
 |---|---|---|
@@ -30,7 +48,9 @@ A manifest is a profile's definition file: its fields, their labels, tiers and o
 
 ## Inspect applicable fields
 
-`fieldsFor` lists the fields that apply to a product's category, and `missingRequired` the required ones a payload lacks. A field applies always, to some categories only, or after review against a condition the profile states. Save this as `inspect-fields.mjs`:
+`fieldsFor` lists applicable fields; `missingRequired` lists missing required fields. Applicability is unconditional, category-specific or subject to the profile's review condition.
+
+1. Save this as `inspect-fields.mjs`:
 
 ```js
 import { readManifest, fieldsFor, missingRequired } from '@bsv/dpp-profiles'
@@ -44,7 +64,7 @@ const gaps = missingRequired(manifest, {}, 'industrial')
 console.log('an empty payload lacks', gaps.missing.length, 'required fields, starting with', gaps.missing.slice(0, 3).map(({ key }) => key).join(', '))
 ```
 
-`node inspect-fields.mjs` prints:
+2. Run `node inspect-fields.mjs`. Expected output:
 
 ```
 categories: lmt, ev, industrial, stationary
@@ -53,9 +73,13 @@ first three: passportId (Passport reference, public); serial (Serial number, pub
 an empty payload lacks 63 required fields, starting with serial, modelName, manufacturer
 ```
 
-A payload names its category, one of the manifest's `applicability.categories`, in its `category` field. `missingRequired` checks only that the fields captured at registration are present; it is neither schema validation nor a product assessment. Show the `needsReview` fields beside your schema results, with their condition, never as satisfied.
+| Finding | Interpretation |
+|---|---|
+| `category` | Must name one of the manifest's `applicability.categories`. |
+| `missingRequired` | Checks presence of fields captured at registration only. It is neither schema validation nor product assessment. |
+| `needsReview` | Show each field and its condition beside schema results. Never present it as satisfied. |
 
-For drafts, in manifest format 2, use `readManifestAny`, `fieldsForV2` and `missingRequiredV2`, which take a richer applicability context. `compareProfiles(from, to)` reports what changes between two profile versions and `reviewProfileData` adds cross-field findings, as [evaluate the version 4 drafts](../profiles/version-4-drafts.md) shows. [Authoring](../profiles/authoring.md) covers the generation and freeze workflow.
+Format 2 drafts use `readManifestAny`, `fieldsForV2` and `missingRequiredV2` with richer applicability context. `compareProfiles(from, to)` reports version changes; `reviewProfileData` adds cross-field findings ([evaluate version 4 drafts](../profiles/version-4-drafts.md)). [Authoring](../profiles/authoring.md) covers generation and freezing.
 
 ## Check a payload against its profile
 
@@ -66,16 +90,16 @@ Two readers return a profile's manifest:
 | `readManifest(profile)` | An identifier in `PROFILE_IDS`, drafts included, such as `battery@2` or `battery@4` | The frozen manifest as published, typed for format 1: a draft comes back in format 2 with keys the type does not name |
 | `readManifestAny(profile)` | Any `id@version` identifier | The manifest in format 1 or 2, typed for both. It checks only the identifier's form, so check `PROFILE_IDS` first; an identifier the package does not hold fails with `ENOENT` |
 
-Each profile also publishes two JSON Schemas (2020-12), generated from its manifest:
+Each manifest generates two JSON Schemas (2020-12):
 
 | Function | Takes | Returns |
 |---|---|---|
 | `readPublicPayloadSchema(profile)` | An identifier in `PROFILE_IDS` | The schema for a state's `payload_public`: every `public`-tier field |
 | `readRestrictedPayloadSchema(profile)` | An identifier in `PROFILE_IDS` | The schema for the `owner`, `legitimate` and `authority` tiers together, in one object |
 
-Outside `PROFILE_IDS`, `readManifest` and both schema readers throw `"<identifier>" is not a published industry profile`, so check a record's declared `profile` against the list first, as the next section does.
+Outside `PROFILE_IDS`, `readManifest` and both schema readers throw `"<identifier>" is not a published industry profile`. Check the declared `profile` against this list first.
 
-Every public schema accepts five properties beyond the manifest's public fields:
+Public schemas accept five additional properties:
 
 | Property | What it carries |
 |---|---|
@@ -84,13 +108,13 @@ Every public schema accepts five properties beyond the manifest's public fields:
 | `object_did` | An optional physical-object DID; carrying it does not bind the record to the object |
 | `dataCarrier` | The data carrier's identifier, such as a chip UID; the index's lookup also finds the passport by it |
 
-Validate with a JSON Schema 2020-12 validator that asserts formats, such as Ajv's 2020 build with `ajv-formats` and `strict: false`, since the schemas carry annotations Ajv does not know. Install them yourself, as the package does not:
+1. Install Ajv's 2020 build and formats. Validation needs JSON Schema 2020-12 with formats asserted; `strict: false` permits schema annotations Ajv does not know:
 
 ```sh
 npm install --save-exact ajv@8.20.0 ajv-formats@3.0.1
 ```
 
-Save this as `check-payload.mjs`:
+2. Save this as `check-payload.mjs`:
 
 ```js
 import Ajv2020 from 'ajv/dist/2020.js'
@@ -105,11 +129,26 @@ if (!validate({ name: 'Example chair' })) {
 }
 ```
 
-`node check-payload.mjs` prints one line for each required property the payload lacks: `careNote`, `category`, `manufacturer`, `manufacturerContact`, `materials`, `profile` and `profile_version`, each as `(payload) must have required property '<name>'`.
+3. Run `node check-payload.mjs` and inspect each missing property:
 
-Compile each profile's schema once and reuse it, with `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`. Every state of a lineage declares the same profile, `readPublicPayloadSchema` returns a fresh copy on every call, and Ajv refuses to compile a second copy of an `$id` it already holds.
+| Expected output | Missing properties |
+|---|---|
+| One line per property: `(payload) must have required property '<name>'` | `careNote`, `category`, `manufacturer`, `manufacturerContact`, `materials`, `profile`, `profile_version` |
 
-To have a verification report make the same check, pass `profilePayloadValidator(ajv)` as the `payloadValidator` of the policy given to `verifyPassportEvidence`, with the same Ajv instance as above; the package brings no validator library of its own. The report's `schema` check then reads `pass` or `fail` with `schema-invalid` and one sentence per problem for every token state that declares a published profile, `unknown` with `schema-unavailable` for a profile this package does not publish, and `unknown` with `profile-undeclared` for a payload without the two stamps:
+Stop before treating this payload as valid: supply the required values and validate again.
+
+Reuse compiled schemas with `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`. Every lineage state declares the same profile; `readPublicPayloadSchema` returns fresh copies, and Ajv refuses a second copy of an existing `$id`.
+
+4. To include validation in a report, pass `profilePayloadValidator(ajv)` as the policy's `payloadValidator` to `verifyPassportEvidence`. Use the same Ajv instance.
+
+| Token payload | Report's `schema` result |
+|---|---|
+| Declares a published profile and validates | `pass` |
+| Declares a published profile and is invalid | `fail`, `schema-invalid`, with one sentence per problem |
+| Declares a profile this package does not publish | `unknown`, `schema-unavailable` |
+| Lacks the two profile stamps | `unknown`, `profile-undeclared` |
+
+**Fragment, not runnable alone:** supply your reader's `evidence`, `expected` and `policy`. The [complete reader](dpp-protocol.md#gather-a-passports-evidence) shows their contents.
 
 ```js
 import Ajv2020 from 'ajv/dist/2020.js'
@@ -122,11 +161,17 @@ addFormats(ajv)
 const report = await verifyPassportEvidence(evidence, expected, { ...policy, payloadValidator: profilePayloadValidator(ajv) })
 ```
 
-In a repository checkout, `node examples/sample-payload.mjs general@2` prints a passing payload, `--demonstration` starts it with a demonstration record's `notice`, and `node examples/sample-payload.mjs --check <profile@version> <file>` explains each problem in a payload file in a sentence.
+| Checkout command or option | Expected result |
+|---|---|
+| `node examples/sample-payload.mjs general@2` | Passing payload |
+| `--demonstration` | Starts the payload with a demonstration record's `notice` |
+| `node examples/sample-payload.mjs --check <profile@version> <file>` | One sentence explaining each problem in the supplied payload file |
 
 ## Show a stored payload under its profile
 
-Show a passport's product data under the profile its record declares, even a draft or superseded one, never under a newer one. This example also needs `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/sdk@2.8.10` and network access to the hosted index. Save it as `show-payload.mjs`:
+Show data under the profile its record declares, including draft or superseded profiles, never a newer one.
+
+1. Save this as `show-payload.mjs`:
 
 ```js
 import { Beef } from '@bsv/sdk'
@@ -156,7 +201,7 @@ for (const field of manifest.fields.filter(({ key }) => key in payload).slice(0,
 }
 ```
 
-`node show-payload.mjs` prints:
+2. Run `node show-payload.mjs`. Expected output:
 
 ```
 battery@4 draft Battery passport
@@ -165,11 +210,18 @@ battery@4 draft Battery passport
   Model name: "Hearth 10"
 ```
 
-When `manifest.status` is `draft`, say so beside the data, and show any `notice` first. The example decodes the latest state without verifying it; verify the passport first, as [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) shows. This package cannot label a record whose profile is outside `PROFILE_IDS`: show its values as unlabelled data, or not at all.
+3. Apply these display rules:
+
+| Condition | Required action |
+|---|---|
+| Any `notice` | Show it before product data. |
+| `manifest.status` is `draft` | Label the data as draft. |
+| Latest state decoded by this example | Verify it before relying on it; see [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence). Decoding alone does not verify. |
+| Profile outside `PROFILE_IDS` | Cannot label: show unlabelled values or no values. |
 
 ## Read a field
 
-Each entry in `manifest.fields` describes one value, with these properties in manifest format 1, which every current profile uses:
+Each `manifest.fields` entry describes one value. All current profiles use these format 1 properties:
 
 | Property | Values | What it tells an application |
 |---|---|---|
@@ -215,7 +267,13 @@ export default {
 }
 ```
 
-The package reads its data files from its own directory at call time, by a computed path that bundlers and file tracers cannot follow. In a Next.js 16 production build, bundling the package leaves every data file behind, and marking it external alone traces the manifests but no generated schema, so `readPublicPayloadSchema` fails with `ENOENT` only once deployed. A standalone build with this configuration serves the schema; without the include, the same route answers 500.
+The package computes data-file paths in its own directory at call time; bundlers and file tracers cannot follow them.
+
+| Next.js 16 production configuration | Result |
+|---|---|
+| Bundle the package | Every data file is left behind. |
+| Mark external only | Manifests are traced, generated schemas are not. `readPublicPayloadSchema` fails with `ENOENT` only after deployment; the route answers 500. |
+| Standalone build with the configuration above | Includes the data files and serves the schema. |
 
 ## Choose an entry point
 
@@ -227,11 +285,11 @@ The package reads its data files from its own directory at call time, by a compu
 | `@bsv/dpp-profiles/generated/*` | Generated payload schemas and profile documents |
 | `@bsv/dpp-profiles/frozen.json` | Frozen file digests |
 
-A consumer in another language can read the data files directly; applicability and the mapping to lifecycle events, which the schemas do not cover, are defined in [profiles](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) and implemented in [`applicability.ts`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/src/applicability.ts).
+Other languages can read data files directly. Applicability and lifecycle-event mappings are outside the schemas; their rules are defined in [profiles](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) and implemented in [`applicability.ts`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/src/applicability.ts).
 
 Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json).
 
-Until it is decided who versions a profile and where its canonical definition lives, the frozen manifests in this package are the definitions.
+Until profile versioning and canonical locations are decided, this package's frozen manifests are the definitions.
 
 ## Next
 

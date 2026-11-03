@@ -1,10 +1,21 @@
 # Install the selected release
 
-**Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
+Application developers can use this guide to install an exact DPP package selection and check its archives. Choose the npm release for a published installation or local archives to test the source candidate.
 
-The published release uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. Existing consumers must migrate their imports and schema paths; the active release uses only the new name. The renamed packages are available from npm at the exact versions below; use the source route to test unpublished changes. See [migration](../migration.md#rename-dpp-core-to-dpp-protocol) for existing applications.
+**Experimental prerelease:** These packages support implementation and interoperability testing; they are not declared production-ready. APIs may change significantly before stability. Package, specification, wire-format and frozen-profile versions are separate. Pin exact packages and retain the lockfile.
 
-Use [choose packages and services](../start/choose-components-and-services.md) to select your components. The [release status](../reference/release-sets.md) distinguishes the source candidate from published releases, and the [support table](support-table.md) describes the candidate's entry points.
+The published release uses **`@bsv/dpp-protocol`**, the new name for the library previously called `@bsv/dpp-core`. The active release uses only the new name; existing consumers must [migrate imports and schema paths](../migration.md#rename-dpp-core-to-dpp-protocol). Earlier pinned installations keep their names and bytes.
+
+## Installation prerequisites
+
+| Context | Input and source |
+|---|---|
+| All consumers | Select components with [choose packages and services](../start/choose-components-and-services.md), then use [release status](../reference/release-sets.md) to distinguish published and candidate versions. |
+| Application installation | Node >=22 and a project using ECMAScript modules. All four DPP packages use ECMAScript modules; npm installation needs no repository clone. |
+| Candidate packing | Source checkout containing `packages/dpp-protocol`; Node 22 or later. |
+| Archive reproduction | Node 22, npm 11.19.0 and the receipt's exact revision. Different compression implementations can change archive digests. Keep a separate checkout to retain both current and historical revisions. |
+| Hosted writer | A wallet toolbox accepting the selected SDK ([choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet)). |
+| Runtime/deployment | Check the candidate's [supported entry points](support-table.md). Node support does not establish browser support. |
 
 ## Choose your starting point
 
@@ -16,11 +27,11 @@ Use [choose packages and services](../start/choose-components-and-services.md) t
 | Add DPP helpers to your own code | [Choose reference libraries](../start/choose-components-and-services.md#pick-only-the-packages-your-task-uses) | Select only the libraries your code uses, following the version instructions below |
 | Embed an index or build a custom host | [Index runtime (advanced)](dpp-overlay.md) | Install the runtime directly as an alternative to the starter |
 
-Both starters are published at `0.1.0-beta.1`; the source carries `0.1.0-beta.2`, which pins the current candidate and is not yet published. Their guides explain how to create a project from npm or check a source candidate. A generated project already declares its dependencies and pins; follow its README rather than adding the packages below a second time. The remaining instructions are for selecting libraries directly or developing from source.
+Both starters are published at `0.1.0-beta.1`; unpublished source `0.1.0-beta.2` pins the candidate. Their guides cover npm creation and source checks. Generated projects already declare dependencies and pins: follow their README. Continue below for direct library selection or source development.
 
 ## Use the renamed source candidate
 
-From a checkout containing `packages/dpp-protocol`, using Node 22 or later:
+1. From the candidate checkout root, build, pack and check:
 
 ```sh
 npm ci
@@ -28,32 +39,35 @@ node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-This builds the packages, packs their archives and tests them in a separate project. It publishes nothing. To try the protocol library and profiles in your own application, replace `/absolute/path/to/dpp` with the checkout's absolute path:
+The commands publish nothing. Expect archives in `release/candidates/`, source revision and digests in `release/candidates.json`, and a consumer check in a separate project ending `Every sentence above holds.` Stop if packing or checking fails.
+
+2. In your application directory, install the selected archives together so npm resolves unpublished dependencies locally. Replace `/absolute/path/to/dpp` with the checkout path:
 
 ```sh
 npm install --save-exact /absolute/path/to/dpp/release/candidates/bsv-dpp-protocol-0.3.0-beta.10.tgz /absolute/path/to/dpp/release/candidates/bsv-dpp-profiles-0.3.0-beta.10.tgz @bsv/sdk@2.8.10
 ```
 
-Install all selected DPP archives together so npm can satisfy their unpublished dependencies locally. To embed the index, add `bsv-dpp-overlay-0.4.0-beta.13.tgz` from the same directory. Preserve the archives and the resulting lockfile. An application that only calls an index over HTTP does not need the index package.
+3. To embed an index, include `bsv-dpp-overlay-0.4.0-beta.13.tgz` from the same directory. HTTP-only clients need no index package. Retain the selected archives and resulting lockfile.
 
-For the published release, use the exact packages below and change imports to the renamed packages. Existing installations pinned to earlier releases keep their original names and bytes.
+Use the exact npm versions below for published installations.
 
 ## Install from npm
 
-The latest complete publication with a receipt in this documentation is `dpp-release-2026-10-10`, the set the current source candidate `dpp-release-2026-11` supersedes: protocol and profiles beta.9, overlay beta.12 and credentials beta.5. The following exact versions remain available; mutable npm tags may have moved. See the [beta.11 publication receipt](../reference/beta-11-publication.md).
+The latest complete publication with a receipt here is `dpp-release-2026-10-10` ([beta.11 receipt](../reference/beta-11-publication.md)); candidate `dpp-release-2026-11` supersedes it for source development. Exact published versions remain available even if mutable tags move.
 
-A Node >=22 application can install only the packages its task uses, without cloning this repository. For passport records, verification and native lifecycle claims, start with the protocol library:
+| Library | Published npm version | Candidate archive version | Select for |
+|---|---|---|---|
+| Protocol | `@bsv/dpp-protocol@0.3.0-beta.9` | `0.3.0-beta.10` | Passport records, verification and native lifecycle claims |
+| Profiles | `@bsv/dpp-profiles@0.3.0-beta.9` | `0.3.0-beta.10` | Manifests, payload schemas and supported projection/discovery helpers |
+| Credentials | `@bsv/dpp-credentials@0.2.0-beta.5` | `0.2.0-beta.6` | Selected VSC credential/exchange features; unnecessary for native lifecycle-claim signing |
+| Overlay | `@bsv/dpp-overlay@0.4.0-beta.12` | `0.4.0-beta.13` | Embedded topic managers/lookup services; starters declare it, HTTP clients need none |
+| SDK | `@bsv/sdk@2.8.10` | `2.8.10` | Declare directly when importing wallet or transaction APIs |
+
+Install only what your code uses. Start with protocol:
 
 ```sh
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9
 ```
-
-| Add when needed | Exact package | Purpose |
-|---|---|---|
-| Your application uses the profile tooling | `@bsv/dpp-profiles@0.3.0-beta.9` | Profile manifests, payload schemas and supported projection/discovery helpers |
-| Your code imports wallet or transaction APIs | `@bsv/sdk@2.8.10` | Declare direct imports as direct dependencies |
-| Your selected credential or exchange feature uses VSC | `@bsv/dpp-credentials@0.2.0-beta.5` | Supported credential/exchange formats; not needed just to sign a native lifecycle claim |
-| You embed index components in your own code | `@bsv/dpp-overlay@0.4.0-beta.12` | Topic managers and lookup services; the starter handles its own runtime dependency, and HTTP clients do not need it |
 
 For a published installation using the protocol helpers, profiles and the SDK:
 
@@ -61,13 +75,13 @@ For a published installation using the protocol helpers, profiles and the SDK:
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/dpp-profiles@0.3.0-beta.9 @bsv/sdk@2.8.10
 ```
 
-A hosted writer's wallet toolbox must accept that SDK version, as [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) explains. All four DPP packages use ECMAScript modules. Releases publish to the `latest` tag until version 1.0; exact versions and the consumer lockfile define the tested installation. An [independent implementation](../implement/README.md) need not use any of these packages.
+Releases publish to `latest` until version 1.0; exact versions and the lockfile define the tested installation. An [independent implementation](../implement/README.md) needs none of these packages.
 
-A trial consumer is building a second stack, an index, a registry and an application, from this documentation and the published packages alone, and what it finds is fixed here. It is a reference consumer under the same administration, not an independent implementation.
+A trial consumer builds a second index, registry and application from these docs and published packages; its findings lead to fixes here. Shared administration makes it a reference consumer, not an independent implementation.
 
 ## Application responsibilities and package boundaries
 
-The table maps each workflow to the package functions it uses. For the order to call them in, from a first read to a published passport, follow [build an application](build-an-application.md).
+Use this workflow map, then follow [build an application](build-an-application.md) for call order from first read to publication.
 
 | Workflow | Public package API | Application responsibility | Specification |
 |---|---|---|---|
@@ -81,13 +95,13 @@ The table maps each workflow to the package functions it uses. For the order to 
 | Credentials and source exchange | VSC `verifySeal`, `./exchange`, `./epcis-source` | Supply selected suites, authority/status evidence and durable source retention | Credential and interoperability profiles |
 | Export and import evidence | Protocol `signEvidenceManifest`, `inspectEvidencePackage`; overlay `buildEvidenceExportPart`, `joinEvidenceExport` | Retain and transport files; check digests and reverify under the reader's own policy | Portable evidence |
 
-The application service remains outside this release. Its existing implementation includes demo persistence and identity structures, so applications adopting the standard directly should supply their own adapters rather than inherit those structures. The reference packages own the shared protocol rules; they do not provide a hosted registry, an account system or durable operation scheduling.
+The application service is outside this release. Supply application adapters rather than inheriting its demonstration persistence and identities. Reference packages supply shared protocol rules, excluding a hosted registry, accounts and durable operation scheduling.
 
-Node runtime support does not imply browser runtime support. Keep server packages on the backend and use the [support table](support-table.md) when choosing browser-facing data exports. Missing proof, authority or status evidence remains `unknown`, and must not be treated as verified.
+Keep server packages on the backend; use the [support table](support-table.md) for browser-facing data exports. Missing proof, authority or status evidence stays `unknown`; never treat it as verified.
 
 ## Source access
 
-The repository is public. The documentation examples use the current source candidate, as the [quick start](../quick-start.md) does:
+The public repository supplies the current source candidate used by the examples and [quick start](../quick-start.md):
 
 ```sh
 git clone https://github.com/bsv-blockchain/dpp.git
@@ -98,9 +112,9 @@ npm ci
 npm run build
 ```
 
-This source revision includes work after the selected published release, including opt-in index discovery and retry changes. Building it does not reproduce the npm archives, even when a package's version string is unchanged. For the exact source of a published package, use its [release set and publication receipt](../reference/release-sets.md).
+Source includes later work, including opt-in index discovery and retries. Building it does not reproduce npm archives, even with unchanged version strings. Reproduce published packages at their [receipt's revision](../reference/release-sets.md).
 
-The following is the retained historical beta.4 reproduction example. All four packages in that set, the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay` and `@bsv/dpp-profiles` and `@bsv/dpp-credentials@0.2.0-beta.3`, repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, the revision the [beta.4 publication receipt](../reference/beta-4-publication.md) records. Its examples are older than the current quick start. Use a separate checkout if you want to keep both revisions available.
+This historical beta.4 example reproduces all four packages: the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay` and `@bsv/dpp-profiles` and `@bsv/dpp-credentials@0.2.0-beta.3`. They repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, recorded in the [beta.4 receipt](../reference/beta-4-publication.md). Its examples predate the current quick start.
 
 ```sh
 git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73
@@ -108,24 +122,24 @@ npm ci
 npm run build
 ```
 
-Use Node 22 and npm 11.19.0 when reproducing archives; different compression implementations can change their digests. A single file at a revision can be read without a checkout:
+Read one file at a revision without a checkout:
 
 ```sh
 git show f9d8e98658c7cf406702d49194ec5a8480cbca73:spec/record-model.md
 ```
 
-Source links in these docs are pinned to the revision a page was written against, which can differ from both; use the path following the commit hash in each link. Links to another repository need access to that repository. The [BSV Association contact page](https://bsvassociation.org/contact/) handles access enquiries for other repositories.
+Source links pin the revision each page was written against, which can differ from current and published source. Use the path after the hash. Other repositories require their own access; direct enquiries to the [BSV Association contact page](https://bsvassociation.org/contact/).
 
 ## Pack and check
 
-From the package revision's checkout:
+To check a selected package revision, run from its checkout:
 
 ```sh
 node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/release-candidates.mjs) writes the source revision and artefact digests to `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/consumer-check.mjs) installs and exercises those tarballs in a separate project.
+The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/release-candidates.mjs) records revision and digests in `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/consumer-check.mjs) installs and exercises the tarballs in a separate project. Require `Every sentence above holds.` before using them; stop on failure.
 
 To print the produced tarball paths, run:
 
@@ -138,7 +152,7 @@ for (const candidate of record.candidates) console.log(candidate.name, resolve('
 JS
 ```
 
-In the consuming application's directory, run `npm install /absolute/path/to/the-produced-package.tgz` for the packages it needs, replacing the path with the corresponding output above. Preserve the resulting lockfile. Use [quick starts](../quick-start.md) from the repository checkout, or select a package:
+In the application directory, use `npm install /absolute/path/to/the-produced-package.tgz` with the printed paths for selected packages, installing candidate archives together as above. Retain the lockfile. Run [quick starts](../quick-start.md) from the checkout or select a guide:
 
 | Task | Package |
 |---|---|

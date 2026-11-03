@@ -1,10 +1,25 @@
 # Versions and compatibility
 
-Several parts of a DPP deployment carry their own version: the packages, the record, claim and anchor formats, the index contract, the custody profile and the industry profiles. This page lists each one with its current value and shows where to read it, so you can check that two parts match before you connect to a service or upgrade.
+Application developers and service operators can use this page to compare DPP versions before connecting or upgrading. Check packages, record, claim and anchor formats, the index contract, custody and industry profiles separately; the tables show each value and where to find it.
+
+## Before you start
+
+| Input | Where to get it |
+|---|---|
+| Client versions and operations | Your installed packages, selected release and application configuration: what the client reads and writes. |
+| Target index URL | The operator of the index you will use. Set it in `INDEX_URL`; the example supplies the hosted reference URL. |
+| Runtime for the capability check | Node.js 22 or later and network access, from any directory. |
 
 ## What carries a version
 
-A release set is one tested combination of all these parts, declared in a file under `release/` ([release sets](../reference/release-sets.md)). The current source candidate is `dpp-release-2026-11`, declared in `release/dpp-release-2026-11.json` and not yet published; the last published set is `dpp-release-2026-10-10`, published on 16 October 2026, and its [beta.11 receipt](../reference/beta-11-publication.md) preserves the approved plan and source revision. The table describes the set: each part's value, the field of the release-set file that declares it, and the field of an index's `GET /capabilities` answer that advertises it. The last column gives the exact spelling to check.
+A [release set](../reference/release-sets.md) is one tested combination, declared under `release/`.
+
+| Scope | Set and source |
+|---|---|
+| Current source candidate | `dpp-release-2026-11`, declared in `release/dpp-release-2026-11.json`; not yet published. |
+| Last published set | `dpp-release-2026-10-10`, published on 16 October 2026. The [beta.11 receipt](../reference/beta-11-publication.md) preserves its approved plan and source revision. |
+
+The candidate inventory below gives each release-set field and the exact spelling in an index's `GET /capabilities` answer.
 
 | Part | Current value | Release-set field | Index capability field |
 |---|---|---|---|
@@ -19,7 +34,7 @@ A release set is one tested combination of all these parts, declared in a file u
 | Custody profile | `managed-custody@2`; the published October set selects `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `2`, with its options |
 | Industry profiles | Current: `general@2`, `battery@2`, `textile@2`. Drafts: `battery@3`, `battery@4`, `textile@3`, `textile@4` | The frozen manifests in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
 
-These numbers move independently. A package prerelease version is not a specification, wire-format or profile version: installing a new package never selects a new record format or industry profile, and never rewrites a stored record. A reader may need both record decoders even when every package it installs comes from one release set, and selecting a draft battery profile does not select a different blockchain format.
+Versions move independently. Installing a package never selects a record format or industry profile, or rewrites stored records. Its prerelease number is not a specification, wire-format or profile version. A reader may need both record decoders within one release set; a draft battery profile does not select a different blockchain format.
 
 ## Record versions 1 and 2
 
@@ -32,11 +47,11 @@ These numbers move independently. A package prerelease version is not a specific
 | Ending a passport | No terminal operation | `RETIRE`, after which nothing can follow |
 | Commitment to an authorisation record | None | Field 15, which the managed custody profile requires on every `TRANSFER` |
 
-Readers read both with the same call, including a lineage that began as version 1 and continued as version 2, and read a version 3 lineage, the version 2 body carried behind a BRC-162 token prefix for new lineages only, with the same call again (`spec/token-carrier.md`). Writers write version 2 for new passports. A version 1 passport continues as version 2 through one `UPDATE` that keeps its controller key, and no version 1 state can ever follow a version 2 state ([migration](../migration.md#start-writing-version-2)).
+The same reader call handles versions 1 and 2, including a lineage that changes from version 1 to 2. It also reads version 3: the version 2 body behind a BRC-162 token prefix, for new lineages only (`spec/token-carrier.md`). Writers write version 2 for new passports. Continue a version 1 passport as version 2 through one `UPDATE` that keeps its controller key. No version 1 state can follow version 2 ([migration](../migration.md#start-writing-version-2)).
 
 ## Check a service before you connect
 
-Ask the index for its capability document and compare it with what your client reads and writes. This runs anywhere with Node.js 22 or later and network access; set `INDEX_URL` to the index you will use:
+1. Set `INDEX_URL` to your target and request its capability document:
 
 ```sh
 INDEX_URL=https://dpp-overlay.bsvb.net node --input-type=module <<'JS'
@@ -60,16 +75,18 @@ protocol overlay-http 0.14.0-draft
 custody managed-custody 1 {"acceptanceCommitment":"required","controlAuthorities":[]}
 ```
 
-Read it this way:
+2. Compare the advertised capabilities with your client. Stop before using an operation that does not match.
 
-- **Record versions and index contract.** The protocols must include every record version you write and the `overlay-http` version your client speaks. The published beta.9 index prints no `dpp-record 3` line and an earlier `overlay-http` version; the carried record and the contract that admits it were introduced by the published beta.10 overlay package.
-- **Custody.** `managed-custody` with `acceptanceCommitment: required` refuses a version 2 `TRANSFER` without an acceptance commitment. An index that admits version 2 without one declares `record-model-baseline@2` instead.
-- **Implementation.** A service can run an older package release than the current set. Until 3 October 2026 the hosted index ran `@bsv/dpp-overlay@0.4.0-beta.3`: it read and wrote the same record formats, but it spoke an earlier index contract, so it did not say why it refused a state or answer a GS1 key lookup. Compare what a service advertises, not the release set's name.
-- **Publisher keys.** Before you write, check that `publisherPolicy.publisherKeys` names the key your states are countersigned with.
+| Check | Match required | Mismatch or limit |
+|---|---|---|
+| Record versions and contract | Protocols include every record version you write and your client's `overlay-http` version. | The published beta.9 index prints no `dpp-record 3` and an earlier contract. The published beta.10 overlay introduced the carried record and admitting contract. |
+| Custody | Match your transfer workflow to the selected profile. | `managed-custody` with `acceptanceCommitment: required` refuses a version 2 `TRANSFER` without an acceptance commitment. An index admitting version 2 without one declares `record-model-baseline@2`. |
+| Publisher key | Before writing, find your countersigning key in `publisherPolicy.publisherKeys`. | A missing key blocks this write workflow. |
+| Implementation | Compare advertised capabilities, not the release-set name. | Services can run older packages. Until 3 October 2026, the hosted `@bsv/dpp-overlay@0.4.0-beta.3` read and wrote the same record formats but used an earlier contract: no refusal reasons or GS1 key lookup. |
 
-A reachable server can still lack the history, export or profile operation your client needs. [Contracts](../reference/contracts.md) describes the capability request and the operations behind it.
+3. Check required history, export and profile operations in [Contracts](../reference/contracts.md). Reachability alone does not establish support; that guide defines the capability request and operations.
 
-A registry's `GET /capabilities` does not answer this document yet. The hosted registry answers the registry contract's own document, whose `protocol` field reads `attestation-registry/1`, and which document a registry should serve is not settled ([known limitations](../operate/limitations.md)). Read the registry's `protocol` field to check its contract.
+For a registry, read `protocol` to check its contract. Its `GET /capabilities` does not yet return the index document: the hosted registry returns its own contract document with `attestation-registry/1`. Which document a registry should serve remains unsettled ([known limitations](../operate/limitations.md)).
 
 ## Find the exact definition
 

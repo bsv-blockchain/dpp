@@ -1,16 +1,25 @@
 # Start an independent implementation
 
-This page is the starting kit for writing the DPP rules in your own code, in any language, without the `@bsv/dpp-*` packages: what you may reuse, what you must write, the order to build in and how you know you are done. If you would rather call the packages from JavaScript or TypeScript, [build an application](../packages/build-an-application.md) is the faster route.
+Implementers can use this starting kit to write the DPP rules in any language without the `@bsv/dpp-*` packages. It defines permitted dependencies, build order and completion evidence. To call the packages from JavaScript or TypeScript, use the faster [application route](../packages/build-an-application.md).
 
 ## Before you start
 
-This guide follows the current source candidate, `dpp-release-2026-11`, including `managed-custody@2`. It is not yet published. To interoperate with an installed October release, keep its source revision, fixtures and `managed-custody@1` rules together; [release sets](../reference/release-sets.md) records both targets.
+| Compatibility target | Source and rule |
+|---|---|
+| Current source candidate | `dpp-release-2026-11`, including `managed-custody@2`; not yet published |
+| Installed October release | Keep its source revision, fixtures and `managed-custody@1` rules together |
+| Both targets | [Release sets](../reference/release-sets.md) |
 
-- git, and a checkout of this repository at the [reviewed example revision](../quick-start.md#get-the-code). The specifications, contracts and fixtures are all in it. A fixture is a JSON file of inputs and expected results, including inputs your code must refuse.
-- Node 22 and npm, to run the reference examples beside your own results. Your implementation does not need them.
-- Python 3, to run the worked example reader. It uses the standard library only.
-- A BSV SDK for your language, or your own code for the building blocks below.
-- Nothing else for a reader: no account, wallet, funds or network. A writer later needs a BRC-100 wallet with funds and an index of its own.
+| Input | Source and scope |
+|---|---|
+| git and reviewed checkout | [Reviewed example revision](../quick-start.md#get-the-code); includes specifications, contracts and fixtures |
+| Node 22 and npm | Your environment, for reference examples beside your results; your implementation needs neither |
+| Python 3 | Your environment, for the worked reader, which uses only the standard library |
+| BSV building blocks | An SDK for your language or your own code, listed below |
+| Reader | Nothing else: no account, wallet, funds or network |
+| Later live writer | A funded BRC-100 wallet and an index of your own |
+
+A fixture is a JSON file of inputs and expected results, including inputs your code must refuse.
 
 To get the checkout, run this in the directory that should hold it:
 
@@ -21,7 +30,7 @@ npm ci
 npm run build
 ```
 
-`npm run build` builds the reference packages, which the reference examples import. Your own code never imports them.
+`npm run build` builds the packages the reference examples import. Your own code never imports them.
 
 ## What you may reuse
 
@@ -38,7 +47,7 @@ Write from the specification text, as the Python reader below was written.
 
 ## What you will implement
 
-Each row is a building block a second implementation needs. The BSV SDKs named above each carry BRC-42 derivation, a PushDrop template, BEEF and merkle paths; check the version you use. BRC numbers refer to the [BSV Requests for Comment](https://bsv.brc.dev/).
+A second implementation needs these building blocks. The SDKs above carry BRC-42 derivation, a PushDrop template, BEEF and merkle paths; check your version. BRC numbers identify [BSV Requests for Comment](https://bsv.brc.dev/).
 
 | Building block | Standard | Where the rule is | From a BSV SDK? |
 |---|---|---|---|
@@ -55,7 +64,13 @@ Each row is a building block a second implementation needs. The BSV SDKs named a
 | Index requests, to submit a transaction and look records up: only for reading live passports, writing, or the index role | [BRC-22](https://bsv.brc.dev/overlays/0022), [BRC-24](https://bsv.brc.dev/overlays/0024) | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/contracts/overlay.yaml) | Clients, yes |
 | Wallet calls to sign, fund and send: only for a writer | [BRC-100](https://bsv.brc.dev/wallet/0100) | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/writing.md) | Use any BRC-100 wallet; [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |
 
-A reader handles all three record versions, because one passport's history can hold versions 1 and 2 together and a version 3 lineage stands on its own: it counts the fields of a bare output, fourteen for version 1 and seventeen for version 2, reads a seventeen-field body behind a token prefix as version 3, and reads each state under its own version.
+A reader handles all three versions, reading each state under its own version. A history can mix versions 1 and 2; a version 3 lineage stands alone.
+
+| Layout | Record version |
+|---|---|
+| Bare output, fourteen fields | 1 |
+| Bare output, seventeen fields | 2 |
+| Seventeen-field body behind a token prefix | 3 |
 
 ## Build in this order
 
@@ -77,23 +92,31 @@ Steps 2 to 5 make a passport reader. Start there whatever you build: every other
 7. **Report what you did**, as [reporting](reporting.md) describes.
 8. **Exchange fresh records** with the reference in [the trial](demonstration.md).
 
-Keep the harness in your own language, and record the case, the expected result and your result for every case. [Run the fixtures](fixture-runner.md) says what each file gives as input, what must match, and the four rules whose texts do not yet agree ([source gaps](fixture-runner.md#source-gaps)).
+Keep the harness in your own language. Record every case, its expected result and your result; stop on a mismatch and retain both values. [Run the fixtures](fixture-runner.md) says what each file gives as input, what must match, and the four rules whose texts do not yet agree ([source gaps](fixture-runner.md#source-gaps)).
 
 ## A worked example: the Python reader
 
-[`conformance/independent/python/dpp_verify.py`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/independent/python/dpp_verify.py) is a reader written from the specification text with the Python standard library alone: secp256k1 arithmetic, strict DER, ECDSA verification, BRC-42 derivation, the PushDrop layout and its refusals, both signature preimages, the chain invariants, the native claim and the anchor. Read it to see how each rule becomes code. Run it at the root of the checkout:
+[`conformance/independent/python/dpp_verify.py`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/independent/python/dpp_verify.py) implements the specification text using only the Python standard library. Read it to see rules become code; run it from the checkout root:
 
 ```sh
 python3 conformance/independent/python/dpp_verify.py
 ```
 
-It prints one sentence per check, with successful checks starting `ok:`, and ends with `Every sentence above holds.` The number of checks changes as fixtures are added; use the output from the revision you recorded. (`npm run conformance:independent` runs the same command.) It covers the record, chain, anchor, acceptance and instruction fixtures and the record, chain, anchor, acceptance, instruction, publisher policy, registration and evidence package vectors. It does not produce verification reports for `evidence-v1.json` or `evidence-v2.json`, and it signs nothing, so it is no example for the report or for a writer.
+| Coverage or result | Detail |
+|---|---|
+| Building blocks | secp256k1 arithmetic, strict DER, ECDSA verification, BRC-42 derivation, PushDrop layout and refusals, both signature preimages, chain invariants, native claim and anchor |
+| Fixtures | Record, chain, anchor, acceptance and instruction |
+| Vectors | Record, chain, anchor, acceptance, instruction, publisher policy, registration and evidence package |
+| Success | One sentence per check, successful checks starting `ok:`; ends `Every sentence above holds.` |
+| Check count | Changes as fixtures are added; retain output for your recorded revision |
+| Equivalent invocation | `npm run conformance:independent` |
+| Exclusions | No reports for `evidence-v1.json` or `evidence-v2.json`; signs nothing. It is no report or writer example. |
 
-It was written by the same programme as the reference, so it is engineering evidence that the specification is complete enough, not the organisationally independent implementation version 1.0 needs. [Its README](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/independent/python/README.md) says exactly what it covers.
+The same programme wrote it and the reference. It provides engineering evidence that the specification is complete enough; version 1.0 still needs an organisationally independent implementation. [Its README](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/independent/python/README.md) says exactly what it covers.
 
 ## Pick your role
 
-The [baseline](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/baseline-native-2.json), `native-baseline@2`, is the recommended selection of current formats. For each role it lists the required ledger rows under `roles.<role>.requires` and the tests under `testTargets`; the table below copies the tests. The ledger, [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json), lists every requirement with its source clause, the roles it binds and its status.
+The [baseline](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/baseline-native-2.json), `native-baseline@2`, is the recommended selection of current formats. It lists required ledger rows under `roles.<role>.requires` and tests under `testTargets`, copied below. The ledger, [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json), lists every requirement with its source clause, the roles it binds and its status.
 
 | Role | What it does | Fixtures and tests | Page |
 |---|---|---|---|
@@ -112,8 +135,8 @@ For each role you claim:
 
 1. Every fixture case of the role gives its expected result from your own code, refusals included ([run the fixtures](fixture-runner.md)).
 2. A writer also has one sentence per rule of writing section 11 ([passport writer](roles/passport-writer.md#prove-it-the-writers-self-report)).
-3. A capability document says what you support and what you do not ([declare what you support](reporting.md#declare-what-you-support)).
-4. A report gives one sentence per check, with no score, and goes where [send it](reporting.md#send-it) says.
+3. Publish a capability document describing support and exclusions ([declare what you support](reporting.md#declare-what-you-support)). Include `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `representations`, `proofSuites`, `anchorFormats` and `unsupported`. For services, fill `topics`, `services`, `publisherPolicy`, `synchronisation` and `limits` where applicable. It is a support claim, not proof of conformance.
+4. Retain the fixture file and case, expected result and your result. Give one sentence per check, with no score, and submit the report as [send it](reporting.md#send-it) describes.
 5. Optionally, [the trial](demonstration.md) exchanges fresh records with the reference.
 
 ## Where the material is
@@ -126,12 +149,23 @@ For each role you claim:
 | Requirements and their status | [Ledger](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json) |
 | Industry profile data | [Frozen profiles](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-profiles/frozen.json) |
 
-To take the material somewhere without the code, assemble the data-only bundle at the root of the checkout:
+To take the material somewhere without the code:
+
+1. Assemble the data-only bundle at the checkout root:
 
 ```sh
 node scripts/implementer-bundle.mjs
 ```
 
-It prints one line naming the number of files, the current source release set `dpp-release-2026-11`, the source revision with `(committed)` when the working tree was clean, and the archive's SHA-256. The output is `release/implementer-bundle/`, with the archive beside it. The bundle holds the specifications, contracts, fixtures in both forms, baselines, ledger, schemas, selections, an example capability document, the frozen profile data, these docs and the licence. It has no README at its root: start with `bundle-manifest.json`, which records the source revision, working-tree state, release selection and the digest of every file, then open `docs/implement/README.md`, this page. It carries no runtime code, examples or Python reader, so keep the checkout to run those.
+2. Retain the output line: file count, source release set `dpp-release-2026-11`, source revision with `(committed)` when the working tree was clean, and archive SHA-256.
+3. Inspect the bundle before using it:
+
+| Item | Location or contents |
+|---|---|
+| Output | `release/implementer-bundle/`, with the archive beside it |
+| Entry point | No root README. Start with `bundle-manifest.json`: source revision, working-tree state, release selection and every file's digest. Then open `docs/implement/README.md`, this page. |
+| Rules and tests | Specifications, contracts, fixtures in both forms, baselines, ledger, schemas and selections |
+| Supporting material | Example capability document, frozen profile data, these docs and licence |
+| Excluded | Runtime code, examples and Python reader; keep the checkout to run them |
 
 Next: [run the fixtures](fixture-runner.md).

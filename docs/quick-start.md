@@ -1,8 +1,17 @@
 # Quick start
 
-Verify a version 2 test passport and understand its report before using a live service. The first exercise needs no wallet, service token or blockchain transaction. The later exercises are optional: a version 2 writer dry run, a historical live read and native claim validation.
+Developers and evaluators can verify a version 2 test passport here and learn to explain its report before using a live service. Start with the offline fixture, then optionally try a version 2 writer dry run, a historical live read and native claim validation.
 
-You need Node.js 22 or later, npm and git. Downloading and building the checkout needs internet access; the fixture and dry-run commands then work offline. Live reading and hosted validation need internet access but do not store claims or spend funds.
+## Before you start
+
+| Exercise | Requirements and source |
+|---|---|
+| All exercises | Node.js 22 or later, npm and git. Download and build the checkout below with internet access |
+| Offline fixture and dry runs | The completed build; no wallet, service token, funds, network or blockchain transaction |
+| Live read and hosted validation | Internet access to the services named below. These exercises store no claims and spend no funds |
+| Later live writing | Authorised signing, a funded BRC-100 wallet and an index that admits your publisher key and grants submission/proof access. [Build an application](packages/build-an-application.md) provides the own-index route; [choose a wallet](operate/wallet-broadcast-proofs.md#choose-a-wallet) lists supported wallets |
+
+Do not remove `--dry-run` until the live-write prerequisites and authority are established. A live run is a separate step and spends funds.
 
 ## Get the code
 
@@ -15,21 +24,27 @@ npm ci
 npm run build
 ```
 
-These commands detach the current source checkout and print its exact revision. Keep that revision with your lockfile and test results so you can reproduce the run. The examples use the packages that checkout builds, under the published names `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay` and `@bsv/dpp-credentials`. Use [source access](packages/README.md#source-access) for a published release's recorded revision. A `Cannot find module` error means the build did not finish: run `npm run build` again and read its first error.
+The commands detach the current source checkout and print its exact revision. Retain it with the lockfile and test results. The examples use the checkout's builds of `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/dpp-overlay` and `@bsv/dpp-credentials`, their published names. [Source access](packages/README.md#source-access) gives each published release's recorded revision. For `Cannot find module`, the build did not finish: rerun `npm run build` and read its first error.
 
-**How to read the output.** Every check prints one sentence. A line starting `ok:` or `Holds:` is a check that held, including where a deliberately broken input is refused, as it should be. A line starting `FAIL:` or `FAILS:` means something is wrong, and the command then exits with a non-zero status.
+**How to read the output.** Every check prints one sentence.
+
+| Output | Meaning |
+|---|---|
+| `ok:` or `Holds:` | The check held, including the expected refusal of a deliberately broken input |
+| Failure and exit status | A line starting `FAIL:` or `FAILS:` means something is wrong, and the command then exits with a non-zero status. |
 
 ## Check the test passports offline
 
-Run the first exercise:
+1. Run the first exercise from the checkout root:
 
 ```sh
 node examples/verify-passport.mjs --fixture --version=2 --report
 ```
 
-It checks a five-state version 2 passport and the refusal cases in the fixture, then prints the verification report. A successful run has no `FAIL:` or `FAILS:` lines and exits with status 0. The transactions are not on chain, so inclusion is pending or `unknown`; that is expected missing evidence, not a failed signature check. [Read the report](learn/evidence-and-freshness.md) to distinguish `pass`, `fail`, `unknown` and `not-applicable`.
+2. Check the result: a five-state version 2 passport, fixture refusal cases and a verification report. Success has no `FAIL:` or `FAILS:` lines and exits with status 0.
+3. Explain the signature and linkage results, and why inclusion remains pending or `unknown`: the transactions are not on chain. This is missing evidence, not a failed signature check. [Read the report](learn/evidence-and-freshness.md) for `pass`, `fail`, `unknown` and `not-applicable`.
 
-You have completed the first exercise when you can explain the signature and linkage results and why inclusion is not established. No hosted service is required. If a command fails before printing checks, confirm Node 22 or later and the completed build. An unexpected failed check needs investigation; do not turn it into a success by ignoring the exit status.
+Stop on an unexpected failed check; never ignore the exit status. If the command fails before printing checks, confirm the runtime and build requirements above. No hosted service is required.
 
 For a complete lifecycle and a separate claim anchor, continue with these optional offline exercises:
 
@@ -58,8 +73,6 @@ node examples/write-passport.mjs --dry-run
 
 That example matches the first state to its fixture byte for byte, refuses an invalid state before sending and shows what it would announce, send and retain. Use version 2 for new passports.
 
-To write live, first arrange authorised signing, a funded BRC-100 wallet and an index that admits your publisher key and grants submission/proof access. [Build an application](packages/build-an-application.md) supplies the own-index route, and [choose a wallet](operate/wallet-broadcast-proofs.md#choose-a-wallet) explains the supported wallets. A live run is a separate step and spends funds; do not remove `--dry-run` until those prerequisites and authority are established.
-
 ## Read a live passport
 
 This optional network exercise reads an existing version 1 passport for compatibility. It is not the template for a new version 2 write.
@@ -79,15 +92,19 @@ The chain as a whole is valid.
 Inclusion across the chain: verified.
 ```
 
-The script asked the [hosted index](deployment.md#the-hosted-reference) for the passport's five states, rebuilt the history and checked every signature, every link and every block proof itself. The index only found the bytes; the script trusted nothing it said about them, though it relies on the index to return the newest state. Add `--report` to see the full report, one line per check, and [reading the report](learn/evidence-and-freshness.md) explains each answer.
-
-If a state says `inclusion pending`, WhatsOnChain limited the header check: run the command again, or set `WOC_API_KEY` to a WhatsOnChain API key. Under Node 26 you may see `ExperimentalWarning: localStorage is not available`; it is harmless.
+| Result or limit | Meaning and action |
+|---|---|
+| Verified history | The script obtains five states from the [hosted index](deployment.md#the-hosted-reference), rebuilds the history and checks every signature, link and block proof itself. It trusts none of the index's assertions about the bytes |
+| Freshness | The script relies on the index to return the newest state |
+| Full report | Add `--report` for one line per check; [reading the report](learn/evidence-and-freshness.md) explains the answers |
+| `inclusion pending` | WhatsOnChain limited the header check. Retry, or set `WOC_API_KEY` to a WhatsOnChain API key |
+| Node 26 warning | `ExperimentalWarning: localStorage is not available` is harmless |
 
 This passport is an older record version 1 lineage under GS1's own example number on `id.gs1.org`. New passports are record version 2, with the operations `ISSUE`, `UPDATE`, `TRANSFER` and `RETIRE`, minted under a host the writer controls ([identifiers](identifiers.md)).
 
 ## Sign a claim
 
-A native lifecycle claim is a signed statement about a product, such as a repair. These core helpers do not require the VSC package. This signs the test claim with its published test key and checks the result:
+A native lifecycle claim is a signed statement about a product, such as a repair. Run this to sign and check the test claim with its published test key. The core helpers need no VSC package:
 
 ```sh
 node --input-type=module <<'JS'
@@ -143,4 +160,4 @@ Return to [Build or integrate](start/build-and-integrate.md) to choose your next
 | Choose the product data a passport carries | [Industry profiles](profiles/README.md) |
 | Write your own implementation instead of using the packages | [Implementer start](implement/README.md) |
 
-These exercises check signatures, history and block proofs. They do not show that a product is what its record says, that an issuer is accredited, or who holds the product today; [evidence and its limits](learn/evidence-and-freshness.md) explains why. Nobody checks a brand's legal identity yet: the platform that hosts an account vouches for it and its brand name, the level these pages call Ring 0 ([identity and authority](learn/identity-and-authority.md)).
+These exercises check signatures, history and block proofs. They establish neither the truth of product records, issuer accreditation nor today's holder ([evidence and its limits](learn/evidence-and-freshness.md)). Nobody checks a brand's legal identity yet. The hosting platform vouches for the account and brand name, the level called Ring 0 ([identity and authority](learn/identity-and-authority.md)).

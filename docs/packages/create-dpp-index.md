@@ -1,6 +1,6 @@
 # Create an index
 
-Start here to operate your own index alongside your application. `@bsv/create-dpp-index` generates an editable project with persistent MongoDB, access tokens, deployment files and an app connection helper. One service handles passport history and attestation anchors.
+Application operators can use `@bsv/create-dpp-index` to create, start and connect an editable index project: persistent MongoDB, access tokens, deployment files and an app connection helper. One service handles passport history and attestation anchors.
 
 **Use the starter once. It includes the index runtime.** You do not separately install `@bsv/dpp-overlay` or create another service for it.
 
@@ -10,21 +10,36 @@ Start here to operate your own index alongside your application. `@bsv/create-dp
 | Your generated project | Holds configuration, deployment files and a pinned runtime dependency | Run its commands to start and maintain your index |
 | `@bsv/dpp-overlay` | Runs the index inside that project | Included automatically with the project's dependencies |
 
-If your app uses an existing compatible index, obtain its URL and access settings from its operator. You need neither package just to connect over HTTP. Direct runtime installation is for [custom or embedded integrations](dpp-overlay.md).
+For an existing compatible index, obtain its URL and access settings from the operator; HTTP connections need neither package. Direct runtime installation supports [custom or embedded integrations](dpp-overlay.md).
+
+## Before creation
+
+| Required input | Source |
+|---|---|
+| Node 22 or later, npm, Docker with Compose v2 | Install on the machine running the generated project. |
+| Publisher key | Run `npm run wallet` in the app and use the public key it prints. |
+| Network | Select the network your application uses. |
 
 ## Create your project
 
-The published starter, `0.1.0-beta.1`, pins the published index runtime `@bsv/dpp-overlay@0.4.0-beta.12` of the superseded `dpp-release-2026-10-10`; the source starter, `0.1.0-beta.2`, pins `@bsv/dpp-overlay@0.4.0-beta.13` of the current candidate `dpp-release-2026-11`, not yet published. The command below installs from npm. From the current reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing anything. Maintainers publish the runtime first, then the starter; the release workflow checks the public npm setup separately before a release is announced.
+| Selection | Version boundary |
+|---|---|
+| Published, installed by the command below | The published starter, `0.1.0-beta.1`, pins the published index runtime `@bsv/dpp-overlay@0.4.0-beta.12` of the superseded `dpp-release-2026-10-10`. |
+| Source candidate, not yet published | Starter `0.1.0-beta.2` pins `@bsv/dpp-overlay@0.4.0-beta.13` of current `dpp-release-2026-11`. |
+
+From the reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing. Maintainers publish the runtime before the starter; the release workflow separately checks public npm setup before announcing a release.
+
+1. Create the project from npm:
 
 ```sh
 npm create @bsv/dpp-index@0.1.0-beta.1 my-index
 ```
 
-You need Node 22 or later, npm, Docker with Compose v2, and the publisher key that `npm run wallet` prints in the app. The guided setup says what an index does, then asks for that key and the network. It generates fresh secrets without printing them. Custody follows the app starter, managed custody, and is not asked; admitting self-custody states is an environment setting in the generated project.
+The guided setup explains the index, asks for the publisher key and network, and generates fresh secrets without printing them. It uses the app starter's managed custody without prompting; admitting self-custody states is an environment setting.
 
 ## Start and connect
 
-Inside the generated project:
+2. Change into the generated `my-index` directory, then run:
 
 ```sh
 npm test
@@ -33,9 +48,23 @@ npm run doctor -- --online
 npm run connection
 ```
 
-The generator installs dependencies unless you pass `--no-install`. `up` builds from your lockfile and starts the index and MongoDB. The HTTP port is published on loopback; MongoDB's port remains private. `doctor` checks the running network, version, topics, custody profile and publisher keys.
+The generator installs dependencies unless you pass `--no-install`.
 
-In the published starter (`0.1.0-beta.1`), `connection` copies the index's operator-wide `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` into a private `.app.env` as `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`, alongside `INDEX_URL` and `NETWORK`. It does not issue per-publisher tokens or create `config/publisher-tokens.json`. Copy those into the app's server environment and restart it. For separate hosts, use `npm run connection -- --url https://index.example.org`. An app in a container needs an address reachable from that container; its `localhost` is its own container.
+| Command | Expected result |
+|---|---|
+| `npm test` | Generated-project checks pass. |
+| `up` | Builds from your lockfile and starts the index and MongoDB. HTTP binds to loopback; MongoDB's port stays private. |
+| `doctor` | Checks the running network, version, topics, custody profile and publisher keys. Resolve failures before connecting. |
+| `connection` | Writes the private `.app.env` described below. |
+
+3. Copy the connection settings into the app's server environment and restart it.
+
+| Connection input or location | Published starter (`0.1.0-beta.1`) behaviour |
+|---|---|
+| `.app.env` | Holds `INDEX_URL`, `NETWORK`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. |
+| Token source | Copies the operator-wide `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN`. It issues no per-publisher tokens and creates no `config/publisher-tokens.json`. |
+| Separate hosts | Use `npm run connection -- --url https://index.example.org`. |
+| Container app | Use an address reachable from that container; its `localhost` is the container itself. |
 
 ## What is included
 
@@ -53,9 +82,9 @@ Peer synchronisation, SHIP discovery and funded SHIP/SLAP advertising are option
 
 ## Testing the source candidate
 
-The unpublished `0.1.0-beta.2` starter pins the November runtime candidate and changes write access to per-publisher tokens. In a project generated from that source, `npm run connection` issues submit and callback tokens bound to the configured publisher key, stores their hashes in `config/publisher-tokens.json`, and saves the corresponding app settings in `.app.env`. A rerun keeps those tokens. The runtime reads changes to the token file without restarting, and an operator can revoke one writer's token without changing another's. The complete-export token remains operator-wide.
+The unpublished `0.1.0-beta.2` starter pins the November runtime candidate and uses per-publisher write tokens. Its `npm run connection` issues submit and callback tokens bound to the configured publisher key, stores hashes in `config/publisher-tokens.json` and app settings in `.app.env`. Reruns retain those tokens. The runtime reads file changes without restarting; operators can revoke one writer without changing another's token. Complete-export access remains operator-wide.
 
-Exercise this workflow with the packed candidate check described above. Running the npm beta.1 command does not install these changes, and changing a generated project's runtime version alone does not update its helper scripts. See [migration](../migration.md#test-the-november-source-candidate) before upgrading.
+Use the packed candidate check above. npm beta.1 lacks these changes; upgrading only a generated project's runtime leaves its helper scripts unchanged. Read [migration](../migration.md#test-the-november-source-candidate) before upgrading.
 
 ## Automated setup
 

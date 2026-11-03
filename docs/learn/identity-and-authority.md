@@ -1,61 +1,95 @@
 # Identity and authority
 
-This page explains who is who in a passport, what a signature proves about them, and what "Ring 0" means for what a reader can trust. Read it before you decide how your platform names brands and which signers your reader accepts.
+Platform designers and reader implementers can use this page to distinguish passport roles, signature evidence and authority. Use the result to name brands accurately and choose which signers your reader accepts at Ring 0.
+
+## Before you start
+
+| Input | Source |
+|---|---|
+| Package or source version | Your selected [release set](../reference/release-sets.md) |
+| Expected passport identifier | The scan or request, before reading evidence |
+| Accepted keys and DIDs | Your independently maintained trust lists, never the evidence under test |
+| Evidence and verification policy for the optional call | Your reader; see [gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) |
 
 ## Ring 0
 
-Ring 0 is the level of identity assurance that exists today, in the hosted reference and in any platform built on the current packages. At Ring 0, the application that registers a signer is the only party vouching for who that signer is. A signature proves which key signed a state or a claim. The name shown beside that key, such as a brand or a repairer, is the registering application's statement, and nothing outside that application certifies it.
+Ring 0 is today's identity assurance level in the hosted reference and platforms built on current packages. Only the application registering a signer vouches for its identity. A signature identifies a signing key; a displayed brand or repairer name is the application's uncertified statement.
 
-What this means for your own platform:
+For your platform:
 
-- Your platform is at Ring 0 too. When it gives a brand an identity key and labels it with the brand's name, readers have only your platform's word for that label.
-- Show brand and issuer names as your platform's statement, not as a checked fact. Keep your own record of whom you registered, on what evidence, and who may act for each brand.
-- A reader on another platform decides for itself which keys it accepts (see [accept the parties you trust](#accept-the-parties-you-trust)). If you want such readers to accept your brands, tell them the identity keys you use, for example in your own documentation. An index advertises the publisher keys it admits, but the standard defines no directory of brand or issuer keys yet ([known limitations](../operate/limitations.md)).
-- Nothing in the standard or the packages lets a platform raise its assurance above Ring 0 today. A DID, a verifiable credential or a passing proof does not do it.
+1. Present brand and issuer names as your statement, not a checked fact. Assigning a brand an identity key gives readers only your word for its label.
+2. Retain whom you registered, the evidence used and who may act for each brand.
+3. Share identity keys with those readers, for example in your documentation, if you want other platforms' readers to accept them. Each reader [chooses its own trust](#accept-the-parties-you-trust). Indexes advertise admitted publisher keys, but there is no standard brand or issuer key directory ([limitations](../operate/limitations.md)).
 
-Two higher rings are described but implemented nowhere yet:
+Nothing in today's standard or packages raises assurance above Ring 0. A DID, verifiable credential or passing proof does not do so. Two higher rings are described but implemented nowhere:
 
-| Ring | What it would add | Live |
+| Ring | Proposed assurance | Live |
 |---|---|---|
-| Ring 1 | An external instrument, such as a qualified electronic seal, binds a brand's DID to a legal entity | No |
-| Ring 2 | A party's role for a type of claim is certified, such as a notified body for a conformity claim | No |
+| Ring 1 | External instrument, such as a qualified electronic seal, binds a brand DID to a legal entity | No |
+| Ring 2 | Certified role for a claim type, such as notified body for a conformity claim | No |
 
 ## Who is who
 
-A passport involves several parties. One deployment can combine them, but keep them apart in your application's data and policy.
+One deployment may combine parties. Keep their roles distinct in application data and policy.
 
-| Party | What it does |
+| Party | Role |
 |---|---|
-| Subject | The product a record concerns, named by its passport identifier ([identifiers](../identifiers.md)) |
-| Actor | The party that makes a passport state and signs it, such as a brand, a repairer or an owner |
-| Owner, or controller | The party that controls the passport now, named by the controller key in field 6 of the newest state. Each later state must prove control of that key |
-| Issuer | The party that signs a lifecycle claim or a credential about the product |
-| Custodian | A service that holds keys for another party and acts for it ([custody](custody.md)) |
-| Publisher | The service that countersigns each state it admits. An index admits only the publisher keys its publisher policy names ([federation](../operate/federation.md)) |
-| Anchoring service | The service that writes a claim's anchor on chain and signs it |
-| Operator | Whoever runs an index or a registry |
+| Subject | Product named by its [passport identifier](../identifiers.md) |
+| Actor | Makes and signs a state; for example, a brand, repairer or owner |
+| Controller (also called owner) | Controls the passport through the key in field 6 of the newest state. Every later state must prove control. Record control does not assert physical or legal ownership. |
+| Issuer | Signs a lifecycle claim or credential about the product |
+| Custodian | Holds keys and acts for another party ([custody](custody.md)) |
+| Publisher | Countersigns each state it admits. An index admits only keys named in its publisher policy ([federation](../operate/federation.md)). |
+| Anchoring service | Writes and signs a claim anchor on chain |
+| Operator | Runs an index or registry |
 
-Each party signs with its own key: the actor key and the publisher key on every state, the controller key named in field 6 of a state, the issuer's key on a claim and the anchoring service's key on an anchor. [Custody](custody.md) explains the keys a state uses and who may hold them.
+Parties sign with their own keys: actor and publisher keys on every state, controller key named in field 6, issuer key on a claim and anchoring-service key on an anchor. [Custody](custody.md) explains the state keys and their holders.
 
 ## What a signature proves
 
-A valid signature attributes bytes to a key. It does not prove who holds the key, that the holder was entitled to make the statement, or that the statement is true. Keep three questions apart:
+A valid signature attributes bytes to a key. It does not establish the holder's identity or entitlement, or the statement's truth. Separate these questions:
 
-1. Which key signed? Your reader checks this from the bytes alone.
-2. Who holds that key? At Ring 0, only the registering application's word.
-3. May that party make this statement? Only a policy you choose answers this.
+| Question | Evidence or decision |
+|---|---|
+| Which key signed? | Reader checks the bytes |
+| Who holds it? | At Ring 0, the registering application's word |
+| May that party make this statement? | Your chosen policy |
 
-An application account sits outside all three. Knowing who signed in does not establish which key signed, and knowing which key signed does not establish the party's authority to make a particular claim.
+An application account sits outside all three. Sign-in does not establish the signing key; the signing key does not establish authority for a claim.
 
 ## Accept the parties you trust
 
-A reader names the parties it accepts in the `authority` option of `verifyPassportEvidence`: `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`. These are lists you keep: the genesis actor keys, claim issuer DIDs, anchoring service keys and acceptance custodians you accept. Never take them from the evidence under test. The `issuerAuthority` check reports the result. It reads `unknown` with `policy-missing` when you give no `authority` option, `unknown` with `authority-unconfirmed` for a role you give no list for, and `fail` with `authority-unconfirmed` for a party a list leaves out. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) shows a reader that passes one.
+Pass accepted parties through the `authority` option of `verifyPassportEvidence`: `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`.
 
-A repairer's signature establishes which key signed the repair claim. Accepting that party as a repairer is your policy's decision.
+| List | Accepted parties |
+|---|---|
+| `genesisIssuers` | Genesis actor keys |
+| `claimIssuers` | Claim issuer DIDs |
+| `anchoringServices` | Anchoring-service keys |
+| `acceptanceCustodians` | Acceptance custodians |
+
+The `issuerAuthority` check reports:
+
+| Policy input | Result |
+|---|---|
+| No `authority` option | `unknown` with `policy-missing` |
+| No list for a role | `unknown` with `authority-unconfirmed` for a role you give no list for |
+| Party excluded by its list | `fail` with `authority-unconfirmed` |
+
+A repairer's signature establishes the signing key. Your policy decides whether to accept that party as a repairer.
 
 ## Supply the expected subject
 
-Tell your reader which passport you asked about, taken from the scan or the request, before it reads the evidence. [Evidence and its limits](evidence-and-freshness.md#supply-the-expected-subject) explains why and shows the call.
+1. Take the expected passport identifier from the scan or request before reading evidence.
+2. Supply it as the second argument. This fragment shows the call, not a standalone reader:
+
+   ```js
+   const report = await verifyPassportEvidence(evidence, { passportId, source: 'request-context' }, policy)
+   ```
+
+3. Inspect `subjectBinding`, which compares every state, claim, anchor and credential with that identifier. Taking the identifier from the evidence would let another product's valid record verify against itself.
+
+[Evidence and its limits](evidence-and-freshness.md#supply-the-expected-subject) explains other subject sources and optional constraints. With no independent expectation (`source: 'none'`), the result is `unknown` with `subject-not-independent`; other checks still run.
 
 ## Source definitions
 

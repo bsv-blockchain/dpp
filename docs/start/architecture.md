@@ -1,13 +1,17 @@
 # The passport model
 
-How a passport, the claims about it and the services around it fit together. Read this before the code if you want the model first; the [words used here](glossary.md) page defines every term.
+Platform planners and implementers can use this model to understand how passport records, claims and services fit together before reading code. The [glossary](glossary.md) defines the terms.
+
+## Before you start
+
+No software, credentials or prior implementation are required.
 
 ## Two rails
 
-A passport is kept on two separate chains of transactions, called rails:
+A passport uses two separate transaction chains, called rails:
 
-- **The passport rail** holds the passport's own states. Each state is one transaction output, and each new state spends the one before it, so the history has one order and cannot be quietly rewritten.
-- **The claim rail** holds anchors for claims. A claim, such as a repair or a recycling, is signed off chain; its anchor is a small output that commits to the claim's exact bytes by their digest.
+- **The passport rail** holds states, one transaction output each. Each new state spends its predecessor, giving the history one order that cannot be quietly rewritten.
+- **The claim rail** holds anchors. A repair or recycling claim is signed off chain. Its anchor commits to those exact bytes by their digest in a small output.
 
 Each rail can be checked without the other, and a party can make a claim without controlling the passport.
 
@@ -28,7 +32,7 @@ Each rail can be checked without the other, and a party can make a claim without
 4. An issuer signs a claim about the product. A registry keeps the signed claim, and an anchoring service commits to its exact bytes on the claim rail.
 5. A reader gets the lineage from an index and the claim from a registry, and checks the signatures, the links, the subject and the proofs of inclusion itself.
 
-The index and the registry only find and keep records. A reader believes nothing because a service said it: it checks the transaction bytes against block headers from a source it chooses.
+Indexes and registries find and keep records. Readers check transaction bytes against block headers from a chosen source; a service response is not proof.
 
 ## The building blocks
 
@@ -38,8 +42,8 @@ The index and the registry only find and keep records. A reader believes nothing
 | Outpoint | One output, named by its transaction identifier and output index |
 | Signature | Attributes bytes to a key |
 | Digest | A fingerprint of bytes, used to detect any change |
-| Secured claim | The claim together with its signature or proof, the exact bytes an anchor commits to. Secured does not mean encrypted |
-| Anchor | A separate output committing to a secured claim's exact bytes |
+| Claim with proof (secured claim) | The claim and its signature or proof: the exact bytes committed by an anchor. Secured does not mean encrypted. |
+| Anchor | Separate output committing to the exact bytes of a claim with its proof |
 
 ## Where next
 

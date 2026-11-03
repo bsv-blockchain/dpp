@@ -1,8 +1,19 @@
 # What a passport application offers
 
-The standard fixes the records, the checks and the services. An application is what people use. This page lists what a passport application usually offers, who uses each part, and what each part does underneath, so you can plan its screens before you write code. [Build an application](build-an-application.md) shows the calls in order.
+Application planners can turn this inventory of passport screens, users and responsibilities into an implementation brief. The standard fixes records, checks and services; the application provides the experience. [Build an application](build-an-application.md) shows the calls in order.
 
-Use these screens to plan the features in [your platform brief](../start/plan-your-platform.md), not as a mandatory feature list. Claims, custody transfer and service hosting depend on your scope. The account/brand model and wallet placement below describe reference application choices: an account, organisation, signing key, DID and passport controller are separate concepts, and your application can organise them differently while meeting the selected role's rules. [Choose packages and services](../start/choose-components-and-services.md) identifies what you supply or obtain from a provider.
+## Before you start
+
+| Decision | Input and scope |
+|---|---|
+| Features | Use [your platform brief](../start/plan-your-platform.md). Screens are optional; scope determines claims, custody transfer and service hosting |
+| Components | [Choose packages and services](../start/choose-components-and-services.md) identifies what you supply or obtain from a provider |
+| Custody and keys | Select the profile and wallet holders before coding. The hand-on workflow uses `managed-custody@2`; the keys table locates each secret |
+| Account model | Accounts, brands and wallet placement are reference choices. Accounts, organisations, signing keys, DIDs and passport controllers are separate concepts; organise them as needed while meeting the selected role's rules |
+
+1. Select the users and screens within your scope.
+2. Assign each screen's underlying work and keys to your application or provider.
+3. Include background duties and release checks in the brief.
 
 ## Who uses it
 
@@ -17,36 +28,36 @@ Use these screens to plan the features in [your platform brief](../start/plan-yo
 
 | Screen | The user | The application | Package calls | Rules |
 |---|---|---|---|---|
-| Account and brand | Signs in and creates a brand | Gives the brand an identity key in a wallet the brand or the platform holds, and records who may act for it | The wallet's `getPublicKey`, `didKeyFromIdentityKey` | [Identity and authority](../learn/identity-and-authority.md) |
-| Catalogue | Lists product models and items | Keeps the product records and gives each item its identifier under the brand's GS1 prefix | `buildGs1DigitalLink`, `gs1CheckDigit`, `parseGs1DigitalLink` | [Identifiers](../identifiers.md) |
-| Create a passport | Chooses the industry profile and fills in the form | Checks the data against the profile, then builds, checks, announces, sends and proves the `ISSUE` | `readPublicPayloadSchema`, `completeState`, `buildLockingScript` | [Industry profiles](../profiles/README.md), [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md) |
-| Update | Records a change, such as new data or a repair | Writes an `UPDATE` that spends the tip and carries the control proof | `revealOwnerLinkage`, `completeState`, and the unlock that spends the tip's PushDrop output (the script template every state uses) | [Build an application](build-an-application.md) |
-| Hand on | Sends an offer; the recipient accepts it, named by identity key or with a one-time claim code (a code, not a lifecycle claim) | Records the offer and the acceptance, signs the acceptance record, writes the `TRANSFER` that commits to it, and keeps the record | `signManagedAcceptance`, `acceptanceCommitment`, `bindAcceptanceToState` | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/managed-custody.md) |
+| Account and brand | Signs in; creates a brand | Assigns its identity key in a wallet held by the brand or platform; records who may act for it | The wallet's `getPublicKey`, `didKeyFromIdentityKey` | [Identity and authority](../learn/identity-and-authority.md) |
+| Catalogue | Lists models and items | Stores product records; assigns item identifiers under the brand's GS1 prefix | `buildGs1DigitalLink`, `gs1CheckDigit`, `parseGs1DigitalLink` | [Identifiers](../identifiers.md) |
+| Create a passport | Selects a profile; fills in data | Validates data against the industry profile; builds, checks, announces, sends and proves the `ISSUE` | `readPublicPayloadSchema`, `completeState`, `buildLockingScript` | [Industry profiles](../profiles/README.md), [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md) |
+| Update | Records new data, a repair or another change | Writes an `UPDATE`, spending the tip with control proof | `revealOwnerLinkage`, `completeState`, and the unlock that spends the tip's PushDrop output (the script template every state uses) | [Build an application](build-an-application.md) |
+| Hand on | Offers a passport; the recipient accepts by identity key or one-time claim code, distinct from a lifecycle claim | Records offer and acceptance; signs and retains the acceptance record; writes the `TRANSFER` committing to it | `signManagedAcceptance`, `acceptanceCommitment`, `bindAcceptanceToState` | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/managed-custody.md) |
 | Retire | Ends the passport, for example at recycling | Writes a `RETIRE`; nothing can follow it | `completeState` | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model-v2.md) |
-| Claims | A repairer or recycler signs a claim | Signs the claim, has a registry validate and store it, and anchors it | `signLifecycleClaim`, `buildAttestationAnchor` | [Rules](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/rules.md) |
-| Passport page | Opens the identifier's address, or scans the label | Looks the passport up on an index, verifies it and shows the report beside the product data | `chainFromBeef`, `verifyPassportEvidence` | [Reading the report](../learn/evidence-and-freshness.md) |
-| Operations | Staff see what is still pending | Shows the journal: operations the network has not answered, proofs not yet delivered, incidents | None; this is the application's own journal | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md) sections 6 to 8 |
+| Claims | Repairer or recycler signs a claim | Signs, obtains registry validation and storage, then anchors | `signLifecycleClaim`, `buildAttestationAnchor` | [Rules](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/rules.md) |
+| Passport page | Opens the identifier or scans the label | Looks up the passport on an index, verifies it and shows its report beside product data | `chainFromBeef`, `verifyPassportEvidence` | [Reading the report](../learn/evidence-and-freshness.md) |
+| Operations | Staff inspect pending work | Shows the journal: unanswered network operations, undelivered proofs and incidents | None; this is the application's own journal | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md) sections 6 to 8 |
 
 ## After a hand on
 
 Under `managed-custody@2` the recipient becomes the passport's holder, and the custodian keeps its keys for them ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) section 2).
 
-- **What the holder can ask.** Everything the holder does next goes through the custodian. To hand the passport on, the holder asks for a new offer, and the same offer, acceptance and `TRANSFER` follow (section 4). Which requests the application accepts, and how it knows a request is the holder's, is the application's to decide: a sign-in, a claim code or a message all work.
+- **Holder requests.** All further actions go through the custodian. The holder requests a new offer to repeat the offer, acceptance and `TRANSFER` (section 4). The application chooses which requests to accept and how to confirm they came from the holder: sign-in, claim code or message.
 - **How the holder leaves managed custody.** The custodian writes a `TRANSFER` to a `destinationKey`, a key the holder's own wallet derived, and from then on the holder proves control from their own wallet (section 7).
-- **What the acceptance screen says.** Tell the holder how to ask for a change or a further hand on, whether they can see the owner tier, and how to take the passport into a wallet of their own.
+- **Acceptance screen.** Explain how to request changes or another hand on, whether the holder can read the owner tier, and how to move to their own wallet.
 
-- **What authorises a change after a hand on.** The holder's recorded instruction. The custodian records the request, signs it and keeps it, and the `UPDATE` or `RETIRE` it writes commits to that record in field 15, as the `TRANSFER` commits to the acceptance (section 6). An index or reader that selects the profile's instruction rule refuses a change written for a holder without one, unless a named control authority made it. An application's own team therefore cannot quietly update or retire a passport it has handed on: it records whose request it acted on, or it acts as a control authority, visibly.
+- **Authority after a hand on.** The holder's recorded instruction authorises the change. The custodian records, signs and retains the request; the `UPDATE` or `RETIRE` it writes commits to that record in field 15, as the `TRANSFER` commits to acceptance (section 6). An index or reader selecting the instruction rule refuses changes written for a holder without it, unless made by a named control authority. The team cannot quietly update or retire a passport it has handed on: it records the requester or visibly acts as a control authority.
 
 ## Keys and secrets
 
-A platform holds several keys and secrets in different places. Plan where each one lives before you write code.
+Use this inventory to assign the platform's keys and secrets to their holders.
 
 | Key or secret | Held by | Used for | Set where |
 |---|---|---|---|
-| Writer's identity key | The writer's BRC-100 wallet | Signs each state as actor, and as publisher when the writer countersigns its own states | The wallet; its public half goes into the index's publisher policy |
+| Writer's identity key | Writer's BRC-100 wallet | Signs each state as actor and, when countersigning its own states, publisher | Wallet; public half in the index's publisher policy |
 | Controller key | Derived in the same wallet | Controls the passport (field 6 of each version 2 state) | Derived per passport; never stored separately |
 | Publisher key, public half | The index | Admitting only states this publisher countersigned | `SERVICE_IDENTITY_KEY`, or a signed publisher policy in `PUBLISHER_POLICY_FILE` |
-| Custodian's identity key | The custodian's BRC-100 wallet | Signs acceptance and instruction records under managed custody through a derived key; the wallet never exports it | The wallet; its public half is the `custodian` property of each record |
+| Custodian's identity key | Custodian's BRC-100 wallet | Signs managed acceptance and instruction records through a derived key; never exported | Wallet; public half in each record's `custodian` property |
 | Submit token | The index operator and its writers | `POST /submit` and `POST /retract` on that index | `SUBMIT_TOKEN` on the index |
 | Callback token | The index operator and whoever pushes proofs | `POST /arc-ingest` on that index | `ARC_CALLBACK_TOKEN` on the index; one per index, never shared with another |
 | Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |
@@ -56,16 +67,29 @@ A platform holds several keys and secrets in different places. Plan where each o
 
 ## Duties that run on their own
 
-Some of a writer's duties come after the screen that caused them: announcing again when an index could not be reached, fetching each state's merkle proof once it is mined, and pushing that proof to every index that admitted the state. Keep them in the journal as pending tasks and run them on a schedule. An application with no scheduler, such as a front end with no background worker, accumulates states that every reader sees as unproven.
+Journal these pending duties and run them on a schedule:
+
+1. Announce again when an index could not be reached.
+2. Fetch each state's merkle proof once it is mined.
+3. Push that proof to every index that admitted the state.
+
+Without a scheduler, such as a front end with no background worker, states accumulate that every reader sees as unproven.
 
 ## Demonstration and live spaces
 
-Keep a demonstration space apart from live products. A demonstration's identifiers use GS1 prefix 952, which GS1 reserves for examples, so software knows nothing real stands behind them; live products use the brand's own prefix. Every demonstration payload also starts with a `notice`, a sentence saying so to the person reading it, and the passport page shows it before the product data. A live product never carries one. Label only what your application wrote: a passport another publisher wrote, which your reader may also show, carries its own `notice` or none. A state, once written, is permanent, so a test written under a live prefix is a permanent claim about a real product.
+Keep demonstration and live products separate:
+
+| Space | Identifier | Reader notice |
+|---|---|---|
+| Demonstration | GS1 prefix 952, reserved for examples so software knows it represents no real product | Every payload starts with a `notice` sentence saying it is a demonstration; the passport page shows it before product data |
+| Live | The brand's own prefix | A live product never carries a demonstration notice |
+
+Label only what your application wrote. Another publisher's passport carries its own `notice` or none. States are permanent: a test under a live prefix permanently makes a claim about a real product.
 
 ## What the standard leaves to you
 
-- How people sign in, and which of them may act for a brand. Today the platform vouches for the account and the brand name, and nobody checks the brand's legal identity (Ring 0).
-- Who holds each wallet: the brand itself, or the platform on the brand's behalf ([custody](../learn/custody.md)).
+- Sign-in and authority to act for a brand. Today the platform vouches for the account and brand name; nobody checks legal identity (Ring 0).
+- Wallet holder: brand or platform on its behalf ([custody](../learn/custody.md)).
 - Storage for product records, restricted documents and the owner tier, which is encrypted and held off chain.
 - The screens themselves, their languages and their accessibility.
 

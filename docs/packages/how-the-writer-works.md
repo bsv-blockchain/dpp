@@ -1,16 +1,45 @@
 # How the writer example works
 
-This page takes `examples/write-passport-v2.mjs` apart step by step, so you can build the same writer into your own application. Run it first, as [write a passport](build-an-application.md#3-write-a-passport) shows; each block here is a fragment of it.
+Application developers can use this walkthrough of `examples/write-passport-v2.mjs` to integrate its state construction, checks, submission and retention into their own writer. Run the complete example first; the implementation blocks below are fragments, not standalone programs ([write a passport](build-an-application.md#3-write-a-passport)).
 
 A passport is a lineage of states, from the genesis, the `ISSUE`, to the tip, the newest state, whose output nothing has spent yet. Every later state spends the tip.
 
+## Before you start
+
+| Task | Required inputs and source |
+|---|---|
+| Run the complete example offline | Node.js 22 or later, npm and git; use [Get the code](../quick-start.md#get-the-code) to download and build the checkout with `npm ci` and `npm run build`. Run the command below from its root |
+| Read the fragments | Use the variables listed below and the complete `examples/write-passport-v2.mjs` for their surrounding code |
+| Run live | Complete the wallet, identifier and index setup in [write a passport](build-an-application.md#3-write-a-passport), including authorised signing, funds and submission/proof access |
+
+```sh
+node examples/write-passport-v2.mjs --dry-run
+```
+
+The dry run needs no wallet, funds or network. Success ends with `Every sentence above holds.` and exit code 0. Stop on `FAIL:` and investigate before writing live.
+
+## Fragment inputs
+
+| Variable | Source |
+|---|---|
+| `wallet`, `passportId` | The complete example's `WalletClient` and the identifier you supply |
+| `identityKey`, `controllerKey`, `controlLinkage` | Wallet calls in the keys fragment |
+| `profile`, `publicFields`, `restrictedFields` | The selected product profile and your payload objects, checked against its public and restricted schemas |
+| `payloadOwnerHash`, `ciphertext` | The owner-tier encryption fragment |
+| `authorityKey` | The identity key of the authority receiving a disclosure |
+| `created`, `created.tx`, `stateTx`, `earlierStates` | The wallet's draft action, its BEEF, the transaction read from that BEEF, and previously written transactions oldest first |
+| `indexUrl`, `submitToken`, `callbackToken` | Your index's URL, submit token and `ARC_CALLBACK_TOKEN` |
+| `beef`, `txid` | The action's `created.tx` and `created.txid` |
+| `tipBeef`, `tipTxid`, `tipOutputIndex` | The journal's tip BEEF, transaction identifier and output number |
+| `nextState` | The signed `UPDATE` built from the new data and tip |
+
 ## Check before you spend
 
-Check these before you build anything, as the example does. A mistake costs nothing now and cannot be undone once a state is mined.
+Check these before building anything. Refused inputs cost nothing at this point; a mined state cannot be undone.
 
 - **The identifier.** Parse it with `parseGs1DigitalLink` from `@bsv/dpp-profiles`, and refuse it if its check digit fails or its GTIN is not under prefix 952 (`identifierProblems`).
 - **The payloads.** Check each public payload against its profile's schema and each owner-tier object against the restricted schema, as [check a payload against its profile](dpp-profiles.md#check-a-payload-against-its-profile) shows. A reader's report checks the public payload only when it is given the profiles package's validator, so check before you write. The example starts from `node examples/sample-payload.mjs general@2 --demonstration` and revises one field in the `UPDATE`. Check your own file with `node examples/sample-payload.mjs --check general@2 payload.json`.
-- **The keys.** Read your keys and reveal the linkage before the first spend, so a refused approval costs nothing. Signing and spending approvals come with each transaction.
+- **The keys.** Read keys and reveal linkage before the first spend so a refused approval costs nothing. Obtain signing and spending approvals for each transaction.
 - **The index.** `GET /capabilities` must name your publisher key, and `POST /lookup` must find nothing for your identifier, so the `ISSUE` is the genesis and not a second one.
 
 ## Keys
@@ -25,7 +54,7 @@ All three values come from the wallet, and no key leaves it.
 
 The actor's identity key is not the controller key, so every later state carries the linkage to prove control of the state it spends. A state without it is refused ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 6). The wallet reveals the linkage to itself, your application decrypts it once, and it is then public on chain.
 
-Fragment of `examples/write-passport-v2.mjs`, in `run`, where `wallet` is the `WalletClient` and `passportId` is your identifier:
+Fragment from `run` in `examples/write-passport-v2.mjs`:
 
 ```js
 const { publicKey: identityKey } = await wallet.getPublicKey({ identityKey: true })
@@ -39,7 +68,7 @@ const controlLinkage = await decryptOwnerLinkage(await revealOwnerLinkage(passpo
 
 A profile's restricted fields, every tier but `public`, form the owner tier and never go on chain. Encrypt them with the wallet, keep the ciphertext off chain, and put only its hash in the state ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). `@bsv/dpp-protocol` does not export the protocol `[2, 'dpp owner data v1']`, so copy it from that section.
 
-Fragment of `examples/write-passport-v2.mjs`, in `sealOwnerTier`, where `restrictedFields` is an object that passes `readRestrictedPayloadSchema(profile)`, such as `{ serviceNotes: '...' }` for `general@2`:
+Fragment from `sealOwnerTier`. `restrictedFields` must pass `readRestrictedPayloadSchema(profile)`, such as `{ serviceNotes: '...' }` for `general@2`:
 
 ```js
 const { ciphertext } = await wallet.encrypt({
@@ -51,11 +80,12 @@ const { ciphertext } = await wallet.encrypt({
 const payloadOwnerHash = ownerBlobHash(ciphertext)
 ```
 
-Read the tier back before you build anything: `verifyOwnerBlob(ciphertext, payloadOwnerHash)`, then `wallet.decrypt` with the same protocol, key identifier and counterparty. With no restricted fields, `payloadOwnerHash` stays empty. On a `TRANSFER`, encrypt the tier again with the recipient's identity key as counterparty and commit that ciphertext's hash instead. The recipient decrypts it with your identity key as counterparty.
+1. Before building a state, check `verifyOwnerBlob(ciphertext, payloadOwnerHash)` and use `wallet.decrypt` with the same protocol, key identifier and counterparty.
+2. Keep `payloadOwnerHash` empty when there are no restricted fields.
+3. For a `TRANSFER`, encrypt again with the recipient's identity key as counterparty and commit the new ciphertext's hash. The recipient decrypts with your identity key as counterparty.
+4. Retain the ciphertext; the example uses its journal. The chain holds only the hash and the wallet only encrypts and decrypts. Lost ciphertext cannot be reconstructed: encrypting identical text produces different bytes.
 
-**Where the ciphertext lives.** Only where you store it. The chain holds only the hash, and the wallet only encrypts and decrypts. Lose it and the committed hash points at nothing: the tier cannot be read again, because encrypting the same text again gives different bytes. The example keeps it in the journal.
-
-Record model section 7 recommends serving it at its UHRP (BRC-26) content address, which is the hash already in the state, so a reader needs no registry to find it. Any UHRP storage host may serve the bytes, or you may serve them yourself, as long as someone holds them. To print each state's address, save this as `uhrp-addresses.mjs` and run `node uhrp-addresses.mjs dpp-journal/passport-<digest>.json` on the file in your journal directory. `node examples/write-passport-v2.mjs --dry-run --journal=./dpp-journal` makes one to try it on:
+Record model section 7 recommends the UHRP (BRC-26) content address, the hash already in the state, so readers need no registry. Serve the retained bytes yourself or through any UHRP host. To print each state's address, save this as `uhrp-addresses.mjs` and run `node uhrp-addresses.mjs dpp-journal/passport-<digest>.json`. Create a sample journal with `node examples/write-passport-v2.mjs --dry-run --journal=./dpp-journal`:
 
 ```js
 import { readFileSync } from 'node:fs'
@@ -67,7 +97,7 @@ for (const state of journal.states) {
 }
 ```
 
-**Disclosing a tier to another party.** The `legitimate` and `authority` fields are part of the one object you encrypted to yourself; they reach the parties entitled to them by a disclosure, the same `encrypt` call over only their fields with that party's identity key as counterparty ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). For a market-surveillance authority whose identity key is `authorityKey`, with `restrictedFields` the object you sealed:
+**Disclose to another party.** The `legitimate` and `authority` fields belong to the object encrypted to yourself. Disclose only the entitled party's fields with the same `encrypt` call, using that party's identity key as counterparty ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 7). For a market-surveillance authority with `authorityKey` and the sealed `restrictedFields`:
 
 ```js
 const manifest = readManifest(profile)
@@ -83,13 +113,19 @@ const { ciphertext: disclosure } = await wallet.encrypt({
 })
 ```
 
-Hand `disclosure` over off chain; the authority decrypts it with your identity key as counterparty. A party with a legitimate interest gets the `legitimate` fields alone. A disclosure is not committed on chain: it is your statement of what the committed tier holds, which the derivation attributes to you. Who is entitled to a tier, and how they show it before you disclose, is your deployment's rule ([what is not settled](build-an-application.md#what-is-not-settled)).
+Deliver `disclosure` off chain; the authority decrypts with your identity key as counterparty. A legitimate-interest recipient gets only `legitimate` fields. The disclosure has no on-chain commitment. It states what the committed tier holds, attributed to you by derivation. Your deployment decides entitlement and how recipients prove it ([what is not settled](build-an-application.md#what-is-not-settled)).
 
 ## Issue
 
-Build the genesis state, then ask the wallet for an unsent transaction holding it. `completeState` signs the state as actor and as publisher, and `buildLockingScript` makes the output script that locks it to the controller key. On a genesis, `previousOutputIndex` and `lineageGenesis` are `null`. `actorKeyId` names the key the actor signature is derived under: any text of 1 to 256 bytes, the same for every state this writer makes (`writer` in the example). `eventData` is JSON or empty (empty in the example). Its properties are a profile's rule, and none is defined yet for an update or a retirement.
+Build the genesis with `completeState`, which signs as actor and publisher. Use `buildLockingScript` to lock its output to the controller key, then ask the wallet for an unsent transaction.
 
-Fragment of `examples/write-passport-v2.mjs`, in `writeState` and `liveAdapter`, where `publicFields` is the public payload object, and `identityKey`, `controllerKey` and `payloadOwnerHash` are from above:
+| Field | Construction rule |
+|---|---|
+| `previousOutputIndex`, `lineageGenesis` | `null` for genesis |
+| `actorKeyId` | Key identifier for deriving the actor signature: any text of 1 to 256 bytes, unchanged across this writer's states; `writer` in the example |
+| `eventData` | JSON or empty; empty in the example. Profiles define its properties, but none is defined yet for an update or retirement |
+
+Fragment from `writeState` and `liveAdapter`:
 
 ```js
 const state = await completeState({
@@ -112,7 +148,7 @@ const created = await wallet.createAction({
 
 ## Check, announce, send
 
-**Check.** Before the unsent transaction leaves your hands, run the verifier's own rules on it, with the lineage written so far in front of it. Fragment of `examples/write-passport-v2.mjs`, in `writeState`, where `earlierStates` is the list of transactions already written, oldest first (empty for a genesis), and `stateTx` is the new one, read with `Transaction.fromAtomicBEEF(created.tx)`:
+1. **Check the draft.** Run the verifier's rules over `earlierStates`, empty for genesis, followed by `stateTx`, read with `Transaction.fromAtomicBEEF(created.tx)`. Fragment from `writeState`:
 
 ```js
 const checked = await verifyChain([...earlierStates, stateTx], {
@@ -125,7 +161,7 @@ if (!checked.valid) console.log(checked.error) // then abort the unsent action a
 
 `'scripts only'` skips the header check, since nothing is mined yet, but still checks the signatures, the link to the tip and the control proof.
 
-**Announce.** `POST /submit` takes the BEEF, your submit token and the topic `tm_dpp`, the index's topic for passport states. Fragment of `examples/write-passport-v2.mjs`, in `announce`, simplified, where `beef` is `created.tx`:
+2. **Announce.** `POST /submit` takes the BEEF, submit token and passport-state topic `tm_dpp`. Simplified fragment from `announce`:
 
 ```js
 async function announce(indexUrl, submitToken, beef) {
@@ -147,24 +183,42 @@ async function announce(indexUrl, submitToken, beef) {
 }
 ```
 
-Send on `admitted`, on `duplicate` (the index already holds those bytes) and on `unreachable`, which refuses nothing. On `refused` or `unauthorised`, abort the unsent action and stop while the draft has cost nothing; announcing after the send would not mend a wrong address or token. [What a refusal code means](build-an-application.md#when-the-index-refuses-a-state) explains each `X-Admission-Refusal` code.
+| Admission outcome | Required action |
+|---|---|
+| `admitted` | Send |
+| `duplicate` | Send; the index already holds those bytes |
+| `unreachable` | Send, then announce again; no answer is not a refusal |
+| `refused` or `unauthorised` | Abort and stop while the draft has cost nothing. Announcing after sending cannot fix the address or token |
 
-**A refused draft is aborted.** An unsent action holds the wallet's inputs until it is sent or aborted, so pass a draft that fails your own check, or that the index refuses, to `abortAction`. Give it the action's reference, `created.signableTransaction.reference` for a state that spends the tip. An issue comes back with no reference, and `@bsv/wallet-toolbox` then accepts the transaction identifier: `wallet.abortAction({ reference: created.txid })`. Read the result. If the network already knows the transaction, the wallet answers `{ aborted: false }` rather than throwing, and you must not build again.
+[Refusal codes](build-an-application.md#when-the-index-refuses-a-state) explain `X-Admission-Refusal`.
 
-**Send.** Send with a second `createAction` that names the unsent transaction, and report only the wallet's answer for it. Fragment of `examples/write-passport-v2.mjs`, in `liveAdapter`, where `txid` is `created.txid`:
+An unsent action holds wallet inputs until sent or aborted. Pass drafts that fail your own check or index admission to `abortAction`:
+
+| Draft or result | Handling |
+|---|---|
+| State spending the tip | Pass `created.signableTransaction.reference` |
+| Issue, which has no reference | `@bsv/wallet-toolbox` accepts `wallet.abortAction({ reference: created.txid })` |
+| `{ aborted: false }` | The network already knows the transaction. The wallet returns this instead of throwing; do not build again |
+
+3. **Send.** A second `createAction` names the unsent transaction. Report only the wallet's answer. Fragment from `liveAdapter`:
 
 ```js
 const result = await wallet.createAction({ description: 'dpp send', options: { sendWith: [txid], acceptDelayedBroadcast: false } })
 const status = result.sendWithResults?.find((r) => r.txid === txid)?.status
 ```
 
-`unproven` means the network accepted the transaction and the state exists, pending until mined. `sending` is not yet an answer: wait, and do not rebuild. `failed` means the state never existed and nothing was spent. If the network refuses a state your index admitted, withdraw it with `POST /retract`, which takes `{ txid, outputIndex, reason }` behind the submit token.
+| Network result | Meaning and action |
+|---|---|
+| `unproven` | Accepted; the state exists, pending mining |
+| `sending` | No answer yet. Wait; do not rebuild |
+| `failed` | The state never existed and nothing was spent. If the index admitted it, withdraw it with `POST /retract`, passing `{ txid, outputIndex, reason }` behind the submit token |
 
 ## Prove
 
-Once a state is mined, the wallet attaches its merkle path, the proof of inclusion, to the transaction it holds. Read the path from the wallet and push it to your index, because announcing the state again would leave the index's copy unproven.
+1. Wait for mining and for the wallet to attach the merkle path, its proof of inclusion.
+2. Read the path and push it to the index. Announcing the state again leaves the index's copy unproven.
 
-Fragment of `examples/write-passport-v2.mjs`, in `waitForProof` and `pushProof`, where `txid` is the state's identifier and `callbackToken` is your index's `ARC_CALLBACK_TOKEN`:
+Fragment from `waitForProof` and `pushProof`:
 
 ```js
 const outputs = await wallet.listOutputs({ basket: 'dpp', include: 'entire transactions', limit: 10000 })
@@ -179,15 +233,21 @@ await fetch(`${indexUrl}/arc-ingest`, {
 })
 ```
 
-The example polls until the path appears or `--wait-proof` runs out, and handles `outputs.BEEF` being absent when the basket holds nothing.
+3. Confirm `{ "status": "applied" }`. The index then serves the state with its proof.
+4. Prove each state before writing the next, as the example does with `--wait-proof`.
 
-Prove each state before you write the next, as the example does with `--wait-proof`. `listOutputs` returns only spendable outputs, so once a state's output is spent, its path cannot be read through BRC-100 any more. A writer that cannot wait points its broadcaster's callback at the index's `/arc-ingest` instead. Also read the path from `beef.bumps`, as the fragment does: in `@bsv/sdk` 2.8.10 a parsed BEEF keeps a proven transaction's path there and not on the transaction, so `beef.findTxid(txid).tx.merklePath` is always `undefined`.
-
-The index answers `{ "status": "applied" }` and from then on serves the state with its proof. Each index guards `/arc-ingest` with its own callback token, so never send one index's token to another.
+| Condition | Handling and limit |
+|---|---|
+| Path absent | The example polls until it appears or `--wait-proof` expires; do not use an absent path |
+| Empty basket | `outputs.BEEF` may be absent; the example handles this |
+| Tip about to be spent | `listOutputs` returns only spendable outputs. After spending, BRC-100 cannot return that state's path this way |
+| Writer cannot wait | Point the broadcaster's callback at the index's `/arc-ingest` instead |
+| Parsed BEEF in `@bsv/sdk` 2.8.10 | Read `beef.bumps`. The path is stored there, so `beef.findTxid(txid).tx.merklePath` is always `undefined` |
+| Callback token | Use each index's own token for `/arc-ingest`; never send one index's token to another |
 
 ## Keep
 
-[Section 5](build-an-application.md#5-keep-what-you-wrote) says what to keep and why. The example writes its journal before acting on each step, and holds for each state the transaction, its BEEF, the owner tier's hash and ciphertext, the index's answer, the network's answer and the proof. Here the journal is a file; in your application it is a table.
+Journal before each action. Retain each state's transaction, BEEF, owner-tier hash and ciphertext, index answer, network answer and proof ([section 5](build-an-application.md#5-keep-what-you-wrote)). The example uses a file; your application uses a table.
 
 ## Update
 
@@ -197,7 +257,7 @@ Build the `UPDATE` as you built the issue, with three differences: the data name
 - **The tip's BEEF** is the one the wallet gave you for the previous state: `created.tx` for the issue, `signed.tx` after that. Keep it in the journal. Once that state has its merkle path, swap in the smaller BEEF: set `stateTx.merklePath = path` and use `stateTx.toAtomicBEEF()`. If you have lost it, `listOutputs` with `basket: 'dpp'` and `include: 'entire transactions'` returns a BEEF that holds the tip, the one output still spendable. The raw transaction alone cannot stand in for it: raw hex carries neither the tip's merkle path nor its unmined ancestors, so a BEEF built from it does not verify.
 - **The unlock.** Every state's output is a PushDrop script locked to the controller key, so spending the tip takes a wallet signature under protocol `[1, 'dpp owner v1']`, key identifier the passport identifier and counterparty `self` ([custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md) section 3). The unlock is 73 bytes.
 
-Fragment of `examples/write-passport-v2.mjs`, in `liveAdapter`, where `tipBeef`, `tipTxid` and `tipOutputIndex` are the tip's BEEF, transaction identifier and output number from the journal, `nextState` is the signed `UPDATE`, and `controllerKey` is from above:
+Fragment from `liveAdapter`, using the tip and signed `nextState` listed in the input table:
 
 ```js
 const created = await wallet.createAction({
@@ -217,7 +277,7 @@ const signed = await wallet.signAction({
 })
 ```
 
-`PushDrop` and `Transaction` come from `@bsv/sdk`. The wallet usually adds its own funding input and change output. The tip keeps the input index you find, and the passport output stays first because outputs are not randomised. `signed.tx` is the signed transaction as BEEF, and `signed.txid` its identifier. Then check, announce, send and prove it as above. An index refuses a state whose tip it does not hold, so before announcing, the example also checks that the tip the index returns for the passport is the state this one spends.
+`PushDrop` and `Transaction` come from `@bsv/sdk`. The wallet usually adds funding and change. The tip retains the input index you found; without output randomisation, the passport output stays first. `signed.tx` is the signed BEEF and `signed.txid` its identifier. Check, announce, send and prove it as above. Before announcing, confirm the index's tip is the state being spent; it refuses a state whose tip it does not hold.
 
 ## Transfer under managed custody
 
@@ -229,4 +289,11 @@ Under `managed-custody@2` the custodian signs the record through its BRC-100 wal
 
 ## Retire
 
-A `RETIRE` spends the tip like any other state, and nothing can follow it. It keeps the previous state's public payload and owner-tier hash, and its `eventData` carries the reason if the profile asks for one.
+A `RETIRE` spends the tip like any other state, and nothing can follow it.
+
+| Check | Required value or result |
+|---|---|
+| Predecessor | Spend the current tip and prove control, as for every post-genesis state |
+| Public payload and owner-tier hash | Keep the previous state's values |
+| `eventData` | Carry the reason if the profile asks for one |
+| Following state | None; the passport is retired |

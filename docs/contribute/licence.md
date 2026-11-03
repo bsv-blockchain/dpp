@@ -1,16 +1,36 @@
 # Licence and reuse
 
-This page says under which terms you may reuse the repository, its packages and the third-party material inside them. It is for anyone copying, modifying or redistributing the code, specifications or documentation.
+Anyone copying, modifying or redistributing DPP code, specifications or documentation can use this page to identify the applicable licence and notices, including third-party terms.
 
 ## The repository and its packages
 
 The repository's software, specifications, schemas, fixtures, examples and documentation, its packages included, use the Apache License, Version 2.0 (`Apache-2.0`), copyright BSV Association. The full text is in the root [`LICENSE`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/LICENSE), and each package carries the same text in its own `LICENSE`, for example [the protocol library's licence at the recorded revision](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/LICENSE).
 
-In short, and the licence text governs: Apache 2.0 lets you use, modify and redistribute the material, and grants a patent licence from its contributors. When you redistribute it, give recipients a copy of the licence, keep the copyright and attribution notices, and mark the files you changed. It grants no trademark rights and comes without warranty.
+The licence text governs. This table summarises Apache 2.0:
+
+| Topic | Terms |
+|---|---|
+| Permitted use | Use, modify and redistribute the material |
+| Patents | Patent licence from contributors |
+| Trademarks and warranty | No trademark rights; no warranty |
+
+### Apply the redistribution duties
+
+When redistributing:
+
+1. Give recipients a copy of the licence.
+2. Keep copyright and attribution notices.
+3. Mark the files you changed.
 
 ## Versions already on npm
 
-The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/dpp-credentials@0.2.0-beta.4`, is the first under Apache 2.0 ([receipt](../reference/beta-5-publication.md)). Every earlier version, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/dpp-credentials@0.2.0-beta.3`, was published before the change. Published archives cannot change, so each keeps the licence file it contains: the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. Read the `LICENSE` file inside the version you install.
+| Scope | Recorded rule or publication |
+|---|---|
+| Source change | The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. |
+| First Apache publication | The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/dpp-credentials@0.2.0-beta.4`, is the first under Apache 2.0 ([receipt](../reference/beta-5-publication.md)). |
+| Earlier publications | Every earlier version, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/dpp-credentials@0.2.0-beta.3`, was published before the change. |
+| Earlier archives | Published archives cannot change. Each earlier version keeps the Open BSV License Version 6 it contains, which among other conditions limits use to the BSV blockchains it defines. |
+| Installed version | Read the `LICENSE` file inside the version you install. |
 
 ## Third-party material
 

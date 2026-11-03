@@ -6,7 +6,19 @@ hidden: true
 
 > Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
 
-All four packages selected by `dpp-release-2026-09-4` were published to the public npm registry on **18 September 2026**, using GitHub OIDC trusted publishing with provenance. Their downloaded archives matched the approved bytes, and the final public-registry consumer check passed. The set has since been superseded by `dpp-release-2026-09-5`; this receipt records the beta.2 publication as it happened.
+Release reviewers and consumers can check this beta.2 publication against its approved source and archive bytes here. All four packages in `dpp-release-2026-09-4` were published to public npm on **18 September 2026**, using GitHub OIDC trusted publishing with provenance. Their downloaded archives matched the approved bytes, and the final public-registry consumer check passed. The set was superseded by `dpp-release-2026-09-5`; this receipt preserves the publication record.
+
+## Before reproducing the verification
+
+For optional reproduction:
+
+| Input | Source and requirement |
+|---|---|
+| Checkout | Source commit recorded below; run from its checkout root. |
+| Toolchain | git, Node 22 and npm 11.19.0, matching the recorded toolchain. |
+| Verification inputs | Public access to `https://registry.npmjs.org/` and the approved plan below. |
+
+Prepare dependencies and build at that revision through [package installation](../packages/README.md#source-access).
 
 ## Exact source and approval
 
@@ -22,7 +34,7 @@ All four packages selected by `dpp-release-2026-09-4` were published to the publ
 | Toolchain | Node 22, npm 11.19.0 |
 | Registry and access | `https://registry.npmjs.org/`, public |
 
-The archived plan includes each archive's SHA-256, SHA-512 npm integrity and byte length, as well as the original release-set, selection and changelog digests. Later changes to documentation or publication tooling do not alter this approved plan or identify a new package publication.
+The plan records each archive's SHA-256, SHA-512 npm integrity and byte length, plus original release-set, selection and changelog digests. Later documentation or publication-tooling changes neither alter it nor identify a new package publication.
 
 ## Published packages
 
@@ -33,15 +45,26 @@ The archived plan includes each archive's SHA-256, SHA-512 npm integrity and byt
 | [@bsv/dpp-profiles](https://www.npmjs.com/package/@bsv/dpp-profiles/v/0.3.0-beta.2) | `0.3.0-beta.2` | `0.3.0-beta.1` | [Attestation](https://registry.npmjs.org/-/npm/v1/attestations/@bsv%2fdpp-profiles@0.3.0-beta.2) |
 | [@bsv/vsc](https://www.npmjs.com/package/@bsv/vsc/v/0.2.0-beta.2) | `0.2.0-beta.2` | `0.2.0-beta.1` | [Attestation](https://registry.npmjs.org/-/npm/v1/attestations/@bsv%2fvsc@0.2.0-beta.2) |
 
-These tags record the outcome of this publication, not a promise that tags never move. Pin exact versions and retain the consuming application's lockfile.
+Tags record this publication and may move. Pin exact versions and retain the consuming application's lockfile.
 
 ## Verification and processing delays
 
-The workflow passed build, type checks, tests, candidate consumer checks, selected-claim qualification and the local operator-image smoke test. After all packages became available, it installed the exact public npm versions into a clean consumer and checked archive integrity, runtime entry points, packaged schemas and artefacts, and strict TypeScript declaration resolution with `skipLibCheck` disabled.
+The workflow passed build, type checks, tests, candidate consumer checks, selected-claim qualification and the local operator-image smoke test.
 
-npm accepted each upload before making the version available to reads. The original publisher treated that temporary 404 as a failure, so attempts 1 through 4 each stopped after an accepted upload. Each resume verified already-published archives before skipping them. Attempt 5 completed registry verification and consumer installation. This was a processing delay after successful OIDC authentication. The subsequent publisher change adds bounded waiting; that change was not part of the source that produced these packages.
+### Recorded outcomes
 
-To reproduce verification, use the recorded source revision and toolchain from [package installation](../packages/README.md#source-access), then run:
+| Stage | Recorded outcome |
+|---|---|
+| Attempts 1 through 4 | npm accepted each upload before exposing the version to reads. The original publisher treated the temporary 404 as failure, so each attempt stopped after an accepted upload. |
+| Each resume | Verified already-published archives before skipping them. |
+| Attempt 5 | Completed registry verification and installed the exact public npm versions into a clean consumer after all packages became available. Checks passed for archive integrity, runtime entry points, packaged schemas and artefacts, and strict TypeScript declaration resolution with `skipLibCheck` disabled. |
+| Subsequent tooling change | Added bounded waiting; it was not part of the source that produced these packages. |
+
+This was a processing delay after successful OIDC authentication.
+
+### Reproduce the checks
+
+1. Run these commands in order. Require matching npm archive bytes and a passing public-registry consumer check.
 
 ```sh
 node scripts/release-candidates.mjs release/dpp-release-2026-09-4.json
@@ -49,12 +72,14 @@ node scripts/publish-candidates.mjs --verify-registry
 node scripts/consumer-check.mjs --registry
 ```
 
-Compare the generated `release/publication-plan.json` with the archived plan. These commands check existing registry packages and do not publish or change tags.
+2. Compare the generated `release/publication-plan.json` with the archived plan; they must match.
+
+Stop on mismatches or failed checks. These commands verify existing registry packages without publishing or changing tags.
 
 ## What publication does and does not change
 
-The original release-set JSON retains `status: candidate` because it is an input whose exact digest was approved. This receipt records completed npm publication without rewriting that evidence or changing the broader release-set lifecycle state.
+The original release-set JSON retains `status: candidate`: its exact input digest was approved. This receipt records completed npm publication without rewriting evidence or changing the broader release-set lifecycle state.
 
 `battery@2` and `textile@2` remain current. Versions 3 and 4 remain drafts, and existing frozen definitions remain unchanged. Publication does not upgrade the reference application, activate new writers, publish an operator image, establish a deployed service's readiness or qualify a battery product. The release selection continues to withhold European conformity and version 1.0 readiness claims.
 
-Continue with [consumer adoption](../profiles/updating-applications.md) and [version 4 review](../profiles/version-4-drafts.md). The [publication guide](publishing-profile-updates.md) describes the process for future releases and recovery from delays.
+Continue with [consumer adoption](../profiles/updating-applications.md) and [version 4 review](../profiles/version-4-drafts.md). The [publication guide](publishing-profile-updates.md) covers future releases and recovery from delays.

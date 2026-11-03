@@ -1,12 +1,21 @@
 # Battery
 
-The battery profile, `battery@2`, is the product data for a battery passport: identity, chemistry and composition, performance and durability, carbon and due-diligence declarations, and who may read each value. Use this page to start a payload from a sample that passes, see the categories and fields the profile defines, inspect them for your category and see how lifecycle events map.
+Battery passport writers and readers can use this page to prepare a `battery@2` payload, inspect fields for a category and interpret lifecycle mappings. The profile defines identity, chemistry, composition, performance, durability, carbon and due-diligence declarations, including who may read each value.
 
-Choosing the profile and passing its schema check do not establish that a battery meets Regulation (EU) 2023/1542 or that every required document exists. To compare the profile with the regulation, a standard or an external validator, use [the readiness review](reviewing-readiness.md).
+Profile selection and schema validation establish neither conformity with Regulation (EU) 2023/1542 nor document completeness. Use [the readiness review](reviewing-readiness.md) to compare the profile with the regulation, a standard or an external validator.
+
+## Before you start
+
+| Task | Input and source |
+|---|---|
+| Run examples | Node.js 22 or later; see [runtime requirements](../start/for-agents.md#facts-to-rely-on) |
+| Generate and check samples or inspect the lifecycle fixture | [Repository checkout](../quick-start.md) at the reviewed example revision, prepared with `npm ci` and `npm run build`; run commands at its root |
+| Inspect fields without a checkout | A project with `@bsv/dpp-profiles@0.3.0-beta.7` installed; alternatively use the checkout after `npm run build` |
+| Replace sample data | Product data and a category from the list below; public and restricted fields together for the registration check |
 
 ## Versions
 
-A version on this page is the profile version, the number after `@`, which a payload declares in `profile_version`. It is not the record version of the passport format or the manifest format ([choose an industry profile](README.md) explains all three).
+The number after `@` is the profile version declared by `profile_version`, separate from the record version and manifest format ([version names](README.md)).
 
 | Version | Status | Use it to |
 |---|---|---|
@@ -14,48 +23,81 @@ A version on this page is the profile version, the number after `@`, which a pay
 | `battery@4` | `draft` | Evaluate the next version before it becomes current ([evaluate the version 4 drafts](version-4-drafts.md)). An application uses it only by naming it |
 | `battery@3` | `draft` | Skip it: `battery@4` succeeds it. It stays published and frozen as the step between the two |
 
-Each manifest's `status` field says which version is which, and it is the answer to trust in code: `readManifestAny('battery@4').status` is `draft`.
+Use the manifest's `status` in code: `readManifestAny('battery@4').status` is `draft`.
 
 ## Categories
 
-The payload's `category` field says what kind of battery the passport describes, and it decides which fields apply: 18 of the 105 fields apply to some categories only. The list is closed, so the schema accepts only these four values.
+Set `category` to one of these four values; the list is closed. Category determines applicability: 18 of the 105 fields apply only to some categories.
 
-| Value | Label |
-|---|---|
-| `lmt` | Light transport |
-| `ev` | Vehicle |
-| `industrial` | Industrial |
-| `stationary` | Stationary storage |
+| Value | Label | Applicable fields |
+|---|---|---|
+| `lmt` | Light transport | 97 |
+| `ev` | Vehicle | 91 |
+| `industrial` | Industrial | 87 |
+| `stationary` | Stationary storage | 100 |
 
 ## Start from a sample payload
 
-Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)):
+1. Generate the sample with the first command:
 
 ```sh
 node examples/sample-payload.mjs battery@2 --demonstration > payload.json
 node examples/sample-payload.mjs --check battery@2 payload.json
 ```
 
-The first command writes a sample that starts with `"notice": "Demonstration record: no real product stands behind this passport."` and then holds the 53 properties the public schema requires, each with a placeholder of the right shape.
+2. Replace every placeholder with battery data. Change the sample's `category` from `lmt`, the first listed value, to your category. Keep `profile` and `profile_version` (`"battery"` and `2`).
+3. Run the second command and resolve every failure before using the payload.
 
-`--demonstration` adds that `notice`, the sentence a person reads first on a test or demonstration record, one that describes no real product and uses the GS1 demonstration prefix 952 ([identifiers](../identifiers.md)). Leave the flag out for a real product: a record about a real product must not carry `notice`.
-
-Replace every placeholder with the battery's own data. The sample's `category` is `lmt`, the first value of the list; set your own. Keep `profile` and `profile_version` (`"battery"` and `2`). The second command then prints `ok: payload.json is a valid battery@2 public payload.` If anything is wrong it prints one `FAIL:` line per problem, such as a missing field or a country that is not a two-letter code, and exits with status 1.
+| Input or result | Value |
+|---|---|
+| Generated public data | The 53 required properties, with correctly shaped placeholders |
+| `--demonstration` | Adds `"notice": "Demonstration record: no real product stands behind this passport."` first |
+| Demonstration scope | Tests or demonstrations with no real product, using GS1 prefix 952 ([identifiers](../identifiers.md)); show `notice` first |
+| Real product | Omit the flag; the record must not carry `notice` |
+| Success | `ok: payload.json is a valid battery@2 public payload.` |
+| Failure | One `FAIL:` line per problem, such as a missing field or country code other than two letters; exit status 1 |
 
 ## What the profile defines
 
 | What | Count |
 |---|---|
 | Fields in the `battery@2` manifest | 105: 64 public and 41 restricted (40 `legitimate`, 1 `authority`) |
-| Properties the public schema accepts | 69: the 64 public fields, plus the five stamps every public payload may carry (`notice`, `profile`, `profile_version`, `object_did`, `dataCarrier`) |
-| Properties the public schema requires | 53: 51 fields plus `profile` and `profile_version`. The sample fills exactly these |
-| Properties the restricted schema accepts | 41, the restricted fields. It requires 12: `capacityFade`, `dismantlingManual`, `electrodeMaterials`, `expectedYears`, `partNumbersUrl`, `powerFade`, `resistanceIncreasePack`, `roundTripFade`, `safetyMeasures`, `sparePartsAddress`, `sparePartsEmail` and `sparePartsUrl` |
+| Accepted public properties | 69: the 64 public fields, plus five public payload stamps (`notice`, `profile`, `profile_version`, `object_did`, `dataCarrier`) |
+| Required public properties | 53: 51 fields plus `profile` and `profile_version`. The sample fills exactly these |
+| Accepted restricted properties | 41, the restricted fields. It requires 12: `capacityFade`, `dismantlingManual`, `electrodeMaterials`, `expectedYears`, `partNumbersUrl`, `powerFade`, `resistanceIncreasePack`, `roundTripFade`, `safetyMeasures`, `sparePartsAddress`, `sparePartsEmail` and `sparePartsUrl` |
 
-The manifest marks six more public fields `required` than the schema requires. Five are calculated from other values or added later (`elementSymbols`, `carbonFootprintLabel`, `carbonGeneralInfo`, `recycledShareTotal`, `declarationOfConformity`), and `exhaustionThreshold` applies to `ev` batteries only. So a payload can pass the schema and still lack a field that applies to it. `missingRequired(manifest, payload, category)` lists the required fields, public and restricted, that are captured at registration, apply to the category and are absent; pass it the public and restricted fields together. The five calculated or later fields are filled in after registration.
+### Schema and registration requirements
+
+The manifest marks six more public fields `required` than the schema requires:
+
+| Fields | When to supply them |
+|---|---|
+| `exhaustionThreshold` | At registration for `ev` batteries only |
+| `elementSymbols`, `carbonFootprintLabel`, `carbonGeneralInfo`, `recycledShareTotal`, `declarationOfConformity` | Calculated from other values or added later; fill these five after registration |
+
+A schema-valid payload can still lack applicable fields. Call `missingRequired(manifest, payload, category)` with public and restricted fields together. It lists absent, required fields captured at registration that apply to the category; it does not establish schema validity or assess the product.
+
+Save this [completeness example](../packages/dpp-profiles.md) as `inspect-fields.mjs` and run `node inspect-fields.mjs` in the prepared checkout or installed project:
+
+```js
+import { readManifest, fieldsFor, missingRequired } from '@bsv/dpp-profiles'
+
+const manifest = readManifest('battery@2')
+const gaps = missingRequired(manifest, {}, 'industrial')
+console.log('an empty payload lacks', gaps.missing.length, 'required fields, starting with', gaps.missing.slice(0, 3).map(({ key }) => key).join(', '))
+```
+
+Expected result:
+
+```
+an empty payload lacks 63 required fields, starting with serial, modelName, manufacturer
+```
+
+Substitute your combined fields and category for the empty object and `industrial`. Resolve applicable registration gaps before writing.
 
 ## Inspect the fields
 
-Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.7` installed, or in the root of a checkout after `npm run build`:
+Inspect the fields:
 
 ```sh
 node --input-type=module <<'JS'
@@ -77,11 +119,20 @@ It prints a table of the 91 fields that apply to a vehicle battery, then:
 ev: 91 apply, 14 do not, 0 need review
 ```
 
-Put your own category in place of `'ev'`: `lmt` gives 97 fields, `industrial` 87 and `stationary` 100. In the table, `label` is what to show a person, `accessTier` says who may read the value and `obligation` says whether to insist on it (`required`, `recommended` or `optional`). The field reference on [@bsv/dpp-profiles](../packages/dpp-profiles.md) explains every field property.
+Replace `'ev'` with your category; expected counts are listed above. Display `label` to the reader; `accessTier` identifies allowed readers, and `obligation` is `required`, `recommended` or `optional`. The [package field reference](../packages/dpp-profiles.md) explains every property.
 
 ## See how lifecycle events map
 
-A passport records operations, such as a transfer of control. The profile maps each operation to an external lifecycle event type only when the evidence it asks for is present, and the result is one of four outcomes: `lossless` (every fact has an external counterpart), `transformed` (mapped, with what was lost listed), `insufficient-data` (the evidence is missing) or `unsupported` (the profile declares no mapping). The synthetic battery fixture shows each state's result. Run this in the root of a checkout:
+A passport operation, such as a transfer of control, maps to an external lifecycle event type only with the required evidence.
+
+| Outcome | Meaning |
+|---|---|
+| `lossless` | Every fact has an external counterpart |
+| `transformed` | Mapped, with losses listed |
+| `insufficient-data` | Required evidence missing |
+| `unsupported` | Profile defines no mapping |
+
+Run this to inspect each state's result in the synthetic battery fixture:
 
 ```sh
 node --input-type=module <<'JS'
@@ -102,9 +153,9 @@ EDIT Transformation transformed
 RECYCLED Disposition lossless
 ```
 
-The `TRANSFER` moved control of the record, but no custody record was put forward, so it maps as `insufficient-data`. Changing control of a record does not establish delivery of a battery: keep that finding beside the event when you show it.
+`TRANSFER` changed record control without a custody record, so its mapping is `insufficient-data`. Record control does not establish battery delivery; show that finding beside the event.
 
-The fixture uses record version 1 operations. Record version 2 operations, which new writers use, map under the same rules: `ISSUE` as `ACTIVATE`, `UPDATE` as `EDIT`, `TRANSFER` as itself and `RETIRE` as `RECYCLED`. For example, `mapNativeOperation(readManifest('battery@2'), { nativeOperation: 'TRANSFER' })` with no evidence returns `outcome: 'insufficient-data'` and `missingEvidence: ['custodyRecord']`. Where that evidence comes from is partly open: a native claim has no payload, so it cannot carry these evidence facets ([known limitations](../operate/limitations.md)).
+The fixture uses record version 1. New writers use version 2, with the same mapping rules: `ISSUE` as `ACTIVATE`, `UPDATE` as `EDIT`, `TRANSFER` as itself and `RETIRE` as `RECYCLED`. `mapNativeOperation(readManifest('battery@2'), { nativeOperation: 'TRANSFER' })` with no evidence returns `outcome: 'insufficient-data'` and `missingEvidence: ['custodyRecord']`. Where that evidence comes from is partly open: a native claim has no payload, so it cannot carry these evidence facets ([known limitations](../operate/limitations.md)).
 
 ## If something fails
 

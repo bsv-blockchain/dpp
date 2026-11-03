@@ -1,10 +1,19 @@
 # Report a disagreement
 
-Use this page when your implementation and the reference implementation, a fixture or the specification give different results for the same input. It says what to record, where to send the report and what happens to an ambiguity; a security problem goes by a private route instead, below.
+Implementers can use this page to report different results for the same input from their code, the reference, a fixture or the specification. Record reproducible evidence, choose the reporting route and retain both readings of any ambiguity.
+
+## Before reporting
+
+| Input | Source |
+|---|---|
+| Revision, role, profile and smallest reproducing input | The specification, fixtures and implementation you tested |
+| Command, actual result, expected result and supporting clauses | Your reproducible run and the competing source readings |
+| Public-report access | A GitHub account; the repository is public and its issues are open |
+| Sensitive or uncertain report | Use the private route below; never post a security problem in an issue |
 
 ## What to record
 
-Copy this into the issue and fill in every line:
+For a public report, copy this into the issue and fill in every line:
 
 ```
 Source revision: <commit hash of the specification and fixtures you read>
@@ -22,9 +31,13 @@ For a fixture case, name the file and case identifier rather than pasting a larg
 
 ## Where to send it
 
-- **A technical report** goes to the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues). A GitHub account is enough: the repository is public and its issues are open.
-- **A security problem, or anything you are unsure about,** is reported privately and never in an issue: through a [GitHub security advisory](https://github.com/bsv-blockchain/dpp/security/advisories/new) or by email to `security@bsvassociation.org`. The [security policy](https://github.com/bsv-blockchain/dpp/security/policy) says what to include and what not to send.
-- **Without repository access**, the [BSV Association contact page](https://bsvassociation.org/contact/) has technical support links and a general contact form.
+| Report | Destination and boundary |
+|---|---|
+| Technical disagreement | [Repository issue tracker](https://github.com/bsv-blockchain/dpp/issues) |
+| Security problem, or anything you are unsure about | Private [GitHub security advisory](https://github.com/bsv-blockchain/dpp/security/advisories/new) or `security@bsvassociation.org`; never a public issue |
+| No repository access | [BSV Association contact page](https://bsvassociation.org/contact/), with technical support links and a general contact form |
+
+The [security policy](https://github.com/bsv-blockchain/dpp/security/policy) specifies what to include and what not to send.
 
 ## Which reading wins
 

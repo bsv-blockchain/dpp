@@ -1,16 +1,23 @@
 # Evaluate the version 4 drafts
 
-`battery@4` and `textile@4` are draft successors to the current `battery@2` and `textile@2`, carried in `@bsv/dpp-profiles` 0.3.0-beta.10. This page is for application owners who want to try a draft before it becomes current, readers who meet records that declare one, and reviewers checking what the drafts change; each has its own section.
+Application owners, readers and reviewers can use this page to generate a change report, evaluate a draft payload or label a stored payload correctly. `battery@4` and `textile@4` succeed the current `battery@2` and `textile@2` as drafts carried in `@bsv/dpp-profiles` 0.3.0-beta.10.
 
-A version on this page is the profile version, the number after `@`; it is not the record version of the passport format or the manifest format ([choose an industry profile](README.md) explains all three). A draft is published but never selected by default: an application uses one only by naming it, a conformance claim cannot rest on it, and publishing it changed nothing in the current versions, whose bytes stay frozen. Each version 4 draft succeeds a version 3 draft (`battery@3`, `textile@3`), which stays published and frozen; evaluate version 4.
+The number after `@` is the profile version, separate from the record version and manifest format ([version names](README.md)). Drafts are published but never selected by default: name one explicitly. They cannot support conformance claims. Publishing them changed no current version: those bytes stay frozen. Evaluate version 4; its predecessors `battery@3` and `textile@3` remain published and frozen.
 
-**Do you need them?** To write new records, no: write under `battery@2` or `textile@2`. Evaluate a draft to prepare your application for the cutover, the later, reviewed step that makes a successor current.
+Write new records under `battery@2` or `textile@2`. Draft evaluation prepares an application for cutover: the later reviewed step that makes a successor current.
+
+## Before you start
+
+| Task | Input and source |
+|---|---|
+| Generate reports and samples | Node.js 22 or later and a [checkout](../quick-start.md) at the reviewed example revision; prepare with `npm ci` and `npm run build`, then run commands at its root |
+| Compare in your own application | The profile version it uses today and the version 4 draft |
+| Read a live declared profile | The prepared checkout, or a project with `@bsv/sdk@2.8.10`, `@bsv/dpp-protocol@0.3.0-beta.10` and `@bsv/dpp-profiles@0.3.0-beta.10` installed; network access to the hosted reference index |
+| Evaluate your product | Public and restricted fields together, category, jurisdiction and evaluation date |
 
 **Install the exact version.** `npm install --save-exact @bsv/dpp-profiles@0.3.0-beta.10`. A bare `npm install @bsv/dpp-profiles` installs the `latest` tag, the newest beta, which carries the drafts; name the exact version all the same.
 
 ## Try a draft in your application
-
-Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)).
 
 ### 1. Generate the change report
 
@@ -21,7 +28,16 @@ npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
 npm run changes -w @bsv/dpp-profiles -- textile@2 textile@4
 ```
 
-Each prints a JSON report: each manifest's status and SHA-256 digest, the top-level changes such as identity rules, and one entry per added, changed or removed field with the properties that changed. `battery@2` to `battery@4` lists 21 fields added and 105 changed, and `textile@2` to `textile@4` 11 added and 49 changed. Every field counts as changed because manifest format 2 adds a `requirement` to each, so read each entry's `properties`. To see only what version 4 corrected in the version 3 draft, compare `battery@3 battery@4` (9 added, 9 changed) or `textile@3 textile@4` (17 changed). In your own project, `compareProfiles(from, to)` returns the same report ([update profiles and consuming applications](updating-applications.md#2-see-what-changed) shows the call). Attach the report to the upgrade proposal; delivering it to consumer owners is a separate workflow.
+Each command prints JSON containing manifest statuses and SHA-256 digests, top-level changes such as identity rules, and added, changed or removed fields with their changed properties.
+
+| Comparison | Field changes | Interpretation |
+|---|---|---|
+| `battery@2` to `battery@4` | 21 added, 105 changed | Current battery profile to draft |
+| `textile@2` to `textile@4` | 11 added, 49 changed | Current textile profile to draft |
+| `battery@3 battery@4` | 9 added, 9 changed | Corrections since the earlier battery draft |
+| `textile@3 textile@4` | 17 changed | Corrections since the earlier textile draft |
+
+Every current-profile field counts as changed because manifest format 2 adds `requirement`. Read each entry's `properties` to understand the change. In your own project, `compareProfiles(from, to)` returns the same report ([example](updating-applications.md#2-see-what-changed)). Attach it to the upgrade proposal; delivery to consumer owners is a separate workflow.
 
 ### 2. Check a sample payload against the draft
 
@@ -52,12 +68,23 @@ It prints `ok: battery4.json is a valid battery@4 public payload.` and then:
 missing 18 (11 restricted), unresolved 16, deferred 19, findings 0
 ```
 
-- `missingRequiredV2` returns three lists. `missing` holds required fields that apply, are captured at registration and are absent: these block a write. `unresolved` holds required fields whose applicability is not settled: show them, and never block on them or count them as satisfied. `deferred` holds fields whose requirement is anticipated, under review or not to be displayed: never count them as missing.
-- In a real application, `payload` holds the public and restricted fields together in one object. Here 11 of the 18 missing fields are restricted (`legitimate` tier), because the sample holds only public fields.
-- `context` is what the evaluation is for: the category, read from the payload with `categoryOf`, the jurisdiction, and `asOf`, the date of the evaluation. `2027-02-18` is the date from which the battery passport obligations apply; rules with dates, such as the due-diligence report's from 18 August 2027, read it.
-- `reviewProfileData` returns `invalid` findings, which are rejected data, and `needs-review` findings, which are kept for evidence review, for manufacture-date consistency, individual measurement context and component declarations. An empty list does not certify readiness, and the helper refuses any profile other than `battery@4` and `textile@4`.
+| Result | Meaning and action |
+|---|---|
+| `missingRequiredV2`: `missing` | Applicable required fields captured at registration but absent; these block a write |
+| `missingRequiredV2`: `unresolved` | Required fields with unsettled applicability; show them without blocking or counting them as satisfied |
+| `missingRequiredV2`: `deferred` | Requirements anticipated, under review or not to be displayed; never count these as missing |
+| `reviewProfileData`: `invalid` | Rejected data |
+| `reviewProfileData`: `needs-review` | Retain for evidence review |
 
-Validate the restricted payload against `readRestrictedPayloadSchema('battery@4')` as well; the sample check covers only the public one. Registration, applicability and cross-field results are separate results.
+The sample contains only public fields, leaving 11 of 18 missing fields in the restricted `legitimate` tier. A real application's `payload` combines both parts. Validate the restricted part against `readRestrictedPayloadSchema('battery@4')` too; the sample check covers only the public part. Registration, applicability and cross-field findings are separate results.
+
+| `context` input | Value and purpose |
+|---|---|
+| Category | Read from the payload with `categoryOf` |
+| Jurisdiction | Where the evaluation applies |
+| `asOf` | Evaluation date; `2027-02-18` is when battery passport obligations apply. Dated rules, including the due-diligence report's from 18 August 2027, use the evaluation date |
+
+`reviewProfileData` checks manufacture-date consistency, individual measurement context and component declarations. It accepts only `battery@4` and `textile@4`. An empty findings list does not certify readiness.
 
 ### 3. Update the application before enabling draft writes
 
@@ -65,9 +92,9 @@ Update its capture forms, adapters, backend checks and exports. [Update profiles
 
 ## Read a record that declares a draft
 
-A reader meets drafts in records other applications wrote. Read the profile a state declares, check that the package publishes it, then read its manifest with `readManifestAny`, which types both manifest formats and says whether the profile is current. The same steps work for any declared profile.
+This reader checks that the package publishes a record's declared profile, then calls `readManifestAny` for the manifest and its current or draft status. The function types both manifest formats; the procedure works for any declared profile, including drafts written by other applications.
 
-Save this as `read-declared.mjs` in a project with `@bsv/sdk@2.8.10`, `@bsv/dpp-protocol@0.3.0-beta.10` and `@bsv/dpp-profiles@0.3.0-beta.10` installed, or in the root of a checkout, and run `node read-declared.mjs`. It reads a live passport from the hosted reference index, so it needs network access.
+1. Save the following as `read-declared.mjs` in the prepared project or checkout. Run `node read-declared.mjs` to read a live passport from the hosted reference index.
 
 ```js
 import { Beef } from '@bsv/sdk'
@@ -93,18 +120,23 @@ console.log(declared, manifest.status, manifest.title)
 if (payload.notice) console.log('notice:', payload.notice)
 ```
 
-It prints:
+2. Expect:
 
 ```
 battery@4 draft Battery passport
 notice: SAMPLE RECORD: demonstration data, not a real product. dpp.bsvb.net
 ```
 
-Show a draft's fields under the draft's own labels and say that it is a draft; never read the payload under the current version instead. Show `notice` before the product data. If the request times out, run it again: the hosted index is a single service. If it throws `holds no states`, the index does not hold that passport.
+3. Show the draft's own field labels and its draft status. Never substitute the current version. Show `notice` before product data.
+
+| Failure | Action or meaning |
+|---|---|
+| Timeout | Retry; the hosted index is a single service |
+| `holds no states` | This index does not hold the passport |
 
 ## What the drafts change
 
-These sections are for reviewers. The change report in step 1 lists every field change; these summarise why.
+Review these reasons beside the complete field change report from step 1.
 
 ### Battery
 
@@ -121,15 +153,23 @@ The paired power measurements use the reference conditions in DIN DKE SPEC 99100
 
 ### Textile
 
-The draft separates anticipated textile passport requirements from existing labelling duties and application field choices. Framework provisions no longer imply that every named passport field is already legally mandatory. Care codes, origin information, expected lifetime, collection instructions and supporting chemical documents keep their application purpose without an unsupported claim that the cited provision mandates that exact field.
-
-`componentFibres` now identifies Article 11 of Regulation (EU) 1007/2011 as its existing basis. Its applicability remains unresolved until the product's components and exceptions have been assessed. Do not replace required component declarations with a whole-product average. The cross-field helper reports unresolved component references and component share totals needing reconciliation; it does not decide legal exemptions or analytical tolerances.
-
-Sustainability-label metadata records the certification-scheme and public-authority alternatives, the relevant consumer-directive provisions and their application date. It does not require every textile to obtain certification. Guarantee information remains conditional on the actual offer and applicable national measures. The model identity now references `modelIdentifier`; a display name is not an identifier.
+| Change | Application work and limits |
+|---|---|
+| Anticipated passport requirements separated from existing labelling duties and application choices | Framework provisions do not make every named passport field legally mandatory. Care codes, origin, expected lifetime, collection instructions and chemical documents retain their application purpose without claiming the cited provision mandates each exact field |
+| `componentFibres` cites Article 11 of Regulation (EU) 1007/2011 as its existing basis | Assess components and exceptions before settling applicability. Never replace required component declarations with a whole-product average |
+| Cross-field component checks | Review unresolved component references and reconcile component share totals. The helper decides neither legal exemptions nor analytical tolerances |
+| Sustainability-label metadata | Records certification-scheme and public-authority alternatives, consumer-directive provisions and their application date. It does not require every textile to obtain certification |
+| Guarantee information | Remains conditional on the actual offer and applicable national measures |
+| Model identity references `modelIdentifier` | A display name is not an identifier |
 
 ## Assessment work still open
 
-The drafts do not include a complete external-format export adapter, hosted readiness-test result, full current-law reconciliation, licensed-standard assessment or deployed actor and access evidence. Additional identity context, category classification, evidence qualification and measurement semantics still need review. [The readiness review](reviewing-readiness.md) explains how to collect that evidence before considering promotion.
+Before considering promotion, collect the evidence described in [the readiness review](reviewing-readiness.md). These items remain open:
+
+| Missing evidence or work | Status |
+|---|---|
+| Complete external-format export adapter; hosted readiness-test result; full current-law reconciliation; licensed-standard assessment; deployed actor and access evidence | Not included in the drafts |
+| Additional identity context; category classification; evidence qualification; measurement semantics | Still need review |
 
 ## History
 

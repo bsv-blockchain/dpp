@@ -1,16 +1,49 @@
 # Identifiers
 
-An identifier tells the reader which product record it is looking for. GS1 Digital Link is one identifier scheme; it is not a prerequisite for every core passport.
+Application owners and implementers can use this page to allocate a passport identifier and verify its intended subject. GS1 Digital Link is one scheme, optional for core passports.
 
-A Global Trade Item Number (GTIN) identifies a trade item. Its allocation, its use in a product identifier and discovery of the corresponding passport are separate tasks.
+A Global Trade Item Number (GTIN) identifies a trade item. Allocation, product identification and passport discovery are separate tasks.
+
+## Before you start
+
+| Input | Where it comes from | Needed for |
+|---|---|---|
+| Entitlement to a real product's GTIN | Brand's licensed GS1 Company Prefix or GS1 Member Organisation | Real products |
+| Demonstration item reference | Your application's catalogue counter or random allocation | Demonstrations, examples and tests |
+| Host the brand controls and expects to keep | Your domain and passport application | New passport addresses |
+| Item serial | Your catalogue; unique within its GTIN and never reused | Individual product instances |
+| Node.js 22 or later | [Execution conventions](start/for-agents.md#facts-to-rely-on) | Running the helper snippets |
+| `@bsv/dpp-profiles` and a JavaScript project | [Profiles package](packages/dpp-profiles.md) | Running the helper snippets |
+
+Save each JavaScript snippet as `name.mjs` and run `node name.mjs` ([execution conventions](start/for-agents.md#how-to-run-what-the-pages-show)).
 
 ## Get an identifier
 
-A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gtin>/21/<serial>`, where the GTIN names the trade item and the serial names this instance.
+A passport identifier is usually a GS1 Digital Link URI:
 
-1. **Obtain the GTIN; never choose it.** For a real product, use a GTIN allocated under a GS1 Company Prefix licensed to the brand, or allocated to the brand by its GS1 Member Organisation. The national member organisation licenses prefixes and sets their fees. A number under a prefix the brand does not hold identifies someone else's product, and a state published under it cannot be withdrawn.
-2. **For a demonstration, example or test, use prefix 952.** GS1 reserves it for demonstrations and never licenses it, so a reader can take it as the statement that nothing real stands behind the record. Nobody allocates numbers under it, so your application picks the rest itself: a nine-digit item reference after `952`, one per product in your catalogue and never reused, from a counter or at random. The fourteen-digit GTIN is then `0952`, the item reference and the check digit. Start every demonstration payload with a `notice`, one sentence a person reads first, such as `"notice": "Demonstration record: no real product stands behind this passport."`; a record about a real product never carries one. `node examples/sample-payload.mjs general@2 --demonstration` starts a sample payload with it.
-3. **Write fourteen digits with a correct check digit.** The helpers in `@bsv/dpp-profiles` compute and check it:
+| Field or constraint | Value |
+|---|---|
+| URI | `https://<host>/01/<gtin>/21/<serial>` |
+| GTIN | Trade item; fourteen digits with a correct check digit |
+| Serial | This instance; GS1 application identifier 21 |
+| Serial length and characters | 1 to 20 characters from GS1 character set 82: letters, digits and `!"%&'()*+,-./:;<=>?_` |
+| Serial uniqueness | Unique within the GTIN, never reused |
+| Easy-to-read serials | Upper-case letters and digits |
+| URI escaping | Characters such as `/` and `?` are allowed but percent-encoded |
+
+1. **Obtain a real product's GTIN; never choose it.** Use a GTIN allocated under the brand's licensed prefix or by its GS1 Member Organisation. The national organisation licenses prefixes and sets fees. Stop without entitlement: another brand's prefix identifies its product, and a published state cannot be withdrawn.
+2. **Use prefix 952 for demonstrations, examples and tests.** GS1 reserves it and never licenses it. Nobody allocates numbers under it. It signals that no real product stands behind the record; your application chooses the item reference.
+
+   | Demonstration input or output | Rule |
+   |---|---|
+   | Item reference | Nine digits after `952`, one per catalogue product, never reused; choose from a counter or at random |
+   | Fourteen-digit GTIN | `0952`, item reference and check digit |
+   | First payload property | `notice`, one sentence the person reads first |
+   | Example notice | `"notice": "Demonstration record: no real product stands behind this passport."` |
+   | Sample payload command | `node examples/sample-payload.mjs general@2 --demonstration` starts the payload with the notice |
+   | Real-product payload | Never carries the demonstration notice |
+
+3. **Compute and check the GTIN** with `@bsv/dpp-profiles`:
 
    ```js
    import { gs1CheckDigit, parseGs1DigitalLink } from '@bsv/dpp-profiles'
@@ -19,9 +52,17 @@ A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gti
    console.log(parseGs1DigitalLink(`https://dpp.example.com/01/${gtin}/21/SN0001`))
    ```
 
-   This prints `09521234567899` with `checkDigitValid: true` and `demonstration: true`.
-4. **Choose a host that answers.** The host is yours to choose. Mint under a host that answers the identifier's path with the passport page, such as your own application. That is all the host must do: it does not have to be a GS1-Conformant Resolver. A resolver, with linksets, negotiated redirects and a description file, is the optional `gs1-digital-link@1` profile on an origin of its own ([GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver)). `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1. Choose one you expect to keep, a name under a domain the brand controls: the host is part of the identifier, and the identifier cannot change after the first state.
-5. **Give each item its own serial.** The serial, GS1 application identifier 21, names one physical item: 1 to 20 characters from GS1 character set 82 (letters, digits and `!"%&'()*+,-./:;<=>?_`), unique within its GTIN and never reused. Upper-case letters and digits read and print cleanly; `/`, `?` and the like are allowed but are percent-encoded in the URI. `buildGs1DigitalLink` checks the GTIN and the serial, then builds the identifier:
+   Expect `09521234567899`, `checkDigitValid: true` and `demonstration: true`.
+
+4. **Choose a host that answers the identifier's path with the passport page**, such as your application. The host need not be a GS1-Conformant Resolver. Keep the name under a domain the brand controls: it becomes part of the identifier and cannot change after the first state.
+
+   | Host option | Requirement |
+   |---|---|
+   | Your application | Answer the identifier's path with the passport page |
+   | Optional resolver | `gs1-digital-link@1` on its own origin, with linksets, negotiated redirects and a description file; see [GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver) |
+   | `id.gs1.org` | Answers only for GTINs whose licensee registered link targets with GS1 |
+
+5. **Give each item its own serial** using the constraints above. `buildGs1DigitalLink` checks the GTIN and serial before building the identifier:
 
    ```js
    import { buildGs1DigitalLink, gs1CheckDigit } from '@bsv/dpp-profiles'
@@ -32,25 +73,41 @@ A passport identifier is usually a GS1 Digital Link URI: `https://<host>/01/<gti
    console.log(buildGs1DigitalLink('dpp.example.com', gtin, 'SN0001'))
    ```
 
-   This prints `https://dpp.example.com/01/09521234567899/21/SN0001`. It refuses a wrong check digit, a serial longer than 20 characters and a character outside the set.
+   Expect `https://dpp.example.com/01/09521234567899/21/SN0001`. The helper refuses a wrong check digit, serials longer than 20 characters and characters outside the set.
 
-The rules are in the [record model](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md) section 3. An application account is not a GS1 licensee: who may publish under a GTIN is established outside the account that publishes.
+The [record model](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md) section 3 defines these rules. An application account is not a GS1 licensee; establish GTIN entitlement separately.
 
 ## Use the identifier throughout the request
 
-Keep the scanned or supplied passport identifier as the reader's expectation. Use discovery to locate a service, retrieve the candidate records, then check that the signed subject matches that expectation. A service URL tells the client where to ask; it does not establish which product the response concerns.
+1. Keep the scanned or supplied identifier as the reader's expectation.
+2. Discover a service and retrieve candidate records.
+3. Check that the signed subject matches the expected identifier. The service URL says where to ask, not which product an answer concerns.
 
-**A path alone is not a passport identifier.** `01/<gtin>/21/<serial>` without its host names a product instance, not a passport: two hosts can each carry a passport for the same GTIN and serial. Given only a path, ask the index by GS1 key, `{"service":"ls_dpp","query":{"gs1Key":"01/<gtin>/21/<serial>"}}`: it answers every passport it holds for that key, each under its exact identifier. Verify each by that identifier, say which host it was issued under, and never assume your own host is the only one. `node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>` does all of this. An index on an earlier release does not answer `gs1Key`: it answers 400 with `Query must provide passportId or uid`. Then ask for the full address, or look the path up under each host you trust.
+**A path alone is not a passport identifier.** Two hosts can carry passports for the same GTIN and serial. Use GS1-key lookup for a path:
 
-A GS1 Digital Link combines an identifier with a web address. A GTIN identifies the trade item; qualifiers such as a serial number can identify an individual instance. A correct check digit tests the number's structure, not whether a party is entitled to use it.
+| Input or result | Value and action |
+|---|---|
+| Path without host | `01/<gtin>/21/<serial>` names a product instance, not a passport |
+| GS1-key query | `{"service":"ls_dpp","query":{"gs1Key":"01/<gtin>/21/<serial>"}}` |
+| Response | Every passport the index holds for the key, each with its exact identifier |
+| Verification | Verify each exact identifier and report its issuing host; never assume only your host exists |
+| Complete example | `node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>` |
+| Earlier-release index | Does not answer `gs1Key`; returns 400 with `Query must provide passportId or uid` |
+| Earlier-release fallback | Ask for the full address, or look up the path under each trusted host |
 
-For the first exercise, use the identifier already supplied by the fixture. Keep its original spelling through signing and verification. The [reader example](quick-start.md#check-the-test-passports-offline) handles the fixture identifier automatically. For a live input, [GS1 discovery](interoperability/gs1-discovery.md) explains parsing and service selection before verification.
+GS1 Digital Link combines identification and a web address: the GTIN names the trade item, qualifiers such as serials an instance. A check digit tests structure, not entitlement.
+
+For the first exercise, keep the fixture identifier's spelling through signing and verification. The [reader example](quick-start.md#check-the-test-passports-offline) handles it automatically. [GS1 discovery](interoperability/gs1-discovery.md) covers parsing and service selection for live input.
 
 ## When a host changes
 
-The host is written into every state of the passport, so a passport keeps the host it was minted under. A writer that moves to another domain keeps its existing passports under the old host and mints new ones under the new host.
+The host is written into every state. Existing passports keep their original identifier; mint new passports under the new host.
 
-To keep the old links working, keep the old host answering: redirect each `/01/<gtin>/21/<serial>` path to the same path on the new host, for as long as the passports matter. If the old host goes, the links lapse and nothing about the passports changes: the identifier is still the subject every signature binds to, and an index still finds the passport by it.
+| Action or outcome | Rule |
+|---|---|
+| Preserve old links | Keep the old host answering for as long as the passports matter |
+| Redirect | Send each `/01/<gtin>/21/<serial>` path to the same path on the new host |
+| Old host disappears | Links lapse, but passport identifiers and signed subjects do not change; an index still finds each passport by its original identifier |
 
 ## Source definitions
 

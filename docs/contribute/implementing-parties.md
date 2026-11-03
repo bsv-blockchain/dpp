@@ -1,35 +1,62 @@
 # Implementing parties
 
-This page is for an organisation that wants to take part in the standard with an implementation of its own: building it, joining the interoperability trial, or exchanging records with the hosted reference. It says what an implementing party is, the steps from a first build to a recorded exchange, and what to send the programme.
+Organisations building their own implementation can use this page to join the interoperability trial or request an exchange with the hosted reference. Follow the steps from a first build to a recorded exchange, and prepare the contact information below.
 
-An implementing party, in [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#roles), is one that runs a conforming implementation against real records. Implementing parties matter for two rules: a normative change to a wire shape both of them produce needs each one's written acceptance, and version 1.0 needs at least two independent implementations, neither importing the other, that pass every fixture. GOVERNANCE.md counts two implementing parties today, this repository's reference implementation and the attestation registry, but neither is an independent implementation: the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) keeps the independent-implementation gate open, and no other organisation's implementation has yet been recorded as passing every fixture.
+| Governance fact | Meaning or current evidence |
+|---|---|
+| Implementing party | Runs a conforming implementation against real records, as [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#roles) defines. |
+| Normative wire changes | A change to a wire shape both parties produce needs each one's written acceptance. |
+| Version 1.0 | Needs at least two independent implementations, neither importing the other, that pass every fixture. |
+| Parties counted today | GOVERNANCE.md counts this repository's reference implementation and the attestation registry. Neither is an independent implementation. |
+| Independence evidence | The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) keeps the independent-implementation gate open. No other organisation's implementation has been recorded as passing every fixture. |
 
-Taking part, writing independent code and operating services under a separate administration are three different facts. Record which of them you have actually shown; taking part alone does not establish a tested implementation.
+Taking part, writing independent code and operating services under separate administration are different facts. Record which you have shown; participation alone does not establish a tested implementation.
+
+## Before joining an exchange
+
+| Stage | Required input and source |
+|---|---|
+| Contact readiness | Your components can explain their own results, and you want to join the trial or exchange records with the hosted reference. |
+| Evidence to retain | Your fixture harness results, code authorship, dependencies and the revision, requirement, input digest and command for each result. |
+| Record exchange | Your index's public base URL, publisher key and oldest signed state's time. Include your operator identity key and signed policy chain if you want the reference to check them. |
+| Hosted scenarios | Programme participation and the scenario-specific records or access below. Public material alone does not supply these. |
 
 ## Steps
 
-1. **Choose your roles and versions.** Pick the roles you implement (reader, verifier, writer, issuer, index, registry) and the record, profile and contract versions, starting from the [implementer start](../implement/README.md).
-2. **Pass the fixtures.** Build a fixture harness and produce one result per case, refusals included, as [run the fixtures](../implement/fixture-runner.md) describes. Keep a record of the code's authorship and its dependencies.
-3. **Keep the evidence.** Retain each result with its requirement, input digest, revision and command, as [requirements and evidence reporting](../implement/reporting.md) describes. The first useful contribution is often a reproducible difference: an input both implementations read, the results they produced and the rule behind each reading, reported as [report a disagreement](disagreements.md) describes.
-4. **Contact the programme**, when your components can explain their own results and you want to join the trial or exchange records with the hosted reference. Use the [BSV Association contact form](https://bsvassociation.org/contact/) and send:
-   - your organisation and a contact;
-   - the roles, versions and release set you implement, and your implementation's revision;
-   - your fixture results, or where to read them;
-   - for an exchange of records: your index's public base URL, your publisher key and the time of the oldest state it signed, and, if you want the reference to check them, your operator identity key and signed policy chain ([peer with the hosted reference](../operate/federation.md#peer-with-the-hosted-reference-or-another-operator));
-   - which trial scenarios you want to run.
-5. **Run the exchange** with the other participant, as [run the interoperability trial](../implement/demonstration.md) describes, keeping the requests, exact artefacts and per-check reports.
+1. **Choose roles and versions:** reader, verifier, writer, issuer, index or registry; then record, profile and contract versions. Start at the [implementer start](../implement/README.md).
+2. **Pass the fixtures.** Build a harness producing one result per case, including refusals ([run the fixtures](../implement/fixture-runner.md)). Record authorship and dependencies.
+3. **Keep the evidence** with each requirement, input digest, revision and command ([requirements and evidence reporting](../implement/reporting.md)). A useful first contribution is a reproducible difference: the input both implementations read, their results and each reading's rule ([report a disagreement](disagreements.md)).
+4. **Contact the programme** through the [BSV Association contact form](https://bsvassociation.org/contact/) when ready. Fill in the submission below; [peering guidance](../operate/federation.md#peer-with-the-hosted-reference-or-another-operator) explains exchange details.
+5. **Run the exchange** with the other participant ([run the interoperability trial](../implement/demonstration.md)). Keep requests, exact artefacts and per-check reports.
+
+### Prepare the contact information
+
+```text
+Organisation and contact:
+Roles, versions and release set:
+Implementation revision:
+Fixture results or their location:
+For a record exchange, index public base URL:
+For a record exchange, publisher key and time of the oldest state it signed:
+For a record exchange, if the reference should check them, operator identity key and signed policy chain:
+Trial scenarios requested:
+```
 
 ## What needs the programme
 
-Two kinds of trial scenario cannot be run from the public material alone, because only the programme can write to the hosted reference:
+Only the programme can write to the hosted reference. These scenarios therefore need its participation:
 
-- `exchange-reference-writes` needs fresh version 2 records and claims that the reference writes for you to read and verify.
-- `exchange-independent-writes` needs the reference index to admit the records you write: its operator names your publisher key and either gives you a submit token or pulls from your index, and a proof for each state has to reach the reference's `POST /arc-ingest`, which needs its callback token.
+| Scenario | Required access or records | Evidence to retain |
+|---|---|---|
+| `exchange-reference-writes` | Fresh version 2 records and claims written by the reference for you to read and verify. | Requests, exact artefacts and per-check reports. |
+| `exchange-independent-writes` | Admission of your records: the reference index operator names your publisher key, then gives you a submit token or pulls from your index. Each state's proof must reach the reference's `POST /arc-ingest`, which needs its callback token. | Requests, exact artefacts and per-check reports. |
 
-The other scenarios in the [trial definition](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) can be rehearsed with services you run yourself. A successful local rehearsal is useful preparation and is reported as that.
+The other scenarios in the [trial definition](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) can be rehearsed with your own services. Report successful local rehearsal as preparation.
 
 ## What you get back
 
-The programme decides whether and when to take part in an exchange. Results and disagreements found along the way are reported through the [issue tracker](https://github.com/bsv-blockchain/dpp/issues) or, for anything sensitive, privately as [report a disagreement](disagreements.md) describes. Evidence from an exchange is recorded against the trial definition, which treats runs produced by the programme itself as engineering evidence; organisational independence is recorded only when another implementing party runs the same scenarios.
+The programme decides whether and when to join an exchange. Report results and disagreements through the [issue tracker](https://github.com/bsv-blockchain/dpp/issues); send sensitive material privately as [report a disagreement](disagreements.md) describes.
 
-Next: start with the [implementer start](../implement/README.md), or read [how the standard changes](README.md) for how a disagreement you find becomes a change.
+Record exchange evidence against the trial definition. Programme-produced runs are engineering evidence; organisational independence is recorded only when another implementing party runs the same scenarios.
+
+Next: [implementer start](../implement/README.md), or [how the standard changes](README.md) to turn a disagreement into a change.

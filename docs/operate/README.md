@@ -1,38 +1,43 @@
 # Run an index from source
 
-This is the advanced alternative for building and running the index directly from a repository checkout. For a new editable operator project, start with **[Create an index](../packages/create-dpp-index.md)**. The starter includes the runtime, MongoDB configuration and deployment files; its guide records the publication prerequisite.
+Operators deploying from source can use this guide to start an index and check admission and access settings. The preset runs an index and MongoDB, not a complete passport platform.
 
-If you already used the starter, follow your generated README. This source deployment replaces that setup; it is not an additional service or installation step.
+For a new editable project, [Create an index](../packages/create-dpp-index.md) supplies runtime, MongoDB configuration, deployment files and its publication prerequisite; existing starter users follow their generated README, as source deployment replaces that setup without another installation or service.
 
-Begin with the [limitations](limitations.md) and [the hosted reference](../deployment.md). The preset runs an index and MongoDB. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists its configuration.
-
-[Choose packages and services](../start/choose-components-and-services.md) explains the alternative of an arranged provider and which other capabilities your task needs. The goal here is an index with the expected admission and access settings, not a complete passport platform.
+Read [limitations](limitations.md) and [the hosted reference](../deployment.md) first. [Choose packages and services](../start/choose-components-and-services.md) covers an arranged provider and other capabilities your task may need. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists this preset's configuration.
 
 ## What to prepare
 
-Install Docker with Docker Compose and obtain the [source checkout](../packages/README.md#source-access). The preset builds the index from this repository and stores admitted records in a named MongoDB volume. It does not start a writer, wallet or attestation registry.
+| Input | Source or preparation |
+|---|---|
+| Container tools | Install Docker with Docker Compose. |
+| Repository | Obtain the [source checkout](../packages/README.md#source-access); run commands from its root. |
+| Publisher key | Publisher's compressed public identity key; use the fixture lookup only for an empty local rehearsal. |
+| Access and custody settings | Operator's policy and writer arrangements, entered below before startup. |
 
-Create the local environment file once. If it already exists, edit it instead of overwriting its values:
+The preset builds from this repository and keeps admitted records in a named MongoDB volume. It starts no writer, wallet or attestation registry.
+
+1. Create the local environment file once. If it exists, edit it without overwriting its values:
 
 ```sh
 cp deploy/operator.env.example deploy/operator.env
 ```
 
-Fill in these settings before starting the containers:
+2. Fill in these settings before starting the containers:
 
 | Setting | Value to supply and why |
 |---|---|
-| `SERVICE_IDENTITY_KEY` | The publisher's compressed public identity key. The index uses it to check admitted passport signatures; it does not need the private key. |
-| `PUBLISHER_TOKENS_FILE` | A JSON file of per-publisher write tokens, hashed: each belongs to one publisher or anchoring key and one use, submit or callback. Without a file, an index with MongoDB keeps them in its database, which is this preset's case: issue them inside the container with `docker compose exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher <key> --use submit`. |
+| `SERVICE_IDENTITY_KEY` | Publisher's compressed public identity key for checking admitted passport signatures. No private key needed. |
+| `PUBLISHER_TOKENS_FILE` | Optional mounted JSON file of hashed tokens, each bound to one publisher or anchoring key and one use: submit or callback. Otherwise stored in the preset's MongoDB; issue after startup. |
 | `SUBMIT_TOKEN` | An optional operator-wide secret for submission and retraction, accepted for any publisher beside the per-publisher tokens. |
 | `REGISTRATION` | `open` or `approval`: `POST /register` lets an application register its publisher key from its own wallet, appending a policy version the index serves at once; `approval` holds each request for `registrations approve`. Needs a publisher policy, `OPERATOR_SIGNING_KEY` and `PUBLIC_URL`. Empty: the route answers 404. |
-| `OPERATOR_SIGNING_KEY` | The operator's identity private key, hex, which signs each policy version registration appends. Only with `REGISTRATION`; its public key must be the operator's in `OPERATOR_IDENTITY_KEYS`. |
+| `OPERATOR_SIGNING_KEY` | Operator's hex identity private key signing registration's appended policy versions. Only with `REGISTRATION`; its public key must match the operator in `OPERATOR_IDENTITY_KEYS`. |
 | `ARC_CALLBACK_TOKEN` | An optional operator-wide secret for the proof-ingestion caller or broadcaster callback. |
 | `NETWORK` | The blockchain network used by the wallet and header lookups. The preset defaults to `main`. |
 | `ACCEPTANCE_COMMITMENT` | The preset selects `required`, so clients need the managed-custody acceptance commitment for version 2 transfers. |
-| `INSTRUCTION_COMMITMENT` | Unset in the preset. `required` selects the profile's instruction rule: after a committed transfer, an update or retirement needs the holder's instruction commitment unless a control authority made it. Turn it on once every writer of the index records instructions. |
+| `INSTRUCTION_COMMITMENT` | Unset. `required` demands the holder's instruction commitment for updates or retirements after a committed transfer, except by a control authority. Enable once every writer records instructions. |
 
-For an empty local fixture rehearsal, the fixture's publisher public key is available with:
+3. For an empty local fixture rehearsal only, obtain the fixture publisher public key:
 
 ```sh
 node --input-type=module <<'JS'
@@ -42,11 +47,13 @@ console.log(fixture.custodianKey)
 JS
 ```
 
-That key belongs to synthetic data; choose the actual publisher key for a deployment. Give each writer its own tokens: `docker compose exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher <key> --use submit`, and the same with `--use callback`, print a token once and store its SHA-256 in the preset's MongoDB (`PUBLISHER_TOKENS_FILE` names a mounted file instead, where an operator prefers one); the index accepts a token only for states that key countersigned or anchors naming it, answers `403 token-publisher-mismatch` otherwise, and `tokens revoke` takes one writer's access away without touching the others. `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` remain as operator-wide secrets that everyone you give them to shares, and `EXPORT_TOKEN` is one such secret for the complete export; generate those with `openssl rand -hex 32` ([known limitations](limitations.md#index-host)). Leave `SERVER_PRIVATE_KEY` empty.
+That key belongs to synthetic data; use the actual publisher key for a deployment.
+
+4. Generate operator-wide secrets with `openssl rand -hex 32` ([known limitations](limitations.md#index-host)). `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` are shared by everyone receiving them; `EXPORT_TOKEN` is the corresponding complete-export secret. Leave `SERVER_PRIVATE_KEY` empty.
 
 ## Start and inspect
 
-From the repository root:
+1. Start the preset and query both open inspection routes:
 
 ```sh
 docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
@@ -54,7 +61,18 @@ curl --fail http://localhost:8080/health
 curl --fail http://localhost:8080/capabilities
 ```
 
-Expect `/health` to identify the running topics and lookup services, and `/capabilities` to return the server's declared interfaces and profile selection. A healthy empty index still returns no passport records.
+2. Compare the responses with this configuration:
+
+| Response field | Expected value or check |
+|---|---|
+| `/health`: `status` | `ok` |
+| `/health`: `topic`, `service` | `tm_dpp`, `ls_dpp` |
+| `/health`: `topics`, `services` | `tm_dpp`, `tm_attestation`, `tm_uora_dpp`; and `ls_dpp`, `ls_attestation`, `ls_uora_dpp` |
+| `/health`: `legacyTopics`, `legacyServices` | `tm_uora_dpp`, `ls_uora_dpp` |
+| `/health`: `network`, `startedAt` | Configured network, default `main`, and startup time |
+| `/capabilities`: `protocols`, `profiles`, `publisherPolicy` | Declared interfaces, profile selection and publisher settings must match the selected clients and configuration. |
+
+Stop before connecting writers if these disagree. A healthy empty index still returns no passport records. Keep observed results separate from configuration.
 
 If startup fails, inspect the service logs:
 
@@ -62,9 +80,13 @@ If startup fails, inspect the service logs:
 docker compose -f deploy/compose.yml --env-file deploy/operator.env logs --tail=100 overlay mongo
 ```
 
-A missing identity key or invalid policy can stop the host. Connection refusal can mean the host is still starting, failed to start or is exposed on a different `OVERLAY_PORT`. An export response of 503 means export is unavailable, commonly because no `EXPORT_SIGNING_KEY` is set; it is not evidence that the passport has no history.
+| Failure | Interpretation |
+|---|---|
+| Host stops | A missing identity key or invalid policy can prevent startup. |
+| Connection refused | Host may be starting, failed or exposed on another `OVERLAY_PORT`. |
+| Export answers 503 | Export unavailable, commonly without `EXPORT_SIGNING_KEY`. It does not mean the passport has no history. |
 
-Continue with [your first lookup](../reference/contracts.md#find-passport-records), then the writer and proof flow. To stop this preset while retaining its named volume, use:
+3. Make [your first lookup](../reference/contracts.md#find-passport-records), then follow the writer and proof flow. To stop while retaining the named volume:
 
 ```sh
 docker compose -f deploy/compose.yml --env-file deploy/operator.env down
@@ -72,25 +94,41 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env down
 
 The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
 
-Follow [broadcast and proofs](wallet-broadcast-proofs.md) and [export and recovery](export-import-recovery.md). Add [peer synchronisation](federation.md) if your operating model needs exchange or replication. From the beta.10 overlay package an index can find peers and advertise itself when configured, as the federation guide explains.
+Follow [broadcast and proofs](wallet-broadcast-proofs.md), [export and recovery](export-import-recovery.md), and [peer synchronisation](federation.md) for exchange or replication. Overlay beta.10 onwards can discover peers and advertise when configured; see the federation guide.
 
-Stored records and resumable cursors have different lifetimes. Cursor secrets are per process; restarting invalidates existing cursors. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
+Stored records and cursors have different lifetimes: per-process cursor secrets invalidate existing resumable cursors on restart. The [export ledger entries](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) describe the tested scope.
+
+### Issue writer access after startup
+
+1. Give each writer its own tokens inside the running container: `docker compose exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher <key> --use submit`, and the same with `--use callback`.
+2. Retain the token when printed; it is shown once. The preset stores its SHA-256 in MongoDB, or in the mounted file named by `PUBLISHER_TOKENS_FILE` if selected.
+3. Use `tokens revoke` to remove one writer's access without affecting others.
+
+| Result | Meaning |
+|---|---|
+| Token accepted | State is countersigned by its bound key, or anchor names that key. |
+| `403 token-publisher-mismatch` | State or anchor names another key; stop and check the writer's token and publisher selection. |
 
 ## Place each component
 
-The reference deployment contains an index and MongoDB. A client or application service supplies wallet operations, submits records and asks the index for evidence. An attestation registry is a separate service. A header source supplies the block-header evidence used for inclusion checks.
+| Component | Responsibility |
+|---|---|
+| Index and MongoDB | Admit and retain records; index holds the publisher's public identity key. |
+| Client or application service | Supply wallet operations, submit records and request evidence. |
+| Writer's wallet | Hold signing access. |
+| Separate attestation registry | Store claims when needed. |
+| Header source | Supply block-header evidence for inclusion checks. |
+| Optional export key | Sign this operator's archive, never passport states. |
 
-The index holds the publisher's public identity key. A writer's wallet holds signing access. An optional export key signs the archive produced by this operator; it does not sign passport states. Keep those roles separate when configuring a deployment.
+Keep these roles separate in deployment configuration.
 
 ## Deploy in steps
 
-Start the index as [start and inspect](#start-and-inspect) shows, check its capabilities and make a lookup. Next connect a writer on the same network and under the expected publisher policy. Exercise admission, broadcast response and later proof ingestion before relying on the record being retrievable with inclusion evidence.
-
-Add a registry only when the workflow needs stored claims. Add peers after one operator can admit, retrieve and export the intended records. [Federation](federation.md) covers the second instance and [recovery](export-import-recovery.md) covers the retained evidence needed to replace one.
-
-The MongoDB volume is service storage; it is not itself an independently administered replica.
-
-Before offering the service for real products, use [Prepare for production](production-readiness.md) to record access, retention, recovery and support responsibilities and the checks that support your release decision.
+1. Complete [start and inspect](#start-and-inspect), including capabilities and lookup checks.
+2. Connect a writer on the same network under the expected publisher policy. Exercise admission, broadcast response and later proof ingestion before relying on retrieval with inclusion evidence.
+3. Add a registry only if the workflow needs stored claims.
+4. Add peers after one operator admits, retrieves and exports the intended records. [Federation](federation.md) covers the second instance; [recovery](export-import-recovery.md) covers retained evidence for replacing one. The MongoDB volume is service storage, not an independently administered replica.
+5. Before serving real products, use [Prepare for production](production-readiness.md) to record access, retention, recovery and support responsibilities, and the checks supporting your release decision.
 
 ## Configuration sources
 
@@ -101,7 +139,5 @@ Before offering the service for real products, use [Prepare for production](prod
 | Wallet, broadcast and proof retrieval | [Integration guide](wallet-broadcast-proofs.md) |
 | Another operator | [Federation](federation.md) |
 | Retention and replacement provider | [Recovery](export-import-recovery.md) |
-
-Check health and capabilities after starting the service, then exercise submission and retrieval under the selected contract. Keep the observed results separate from the deployment's configuration.
 
 Header-storage size, mining delay and synchronisation latency are unmeasured here. The [ledger](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json) records local tests and the remaining deployment evidence gaps. [Durable publication](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json#L3794) has ledger status `gap`.

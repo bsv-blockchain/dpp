@@ -1,33 +1,62 @@
 # How the standard changes
 
-This page is for anyone who wants to change the standard: a rule, an interface, a fixture, a profile or the documentation. It gives the steps from an issue to a merged pull request, what reviewers need from you and how a change is accepted; [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/GOVERNANCE.md) is the governing text.
+Anyone proposing a rule, interface, fixture, profile or documentation change can use this page to prepare an issue and pull request for review. Follow the steps and acceptance rules below; [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/GOVERNANCE.md) is the governing text.
 
-**A security problem is never a public issue or pull request.** Report it privately through a [GitHub security advisory](https://github.com/bsv-blockchain/dpp/security/advisories/new) or by email to `security@bsvassociation.org`, as the [security policy](https://github.com/bsv-blockchain/dpp/security/policy) describes. If you are unsure whether something counts, report it privately.
+## Prerequisites and reporting route
+
+| Work | Required input and source |
+|---|---|
+| Public issue or pull request | A GitHub account and a concrete gap or defect from your implementation or reading. |
+| Local changes and checks | Your fork of the repository, a branch from `main`, Node.js 22 or later, npm and git. Use the [source-access instructions](../packages/README.md#source-access); install and build with `npm ci` and `npm run build` before checking. |
+| Disagreement | Reproducing input and both results, prepared through [report a disagreement](disagreements.md). |
+
+**A security problem is never a public issue or pull request.** Report it privately through a [GitHub security advisory](https://github.com/bsv-blockchain/dpp/security/advisories/new) or by email to `security@bsvassociation.org`, as the [security policy](https://github.com/bsv-blockchain/dpp/security/policy) describes. If unsure, report privately.
 
 ## Propose a change
 
-1. **Open an issue** in the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues) describing the gap or the defect: what an implementer cannot do, or what two conforming implementations would disagree about. A GitHub account is enough. For a result that contradicts a fixture or the specification, use [report a disagreement](disagreements.md).
-2. **Fork the repository and branch from `main`.** Edit the material that owns the change: rules in `spec/`, interfaces in `contracts/`, expected bytes in `fixtures/`, evidence in the ledger, and the guide in `docs/` that explains the changed behaviour. Put the rationale in the document where the rule lives, not only in the pull request. A change to a settled design decision answers the reason [`spec/design-rationale.md`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/design-rationale.md) records.
-3. **Change the fixtures with any wire change.** A change to a wire format or an on-chain layout updates the fixtures in the same pull request, in both their forms, and adds the refusal vectors the new rule implies. A change to what an already-published record means is not an edit: it is a new version identifier, and the old records keep verifying under the old one.
-4. **Run the checks** from the root of your checkout, after `npm ci` and `npm run build`: `npm run typecheck` and `npm test`. `npm test` runs the package suites, the conformance tests, the conformance check and the documentation check. For a documentation-only change, run `npm run docs:check` and `npm run conformance:check`: the ledger also pins `docs/quick-start.md`. A change to a pinned source makes the conformance check fail on purpose: the ledger records the digest of every source an assessment was made against, and a moved source stops the check until a reviewer confirms the assessment still holds. Do not re-pin in your own change unless a reviewer asks; the reviewer runs `node conformance/pin-sources.mjs` after review. Until then, `npm run test --workspaces` and `npm run docs:check` check package behaviour and documentation links; the conformance tests also enforce the source pins.
-5. **Open a pull request against `main`** on [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp), linking the issue and carrying what reviewers need, below.
+1. **Open an issue** in the [repository issue tracker](https://github.com/bsv-blockchain/dpp/issues). Describe what an implementer cannot do, or what two conforming implementations would disagree about.
+2. **Fork the repository and branch from `main`.** In your local fork, use `git checkout main`, record the starting revision with `git rev-parse HEAD`, then create your working branch from that revision. Edit the material that owns the change:
+
+| Material | Location |
+|---|---|
+| Rules and rationale | `spec/`; put rationale beside the rule, not only in the pull request. A settled design change must answer the reason in [`spec/design-rationale.md`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/design-rationale.md). |
+| Interfaces | `contracts/` |
+| Expected bytes | `fixtures/` |
+| Evidence | The ledger |
+| Changed behaviour guide | `docs/` |
+
+3. **Update fixtures with any wire-format or on-chain layout change.** Include both fixture forms and the refusal vectors the rule implies in the same pull request. Changing an already-published record's meaning requires a new version identifier; old records keep verifying under the old one.
+4. **Run the checks** below from the checkout root.
+5. **Open a pull request against `main`** on [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp). Link the issue and include the review evidence below.
+
+### Run the checks for the change type
+
+| Change or check | Command | Expected result |
+|---|---|---|
+| Implementation | `npm run typecheck` and `npm test` | Passing type checks, package suites, conformance tests, conformance check and documentation check. |
+| Documentation only | `npm run docs:check` and `npm run conformance:check` | Passing documentation and ledger checks. The ledger also pins `docs/quick-start.md`. |
+| While a changed source pin awaits review | `npm run test --workspaces` and `npm run docs:check` | Checks of package behaviour and documentation links. Conformance tests still enforce source pins. |
+
+A changed pinned source deliberately fails the conformance check: the ledger records every assessed source's digest. Stop for a reviewer to confirm the assessment still holds. Do not re-pin your own change unless asked; the reviewer runs `node conformance/pin-sources.mjs` after review.
 
 ## What reviewers need
 
-- The concrete input or workflow the current material cannot handle. For a behaviour change, the existing result, the intended result and the affected clauses, with a reproducible case.
-- Edits kept in the material that owns them. A wording change must not silently select a different implementation rule.
-- The operational consequences as well as the API change: what triggers the workflow, what the tooling handles, what an application owner must implement, how readiness is shown and which limitations remain. For a profile change, cover notification, interface and backend changes, activation and history, as [the consumer adoption guide](../profiles/updating-applications.md) describes.
-- For implementation evidence, the actual test output, kept as [reporting](../implement/reporting.md) describes.
+- Concrete input or workflow the current material cannot handle. For behaviour changes, include the existing and intended results, affected clauses and a reproducible case.
+- Edits in the material that owns them. Wording changes must not silently choose a different implementation rule.
+- Operational consequences alongside API changes: workflow trigger, tooling responsibilities, application-owner work, readiness evidence and remaining limits. Profile changes cover notification, interface and backend changes, activation and history ([consumer adoption](../profiles/updating-applications.md)).
+- Actual implementation test output retained as [reporting](../implement/reporting.md) describes.
 
 ## How a change is accepted
 
-- An editorial change, one that alters no rule, needs one maintainer.
-- A normative change needs one maintainer and, where it touches a wire shape both implementing parties produce, the written acceptance of each implementing party, recorded in the pull request ([implementing parties](implementing-parties.md)).
-- A change to GOVERNANCE.md needs every maintainer.
-- Continuous integration must pass: the reference suites, the fixture-consistency checks and the image build. A red suite is a veto no reviewer can override.
-- Silence is not acceptance. A pull request with no maintainer response in thirty days is closed with a note saying so, and may be reopened.
+| Change or condition | Required acceptance or outcome |
+|---|---|
+| Editorial, altering no rule | One maintainer. |
+| Normative | One maintainer; where it touches a wire shape both implementing parties produce, each party's written acceptance in the pull request ([implementing parties](implementing-parties.md)). |
+| GOVERNANCE.md | Every maintainer. |
+| Continuous integration | Reference suites, fixture-consistency checks and image build must pass. A red suite is a veto no reviewer can override. |
+| No maintainer response in thirty days | Close with a note; the pull request may be reopened. Silence is not acceptance. |
 
-GOVERNANCE.md names the BSV Association as the maintainer. Address maintainers through the repository issue or pull request; adding a maintainer follows the governance change process. Before version 1.0, where the specification and the reference implementation disagree, the reference implementation breaks the tie, except for a defect the specification names.
+GOVERNANCE.md names the BSV Association as maintainer. Address maintainers through the issue or pull request; adding one follows the governance change process. Before version 1.0, the reference implementation breaks a tie with the specification, except for a defect the specification names.
 
 ## Other routes
 
@@ -39,4 +68,4 @@ GOVERNANCE.md names the BSV Association as the maintainer. Address maintainers t
 | Ask about reuse or the licence | [Licence and reuse](licence.md) |
 | Ask the programme anything else | The [BSV Association contact form](https://bsvassociation.org/contact/) |
 
-The [conformance specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/conformance.md) defines how evidence supports a claim, and [conformance and the ledger](../reference/conformance.md) shows how to check one.
+The [conformance specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/conformance.md) defines how evidence supports a claim; [conformance and the ledger](../reference/conformance.md) shows how to check one.

@@ -1,13 +1,16 @@
 # Migration
 
-Use this page when you move a running application or index to a new package release, start writing record version 2, or adopt a new industry profile. A package upgrade never rewrites records already written, so plan, rehearse and roll out each of these changes separately.
+Application teams and index operators can use this guide to rehearse and roll out a package upgrade, record version 2 writes or a new industry profile. Treat each as a separate migration: package upgrades never rewrite existing records.
 
 ## Before you start
 
-Write down what each running component uses now, and keep the old configuration and a recoverable copy of the data before you change anything ([fetch, check and restore an export](operate/export-import-recovery.md#restore-a-passport-from-the-complete-export)).
+Record the running configuration and obtain these inputs before changing it:
 
-| What | Where to read it |
+| Input | Source |
 |---|---|
+| Recoverable data and old configuration | Retain the environment and lockfiles; [fetch, check and restore an export](operate/export-import-recovery.md#restore-a-passport-from-the-complete-export). |
+| Rehearsal environment | A scratch index admitting the live publisher keys; separate old/new source checkouts in an empty working directory. Examples use their own checkout builds. |
+| Tools for source commands | Node 22 or later, npm and git; install and build the selected checkout before running examples. Historical reproduction uses the specified revisions, not the current source. |
 | Package versions | Your lockfile, or `npm ls @bsv/dpp-protocol @bsv/dpp-core @bsv/dpp-profiles @bsv/dpp-overlay @bsv/dpp-credentials @bsv/sdk` in your project |
 | The release set they belong to | [Release sets](reference/release-sets.md) |
 | What an index runs and admits | Its `GET /capabilities`: `implementation`, `protocols`, the custody profile and `publisherPolicy` ([check a service before you connect](learn/versions-and-compatibility.md#check-a-service-before-you-connect)) |
@@ -17,75 +20,131 @@ Write down what each running component uses now, and keep the old configuration 
 
 ## Test the November source candidate
 
-`dpp-release-2026-11` is not yet published. It selects protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and credentials `0.2.0-beta.6`; both source starters are `0.1.0-beta.2`. The published October set remains on the versions in its [publication receipt](reference/beta-11-publication.md). Use [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test the new set without treating it as an npm upgrade.
+`dpp-release-2026-11` is unpublished. Test it with [local candidate archives](packages/README.md#use-the-renamed-source-candidate); the published October set retains its [receipt's versions](reference/beta-11-publication.md).
 
-Before moving a deployment to the candidate:
+| Candidate component | Version |
+|---|---|
+| Protocol and profiles | `0.3.0-beta.10` |
+| Overlay | `0.4.0-beta.13` |
+| Credentials | `0.2.0-beta.6` |
+| Both source starters | `0.1.0-beta.2` |
 
-1. **Upgrade readers before writers.** The reader verifies `dpp-managed-acceptance@1` under its original direct-signature rule and `@2` under its derived-key rule. Keep historical records and commitments unchanged.
-2. **Change custodian signing.** `signManagedAcceptance` and `signManagedInstruction` take the same `DataSigner` interface as state signing. Supply the BRC-100 wallet instead of a signer that signs directly with the identity key. The acceptance writer emits version 2 only; it and the instruction writer use `[1, 'dpp managed record v1']`, `requestId` and counterparty `anyone`. The index declares `managed-custody@2` when `ACCEPTANCE_COMMITMENT=required`.
-3. **Retain authorisation evidence.** Include acceptance and instruction records in evidence packages. Enable `INSTRUCTION_COMMITMENT=required` only after every writer can commit to a holder instruction for an update or retirement after a committed transfer; readers and indexes selecting that rule refuse a missing commitment. Rehearse transfer, update and retirement with the candidate fixtures.
-4. **Update claims and verification policy.** A native claim's `recordId` is a transaction outpoint, `<txid>:<outputIndex>`, and the claim may carry structured evidence facets. Pass `profilePayloadValidator(ajv)` as the report's `payloadValidator` to check token payloads against their declared profiles. Schema results can now fail where the published reader reported `unknown`.
-5. **Choose write access explicitly.** Per-publisher tokens and optional `POST /register` are candidate features. The published index starter still copies operator-wide tokens; the source starter issues per-publisher tokens. Review generated configuration and helper-script changes as well as the runtime dependency before adopting that workflow ([create an index](packages/create-dpp-index.md#testing-the-source-candidate)).
+1. **Upgrade readers first.** Verify `dpp-managed-acceptance@1` with its original direct-signature rule and `@2` with derived keys. Keep historical records and commitments unchanged.
+2. **Change custodian signing.** Supply a BRC-100 wallet to `signManagedAcceptance` and `signManagedInstruction` through the state-signing `DataSigner` interface, replacing direct identity-key signing. Acceptance writes only version 2. Both writers use `[1, 'dpp managed record v1']`, `requestId` and counterparty `anyone`. With `ACCEPTANCE_COMMITMENT=required`, the index declares `managed-custody@2`.
+3. **Retain authorisation evidence.** Include acceptance and instruction records in evidence packages. Enable `INSTRUCTION_COMMITMENT=required` only when every writer commits to holder instructions for updates/retirement after a committed transfer. Selecting readers and indexes refuse missing commitments. Rehearse transfer, update and retirement using the candidate exercises below.
+4. **Update claims and policy.** Native `recordId` is an outpoint, `<txid>:<outputIndex>`; claims may include structured evidence facets. Supply `profilePayloadValidator(ajv)` as the report's `payloadValidator`. Schema checks can fail where published readers returned `unknown`.
+5. **Choose write access.** Per-publisher tokens and optional `POST /register` are candidate features. The published index starter copies operator-wide tokens; the source starter issues per-publisher tokens. Review generated configuration, helpers and runtime dependencies ([index starter](packages/create-dpp-index.md#testing-the-source-candidate)).
+
+From the built candidate checkout root, run the [offline exercises](quick-start.md#check-the-test-passports-offline):
+
+```sh
+node examples/verify-passport.mjs --fixture --version=2 --report
+node examples/lifecycle-v2.mjs
+```
+
+Expect no `FAIL:` or `FAILS:` lines and exit status 0. The lifecycle exercise ends `Every sentence above holds.` No wallet, funds or network is needed; fixture inclusion remains pending or `unknown`. Stop on an unexpected failure before changing the deployment.
 
 The [managed-custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) records the signature rules and compatibility boundary. The second implementing party's written acceptance of the version 2 signed shape remains outstanding. Testing these changes does not upgrade the hosted services or establish a completed cross-implementation trial.
 
 ## Rename dpp-overlay-topics to dpp-overlay, and vsc to dpp-credentials
 
-The candidate `dpp-release-2026-10-9` renames two packages without changing what they do. The index runtime `@bsv/dpp-overlay-topics@0.4.0-beta.11` becomes `@bsv/dpp-overlay@0.4.0-beta.11`, named for the overlay service it runs; its `./server` entry point, the `dpp-index` executable and every export are unchanged. The credentials package `@bsv/vsc@0.2.0-beta.5` becomes `@bsv/dpp-credentials@0.2.0-beta.5`, named for the supply-chain credentials it issues and verifies; its `./exchange` and `./epcis-source` entry points are unchanged, and the profile identifiers it implements, such as `vsc-draft-compat/0.1.0`, keep their names because they are wire-level identifiers, not package names.
+The candidate `dpp-release-2026-10-9` renames two packages without behaviour changes:
 
-To migrate, replace the package names in your dependencies and imports: `@bsv/dpp-overlay-topics` with `@bsv/dpp-overlay` and `@bsv/vsc` with `@bsv/dpp-credentials`, keeping the same versions. A project generated by `@bsv/create-dpp-index` changes its one dependency. The old names stay on npm at their historical versions with a deprecation notice once the new names are published. The new names were published on 16 October 2026 ([receipt](reference/beta-11-publication.md)); the overlay archive published as `0.4.0-beta.11` differed from its approved bytes in one file mode, so `dpp-release-2026-10-10` published the same source as `@bsv/dpp-overlay@0.4.0-beta.12`. Pin beta.12; no set names beta.11.
+| Former name and version | New name and version | Unchanged interfaces |
+|---|---|---|
+| `@bsv/dpp-overlay-topics@0.4.0-beta.11` | `@bsv/dpp-overlay@0.4.0-beta.11`, named for its overlay service | `./server`, `dpp-index`, every export |
+| `@bsv/vsc@0.2.0-beta.5` | `@bsv/dpp-credentials@0.2.0-beta.5`, named for credentials it issues/verifies | `./exchange`, `./epcis-source`; wire profile identifiers such as `vsc-draft-compat/0.1.0` |
+
+1. Replace `@bsv/dpp-overlay-topics` with `@bsv/dpp-overlay` and `@bsv/vsc` with `@bsv/dpp-credentials` in dependencies and imports, retaining versions. A generated `@bsv/create-dpp-index` project changes its one dependency.
+2. Apply the publication exception: pin overlay beta.12. The names were [published on 16 October 2026](reference/beta-11-publication.md), but the `0.4.0-beta.11` overlay archive differed from approved bytes by one file mode. `dpp-release-2026-10-10` republished the same source as `@bsv/dpp-overlay@0.4.0-beta.12`; no set names beta.11.
+
+Old npm names retain their historical versions, with deprecation notices once new names are published.
 
 ## Rename dpp-core to dpp-protocol
 
-The candidate `dpp-release-2026-10-8` introduced `@bsv/dpp-protocol@0.3.0-beta.9` as the name of the shared protocol library, and `dpp-release-2026-10-10` published it on 16 October 2026 ([receipt](reference/beta-11-publication.md)). The name reflects its passport tokens, custody rules, native lifecycle claims, anchors and evidence verification. Its implementation moved to `packages/dpp-protocol`.
+The shared library became `@bsv/dpp-protocol@0.3.0-beta.9` in candidate `dpp-release-2026-10-8`. Set `dpp-release-2026-10-10` [published it on 16 October 2026](reference/beta-11-publication.md). Its name covers passport tokens, custody, native lifecycle claims, anchors and evidence verification; implementation moved to `packages/dpp-protocol`.
 
-Install the published version from npm, or use the [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test unpublished source. Earlier published `@bsv/dpp-core` versions keep their original names and bytes, and installations pinned to them continue using those versions.
+This breaking rename has no compatibility wrapper: the active release contains only `@bsv/dpp-protocol`. Both starters select it, but generating a project never updates existing projects. Existing generated applications need the same migration as other consumers:
 
-This is a breaking package rename: the active release contains only `@bsv/dpp-protocol`, with no compatibility wrapper. Both the application and index starters use the renamed release set. Upgrading an existing generated application requires the same dependency and import changes as any other consumer; generating a new project does not update existing projects.
+1. Install the selected exact version from npm or [local candidate archives](packages/README.md#use-the-renamed-source-candidate), with matching SDK and DPP versions.
+2. Replace `from '@bsv/dpp-core'` with `from '@bsv/dpp-protocol'`, including dynamic imports. Use `@bsv/dpp-protocol/schemas/*` for schemas.
+3. Check types, schema loading and passport/claim verification. Retain the lockfile and any local archives.
+4. Find remaining consumers with `npm ls --all @bsv/dpp-core`. Upgrade those dependencies; remove direct `@bsv/dpp-core` only when imports no longer use it.
 
-To migrate your own imports:
-
-1. Install `@bsv/dpp-protocol` at the selected candidate or published release's exact version. Keep the matching SDK and other DPP package versions.
-2. Replace `from '@bsv/dpp-core'` with `from '@bsv/dpp-protocol'`, including dynamic imports. Change schema paths to `@bsv/dpp-protocol/schemas/*`.
-3. Run your type checks, schema loading and passport/claim verification checks. Keep your lockfile and the candidate archives if installing locally.
-4. Use `npm ls --all @bsv/dpp-core` to find remaining consumers. Upgrade dependencies that still require the old name, then remove your direct `@bsv/dpp-core` dependency once your application no longer imports it.
-
-The rename changes the package name and dependency graph. It does not change any wire bytes, signing protocol identifiers, topic names, profile identifiers, passport identifiers or database records. Earlier protocol upgrades described below still apply if you are moving from an older implementation at the same time.
+Earlier `@bsv/dpp-core` publications retain their names and bytes; pinned consumers keep them. The rename changes only the package name and dependency graph. Wire bytes, signing protocol identifiers, topics, profiles, passport identifiers and database records stay unchanged. Apply earlier protocol migrations below when upgrading older implementations.
 
 ## Upgrade the packages
 
 ### From beta.9 to beta.10
 
-The last set published under the former names, `dpp-release-2026-10-7`, carries the protocol library as `@bsv/dpp-core@0.3.0-beta.8`, the name it had before [the rename](#rename-dpp-core-to-dpp-protocol) to `@bsv/dpp-protocol`, with `@bsv/dpp-profiles@0.3.0-beta.8` and `@bsv/dpp-overlay-topics@0.4.0-beta.10` beside the unchanged beta.5 VSC, published under `latest` on 9 and 10 October 2026 from source revision `1b7a922616f5943f884ec07a39e8b966ecc8a42d` ([receipt](reference/beta-10-publication.md)); the same code is on npm under the new names since 16 October 2026 ([receipt](reference/beta-11-publication.md)). The protocol library reads and writes record version 3, the token carrier ([the specification](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/spec/token-carrier.md)): `DppState` gains a third version, `parseDppOutput` returns the carrier beside the state and a `verifyChain` inspection names the token id. Every existing call compiles unchanged, but code that treats any state other than version 2 as version 1 misreads a version 3 state, so narrow on both where a carried lineage can arrive (`SeventeenFieldState` covers the two). Nothing writes version 3 unless the writer builds a state with version `3`; an application on beta.10 keeps writing version 2 until it decides otherwise. An index on it admits version 3 states, accepts the token id as a lookup selector, speaks index contract `0.11.0-draft` and declares `single-operator@2` when it pulls from peers under a one-operator policy; discovery, advertising and the left-behind retry are opt-in ([peer exchange](operate/federation.md)). The protocol library and overlay topics pin `@bsv/sdk@2.8.10` exactly, so a project on another SDK version ends up with two copies whose types do not match; pin 2.8.10. Profiles beta.8 adds the `single-operator@2` operator manifest. No industry profile, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+| Historical release fact | Value |
+|---|---|
+| Set | `dpp-release-2026-10-7`, the last published under former names |
+| Packages | `@bsv/dpp-core@0.3.0-beta.8` (before [renaming to protocol](#rename-dpp-core-to-dpp-protocol) `@bsv/dpp-protocol`), `@bsv/dpp-profiles@0.3.0-beta.8`, `@bsv/dpp-overlay-topics@0.4.0-beta.10`; unchanged beta.5 VSC |
+| Publication/source | `latest`, 9 and 10 October 2026; `1b7a922616f5943f884ec07a39e8b966ecc8a42d` ([receipt](reference/beta-10-publication.md)). Same code under new names since 16 October 2026 ([receipt](reference/beta-11-publication.md)). |
+| Protocol change | Reads/writes record version 3, the [token carrier](https://github.com/bsv-blockchain/dpp/blob/1b7a922616f5943f884ec07a39e8b966ecc8a42d/spec/token-carrier.md). `DppState` adds a version; `parseDppOutput` returns the carrier beside the state; `verifyChain` inspections name the token id. |
+| Application action | Existing calls compile unchanged. Narrow version 2 and 3 separately where carried lineages arrive (`SeventeenFieldState` covers both): treating every non-2 state as version 1 misreads version 3. Writers stay on version 2 until explicitly building version `3`. |
+| Index change | Admits version 3, supports token-id lookup, contract `0.11.0-draft`; declares `single-operator@2` when pulling under a one-operator policy. Discovery, advertising and left-behind retries are [opt-in](operate/federation.md). |
+| Dependencies | Protocol and overlay topics pin `@bsv/sdk@2.8.10` exactly. Pin 2.8.10: another SDK creates two copies with incompatible types. Profiles beta.8 adds the `single-operator@2` manifest. |
+| Unchanged | Industry, frozen and custody profiles; claim, anchor and acceptance formats |
 
 ### From beta.8 to beta.9
 
-The superseded set `dpp-release-2026-10-6` carries `@bsv/dpp-overlay-topics@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 3 October 2026 from source revision `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)). An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+| Historical release fact | Value |
+|---|---|
+| Set/packages | Superseded `dpp-release-2026-10-6`: `@bsv/dpp-overlay-topics@0.4.0-beta.9`; unchanged beta.7 core/profiles and beta.5 VSC |
+| Publication/source | `latest`, 3 October 2026; `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)) |
+| Change/action | Index contract `0.10.0-draft`; `GET /publisher-policy` serves the signed chain. Readers using `GET /capabilities` keys can now verify those keys and windows. |
+| Unchanged | Record, claim, anchor and acceptance formats; frozen and custody profiles |
 
 ### From beta.7 to beta.8
 
-The set `dpp-release-2026-10-5`, now superseded, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 2 October 2026 from source revision `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)). An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+| Historical release fact | Value |
+|---|---|
+| Set/packages | Superseded `dpp-release-2026-10-5`: `@bsv/dpp-overlay-topics@0.4.0-beta.8`; unchanged beta.7 core/profiles and beta.5 VSC |
+| Publication/source | `latest`, 2 October 2026; `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)) |
+| Index change | An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`); contract `0.9.0-draft`. First start rebuilds stored GS1 keys once. |
+| Application action | Embedded overlay now depends on `@bsv/dpp-profiles`; install both. |
+| Unchanged | Record, claim, anchor and acceptance formats; frozen and custody profiles |
 
 ### From beta.6 to beta.7
 
-The set `dpp-release-2026-10-4`, now superseded, carries the beta.7 packages of core, overlay topics and profiles, with VSC unchanged at beta.5, published under `latest` on 2 October 2026 from source revision `25fabf755090442b98c6714abfae54ec48fee029` ([receipt](reference/beta-7-publication.md)). An index on beta.7 says why it refused a passport state, in an `X-Admission-Refusal` header beside `X-Admission`, and speaks index contract `0.8.0-draft`. A writer needs no change, and one that reads the new header can report the reason ([when the index refuses a state](packages/build-an-application.md#when-the-index-refuses-a-state)). `@bsv/dpp-core` adds `linkageReasonCode`, and the profiles package changes only its version. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles. The anchor fixture's `attestationId` now has the `urn:sha256:` form of a native claim's identifier, so a harness that pinned the fixture's bytes or its anchor script reads them again.
+| Historical release fact | Value |
+|---|---|
+| Set/packages | Superseded `dpp-release-2026-10-4`: beta.7 core, overlay topics and profiles; unchanged beta.5 VSC |
+| Publication/source | `latest`, 2 October 2026; `25fabf755090442b98c6714abfae54ec48fee029` ([receipt](reference/beta-7-publication.md)) |
+| Change/action | Contract `0.8.0-draft`; refused passport states return `X-Admission-Refusal` beside `X-Admission`. Writers need no change but can [report the reason](packages/build-an-application.md#when-the-index-refuses-a-state). `@bsv/dpp-core` adds `linkageReasonCode`; profiles changes only version. |
+| Fixture action | Anchor fixture `attestationId` now uses native `urn:sha256:` form. Reread bytes/scripts pinned by a harness. |
+| Unchanged | Record, claim, anchor and acceptance formats; frozen and custody profiles |
 
 ### From beta.5 to beta.6
 
-The set `dpp-release-2026-10-3`, now superseded, carries the beta.6 packages (VSC beta.5), published under `latest` on 2 October 2026 from source revision `77d53611d884f7d9aa058fe063acb187f77ec9c7` ([receipt](reference/beta-6-publication.md)). The only change is the npm tag the packages publish to, `latest` instead of `next`; nothing in the code, the record formats or the index changed, so an application needs only the new versions.
+| Historical release fact | Value |
+|---|---|
+| Set/packages | Superseded `dpp-release-2026-10-3`: beta.6 packages, VSC beta.5 |
+| Publication/source | `latest`, 2 October 2026; `77d53611d884f7d9aa058fe063acb187f77ec9c7` ([receipt](reference/beta-6-publication.md)) |
+| Change/action | Only the publication tag changes, from `next` to `latest`. Install new versions; code, record formats and index are unchanged. |
 
 ### From beta.4 to beta.5
 
-The set `dpp-release-2026-10-2`, now superseded, carries the beta.5 packages (VSC beta.4), published on 2 October 2026 from source revision `7292237376b8308ed67b11194fd7a00cbe313d82` ([receipt](reference/beta-5-publication.md)). The only change is the licence: the packages move from the Open BSV License Version 6 to Apache 2.0. No code, record, claim, anchor or acceptance format changed, so an application needs only the new versions and an index needs no change.
+| Historical release fact | Value |
+|---|---|
+| Set/packages | Superseded `dpp-release-2026-10-2`: beta.5 packages, VSC beta.4 |
+| Publication/source | 2 October 2026; `7292237376b8308ed67b11194fd7a00cbe313d82` ([receipt](reference/beta-5-publication.md)) |
+| Change/action | Only the licence changes: Open BSV License Version 6 to Apache 2.0. Applications need new versions; indexes need no change. Code, record, claim, anchor and acceptance formats are unchanged. |
 
 ### From beta.3 to beta.4
 
-The set `dpp-release-2026-10`, now superseded, carries the beta.4 packages, published on 1 October 2026 from source revision `f9d8e98658c7cf406702d49194ec5a8480cbca73` ([receipt](reference/beta-4-publication.md)). It replaced `dpp-release-2026-09-5`, now superseded. No record, claim, anchor or acceptance format changed, and neither did the index contract, the frozen profiles or the custody profile.
+| Historical release fact | Value |
+|---|---|
+| Set/packages | Superseded `dpp-release-2026-10`: beta.4 packages, replacing superseded `dpp-release-2026-09-5` |
+| Publication/source | 1 October 2026; `f9d8e98658c7cf406702d49194ec5a8480cbca73` ([receipt](reference/beta-4-publication.md)) |
+| Unchanged | Record, claim, anchor and acceptance formats; index contract, frozen and custody profiles |
 
 | Package, from and to | What changes for an application | What changes for an index operator |
 |---|---|---|
-| `@bsv/dpp-profiles@0.3.0-beta.3` to `0.3.0-beta.4` | The profile readers `readManifest`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readExchangeProfile`, `readOperatorProfile` and `readInteroperabilityProfile` now accept only identifiers the package publishes, and throw for any other before reading a file. Earlier versions did not check the identifier, so use 0.3.0-beta.4 or later. | Nothing |
-| `@bsv/dpp-overlay-topics@0.4.0-beta.3` to `0.4.0-beta.4` | Nothing | The passport topic asks a synchronising peer for a state's predecessor only when the peer's walk reached that state through its passport output. Once it takes effect, a new passport funded from another passport's change is no longer left behind until it is mined. It has no effect yet: `@bsv/overlay`, up to 2.6.2, does not pass the topic the output its walk reached, so synchronisation behaves as on beta.3 until it does ([federation](operate/federation.md)) |
+| `@bsv/dpp-profiles@0.3.0-beta.3` to `0.3.0-beta.4` | Readers `readManifest`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readExchangeProfile`, `readOperatorProfile` and `readInteroperabilityProfile` throw for any identifier the package does not publish before reading files. Earlier readers did not check: use 0.3.0-beta.4 or later. | Nothing |
+| `@bsv/dpp-overlay-topics@0.4.0-beta.3` to `0.4.0-beta.4` | Nothing | Predecessors are requested only when a peer's walk reaches the passport output. Once effective, this removes the mining wait for passports funded by another passport's change. It has no effect yet: `@bsv/overlay` up to 2.6.2 omits the reached output, so synchronisation still behaves as beta.3 ([federation](operate/federation.md)). |
 | `@bsv/dpp-core@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3` | Package documentation only; no code changed | Nothing |
 
 To upgrade an application:
@@ -97,10 +156,10 @@ To upgrade an application:
    ```
 
    Add `@bsv/vsc@0.2.0-beta.3` or `@bsv/dpp-overlay-topics@0.4.0-beta.4` if you use them. Always name the version.
-2. Find every place that passes a profile identifier to a profile reader, typically one built from the `profile` and `profile_version` a record declares, such as `general@2`. Check the identifier against `PROFILE_IDS` from `@bsv/dpp-profiles` before you pass it, and handle the error the reader now throws for any other.
+2. Check each supplied profile identifier, often built from `profile` and `profile_version` such as `general@2`, against `PROFILE_IDS` from `@bsv/dpp-profiles`. Handle the error for other identifiers.
 3. Rehearse against retained data ([below](#rehearse-against-retained-data)), then deploy.
 
-To upgrade an index built with the Compose preset, check out the new source revision in your checkout, then rebuild and restart it with the same environment file and the `docker compose` command in [run a service](operate/README.md). Check that the `implementation` in its `GET /capabilities` now reads version `0.4.0-beta.4`.
+For a Compose index, check out the new revision; rebuild/restart with the existing environment and [run a service](operate/README.md)'s `docker compose` command. Verify `GET /capabilities` reports `implementation` version `0.4.0-beta.4`.
 
 ### From earlier releases
 
@@ -116,10 +175,10 @@ The [changelog](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50
 
 ## Rehearse against retained data
 
-Compare what your reader reports on the same evidence under the old release and the new one. An unchanged transaction must not acquire a different subject or a stronger finding because the software changed.
+Compare old and new readers on identical evidence. Unchanged transactions must not acquire different subjects or stronger findings merely because software changed. The worked commands below reproduce beta.3 to beta.4; choose the appropriate revisions for another migration.
 
 1. **Restore a copy into a scratch index.** Start a local index with the Compose preset ([run a service](operate/README.md)), admitting the same publisher keys as the live one, and restore your export into it ([fetch, check and restore an export](operate/export-import-recovery.md#restore-a-passport-from-the-complete-export)). It answers at `http://localhost:8080`.
-2. **Run the reader at the old release.** `examples/verify-passport.mjs` uses the packages built in its own checkout, not packages installed in your project, so run it from a checkout at the old set's source revision. In an empty working directory:
+2. **Run the old reader.** `examples/verify-passport.mjs` uses its checkout builds, not your project's installed packages. From the empty working directory:
 
    ```sh
    git clone https://github.com/bsv-blockchain/dpp.git dpp-beta-3
@@ -131,7 +190,7 @@ Compare what your reader reports on the same evidence under the old release and 
    ```
 
 3. **Run it at the new release**, the same way, from a second checkout at `f9d8e98658c7cf406702d49194ec5a8480cbca73`, writing `../report-beta-4.txt`.
-4. **Compare.** From the working directory, `diff report-beta-3.txt report-beta-4.txt` should show only the `checked at` line. Explain any other difference before you switch: a changed subject, a check that changed its answer, or a missing state.
+4. **Compare.** `diff report-beta-3.txt report-beta-4.txt` from the working directory should show only `checked at`. Stop and explain changed subjects, findings or missing states before switching.
 
 | Release set | Packages | Source revision |
 |---|---|---|
@@ -163,7 +222,13 @@ Change the parts in this order, so that nothing reads or admits a record it does
 
 ## Change a profile selection
 
-Installing a package and activating a successor profile are separate steps. A payload is read under the profile version it declares, so changing the profile you write is its own migration. Use [update profiles and consuming applications](profiles/updating-applications.md) to prepare the change report, notify application owners and track interface and backend readiness. [Battery](profiles/battery.md) and [textile](profiles/textile.md) link their current and draft manifests.
+Installing definitions does not activate a successor. Read every payload under its declared version and migrate writes separately:
+
+1. Prepare the change report, notify application owners and track interface/backend readiness with [update profiles and consuming applications](profiles/updating-applications.md).
+2. Implement readers for retained and proposed versions, update writers and interfaces, and rehearse with representative data.
+3. Deploy and verify compatible readers first. Then explicitly enable the selected writer profile through the server and record the activation decision.
+
+[Battery](profiles/battery.md) and [textile](profiles/textile.md) link current and draft manifests.
 
 ## Roll back
 

@@ -1,6 +1,18 @@
 # Choose a role
 
-A role is one component of a passport system, such as the reader that checks a passport or the index that finds one. Find the component you are building, then follow the column for how you are building it: with the reference packages, or in your own code. Each package guide identifies its publication status.
+Application planners and implementers can use this page to select a component role and its package or independent-code route. A role is one component, such as a passport reader or index.
+
+## Before choosing
+
+| Input | Source |
+|---|---|
+| Component you are building | Your application or service design |
+| Implementation route | Your team's choice: reference packages or your own code |
+| Package publication status | The selected package guide |
+
+## Match the component to a role
+
+The fixed attestation role names refer to claims. Start with the reader; claim each role separately when one program fills several roles.
 
 | Role | What it does | With the packages | In your own code |
 |---|---|---|---|
@@ -11,6 +23,9 @@ A role is one component of a passport system, such as the reader that checks a p
 | Registry | Validates and stores signed claims | No registry package is published; build one against the contract with the packages' calls ([registry](../implement/roles/registry.md)) | [Registry](../implement/roles/registry.md) |
 | Index (the overlay role) | Admits passport states and answers lookups | [Create an index](../packages/create-dpp-index.md); the starter includes the runtime. Direct embedding is an [advanced alternative](../packages/dpp-overlay.md) | [Overlay](../implement/roles/overlay.md) |
 
-One program can fill several roles, and each is claimed separately. Start with the reader whichever route you take: every other role checks what it makes or receives with the reader's rules.
+## Choose the build order
+
+1. Select the component in the table and follow the column for your implementation route.
+2. Build the reader first on either route: every other role checks what it makes or receives with the reader's rules.
 
 Writing your own code? [Start an independent implementation](../implement/README.md#pick-your-role) gives the build order, what you may reuse and the fixtures for each role. The [role definitions](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) (section 2) and the [baseline](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json) hold each role's obligations and tests.

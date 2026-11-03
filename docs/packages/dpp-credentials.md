@@ -1,14 +1,24 @@
 # @bsv/dpp-credentials
 
-`@bsv/dpp-credentials` issues and verifies supply-chain credentials in W3C formats, and reads supply-chain event documents in the GS1 EPCIS format. Use it if your application exchanges SEALs or other W3C verifiable credentials with partners, or imports EPCIS events; a passport reader or writer that uses only passports and native claims does not need it.
+Application developers exchanging SEALs or other W3C verifiable credentials with partners can use `@bsv/dpp-credentials` to issue and verify credentials, or read GS1 EPCIS supply-chain event documents. Readers and writers using only passports and native claims do not need it.
 
 **Experimental prerelease:** `@bsv/dpp-credentials` 0.2.0-beta.6 is intended for implementation and interoperability testing. APIs may change significantly before a stable release; production readiness is not established.
 
+## Preconditions
+
+| Procedure | Input and source |
+|---|---|
+| Installed examples | Node 22 or later, ECMAScript modules and this package; release status is in Install. |
+| First EPCIS call | The included document; no network, key or checkout. |
+| SEAL issuance | Application's unsigned event credential and issuer key; contexts through `createDocumentLoader`. |
+| SEAL verification | Contexts, issuer DID documents, status resolver and authority policy from configured evidence sources, never self-asserted trust. |
+| Checkout exercises | Repository checkout; run `npm ci` and `npm run build` before commands at its root. |
+
 ## What it is and whether you need it
 
-**Verifiable Supply Chain (VSC)** is a draft of the W3C Verifiable Supply Chain Community Group for credentials that record supply-chain events. This package implements a selected subset of it as its own profile, `vsc-draft-compat/0.1.0`, against the draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It is not a W3C standard and the package claims no W3C certification.
+**Verifiable Supply Chain (VSC)** is the W3C Verifiable Supply Chain Community Group's draft for supply-chain event credentials. This package implements a selected subset as `vsc-draft-compat/0.1.0`, against revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It is not a W3C standard; the package claims no W3C certification.
 
-**A SEAL** is the VSC credential for one signed event: which products (`what`), when, where, who acted and how, with links to the earlier SEALs in the product's chain of custody. It is a W3C verifiable credential, secured with an `Ed25519Signature2020` or `bbs-2023` proof, and it is a different format from the native lifecycle claim that `@bsv/dpp-protocol` signs. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
+**A SEAL** is a VSC credential for one signed event: products (`what`), when, where, who acted and how, linked to earlier SEALs in the product's custody chain. This W3C credential uses an `Ed25519Signature2020` or `bbs-2023` proof, a different format from `@bsv/dpp-protocol`'s native lifecycle claim. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
 
 | You want to | Need this package? |
 |---|---|
@@ -17,7 +27,7 @@
 | Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/dpp-credentials/exchange` |
 | Import EPCIS 2.0.1 event documents, or map their events to SEALs | Yes, `@bsv/dpp-credentials/epcis-source` and the root |
 
-The package does not fund a wallet, move a passport or find records through an index; those stay with [@bsv/dpp-protocol](dpp-protocol.md) and your own wallet. It has no BSV runtime dependency.
+Wallet funding, passport movement and index lookups stay with [@bsv/dpp-protocol](dpp-protocol.md) and your wallet. This package has no BSV runtime dependency.
 
 ## Install
 
@@ -27,7 +37,15 @@ In your project, with Node 22 or later:
 npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 ```
 
-Each package numbers its own prereleases. `@bsv/dpp-credentials` 0.2.0-beta.6 in the current source candidate, `dpp-release-2026-11`, is beta.5 repacked with no code change, beside protocol and profiles beta.10 and overlay beta.13. The [release page](../reference/release-sets.md) distinguishes that candidate from the latest published set. A bare `npm install @bsv/dpp-credentials` installs the `latest` tag, the newest beta; name the exact version all the same, so an upgrade is your choice. Keep the lockfile. The package runs in Node only, as ECMAScript modules; its artefact files are plain data ([support table](support-table.md)).
+| Release fact | Value |
+|---|---|
+| Package | `@bsv/dpp-credentials` 0.2.0-beta.6 |
+| Current source candidate | `dpp-release-2026-11`; the [release page](../reference/release-sets.md) distinguishes it from the latest published set. |
+| Change | beta.5 repacked with no code change |
+| Other candidate packages | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
+| Runtime | Node only, ECMAScript modules; artefact files are plain data ([support table](support-table.md)). |
+
+A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin the exact version so upgrades are your choice, and keep the lockfile.
 
 ## Entry points and their main functions
 
@@ -40,7 +58,7 @@ Each package numbers its own prereleases. `@bsv/dpp-credentials` 0.2.0-beta.6 in
 
 ## First call
 
-This parses and validates one EPCIS document, the kind of event file a supplier's system sends. It needs no network, key or checkout. Save it as `vsc-first.mjs` in a project with the package installed:
+1. Save this complete file as `vsc-first.mjs` in your installed project. It parses and validates one EPCIS document of the kind a supplier sends:
 
 ```js
 import { parseEpcisSource, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
@@ -73,22 +91,39 @@ console.log('events:', parsed.events.map(({ pointer, type }) => `${type} at ${po
 console.log('schema:', validation.schema, '; findings:', validation.findings.length)
 ```
 
-`node vsc-first.mjs` prints:
+2. Run `node vsc-first.mjs`. Expected output:
 
 ```
 events: ObjectEvent at /epcisBody/eventList/0
 schema: pass ; findings: 0
 ```
 
-In an importer, keep the bytes exactly as received rather than serialising a parsed object again. To go further, run `node examples/import-epcis.mjs` at the root of a checkout, after `npm ci` and `npm run build`: it maps each event of a seven-event fixture to an unsigned SEAL and prints the outcome, `lossless`, `transformed` or `unsupported`, with what was lost.
+3. Retain exact received bytes, without reserialising the parsed object. Stop on parse refusal or schema findings before treating it as validated.
 
-To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID documents, a status resolver and an authority policy; a credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md) shows the issuance and verification calls with each policy.
+| Command | Expected result |
+|---|---|
+| `node vsc-first.mjs` | One `ObjectEvent` at `/epcisBody/eventList/0`; schema `pass`, zero findings |
+| `node examples/import-epcis.mjs` | Maps the seven-event fixture to unsigned SEALs; prints `lossless`, `transformed` or `unsupported`, with what was lost. |
+
+### Select issuance or verification inputs
+
+| Step | Inputs and call | Output or decision |
+|---|---|---|
+| 1. Prepare | Configured documents to `createDocumentLoader` | Loader for pinned contexts and issuer DID documents |
+| 2. Issue | Unsigned SEAL, issuer key and loader to `issueSealEd25519` or `issueSealBbs` | SEAL signed with the selected suite |
+| 3. Read | Exact bytes to `parseSealBytes`; retain bytes separately | Strictly parsed credential |
+| 4. Verify | Credential, loader, status resolver, authority policy and custody-chain evidence to `verifySeal` | Proof, status, issuer authority and custody findings; inspect each before reliance. |
+
+A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md) shows the calls with each policy.
 
 ## Limits
 
-- The release does not claim conformance with the whole upstream VSC draft. It implements and tests a selected subset, and the upstream context and test suite were unavailable to check against ([release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json)). Passing its tests is not product qualification.
-- A passing proof says which key signed, not that the issuer is who it claims to be: identity is at Ring 0, where only the platform account vouches for who holds a key ([identity and authority](../learn/identity-and-authority.md)).
-- [Known limitations](../operate/limitations.md) collects the other open gaps of the reference services.
+| Limit | Meaning |
+|---|---|
+| Selected VSC subset | The release does not claim whole-draft conformance. The upstream context and test suite were unavailable for comparison ([release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json)). Passing tests is not product qualification. |
+| Ring 0 identity | A passing proof identifies the signing key, not the claimed issuer. Only the platform account vouches for the key holder ([identity and authority](../learn/identity-and-authority.md)). |
+
+[Known limitations](../operate/limitations.md) lists the reference services' other open gaps.
 
 ## Sources
 

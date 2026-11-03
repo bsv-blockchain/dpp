@@ -1,18 +1,28 @@
 # Verifiable credentials
 
-Use this page if a partner asks you for World Wide Web Consortium (W3C) verifiable credentials, or sends you some to check. A native DPP build does not need them: it signs and anchors native lifecycle claims instead, as [build an application](../packages/build-an-application.md) shows in "Sign and anchor a lifecycle claim".
+Application teams can use this page to select and verify supported World Wide Web Consortium (W3C) credentials exchanged with partners. Native DPP builds use signed, anchored lifecycle claims and do not need W3C credentials; see [build an application](../packages/build-an-application.md), "Sign and anchor a lifecycle claim".
+
+## Before you start
+
+| Task | Inputs and where they come from |
+|---|---|
+| Runtime | Node 22 or later; the package runs server side only. |
+| Run exercises | Use the [checkout](../quick-start.md#get-the-code) root after `npm ci` and `npm run build`. Tests supply local identity documents and status evidence; no wallet or funds. |
+| Issue a SEAL | Your event and product subject, issuer DID document, status entry and a signing key that document authorises for assertion. The suites need their own keys; a wallet's BSV key is not interchangeable. |
+| Verify a credential | The received credential, contexts and issuer documents through a document loader, observation time, status policy and authority policy. For an external credential, retain its exact received bytes. |
+| Bind the subject | Take the expected product identifier from your own request, never from the credential. |
 
 ## What a credential is
 
-A verifiable credential (VC) is an issuer's statement secured by a proof that a recipient can check. It names the issuer and the subject and carries claims about that subject. In a digital product passport (DPP) a credential can carry a product assertion or a lifecycle event, such as a repair, beside the passport's own history.
+A verifiable credential (VC) names an issuer and subject and secures claims with a proof a recipient can check. Beside a digital product passport's (DPP) history, it can carry product assertions or lifecycle events, such as repairs.
 
-A [DID](dids.md) identifies the issuer and leads to its verification keys. The credential carries what that issuer says, and the proof attributes the statement to a key. Whether to accept the statement is a separate decision, made on evidence and policy: a DID document alone does not establish accreditation or the truth of a claim, and a passing proof does not raise identity assurance above [Ring 0](identity-and-authority.md#ring-0).
+A [DID](dids.md) identifies the issuer and leads to verification keys; the proof attributes its statement to a key. Acceptance still needs evidence and policy. A DID document establishes neither accreditation nor truth, and a passing proof does not raise identity assurance above [Ring 0](identity-and-authority.md#ring-0).
 
-A native lifecycle claim is a different format. Signing one does not produce a W3C credential, and a credential is not a native claim.
+Native lifecycle claims and W3C credentials are different formats. Signing a native claim does not produce a credential, or vice versa.
 
 ## What the packages support
 
-`@bsv/dpp-credentials` implements two credential representations. Each selects its own data model, proof suite and identity rules, and each has its own entry point.
+`@bsv/dpp-credentials` supports two representations, each with its own data model, proof suite, identity rules and entry point.
 
 | Representation | What you can do | Entry point and functions | Ledger status |
 |---|---|---|---|
@@ -32,30 +42,44 @@ The ledger rows are in the [conformance ledger](https://github.com/bsv-blockchai
 
 ## Run the credential exercises
 
-From the root of a checkout, after `npm ci` and `npm run build` ([quick start](../quick-start.md#get-the-code)):
+1. Run both exercises from the prepared checkout:
 
 ```sh
 npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts
 npm run test -w @bsv/dpp-credentials -- test/exchange.test.ts test/exchange-vectors.test.ts
 ```
 
-The first command exercises SEAL issuance, proof verification and the evidence checks, and ends `Tests  20 passed (20)`. The second exercises the external profile with valid, altered, expired, revoked and unsupported credentials, and ends `Tests  60 passed (60)`. The tests supply identity documents and status evidence locally, and the passes include refusals of deliberately invalid inputs. No wallet or funds are needed.
+| Command above | Coverage | Expected result |
+|---|---|---|
+| First | SEAL issuance, proof verification and evidence checks | `Tests  20 passed (20)` |
+| Second | External credentials: valid, altered, expired, revoked and unsupported | `Tests  60 passed (60)` |
 
-`node examples/verify-external-credential.mjs`, from the same place, verifies one external credential and a copy with one subject value changed, one line per check. Every check on the original prints `Holds:`; on the altered copy `proof` prints `FAILS:`, as it should, and the command still exits with status 0.
+Passing tests include refusals of deliberately invalid inputs.
+
+2. From the same directory, run `node examples/verify-external-credential.mjs`:
+
+```sh
+node examples/verify-external-credential.mjs
+```
+
+| Local input | Expected finding |
+|---|---|
+| Original external credential supplied by the example | Every check prints `Holds:`, one line per check. |
+| Copy with one subject value changed | on the altered copy `proof` prints `FAILS:`, as it should, and the command still exits with status 0. |
 
 ## Connect an issuer or verifier
 
-1. Install the package at its exact version: `npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6`. It runs on Node 22 or later, server side only ([@bsv/dpp-credentials](../packages/dpp-credentials.md)).
-2. **To issue a SEAL**, prepare the event, the product subject, the issuer's DID document, a status entry and a signing key the DID document authorises for assertion. Call `issueSealEd25519` or `issueSealBbs` from `@bsv/dpp-credentials`. These suites use their own keys: your wallet's BSV key is not an interchangeable input. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md#issuance-and-verification) shows the call with its document loader and policies.
-3. **To verify a SEAL**, call `verifySeal` from `@bsv/dpp-credentials` with the credential, a document loader for the contexts and the issuer's documents, the observation time, a status policy and an authority policy.
-4. **To verify an external credential**, keep the exact bytes you received and call `verifyExternalCredential` from `@bsv/dpp-credentials/exchange`. [External credential verification](../interoperability/external-credentials.md) has the complete call with its policy, and how to map the vector file onto it.
-5. **To show the result in a passport report**, pass the credential's exact bytes in the `externalCredentials` evidence of `verifyPassportEvidence`, and give its policy a `credentialVerifier` made with `externalCredentialVerifierFor` from `@bsv/dpp-credentials/exchange`.
+1. Install [@bsv/dpp-credentials](../packages/dpp-credentials.md) at its exact version: `npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6`.
+2. **Issue a SEAL:** pass the prepared issuance inputs to `issueSealEd25519` or `issueSealBbs` from `@bsv/dpp-credentials`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md#issuance-and-verification) shows the call with its document loader and policies.
+3. **Verify a SEAL:** call `verifySeal` from `@bsv/dpp-credentials` with the credential and verification inputs above.
+4. **Verify an external credential:** pass the retained bytes to `verifyExternalCredential` from `@bsv/dpp-credentials/exchange`. [External credential verification](../interoperability/external-credentials.md) supplies the complete call, policy and vector mapping.
+5. **Include it in a passport report:** pass exact bytes as `externalCredentials` evidence to `verifyPassportEvidence`. Supply a policy `credentialVerifier` made with `externalCredentialVerifierFor` from `@bsv/dpp-credentials/exchange`.
 
-Whichever you verify, take the expected product identifier from your own request, not from the credential, and read proof, issuer authority, subject binding, time and status as separate findings. Missing status or authority evidence leaves a finding `unknown` even when the proof verifies ([evidence and its limits](evidence-and-freshness.md)). If you anchor a credential, anchor the original secured bytes: a derived presentation or a reformatted copy is a different byte sequence and a different commitment.
+Read proof, issuer authority, subject binding, time and status separately. Stop short of claiming verification for a finding left `unknown` by missing status or authority evidence, even if the proof passes ([evidence and its limits](evidence-and-freshness.md)). Anchor only the original secured bytes: a derived presentation or reformatted copy has different bytes and a different commitment.
 
 ## Not in the packages
 
-The reference application, whose source is not public, also issues and verifies compact JSON Web Signature (JWS) credentials with ES256K through a signer it injects. That signer is part of the reference application, not of the published packages (ledger row `EXCH-4-signer`, `tested`), and it does not close the gaps below.
+The reference application, whose source is not public, issues and verifies compact JSON Web Signature (JWS) credentials using an injected ES256K signer (ledger row `EXCH-4-signer`, `tested`). The signer is absent from published packages and does not close the gaps below.
 
 ## What remains incomplete
 

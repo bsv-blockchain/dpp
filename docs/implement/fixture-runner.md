@@ -1,8 +1,17 @@
 # Run the fixtures
 
-This page is for implementers writing a test harness, in their own language, that runs the pinned fixtures against their own code. It says what each file gives you as input, what your code must reproduce, and which parts of a result must match; set up the checkout first, as [start an independent implementation](README.md#before-you-start) shows.
+Implementers can use this page to build a test harness in their own language and compare their code with the pinned fixtures. It defines each file's inputs, required results and comparison rules.
 
-A fixture is a JSON file of inputs and expected results, including inputs a conforming implementation must refuse. A signing preimage is the exact byte sequence a signature is made over; reproducing it catches errors that decoding the fields alone cannot reveal.
+A fixture is a JSON file of inputs and expected results, including required refusals. A signing preimage is the exact signed byte sequence; reproducing it catches errors that field decoding alone misses.
+
+## Before you start
+
+| Procedure | Input and source |
+|---|---|
+| Run your harness | Your implementation and a reviewed checkout with unchanged fixtures, as [start an independent implementation](README.md#before-you-start) describes. Retain the revision with your results. |
+| Run reference commands | Node 22 and npm; run `npm ci` and `npm run build` in that checkout. Run page commands from its root. |
+| Run the worked reader | Python 3 on the path; it uses only the standard library. |
+| Optional structural check | A separate `ts-stack` checkout with its runner dependencies installed, and the path to this repository. |
 
 ## Build a small test loop
 
@@ -27,19 +36,42 @@ Start with the native path: record, chain, acceptance record, report. Add histor
 | `fixtures/attestation-anchor-v1.json` | `unsignedClaim`, `issuerPrivateKey`, `anchoringPrivateKey` | `claim`, `canonicalUnsignedClaim`, `representationBytes`, `digest`, the nine `fields`, `signingPreimage`, `signature`, `lockingKey` and `lockingScript`. Its refusals are in the vector form: [attestation verifier](roles/attestation-verifier.md#the-cases-to-run) lists them. |
 | `fixtures/evidence-v2.json`, `fixtures/evidence-v1.json` and `fixtures/evidence-v3.json` | Each case's `evidence`, `expectedSubject`, `policy` and `observers`, and the file's `checkedAt` | Each case's `report`, on the parts [what a matching report is](#what-a-matching-report-is) lists |
 
-**Chain refusals.** Each refusal extends a prefix of the valid chain. `appendAfter` is a zero-based index into `states`: keep `states[0]` to `states[appendAfter]` and add the refusal's `rawTx`. `-1` means the refusal stands alone as a genesis. The default policy names no publisher key (the publisher signature is admission policy and may be skipped; with the file's publisher key the valid chain passes too), selects no custody profile and names no control authorities. Three kinds of case change that, and each must be run both ways:
+### Policy switches and observation inputs
 
-- `managedAcceptance: true` (the version 2 `transferWithoutCommitment`): refused with the managed custody profile selected, valid with it off.
-- `ownerConsent: true` (seven version 1 cases): refused with the owner-signed transfer selected, valid with it off.
-- `acceptedUnder` (`recoveryWithoutAuthority` in both files): valid when the keys it names are the control or transfer authorities.
+Each chain refusal extends a prefix of the valid chain. Run all policy variants below; the valid controls prevent a harness that refuses everything from passing.
 
-These control cases keep a harness that refuses everything from passing.
+| Chain input or policy | How to run it |
+|---|---|
+| `appendAfter` | Zero-based index in `states`: retain `states[0]` to `states[appendAfter]`, then append the refusal's `rawTx` |
+| `-1` | Refusal stands alone as a genesis |
+| Default policy | No publisher key, custody profile or control authorities. Publisher signature verification is admission policy and may be skipped; the valid chain also passes with the file's publisher key. |
+| `managedAcceptance: true` | Version 2 `transferWithoutCommitment`: refused with managed custody selected, valid with it off |
+| `ownerConsent: true` | Seven version 1 cases: refused with owner-signed transfer selected, valid with it off |
+| `acceptedUnder` | `recoveryWithoutAuthority` in both files: valid when the named keys are control or transfer authorities; run both ways |
 
-**Evidence cases.** `evidence.tokenHistory` is the passport's transactions as raw hex, oldest first. Optional parts sit beside it: `merklePaths` (a merkle path per state in BUMP form, as hex), `alternativeHistories`, `nativeClaims` as posted, `anchors` (locking scripts as hex, with the secured bytes when supplied) and `acceptanceRecords`. `policy` names the publisher keys, the profile options (`managedAcceptance`, `ownerConsent`), any `authority` lists and `policyId`. `chainTracker` is `scripts-only` for no header source, or `header-source` with `headerSource` mapping each height to the merkle root the source holds, or to `unavailable` for an outage. `observers` are latest-state sources that answer exactly as written: `unspent`, `spent` with its `spendingTxid`, `not-found` or `unavailable`. Inject the file's `checkedAt` as the observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json` and `2027-06-01T12:00:00Z` in `evidence-v2.json` and `evidence-v3.json`. The second is a future date on purpose; it is synthetic test input, not a delivery date.
+| Evidence input | Meaning |
+|---|---|
+| `evidence.tokenHistory` | Passport transactions as raw hex, oldest first |
+| Optional `merklePaths` | Merkle path per state, BUMP hex |
+| Optional `alternativeHistories` | Alternative histories beside the token history |
+| Optional `nativeClaims` | Claims as posted |
+| Optional `anchors` | Locking scripts as hex, with secured bytes when supplied |
+| Optional `acceptanceRecords` | Acceptance records beside the token history |
+| `policy` | Publisher keys, profile options `managedAcceptance` and `ownerConsent`, any `authority` lists, and `policyId` |
+| `chainTracker` | `scripts-only` means no header source; `header-source` uses `headerSource`, mapping each height to its merkle root or `unavailable` for an outage |
+| `observers` | Latest-state sources: use the answers exactly as written, `unspent`, `spent` with `spendingTxid`, `not-found` or `unavailable` |
+| `checkedAt` | Inject the file's observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json`; `2027-06-01T12:00:00Z` in `evidence-v2.json` and `evidence-v3.json`. The future date is deliberate synthetic input, not a delivery date. |
 
 ## What a matching report is
 
-Do not compare whole reports as JSON. Parts of a report are free text or each build's own vocabulary: `limits` are sentences, a check's `detail` is optional and its shape is the build's own (the reference's carries names such as `userSignatureValid` and `spv`), `queryScope` is words, and `evidenceRefs` mixes forms the specification fixes with the reference's own labels such as `anchor:0`.
+Do not compare whole reports as JSON. Some fields are free text or implementation-specific:
+
+| Field | Why whole-value equality is unsuitable |
+|---|---|
+| `limits` | Sentences whose required meaning must survive |
+| `detail` | Optional, implementation-defined shape; the reference uses names such as `userSignatureValid` and `spv` |
+| `queryScope` | Words |
+| `evidenceRefs` | Mixes specified forms with reference labels such as `anchor:0` |
 
 | Part of the report | How to compare |
 |---|---|
@@ -53,7 +85,7 @@ Do not compare whole reports as JSON. Parts of a report are free text or each bu
 
 This is the equivalence the [trial](demonstration.md) asks for in its `reader-equivalence` scenario: "the same check statuses and reason codes". Verification section 8 asks a conforming verifier for "equivalent reports for the pinned fixture cases"; the [fixture guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/README.md)'s "equal to `report`" is what the reference itself meets.
 
-To see the parts that must match for one case, run this at the root of the checkout:
+Inspect the required comparison fields for one case:
 
 ```sh
 node --input-type=module <<'JS'
@@ -65,7 +97,7 @@ console.log('latestState', report.observations.latestState, JSON.stringify(repor
 JS
 ```
 
-It prints sixteen lines, from `recordEncoding pass` to `evidenceAvailability pass`, among them `linkage fail control-not-proven {"stateIndex":2}` and `inclusion unknown proof-absent`, then `latestState unknown` with one candidate outpoint. Your harness compares those values for every case.
+Expect sixteen check lines, from `recordEncoding pass` to `evidenceAvailability pass`, including `linkage fail control-not-proven {"stateIndex":2}` and `inclusion unknown proof-absent`. Then comes `latestState unknown` with one candidate outpoint. Compare those values for every case.
 
 To list every report case without running anything:
 
@@ -81,7 +113,9 @@ It prints thirteen lines, from `v2-valid-lineage` to `unknown-version`, each wit
 
 ## What a matching refusal is
 
-A refusal passes when your code refuses the input. The vector form also names the stage, such as `decode` or `chain`; the trial's `vectors` scenario asks for each refusal "at the point the vector names", and for reason codes only "where the vector specifies them". The record and chain refusals carry a sentence (`error` in the top-level files, `reason` in the vectors), not a reason code: it is the reference's wording of the rule the case breaks. Map your own error to that rule and keep both sentences in your results, as the Python reader does when it prints `pinned reason:` beside its own.
+A refusal passes when your code refuses the input. In the trial's `vectors` scenario, refuse at the named stage, such as `decode` or `chain`, and match reason codes only where specified.
+
+Record and chain refusals give a sentence, not a reason code: `error` in top-level files or `reason` in vectors. Map your error to the rule that sentence identifies. Keep both sentences, as the Python reader does with `pinned reason:` beside its own.
 
 ## The vector form
 
@@ -103,11 +137,22 @@ The two forms do not map one file to one file:
 | `publisher-policy/v1.json`, `evidence-package/v1.json`, everything under `interoperability/` | None: vector form only |
 | None: top-level form only | `evidence-v1.json`, `evidence-v2.json`, `evidence-v3.json`, `battery-lifecycle-v1.json` |
 
-The stack's structural runner validates the vector files: from a checkout of `ts-stack` with its runner's dependencies installed, `node conformance/runner/src/runner.js --validate-only --vectors <this repository>/fixtures/vectors` exits 0 when they are well formed ([vector format](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/conformance/VECTOR-FORMAT.md)).
+Optionally check the vector structure with the stack runner:
+
+1. From the prepared `ts-stack` checkout, run `node conformance/runner/src/runner.js --validate-only --vectors <this repository>/fixtures/vectors`, substituting this repository's path.
+2. Expect exit 0 for well-formed vector files ([vector format](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/conformance/VECTOR-FORMAT.md)). This checks structure, not your implementation's answers. Run your harness separately.
 
 ## The worked example
 
-The [independent Python reader](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/independent/python/README.md) runs most of these files from a reader written from the specification: the record, chain, anchor and acceptance fixtures and the record, chain, anchor, acceptance, publisher policy and evidence package vectors. It does not produce the reports of `evidence-v1.json` and `evidence-v2.json`, so it is no example of the report comparison. Run it at the root of the checkout with `python3 conformance/independent/python/dpp_verify.py` (or `npm run conformance:independent`, which needs `python3` on the path); it ends with `Every sentence above holds.`
+The [independent Python reader](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/independent/python/README.md) was written from the specification and runs most of these files.
+
+| Item | Coverage or result |
+|---|---|
+| Fixtures | Record, chain, anchor and acceptance |
+| Vectors | Record, chain, anchor, acceptance, publisher policy and evidence package |
+| Missing coverage | No reports for `evidence-v1.json` and `evidence-v2.json`; it is no report-comparison example |
+| Invocation | `python3 conformance/independent/python/dpp_verify.py`, or `npm run conformance:independent`, which needs `python3` on the path |
+| Success | Ends with `Every sentence above holds.` |
 
 ## Source definitions
 

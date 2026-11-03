@@ -1,10 +1,19 @@
 # The hosted reference
 
-The programme hosts one instance of each service, so you can look up and verify live records, test a reader, or use the hosted index as a peer before you run your own. This page says what each one runs, what is open to anyone, which passports to try and where the hosted services fall short.
+Readers, application teams and operators can use this page to select hosted services and verify sample records. The programme hosts one instance of each service for live lookups, reader tests and peering before you run your own. Check its access, versions and limits below.
 
-For a production design, [choose which services you need](start/choose-components-and-services.md) and establish each provider's actual access and operating commitments. The reference is not a catalogue of generally available production providers. A public URL or successful read does not grant write access or a service agreement.
+For production, [choose your services](start/choose-components-and-services.md) and confirm provider access and operating commitments. This reference is no catalogue of generally available production providers. Public URLs and successful reads grant neither writes nor a service agreement.
 
-[dpp.bsvb.net](https://dpp.bsvb.net) is a demonstration of the standard, not a service for real products. Anyone can browse it and verify the passports it publishes. Its three sample brands are open to anyone and write nothing to the blockchain. Anyone who signs up can create a brand of their own, whose passports are real transactions on the BSV mainnet, marked as sample records, while the demonstration's publishing is open. The brands, products and data are mock demonstration data.
+[dpp.bsvb.net](https://dpp.bsvb.net) demonstrates the standard with mock brands, products and data; it serves no real products. Anyone can browse and verify its passports. Its three open sample brands write nothing to the blockchain. While publishing is open, anyone who signs up can create a brand whose passports are real BSV mainnet transactions marked as samples.
+
+## Access and trust inputs
+
+| Activity | Required input and source |
+|---|---|
+| Browse or read | Browser or HTTP client; public service URLs below need no read token. |
+| Run the verification example | Node 22 or later and a [checkout after setup](quick-start.md#get-the-code), with `npm ci` and `npm run build`. Run from its root. A WhatsOnChain API key can be set as `WOC_API_KEY` if anonymous header checks are limited. |
+| Write, deliver proofs or export | Destination-specific tokens from the operator, subject to the restrictions below. |
+| Check policy or evidence signatures | Independently obtain the operator identity key; use the export signer and accepted anchoring key below for their respective checks. |
 
 ## Services
 
@@ -14,18 +23,31 @@ Read each service's `/capabilities` for what that deployment reports. The index 
 |---|---|---|
 | `https://dpp.bsvb.net` | The reference application: the brand console and a passport page at every `/01/<gtin>/21/<serial>` it issued | The `dpp-release-2026-10-10` set: `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12` and `@bsv/dpp-credentials@0.2.0-beta.5` |
 | `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay@0.4.0-beta.12`, `single-operator@2` under publisher policy version 1, pulling all three topics from one peer run under the same administration, with discovery and advertising off |
-| `https://dpp-resolver.bsvb.net` | The attestation registry: validation, storage, anchoring and proofs | `attestation-registry/1` |
+| `https://dpp-resolver.bsvb.net` | The registry: claim validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
 
-The index names its peers itself: it runs beta.12, which carries the opt-in discovery, advertising and left-behind retry, with discovery and advertising off, so its capability document reports `static-peers` and lists `ship-slap-discovery` as unsupported. The registry reports discovery and its external credential policy as `not-configured`. Its `resolver` hostname denotes the attestation registry here, not a hosted GS1 resolver.
+The index names peers statically. beta.12 supports opt-in discovery, advertising and left-behind retry, but discovery and advertising are off: capabilities report `static-peers` and unsupported `ship-slap-discovery`. The registry reports discovery and external credential policy as `not-configured`; its `resolver` hostname denotes this claim registry, not a hosted GS1 resolver.
 
 ## What is open and what needs a token
 
-On the index, `POST /submit` and `POST /retract` need the operator's submit token, `POST /arc-ingest` needs the broadcaster's callback token and `GET /evidence-export` needs the export token. The index signs its evidence packages and export parts with `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass it as `expectedSigner` when you check one. Lookups, `/history`, `/capabilities`, `/publisher-policy`, `/evidence-package`, `/health` and the synchronisation routes are open. On the registry, storing a claim and changing a status list need its write token; validation and reads are open.
+| Service | Route or operation | Access |
+|---|---|---|
+| Index | `POST /submit`, `POST /retract` | Operator's submit token |
+| Index | `POST /arc-ingest` | Broadcaster's callback token |
+| Index | `GET /evidence-export` | Export token |
+| Index | Lookups, `/history`, `/capabilities`, `/publisher-policy`, `/evidence-package`, `/health`, synchronisation routes | Open |
+| Registry | Store a claim or change a status list | Write token |
+| Registry | Validation and reads | Open |
 
-These are the documented access rules; the latest capability check did not exercise authenticated writes. Keep each token with its intended endpoint. Independently establish the operator identity key used to check a signed publisher policy, and check its key windows before announcing. The index admits public publisher keys; it does not provide their private countersigning capability.
+| Verification input | Value and use |
+|---|---|
+| Evidence-package and export-part signer | `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass as `expectedSigner`. |
+| Operator identity key | Establish independently to check a signed publisher policy, then check its key windows before announcing. |
+| Publisher keys | The index admits public keys; it supplies no private countersigning capability. |
 
-The tokens belong to the hosted reference's operator and are not handed out for general use: to publish your own passports, [create your own index](packages/create-dpp-index.md) or arrange access with a compatible provider. To ask for a token or for the hosted index to name yours as a peer, [contact the programme](start/choose-your-path.md#contact-the-programme).
+These are documented rules; the latest capability check did not exercise authenticated writes. Keep each token with its intended endpoint.
+
+The operator does not distribute tokens for general use. To publish, [create an index](packages/create-dpp-index.md) or arrange access with a compatible provider. For a token or a hosted peer arrangement, [contact the programme](start/choose-your-path.md#contact-the-programme).
 
 ## Passports to try
 
@@ -39,13 +61,40 @@ Three live passports to look up with the [passport lookup](reference/contracts.m
 
 Use these to test reading and verifying, not as payload examples. The first, a version 1 lineage under GS1's example GTIN, predates the demonstration `notice` rule and carries none; the other two carry one. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. A report made with the profiles package's payload validator reads `schema` as `fail` with `schema-invalid` for each of them, and one made without a validator reads `unknown`; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile)). Start your own payload from `node examples/sample-payload.mjs`.
 
+To verify the first passport, run the existing reader from the checkout root:
+
+```sh
+node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A https://dpp-overlay.bsvb.net
+```
+
+It reconstructs five states and should finish:
+
+```text
+The chain as a whole is valid.
+Inclusion across the chain: verified.
+```
+
+This checks the supplied history, not freshness or profile validity. If header rate limits leave `inclusion pending`, retry or supply `WOC_API_KEY`.
+
 ## Where the hosted services fall short
 
 None of the three runs a GS1 resolver. No host serves `/.well-known/gs1resolver`, the registry's capability document reads `"discovery": "not-configured"`, and `dpp.bsvb.net` answers an identifier's path with its passport page whatever the `Accept` header asks for. The registry contract's `https://id.example.org` is a placeholder for the resolver origin a deployment configures, not a hosted service.
 
-The application's check at `https://dpp.bsvb.net/verify` looks an identifier up in the hosted index exactly as it is given, under any host, and accepts a state countersigned by any publisher key that index names. Given a path without a host, such as `01/<gtin>/21/<serial>`, or an address under one of its own hosts that it does not find, it asks the hosted index for every passport with that GS1 key, under any host ([find passport records](reference/contracts.md#find-passport-records)). It checks the one passport it finds, and when more than one host holds one it names them all and asks for the full address. It finds only what the hosted index holds, so a passport written to your own index reads as not found there until the hosted index pulls from yours ([join the hosted reference](#join-the-hosted-reference)). Check such a passport with a reader of your own, as step 1 of [build an application](packages/build-an-application.md) shows. The page reads no registry, so it reports lifecycle claims as not checked; the anchor proof page checks claims.
+The application's check at `https://dpp.bsvb.net/verify` uses only the hosted index and accepts a state countersigned by any publisher key it names:
 
-The registry's capability document does not name its anchoring key. Every current anchor it writes names `036564081bb854af4d049245f775f48495a5c4ffae830db5d3f1dbc05f9bf403e2` as `anchoredBy`, so give that key as an anchoring service you accept when you check its claims, as `--anchoring-services` does for `examples/check-registry.mjs`. Without it, a verifier cannot establish which service wrote the anchor. Its proofs carry no `lockingScript`, `blockHeight` or `merklePath`, so a verifier reads each anchor output and its merkle path from the chain, as `examples/check-registry.mjs` does.
+| Input or result | Behaviour |
+|---|---|
+| Full identifier under any host | Looks it up exactly as supplied. |
+| Hostless `01/<gtin>/21/<serial>`, or an unfound address under one of the application's own hosts | Asks for every passport with that GS1 key under any host ([find passport records](reference/contracts.md#find-passport-records)). |
+| One passport found | Checks that passport. |
+| More than one host holds a passport | Lists them all and asks for the full address. |
+| Passport only on your own index | Not found until the hosted index pulls from yours ([join the hosted reference](#join-the-hosted-reference)). Use your own reader as in step 1 of [build an application](packages/build-an-application.md). |
+| Lifecycle claims | Not checked: the page reads no registry. Use the anchor proof page for claims. |
+
+| Registry verification input | Requirement |
+|---|---|
+| Anchoring key | The capability document omits it. Every current anchor names `036564081bb854af4d049245f775f48495a5c4ffae830db5d3f1dbc05f9bf403e2` as `anchoredBy`. Accept that service key when checking claims, as `--anchoring-services` does for `examples/check-registry.mjs`; otherwise the verifier cannot establish which service wrote the anchor. |
+| Anchor output and proof | Registry proofs omit `lockingScript`, `blockHeight` and `merklePath`. Read the output and merkle path from the chain, as `examples/check-registry.mjs` does. |
 
 Every other known limit, of the hosted services and of the standard, is on [known limitations](operate/limitations.md).
 
@@ -61,7 +110,7 @@ Its one peer is run by the same administration, so the exchange between them dem
 
 ## Join the hosted reference
 
-Without its operator, anyone can read and verify every passport and anchor the hosted reference holds, take a passport's signed evidence package from `GET /evidence-package` and restore it into their own index ([restore from the bounded package](operate/export-import-recovery.md#restore-a-passport-from-the-bounded-package)), and pull the reference's records into their own index by naming it in `SYNC_PEERS` ([federation](operate/federation.md)).
+Without operator involvement, anyone can read and verify held passports and anchors, fetch `GET /evidence-package` to [restore a passport's signed bounded package](operate/export-import-recovery.md#restore-a-passport-from-the-bounded-package) into their index, or pull records by naming the reference in `SYNC_PEERS` ([federation](operate/federation.md)).
 
 Everything else is a setting only the reference's operator holds. Ask for it through the [contact form](start/choose-your-path.md#contact-the-programme), with what the table says to send:
 

@@ -1,75 +1,102 @@
 # Passport states and attestations
 
-A passport has two kinds of record: states, which change the product's record, and claims, which a party such as a repairer signs about the product. This page explains each one, when to write which, and what a reader can conclude from them.
+Readers and writers can use this page to choose between a passport state and a claim, and understand what each proves. States change the product's record; claims are separate signed statements, for example from a repairer.
+
+## Before you start
+
+| Task | Requirements and source |
+|---|---|
+| Understand or choose records | No software required |
+| Run the optional offline exercises | Node.js 22 or later; a [quick-start checkout](../quick-start.md#check-the-test-passports-offline) prepared with `npm ci` and `npm run build`. Both exercises use test data and need no network. |
 
 ## Passport states
 
-A state is one signed record in a passport's history, carried in one small transaction output. Each state after the first spends the one before it, so the history has a single order. The first state is the genesis, the newest is the tip, and the chain from one to the other is the passport's lineage.
+A state is a signed record in one small transaction output. Each state after the first spends its predecessor, giving history a single order. The first is the genesis, the newest is the tip, and their chain is the lineage.
 
-New passports are written as record version 2, which has four operations:
+New passports use record version 2, with four operations:
 
-| Operation | What it may change |
+| Operation | Permitted change |
 |---|---|
-| `ISSUE` | Opens the passport. It is the genesis and appears nowhere else |
-| `UPDATE` | The public payload, the owner-tier hash and the event data, and nothing else |
-| `TRANSFER` | The controller key, which says who controls the passport next, and the payload with it ([custody](custody.md)) |
-| `RETIRE` | Nothing in the payload; its event data may give the reason. It ends the passport, and no state can follow it |
+| `ISSUE` | Opens the passport; appears only at genesis |
+| `UPDATE` | Public payload, owner-tier hash and event data only |
+| `TRANSFER` | Controller key naming the next controller, and payload ([custody](custody.md)) |
+| `RETIRE` | No payload change; event data may give the reason. Ends the passport; no state may follow. |
 
-Record version 1 had seven operations named after lifecycle events: `ACTIVATE`, `SOLD`, `RESOLD`, `REPAIRED`, `RECYCLED`, `EDIT` and `TRANSFER`. Version 1 passports stay readable: the live passport in the [quick start](../quick-start.md) is one. Version 2 keeps in the record only what the record must enforce, and leaves the meaning, such as "this was a repair", to claims and to the event data a profile defines. A version 1 passport can continue as version 2 through one `UPDATE` ([versions and compatibility](versions-and-compatibility.md#record-versions-1-and-2)). Record version 3 carries the same four-operation body behind a token prefix, so that a generic token reader can follow a passport by its token id; it is for new lineages only (`spec/token-carrier.md`).
+| Version | Behaviour |
+|---|---|
+| 1 | Seven lifecycle operations: `ACTIVATE`, `SOLD`, `RESOLD`, `REPAIRED`, `RECYCLED`, `EDIT`, `TRANSFER`. Still readable; the [quick-start live passport](../quick-start.md) is one. |
+| 1 to 2 | One `UPDATE` can continue a version 1 passport as version 2 ([compatibility](versions-and-compatibility.md#record-versions-1-and-2)) |
+| 2 | Records enforce record rules; claims and profile-defined event data carry meanings such as repair |
+| 3 | Same four-operation body behind a token prefix; generic token readers can follow the token id. New lineages only (`spec/token-carrier.md`). |
 
 ## What a state carries
 
-| Part | What it is |
+| Part | Contents |
 |---|---|
-| Passport identifier | The product's web address, the same in every state ([identifiers](../identifiers.md)) |
-| Public payload, `payload_public` | The product data anyone can read, as JSON, on chain. The industry profile, such as battery or textile, chooses its fields ([industry profiles](../profiles/README.md)) |
-| Owner-tier hash, `payload_owner_hash` | The SHA-256 of the restricted data, which is encrypted and kept off chain. A reader uses the hash to check a copy; the hash itself reveals nothing and recovers nothing |
-| Keys and signatures | The actor's key and signature, the controller key, and the publisher's countersignature ([custody](custody.md#the-four-keys)) |
-| Links | The state this one spends, and the genesis of its lineage |
-| Event data | Optional JSON whose properties the profile defines |
+| Passport identifier | Product web address, unchanged across states ([identifiers](../identifiers.md)) |
+| Public payload, `payload_public` | Public JSON on chain; industry profiles such as battery or textile define fields ([profiles](../profiles/README.md)) |
+| Owner-tier hash, `payload_owner_hash` | SHA-256 of restricted data encrypted off chain. Checks a copy; reveals and recovers nothing itself. |
+| Keys and signatures | Actor key and signature, controller key, publisher countersignature ([four keys](custody.md#the-four-keys)) |
+| Links | Previous state spent and lineage genesis |
+| Event data | Optional JSON with profile-defined properties |
 
-Each field of an industry profile has an access tier that says who may read it:
+Industry profile fields each have an access tier:
 
-| Tier | Who reads it | Where it lives |
+| Tier | Readers | Storage |
 |---|---|---|
-| `public` | Anyone with the identifier | On chain, in `payload_public` |
-| `owner` | The passport's current holder | Off chain, encrypted; the state carries its hash |
-| `legitimate` | Parties with a legitimate interest, as the profile defines them | Off chain, encrypted |
-| `authority` | Notified bodies, market surveillance and other authorities | Off chain, encrypted |
+| `public` | Anyone with the identifier | On chain in `payload_public` |
+| `owner` | Current passport holder | Encrypted off chain; hash in state |
+| `legitimate` | Profile-defined parties with a legitimate interest | Encrypted off chain |
+| `authority` | Notified bodies, market surveillance and other authorities | Encrypted off chain |
 
-[The owner tier](../packages/how-the-writer-works.md#the-owner-tier), in how the writer example works, shows how to encrypt the restricted fields with the wallet and put their hash in a state. How the `legitimate` and `authority` tiers reach their readers is not settled yet: a state commits to one ciphertext, which reaches whoever holds its key ([known limitations](../operate/limitations.md)).
+[The owner tier](../packages/how-the-writer-works.md#the-owner-tier) shows wallet encryption of restricted fields and commitment of their hash. How the `legitimate` and `authority` tiers reach their readers is not settled yet: a state commits to one ciphertext, which reaches whoever holds its key ([known limitations](../operate/limitations.md)).
 
 ## Claims and anchors
 
-A claim is a statement a party signs about a product, kept apart from the passport's states. Four pieces make it checkable by anyone:
+A claim is a signed product statement separate from passport states. Four pieces make it checkable by anyone:
 
-| Piece | What it is |
+| Piece | Contents or role |
 |---|---|
-| Claim | A native lifecycle claim, format `dpp-lifecycle-v1`: the passport identifier, the state it refers to, one event type (`Origin`, `Transfer`, `Transformation` or `Disposition`), a time, the issuer and the issuer's signature |
-| Issuer | The party that signs the claim, named by a DID. At Ring 0 a `did:key` of its identity key is enough ([BSV DIDs](dids.md)) |
-| Registry | A service that validates claims, stores them and serves each one's exact bytes |
-| Anchor | A small transaction output, format `bsv-attestation-anchor-v1`, that commits to the claim's exact bytes. The anchoring service that writes it signs it |
+| Claim | Native format `dpp-lifecycle-v1`: passport identifier, referenced state, event type (`Origin`, `Transfer`, `Transformation` or `Disposition`), time, issuer and issuer signature |
+| Issuer | Signer named by a DID. At Ring 0, `did:key` of its identity key suffices ([BSV DIDs](dids.md)). |
+| Registry | Validates, stores and serves exact claim bytes |
+| Anchor | Small output in format `bsv-attestation-anchor-v1`, committing to exact claim bytes and signed by the anchoring service |
 
-Writing a claim never spends the passport, and the passport's controller does not have to agree to it. A valid claim with a valid anchor shows who signed it and that its bytes are unchanged since anchoring. It does not show that the claim is true, or that the issuer may make it ([identity and authority](identity-and-authority.md)).
+A claim never spends the passport or requires its controller's agreement. A valid claim and anchor establish the signer and unchanged bytes since anchoring, not truth or issuer authority ([identity and authority](identity-and-authority.md)).
 
 A native claim has no payload. Today it records the event type, the time, the issuer and the subject, but not what was done: a repair claim cannot say which part was replaced or who did the work. A mapping to an external event model therefore finds none of the evidence it asks for, and reports `insufficient-data` wherever the profile requires that evidence. Where such details belong is not settled in the standard yet ([known limitations](../operate/limitations.md)).
 
-Partners that ask for W3C verifiable credentials get a third representation; a native build does not need one ([verifiable credentials](verifiable-credentials.md)).
+Partners requesting W3C verifiable credentials receive a third representation; native builds do not need it ([verifiable credentials](verifiable-credentials.md)).
 
 ## Choose which to create
 
-Use a passport update when the product record itself changes. Use a claim when a party makes a statement that should be kept and checked independently, such as a repair assessment. One business event can produce both, but they have different signatures and verification paths.
+| Need | Record to create |
+|---|---|
+| Change the product record | Passport update |
+| Keep and check a party's statement independently, such as a repair assessment | Claim |
+| Record a changed condition and a signed repair claim | Both, with different signatures and verification paths |
 
-For example, a repair can update the product's recorded condition and produce a signed repair claim. Finding the updated passport does not establish that the repair claim was retrieved or checked. The reader's report keeps those results separate ([evidence and its limits](evidence-and-freshness.md#the-sixteen-checks)).
+Retrieving an updated passport does not establish that its repair claim was retrieved or checked. Reports separate those results ([evidence and its limits](evidence-and-freshness.md#the-sixteen-checks)).
 
 ## See it run
 
-Run the offline exercises in the [quick start](../quick-start.md#check-the-test-passports-offline), from a checkout after `npm ci` and `npm run build`. What to look for:
+1. Run `node examples/lifecycle-v2.mjs`:
 
-- `node examples/lifecycle-v2.mjs`: the `step:` lines from `ISSUE` through `UPDATE` and `TRANSFER` to `RETIRE` are passport states. The offer and acceptance between them are managed custody ([custody](custody.md#how-a-managed-transfer-works)). The block that starts "A lifecycle claim after retirement, on the other rail" is a recycler's claim and its anchor, verifying after the passport has ended without spending it; "rail" there means the separate path claims and anchors travel on. The run ends `Every sentence above holds.`
-- `node examples/verify-attestation-anchor.mjs`: checks one claim and its anchor on their own, and prints six lines starting `Holds:`.
+   ```sh
+   node examples/lifecycle-v2.mjs
+   ```
 
-Both use test data and need no network.
+2. Run `node examples/verify-attestation-anchor.mjs`:
+
+   ```sh
+   node examples/verify-attestation-anchor.mjs
+   ```
+
+| Exercise | Expected result |
+|---|---|
+| Lifecycle | `step:` lines show states from `ISSUE` through `UPDATE` and `TRANSFER` to `RETIRE`. Offer and acceptance between them show [managed custody](custody.md#how-a-managed-transfer-works). Ends `Every sentence above holds.` |
+| Lifecycle's "A lifecycle claim after retirement, on the other rail" block | Recycler claim and anchor verify after retirement without spending the passport. Rail means their separate transaction path. |
+| Anchor verification | Checks one claim and anchor independently; prints six `Holds:` lines |
 
 ## Source definitions
 
@@ -81,13 +108,13 @@ Both use test data and need no network.
 | Historical anchor records | [Historical format](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) |
 | Credential representations | [VSC profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md), [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
 
-A record's format selects the source to read. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists where the sources still disagree. Whether the historical anchor format admits issuers other than `did:key` is an [open decision](../start/status.md#open-decisions); new anchors are not affected.
+The record format selects its source. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists source disagreements. Historical-anchor issuers beyond `did:key` remain an [open decision](../start/status.md#open-decisions); new anchors are unaffected.
 
 ## Next
 
-| You are | Go to |
+| Task | Guide |
 |---|---|
-| Writing passports with the packages | [Write a passport](../packages/build-an-application.md#3-write-a-passport) in build an application |
-| Signing claims with the packages | [Add a claim](../packages/add-a-claim.md) |
-| Implementing the rules yourself | [Passport writer](../implement/roles/passport-writer.md) or [attestation issuer](../implement/roles/attestation-issuer.md) |
-| Still learning the model | [Identifiers](../identifiers.md), then [identity and authority](identity-and-authority.md) |
+| Write with packages | [Write a passport](../packages/build-an-application.md#3-write-a-passport) |
+| Sign claims with packages | [Add a claim](../packages/add-a-claim.md) |
+| Implement rules independently | [Passport writer](../implement/roles/passport-writer.md) or [attestation issuer](../implement/roles/attestation-issuer.md) |
+| Learn the model | [Identifiers](../identifiers.md), then [identity and authority](identity-and-authority.md) |

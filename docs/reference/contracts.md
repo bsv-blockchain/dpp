@@ -1,28 +1,44 @@
 # Contracts and schemas
 
-This page lists every HTTP route of the index and the registry with what it takes and what it answers, and maps the JSON schemas to the documents they define. It is for implementers and operators who need the exact shapes; the contract files linked at the end are the authority where this page and they differ.
+This page lists every HTTP route of the index and the registry with what it takes and what it answers, and maps the JSON schemas to the documents they define. Implementers and operators can use it to make requests and interpret responses. The linked contracts take precedence where this page differs.
 
-The index (the reference package and its software call it an overlay) admits passport states and claim anchors and answers lookups. The registry validates and keeps signed claims. They are separate services: a route on one does not mean the other runs at the same address.
+The index (overlay in the reference software) admits passport states and claim anchors and answers lookups. The registry validates and keeps signed claims. They are separate services; do not assume they share an address.
+
+## Before you start
+
+| Procedure | Input and source |
+|---|---|
+| Check a service | `curl` and its URL from the operator. Start a local index with [Create an index](../packages/create-dpp-index.md), or use `https://dpp-overlay.bsvb.net`. |
+| Run JavaScript requests | Node.js 22 or later. Use the checkout root after `npm ci` and `npm run build`; the lookup also runs in a project with `@bsv/sdk@2.8.10` installed. |
+| Look up records | Expected passport identifier from the caller, or its GTIN and serial. Select the index URL below. |
+| Validate a claim | A registry URL, secured native claim and expected product identifier from the caller. The example uses the checkout fixture and hosted registry. Validation is open. |
+| Submit, retract, ingest proofs or export | Obtain the tokens in the route table from the operator. Outside writers have none of the hosted index tokens. |
+| Publisher admission windows | Operator's signed policy chain ([verification](../operate/federation.md#tell-operators-apart)) |
 
 ## Check a service
 
-Every service answers two open routes. Against your own index, started as [Create an index](../packages/create-dpp-index.md) describes, or against the hosted index at `https://dpp-overlay.bsvb.net`:
+1. Request the two open routes every service answers. These commands target your local index:
 
 ```sh
 curl --fail http://localhost:8080/health
 curl --fail http://localhost:8080/capabilities
 ```
 
-`/health` names the topics and lookup services the index runs. `/capabilities` is its capability document, in the shape of [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json): roles, protocol versions, profiles, the publisher policy, synchronisation, limits and what the service does not do. Compare it with what your client needs before you submit records or request an export.
+2. Compare the answers with your client's requirements before submitting records or requesting an export.
 
-Two things the capability document does not tell you:
+| Response | What it provides |
+|---|---|
+| `/health` | Topics and lookup services the index runs |
+| `/capabilities` | Roles, protocol versions, profiles, publisher policy, synchronisation, limits and unsupported functions, in the shape of [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json) |
 
-- `publisherPolicy.publisherKeys` lists the publisher keys active at the moment of the request, without their activation windows; the schema allows no other property there. A key's window is only in the operator's signed policy chain, which [tell operators apart](../operate/federation.md#tell-operators-apart) shows how to check.
-- The registry contract defines its own `Capabilities` document, a different shape from `capabilities.schema.json`, and the hosted registry serves the contract's. Which one a registry's `GET /capabilities` must answer is not settled; the [registry guide](../implement/roles/registry.md) explains.
+| Missing or unsettled fact | Source and stop condition |
+|---|---|
+| Publisher activation windows | `publisherPolicy.publisherKeys` lists only keys active at request time; the schema allows no other property there. Check the operator's signed policy chain before relying on a key's window. |
+| Registry capability shape | The registry contract defines its own `Capabilities`, different from `capabilities.schema.json`; the hosted registry serves the contract's shape. Which document a registry's `GET /capabilities` must answer is unsettled. Follow the [registry guide](../implement/roles/registry.md) before assuming one shape. |
 
 ## Find passport records
 
-This asks an index for every state it holds for one passport and prints each state's transaction identifier. Save it as `lookup.mjs` at the root of the checkout, after `npm ci` and `npm run build`, or in a project with `@bsv/sdk@2.8.10` installed:
+1. Save this as `lookup.mjs` in the prepared checkout or SDK project. It requests every state the index holds for one passport and prints each transaction identifier.
 
 ```js
 // Ask an index for every state it holds for one passport.
@@ -42,7 +58,7 @@ console.log(`${answer.type} with ${answer.outputs.length} outputs from ${indexUr
 for (const output of answer.outputs) console.log(`  ${Transaction.fromBEEF(output.beef).id('hex')} output ${output.outputIndex}`)
 ```
 
-Run `node lookup.mjs`. By default it asks the hosted index for a live version 1 passport and prints:
+2. Run `node lookup.mjs`. The default request returns this live version 1 passport:
 
 ```
 output-list with 5 outputs from https://dpp-overlay.bsvb.net
@@ -53,15 +69,22 @@ output-list with 5 outputs from https://dpp-overlay.bsvb.net
   1947027e0cd40613795bc2ec005defff03ada9695c1f1e323da26797b9bf4150 output 0
 ```
 
-Set `INDEX_URL` to ask another index, such as `INDEX_URL=http://localhost:8080 node lookup.mjs`, and `PASSPORT_ID` to ask for another passport; [the hosted reference page](../deployment.md) lists three live ones. An index that holds nothing for the passport, such as a new index, prints `output-list with 0 outputs`. Each output carries its transaction evidence as BEEF, the encoding that bundles a transaction with its ancestors and merkle proofs. A 200 answer does not establish a valid history or inclusion: pass the outputs to a [reader](../implement/roles/passport-reader.md), or run `node examples/verify-passport.mjs <passportId> <indexUrl>`, which verifies them.
+| Setting or selector | Value and result |
+|---|---|
+| `INDEX_URL` | Default `https://dpp-overlay.bsvb.net`; use `INDEX_URL=http://localhost:8080 node lookup.mjs` for a local index |
+| `PASSPORT_ID` | Select another passport; [hosted references](../deployment.md) lists three live ones |
+| Empty result | `output-list with 0 outputs`, including from a new index holding no states for this passport |
+| GTIN and serial only | `query: { gs1Key: '01/09506000134352/21/7AC18477503A' }` |
 
-Holding only a GTIN and serial, ask by GS1 key instead: `query: { gs1Key: '01/09506000134352/21/7AC18477503A' }`, or the tuple `01:09506000134352|21:7AC18477503A`, answers the states of every passport the index holds for that key under any host, each under its exact identifier, which you then verify ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)). An index on an earlier release refuses the query.
+The tuple `01:09506000134352|21:7AC18477503A` is another GS1-key selector. A GS1-key query returns states for every matching passport under any host, each under its exact identifier. Verify those identifiers as [identifier handling](../identifiers.md#use-the-identifier-throughout-the-request) describes. An index on an earlier release refuses the query.
 
-To compare two indexes, compare transaction identifiers and proofs, not bytes. The contract does not fix the form of a lookup's BEEF, so two indexes can serve the same states differently: for the passport above, the hosted index and a local index restored from its package returned the same five transactions, each 36 bytes apart.
+3. Verify the returned outputs with a [reader](../implement/roles/passport-reader.md), or `node examples/verify-passport.mjs <passportId> <indexUrl>`. Each output carries BEEF, which bundles a transaction, its ancestors and merkle proofs. HTTP 200 does not establish a valid history or inclusion.
+
+Compare indexes by transaction identifiers and proofs. The contract leaves lookup BEEF form open. For the passport above, the hosted index and a local index restored from its package returned the same five transactions, each 36 bytes apart.
 
 ## Index routes
 
-[`contracts/overlay.yaml`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) is a profile of the BSV ecosystem's overlay HTTP contract: BRC-22 submission and BRC-24 lookup as upstream defines them, plus the extensions below. The tokens are the operator's settings; on the hosted index, outside writers have none of them.
+[`contracts/overlay.yaml`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) is a profile of the BSV ecosystem's overlay HTTP contract: BRC-22 submission and BRC-24 lookup as upstream defines them, plus the extensions below. The route table gives each token setting.
 
 | Route | Access | Request | Success | Errors |
 |---|---|---|---|---|
@@ -80,7 +103,7 @@ To compare two indexes, compare transaction identifiers and proofs, not bytes. T
 
 ### What `POST /submit` answers
 
-A well-formed, authorised `/submit` answers 200 whether or not anything was admitted. The body is the STEAK, the BRC-22 acknowledgement: for each topic, `outputsToAdmit` lists the outputs the index admitted, and `coinsToRetain` and `coinsRemoved` the inputs it kept or removed. The `X-Admission` header says per topic, comma-separated, which of three things happened. These are the answers a reference index gave for the genesis of the passport above:
+A well-formed, authorised `/submit` answers 200 even when nothing was admitted. Read `X-Admission` per topic, comma-separated. The body is the STEAK, the BRC-22 acknowledgement: `outputsToAdmit` lists admitted outputs; `coinsToRetain` and `coinsRemoved` list inputs kept or removed. A reference index gave these three answers for the genesis above:
 
 | `X-Admission` | Body | Meaning |
 |---|---|---|
@@ -88,15 +111,43 @@ A well-formed, authorised `/submit` answers 200 whether or not anything was admi
 | `tm_dpp=duplicate` | `{"tm_dpp":{"outputsToAdmit":[],"coinsToRetain":[]}}` | The index already held it; announcing it again changes nothing. The body has no `coinsRemoved`, which is how a duplicate is told from a refusal. |
 | `tm_dpp=none` | `{"tm_dpp":{"outputsToAdmit":[],"coinsToRetain":[],"coinsRemoved":[]}}` | The index refused it. |
 
-A refusal also carries `X-Admission-Refusal`, which names per topic the check that failed. For the `none` answer above, from an index whose publisher key was not the state's, an index on this release adds `X-Admission-Refusal: tm_dpp=publisher-not-authorised`. The contract lists every code under `x-refusal-codes`, and [when the index refuses a state](../packages/build-an-application.md#when-the-index-refuses-a-state) says what each asks of a writer. Where a verification report names the same failure, the code is the report's own word, so a writer and a reader see the same one. Only `tm_dpp` records reasons: an anchor refused on `tm_attestation`, or a state refused by an index on an earlier release, comes back without the header, and then only the operator's log says why ([known limitations](../operate/limitations.md)).
+A refusal also carries `X-Admission-Refusal`, naming the failed check per topic. For the `none` answer above, the index's publisher key differed from the state's. An index on this release adds `X-Admission-Refusal: tm_dpp=publisher-not-authorised`.
+
+The contract lists every code under `x-refusal-codes`, and [when the index refuses a state](../packages/build-an-application.md#when-the-index-refuses-a-state) says what each asks of a writer. Writers and readers see the same code where a verification report names the same failure. Only `tm_dpp` records reasons: an anchor refused on `tm_attestation`, or a state refused by an index on an earlier release, comes back without the header, and then only the operator's log says why ([known limitations](../operate/limitations.md)).
 
 ## Validate a claim
 
-Send the secured native claim as JSON to `POST /validate?subject=...` on a registry. The query value is the product identifier the caller expects the claim to be about. The [runnable request](../quick-start.md#ask-a-registry-to-check-the-claim) reads the claim from a fixture and handles the URL encoding.
+1. Send the secured native claim as JSON to `POST /validate?subject=...`. Set the query value to the product identifier the caller expects. This [runnable request](../quick-start.md#ask-a-registry-to-check-the-claim) reads the fixture and handles URL encoding:
 
-The answer names its contract and carries named checks, with a shared `report` when a subject can be determined. Read that report's checks and limits: a transport success or a registry-level outcome is not evidence about each check. Claims in the historical representation answer under a different response contract ([historical claims](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)).
+```sh
+REGISTRY_URL=https://dpp-resolver.bsvb.net node --input-type=module <<'JS'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 
-The operation does not store or anchor the claim. The optional `tokenHistory` field supplies BEEF-encoded history as request context and is removed before the claim is verified ([the operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml#L773-L823)). A malformed or ambiguous request, unreadable token history included, can answer 400. A refused connection means no registry runs at the chosen URL.
+const fixture = JSON.parse(readFileSync('fixtures/attestation-anchor-v1.json', 'utf8'))
+const url = new URL('/validate', process.env.REGISTRY_URL ?? 'http://localhost:4000')
+url.searchParams.set('subject', fixture.unsignedClaim.passportId)
+const response = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(fixture.claim),
+})
+assert.equal(response.status, 200)
+const result = await response.json()
+console.log(JSON.stringify(result.report ?? result, null, 2))
+JS
+```
+
+2. Expect HTTP 200 and a report whose claim signature, subject, validity period and evidence checks pass. Checks needing omitted evidence, such as passport history, read `unknown` with a reason. Set `REGISTRY_URL` to use your own registry.
+
+The answer names its contract and checks, with a shared `report` when the subject can be determined. Read its checks and limits; transport success or a registry-level outcome does not establish each check. Historical claims use a different response contract ([historical claims](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)).
+
+| Condition | Interpretation |
+|---|---|
+| Validation only | Does not store or anchor the claim |
+| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml#L773-L823)) |
+| HTTP 400 | A malformed or ambiguous request, including unreadable token history; resolve it before interpreting verification |
+| Refused connection | No registry runs at the chosen URL |
 
 ## Registry routes
 

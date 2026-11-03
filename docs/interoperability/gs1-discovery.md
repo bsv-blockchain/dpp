@@ -1,32 +1,72 @@
 # GS1 discovery
 
-This page is for brands whose products carry GS1 Digital Link codes, and for readers that start from a scanned code. It says whether you need a GS1 resolver (usually not), how a reader gets from a scan to passport evidence, and which published helpers do each step; mint the identifiers first, as [identifiers](../identifiers.md) shows.
+Brands using GS1 Digital Link codes and readers starting from scans can use this guide to choose whether to run a resolver, find passport evidence and verify the scanned subject. The tables identify the published helpers for each step.
 
-A GS1 Digital Link is a web address that carries a GS1 key, such as `https://dpp.bsvb.net/01/09521000000018/21/BATT-0001`: application identifier `01` is the GTIN and `21` the serial. Discovery finds the services that hold a product's passport and evidence; the reader then verifies what those services return.
+A Digital Link is a web address carrying a GS1 key: in `https://dpp.bsvb.net/01/09521000000018/21/BATT-0001`, application identifier `01` is the GTIN and `21` the serial. Discovery finds services; readers verify their responses.
+
+## Discovery prerequisites
+
+| Task | Input and source |
+|---|---|
+| Publish identifiers | Mint them first under a host you control, following [identifiers](../identifiers.md). That host must serve each identifier's passport page. |
+| Select a resolver | Use scanners' or trading partners' resolution requirements to decide whether the optional profile below is needed. |
+| Follow a scan | Preserve the original scanned identifier as the expected subject. |
+| Run local examples | Node 22 or later, npm and a checkout with `npm ci` and `npm run build` completed through [setup](../quick-start.md#get-the-code). Run from its root; the exercises make no network requests. |
 
 ## Do you need a resolver?
 
-Usually not. The host you mint identifiers under must answer each identifier's path with the passport page, and your own application does that. A GS1-Conformant Resolver is more: for every identifier it serves a linkset, the list of the product's links each labelled with a link type such as `gs1:pip` for product information; it redirects a request to the link that best matches the link type, media type and language asked for; and it publishes a description file at `/.well-known/gs1resolver`. That is the optional `gs1-digital-link@1` profile.
+Usually not: your application can serve passport pages under its identifier host. Adopt optional `gs1-digital-link@1` when scanners or partners expect several destinations or selection by language or link type.
 
-Adopt it when scanners or trading partners expect GS1 resolution: several destinations per product, or links chosen by language or link type. A deployment that adopts it gives the resolver an origin of its own, separate from its API, and has two choices today:
+| GS1-Conformant Resolver responsibility | Behaviour |
+|---|---|
+| Linkset | For each identifier, lists product links labelled by type, such as `gs1:pip` for product information. |
+| Resolution | Redirects to the best match for requested link type, media type and language. |
+| Description | Publishes `/.well-known/gs1resolver`. |
+| Deployment | Uses its own origin, separate from its API. |
 
-- **Build the resolver** with the published `@bsv/dpp-profiles` helpers: `resolutionRecordProblems` checks a record before it is stored, `matchRecords` and `resolveLinks` answer a request, `linksetDocument` builds the linkset, `describeResolver` builds the description file, and `selectLink` is the client's side.
-- **Name an external GS1-Conformant Resolver**, which a discovery client reads through the same contract.
+Build a resolver with published `@bsv/dpp-profiles` helpers, or name an external GS1-Conformant Resolver that discovery clients read through the same contract:
 
-The [GS1 discovery specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/gs1-discovery.md) (sections 1 and 4) also names running the reference registry's resolver. That registry is not published: its source is not public, and no package or image of it exists ([registry](../implement/roles/registry.md)). The hosted reference runs no resolver either. The hosted registry at `dpp-resolver.bsvb.net` has no resolver configured despite its name: its capability document reads `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. There is no hosted resolver origin to point at ([hosted reference](../deployment.md#the-hosted-reference)).
+| Helper | Task |
+|---|---|
+| `resolutionRecordProblems` | Check records before storage |
+| `matchRecords`, `resolveLinks` | Answer requests |
+| `linksetDocument` | Build linksets |
+| `describeResolver` | Build description files |
+| `selectLink` | Select links on the client |
+
+The [specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/gs1-discovery.md), sections 1 and 4, also names the reference registry's resolver. That registry has no public source, package or image ([registry](../implement/roles/registry.md)). The hosted reference runs no resolver. Despite its name, `dpp-resolver.bsvb.net`'s capability document reports `"discovery": "not-configured"` and serves no `/.well-known/gs1resolver`. There is no hosted resolver origin to use ([hosted reference](../deployment.md#the-hosted-reference)).
 
 ## Follow a scanned identifier
 
-1. **Parse the Digital Link** with `parseGs1DigitalLinkUri`. It answers `uncompressed` with the GS1 key and its qualifiers, such as a lot (`10`) or serial (`21`); `compressed`, which `decompressGs1DigitalLink` turns into the uncompressed form; or `invalid` with a named reason, never an exception.
-2. **Ask for the linkset.** Request the identifier with the header `Accept: application/linkset+json`, or add `?linkType=linkset`; a resolver never redirects that request. A host without a resolver answers with its passport page instead: `dpp.bsvb.net` returns the page whatever the `Accept` header asks for.
-3. **Select the link** with `selectLink`. Ask for the relation you need: `gs1:defaultLink` for the default destination, `gs1:pip` for product information, or `https://dpp.bsvb.net/link/evidencePackage/1` (exported as `DPP_EVIDENCE_PACKAGE_LINK_TYPE`) for the passport's portable evidence package, a relation this standard defines because the GS1 vocabulary has none. The answer is one link with its anchor and scope, an ambiguous set of candidates, or not found with the relations that are available. A link found under the GTIN's anchor is model information the item inherits, not an item fact.
-4. **Retrieve the evidence and verify it** with a [passport reader](../implement/roles/passport-reader.md), passing the identifier the scan gave as the expected subject.
+1. Parse with `parseGs1DigitalLinkUri` and handle the result:
 
-Keep the original identifier through all four steps. Equivalent keys on different hosts do not permit rewriting the subject inside signed evidence, and rewriting a discovery host does not rename the signed subject. A lookup by GS1 key, `gs1Key` on `ls_dpp`, keeps to this: it answers every passport for the key under its own exact identifier, whatever host it was issued under, and the reader verifies each against that identifier, never against the key it asked with ([identifiers](../identifiers.md)). A URL that resolves also does not establish who GS1 allocated the number to. The hosted reference's page check does the same: it looks an identifier up exactly as given, tries the same path under the other hosts it knows only for a path without a host, or an identifier under one of its own hosts, that the exact lookup does not find, and checks a passport it finds under that passport's own identifier ([hosted reference](../deployment.md#the-hosted-reference)).
+   | Result | Meaning and next step |
+   |---|---|
+   | `uncompressed` | GS1 key and qualifiers, such as lot (`10`) or serial (`21`). Continue. |
+   | `compressed` | Use `decompressGs1DigitalLink` to obtain uncompressed form. |
+   | `invalid` | Named reason, never an exception. Stop this discovery attempt. |
+
+2. Request the identifier with `Accept: application/linkset+json` or `?linkType=linkset`. Resolvers never redirect this request. Without a resolver, the host serves its page: `dpp.bsvb.net` does so regardless of `Accept`.
+3. Use `selectLink` for the required relation:
+
+   | Relation | Destination |
+   |---|---|
+   | `gs1:defaultLink` | Default link |
+   | `gs1:pip` | Product information |
+   | `https://dpp.bsvb.net/link/evidencePackage/1`, exported as `DPP_EVIDENCE_PACKAGE_LINK_TYPE` | Portable evidence package. This standard defines the relation because GS1 has none. |
+
+   The result is one link with anchor and scope, ambiguous candidates, or not found with available relations. Keep ambiguity visible instead of choosing an unsupported match. A GTIN-anchor link is inherited model information, not an item fact.
+4. Retrieve evidence and pass the scanned identifier as expected subject to a [passport reader](../implement/roles/passport-reader.md).
+
+Apply these matching rules throughout:
+
+1. Preserve the original identifier. Equivalent keys across hosts do not authorise rewriting signed subjects; changing discovery hosts does not rename them. A resolving URL does not establish the GS1 allocation holder.
+2. For GS1-key lookup, `gs1Key` on `ls_dpp` returns every passport under its own exact identifier, regardless of issuance host. Verify each against that identifier, never the lookup key ([identifiers](../identifiers.md)).
+3. The hosted page check first looks up the exact identifier. Only after a miss, for a hostless path or an identifier under its own hosts, it tries that path under other known hosts. It verifies any found passport under its own identifier ([hosted reference](../deployment.md#the-hosted-reference)).
 
 ## Run the examples
 
-At the root of a checkout, after [setup](../quick-start.md#get-the-code), parse the battery fixture's identifier:
+Parse the battery fixture's identifier:
 
 ```sh
 node --input-type=module <<'JS'
@@ -37,26 +77,47 @@ console.log(parseGs1DigitalLinkUri(fixture.identifiers.passportId))
 JS
 ```
 
-It prints an object with `kind: 'uncompressed'`, `host: 'dpp.bsvb.net'`, a `primaryKey` of `ai: '01'` and `value: '09521000000018'` with `checkDigitValid: true` and `demonstration: true` (the 952 prefix), and one qualifier, `{ ai: '21', value: 'BATT-0001' }`. It makes no request.
+The returned object's relevant fields are:
 
-Then run the whole flow, from records to a selected link, with no network:
+```text
+kind: 'uncompressed'
+host: 'dpp.bsvb.net'
+primaryKey: { ai: '01', value: '09521000000018', checkDigitValid: true, demonstration: true }
+qualifiers: [{ ai: '21', value: 'BATT-0001' }]
+```
+
+The qualifier is the serial; `demonstration: true` identifies prefix 952. No request is made. Run the complete offline flow next:
 
 ```sh
 node examples/resolve-digital-link.mjs
 ```
 
-[`examples/resolve-digital-link.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/resolve-digital-link.mjs) checks three demonstration resolution records (model, lot and item), parses the URI, resolves it for a public audience, builds the linkset, selects links as a client would and builds the description file. It prints thirteen `Holds:` sentences, among them that the evidence package link is found at the item level and that a restricted link never reaches the public, and ends with `Every sentence above holds.` Give it a URI as its argument to try another, including a compressed one.
+The [example](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/resolve-digital-link.mjs) checks three demonstration model/lot/item records, parses the URI, resolves for a public audience, builds a linkset, selects links and builds the description. Expect thirteen `Holds:` sentences, including the evidence-package link at item level and no restricted links reaching the public, then `Every sentence above holds.` Supply a URI argument to try another, including compressed input.
 
 ## Add a passport link to a resolver you already run
 
-If your products already resolve through a GS1-Conformant Resolver, register the passport on the item's own record, at the serial level, so it is an item fact: the passport page under the link type you use for product information, and the evidence package under `https://dpp.bsvb.net/link/evidencePackage/1`. The item record in `examples/resolve-digital-link.mjs` is that shape. A record may also carry the exact signed passport identifier it is bound to, with a reference to the evidence that established the binding; it never derives one from the GS1 key (specification section 2).
+Register links on the item's serial-level record: the passport page under your product-information link type and evidence under `https://dpp.bsvb.net/link/evidencePackage/1`. This makes them item facts.
+
+`examples/resolve-digital-link.mjs` shows these item-record fields:
+
+| Field | Example shape or value |
+|---|---|
+| `key` | GTIN: `ai: '01'`, `value: GTIN` |
+| `qualifiers` | Serial: `[{ ai: '21', value: 'SER-0001' }]` |
+| `configurationRevision` | `'example-1'` |
+| `links` | Evidence entry with `rel: DPP_EVIDENCE_PACKAGE_LINK_TYPE`, destination `href`, `title`, `type: 'application/json'` and `disclosure: 'public'` |
+| Optional `passportId`, `bindingRef` | Exact signed passport identifier and reference to evidence establishing its binding |
+
+Never derive the bound passport identifier from the GS1 key (specification section 2).
 
 ## Known gaps
 
-These are open questions in the standard; [known limitations](../operate/limitations.md) lists the reference service's limits.
+These are open standard questions; [known limitations](../operate/limitations.md) covers reference-service limits.
 
-- No link type names the registry that holds a passport's claims, so a reader learns the registry out of band.
-- The record model's text (section 3) still says a host that mints identifiers runs "its own resolver"; this page, [identifiers](../identifiers.md) and the profile itself say a passport page is enough and a resolver is optional.
+| Gap | Consequence |
+|---|---|
+| No claim-registry link type | Readers learn the registry out of band. |
+| Record-model text, section 3 | Still says identifier hosts run "its own resolver". This page, [identifiers](../identifiers.md) and the profile permit a passport page with an optional resolver. |
 
 ## Source definitions
 
@@ -67,4 +128,4 @@ These are open questions in the standard; [known limitations](../operate/limitat
 | The reference registry's resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml); its `https://id.example.org` is a placeholder origin |
 | Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/gs1) |
 
-Next: the [passport reader](../implement/roles/passport-reader.md), which verifies what discovery found.
+Next: the [passport reader](../implement/roles/passport-reader.md) verifies discovered evidence.

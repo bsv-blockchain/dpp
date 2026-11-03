@@ -1,19 +1,34 @@
 # Run the interoperability trial
 
-The trial is a defined exchange between the reference implementation, which the programme operates, and a second implementation written from the bundle: each writes fresh records, the other verifies them, and every scenario records what passes and what must be refused. This page is for an implementer whose components already pass the fixtures and who wants to run the trial, alone where a scenario allows and with the programme where it needs the reference to act.
+Implementers whose components pass the fixtures can use this guide to exchange fresh records with the reference implementation and retain reproducible per-check results. Run scenarios alone where permitted; arrange programme participation where the reference must act.
 
-The trial is defined in [`independent-implementation-2026-09`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) for release set `dpp-release-2026-11`, baseline `native-baseline@2` and custody profile `managed-custody@1`, the profile the September run demonstrated; it moves to `managed-custody@2` with the second implementing party's written acceptance of the derived-key signature. It has not been completed. Evidence the programme produces itself is engineering evidence; the organisational independence that version 1.0 needs is recorded only when another implementing party runs the same scenarios.
+## Prerequisites and trial target
+
+| Input or scenario | Requirement and source |
+|---|---|
+| All scenarios | Passing fixture results, authorship and dependency records kept as [reporting](reporting.md) describes. |
+| Writer | Your funded BRC-100 wallet and index. [Create an index](../packages/create-dpp-index.md) includes the reference runtime; use your own implementation to claim the independent overlay role. |
+| Mined inclusion | Explicitly authorised, funded mainnet run, with transaction identifiers retained. Synthetic transactions under a scripts-only header setting prove admission and structure, never mining. |
+| Reference participation | Agree scenarios, endpoints and publisher keys with the programme below. |
+
+The trial definition is [`independent-implementation-2026-09`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json):
+
+| Target or gate | Value |
+|---|---|
+| Release set | `dpp-release-2026-11` |
+| Baseline | `native-baseline@2` |
+| Custody profile | `managed-custody@1`, demonstrated in September. It moves to `managed-custody@2` with the second implementing party's written acceptance of the derived-key signature. |
+| Completion | Not completed. Programme-produced evidence is engineering evidence. Version 1.0's organisational independence is recorded only when another implementing party runs the same scenarios. |
 
 ## Take part
 
-To take part, or to arrange a scenario that needs the reference, write to the programme through the [BSV Association contact form](https://bsvassociation.org/contact/). Say which scenarios you want to run, the roles and record versions you implement, your index and registry URLs, and the publisher keys your states are countersigned with. Before you ask, have:
-
-- components that pass their fixtures, with your results and your authorship and dependency record kept as [reporting](reporting.md) describes;
-- for a writer, a BRC-100 wallet with funds and your own index ([Create an index](../packages/create-dpp-index.md) includes the reference runtime; use your own implementation when claiming the independent overlay role).
+1. Select scenarios from the table below.
+2. For participation or reference actions, use the [BSV Association contact form](https://bsvassociation.org/contact/). Include your scenarios, implemented roles and record versions, index and registry URLs, and publisher keys countersigning your states.
+3. Agree the exchange below before running a scenario that needs the reference.
 
 ## The scenarios
 
-"Alone" means you can run the scenario with your own components and the published material. A scenario that needs the reference to write, admit or peer needs the programme.
+The trial exchanges records between the programme-operated reference implementation and a second implementation written from the bundle. Each writes fresh records for the other to verify; each scenario records passes and required refusals. "Alone" means your components and the published material suffice. Reference writing, admission or peering needs the programme.
 
 | Scenario | Roles | What it shows | Who you need |
 |---|---|---|---|
@@ -33,15 +48,14 @@ To take part, or to arrange a scenario that needs the reference, write to the pr
 | `profiles` | Reader, writer | Profile results reported apart from core results, with an unknown profile version and a missing field refused | Alone |
 | `stale-restricted-unavailable` | Reader, verifier | Missing claims, status, authority evidence and headers reported as `unknown`, pending or refused, never as a pass | Alone |
 
-A scenario that needs mined inclusion needs an explicitly authorised, funded mainnet run, recorded with its transaction identifiers. Synthetic transactions under a scripts-only header setting prove admission and structure, never mining.
-
 ## Prepare an exchange
 
-Agree the roles, record and profile versions, endpoint addresses and publisher policies with the other participant. Each implementation first runs its own fixture checks and keeps its authorship and dependency record.
+1. Agree roles, record and profile versions, endpoint addresses and publisher policies with the other participant.
+2. Run each implementation's fixture checks first. Keep results, authorship and dependency records.
+3. Produce fresh records. The other participant retrieves and verifies them with its own logic; reverse direction where both implement the role. Retain exact requests, responses, artefacts and reports.
+4. Exercise missing evidence and an unavailable provider as well as success. For recovery, retain exports and use a replacement service; a second view of the first service's database is insufficient.
 
-Then exchange newly created records. One participant produces evidence; the other retrieves and verifies it with its own logic. Reverse the direction where both implement the role. Exercise missing evidence and an unavailable provider as well as the successful path. A recovery exercise needs retained exports and a replacement service, not merely a second view of the first service's database.
-
-A driver that calls a service supplies data to your implementation; it does not replace your implementation's verification.
+A driver calling a service supplies inputs. It does not replace your implementation's verification.
 
 ## Retain
 
@@ -64,6 +78,16 @@ These are open questions in the standard and the reference deployment, not fault
 
 ## What completion records
 
-A completed scenario records its retained evidence and the ledger rows it bears on: each scenario lists them under `rows` in the definition. The trial's evidence bears on the claims `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer`, `overlay-single-operator-1` and `registry-current-intake`. It cannot make `overlay-federated-operators-1`, which needs separately administered operators (`two-operators` provides them only when the parties are separate organisations), `version-1-0-readiness`, which needs another implementing party on record, or the European and battery claims, which need their own assessments. Local synthetic exchanges do not establish separately administered operation or mined inclusion, and the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records the remaining evidence gaps.
+For each completed scenario, retain its evidence and the ledger rows listed under `rows` in the definition.
+
+| Claim or conclusion | What the trial records or still needs |
+|---|---|
+| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer`, `overlay-single-operator-1`, `registry-current-intake` | Trial evidence bears on these claims. |
+| `overlay-federated-operators-1` | Cannot be made by the trial alone. Requires separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
+| `version-1-0-readiness` | Cannot be made by the trial alone. Requires another implementing party on record. |
+| European and battery claims | Need their own assessments. |
+| Local synthetic exchange | Establishes neither separately administered operation nor mined inclusion. |
+
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records remaining evidence gaps.
 
 Next: [report the results](reporting.md#send-it).

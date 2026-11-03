@@ -1,12 +1,21 @@
 # Textile
 
-The textile profile, `textile@2`, is the product data for clothing, footwear, home textiles and textile accessories: composition, care, origin and the evidence behind them, and who may read each value. Use this page to start a payload from a sample that passes, see the categories and fields the profile defines, and inspect them in code.
+Passport writers and readers can use this page to prepare a `textile@2` payload and inspect its categories and fields. The profile covers clothing, footwear, home textiles and textile accessories: composition, care, origin, supporting evidence and who may read each value.
 
 A shared schema lets producers and readers use the same declared fields, but it does not turn an unassessed declaration into verified evidence. To compare the profile with the sources that apply to a product, use [the readiness review](reviewing-readiness.md).
 
+## Before you start
+
+| Task | Input and source |
+|---|---|
+| Run examples | Node.js 22 or later; see [runtime requirements](../start/for-agents.md#facts-to-rely-on) |
+| Generate and check samples | [Repository checkout](../quick-start.md) at the reviewed example revision, prepared with `npm ci` and `npm run build`; run commands at its root |
+| Inspect fields without a checkout | A project with `@bsv/dpp-profiles@0.3.0-beta.7` installed; alternatively use the checkout after `npm run build` |
+| Replace sample data | Product data and a category from the list below |
+
 ## Versions
 
-A version on this page is the profile version, the number after `@`, which a payload declares in `profile_version`. It is not the record version of the passport format or the manifest format ([choose an industry profile](README.md) explains all three).
+The number after `@` is the profile version declared by `profile_version`, separate from the record version and manifest format ([version names](README.md)).
 
 | Version | Status | Use it to |
 |---|---|---|
@@ -15,11 +24,11 @@ A version on this page is the profile version, the number after `@`, which a pay
 | `textile@3` | `draft` | Skip it: `textile@4` succeeds it. It stays published and frozen as the step between the two |
 | `textile@1` | `superseded` | Read records that declare it. Its 13 fields carry names, labels, obligations and tiers only, with no types, units or constraints |
 
-Each manifest's `status` field says which version is which, and it is the answer to trust in code: `readManifestAny('textile@4').status` is `draft`. Select a draft explicitly for evaluation; never apply it silently to existing records.
+Use the manifest's `status` in code: `readManifestAny('textile@4').status` is `draft`. Select a draft explicitly for evaluation; never apply it silently to existing records.
 
 ## Categories
 
-The payload's `category` field says what kind of product the passport describes. The list is open: the schema accepts any non-empty text, but use one of these values so that other readers can label it. Every `textile@2` field applies to every category, and two need a person's review (see [inspect the fields](#inspect-the-fields)).
+`category` identifies the product type. This open list accepts any non-empty text; choose a listed value so readers can label it. Every `textile@2` field applies to every category; two need human review ([inspect the fields](#inspect-the-fields)).
 
 | Value | Label |
 |---|---|
@@ -30,14 +39,14 @@ The payload's `category` field says what kind of product the passport describes.
 
 ## Start from a sample payload
 
-Run these in the root of a checkout of this repository at the reviewed example revision, after `npm ci` and `npm run build` ([quick start](../quick-start.md)):
+1. Generate the sample with the first command:
 
 ```sh
 node examples/sample-payload.mjs textile@2 --demonstration > payload.json
 node examples/sample-payload.mjs --check textile@2 payload.json
 ```
 
-The first command writes this sample:
+Generated sample:
 
 ```json
 {
@@ -67,9 +76,18 @@ The first command writes this sample:
 }
 ```
 
-`--demonstration` adds `notice`, the sentence a person reads first on a test or demonstration record, one that describes no real product and uses the GS1 demonstration prefix 952 ([identifiers](../identifiers.md)). Leave the flag out for a real product: a record about a real product must not carry `notice`.
+2. Replace every placeholder with product data and choose `category` from the list above.
+3. Run the second command. Resolve every reported problem and check again before using the payload.
 
-Replace every placeholder with the product's own data and set `category` to one of the values above. Keep `profile` and `profile_version` as they are. The second command then prints `ok: payload.json is a valid textile@2 public payload.` If anything is wrong it prints one `FAIL:` line per problem and exits with status 1, for example:
+| Input or result | Rule |
+|---|---|
+| `--demonstration` | Adds `notice` as the sentence shown first; use it for tests or demonstrations with no real product and GS1 prefix 952 ([identifiers](../identifiers.md)) |
+| Real product | Omit the flag; the record must not carry `notice` |
+| `profile`, `profile_version` | Keep their generated values |
+| Success | `ok: payload.json is a valid textile@2 public payload.` |
+| Failure | One `FAIL:` line per problem and exit status 1 |
+
+Example failures:
 
 ```
 FAIL: the payload is missing the required field `name`.
@@ -81,15 +99,20 @@ FAIL: `manufacturingPlace.country` must match pattern "^[A-Z]{2}$".
 | What | Count |
 |---|---|
 | Fields in the `textile@2` manifest | 49: 41 public and 8 restricted (4 `owner`, 3 `legitimate`, 1 `authority`) |
-| Properties the public schema accepts | 46: the 41 public fields, plus the five stamps every public payload may carry (`notice`, `profile`, `profile_version`, `object_did`, `dataCarrier`) |
-| Properties the public schema requires | 12: ten fields (`batch`, `care`, `category`, `collection`, `fibres`, `manufacturer`, `manufacturerContact`, `manufacturingPlace`, `modelIdentifier`, `name`) plus `profile` and `profile_version`. The sample fills exactly these |
-| Properties the restricted schema accepts | 8, the restricted fields. It requires none |
+| Accepted public properties | 46: the 41 public fields, plus five public payload stamps (`notice`, `profile`, `profile_version`, `object_did`, `dataCarrier`) |
+| Required public properties | 12: ten fields (`batch`, `care`, `category`, `collection`, `fibres`, `manufacturer`, `manufacturerContact`, `manufacturingPlace`, `modelIdentifier`, `name`) plus `profile` and `profile_version`. The sample fills exactly these |
+| Accepted restricted properties | 8, the restricted fields. It requires none |
 
-The manifest also marks `nonTextileParts` and `substancesOfConcern` `required`, but only under a condition a person must review, so the schema does not require them. Show them as open questions, never as satisfied or as always required.
+| Conditional field | Review needed |
+|---|---|
+| `nonTextileParts` | Whether the product contains non-textile parts of animal origin |
+| `substancesOfConcern` | Whether a substance of concern exceeds the threshold the act will set |
+
+The manifest marks both `required`, subject to human review, so the schema does not require them. Show them as open questions, never as satisfied or always required.
 
 ## Inspect the fields
 
-Run this in a project with `@bsv/dpp-profiles@0.3.0-beta.7` installed, or in the root of a checkout after `npm run build`:
+Inspect the fields:
 
 ```sh
 node --input-type=module <<'JS'
@@ -113,7 +136,7 @@ review nonTextileParts: the product contains non-textile parts of animal origin
 review substancesOfConcern: a substance of concern is present above the threshold the act will set
 ```
 
-Put your own category in place of `'apparel'`. In the table, `label` is what to show a person, `accessTier` says who may read the value and `obligation` says whether to insist on it (`required`, `recommended` or `optional`). The field list is where payload integration starts: the generated schema checks structure, applicability needs evaluating, and source assessments stay unresolved where the ledger leaves them so. The field reference on [@bsv/dpp-profiles](../packages/dpp-profiles.md) explains every field property, and why a missing-field check is not a complete assessment.
+Replace `'apparel'` with your category. Display `label` to the reader; `accessTier` identifies allowed readers, and `obligation` is `required`, `recommended` or `optional`. Start integration from these fields: schema checks establish structure, applicability needs evaluation, and source assessments remain unresolved where the ledger leaves them. The [package field reference](../packages/dpp-profiles.md) explains each property and why checking missing fields is not a complete assessment.
 
 ## If something fails
 

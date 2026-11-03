@@ -1,10 +1,19 @@
 # Evidence and its limits
 
-Your reader returns a report, not a yes or a no. This page explains how to read that report: what each of the sixteen checks means, what `unknown` and its reason tell you, and why a history that verifies may still not be the latest state.
+Readers and application teams can use this page to interpret a report's sixteen checks, `unknown` results and freshness limits, then decide whether the evidence meets their needs.
+
+## Before you start
+
+| Task | Input and source |
+|---|---|
+| Bind a report to the intended passport | Exact identifier from the scan, label, request or earlier verified binding, obtained before loading evidence |
+| Inspect or reproduce fixture reports | Node.js 22 or later and a [source checkout](../quick-start.md), prepared with `npm ci` and `npm run build`; run shell commands at its root |
+| Add the call fragment to a reader | Evidence, expected subject and policy from [build an application](../packages/build-an-application.md) |
+| Observe freshness | Sources supplied as the policy's `observers`; without them, latest-state knowledge stays `unknown` |
 
 ## The shape of a report
 
-`verifyPassportEvidence` in `@bsv/dpp-protocol` returns one JSON object, and so does every reader that follows the [verification report](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) specification:
+`verifyPassportEvidence` in `@bsv/dpp-protocol` and every conforming reader return one JSON object, defined by the [verification report](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) specification:
 
 | Property | What it holds |
 |---|---|
@@ -17,7 +26,12 @@ Your reader returns a report, not a yes or a no. This page explains how to read 
 | `observations` | What the sources you asked said about the latest state ([below](#is-this-the-latest-state)) |
 | `limits` | Sentences saying what this report does not establish |
 
-Each entry in `checks` has a `name` and a `status`, a `reasonCode` whenever the status is not `pass`, and `evidenceRefs` naming what was checked, such as outpoints (a transaction identifier and output index), digests and policy identifiers. When a check ran over several states or artefacts, `scope` and `detail` say which one a finding is about.
+| Check property | Meaning |
+|---|---|
+| `name`, `status` | Check and its result |
+| `reasonCode` | Required whenever the result is not `pass` |
+| `evidenceRefs` | Checked outpoints (transaction identifier and output index), digests or policy identifiers |
+| `scope`, `detail` | State or artefact a finding concerns when several were checked |
 
 ## The four answers
 
@@ -28,21 +42,21 @@ Each entry in `checks` has a `name` and a `status`, a `reasonCode` whenever the 
 | `unknown` | The evidence, source or policy needed to complete the check was missing or unavailable. The `reasonCode` says which. |
 | `not-applicable` | The selected profile or policy defines that check as not applying. Missing evidence alone is never this case. |
 
-No property sums the checks up into one word. To decide something, such as whether to show a passport as checked, name the checks your use needs and decide on those. Show people each finding, not a single badge: a single success label hides the checks that did not run.
+The report has no overall verdict. Select the checks your decision needs and show each finding; one success badge hides checks that did not run.
 
 ## The sixteen checks
 
-The checks fall into four groups. The second column is the short label `@bsv/dpp-protocol` gives each check in `EVIDENCE_CHECK_LABELS`, which the examples print; it says what `pass` means.
+The checks form four groups. The second column uses the short labels from `@bsv/dpp-protocol`'s `EVIDENCE_CHECK_LABELS`, printed by the examples, to explain `pass`.
 
 **The passport's states**
 
 | Check | Passes when | Otherwise, usually |
 |---|---|---|
-| `recordEncoding` | Every entry is a well-formed record: each state decodes as record version 1 or 2, with one passport output per transaction | `fail` `decode-failed`; the next four checks then read `unknown` `decode-failed` |
+| `recordEncoding` | Well-formed records: each state decodes as record version 1 or 2, with one passport output per transaction | `fail` `decode-failed`; the next four checks then read `unknown` `decode-failed` |
 | `actorSignatures` | Every entry was signed by whoever wrote it | `fail` `signature-invalid` |
-| `publisherSignatures` | Every entry was countersigned by the named publisher, a key your policy names | `not-applicable` `publisher-not-selected` when you named no publisher keys; `fail` `signature-invalid`, or `publisher-not-authorised` for a key used outside its policy window; `unknown` `publisher-policy-invalid` |
-| `linkage` | No step is missing from the middle: each state spends the one before it and follows the chain rules, including the control proof and, under the managed custody profile, the acceptance commitment on every version 2 `TRANSFER` | `fail` with `link-broken`, `lineage-retired`, `control-not-proven`, `version-transition-invalid`, `consent-not-proven` or `acceptance-commitment-absent` |
-| `inclusion` | Every entry is in a block: each state's merkle path checks against block headers | `unknown` `proof-absent` when a state carries no proof; `unknown` `header-source-unavailable` when the header source did not answer; `unknown` `not-selected` when no header source was given; `fail` `proof-refuted` |
+| `publisherSignatures` | Every entry was countersigned by its named publisher, whose key your policy names | `not-applicable` `publisher-not-selected` without selected keys; `fail` `signature-invalid`, or `publisher-not-authorised` outside a key's policy window; `unknown` `publisher-policy-invalid` |
+| `linkage` | Each state spends its predecessor without a missing middle step and follows chain rules, including control proof and, under managed custody, an acceptance commitment on every version 2 `TRANSFER` | `fail` with `link-broken`, `lineage-retired`, `control-not-proven`, `version-transition-invalid`, `consent-not-proven` or `acceptance-commitment-absent` |
+| `inclusion` | Each state's merkle path checks against block headers, establishing block inclusion | `unknown` `proof-absent` without proof; `unknown` `header-source-unavailable` without a header-source answer; `unknown` `not-selected` without a header source; `fail` `proof-refuted` |
 
 **Claims and their anchors**
 
@@ -66,50 +80,72 @@ The checks fall into four groups. The second column is the short label `@bsv/dpp
 | Check | Passes when | Otherwise, usually |
 |---|---|---|
 | `subjectBinding` | Everything concerns the passport that was asked about | `unknown` `subject-not-independent` when the subject came from the evidence; `fail` `subject-mismatch`; `unknown` `genesis-ambiguous` when two valid first states share the identifier |
-| `issuerAuthority` | Every issuer held the authority the policy requires: the first state's actor, each claim's issuer, each anchoring service and each acceptance custodian is one your policy accepts | `unknown` `policy-missing` when you gave no `authority` option; `fail` or `unknown` `authority-unconfirmed` ([identity and authority](identity-and-authority.md#accept-the-parties-you-trust)) |
+| `issuerAuthority` | Your authority policy accepts the first state's actor, each claim's issuer, each anchoring service and each acceptance custodian | `unknown` `policy-missing` when you gave no `authority` option; `fail` or `unknown` `authority-unconfirmed` ([identity and authority](identity-and-authority.md#accept-the-parties-you-trust)) |
 | `schema` | Every payload matches its declared profile: each claim and credential validates against the profile it names | `unknown` `schema-unavailable` when you gave no profile validator; `unknown` `no-evidence` |
 | `evidenceAvailability` | Everything the evidence points at was available, including the acceptance record a managed `TRANSFER` commits to | `unknown` `referenced-artefact-unavailable` when something referenced was not supplied; `fail` `referenced-artefact-mismatch` when it was supplied and does not match |
 
-A pass on the passport's states says nothing about its claims, and the other way round. A report whose state checks all pass and whose claim checks read `unknown` is a report about the passport record, not about its lifecycle claims. The report checks a state's `payload_public` against its industry profile only when the caller supplies a payload validator, such as `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles`; without one, `schema` reads `unknown` with `schema-unavailable`, and a payload that declares no profile reads `unknown` with `profile-undeclared` either way.
+State and claim results are independent. Passing state checks with `unknown` claim checks establishes findings about the passport record only.
+
+| Payload evidence | `schema` result |
+|---|---|
+| Declared profile and caller-supplied payload validator, such as `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` | Checks the state's `payload_public` against its industry profile |
+| No payload validator | `unknown` with `schema-unavailable` |
+| Payload declares no profile | `unknown` with `profile-undeclared`, with or without a validator |
 
 ## Results you will see first
 
 | You see | It means |
 |---|---|
-| `inclusion` `unknown` `proof-absent` | A state carries no merkle proof yet: test data, or a state whose proof has not reached the index. The reader example prints this as `inclusion pending`; the two are the same finding. `pending` can also mean `header-source-unavailable` (the header source refused or timed out: run again, or set `WOC_API_KEY`) or `not-selected` (no header source was given). |
-| Claim and anchor checks `unknown` `no-evidence` | You supplied no claims or anchors. The passport may have none, or you did not fetch them from its registry ([gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence)). |
+| `inclusion` `unknown` `proof-absent` | A state lacks a merkle proof: test data, or proof not yet at the index. The reader prints `inclusion pending` for this finding. `pending` also covers `header-source-unavailable` (refusal or timeout: retry or set `WOC_API_KEY`) and `not-selected` (no header source). |
+| Claim and anchor checks `unknown` `no-evidence` | No claims or anchors supplied: none exist, or you have not fetched them from the registry ([gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence)). |
 | `issuerAuthority` `unknown` `policy-missing` | You gave no `authority` option, so nobody is accepted or refused. |
 | `schema` `unknown` `schema-unavailable` | You supplied native claims and no profile validator. |
 | `evidenceAvailability` `unknown` `referenced-artefact-unavailable` on a passport with a managed transfer | Its `TRANSFER` commits to an acceptance record that you did not supply. The custodian keeps it and no index or registry route serves it yet, so a reader on another stack sees this for every managed transfer it did not write ([custody](custody.md#not-settled-yet), [known limitations](../operate/limitations.md)). |
 
 ## Is this the latest state?
 
-A history that verifies shows that the states you were given are valid and in order. It does not show that nobody has added a later state: the index you asked may not hold it yet, or may not return it. A valid older part of a history is still valid after a newer state exists.
+A verified history establishes that the supplied states are valid and ordered. The index may lack or omit a later state. An older valid history remains valid after a newer state exists.
 
-To ask, pass `observers` in the policy: sources that are asked whether the tip, the newest state you checked, is still unspent. Each answers `unspent`, `spent`, `not-found`, `unavailable` or `conflicting`, and the report's `observations.latestState` then reads:
+Pass `observers` in the policy to ask sources whether the supplied tip remains unspent. Each answers `unspent`, `spent`, `not-found`, `unavailable` or `conflicting`. The report combines those answers in `observations.latestState`:
 
 | `latestState` | Meaning |
 |---|---|
-| `observed` | The sources that answered said the tip is unspent. This means "latest as far as these sources know", never proof that no later state exists. A retired tip reported unspent is `observed`: the passport has ended. |
+| `observed` | Answering sources reported the tip unspent: latest to their knowledge, never proof that no later state exists. An unspent retired tip is `observed`: the passport has ended. |
 | `superseded` | The sources reported a later state spending the tip. Fetch the newer states and verify again. |
-| `conflicting` | The sources disagreed, or two valid next states spend the same state (a fork). Every candidate is listed in `candidateOutpoints`; the report never picks one. |
-| `unknown` | No source was asked, or none answered. This is what you get without `observers`. |
+| `conflicting` | Sources disagreed, or two valid next states spend the same state (a fork). `candidateOutpoints` lists every candidate; the report never picks one. |
+| `unknown` | No source asked or none answered; the result without `observers`. |
 
-`sources` lists each source asked, with its answer and the time, and `queryScope` says in words what was asked (`no source asked` when nothing was). Whenever `latestState` is not `unknown`, `limits` says the observation is not a proof. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) shows an observer that asks the index again for a later state.
+`sources` lists each source, answer and time. `queryScope` states the question, or `no source asked`. Whenever `latestState` is not `unknown`, `limits` states that observation is not proof. [Gather a passport's evidence](../packages/dpp-protocol.md#gather-a-passports-evidence) shows an observer asking the index for a later state.
 
 ## Supply the expected subject
 
-Take the passport identifier you expect from the scan, the label or the request, before you load any evidence, and pass it as the second argument of `verifyPassportEvidence`. This fragment shows only the call; the complete reader is step 1 of [build an application](../packages/build-an-application.md):
+1. Obtain the expected identifier before loading evidence. Taking it from the evidence lets another product's valid record verify against itself.
+2. Pass the identifier and its source as the second argument of `verifyPassportEvidence`. This fragment shows the call; step 1 of [build an application](../packages/build-an-application.md) provides the complete reader:
 
 ```js
 const report = await verifyPassportEvidence(evidence, { passportId, source: 'request-context' }, policy)
 ```
 
-`subjectBinding` then compares every state, claim, anchor and credential with that identifier. If you took the identifier from the evidence instead, a valid record for another product would verify against its own identifier and look convincing. Use `source: 'established-binding'` when the expectation comes from something you verified earlier, such as a first state you checked before. With `source: 'none'`, which says you had no expectation and took the identifier from the evidence, `subjectBinding` reads `unknown` with `subject-not-independent` and every other check runs as usual: the report still says whether the evidence is valid, though not that it concerns the passport you meant. Optional `expectedGenesisOutpoint`, `expectedStateOutpoint`, `expectedIssuer` and `productIdentifier` narrow the expectation further.
+3. Read `subjectBinding`, which compares every state, claim, anchor and credential with that expectation. Stop short of claiming the intended subject was verified if the result is `unknown` or `fail`.
+
+| Expectation source | Use and result |
+|---|---|
+| `source: 'request-context'` | Identifier from the scan, label or request |
+| `source: 'established-binding'` | Earlier verified binding, such as a previously checked first state |
+| `source: 'none'` | No independent expectation; identifier taken from the evidence. `subjectBinding` reads `unknown` with `subject-not-independent`. Other checks still run and assess validity, but cannot establish that this is the intended passport |
+
+These optional fields narrow the expectation further:
+
+| Field | Expected value |
+|---|---|
+| `expectedGenesisOutpoint` | First state's transaction identifier and output index |
+| `expectedStateOutpoint` | Exact state's transaction identifier and output index |
+| `expectedIssuer` | Exact issuer identifier for the first state or claim under test |
+| `productIdentifier` | Exact product identifier when independently known or different from the passport identifier |
 
 ## Inspect a stored report
 
-From the root of a checkout, after `npm ci` and `npm run build`, this prints one expected report from the version 2 report fixture. It shows the structure; it does not run verification:
+1. Run this command to inspect one expected report from the version 2 fixture. It prints stored data and does not run verification:
 
 ```sh
 node --input-type=module <<'JS'
@@ -123,9 +159,23 @@ for (const limit of report.limits) console.log('limit:', limit)
 JS
 ```
 
-It prints the subject with `request-context`, then sixteen lines: the first four checks and `subjectBinding` read `pass`; `inclusion` reads `unknown proof-absent`; `nativeAttestationSignature`, the three anchor checks, `schema`, `credentialTime` and `credentialStatus` read `unknown no-evidence`; `externalCredentialProof` reads `not-applicable no-external-credential`; `issuerAuthority` reads `unknown policy-missing`; and `evidenceAvailability` reads `unknown referenced-artefact-unavailable`, because this lineage has a managed `TRANSFER` and the case supplies no acceptance record. Then `latest state unknown | no source asked`, and thirteen `limit:` lines. Run it again with `CASE=v2-retired-tip-observed` in front to see `latest state observed`, from one index that reported the retired tip unspent.
+2. Compare the output with these expected findings. After the subject line, the fixture prints sixteen checks:
 
-To produce these reports with the implementation rather than read them, run `node examples/verify-passport.mjs --fixture --version=2 --report` from the same place ([quick start](../quick-start.md#check-the-test-passports-offline)); each case prints a line starting `ok:` that says `this verifier's report is the pinned one`.
+| Output | Expected finding |
+|---|---|
+| Subject | Identifier and `request-context` |
+| First four checks; `subjectBinding` | `pass` |
+| `inclusion` | `unknown proof-absent` |
+| `nativeAttestationSignature`; three anchor checks | `unknown no-evidence` |
+| Other evidence checks | `schema`, `credentialTime` and `credentialStatus` read `unknown no-evidence` |
+| `externalCredentialProof` | `not-applicable no-external-credential` |
+| `issuerAuthority` | `unknown policy-missing` |
+| `evidenceAvailability` | `unknown referenced-artefact-unavailable`: the lineage has a managed `TRANSFER` without its acceptance record |
+
+The report ends with `latest state unknown | no source asked` and thirteen `limit:` lines.
+
+3. Run again with `CASE=v2-retired-tip-observed` in front. Expect `latest state observed`: one index reported the retired tip unspent.
+4. To produce reports with the implementation, run `node examples/verify-passport.mjs --fixture --version=2 --report` from the same checkout ([quick start](../quick-start.md#check-the-test-passports-offline)). Each case prints `ok:` followed by `this verifier's report is the pinned one`.
 
 ## What a report never says
 

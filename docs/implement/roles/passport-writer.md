@@ -1,6 +1,18 @@
 # Passport writer
 
-A passport writer builds each new state of a passport, checks it with the reader's own rules, has an index admit it, sends it, obtains its proof and keeps everything it wrote. This page is for anyone adding a writer to a system, in their own code or with the packages.
+Implementers adding a passport writer can use this guide with the packages or their own code. A writer builds each state, checks it with the reader's rules, has an index admit it, sends it, obtains its proof and retains everything it wrote.
+
+## Before you start
+
+| Procedure | Input and source |
+|---|---|
+| Offline exercises | Node.js 22 or later, npm and the [reviewed checkout and build](../../quick-start.md#get-the-code). Run `npm ci` and `npm run build`, then run examples from the checkout root. |
+| Live writes: passport identifier | GS1 Digital Link on a host you control, using demonstration prefix 952 until you have your own ([identifiers](../../identifiers.md)) |
+| Live writes: wallet | Funded BRC-100 wallet ([choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet)) |
+| Live writes: publisher | A key the index admits under `publisherPolicy.publisherKeys` in `GET /capabilities`. Your wallet's identity key can be the publisher ([application setup](../../packages/build-an-application.md#2-run-your-own-index), step 2). |
+| Live writes: index access | URL, submit token for `POST /submit` and `POST /retract`, callback token for `POST /arc-ingest`. Use [your own index](../../packages/create-dpp-index.md) or an agreed provider that admits your key and grants access. The hosted reference offers no general write credentials ([service choices](../../start/choose-components-and-services.md)). |
+| Live writes: payload | An [industry profile](../../profiles/README.md) |
+| Live example below | Unused prefix-952 identifier, running index naming your key, unlocked funded wallet, network access and authority to spend. Stop until these are established. |
 
 ## Two ways to build a writer
 
@@ -9,26 +21,26 @@ A passport writer builds each new state of a passport, checks it with the reader
 
 In both cases, passing the fixture recipe leaves live wallet and service integration to exercise. [What a passport application offers](../../packages/what-an-application-offers.md) describes the screens and scheduled duties around the writer.
 
-## Before you start
-
-These prerequisites apply to live writes. The offline exercises below need only the [reviewed checkout and build](../../quick-start.md#get-the-code).
-
-- **A passport identifier**: a GS1 Digital Link on a host you control, under the demonstration prefix 952 until you have your own ([identifiers](../../identifiers.md)).
-- **A BRC-100 wallet with funds** ([choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet)).
-- **A publisher key the index admits.** Every version 2 state must carry a publisher countersignature: field 17, `publisher_signature`, the publishing service's signature over the framed fields 1 to 16, verified under the BRC-42 child of the publisher's identity key for key identifier `passport_id` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 5). An index admits a state only when that key is in its policy, so check that the index's `GET /capabilities` lists your publisher key under `publisherPolicy.publisherKeys`. Writing through your own wallet, its identity key can be the publisher, as step 2 of [build an application](../../packages/build-an-application.md#2-run-your-own-index) sets up.
-- **An index URL and its two tokens**: the submit token for `POST /submit` and `POST /retract`, and the callback token for `POST /arc-ingest`. Use [your own index](../../packages/create-dpp-index.md) or a provider that has agreed to admit your key and provide the required access. The hosted reference does not offer general write credentials ([service choices](../../start/choose-components-and-services.md)).
-- **An industry profile** for the payload ([industry profiles](../../profiles/README.md)).
+| Version 2 signing rule | Value |
+|---|---|
+| Required countersignature | Every state carries field 17, `publisher_signature`; an index admits it only when the publisher key is in its policy |
+| Signed bytes | Publishing service's signature over framed fields 1 to 16 |
+| Verification key | BRC-42 child of the publisher's identity key for key identifier `passport_id` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md), section 5) |
 
 ## Reproduce the bytes offline
 
-At the root of a checkout, after [setup](../../quick-start.md#get-the-code):
+Run the version 2 issue/update and lifecycle exercises:
 
 ```sh
 node examples/write-passport-v2.mjs --dry-run
 node examples/lifecycle-v2.mjs
 ```
 
-The first runs the version 2 issue/update workflow against an in-process index with synthetic funding and proofs, including a refused update without its control proof. The second walks a whole version 2 lifecycle, issue, update, offer, acceptance, transfer and retirement, plus its refusals and a claim after retirement. Both end with `Every sentence above holds.` Neither spends real funds nor broadcasts a transaction.
+| Exercise | Expected result |
+|---|---|
+| Issue/update | In-process index, synthetic funding and proofs; refuses an update without its control proof |
+| Lifecycle | Issue, update, offer, acceptance, transfer and retirement, plus refusals and a claim after retirement |
+| Both | End with `Every sentence above holds.`; no real spending or broadcast |
 
 For the historical version 1 byte target, run:
 
@@ -38,27 +50,76 @@ node examples/write-passport.mjs --dry-run
 
 It prints `ok:` lines showing that the locking script and transaction equal state 1 of `fixtures/chain-v1.json` byte for byte, that the writer's own check accepts the state, and that the same check refuses a forbidden state before anything would be sent. It then prints what it would announce, send, prove and retain.
 
-The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) remains for compatibility. Removing `--dry-run` selects a live wallet/service workflow; first establish the required access, network and authority to spend. The usage at the top of each file identifies its arguments.
+The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) remains for compatibility. Removing `--dry-run` selects a live wallet/service workflow. The invocation below maps the version 2 inputs; each file's usage lists its arguments.
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
-For a carried passport, record version 3 (`spec/token-carrier.md`), the byte targets are `fixtures/record-v3.json` and `fixtures/chain-v3.json` with their vector forms, `fixtures/vectors/dpp/record/v3.json` and `fixtures/vectors/dpp/chain/v3.json`. A carried state is the version 2 body behind a BRC-162 token prefix, signed under `[1, 'dpp token v3']` and the version 3 tags, and the writer owes two things beyond the lifecycle below: the genesis's carrier output is output 0, so the wallet's output randomisation is off for that one action, and every carried output holds one satoshi. `node examples/lifecycle-v3.mjs` walks a carried lifecycle from fresh keys, issue, update, transfer and retirement, then the carrier's refusals and the burn, offline; it ends with `Every sentence above holds.`
+### Reproduce carried states
+
+A carried passport is record version 3 (`spec/token-carrier.md`).
+
+| Part | Target or rule |
+|---|---|
+| Byte fixtures | `fixtures/record-v3.json` and `fixtures/chain-v3.json` |
+| Vector forms | `fixtures/vectors/dpp/record/v3.json` and `fixtures/vectors/dpp/chain/v3.json` |
+| Layout and signing | Version 2 body behind a BRC-162 token prefix, signed under `[1, 'dpp token v3']` and version 3 tags |
+| Genesis | Carrier at output 0; turn off wallet output randomisation for that one action |
+| Funding | Every carried output holds one satoshi |
+
+The output index and funding rules are additional duties beyond the lifecycle below. Run:
+
+```sh
+node examples/lifecycle-v3.mjs
+```
+
+This offline exercise uses fresh keys for issue, update, transfer and retirement, then tests carrier refusals and burn. It ends with `Every sentence above holds.`
 
 ## The write, step by step
 
-The order is the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md). Record each step in an operation journal, your own record of every operation, so a retry continues instead of repeating.
+Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
 
 1. **Build the state and its transaction, unsent** (section 3). Validate the payload under its profile. Build against the tip you mean to spend, the passport's newest state, which the index's `ls_dpp` lookup returns.
 2. **Check it with the reader's rules** (section 2). Decode the locking script you built, check the chain invariants against the tip it spends, verify both signatures, and under the managed custody profile bind the acceptance record to the `TRANSFER`. A state that fails is never sent.
-3. **Announce it** (sections 3 and 6). `POST /submit` the BEEF, with the predecessor's transaction in the same BEEF and `X-Topics: ["tm_dpp"]`, and send only when the `X-Admission` header reads `tm_dpp=admitted`. `tm_dpp=duplicate` means the index already holds those bytes. A refused state comes back as HTTP 200 with `X-Admission: tm_dpp=none`, nothing admitted, and `X-Admission-Refusal` naming the check that failed ([the codes](../../packages/build-an-application.md#when-the-index-refuses-a-state)). If the index refuses the state, abort the unsent action so the wallet gets its inputs back. An index that cannot be reached is not a refusal: send anyway, and announce the same bytes again later; never build a second state.
+3. **Announce it** (sections 3 and 6). `POST /submit` the BEEF, including the predecessor's transaction, with `X-Topics: ["tm_dpp"]`. Follow the announcement table below before sending.
 4. **Send it, and report only the network's answer** (sections 4 and 5): accepted, rejected, or competing with another spend of the same tip. Spend a tip a second time only after you know the fate of the first spend, and never report a queued broadcast as a written state.
 5. **Withdraw a state the network refused.** If the index admitted a state that the network then refused, `POST /retract` the JSON body `{"txid": "...", "outputIndex": 0, "reason": "..."}` behind the submit token ([overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml)).
 6. **Prove it** (section 7). When the state is mined, get its merkle path, attach it to the BEEF you keep, and offer it to every index you announced to: `POST /arc-ingest` a JSON body of `txid`, `merklePath` (the path in BRC-74 form) and `blockHeight`, with that index's own callback token.
 7. **Keep it** (section 8): the raw transaction, the BEEF it was sent as and the proof, for the passport's life. [Wallet, broadcast and proofs](../../operate/wallet-broadcast-proofs.md) explains the service sequence, and [custody](../../learn/custody.md) explains signing access and managed acceptance.
 
+### Handle announcement outcomes
+
+| Response | Required handling |
+|---|---|
+| `X-Admission` reads `tm_dpp=admitted` | Send only when admitted |
+| `tm_dpp=duplicate` | Index already holds those bytes |
+| HTTP 200, `X-Admission: tm_dpp=none` | Nothing admitted; `X-Admission-Refusal` names the failed check ([codes](../../packages/build-an-application.md#when-the-index-refuses-a-state)). Abort the unsent action so the wallet gets its inputs back. |
+| Unreachable index | An index that cannot be reached is not a refusal: send anyway, and announce the same bytes again later; never build a second state. |
+
+### Run the version 2 writer live
+
+After the live prerequisites above, use the [application example](../../packages/build-an-application.md#3-write-a-passport). It spends real mainnet satoshis for an `ISSUE` and an `UPDATE`:
+
+```sh
+node examples/write-passport-v2.mjs <passportId> http://localhost:8080 \
+  --submit-token=<SUBMIT_TOKEN> --callback-token=<ARC_CALLBACK_TOKEN> \
+  --wait-proof=30 --journal=./dpp-journal
+```
+
+| Argument | Source or meaning |
+|---|---|
+| `<passportId>` | Your unused identifier; the demonstration writer refuses identifiers outside prefix 952 |
+| `<indexUrl>` | Your own index, shown as `http://localhost:8080`; required, never defaulted to the hosted reference |
+| `--submit-token=<t>` | Index operator's `SUBMIT_TOKEN`; 401 or 403 stops the run |
+| `--callback-token=<t>` | Index operator's `ARC_CALLBACK_TOKEN`, sent as `X-Callback-Token` for proofs |
+| `--wait-proof=<minutes>` | Wait for each wallet merkle path; default 0. With 30, prove each state before writing the next, about two blocks in total. |
+| `--originator=<host>` | Hostname the wallet knows the program by; default `localhost` |
+| `--journal=<dir>` | Journal directory; default `./dpp-journal` |
+
+For a generated index, its `.app.env` supplies `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. Command-line tokens remain in shell history; use replaceable secrets. Stay for wallet prompts: an unanswered prompt stops the run and the journal records progress. Success ends `Every sentence above holds.` with exit code 0 and a journal file in `dpp-journal/` named for the identifier's digest.
+
 ## Prove it: the writer's self-report
 
-No fixture can show that a state was checked before it was sent or that its proof was kept, so writer conformance is self-reported: one sentence per rule that [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11 lists, in the style [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) sets. A report that passes every fixture says nothing about a writer until these sentences stand beside it. The six rules are:
+Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these six sentences:
 
 1. Section 2: the reader's check runs before any send or announcement.
 2. Section 3: the order, announce before send, where you claim to follow it.
@@ -76,7 +137,7 @@ Two sentences in that style, for a fictional writer:
 
 ## Known gaps for a writer
 
-These are open questions in the standard and the reference deployment; [known limitations](../../operate/limitations.md) lists the reference service's limits.
+These standard and deployment questions remain open. [Known limitations](../../operate/limitations.md) lists the reference service limits.
 
 - **An older index gives no reason.** An index on an earlier release, or another implementation, may refuse without `X-Admission-Refusal`. Before you announce to one, check the causes you can see yourself: your publisher key is listed in the index's `GET /capabilities`, and your state spends the tip the index's `ls_dpp` lookup returns.
 - **Key windows are not published.** The capability document lists publisher keys without the times each is active, and a listed key outside its window is refused the same way as an unlisted one. The windows are in the operator's signed policy chain ([tell operators apart](../../operate/federation.md#tell-operators-apart)).

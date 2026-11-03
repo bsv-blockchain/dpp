@@ -1,25 +1,29 @@
 # Attestation verifier
 
-An attestation verifier checks a signed claim about a product and, when it is given one, the claim's anchor: the small on-chain output that commits to the claim's exact bytes. This page is for anyone building one in their own code; with the packages, `verifyLifecycleClaim` and `verifyPassportEvidence` from `@bsv/dpp-protocol` do it, as [gather a passport's evidence](../../packages/dpp-protocol.md#gather-a-passports-evidence) shows.
+An attestation verifier is a claim verifier. Implementers can use this guide to check a product claim's signature and any anchor: a small on-chain output committing to its exact bytes. Produce a report showing each check's evidence. With the packages, `verifyLifecycleClaim` and `verifyPassportEvidence` from `@bsv/dpp-protocol` perform these checks ([gather a passport's evidence](../../packages/dpp-protocol.md#gather-a-passports-evidence)).
 
-A verifier needs:
+## Prerequisites and evidence inputs
 
-- the claim's secured bytes exactly as received, and the representation they are in;
-- the passport identifier the caller expects;
-- for the anchor checks, the anchor's locking script;
-- for authority, status and inclusion, the policy and evidence each needs. Without them those checks read `unknown`.
+| Exercise or input | Requirement and source |
+|---|---|
+| Claim verification | Secured bytes exactly as received, their representation, and the passport identifier the caller expects. |
+| Anchor checks | The anchor's locking script from the supplied evidence. |
+| Authority, status and inclusion | Policy and evidence for each check; without them, report `unknown`. |
+| Checkout examples | Node.js 22 or later, npm and git; complete [setup](../../quick-start.md#get-the-code), including `npm ci` and `npm run build`. Run at the checkout root. |
+| Live registry command | Registry URL and network access to its query routes and the chain source. Optionally supply accepted service keys and `WOC_API_KEY` as described below. |
+| Hosted proof page | Registry URL; its two showcase routes enabled and available cross-origin with `Access-Control-Allow-Origin`. |
 
-A claim and its anchor establish that a key signed the bytes and that an anchoring service committed to them. They do not establish that the issuer had authority or that the claimed event happened.
+A claim and anchor establish that a key signed the bytes and an anchoring service committed to them. They establish neither the issuer's authority nor that the event happened.
 
 ## See the reference answer
 
-At the root of a checkout, after [setup](../../quick-start.md#get-the-code):
+Run the native claim and anchor example:
 
 ```sh
 node examples/verify-attestation-anchor.mjs
 ```
 
-It checks one valid claim and its anchor and prints:
+Expect these checks for one valid claim and its anchor:
 
 ```
 Holds: the anchoring service signature, key derivation and ten-field layout verify.
@@ -31,19 +35,35 @@ Holds: the representation and media type select the native lifecycle verifier.
 This example does not evaluate business authority, physical product binding, credential status, VSC conformance or transaction inclusion.
 ```
 
-It refuses nothing; the refusal cases are in [the cases to run](#the-cases-to-run). For the historical `uora-anchor-v3` format, [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) checks `fixtures/anchor-v3.json` from the output's own bytes: run `node examples/verify-anchor.mjs`, and it prints a `Holds:` line for each check and for each of its eight refusals, then `Every check holds.`
+This example refuses nothing; use [the cases to run](#the-cases-to-run) for refusals. For historical `uora-anchor-v3`, [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) checks `fixtures/anchor-v3.json` from the output's bytes. Run `node examples/verify-anchor.mjs`: expect `Holds:` per check and for all eight refusals, then `Every check holds.`
 
 ## Build the verifier
 
 1. **Keep the bytes** ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 4). Store the received bytes before decoding, and refuse duplicate JSON keys.
-2. **Dispatch on the representation.** A native claim is `dpp-lifecycle-json-v1` (rules section 3); a SEAL credential, the event credential of the Verifiable Supply Chain (VSC) profile, is `vsc-seal-json-v1`; an external W3C credential is `vc-di-ecdsa-rdfc-2019@1` ([external credentials](../../interoperability/external-credentials.md)); a record written before the native format is `legacy-uora-json` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) sections 3 to 5). They use different proof rules. A representation you do not implement reads `unknown` with `representation-unsupported`, never a pass.
-3. **Verify a native claim** (rules section 3). Accept exactly the allowed properties. Serialise every property except `signature` as restricted canonical JSON, hash it with SHA-256, and verify the DER signature under the BRC-42 child of the issuer's key for protocol `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. A `did:key` issuer names the key itself; otherwise `issuerKeyDid` names the key that signed, and its relationship to the issuer needs separate evidence.
-4. **Decode the anchor** (rules section 5). The script is exactly a 33-byte key, `OP_CHECKSIG`, ten fields and five `OP_2DROP`, with nothing after. Field 1 is `bsv-attestation-anchor-v1`, fields 1 to 9 are printable UTF-8 within their bounds, and field 10 is the service's DER signature over the SHA-256 of fields 1 to 9, each prefixed with its length as a Bitcoin VarInt. Verify it under the BRC-42 child of field 9 (`anchoredBy`) for protocol `[1, 'bsv attestation anchor v1']`, key identifier field 3 (`attestationId`), counterparty `anyone`. The locking key must equal that same child.
-5. **Bind the anchor to the claim** (rules section 6). Field 2 must equal the SHA-256 of the complete secured bytes, which for a native claim is the restricted canonical JSON including `signature`. The issuer, subject, type, representation and media type the anchor carries must equal the verified claim's.
+2. **Dispatch on the representation** using the table below. Each format has different proof rules. Report an unimplemented representation as `unknown` with `representation-unsupported`, never a pass.
+3. **Verify a native claim** (rules section 3). Accept exactly the allowed properties. Serialise all except `signature` as restricted canonical JSON, hash with SHA-256, and verify the DER signature under the issuer key's BRC-42 child: protocol `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. A `did:key` issuer names the key; otherwise `issuerKeyDid` names it, and its relationship to the issuer needs separate evidence.
+4. **Decode the anchor** (rules section 5). Check every layout and derivation rule in the anchor table below.
+5. **Bind the anchor to the claim** (rules section 6). Field 2 must equal the complete secured bytes' SHA-256; for native claims, hash restricted canonical JSON including `signature`. The anchor's issuer, subject, type, representation and media type must equal the verified claim's.
 6. **Compare the subject** ([verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) section 3) with the identifier your caller expects.
 7. **Report each check separately** (verification section 4): `nativeAttestationSignature`, `anchorSignature`, `anchorKeyDerivation`, `anchorDigestAndMetadataBinding`, `subjectBinding`, `issuerAuthority` and `evidenceAvailability`, among the sixteen. A valid claim without an anchor is not a completed anchor check; a valid anchor without the claim cannot establish what the claim says.
 
-Present the [individual findings](../../learn/evidence-and-freshness.md), including unknown authority or inclusion. An application can apply its policy to them without hiding them.
+| Representation | Format and proof rules |
+|---|---|
+| `dpp-lifecycle-json-v1` | Native claim, rules section 3 |
+| `vsc-seal-json-v1` | SEAL, the event credential of the Verifiable Supply Chain (VSC) profile |
+| `vc-di-ecdsa-rdfc-2019@1` | [External W3C credential](../../interoperability/external-credentials.md) |
+| `legacy-uora-json` | Record predating the native format; [legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) sections 3 to 5 |
+
+| Anchor element | Required value or check |
+|---|---|
+| Complete script | Exactly a 33-byte key, `OP_CHECKSIG`, ten fields and five `OP_2DROP`; nothing after. |
+| Field 1 | `bsv-attestation-anchor-v1` |
+| Fields 1 to 9 | Printable UTF-8 within their bounds; prefix each with its length as a Bitcoin VarInt when building the signing preimage. |
+| Field 10 | Service's DER signature over the SHA-256 of that preimage. |
+| Signature key | BRC-42 child of field 9 (`anchoredBy`), protocol `[1, 'bsv attestation anchor v1']`, key identifier field 3 (`attestationId`), counterparty `anyone`. |
+| Locking key | Must equal the same child. |
+
+Present the [individual findings](../../learn/evidence-and-freshness.md), including unknown authority or inclusion. An application can apply policy without hiding them.
 
 ## The cases to run
 
@@ -72,27 +92,39 @@ No fixture case alters the native claim's own signature; add one to your own tes
 
 ## Run an anchor proof page
 
-A proof page checks a registry's claims without trusting the registry: the registry hands over each record's stored bytes and names its anchor transaction, and everything else comes from the chain. The hosted reference serves one ([the hosted reference](../../deployment.md#the-hosted-reference)). It reads a registry's two showcase routes, `GET /showcase/attestations` and `GET /showcase/verify/{id}` under the `showcase` tag of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml), from the registry its RESOLVER field names, the hosted registry unless you type another address. A registry that serves those routes, which stay off until its deployment turns them on, can be checked there. The verify route asks a chain source for the anchor transaction on every request, so pace those requests and use the source's API key.
+A proof page checks claims without trusting their registry. The registry supplies stored bytes and names each anchor transaction; everything else comes from the chain. The [hosted reference](../../deployment.md#the-hosted-reference) reads `GET /showcase/attestations` and `GET /showcase/verify/{id}`, under the `showcase` tag of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml).
 
-The hosted page fetches from the visitor's browser, so a registry it reads must answer those routes cross-origin, with an `Access-Control-Allow-Origin` header, as the hosted registry does. If your own page fetches from its server instead, fetch only the registries you configure. A server that fetches any address a visitor types can be made to request addresses only it can reach, such as its own internal services, which is server-side request forgery.
+1. Enable both showcase routes in the registry deployment; they are off until enabled.
+2. Set the proof page's RESOLVER field to your registry URL. It defaults to the hosted registry.
+3. For the hosted page's browser requests, provide the cross-origin header listed above, as the hosted registry does. For your own page's server requests, allow only configured registries. Fetching any visitor-supplied address permits server-side request forgery against internal services.
+4. Pace verify-route requests and use the chain source's API key: the route fetches the anchor transaction on every request.
 
-One command checks any registry from its two query routes alone, and its source, `examples/check-registry.mjs`, is the recipe to copy:
+To check any registry using only its two query routes, run `examples/check-registry.mjs`; copy its source for your implementation:
 
 ```sh
 node examples/check-registry.mjs --fixture
 node examples/check-registry.mjs https://dpp-resolver.bsvb.net
 ```
 
-The first runs offline on the repository's test data and ends `Every sentence above holds.` The second checks a live registry's first 10 records. Add `--subject=<passportId>` for one passport, `--limit=<n>` for more records and `--anchoring-services=<key>,<key>` to name the anchoring services you accept, and set `WOC_API_KEY` to raise WhatsOnChain's rate limit. For each record it prints one line per check, each `pass`, `fail`, `unknown` or `not-applicable`, and no overall verdict (verification section 4). It exits 1 when any check fails.
+The first runs offline on repository test data and ends `Every sentence above holds.` The second checks a live registry's first 10 records.
+
+| Option or output | Meaning |
+|---|---|
+| `--subject=<passportId>` | Select one passport. |
+| `--limit=<n>` | Check more records. |
+| `--anchoring-services=<key>,<key>` | Name the anchoring services you accept. |
+| `WOC_API_KEY` | Raise WhatsOnChain's rate limit. |
+| Per-record output | One line per check: `pass`, `fail`, `unknown` or `not-applicable`; no overall verdict (verification section 4). |
+| Exit status 1 | At least one check failed. Inspect that check before relying on its result. |
 
 | Check | What it does | Where the evidence comes from |
 |---|---|---|
 | `digest` | Hashes the stored bytes with SHA-256 and compares the result with the registry's `digest` | `GET /attestations/{id}/proof`: `securedBytes`, or `canonical` on a `legacy-uora-json` record |
 | `claim signature` | Verifies a native claim with `verifyLifecycleClaim` from `@bsv/dpp-protocol` | The stored bytes |
-| `anchor` | Decodes the output under the format its first field names, and verifies its signature and locking key | The transaction from WhatsOnChain (`/tx/<txid>/hex`), by the proof's `anchor.recordId` and `anchor.outputIndex`; a script the registry also sends must equal it |
+| `anchor` | Decode using the first field's format; verify signature and locking key | WhatsOnChain transaction (`/tx/<txid>/hex`), located by the proof's `anchor.recordId` and `anchor.outputIndex`. Any registry-supplied script must match. |
 | `binding` | The anchor commits to the digest and names the claim's identifier, issuer, subject and type | The decoded anchor and the claim |
-| `inclusion` | Verifies the transaction's merkle path against block headers; a path the registry sends counts only when its root matches the header | The proof's `anchor.merklePath` when the registry sends one, otherwise WhatsOnChain's `/tx/<txid>/proof/bump`: both are BUMPs that `MerklePath.fromHex` from `@bsv/sdk` reads as they are. The block headers come from your header source |
-| `anchoring service` | Compares the key that wrote the anchor with the services you accept or, without a list of your own, with the keys the registry names | The decoded anchor and your `--anchoring-services`, or the keys the registry's `GET /capabilities` names, as `anchoredBy` or under `publisherPolicy.anchoringServices` |
+| `inclusion` | Verify the transaction's merkle path against headers. A registry-supplied path counts only if its root matches the header. | The proof's `anchor.merklePath`, otherwise WhatsOnChain's `/tx/<txid>/proof/bump`. Both are BUMPs read unchanged by `MerklePath.fromHex` from `@bsv/sdk`. Block headers come from your header source. |
+| `anchoring service` | Compare the anchor's signing key with accepted services; without your own list, use the registry's keys. | Decoded anchor and `--anchoring-services`, otherwise `GET /capabilities` keys in `anchoredBy` or `publisherPolicy.anchoringServices`. |
 
 What each kind of record can establish:
 
@@ -107,8 +139,16 @@ What each kind of record can establish:
 
 These are open questions in the standard; [known limitations](../../operate/limitations.md) lists the reference service's limits.
 
-- **Finding the claim behind an anchor.** An anchor names the claim's digest, identifier, issuer, subject and anchoring service key, but not the registry that holds the claim, and a passport names no registry either. Learn the registry out of band, for example from the passport's application. Given the anchor alone, the report reads as case `anchor-bytes-absent` does: `anchorSignature` and `anchorKeyDerivation` pass; `anchorDigestAndMetadataBinding` is `unknown` with `secured-bytes-absent`; `nativeAttestationSignature`, `schema`, `credentialTime` and `credentialStatus` are `unknown` with `no-evidence`; and `evidenceAvailability` is `unknown` with `referenced-artefact-unavailable`.
-- **Issuer identity.** Live identity assurance is Ring 0, where the platform vouches only for the account and brand label ([identity and authority](../../learn/identity-and-authority.md)). A `did:key` names a key, not a legal entity, and `issuerAuthority` passes only against a policy that names the issuers you trust.
+An anchor names the claim's digest, identifier, issuer, subject and anchoring service key, but no registry. A passport names no registry either. Obtain the registry out of band, for example from the passport's application. With only an anchor, report the `anchor-bytes-absent` case:
+
+| Check | Status | Reason |
+|---|---|---|
+| `anchorSignature`, `anchorKeyDerivation` | `pass` | Anchor checks can run without claim bytes. |
+| `anchorDigestAndMetadataBinding` | `unknown` | `secured-bytes-absent` |
+| `nativeAttestationSignature`, `schema`, `credentialTime`, `credentialStatus` | `unknown` | `no-evidence` |
+| `evidenceAvailability` | `unknown` | `referenced-artefact-unavailable` |
+
+Live identity assurance is Ring 0: the platform vouches only for the account and brand label ([identity and authority](../../learn/identity-and-authority.md)). A `did:key` names a key, not a legal entity. `issuerAuthority` passes only against a policy naming the issuers you trust.
 
 ## Exact implementation sources
 

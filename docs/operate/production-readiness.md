@@ -1,51 +1,92 @@
 # Prepare for production
 
-Use this page when your team is preparing its own platform or service for real users and products. The output is a release decision supported by evidence and named operating responsibilities.
+Platform and service owners can use this checklist to decide whether to release for real users and products. Record the supporting evidence and name each operating responsibility before making that decision.
 
-This is a platform planning checklist. It does not add requirements to the open standard or certify a product, organisation or deployment. The standard is before version 1.0, and readiness depends on your chosen scope.
+This planning checklist adds no requirements to the open standard and certifies no product, organisation or deployment. Readiness depends on your chosen scope.
+
+## Before you start
+
+| Input | Source and use |
+|---|---|
+| Product scope | [Your platform brief](../start/plan-your-platform.md): users, actions, products, volumes, retention and service commitments |
+| Selected release and profiles | Your installed package versions, configuration and selected contracts |
+| Representative product data | Your data suppliers; use the exact selected profile |
+| Authority, access and service owners | Your organisation and providers; include identifier entitlement, key responsibilities and named operating owners |
+| Operational evidence | Your application's tests, journals, exports and recovery exercises |
+| Standard status | Before version 1.0; check [current status](../start/status.md) and [known limitations](limitations.md) |
 
 ## Confirm the product and data scope
 
-Complete [your platform brief](../start/plan-your-platform.md). Identify the users, actions, products, volumes, retention periods and service commitments you will support.
+1. Complete the platform brief with the users, actions, products, volumes, retention periods and service commitments you will support.
+2. Check representative data against the selected profile. Use [profile and application readiness](../profiles/reviewing-readiness.md) to assess field coverage, source quality and application handling.
+3. Confirm control of the identifier domain and entitlement to the identifiers used for real products. Preserve the complete identifier, including its host, throughout the application. The [identifier guide](../identifiers.md) covers resolution and ambiguous matches.
 
-Check representative product data against the exact selected profile. Assess field coverage, source quality and the application's handling of that data using [profile and application readiness](../profiles/reviewing-readiness.md). Transaction verification does not currently validate a payload against its declared profile. A passing cryptographic report is therefore not enough to accept product data.
-
-Confirm control of the identifier domain and entitlement to the identifiers used for real products. Preserve the complete passport identifier, including its host, throughout the application. Use the [identifier guide](../identifiers.md) for resolution and ambiguous matches.
+Transaction verification does not currently validate a payload against its declared profile. A passing cryptographic report is therefore not enough to accept product data.
 
 ## Confirm authority, custody and keys
 
-Document who may issue, update, countersign, make claims and accept custody. Keep account membership separate from legal identity and signing authority.
-
-Record who protects, backs up and rotates each key, and how authorised operations continue after staff or provider changes. For managed custody, retain the required acceptance evidence. Review [custody](../learn/custody.md) and its open questions before offering transfer behaviour to users.
+| Record | Required distinction or evidence |
+|---|---|
+| Permission to issue, update, countersign, make claims and accept custody | Account membership is separate from legal identity and signing authority |
+| Key protection, backup and rotation | Name the responsible party for each key and how authorised operations continue after staff or provider changes |
+| Managed custody | Retain required acceptance evidence; review [custody](../learn/custody.md) and its open questions before offering transfers |
 
 ## Confirm services and access
 
-For every external service, record the actual provider agreement and tested access. For services you operate, record the equivalent internal responsibilities. Include:
+For each external service, record the provider agreement and tested access. For services you operate, record equivalent internal responsibilities.
 
-- Base URL, network, selected release/contracts and required profiles.
-- Trusted operator identity, admitted publisher or anchoring keys and policy validity windows.
-- Read, submission, callback and export permissions, with credentials scoped to their intended destinations.
-- Retention, capacity, availability, incident response and support ownership.
-- Responsibility for later proofs, missing claims and unavailable evidence sources.
+| Service fact | Record |
+|---|---|
+| Endpoint and compatibility | Base URL, network, selected release/contracts and required profiles |
+| Trust and admission | Trusted operator identity, admitted publisher or anchoring keys, policy validity windows |
+| Access | Read, submission, callback and export permissions; credentials scoped to intended destinations |
+| Operating commitments | Retention, capacity, availability, incident response and support ownership |
+| Evidence delivery | Responsibility for later proofs, missing claims and unavailable sources |
 
-Use [component selection](../start/choose-components-and-services.md) and the [hosted reference](../deployment.md). A public endpoint or a successful capability request does not establish a production service commitment.
+Use [component selection](../start/choose-components-and-services.md) and the [hosted reference](../deployment.md). A public endpoint or successful capability request establishes no production service commitment.
 
 ## Demonstrate reliable operations
 
-Exercise the operations your product offers, including failure and recovery. For a writer, show that concurrent attempts, interrupted broadcasts and retries cannot silently lose the intended operation or conceal conflicting state. Keep the journal and evidence needed to resolve uncertainty.
+Exercise the operations your product offers, including failure and recovery.
 
-Show how a pending transaction becomes a verifiable mined transaction and how each relevant index receives later proofs. With peers, verify the actual record flow and admission agreement. Two endpoints run by the same operator do not demonstrate independent operation.
+| Exercise | Evidence to retain |
+|---|---|
+| For writers: concurrent attempts, interrupted broadcasts and retries | Show that intended operations cannot be silently lost or conflicting state concealed; keep the journal and evidence needed to resolve uncertainty |
+| Pending transaction through mining | Show how it becomes verifiable and how every relevant index receives later proofs |
+| Peer operation | Verify actual record flow and admission agreement; two endpoints under one operator do not demonstrate independent operation |
+| Restore a representative export in isolation | Verify recovered evidence; distinguish a bounded evidence package from complete history |
+| Recovery boundaries | Check snapshot expiry, export-signing trust and separate recovery of keys, claim bytes, product data and restricted evidence |
 
-Restore a representative export into an isolated environment and verify the recovered evidence. Distinguish a bounded evidence package from complete history. Check snapshot expiry, export signing trust and the separate recovery of keys, claim bytes, product data and restricted evidence. See [wallet and proofs](wallet-broadcast-proofs.md) and [recovery](export-import-recovery.md).
+Use [wallet and proofs](wallet-broadcast-proofs.md) and [recovery](export-import-recovery.md) for the procedures.
 
 ## Demonstrate honest user-facing results
 
-Present `pass`, `fail`, `unknown` and `not-applicable` with reasons. Show users when evidence is missing, freshness is uncertain or a required service is unavailable. Avoid presenting those situations as successful verification.
+| Result to present | What the user must understand |
+|---|---|
+| `pass`, `fail`, `unknown`, `not-applicable` | Present each with its reasons |
+| Missing evidence, uncertain freshness or unavailable service | These are not successful verification |
+| Valid signature | Separate this finding from authority, product authenticity and regulatory assessment |
 
-Test an invalid profile payload, an unauthorised issuer, an ambiguous identifier, a refused write and missing proof or claim bytes. Explain signature validity separately from authority, product authenticity and any regulatory assessment.
+| Failure scenario to test | Review |
+|---|---|
+| Invalid profile payload | How the application reports invalid product data |
+| Unauthorised issuer | How authority is distinguished from signature validity |
+| Ambiguous identifier | How the intended passport is selected |
+| Refused write | How the refusal reaches the user |
+| Missing proof or claim bytes | How missing evidence is shown |
 
 ## Record the release decision
 
-Keep a short record of the deployed versions, configuration, completed checks, evidence locations, operating owners and unresolved issues. Review [known limitations](limitations.md) and [current status](../start/status.md). Where an unresolved standard question affects a promised feature, obtain the necessary decision or adjust the scope before release.
+1. Complete a decision record:
 
-Accept a release only against your agreed criteria. Document the upgrade and recovery path, including [migration](../migration.md), and assign a person or team to maintain the service after launch.
+| Field | Fill in |
+|---|---|
+| Deployed versions and configuration | |
+| Completed checks and evidence locations | |
+| Operating owner for each service | |
+| Unresolved issue, owner and effect on scope | |
+| Agreed release criteria and decision | |
+| Upgrade, recovery and maintenance owner | |
+
+2. Where an unresolved standard question affects a promised feature, obtain the necessary decision or adjust the scope before release.
+3. Accept only against agreed criteria. Document the upgrade and recovery path, including [migration](../migration.md), and assign a person or team to maintain the launched service.
