@@ -19,7 +19,7 @@ Third-party dependencies and artefacts keep their own terms and notices; the rep
 | Material | Terms and notices |
 |---|---|
 | Package dependencies | The [licence ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json) records the licence each direct dependency declares, and `conformance/check.mjs` notices when one changes |
-| Credential and event artefacts | The [notices beside the retained artefacts](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/artifacts) |
+| Credential and event artefacts | The [notices beside the retained artefacts](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 | GS1 schema material | The [GS1 schema notice](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/schemas/gs1/NOTICE.md) |
 
 Read the applicable terms before reuse. For a reuse question these sources do not answer, use the [BSV Association contact page](https://bsvassociation.org/contact/).

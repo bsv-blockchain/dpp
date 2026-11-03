@@ -82,7 +82,7 @@ schema: pass ; findings: 0
 
 In an importer, keep the bytes exactly as received rather than serialising a parsed object again. To go further, run `node examples/import-epcis.mjs` at the root of a checkout, after `npm ci` and `npm run build`: it maps each event of a seven-event fixture to an unsigned SEAL and prints the outcome, `lossless`, `transformed` or `unsupported`, with what was lost.
 
-To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID documents, a status resolver and an authority policy; a credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/README.md) shows the issuance and verification calls with each policy.
+To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID documents, a status resolver and an authority policy; a credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md) shows the issuance and verification calls with each policy.
 
 ## Limits
 
@@ -97,7 +97,7 @@ To issue or verify SEALs, a verifier supplies the contexts, the issuer's DID doc
 | `@bsv/dpp-credentials` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md) |
 | `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md) |
 | `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
-| `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/artifacts) |
+| `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 
 ## Next
 

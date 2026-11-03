@@ -100,7 +100,7 @@ The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab
 | Integration task | Source |
 |---|---|
 | Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
-| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-credentials/src/exchange.ts) |
+| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/src/exchange.ts) |
 | Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) |
 | Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability) |
 

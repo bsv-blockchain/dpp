@@ -1,6 +1,6 @@
 # Create an index
 
-Start here to operate your own index alongside your application. `@bsv/create-dpp-index` generates an editable project with persistent MongoDB, scoped tokens, deployment files and an app connection helper. One service handles passport history and attestation anchors.
+Start here to operate your own index alongside your application. `@bsv/create-dpp-index` generates an editable project with persistent MongoDB, access tokens, deployment files and an app connection helper. One service handles passport history and attestation anchors.
 
 **Use the starter once. It includes the index runtime.** You do not separately install `@bsv/dpp-overlay` or create another service for it.
 
@@ -14,7 +14,7 @@ If your app uses an existing compatible index, obtain its URL and access setting
 
 ## Create your project
 
-The published starter, `0.1.0-beta.1`, pins the published index runtime `@bsv/dpp-overlay@0.4.0-beta.12` of the superseded `dpp-release-2026-10-10`; the source starter pins `@bsv/dpp-overlay@0.4.0-beta.13` of the current candidate `dpp-release-2026-11`, not yet published. The command below installs from npm. From the current reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing anything. Maintainers publish the runtime first, then the starter; the release workflow checks the public npm setup separately before a release is announced.
+The published starter, `0.1.0-beta.1`, pins the published index runtime `@bsv/dpp-overlay@0.4.0-beta.12` of the superseded `dpp-release-2026-10-10`; the source starter, `0.1.0-beta.2`, pins `@bsv/dpp-overlay@0.4.0-beta.13` of the current candidate `dpp-release-2026-11`, not yet published. The command below installs from npm. From the current reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing anything. Maintainers publish the runtime first, then the starter; the release workflow checks the public npm setup separately before a release is announced.
 
 ```sh
 npm create @bsv/dpp-index@0.1.0-beta.1 my-index
@@ -35,7 +35,7 @@ npm run connection
 
 The generator installs dependencies unless you pass `--no-install`. `up` builds from your lockfile and starts the index and MongoDB. The HTTP port is published on loopback; MongoDB's port remains private. `doctor` checks the running network, version, topics, custody profile and publisher keys.
 
-`connection` issues the application's submit and callback tokens for the index's publisher key into `config/publisher-tokens.json`, hashed, which the running index reads without a restart, and saves a private `.app.env` with `INDEX_URL`, `INDEX_SUBMIT_TOKEN`, `INDEX_CALLBACK_TOKEN` and `NETWORK`, using the app starter's existing settings. Copy those into the app's server environment and restart it. For separate hosts, use `npm run connection -- --url https://index.example.org`. An app in a container needs an address reachable from that container; its `localhost` is its own container.
+In the published starter (`0.1.0-beta.1`), `connection` copies the index's operator-wide `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` into a private `.app.env` as `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`, alongside `INDEX_URL` and `NETWORK`. It does not issue per-publisher tokens or create `config/publisher-tokens.json`. Copy those into the app's server environment and restart it. For separate hosts, use `npm run connection -- --url https://index.example.org`. An app in a container needs an address reachable from that container; its `localhost` is its own container.
 
 ## What is included
 
@@ -43,13 +43,19 @@ The generator installs dependencies unless you pass `--no-install`. `up` builds 
 | --- | --- |
 | Passport and attestation topics on one service | Publisher public keys and network |
 | Persistent MongoDB with a dedicated user | Bundled Docker MongoDB or a managed database |
-| Per-publisher submit and callback tokens, and a separate complete-export token | Which application holds each token; one is revoked without touching the others |
+| Published starter: separate operator-wide submit, callback and complete-export tokens | Which applications receive each shared secret; rotate it for every application using it |
 | Managed custody admission, as the app starter writes | Admitting self-custody states, by environment setting; no starter app writes them yet |
 | Header verification enabled | Header-source credentials and quota |
 | Evidence export with a separate signing key | Disable exports if you do not provide them |
 | Deployment, diagnostics and backup instructions | Hosting, TLS, monitoring and recovery rehearsal |
 
 Peer synchronisation, SHIP discovery and funded SHIP/SLAP advertising are optional. No funded wallet is needed merely to run the index. The included runtime brings the compatible protocol, profiles, SDK and MongoDB driver dependencies automatically. Application auth, a wallet service, claim storage and a resolver are separate responsibilities. [Choose packages and services](../start/choose-components-and-services.md) explains when you need them.
+
+## Testing the source candidate
+
+The unpublished `0.1.0-beta.2` starter pins the November runtime candidate and changes write access to per-publisher tokens. In a project generated from that source, `npm run connection` issues submit and callback tokens bound to the configured publisher key, stores their hashes in `config/publisher-tokens.json`, and saves the corresponding app settings in `.app.env`. A rerun keeps those tokens. The runtime reads changes to the token file without restarting, and an operator can revoke one writer's token without changing another's. The complete-export token remains operator-wide.
+
+Exercise this workflow with the packed candidate check described above. Running the npm beta.1 command does not install these changes, and changing a generated project's runtime version alone does not update its helper scripts. See [migration](../migration.md#test-the-november-source-candidate) before upgrading.
 
 ## Automated setup
 

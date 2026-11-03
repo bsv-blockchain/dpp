@@ -95,7 +95,7 @@ admitted outputs [ 0 ]
 lookup found 1 output: the state just stored
 ```
 
-`engine.submit` answers with the outputs each topic admitted, and `engine.lookup` with each matching output and the BEEF it arrived in; BEEF is the transaction format that carries a transaction with its ancestors and their block proofs. The engine checks every input against its source transaction, which is why the example funds the state from an output it builds itself. A state the topic manager refuses, such as one countersigned by another publisher, comes back with `outputsToAdmit` empty and is not found. The package's [engine test](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/test/engine.test.ts) adds a second state that spends the first, and a repeated submission.
+`engine.submit` answers with the outputs each topic admitted, and `engine.lookup` with each matching output and the BEEF it arrived in; BEEF is the transaction format that carries a transaction with its ancestors and their block proofs. The engine checks every input against its source transaction, which is why the example funds the state from an output it builds itself. A state the topic manager refuses, such as one countersigned by another publisher, comes back with `outputsToAdmit` empty and is not found. The package's [engine test](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/engine.test.ts) adds a second state that spends the first, and a repeated submission.
 
 To embed the claim rail as well, add `tm_attestation: new AttestationTopicManager()` and `ls_attestation: new AttestationLookupService(new InMemoryAttestationStorage())` beside the passport pair. An empty list of anchoring services admits any well-formed anchor; name the services you accept on anything a stranger can reach.
 
@@ -138,7 +138,7 @@ The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /
 Choose one of these when you want to work from the repository directly. They replace the starter setup; they are not additional steps for a generated project.
 
 - **With the repository's Compose preset.** Follow [run an index from source](../operate/README.md): it explains the publisher key, the tokens, storage and the first health and capability checks. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
-- **From a checkout.** At the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` starts it on port 8080 with in-memory storage, and `GET /health` answers `"status":"ok"`. It warns at start for every protection left off; set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS` on anything a stranger can reach. The [package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/README.md) lists every variable.
+- **From a checkout.** At the root of the [reviewed source checkout](../quick-start.md#get-the-code), after `npm ci` and `npm run build`, `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` starts it on port 8080 with in-memory storage, and `GET /health` answers `"status":"ok"`. It warns at start for every protection left off; set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS` on anything a stranger can reach. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md) lists every variable.
 
 **Tokens.** `POST /submit` and `POST /retract` need a submit token and `POST /arc-ingest` a callback token when the operator configures them, as the hosted reference does. A token belongs to one publisher key and one use: the index accepts it only for states that key countersigned, or anchors naming that key as their anchoring service, and answers `403 token-publisher-mismatch` for anything else; an unknown, revoked or wrong-use token is `401`. A writer gets its two tokens from the index's operator, who issues them with `dpp-index tokens issue` and can revoke them one at a time; an operator may also keep one operator-wide token per route.
 
@@ -150,11 +150,11 @@ Choose one of these when you want to work from the repository directly. They rep
 
 | Integration | Source |
 |---|---|
-| Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/src/lib.ts) |
-| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/src/index.ts) |
+| Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/lib.ts) |
+| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) |
 | Read a historical UORA anchor | `tryParseUoraAnchor` and `expectedLockingKey`, as [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) shows for `uora-anchor-v3`; it refuses `uora-anchor-v2` and does not read `uora-anchor-v1` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)) |
 | Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) |
-| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-overlay/README.md) |
+| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md) |
 
 ## Next
 

@@ -4,7 +4,7 @@ Custody is who holds the keys a passport uses: the brand, your platform, the pas
 
 ## The four keys
 
-Every passport state involves four keys, each answering a different question ([custody specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md#1-four-keys-four-roles) section 1):
+Every passport state involves four keys, each answering a different question ([custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#1-four-keys-four-roles) section 1):
 
 | Key | Where it appears | What it decides |
 |---|---|---|
@@ -19,9 +19,9 @@ A reader cannot tell where any of the four keys is kept, and does not need to: t
 
 ## Choose an arrangement
 
-The custody specification describes three ways to distribute the keys, and record version 2 adds a fourth, the `managed-custody@1` profile. The standard prefers none of them.
+The custody specification describes three ways to distribute the keys, and record version 2 adds a fourth, the `managed-custody@2` profile. The standard prefers none of them.
 
-| | Possession | Split custody | Operator custody | `managed-custody@1` |
+| | Possession | Split custody | Operator custody | `managed-custody@2` |
 |---|---|---|---|---|
 | Who holds the lock | The owner's wallet, as the controller key itself | An operator | An operator | The controller key itself; the custodian's wallet spends it for a managed identity, and a recipient who supplied their own key spends it themselves |
 | Who holds the controller key | The owner's wallet | The owner's wallet | The operator, for the owner | The custodian, for the holder |
@@ -29,23 +29,30 @@ The custody specification describes three ways to distribute the keys, and recor
 | What a stranger can check about a transfer | The owner's spend, which the network enforces | The owner's linkage proof, when the profile asks for it | Nothing beyond the operator's word | That the custodian signed and kept a record of the recipient's acceptance, and that the transfer commits to it |
 | A lost owner wallet | Freezes the passport at its tip, for good | Loses the owner's authority and owner tier; the operator moves ownership as a named authority | Is an account recovery | The custodian holds the keys; if it loses a managed identity's root, a named control authority moves control |
 
-Under possession a compromised operator can forge nothing about the owner; under split custody it can move ownership, visibly; under operator custody it can forge everything ([section 5](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md#5-three-arrangements)). Under `managed-custody@1` the acceptance evidence is the custodian's own: the recipient holds no key, so the record shows what the custodian attests, not something the recipient signed.
+Under possession a compromised operator can forge nothing about the owner; under split custody it can move ownership, visibly; under operator custody it can forge everything ([section 5](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#5-three-arrangements)). Under `managed-custody@2` the acceptance evidence is the custodian's own: the recipient holds no key, so the record shows what the custodian attests, not something the recipient signed.
 
-**What the current release selects.** The current release writes record version 2 under `managed-custody@1`. Two things differ from version 1. Version 2 checks control on every state after the first, not only on transfers. And under `managed-custody@1` every version 2 `TRANSFER` must commit to an acceptance record, or a reader or index applying the profile refuses it. An index declares the profile in its `GET /capabilities` answer; the hosted index declares `managed-custody` version 1 with `acceptanceCommitment: required`.
+**Choose the rules for your release.** The transfer walkthrough below follows the unpublished November source candidate. Package publication and a hosted upgrade are separate steps ([release sets](../reference/release-sets.md)).
 
-Version 1 passports still verify. They use the owner-signed transfer of the custody specification ([section 4](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md#4-the-owner-signed-transfer)) where a profile selects it, and continue as version 2 through one `UPDATE` that keeps the controller key and needs no acceptance ([migration](../migration.md#start-writing-version-2)).
+| Release or deployment | Custody profile | Custodian's acceptance signature |
+|---|---|---|
+| Published October set, and the hosted index's current declaration | `managed-custody@1` | Directly under the custodian's identity key; acceptance format `dpp-managed-acceptance@1` |
+| November source candidate | `managed-custody@2` | Under a BRC-42 derived key through the BRC-100 wallet; acceptance format `dpp-managed-acceptance@2` |
+
+Record version 2 checks control on every state after the first. Both custody versions require a transfer's acceptance commitment. The November reader checks older acceptance records under their own signature rule, while its writer produces only version 2 acceptance records. The custody profile version is separate from the passport record version. Read the index's `GET /capabilities` before connecting, and follow [the candidate migration](../migration.md#test-the-november-source-candidate) before changing writers. The second implementing party's written acceptance of the version 2 signed shape remains outstanding.
+
+Version 1 passports still verify. They use the owner-signed transfer of the custody specification ([section 4](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#4-the-owner-signed-transfer)) where a profile selects it, and continue as version 2 through one `UPDATE` that keeps the controller key and needs no acceptance ([migration](../migration.md#start-writing-version-2)).
 
 **Brand keys.** Who holds a brand's identity key is your platform's choice: the brand's own wallet, or your platform on the brand's behalf. In the reference application the platform holds each brand's identity, so a brand cannot yet update or move it. Nothing in the standard requires this, and another application can let brands hold their own ([open decisions](../start/status.md#open-decisions)).
 
 ## How a managed transfer works
 
-Under `managed-custody@1` a hand on, or transfer, takes three steps, and only the third touches the chain ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md#4-the-transfer) section 4):
+Under `managed-custody@2` a hand on, or transfer, takes three steps, and only the third touches the chain ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md#4-the-transfer) section 4):
 
 1. **Offer.** The holder asks the custodian to offer the passport, to a named recipient's identity key or through a claim code. The custodian fixes the current tip, a digest of the exact terms shown to the recipient, and an expiry.
-2. **Acceptance.** The recipient reads the terms and accepts, by redeeming the claim code or answering as the named identity. The custodian derives or receives the destination key, the controller key the passport moves to, records the acceptance with its time, signs the record with `signManagedAcceptance` (format `dpp-managed-acceptance@1`) and keeps it.
+2. **Acceptance.** The recipient reads the terms and accepts, by redeeming the claim code or answering as the named identity. The custodian derives or receives the destination key, the controller key the passport moves to, records the acceptance with its time, signs the record with `signManagedAcceptance` (format `dpp-managed-acceptance@2`) through its BRC-100 wallet and keeps it. The signature uses the child key for `[1, 'dpp managed record v1']`, the record's `requestId` and counterparty `anyone`; it does not require exporting the identity private key.
 3. **Transfer.** The custodian writes the `TRANSFER`: it spends the tip the offer named, moves field 6 to the destination key, carries the holder as actor with the control proof, and carries `acceptanceCommitment(record)` in field 15, `authorisationCommitment`. Check that `bindAcceptanceToState(record, state)` returns no mismatches before you send it.
 
-Then keep the record for the passport's life. A reader needs it to check the transfer, and the custodian holds the only copy.
+Then keep the record for the passport's life. A reader needs it to check the transfer. The November candidate carries acceptance records in evidence packages under `authority`; `acceptanceRecordsInPackage` retrieves them for the reader. Keep and share those packages under the deployment's access policy. No dedicated index or registry route serves an acceptance record on its own.
 
 An offer is accepted once, and one acceptance executes at most one `TRANSFER`. An offer made against a tip that has since moved must be made again. A declined or expired offer writes nothing on chain.
 
@@ -55,12 +62,12 @@ A reader that is given the record checks that it binds to the `TRANSFER`: `evide
 
 ## After a hand on: the holder's side
 
-For a recipient, being handed a passport under `managed-custody@1` goes like this:
+For a recipient, being handed a passport under `managed-custody@2` goes like this:
 
 1. **You receive an offer.** The platform sends you a claim code outside the passport, or addresses the offer to an identity of yours.
 2. **You accept.** You read the terms and accept. You sign nothing: the custodian records your acceptance, signs that record and keeps it.
 3. **You are the holder.** The custodian keeps the passport's keys for you, under an identity it holds on your behalf unless you gave it one of your own.
-4. **Everything next goes through the custodian, on your instruction.** To change the passport, hand it on or retire it, you ask the platform. The custodian records your request, signs that record and keeps it, and the state it writes commits to the record the way a transfer commits to your acceptance ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) section 6). A reader applying the profile's instruction rule refuses a change the custodian wrote for you without one. To hand it on, the platform makes a new offer and the same three steps follow.
+4. **Everything next goes through the custodian, on your instruction.** To change the passport, hand it on or retire it, you ask the platform. The custodian records your request, signs that record and keeps it, and the state it writes commits to the record the way a transfer commits to your acceptance ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) section 6). A reader applying the profile's instruction rule refuses a change the custodian wrote for you without one. To hand it on, the platform makes a new offer and the same three steps follow.
 
 A platform should answer these questions on its acceptance screen, so that a holder knows what comes next:
 
@@ -69,32 +76,31 @@ A platform should answer these questions on its acceptance screen, so that a hol
 - Can I have a copy of the acceptance record?
 - How do I take the passport into a wallet of my own?
 
-**Take the passport into your own wallet.** Your BRC-100 wallet derives your controller key for the passport with `ownerKeyFor(passportId, wallet)`, and you give that key, with your identity key, to the custodian. The custodian offers the passport to you as a named recipient with that key as the destination, and writes the `TRANSFER`. For your wallet to spend the next state, that `TRANSFER` must be locked to the same key, as the [custody specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md#3-where-the-lock-sits) section 3 pins for an owner-held lock. From then on you prove control from your own root: that is possession ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md#7-what-a-deployment-declares-and-where-a-passport-can-go) section 7). To add a state yourself later, you also need a publisher whose countersignature an index admits: run your own index that names your wallet's key, or find a service that will countersign for you. The contracts define no route for asking a service to countersign.
+**Take the passport into your own wallet.** Your BRC-100 wallet derives your controller key for the passport with `ownerKeyFor(passportId, wallet)`, and you give that key, with your identity key, to the custodian. The custodian offers the passport to you as a named recipient with that key as the destination, and writes the `TRANSFER`. For your wallet to spend the next state, that `TRANSFER` must be locked to the same key, as the [custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#3-where-the-lock-sits) section 3 pins for an owner-held lock. From then on you prove control from your own root: that is possession ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md#7-what-a-deployment-declares-and-where-a-passport-can-go) section 7). To add a state yourself later, you also need a publisher whose countersignature an index admits: run your own index that names your wallet's key, or find a service that will countersign for you. A recipient leaving managed custody also needs a deployment that does not select the instruction rule, because that rule still requires commitments after a committed transfer and cannot tell who holds the recipient's key. The contracts define no route for asking a service to countersign.
 
 ## Rehearse recovery
 
 Write down where transaction history, signed claims, acceptance records, restricted documents and signing access are kept. Recover each separately in a test environment. A restored account can still lack keys; a restored key can still lack evidence; an evidence archive stays readable after the access needed to update the passport is lost.
 
-Two facts follow from the design. A lost lock freezes the passport at its tip, because the output script has one key and one path. A lost controller key, when the lock is held elsewhere, loses that party's authority and owner tier, and a named authority can move control with one more state ([custody specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md#6-recovery) section 6). [Export and recovery](../operate/export-import-recovery.md) covers the evidence; an export does not recover a missing private key.
+Two facts follow from the design. A lost lock freezes the passport at its tip, because the output script has one key and one path. A lost controller key, when the lock is held elsewhere, loses that party's authority and owner tier, and a named authority can move control with one more state ([custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#6-recovery) section 6). [Export and recovery](../operate/export-import-recovery.md) covers the evidence; an export does not recover a missing private key.
 
 ## Not settled yet
 
-These are open in the standard ([known limitations](../operate/limitations.md)). Each has a way to proceed meanwhile.
+The November candidate specifies the locking key, derived-key signatures and committed holder instructions. The remaining deployment questions are how to obtain retained evidence and how an application offers key portability ([known limitations](../operate/limitations.md)).
 
-| Open question | What to do meanwhile |
+| Remaining question | What to do now |
 |---|---|
-| Whether a custodian may write a state for a holder without the holder's request, and how such a request is recorded | Decide it in your platform. If your staff can update or retire a passport you have handed on, tell the holder |
-| The acceptance record is signed with the custodian's identity key itself, which a BRC-100 wallet does not expose, against the one-derivation rule above | Hold the custodian's identity key outside its wallet for now, as the walkthrough does |
-| No index or registry route serves acceptance records, so a reader on another stack cannot fetch them | Keep every record for the passport's life and serve it yourself. Readers elsewhere see `evidenceAvailability` `unknown` for your managed transfers |
-| Which key the lock sits on under `managed-custody@1` | The walkthrough locks each state to the controller key and spends it with the `[1, 'dpp owner v1']` unlock; the offline example locks every state to the custodian's identity key. Both verify, because a reader never checks who holds the lock. Choose a key your custodian's wallet can spend |
+| No dedicated index or registry route serves acceptance or instruction records | Retain the records and carry them in evidence packages. A reader without the referenced record still reports missing evidence |
+| How a platform lets a holder take control through their own wallet | Implement the offer, destination-key and access workflow, and explain which index will accept subsequent writes. The standard defines the records, not those screens |
+| Whether records and signing access survive the custodian's loss | Rehearse evidence export, recovery and key portability separately; restoring public history does not recover private keys |
 
 ## Source definitions
 
 | Design question | Source |
 |---|---|
-| Who may hold each key, and the three arrangements | [Custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md) |
-| How managed acceptance works and what it proves | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) |
-| Which control proof a state needs | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md#6-chain-invariants) section 6 |
+| Who may hold each key, and the three arrangements | [Custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md) |
+| How managed acceptance works and what it proves | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) |
+| Which control proof a state needs | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/record-model-v2.md#6-chain-invariants) section 6 |
 | What a replacement provider can restore | [Export, import and recovery](../operate/export-import-recovery.md) |
 
 ## Next

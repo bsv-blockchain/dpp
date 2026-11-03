@@ -15,6 +15,20 @@ Write down what each running component uses now, and keep the old configuration 
 | The record versions you hold | The operations the reader prints for each passport: version 2 uses `ISSUE`, `UPDATE`, `TRANSFER` and `RETIRE` |
 | The profiles your records declare | The `profile` and `profile_version` in each state's public payload |
 
+## Test the November source candidate
+
+`dpp-release-2026-11` is not yet published. It selects protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and credentials `0.2.0-beta.6`; both source starters are `0.1.0-beta.2`. The published October set remains on the versions in its [publication receipt](reference/beta-11-publication.md). Use [local candidate archives](packages/README.md#use-the-renamed-source-candidate) to test the new set without treating it as an npm upgrade.
+
+Before moving a deployment to the candidate:
+
+1. **Upgrade readers before writers.** The reader verifies `dpp-managed-acceptance@1` under its original direct-signature rule and `@2` under its derived-key rule. Keep historical records and commitments unchanged.
+2. **Change custodian signing.** `signManagedAcceptance` and `signManagedInstruction` take the same `DataSigner` interface as state signing. Supply the BRC-100 wallet instead of a signer that signs directly with the identity key. The acceptance writer emits version 2 only; it and the instruction writer use `[1, 'dpp managed record v1']`, `requestId` and counterparty `anyone`. The index declares `managed-custody@2` when `ACCEPTANCE_COMMITMENT=required`.
+3. **Retain authorisation evidence.** Include acceptance and instruction records in evidence packages. Enable `INSTRUCTION_COMMITMENT=required` only after every writer can commit to a holder instruction for an update or retirement after a committed transfer; readers and indexes selecting that rule refuse a missing commitment. Rehearse transfer, update and retirement with the candidate fixtures.
+4. **Update claims and verification policy.** A native claim's `recordId` is a transaction outpoint, `<txid>:<outputIndex>`, and the claim may carry structured evidence facets. Pass `profilePayloadValidator(ajv)` as the report's `payloadValidator` to check token payloads against their declared profiles. Schema results can now fail where the published reader reported `unknown`.
+5. **Choose write access explicitly.** Per-publisher tokens and optional `POST /register` are candidate features. The published index starter still copies operator-wide tokens; the source starter issues per-publisher tokens. Review generated configuration and helper-script changes as well as the runtime dependency before adopting that workflow ([create an index](packages/create-dpp-index.md#testing-the-source-candidate)).
+
+The [managed-custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) records the signature rules and compatibility boundary. The second implementing party's written acceptance of the version 2 signed shape remains outstanding. Testing these changes does not upgrade the hosted services or establish a completed cross-implementation trial.
+
 ## Rename dpp-overlay-topics to dpp-overlay, and vsc to dpp-credentials
 
 The candidate `dpp-release-2026-10-9` renames two packages without changing what they do. The index runtime `@bsv/dpp-overlay-topics@0.4.0-beta.11` becomes `@bsv/dpp-overlay@0.4.0-beta.11`, named for the overlay service it runs; its `./server` entry point, the `dpp-index` executable and every export are unchanged. The credentials package `@bsv/vsc@0.2.0-beta.5` becomes `@bsv/dpp-credentials@0.2.0-beta.5`, named for the supply-chain credentials it issues and verifies; its `./exchange` and `./epcis-source` entry points are unchanged, and the profile identifiers it implements, such as `vsc-draft-compat/0.1.0`, keep their names because they are wire-level identifiers, not package names.
@@ -46,11 +60,11 @@ The last set published under the former names, `dpp-release-2026-10-7`, carries 
 
 ### From beta.8 to beta.9
 
-The superseded set `dpp-release-2026-10-6` carries `@bsv/dpp-overlay@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 3 October 2026 from source revision `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)). An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+The superseded set `dpp-release-2026-10-6` carries `@bsv/dpp-overlay-topics@0.4.0-beta.9` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 3 October 2026 from source revision `488baaefb5bda535e360fd1c1895124387408816` ([receipt](reference/beta-9-publication.md)). An index on it serves its signed publisher policy on `GET /publisher-policy` and speaks index contract `0.10.0-draft`. A reader that took publisher keys from `GET /capabilities` can verify them and their windows from the chain instead. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
 
 ### From beta.7 to beta.8
 
-The set `dpp-release-2026-10-5`, now superseded, carries `@bsv/dpp-overlay@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 2 October 2026 from source revision `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)). An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
+The set `dpp-release-2026-10-5`, now superseded, carries `@bsv/dpp-overlay-topics@0.4.0-beta.8` beside the unchanged beta.7 core and profiles and beta.5 VSC, published under `latest` on 2 October 2026 from source revision `a8db9b6018c61d933596e21797ce2d67ddb5a33e` ([receipt](reference/beta-8-publication.md)). An index on it finds a passport from a GS1 key without a host (`ls_dpp` with `gs1Key`) and speaks index contract `0.9.0-draft`; it rebuilds its records' GS1 keys once at its first start. The overlay package now depends on `@bsv/dpp-profiles`, so an application that embeds it installs both. No record, claim, anchor or acceptance format changed, and neither did the frozen or custody profiles.
 
 ### From beta.6 to beta.7
 
@@ -71,8 +85,8 @@ The set `dpp-release-2026-10`, now superseded, carries the beta.4 packages, publ
 | Package, from and to | What changes for an application | What changes for an index operator |
 |---|---|---|
 | `@bsv/dpp-profiles@0.3.0-beta.3` to `0.3.0-beta.4` | The profile readers `readManifest`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readExchangeProfile`, `readOperatorProfile` and `readInteroperabilityProfile` now accept only identifiers the package publishes, and throw for any other before reading a file. Earlier versions did not check the identifier, so use 0.3.0-beta.4 or later. | Nothing |
-| `@bsv/dpp-overlay@0.4.0-beta.3` to `0.4.0-beta.4` | Nothing | The passport topic asks a synchronising peer for a state's predecessor only when the peer's walk reached that state through its passport output. Once it takes effect, a new passport funded from another passport's change is no longer left behind until it is mined. It has no effect yet: `@bsv/overlay`, up to 2.6.2, does not pass the topic the output its walk reached, so synchronisation behaves as on beta.3 until it does ([federation](operate/federation.md)) |
-| `@bsv/dpp-core@0.3.0-beta.4` and `@bsv/dpp-credentials@0.2.0-beta.3` | Package documentation only; no code changed | Nothing |
+| `@bsv/dpp-overlay-topics@0.4.0-beta.3` to `0.4.0-beta.4` | Nothing | The passport topic asks a synchronising peer for a state's predecessor only when the peer's walk reached that state through its passport output. Once it takes effect, a new passport funded from another passport's change is no longer left behind until it is mined. It has no effect yet: `@bsv/overlay`, up to 2.6.2, does not pass the topic the output its walk reached, so synchronisation behaves as on beta.3 until it does ([federation](operate/federation.md)) |
+| `@bsv/dpp-core@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3` | Package documentation only; no code changed | Nothing |
 
 To upgrade an application:
 
@@ -82,7 +96,7 @@ To upgrade an application:
    npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/sdk@2.8.10
    ```
 
-   Add `@bsv/dpp-credentials@0.2.0-beta.3` or `@bsv/dpp-overlay@0.4.0-beta.4` if you use them. Always name the version.
+   Add `@bsv/vsc@0.2.0-beta.3` or `@bsv/dpp-overlay-topics@0.4.0-beta.4` if you use them. Always name the version.
 2. Find every place that passes a profile identifier to a profile reader, typically one built from the `profile` and `profile_version` a record declares, such as `general@2`. Check the identifier against `PROFILE_IDS` from `@bsv/dpp-profiles` before you pass it, and handle the error the reader now throws for any other.
 3. Rehearse against retained data ([below](#rehearse-against-retained-data)), then deploy.
 
@@ -142,7 +156,7 @@ Then exercise writing, verification, export and recovery against the scratch ind
 Change the parts in this order, so that nothing reads or admits a record it does not yet understand:
 
 1. **Readers.** Every package release since the first set reads both record versions with the same call, so a reader on beta.4 needs no change. From a checkout, `node examples/verify-passport.mjs --fixture --version=2` checks the version 2 fixture and the upgrade of the version 1 fixture chain; no line should start `FAIL:`.
-2. **The index.** Set `ACCEPTANCE_COMMITMENT=required` so it applies `managed-custody@1` (the Compose preset already does), and `CONTROL_AUTHORITIES` if you name control authorities. Add `INSTRUCTION_COMMITMENT=required` only once every writer of the index commits to the holder's instruction on each update or retirement after a hand on. Check that `GET /capabilities` lists `managed-custody` version `1` with `acceptanceCommitment: required` and the `instructionCommitment` you chose.
+2. **The index.** Set `ACCEPTANCE_COMMITMENT=required` (the Compose preset already does), and `CONTROL_AUTHORITIES` if you name control authorities. The published October runtime declares `managed-custody` version `1`; the November source candidate declares version `2`. On the candidate, add `INSTRUCTION_COMMITMENT=required` only once every writer commits to the holder's instruction on each update or retirement after a hand on. Check that `GET /capabilities` names the profile version and options you selected ([candidate migration](#test-the-november-source-candidate)).
 3. **Writers.** New passports start with a version 2 `ISSUE` ([build an application](packages/build-an-application.md#3-write-a-passport)). Every later state proves control, and every `TRANSFER` commits to an acceptance record ([custody](learn/custody.md#how-a-managed-transfer-works)).
 
 **Continue a version 1 passport.** Its next state is a version 2 `UPDATE` that spends the version 1 tip, keeps the controller key equal to the version 1 owner key, names the version 1 genesis as its lineage genesis, and proves control like any other `UPDATE` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md#L94), "The upgrade"). It needs no acceptance record, because control does not change. A `TRANSFER` or `RETIRE` cannot spend a version 1 tip, and no version 1 state can follow a version 2 state. The packages have no call dedicated to this step: build it as any other version 2 `UPDATE`, with `completeState`. The reference application's own upgrade operation is not public.
