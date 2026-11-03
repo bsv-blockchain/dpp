@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-03, log the OIDC exchange in the publish step
+
+- Probe the trusted publishers in every dry run of `publish.yaml`: `npm publish --dry-run` performs the OIDC token exchange for each archive and writes nothing, and at verbose level prints the registry's reason when it is refused. The publish step logs at the same level. Three publication runs of `dpp-release-2026-11` stopped at the first upload with a bare `ENEEDAUTH` and nothing written.
+
 ### 2026-11-05, retraction is a writer duty and stays local to an index
 
 - `spec/writing.md` §3: a writer that announces before sending MUST withdraw a draft the network refused from every index it announced it to, with the network's answer as the reason, before it builds on the same tip; §11 adds the withdrawal to the self-report list. `spec/services.md` §2 says what the retraction route does and that a retraction is local: synchronisation carries admissions only, a peer that pulled the withdrawn state keeps it, and that peer's operator withdraws it through its own route under the same checks. The overlay contract's `/retract` description says the same (descriptions only, `0.14.0-draft` unchanged); the federation page, known limitations and the writer role page follow. Ledger rows `WR-3-retract-refused` and `SVC-2-retraction`, the latter required by both single-operator claims; `packages/dpp-overlay/test/federation.test.ts` shows a retraction on one index not offered to its peer and the peer withdrawing it itself (bsv-blockchain/dpp-issues#82).
