@@ -29,7 +29,7 @@ Start with the native path: record, chain, acceptance record, report. Add histor
 
 **Chain refusals.** Each refusal extends a prefix of the valid chain. `appendAfter` is a zero-based index into `states`: keep `states[0]` to `states[appendAfter]` and add the refusal's `rawTx`. `-1` means the refusal stands alone as a genesis. The default policy names no publisher key (the publisher signature is admission policy and may be skipped; with the file's publisher key the valid chain passes too), selects no custody profile and names no control authorities. Three kinds of case change that, and each must be run both ways:
 
-- `managedAcceptance: true` (the version 2 `transferWithoutCommitment`): refused with `managed-custody@1` selected, valid with it off.
+- `managedAcceptance: true` (the version 2 `transferWithoutCommitment`): refused with the managed custody profile selected, valid with it off.
 - `ownerConsent: true` (seven version 1 cases): refused with the owner-signed transfer selected, valid with it off.
 - `acceptedUnder` (`recoveryWithoutAuthority` in both files): valid when the keys it names are the control or transfer authorities.
 

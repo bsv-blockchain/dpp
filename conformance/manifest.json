@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/writing.md",
-      "digest": "e6d02520db78c90a3bf0b8bfc454131fc3b74820bce1622088dcd57c44908e2d"
+      "digest": "225f4646c4e380b9b51fd6c5ad1a4e414a036cd2e28943cb2b64d1cb25a21266"
     },
     {
       "id": "spec-services",
@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "8dbb2085df152bcddfd8b68f52ca9b7e94511d145230466a219e88e48e43e89e"
+      "digest": "c4914af1ea5eca1139526e36a233cd0a0efe70cec90aac87572577339d1045cd"
     },
     {
       "id": "spec-conformance",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "e079d2ad5aff50df0b43b1aea494ac442a55c0dcdc2405e4d8d51e334b63360b"
+      "digest": "bcdfb8e9746589b6bab6adb2fb71d93120e57262ded323c8e1c1540b16e81825"
     },
     {
       "id": "contract-registry",
@@ -160,7 +160,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "7c850639b9f294bd46e92c729375e9ffab6a45a6e76e69514becde37eef45a5d"
+      "digest": "21c02ce84d830aaee79166fad44f32760cedfe46efd3d06bb5a4cb424380b78e"
     },
     {
       "id": "profiles-manifest-schema",
@@ -1871,7 +1871,7 @@
         "fixtures/managed-instruction-v1.json#refusals.directlySigned"
       ],
       "status": "independently-tested",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#92): writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the six refusals from the fixture."
+      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#92): writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the seven refusals from the fixture."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -5870,7 +5870,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "7c850639b9f294bd46e92c729375e9ffab6a45a6e76e69514becde37eef45a5d",
+      "sourceDigest": "21c02ce84d830aaee79166fad44f32760cedfe46efd3d06bb5a4cb424380b78e",
       "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged."
     },
     {
@@ -6279,7 +6279,7 @@
     {
       "id": "managed-custody-1",
       "minimumStatus": "tested",
-      "description": "The superseded managed-custody@1 profile: records signed with the custodian's identity key directly, read under spec/managed-custody.md §9, with the acceptance record's binding, the report, the index's admission and declaration as version 2 defines them. Demonstrated in September 2026; nothing writes version 1 any more.",
+      "description": "The superseded managed-custody@1 profile: records signed with the custodian's identity key directly, read under spec/managed-custody.md §9, with the acceptance record's binding, the report, the index's admission and declaration as version 2 defines them. Demonstrated in September 2026; the November candidate writes no version 1 record, while applications on the published October set still do until they adopt the candidate.",
       "requires": [
         "MC-9-version-1-records",
         "MC-4-transfer-binding",

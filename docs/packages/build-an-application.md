@@ -37,7 +37,7 @@ For deployment, connect to an existing compatible index or create a separate pro
 | Journal | Your record of every operation, so a retry continues instead of repeating | For writing |
 | Claim issuer, registry and anchoring service | Sign a claim, retain it and publish a separate anchor; these roles can be supplied together or separately | Only for the selected claim workflow |
 
-[Words you will meet](../README.md#words-you-will-meet) defines the core terms; this page defines the rest as they appear. You write record version 2 under `managed-custody@1`, the custody profile the current release selects. Version 1 lineages still verify ([custody](../learn/custody.md) explains the difference).
+[Words you will meet](../README.md#words-you-will-meet) defines the core terms; this page defines the rest as they appear. You write record version 2 under `managed-custody@2`, the custody profile the November source candidate selects; the published October set selects `managed-custody@1`. Version 1 lineages still verify ([custody](../learn/custody.md) explains the difference).
 
 ## Before you start
 
@@ -197,7 +197,7 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `ARC_CALLBACK_TOKEN` | The second secret | Guards `POST /arc-ingest`, where a writer pushes a mined state's merkle path. Compose will not start without it |
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
 | `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
-| `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects `managed-custody@1`: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
+| `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects the managed custody profile, `managed-custody@2` in this candidate: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
 | `INSTRUCTION_COMMITMENT` | `required`, or unset | Selects the profile's instruction rule: after a committed `TRANSFER`, an `UPDATE` or `RETIRE` is admitted only with its instruction commitment, unless a control authority made it. Needs `ACCEPTANCE_COMMITMENT=required` |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 

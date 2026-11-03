@@ -13,10 +13,10 @@ A release set is one tested combination of all these parts, declared in a file u
 | Passport records | Version 1 (14 fields), version 2 (17 fields) and version 3 (the version 2 body behind a token prefix) | `wire.records` | `protocols`: `dpp-record` version `1`, version `2` and version `3` |
 | Native claim | `dpp-lifecycle-v1` | `wire.nativeClaim` | `representations`: `dpp-lifecycle-json-v1`, the claim's anchored form |
 | Anchor | `bsv-attestation-anchor-v1` | `wire.anchor` | `protocols`: `bsv-attestation-anchor` version `1`; `anchorFormats` lists it as `current` |
-| Acceptance record | `dpp-managed-acceptance@1` | `wire.acceptanceRecord` | Implied by the custody profile |
+| Acceptance record | `dpp-managed-acceptance@2`; a reader also reads `dpp-managed-acceptance@1` under its superseded rule | `wire.acceptanceRecord` | Implied by the custody profile |
 | Verification report | Version `1` | `wire.verificationReport` | Not advertised; each report carries `reportVersion` |
 | Index contract | `0.14.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.14.0-draft` |
-| Custody profile | `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `1`, with its options |
+| Custody profile | `managed-custody@2`; the published October set selects `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `2`, with its options |
 | Industry profiles | Current: `general@2`, `battery@2`, `textile@2`. Drafts: `battery@3`, `battery@4`, `textile@3`, `textile@4` | The frozen manifests in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
 
 These numbers move independently. A package prerelease version is not a specification, wire-format or profile version: installing a new package never selects a new record format or industry profile, and never rewrites a stored record. A reader may need both record decoders even when every package it installs comes from one release set, and selecting a draft battery profile does not select a different blockchain format.
@@ -30,7 +30,7 @@ These numbers move independently. A package prerelease version is not a specific
 | Control | Proven on a `TRANSFER` only where a profile selects the owner-signed transfer | Proven on every state after the first, for every reader |
 | Each state names | The transaction it spends | The output it spends and the lineage's first state |
 | Ending a passport | No terminal operation | `RETIRE`, after which nothing can follow |
-| Commitment to an authorisation record | None | Field 15, which `managed-custody@1` requires on every `TRANSFER` |
+| Commitment to an authorisation record | None | Field 15, which the managed custody profile requires on every `TRANSFER` |
 
 Readers read both with the same call, including a lineage that began as version 1 and continued as version 2, and read a version 3 lineage, the version 2 body carried behind a BRC-162 token prefix for new lineages only, with the same call again (`spec/token-carrier.md`). Writers write version 2 for new passports. A version 1 passport continues as version 2 through one `UPDATE` that keeps its controller key, and no version 1 state can ever follow a version 2 state ([migration](../migration.md#start-writing-version-2)).
 

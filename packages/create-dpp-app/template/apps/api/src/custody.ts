@@ -1,4 +1,4 @@
-// Hand-ons under managed-custody@1 (spec/managed-custody.md): offer,
+// Hand-ons under managed-custody@2 (spec/managed-custody.md): offer,
 // acceptance, transfer. The custodian, this platform, fixes the current tip,
 // a digest of the exact terms shown to the recipient and an expiry; the
 // recipient accepts with a claim code or as a named identity; the custodian
