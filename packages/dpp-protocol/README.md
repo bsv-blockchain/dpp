@@ -18,7 +18,13 @@ rather than rewritten.
 
 ## Install and consume
 
-This is a pre-1.0 source candidate. The package was renamed from `@bsv/dpp-core`. Existing consumers must [migrate their imports and schema paths](../../docs/migration.md#rename-dpp-core-to-dpp-protocol); the active release contains no wrapper under the old name. The new name is not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
+This is a pre-1.0 source candidate. The package was renamed from `@bsv/dpp-core`. Existing consumers must [migrate their imports and schema paths](../../docs/migration.md#rename-dpp-core-to-dpp-protocol); the active release contains no wrapper under the old name. The published version under the new name is `@bsv/dpp-protocol@0.3.0-beta.9`, selected by the October set since 16 October 2026:
+
+```sh
+npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.9 @bsv/sdk@2.8.10
+```
+
+This source tree is the November candidate, `0.3.0-beta.10`, not yet published. [Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test it. After publication, install these exact versions from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-protocol@0.3.0-beta.10 @bsv/sdk@2.8.10
@@ -34,7 +40,7 @@ const key = PrivateKey.fromRandom()
 const claim = await signLifecycleClaim({
   claimFormat: 'dpp-lifecycle-v1',
   passportId: 'https://example.com/01/09521000000018/21/EXAMPLE',
-  recordId: '0'.repeat(64), // Synthetic record identifier for this offline example.
+  recordId: `${'0'.repeat(64)}:0`, // Synthetic outpoint, <txid>:<outputIndex>, for this offline example.
   eventType: 'Origin',
   timestamp: new Date().toISOString(),
   issuer: didKeyFromIdentityKey(key.toPublicKey().toString()),
