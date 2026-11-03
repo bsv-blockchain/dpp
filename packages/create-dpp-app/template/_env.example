@@ -1,10 +1,11 @@
-# Copy to .env and fill in. The npm scripts (dev, start, wallet, operations) read .env at start,
-# as does Docker with --env-file. A value already set in the environment wins over the file.
-# Values marked (live) are needed only to write real passports on BSV mainnet;
-# `npm test` and `npm run dev` work without them.
+# The scaffold wrote .env from this file with fresh secrets and the default testnet index;
+# this copy keeps the placeholders. The npm scripts (dev, start, wallet, operations, go-live) read
+# .env at start, as does Docker with --env-file. A value already set in the environment wins over
+# the file. Values marked (live) are needed only to write real passports; `npm test` and
+# `npm run dev` work without them, and `npm run go-live` fills in what it can.
 
-# The chain your wallet and index are on: main or test
-NETWORK=main
+# The chain your wallet and index are on: test for the default testnet index, main for mainnet
+NETWORK=test
 PORT=3000
 # Where the web app is served from in production (the API serves it); in dev Vite proxies to the API
 PUBLIC_URL=http://localhost:3000
@@ -17,7 +18,7 @@ MONGO_DB=dpp_app
 AUTH_SECRET=change-me-to-32-random-bytes-hex
 
 # The platform wallet: a BRC-100 wallet the API owns (wallet-toolbox on SQLite).
-# Generate a root key with: openssl rand -hex 32. Keep it secret and backed up.
+# Empty until the first `npm run go-live`, which generates the root key here. Keep it secret and backed up.
 WALLET_ROOT_KEY=
 WALLET_FILE=local/wallet.sqlite
 # WhatsOnChain API key: the header source for the wallet and the reader (live)
@@ -29,11 +30,12 @@ ARC_URL=
 BRAND_ROOT_SECRET=
 MANAGED_IDENTITY_SECRET=
 
-# The index (overlay) this platform writes to. Empty in dev: the API runs one in-process.
-# Required once LIVE_PUBLISHING=true; the API refuses to start without it.
-# Use an existing provider or a separate @bsv/create-dpp-index project.
-# Copy its .app.env connection values here. App Compose starts only the app database.
-INDEX_URL=
+# The index this app announces passports to and readers look them up in. The default is the
+# hosted testnet index (mainnet: https://dpp-overlay.bsvb.net with NETWORK=main). Until
+# `npm run go-live` has registered the app's publisher key and stored the two tokens below, the
+# API runs an index in this process instead. `npm run connect-index` takes another provider's
+# address and tokens; `npm run add-index` creates your own index project beside this app.
+INDEX_URL=https://dpp-overlay-testnet.bsvb.net
 INDEX_SUBMIT_TOKEN=
 INDEX_CALLBACK_TOKEN=
 
@@ -47,7 +49,7 @@ GS1_PREFIX=952
 REGISTRY_URL=https://dpp-resolver.bsvb.net
 REGISTRY_TOKEN=
 
-# Writing to the chain spends real satoshis. Keep false until the live prerequisites in README.md are met.
+# Writing to the chain spends real satoshis. `npm run go-live` sets this to true once every check passes.
 LIVE_PUBLISHING=false
 # How many satoshis the platform may spend per day before it refuses to write more
 SPEND_CAP_SATOSHIS=20000

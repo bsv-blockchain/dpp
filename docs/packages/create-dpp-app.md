@@ -21,9 +21,10 @@ npm create @bsv/dpp-app@0.1.0-beta.1 my-app
 cd my-app
 npm test
 npm run dev
+npm run go-live
 ```
 
-The first run is an offline test of a whole passport lifecycle. The generated README explains the rest, including the route to writing real passports, connecting an index and deploying.
+The first run is an offline test of a whole passport lifecycle; `npm run dev` serves the app with an index in this process; `npm run go-live` registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. The generated README explains what each check needs, the mainnet settings, and `connect-index` and `add-index` for another provider's index or your own.
 
 To test a source candidate instead, run these commands from the DPP repository root, choosing a new directory for the app:
 

@@ -45,3 +45,27 @@ test('refuses a directory that is not empty', () => {
     rmSync(scratch, { recursive: true, force: true })
   }
 })
+
+test('writes .env with fresh secrets and the default testnet index, and never a placeholder', () => {
+  const scratch = mkdtempSync(join(tmpdir(), 'create-dpp-app-test-'))
+  try {
+    const target = join(scratch, 'my-app')
+    const out = execFileSync(process.execPath, [cli, target, '--no-install'], { encoding: 'utf8', cwd: scratch })
+    const env = readFileSync(join(target, '.env'), 'utf8')
+    const value = (name) => env.match(new RegExp(`^${name}=(.*)$`, 'm'))?.[1]
+    const secrets = ['AUTH_SECRET', 'BRAND_ROOT_SECRET', 'MANAGED_IDENTITY_SECRET'].map(value)
+    for (const secret of secrets) assert.match(secret, /^[0-9a-f]{64}$/)
+    assert.equal(new Set(secrets).size, 3)
+    assert.equal(value('NETWORK'), 'test')
+    assert.equal(value('INDEX_URL'), 'https://dpp-overlay-testnet.bsvb.net')
+    assert.equal(value('WALLET_ROOT_KEY'), '')
+    assert.equal(value('LIVE_PUBLISHING'), 'false')
+    assert.doesNotMatch(env, /change-me|development-only/)
+    assert.match(readFileSync(join(target, '.env.example'), 'utf8'), /change-me-to-32-random-bytes-hex/)
+    for (const secret of secrets) assert.ok(!out.includes(secret), 'secrets are not printed')
+    assert.doesNotMatch(out, /cp \.env\.example/)
+    assert.match(out, /npm run go-live/)
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
+  }
+})

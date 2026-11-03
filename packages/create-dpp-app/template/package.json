@@ -19,10 +19,14 @@
     "format": "prettier --write \"apps/**/*.{ts,tsx,css,json}\"",
     "start": "node apps/api/dist/main.js",
     "wallet": "tsx apps/api/src/cli.ts wallet",
-    "operations": "tsx apps/api/src/cli.ts operations"
+    "operations": "tsx apps/api/src/cli.ts operations",
+    "go-live": "tsx apps/api/src/cli.ts go-live",
+    "connect-index": "tsx apps/api/src/cli.ts connect-index",
+    "add-index": "tsx apps/api/src/cli.ts add-index"
   },
   "dpp": {
-    "releaseSet": "dpp-release-2026-11"
+    "releaseSet": "dpp-release-2026-11",
+    "indexStarter": "0.1.0-beta.2"
   },
   "overrides": {
     "@bsv/overlay": {

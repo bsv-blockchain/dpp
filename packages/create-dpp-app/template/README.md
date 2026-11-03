@@ -14,7 +14,7 @@ The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release
 
 The API's routes are in [apps/api/API.md](apps/api/API.md).
 
-For deployment, connect to an existing compatible index or create a separate operator project with `@bsv/create-dpp-index`. The app's Compose file starts only its database. Overlay library components are included for offline exercises; you do not install them separately or use the in-process development index as persistent service storage.
+For deployment, `npm run go-live` registers this app with the default hosted index; `npm run connect-index` takes another provider's, and `npm run add-index` creates your own index project with `@bsv/create-dpp-index`. The app's Compose file starts only its database. The index runtime is included for offline exercises; you do not install it separately or use the index in this process as persistent service storage.
 
 ## First run
 
@@ -24,14 +24,13 @@ No wallet, funds, Docker or network:
 npm test
 ```
 
-This runs a whole passport lifecycle against an index in-process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. Then:
+This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. Then:
 
 ```sh
-cp .env.example .env
 npm run dev
 ```
 
-The web app is on http://localhost:5173 and the API on http://localhost:3000. Without MongoDB the API keeps records in memory and signs you in as a developer with one development brand, so you can issue a passport, open its page, hand it on and accept it with the claim code, all without any service. Nothing reaches the chain: the wallet is a test wallet, and the index runs in-process with its header checks off.
+The web app is on http://localhost:5173 and the API on http://localhost:3000. Without MongoDB the API keeps records in memory and signs you in as a developer with one development brand, so you can issue a passport, open its page, hand it on and accept it with the claim code, all without any service. The scaffold wrote `.env` with fresh secrets and the default testnet index; until `npm run go-live` has registered this app with it, the API runs an index in this process and the web app says so. Nothing reaches the chain: the wallet is a test wallet, and the index runs in-process with its header checks off.
 
 ## How a write works
 
@@ -60,53 +59,41 @@ Passports are GS1 Digital Links, `https://<PASSPORT_HOST>/01/<GTIN>/21/<serial>`
 
 ## Going live
 
-Every npm script reads `.env` from the project root at start, so a setting changed there applies on the next run without exporting anything. Docker gets the same file with `--env-file`.
+```sh
+npm run go-live
+```
 
-Writing a real passport spends real satoshis on BSV mainnet and is permanent. Before `LIVE_PUBLISHING=true`:
+One command checks everything a real write needs and names the fix for each failure; nothing reaches the chain until every check passes. In order:
 
-1. **MongoDB.** `docker compose -f deploy/compose.yml --env-file .env up -d mongo`, or a hosted MongoDB. Set `MONGO_URL`. Sign-in and persistence need it.
-2. **A root key.** `openssl rand -hex 32` into `WALLET_ROOT_KEY`. Back it up: a root key alone is not a full wallet backup, so read the wallet toolbox's recovery guidance and keep the SQLite file in `local/` on a persistent volume.
-3. **Secrets.** `AUTH_SECRET`, `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET`, each `openssl rand -hex 32`. Changing an identity secret changes every key derived from it, so decide them once.
-4. **A header source.** A WhatsOnChain API key in `WOC_API_KEY`, for the wallet's monitor and the reader.
-5. **An index that admits your publisher key.** An index is the service this app announces each passport state to before sending it, and the service readers look passports up in. In development the API runs one in-process; live passports need one that persists, and the API refuses to start with `LIVE_PUBLISHING=true` until `INDEX_URL` is set. `npm run wallet` prints the publisher key. Follow [Connect an index](#connect-an-index) to arrange an existing provider or run a separate index project. Match the wallet's network and managed custody profile.
-6. **Funds.** `npm run wallet` prints a funding address. Pay it from any wallet, then take the payment in with the `wallet fund` command it prints, or from the Wallet page. A state costs a little over a hundred satoshis and leaves one satoshi in the passport output.
-7. **Your identifier host and prefix.** `PASSPORT_HOST` must be a host you control and serve this application from, so a label's QR code opens the passport page.
+1. **Configuration.** The secrets in `.env` are not placeholders; `INDEX_URL` is set and a hosted index matches `NETWORK` (`https://dpp-overlay-testnet.bsvb.net` is `test`, `https://dpp-overlay.bsvb.net` is `main`); on mainnet, `GS1_PREFIX` is a prefix licensed to you and `PASSPORT_HOST` a host you serve.
+2. **Wallet.** The first run generates `WALLET_ROOT_KEY` into `.env` and prints the publisher key. Back the file up: a root key alone is not a full wallet backup, so read the wallet toolbox's recovery guidance and keep the SQLite file in `local/` on a persistent volume.
+3. **Index.** The index answers, serves the same network, and admits under the managed custody profile this app writes.
+4. **Registration.** The app signs a registration request with its wallet and sends it to the index's `POST /register`; the index names the publisher key in its policy and answers with the app's two write tokens, which go into `.env`. An index whose operator approves registrations holds the request; run `go-live` again once approved. An index that does not register publishers says so and names `connect-index`.
+5. **Funds.** The wallet holds enough for a few states. If not, the command prints a funding address and the `wallet fund` command that takes the payment in. A state costs a little over a hundred satoshis and leaves one satoshi in the passport output.
+6. **Admission.** The index now names the key.
 
-Then set `LIVE_PUBLISHING=true`. Until then, a write is built, checked and admitted as a draft, and aborted before the send, which is the dry run you can rehearse with.
+Then `LIVE_PUBLISHING=true` is written and the next write spends real satoshis. Until then, a write is built, checked and admitted as a draft, and aborted before the send, which is the dry run you can rehearse with. `SPEND_CAP_SATOSHIS` refuses writes once the platform has spent that much in a day.
 
-`SPEND_CAP_SATOSHIS` refuses writes once the platform has spent that much in a day.
+Mainnet needs MongoDB (`docker compose -f deploy/compose.yml --env-file .env up -d mongo`, or a hosted one, in `MONGO_URL`) for sign-in and persistence, a WhatsOnChain API key in `WOC_API_KEY` for the wallet's monitor and the reader, `NETWORK=main` with `INDEX_URL=https://dpp-overlay.bsvb.net`, and your own `PASSPORT_HOST` and `GS1_PREFIX`. Changing an identity secret changes every key derived from it, so decide `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET` once.
 
 ## Connect an index
 
-An index is where your passports become findable: the app announces every state to it before sending, and readers, including other platforms, look states and their evidence up there. It admits only states countersigned by a publisher key it names, and it follows this app's custody model. Choose one route. This app's Compose file starts only the application database.
+An index is where your passports become findable: the app announces every state to it before sending, and readers, including other platforms, look states and their evidence up there. The technology behind it is a BSV overlay service. It admits only states countersigned by a publisher key it names, and it follows this app's custody model. Three routes; this app's Compose file starts only the application database.
 
-**Use an existing index.** Arrange admission of your publisher public key, managed custody support, and submit and proof-delivery access with its operator. Public lookup access alone is insufficient. Get its URL and network, then set the four app settings below. You need no index starter or additional overlay installation.
+**The default index.** `.env` names the hosted testnet index, and `npm run go-live` registers this app with it. Mainnet is `INDEX_URL=https://dpp-overlay.bsvb.net` with `NETWORK=main`, where the operator approves each registration.
 
-**Operate your own index.** Use `@bsv/create-dpp-index` in a separate directory. It includes the persistent runtime, MongoDB configuration, tokens and deployment files. This starter is a source candidate pending publication; after its release, from the directory containing your app project:
+**Another provider's index.** `npm run connect-index -- --url https://index.example` writes the address and runs the checks; `go-live` then registers if the index registers publishers. A provider that hands out tokens itself: `npm run connect-index -- --url https://index.example --submit-token <t> --callback-token <t>`. Match the wallet's network and the managed custody profile; public lookup access alone is insufficient.
 
-```sh
-npm create @bsv/dpp-index@0.1.0-beta.2 my-index
-cd my-index
-npm test
-npm run up
-npm run doctor -- --online
-npm run connection
-```
-
-Supply the publisher key printed by this app's `npm run wallet` and select the same network; custody follows this app. The key is public, and the index does not need the wallet's private key. Follow the index project's README for its own startup, hosting and recovery. Before publication, use the index starter's candidate checks in the DPP repository; do not substitute another runtime version to force installation.
-
-Copy these settings from the generated index's `.app.env`, or from the existing operator, into the app's server-side `.env`:
+**Your own index.** `npm run add-index` creates an index project beside this app with `@bsv/create-dpp-index`, named with this app's publisher key and network, takes the connection its connection script wrote, and prints the two next commands: `npm run up` inside the index project, then `npm run go-live` here. The index project's README covers its own startup, hosting and recovery. The index starter version is pinned in this project's `package.json`; before that version is published, create the index from the DPP repository's candidate checks and connect it with `connect-index`.
 
 | App setting | Meaning |
 | --- | --- |
 | `INDEX_URL` | Index address reachable from the API |
-| `INDEX_SUBMIT_TOKEN` | Submission and retraction access |
-| `INDEX_CALLBACK_TOKEN` | Proof-delivery access |
+| `INDEX_SUBMIT_TOKEN` | Submission and retraction access, from registration or the operator |
+| `INDEX_CALLBACK_TOKEN` | Proof-delivery access, from registration or the operator |
 | `NETWORK` | The same network as the wallet and index |
 
-Restart the app after changing its settings. Keep these tokens out of browser code. For an API running in Docker, use an index address reachable from that container; `localhost` refers to the API container itself. The index project's `npm run connection -- --url https://index.example.org` writes connection settings for a chosen address.
-
-Check that the index's `/capabilities` names your publisher key and managed custody profile before enabling live writes. The app uses `INDEX_URL` directly and starts no in-process index when it is set. A connection failure does not cause another index to start.
+Restart the app after changing its settings. Keep the tokens out of browser code. For an API running in Docker, use an index address reachable from that container; `localhost` refers to the API container itself. The app announces to `INDEX_URL` once it holds both tokens; before that it runs an index in this process, and a connection failure does not cause another index to start.
 
 ## Deploy
 

@@ -161,7 +161,7 @@ export function createServer(options: ServerOptions): express.Express {
     wrap(async () => ({
       ok: true,
       network: config.network,
-      index: platform.index.url,
+      index: { url: platform.index.url, joined: config.index.joined, inProcess: platform.devIndex != null, configured: config.index.url },
       publisherKey: platform.wallet.identityKey,
       wallet: platform.wallet.kind,
       livePublishing: config.livePublishing,

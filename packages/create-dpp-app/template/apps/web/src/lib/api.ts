@@ -50,7 +50,8 @@ export const passportRef = (passportId: string): string => encodeURIComponent(pa
 export interface Health {
   ok: boolean
   network: 'main' | 'test'
-  index?: string
+  /** The index in use: in this process until the app has joined the configured one. */
+  index: { url: string; joined: boolean; inProcess: boolean; configured?: string }
   publisherKey: string
   wallet: 'toolbox' | 'test'
   livePublishing: boolean
