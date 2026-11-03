@@ -58,6 +58,16 @@ export function validateConfiguration(env) {
     for (const key of value(name).split(',').map(key => key.trim()).filter(Boolean)) check(() => publicKey(key, name))
   }
   if (value('PUBLISHER_POLICY_FILE') && value('PUBLISHER_POLICY_JSON')) errors.push('Set only one of PUBLISHER_POLICY_FILE and PUBLISHER_POLICY_JSON')
+  const registration = value('REGISTRATION')
+  if (registration && registration !== 'open' && registration !== 'approval') errors.push('REGISTRATION must be open, approval or empty')
+  if (registration) {
+    if (!value('PUBLISHER_POLICY_FILE')) errors.push('REGISTRATION needs PUBLISHER_POLICY_FILE: the registered keys are appended to it')
+    if (!value('OPERATOR_IDENTITY_KEYS')) errors.push('REGISTRATION needs OPERATOR_IDENTITY_KEYS, the operator whose key signs each appended version')
+    if (!/^[0-9a-fA-F]{64}$/.test(value('OPERATOR_SIGNING_KEY'))) errors.push('REGISTRATION needs OPERATOR_SIGNING_KEY, the operator identity private key as 64 hexadecimal characters')
+  } else if (value('OPERATOR_SIGNING_KEY')) {
+    errors.push('OPERATOR_SIGNING_KEY is set without REGISTRATION: remove the key from an index that does not register publishers')
+  }
+  if (value('REGISTRATION_RATE_LIMIT') && !/^[1-9][0-9]*$/.test(value('REGISTRATION_RATE_LIMIT'))) errors.push('REGISTRATION_RATE_LIMIT must be a positive integer')
   if (value('EXPORT_SIGNING_KEY')) {
     check(() => {
       try {

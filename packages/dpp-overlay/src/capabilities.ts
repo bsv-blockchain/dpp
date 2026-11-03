@@ -34,7 +34,7 @@ import { DEFAULT_SYNC_INTERVAL_MS } from './sync.js'
  * test holds the two equal, so the document cannot claim a contract version
  * the file does not carry.
  */
-export const OVERLAY_HTTP_CONTRACT_VERSION = '0.13.0-draft'
+export const OVERLAY_HTTP_CONTRACT_VERSION = '0.14.0-draft'
 
 /** The recommended baseline this node claims (`conformance/baseline-native-1.json`). */
 export const BASELINE_ID = 'native-baseline@2'
@@ -74,6 +74,11 @@ export const FEDERATED_OPERATORS_PROFILE = 'federated-operators@1'
  * index adds peers; this is what the index does with it (`spec/services.md`
  * section 6).
  */
+/** The custody profile this index admits version 2 states under, as the document declares it and as a registration request must name it. */
+export function declaredCustodyProfile(managedAcceptance: boolean): string {
+  return managedAcceptance ? MANAGED_CUSTODY_PROFILE : 'record-model-baseline@2'
+}
+
 export function operatorProfileFor(policy: PublisherPolicyConfig | undefined, synchronising: boolean): string {
   if (synchronising && policy != null && newestPolicy(policy).scope.operators.length >= 2) return FEDERATED_OPERATORS_PROFILE
   return synchronising ? SINGLE_OPERATOR_PEERS_PROFILE : SINGLE_OPERATOR_PROFILE
@@ -120,6 +125,8 @@ export interface CapabilityDocument {
 }
 
 export interface CapabilityInput {
+  /** REGISTRATION: whether POST /register registers a publisher at once, after approval, or not at all (absent). */
+  registration?: 'open' | 'approval'
   /** The verified chain, when PUBLISHER_POLICY_FILE or PUBLISHER_POLICY_JSON is set. */
   publisherPolicy?: PublisherPolicyConfig
   /** SERVICE_IDENTITY_KEY: the whole policy when no chain is configured. */
@@ -231,6 +238,12 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       reason: 'No publisher policy is configured (PUBLISHER_POLICY_FILE or PUBLISHER_POLICY_JSON): the single SERVICE_IDENTITY_KEY is an implicit single-operator policy with no rotation history, and every state is checked against it whatever its timestamp.',
     })
   }
+  if (input.registration == null) {
+    unsupported.push({
+      id: 'self-service-registration',
+      reason: 'REGISTRATION is unset, so POST /register answers 404 registration-unavailable; a publisher is added by the operator signing a policy version.',
+    })
+  }
   if (!input.exportAvailable) {
     unsupported.push({
       id: 'evidence-package-export',
@@ -269,6 +282,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
           discovery,
           gasp: synchronising,
           ...(policy == null ? {} : { operators: [...newestPolicy(policy).scope.operators] }),
+          registration: input.registration ?? 'off',
           ...(synchronising ? { peers, syncIntervalMs: input.syncIntervalMs ?? DEFAULT_SYNC_INTERVAL_MS } : {}),
         },
       },
@@ -277,7 +291,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       // else the record model baseline, named so a writer learns which rule
       // applies from the document and not from a refusal.
       {
-        ...profileEntry(managedAcceptance ? MANAGED_CUSTODY_PROFILE : 'record-model-baseline@2'),
+        ...profileEntry(declaredCustodyProfile(managedAcceptance)),
         kind: 'custody',
         options: {
           acceptanceCommitment: managedAcceptance ? 'required' : 'not-selected',

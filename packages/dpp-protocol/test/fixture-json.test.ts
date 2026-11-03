@@ -24,6 +24,8 @@ import { recordV3Vectors } from './record-v3-vectors.js'
 import { chainV3Fixture } from './chain-v3-fixture.js'
 import { chainV3Vectors } from './chain-v3-vectors.js'
 import { evidenceV3Fixture } from './evidence-v3-fixture.js'
+import { indexRegistrationV1Fixture } from './index-registration-v1-fixture.js'
+import { indexRegistrationV1Vectors } from './index-registration-v1-vectors.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
@@ -198,5 +200,13 @@ describe('the published fixture files', () => {
     const F = JSON.parse(readFileSync(join(FIXTURES, 'anchor-v3.json'), 'utf8'))
     expect(canonicalString(F.attestation)).toBe(F.canonical)
     expect(Utils.toHex(Hash.sha256(canonicalBytes(F.attestation)))).toBe(F.digest)
+  })
+
+  it('index-registration-v1.json is indexRegistrationV1Fixture(), verbatim, and vectors/dpp/index-registration/v1.json its vector form', async () => {
+    const generated = await indexRegistrationV1Fixture()
+    expectPublished('index-registration-v1.json', generated)
+    const vectors = indexRegistrationV1Vectors(generated)
+    expectPublished('vectors/dpp/index-registration/v1.json', vectors)
+    expectStackShape(vectors)
   })
 })

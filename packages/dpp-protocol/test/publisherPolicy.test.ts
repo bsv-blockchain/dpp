@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PrivateKey, Utils } from '@bsv/sdk'
 import { canonicalJson } from '../src/canonicalJson.js'
-import { policyDigest, policySigningPreimage, publisherKeysAt, verifyPolicyChain, type PublisherPolicy } from '../src/publisherPolicy.js'
+import { appendPublisherVersion, policyDigest, policySigningPreimage, publisherKeysAt, verifyPolicyChain, type PublisherPolicy } from '../src/publisherPolicy.js'
 
 const key = (seed: number) => PrivateKey.fromString(Utils.toHex(new Array(31).fill(0).concat([seed])), 'hex')
 const pub = (k: PrivateKey) => k.toPublicKey().toString()
@@ -162,5 +162,60 @@ describe('the publisher key policy chain (services.md §1)', () => {
     const preimage = policySigningPreimage(genesis)
     expect(preimage).toEqual(policySigningPreimage({ ...genesis, authorisation: { ...genesis.authorisation, value: 'ff' } }))
     expect(preimage).not.toEqual(policySigningPreimage({ ...genesis, authorisation: { ...genesis.authorisation, signer: pub(B) } }))
+  })
+})
+
+describe('appending a version for a registered or retired publisher (services.md §2)', () => {
+  const NOW = new Date('2026-03-01T12:00:00.250Z')
+  const singleOperator = { 'did:example:a': pub(A) }
+
+  it('adds a state publisher in a rotation the operator signs, which the extended chain accepts', () => {
+    const version = appendPublisherVersion([genesis], singleOperator, { add: { key: pub(K2), role: 'state-publisher' } }, A, NOW)
+    expect(version.policyVersion).toBe(2)
+    expect(version.issuedAt).toBe('2026-03-01T12:00:00.250Z')
+    expect(version.supersedes).toEqual({ policyVersion: 1, sha256: policyDigest(genesis) })
+    expect(version.scope).toEqual(genesis.scope)
+    expect(version.authorisation).toMatchObject({ kind: 'rotation', signer: pub(A), suite: 'bsv-ecdsa-der' })
+    expect(version.publishers).toEqual([
+      { key: pub(K1), role: 'state-publisher', activeFrom: '2026-01-01T00:00:00Z' },
+      { key: pub(K2), role: 'state-publisher', activeFrom: '2026-03-01T12:00:00.250Z' },
+    ])
+    expect(version).not.toHaveProperty('notes')
+    expect(verifyPolicyChain([genesis, version], singleOperator)).toEqual({ ok: true, versions: [1, 2] })
+    expect(publisherKeysAt([genesis, version], NOW)).toEqual([pub(K1), pub(K2)])
+    expect(publisherKeysAt([genesis, version], '2026-03-01T12:00:00.249Z')).toEqual([pub(K1)])
+  })
+
+  it('retires a publisher, keeping its entry with its window closed', () => {
+    const added = appendPublisherVersion([genesis], singleOperator, { add: { key: pub(K2), role: 'state-publisher' } }, A, NOW)
+    const later = new Date('2026-04-01T00:00:00Z')
+    const retired = appendPublisherVersion([genesis, added], singleOperator, { retire: pub(K1) }, A, later)
+    expect(retired.policyVersion).toBe(3)
+    expect(retired.publishers[0]).toEqual({ key: pub(K1), role: 'state-publisher', activeFrom: '2026-01-01T00:00:00Z', retiredAt: '2026-04-01T00:00:00.000Z' })
+    expect(verifyPolicyChain([genesis, added, retired], singleOperator).ok).toBe(true)
+    expect(publisherKeysAt([genesis, added, retired], later)).toEqual([pub(K2)])
+    expect(publisherKeysAt([genesis, added, retired], '2026-03-15T00:00:00Z')).toEqual([pub(K1), pub(K2)])
+  })
+
+  it('refuses a signer that is not an operator of the scope, even an active publisher key', () => {
+    expect(() => appendPublisherVersion([genesis], singleOperator, { add: { key: pub(K2), role: 'state-publisher' } }, K1, NOW)).toThrow(/operator/)
+    expect(() => appendPublisherVersion([genesis], singleOperator, { add: { key: pub(K2), role: 'state-publisher' } }, STRANGER, NOW)).toThrow(/operator/)
+  })
+
+  it('refuses a scope that is not single-operator@1', () => {
+    expect(() => appendPublisherVersion([genesis, rotation, handover], identity, { add: { key: pub(K1), role: 'state-publisher' } }, A, new Date('2026-10-01T00:00:00Z'))).toThrow(/single-operator@1/)
+  })
+
+  it('refuses a key already active, a retirement of a key not active, and a time not after the newest version', () => {
+    expect(() => appendPublisherVersion([genesis], singleOperator, { add: { key: pub(K1), role: 'state-publisher' } }, A, NOW)).toThrow(/already active/)
+    expect(() => appendPublisherVersion([genesis], singleOperator, { retire: pub(K2) }, A, NOW)).toThrow(/not active/)
+    expect(() => appendPublisherVersion([genesis], singleOperator, { add: { key: pub(K2), role: 'state-publisher' } }, A, new Date('2026-01-01T00:00:00Z'))).toThrow(/after/)
+    expect(() => appendPublisherVersion([genesis], singleOperator, {}, A, NOW)).toThrow(/add or retire/)
+  })
+
+  it('refuses to grow past the 256 entries a version may hold', () => {
+    const full = sign({ ...genesis, publishers: Array.from({ length: 256 }, (_, i) => ({ key: pub(PrivateKey.fromHex((i + 1000).toString(16).padStart(64, '0'))), role: 'state-publisher' as const, activeFrom: '2026-01-01T00:00:00Z' })) }, A)
+    expect(verifyPolicyChain([full], singleOperator).ok).toBe(true)
+    expect(() => appendPublisherVersion([full], singleOperator, { add: { key: pub(K2), role: 'state-publisher' } }, A, NOW)).toThrow(/256/)
   })
 })

@@ -50,6 +50,15 @@ PUBLISHER_POLICY_FILE=
 PUBLISHER_POLICY_JSON=
 OPERATOR_IDENTITY_KEYS=
 
+# OPTIONAL: self-service registration. open or approval lets an application register
+# its publisher key through POST /register; the version is signed by OPERATOR_SIGNING_KEY
+# and written into PUBLISHER_POLICY_FILE, so set both and OPERATOR_IDENTITY_KEYS with it.
+# Leave empty: the app this project is connected to gets its tokens from `npm run connection`.
+REGISTRATION=
+OPERATOR_SIGNING_KEY=
+REGISTRATION_RATE_LIMIT=
+TRUST_PROXY=
+
 # OPTIONAL: peer synchronisation and discovery. No peers or discovery by default.
 SYNC_PEERS=
 SYNC_INTERVAL_MS=

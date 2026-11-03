@@ -25,6 +25,8 @@ Fill in these settings before starting the containers:
 | `SERVICE_IDENTITY_KEY` | The publisher's compressed public identity key. The index uses it to check admitted passport signatures; it does not need the private key. |
 | `PUBLISHER_TOKENS_FILE` | A JSON file of per-publisher write tokens, hashed: each belongs to one publisher or anchoring key and one use, submit or callback. Without a file, an index with MongoDB keeps them in its database, which is this preset's case: issue them inside the container with `docker compose exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher <key> --use submit`. |
 | `SUBMIT_TOKEN` | An optional operator-wide secret for submission and retraction, accepted for any publisher beside the per-publisher tokens. |
+| `REGISTRATION` | `open` or `approval`: `POST /register` lets an application register its publisher key from its own wallet, appending a policy version the index serves at once; `approval` holds each request for `registrations approve`. Needs a publisher policy, `OPERATOR_SIGNING_KEY` and `PUBLIC_URL`. Empty: the route answers 404. |
+| `OPERATOR_SIGNING_KEY` | The operator's identity private key, hex, which signs each policy version registration appends. Only with `REGISTRATION`; its public key must be the operator's in `OPERATOR_IDENTITY_KEYS`. |
 | `ARC_CALLBACK_TOKEN` | An optional operator-wide secret for the proof-ingestion caller or broadcaster callback. |
 | `NETWORK` | The blockchain network used by the wallet and header lookups. The preset defaults to `main`. |
 | `ACCEPTANCE_COMMITMENT` | The preset selects `required`, so clients need the managed-custody acceptance commitment for version 2 transfers. |

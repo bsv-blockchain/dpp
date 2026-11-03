@@ -1,0 +1,177 @@
+{
+  "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+  "signing": {
+    "protocolId": [
+      1,
+      "dpp index registration v1"
+    ],
+    "keyId": "https://index.example/",
+    "counterparty": "anyone",
+    "verificationKey": "035b576862eb37bc4eec44dc51ec2be2f1750330c47866070c1b18fab7e52d844f"
+  },
+  "expectations": {
+    "indexUrl": "https://index.example/",
+    "network": "test",
+    "custodyProfile": "managed-custody@2",
+    "now": "2026-11-02T10:00:00Z",
+    "windowMs": 600000
+  },
+  "request": {
+    "registrationFormat": "dpp-index-registration@1",
+    "indexUrl": "https://index.example/",
+    "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+    "network": "test",
+    "custodyProfile": "managed-custody@2",
+    "label": "Cell pack demo",
+    "requestedAt": "2026-11-02T09:58:30Z",
+    "signature": "30440220143c49f94c5d9e36bcebade931469356e40a6caafb929d30c673f20bed23cfef02207e4f33a3d319c415fd998bcec89ca4944743b24a07e2ad02d21337de86d4cc98"
+  },
+  "canonicalUnsigned": "{\"custodyProfile\":\"managed-custody@2\",\"indexUrl\":\"https://index.example/\",\"label\":\"Cell pack demo\",\"network\":\"test\",\"publisherKey\":\"023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1\",\"registrationFormat\":\"dpp-index-registration@1\",\"requestedAt\":\"2026-11-02T09:58:30Z\"}",
+  "signingPreimageHex": "7b22637573746f647950726f66696c65223a226d616e616765642d637573746f64794032222c22696e64657855726c223a2268747470733a2f2f696e6465782e6578616d706c652f222c226c6162656c223a2243656c6c207061636b2064656d6f222c226e6574776f726b223a2274657374222c227075626c69736865724b6579223a22303233633732616464623466646630396166393466306339346437666539326133383661376537306366386131643835393136333836626232353335633762316231222c22726567697374726174696f6e466f726d6174223a226470702d696e6465782d726567697374726174696f6e4031222c227265717565737465644174223a22323032362d31312d30325430393a35383a33305a227d",
+  "expected": {
+    "valid": true,
+    "reasons": []
+  },
+  "refusals": [
+    {
+      "name": "tamperedLabel",
+      "description": "label changed after signing.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://index.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "test",
+        "custodyProfile": "managed-custody@2",
+        "label": "Someone else",
+        "requestedAt": "2026-11-02T09:58:30Z",
+        "signature": "30440220143c49f94c5d9e36bcebade931469356e40a6caafb929d30c673f20bed23cfef02207e4f33a3d319c415fd998bcec89ca4944743b24a07e2ad02d21337de86d4cc98"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "signature-invalid"
+        ]
+      }
+    },
+    {
+      "name": "strangerSigned",
+      "description": "Signed under the registration protocol from a root other than the publisher key the request names.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://index.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "test",
+        "custodyProfile": "managed-custody@2",
+        "label": "Cell pack demo",
+        "requestedAt": "2026-11-02T09:58:30Z",
+        "signature": "3045022100ac74327c3c34121ce298ddaff1517378cb991a9977b4cf8b9e798ad5f91e0f850220221586587aeb1bf50c9b2680a4e0c096b358e6d1af3a458cb7eb8037303052f1"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "signature-invalid"
+        ]
+      }
+    },
+    {
+      "name": "directlySigned",
+      "description": "Signed with the publisher key directly, with no derivation.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://index.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "test",
+        "custodyProfile": "managed-custody@2",
+        "label": "Cell pack demo",
+        "requestedAt": "2026-11-02T09:58:30Z",
+        "signature": "30440220655deddf39cb1467dcfcbc2a4c50315098cacb8bd0dbaefa70dc656d1127ef7202202a1d6259acebb78d0da2b25b1481e1cbfe685d4c32f27ba8794897d1964b81f1"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "signature-invalid"
+        ]
+      }
+    },
+    {
+      "name": "otherIndex",
+      "description": "Signed for another index URL: the signature verifies under its own derivation and the index refuses it as not addressed to it.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://other.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "test",
+        "custodyProfile": "managed-custody@2",
+        "label": "Cell pack demo",
+        "requestedAt": "2026-11-02T09:58:30Z",
+        "signature": "30440220465d8e07210e89f82ad523bddd3af1040e092541a0b70e6fdd7a023e470265e00220586b84d41fb83a15bcd8f97830b1358d8312a038dcb9de2c2bc25f3e94bace38"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "index-url-mismatch"
+        ]
+      }
+    },
+    {
+      "name": "otherNetwork",
+      "description": "Well signed, naming the other network.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://index.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "main",
+        "custodyProfile": "managed-custody@2",
+        "label": "Cell pack demo",
+        "requestedAt": "2026-11-02T09:58:30Z",
+        "signature": "3044022038096e66d9b4c68f073514b2dc1ec24a38ed3cd60b8a07e05cf278d17c801703022027396e370de99e18b9f60daf5c4a5704c5334557d41b32802463278a74c620d6"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "network-mismatch"
+        ]
+      }
+    },
+    {
+      "name": "otherCustody",
+      "description": "Well signed, naming a custody profile the index does not admit under.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://index.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "test",
+        "custodyProfile": "record-model-baseline@2",
+        "label": "Cell pack demo",
+        "requestedAt": "2026-11-02T09:58:30Z",
+        "signature": "3045022100f96f5a9302e0c518f5125064e5507d21c77ba4f44a09f004c367d7e3e409f0ff0220307e4bbc0345e91981b7be56e879f28d48587d87d50d3249a407c93eb542569a"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "custody-profile-mismatch"
+        ]
+      }
+    },
+    {
+      "name": "stale",
+      "description": "Well signed, requested twenty minutes before the index clock, outside its ten-minute window.",
+      "request": {
+        "registrationFormat": "dpp-index-registration@1",
+        "indexUrl": "https://index.example/",
+        "publisherKey": "023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1",
+        "network": "test",
+        "custodyProfile": "managed-custody@2",
+        "label": "Cell pack demo",
+        "requestedAt": "2026-11-02T09:40:00Z",
+        "signature": "304402202136892275cf8658b5ed1d56d61191dfe3f1c6ca6ae50c60a65d32859b1e6e06022003bbf71fd4908f0477dd44cf904c4abe7a7e899a62d06df3642ed9e16e5e3303"
+      },
+      "expected": {
+        "valid": false,
+        "reasons": [
+          "request-stale"
+        ]
+      }
+    }
+  ]
+}

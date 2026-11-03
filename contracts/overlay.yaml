@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: DPP overlay profile
-  version: 0.13.0-draft
+  version: 0.14.0-draft
   description: >-
     A profile of the BSV ecosystem's overlay HTTP contract for the two rails
     this standard adds. Status: working draft, pre-1.0. The wire is the
@@ -726,6 +726,93 @@ paths:
           $ref: '#/components/responses/namedError'
         '503':
           $ref: '#/components/responses/namedError'
+  /register:
+    post:
+      summary: Register a publisher key with this index, from the application's own wallet (an extension; spec/services.md section 2)
+      description: >-
+        Self-service registration, where the operator enables it with
+        REGISTRATION=open or REGISTRATION=approval. The body is a
+        dpp-index-registration@1 request the application's wallet signed with
+        the BRC-42 child of its publisher key for protocol
+        [1, "dpp index registration v1"], key identifier the index URL and
+        counterparty anyone, so the index verifies it from the request alone
+        and a request signed for another index fails here. The index checks
+        the signature, then that the request names this index's address, its
+        network and the custody profile its capability document declares, and
+        that requestedAt is within ten minutes of its clock. In open mode the
+        operator's identity key then signs a new policy version naming the key
+        as a state publisher, a rotation under spec/services.md section 1 that
+        GET /publisher-policy serves at once and the topic managers admit under
+        at once, and the answer carries the key's two write tokens, shown once.
+        Under approval the request is held as pending (202) until the operator
+        approves it on the command line; the application then re-sends a
+        freshly signed request and collects its tokens (201), once. A key
+        registers once: a later request is 409 already-registered, and a key
+        the operator refused or revoked is told so with 403. The answer never
+        carries the operator's key; the appended version is read from
+        GET /publisher-policy. Rate limited per source address, 429 past the
+        limit; 404 registration-unavailable where the index does not register
+        publishers, 503 registration-unavailable when its policy version is
+        full.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './index-registration.schema.json'
+      responses:
+        '201':
+          description: Registered, with the key's write tokens, shown once.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, policyVersion, tokens]
+                properties:
+                  status:
+                    const: registered
+                  policyVersion:
+                    type: integer
+                    minimum: 2
+                    description: The policy version that names the key, served by GET /publisher-policy.
+                  tokens:
+                    type: object
+                    required: [submit, callback]
+                    properties:
+                      submit:
+                        type: string
+                        pattern: '^[0-9a-f]{64}$'
+                        description: The bearer for POST /submit and POST /retract.
+                      callback:
+                        type: string
+                        pattern: '^[0-9a-f]{64}$'
+                        description: The token for POST /arc-ingest, as the bearer or X-Callback-Token.
+        '202':
+          description: Held for the operator's approval; re-send a freshly signed request later.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    const: pending
+        '400':
+          $ref: '#/components/responses/namedError'
+        '401':
+          $ref: '#/components/responses/namedError'
+        '403':
+          $ref: '#/components/responses/namedError'
+        '404':
+          $ref: '#/components/responses/namedError'
+        '409':
+          $ref: '#/components/responses/namedError'
+        '413':
+          $ref: '#/components/responses/error'
+        '429':
+          $ref: '#/components/responses/namedError'
+        '503':
+          $ref: '#/components/responses/namedError'
   /requestSyncResponse:
     post:
       summary: The outputs this index holds for a topic since a checkpoint, for a synchronising peer (as upstream)
@@ -903,7 +990,14 @@ components:
                   limit-invalid, cursor-invalid, snapshot-expired,
                   history-unavailable, export-unavailable, export-unauthorised,
                   passport-unknown, output-unknown, retraction-refused,
-                  chain-tracker-unavailable or retraction-unavailable.
+                  chain-tracker-unavailable, retraction-unavailable,
+                  token-publisher-mismatch, or on POST /register
+                  registration-unavailable, registration-rate-limited,
+                  registration-malformed, registration-signature-invalid,
+                  index-url-mismatch, network-mismatch,
+                  custody-profile-mismatch, request-stale,
+                  already-registered, registration-refused or
+                  registration-revoked.
               description:
                 type: string
               hint:

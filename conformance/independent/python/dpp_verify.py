@@ -31,6 +31,7 @@ import hmac
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # ----------------------------------------------------------------- secp256k1
@@ -1127,6 +1128,54 @@ def keys_active_at(chain: list[dict], at: str, role: str | None) -> list[str]:
     return keys
 
 
+INDEX_REGISTRATION_PROTOCOL = "dpp index registration v1"
+
+
+def registration_key(request: dict) -> Point:
+    """The key a registration request verifies under (services.md section 2): the BRC-42 child of the publisher key for
+    [1, 'dpp index registration v1'], the request's own indexUrl and counterparty anyone."""
+    return brc42_child(canonical_key_hex(request["publisherKey"]), invoice(1, INDEX_REGISTRATION_PROTOCOL, request["indexUrl"]))
+
+
+def registration_reasons(request: dict, expectations: dict) -> list[str]:
+    """What an index answers: the signature under the request's own derivation first, then each expectation by name."""
+    unsigned = {k: v for k, v in request.items() if k != "signature"}
+    if not ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(request["signature"]), registration_key(request)):
+        return ["signature-invalid"]
+    reasons = []
+    if request["indexUrl"] != expectations["indexUrl"]:
+        reasons.append("index-url-mismatch")
+    if request["network"] != expectations["network"]:
+        reasons.append("network-mismatch")
+    if request["custodyProfile"] != expectations["custodyProfile"]:
+        reasons.append("custody-profile-mismatch")
+    requested = datetime.fromisoformat(request["requestedAt"].replace("Z", "+00:00"))
+    now = datetime.fromisoformat(expectations["now"].replace("Z", "+00:00"))
+    if abs((requested - now).total_seconds()) * 1000 > expectations["windowMs"]:
+        reasons.append("request-stale")
+    return reasons
+
+
+def check_registration(root: Path) -> None:
+    fixture = load(root, "fixtures/index-registration-v1.json")
+    request = fixture["request"]
+    unsigned = {k: v for k, v in request.items() if k != "signature"}
+    say(nested_canonical(unsigned).hex() == fixture["signingPreimageHex"], "index-registration-v1: the canonical JSON of the unsigned request is the pinned signing preimage.")
+    say(encode_compressed(registration_key(request)).hex() == fixture["signing"]["verificationKey"], "index-registration-v1: this reader's BRC-42 child of the publisher key for [1, 'dpp index registration v1'] and the index URL is the pinned verification key.")
+    say(registration_reasons(request, fixture["expectations"]) == [] and fixture["expected"]["valid"], "index-registration-v1: the application's signature verifies under the derived key and the request matches the index's expectations.")
+    say(not ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(request["signature"]), canonical_key_hex(request["publisherKey"])), "index-registration-v1: the same signature does not verify under the publisher key directly: it is one derivation from the root.")
+    for refusal in fixture["refusals"]:
+        reasons = registration_reasons(refusal["request"], fixture["expectations"])
+        say(reasons == refusal["expected"]["reasons"] and not refusal["expected"]["valid"], f"index-registration-v1: {refusal['name']} is refused as {', '.join(refusal['expected']['reasons'])} (this reader says {', '.join(reasons) or 'nothing'}).")
+    vectors = load(root, "fixtures/vectors/dpp/index-registration/v1.json")
+    for vector in vectors["vectors"]:
+        if vector["id"] == "sign":
+            say(vector["expected"]["signature_hex"] == request["signature"] and vector["expected"]["verification_key_hex"] == fixture["signing"]["verificationKey"], "index-registration vectors: the sign vector pins the fixture's signature and verification key.")
+        else:
+            reasons = registration_reasons(vector["input"]["request"], vector["input"]["expectations"])
+            say(reasons == vector["expected"]["reasons"] and (reasons == []) == vector["expected"]["valid"], f"index-registration vectors: {vector['id']} answers {', '.join(vector['expected']['reasons']) or 'valid'}.")
+
+
 def check_policy_vectors(root: Path) -> None:
     vectors = load(root, "fixtures/vectors/dpp/publisher-policy/v1.json")
     for vector in vectors["vectors"]:
@@ -1305,6 +1354,7 @@ def run(root: Path) -> None:
     check_policy_vectors(root)
     check_package_vectors(root)
     check_version_two(root)
+    check_registration(root)
     print("Every sentence above holds." if failures == 0 else "At least one sentence above does not hold.")
 
 
