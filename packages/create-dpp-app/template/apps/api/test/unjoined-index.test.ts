@@ -17,7 +17,7 @@ describe('an index the app has not joined', () => {
     const platform = await openPlatform({ config: loadConfig({ INDEX_URL: 'https://dpp-overlay-testnet.bsvb.net', NETWORK: 'test' }), mode: 'live', log: (line) => lines.push(line) })
     try {
       expect(platform.index.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/)
-      expect(lines.some((line) => line.includes('npm run go-live') && line.includes('https://dpp-overlay-testnet.bsvb.net'))).toBe(true)
+      expect(lines.some((line) => /^This app has not joined https:\/\/dpp-overlay-testnet\.bsvb\.net yet .* npm run go-live /.test(line))).toBe(true)
       expect(await platform.index.health()).toMatchObject({ status: 'ok', network: 'test' })
     } finally {
       await platform.close()
