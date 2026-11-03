@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-03, log the OIDC exchange in the publish step
+
+- Probe the trusted publishers in every dry run of `publish.yaml`: `npm publish --dry-run` performs the OIDC token exchange for each archive and writes nothing, and at verbose level prints the registry's reason when it is refused. The publish step logs at the same level. Three publication runs of `dpp-release-2026-11` stopped at the first upload with a bare `ENEEDAUTH` and nothing written.
+
 ### 2026-11-03, the documentation and contract wording follow managed-custody@2
 
 - The pages, specification sentences and contract descriptions that still named `managed-custody@1` or said the custodian holds its identity key outside its wallet now describe the November candidate's rule: the custodian signs acceptance and instruction records through its BRC-100 wallet under `managed-custody@2`, and the published October set is named as the one that selects `managed-custody@1`. `contracts/overlay.yaml` keeps `0.14.0-draft`, since only its descriptions change; `spec/profiles.md`, `spec/writing.md` and `spec/verification.md` name the current profile; the application starter's template labels its custody code and reader policy with version 2; the ledger's `MC-6-instruction-record` note counts the seven refusals of its fixture and the `managed-custody-1` claim says who still writes version 1 (bsv-blockchain/dpp-issues#124).
