@@ -24,7 +24,7 @@ Read the relevant [limitations](../operate/limitations.md) before promising the 
 | Former names | `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/vsc` stay at their historical versions; the [migration guide](../migration.md) maps each to its new name |
 | Install | Use the [local candidate archives](../packages/README.md#use-the-renamed-source-candidate) until publication. Pin exact versions and retain the lockfile; do not infer publication from a source version or a dist-tag |
 | Runtime | Node.js 22 or later, ECMAScript modules |
-| Record version to write | Version 2, under the custody profile `managed-custody@1`; version 1 passports still verify |
+| Record version to write | Version 2, under the custody profile `managed-custody@2` (the published October set selects `managed-custody@1`); version 1 passports still verify |
 | Demonstration application | `https://dpp.bsvb.net`, with the verifier at `https://dpp.bsvb.net/verify`: sample brands that write nothing to the chain; brands a signed-in user creates write real mainnet transactions, marked as samples |
 | Hosted index | `https://dpp-overlay.bsvb.net`: lookups, `/history`, `/capabilities`, `/evidence-package`, `/health` and the synchronisation routes are open; `/submit`, `/retract`, `/arc-ingest` and `/evidence-export` need its operator's tokens |
 | Hosted registry | `https://dpp-resolver.bsvb.net`: validation and reads are open; storing a claim needs its write token |

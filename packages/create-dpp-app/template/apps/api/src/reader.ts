@@ -66,7 +66,7 @@ export async function readPassport(passportId: string, options: ReaderOptions, e
     { tokenHistory: lineage, acceptanceRecords: evidence.acceptanceRecords ?? [] },
     { passportId, source: 'request-context' },
     {
-      policyId: options.policyId ?? 'managed-custody@1/application',
+      policyId: options.policyId ?? 'managed-custody@2/application',
       publisherKeys,
       managedAcceptance: { required: true },
       chainTracker: options.chainTracker,

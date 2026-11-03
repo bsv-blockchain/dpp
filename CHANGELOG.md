@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-03, the documentation and contract wording follow managed-custody@2
+
+- The pages, specification sentences and contract descriptions that still named `managed-custody@1` or said the custodian holds its identity key outside its wallet now describe the November candidate's rule: the custodian signs acceptance and instruction records through its BRC-100 wallet under `managed-custody@2`, and the published October set is named as the one that selects `managed-custody@1`. `contracts/overlay.yaml` keeps `0.14.0-draft`, since only its descriptions change; `spec/profiles.md`, `spec/writing.md` and `spec/verification.md` name the current profile; the application starter's template labels its custody code and reader policy with version 2; the ledger's `MC-6-instruction-record` note counts the seven refusals of its fixture and the `managed-custody-1` claim says who still writes version 1 (bsv-blockchain/dpp-issues#124).
+
 ### 2026-11-03, the application starter's go-live path
 
 - `@bsv/create-dpp-app` writes `.env` at scaffold with fresh `AUTH_SECRET`, `BRAND_ROOT_SECRET` and `MANAGED_IDENTITY_SECRET`, `NETWORK=test` and the default testnet index `INDEX_URL=https://dpp-overlay-testnet.bsvb.net`; the API refuses a secret copied from `.env.example`. An index address with no tokens is one the app has not joined: the API keeps the index in this process and the web app says so, naming `npm run go-live`. `npm run go-live` checks configuration (a hosted index against `NETWORK`, mainnet prefix and host), generates `WALLET_ROOT_KEY` on first run, reaches the index, registers the publisher key through `POST /register` with a wallet-signed `dpp-index-registration@1` request and stores the two tokens, checks funds and admission, and writes `LIVE_PUBLISHING=true`; each failure names its fix. `npm run connect-index` takes a provider's address and tokens; `npm run add-index` creates an index project beside the app through `@bsv/create-dpp-index` and connects to it. The scaffold check runs both paths (bsv-blockchain/dpp-issues#120).

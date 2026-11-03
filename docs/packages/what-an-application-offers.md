@@ -29,7 +29,7 @@ Use these screens to plan the features in [your platform brief](../start/plan-yo
 
 ## After a hand on
 
-Under `managed-custody@1` the recipient becomes the passport's holder, and the custodian keeps its keys for them ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) section 2).
+Under `managed-custody@2` the recipient becomes the passport's holder, and the custodian keeps its keys for them ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) section 2).
 
 - **What the holder can ask.** Everything the holder does next goes through the custodian. To hand the passport on, the holder asks for a new offer, and the same offer, acceptance and `TRANSFER` follow (section 4). Which requests the application accepts, and how it knows a request is the holder's, is the application's to decide: a sign-in, a claim code or a message all work.
 - **How the holder leaves managed custody.** The custodian writes a `TRANSFER` to a `destinationKey`, a key the holder's own wallet derived, and from then on the holder proves control from their own wallet (section 7).
@@ -46,7 +46,7 @@ A platform holds several keys and secrets in different places. Plan where each o
 | Writer's identity key | The writer's BRC-100 wallet | Signs each state as actor, and as publisher when the writer countersigns its own states | The wallet; its public half goes into the index's publisher policy |
 | Controller key | Derived in the same wallet | Controls the passport (field 6 of each version 2 state) | Derived per passport; never stored separately |
 | Publisher key, public half | The index | Admitting only states this publisher countersigned | `SERVICE_IDENTITY_KEY`, or a signed publisher policy in `PUBLISHER_POLICY_FILE` |
-| Custodian's identity key | The custodian, outside its wallet for now | Signs acceptance records under managed custody | The custodian's own secure storage ([known limitations](../operate/limitations.md)) |
+| Custodian's identity key | The custodian's BRC-100 wallet | Signs acceptance and instruction records under managed custody through a derived key; the wallet never exports it | The wallet; its public half is the `custodian` property of each record |
 | Submit token | The index operator and its writers | `POST /submit` and `POST /retract` on that index | `SUBMIT_TOKEN` on the index |
 | Callback token | The index operator and whoever pushes proofs | `POST /arc-ingest` on that index | `ARC_CALLBACK_TOKEN` on the index; one per index, never shared with another |
 | Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |
