@@ -61,7 +61,7 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 |---|---|---|
 | Later proofs do not synchronise | Indexes keep the first bytes received; synchronised unproven states stay unproven. | Push proofs to every holding index's `POST /arc-ingest`, using its own callback token ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). |
 | No duty assigns delivery of later proofs to peers | No writer or gateway is responsible yet. | Agree delivery with peer operators. |
-| Retraction propagation is unspecified | Peers may retain withdrawn states. | Tell peer operators. |
+| Retraction does not propagate | Synchronisation carries admissions only, so a peer that pulled a withdrawn state keeps serving it as the tip. | The peer's operator withdraws it with their own `POST /retract` ([federation](federation.md#when-a-record-does-not-arrive)); tell peer operators, as for proofs. |
 
 ## Capability documents
 

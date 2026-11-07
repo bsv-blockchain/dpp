@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/writing.md",
-      "digest": "225f4646c4e380b9b51fd6c5ad1a4e414a036cd2e28943cb2b64d1cb25a21266"
+      "digest": "b76cac54cf49f358af7b41ca123a1d7ce2bc1ba327ecbc136edcac1cb16b9fe0"
     },
     {
       "id": "spec-services",
@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "eb250d09e236caeea5cdcd7f30ec4d91544e8bb266defc62667af68ecf6bd69e"
+      "digest": "4879ef37e3ee9c78398b8a910f2fde71feac9f36f0f7086d60d4625ee5c2d385"
     },
     {
       "id": "spec-verification",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "bcdfb8e9746589b6bab6adb2fb71d93120e57262ded323c8e1c1540b16e81825"
+      "digest": "2b38ce4c6a63a8a685aa654ee1754a9d45e7e62bea74cccf86e2851e29ed2d7d"
     },
     {
       "id": "contract-registry",
@@ -2382,6 +2382,29 @@
       "notes": "Exercised live only; the dry run prints what it would do."
     },
     {
+      "id": "WR-3-retract-refused",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§3",
+      "summary": "A writer that announces before sending withdraws a draft the network refused from every index it announced it to, with the network's answer as the reason, before it builds on the same tip; the request reaches only those indexes.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "when the writer announces before sending",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport.mjs (retract, sections 4 and 5)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-11-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-05 (bsv-blockchain/dpp-issues#82): the withdrawal is a duty of the §3 order and joins the §11 self-report list. Self-reported beside the reference example, as every writer rule is."
+    },
+    {
       "id": "WR-4-one-writer",
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
@@ -2709,6 +2732,35 @@
       "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
       "notes": "Decided 2026-11-02 (bsv-blockchain/dpp-issues#119): the default index registers a newcomer from the quick start; the Python verifier reproduces the derived key and every refusal."
+    },
+    {
+      "id": "SVC-2-retraction",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§2",
+      "summary": "An index withdraws an admitted, unproven state on its writer's request, restoring the predecessor as the tip, and refuses to withdraw a proven, network-known or spent output; a retraction is local, synchronisation carries admissions only, and a peer's operator withdraws through that peer's own route.",
+      "layer": "role",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-overlay/src/retraction.ts",
+        "packages/dpp-overlay/src/index.ts (POST /retract)"
+      ],
+      "testRefs": [
+        "packages/dpp-overlay/test/retract.test.ts",
+        "packages/dpp-overlay/test/federation.test.ts (a retraction on A stays on A)"
+      ],
+      "evidenceRefs": [
+        "contracts/overlay.yaml#paths./retract"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-05",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Decided 2026-11-05 (bsv-blockchain/dpp-issues#82): peers are not told of a retraction; the federation test shows the withdrawn state no longer offered and the peer keeping it until its own retraction route is used."
     },
     {
       "id": "SVC-3-registry-bytes",
@@ -3645,9 +3697,9 @@
       ],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-09-07",
+      "reviewedAt": "2026-11-05",
       "reviewOwner": "dpp maintainers",
-      "notes": "An envelope-level pilot exists in the application (VC Data Model 2.0 credential of type DigitalProductPassport secured as compact JWS ES256K with the native evidence extension, round trip and refusals tested). The official schema and context are now pinned by digest from the v0.7.0 tag in the exchange manifest, but the credential still carries only the VCDM context, no UNTP term and no issuingSoftware block, and validates against nothing; the row stays a gap until the credential names the pinned context and validates against the pinned schema. Independently of this row, UNTP's test suite verifies Ed25519 under did:web only, so passing it is a separate claim."
+      "notes": "A function-level pilot exists in the reference application: a VC Data Model 2.0 credential of type DigitalProductPassport that names the pinned 0.7.0 context as its second context entry, the UNTP types, a CredentialIssuer and, when the deployment names one, the issuingSoftware block, secured as compact JWS ES256K with the native evidence extension, with round trip and refusals tested. Validation against the pinned DigitalProductPassport schema is conditional: it runs only when the caller supplies the artefact bytes and they hash to the digest the exchange manifest pins, because the repository carries no copy of the GPL-licensed artefacts pending the licence review; no route exposes the credential. The row stays a gap because none of this is public evidence: the implementation and its tests are not published, and the validation depends on artefacts the standard does not ship. Independently of this row, UNTP's own test tooling verifies Ed25519 under did:web only, so ES256K passing it is a separate claim."
     },
     {
       "id": "UNTP-0.7.0-dte",
@@ -5993,6 +6045,7 @@
         "SVC-2-anchor-admission",
         "SVC-2-cursor-lookup",
         "SVC-2-passport-admission",
+        "SVC-2-retraction",
         "SVC-2-proof-ingest",
         "SVC-6-idempotent-admission"
       ],
@@ -6017,6 +6070,7 @@
         "SVC-2-anchor-admission",
         "SVC-2-cursor-lookup",
         "SVC-2-passport-admission",
+        "SVC-2-retraction",
         "SVC-2-proof-ingest",
         "SVC-6-idempotent-admission"
       ],

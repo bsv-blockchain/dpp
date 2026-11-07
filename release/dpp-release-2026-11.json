@@ -342,7 +342,7 @@
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "bcdfb8e9746589b6bab6adb2fb71d93120e57262ded323c8e1c1540b16e81825",
+      "sha256": "2b38ce4c6a63a8a685aa654ee1754a9d45e7e62bea74cccf86e2851e29ed2d7d",
       "pins": "the index's HTTP contract"
     },
     {

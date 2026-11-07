@@ -12,6 +12,14 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-05, retraction is a writer duty and stays local to an index
+
+- `spec/writing.md` §3: a writer that announces before sending MUST withdraw a draft the network refused from every index it announced it to, with the network's answer as the reason, before it builds on the same tip; §11 adds the withdrawal to the self-report list. `spec/services.md` §2 says what the retraction route does and that a retraction is local: synchronisation carries admissions only, a peer that pulled the withdrawn state keeps it, and that peer's operator withdraws it through its own route under the same checks. The overlay contract's `/retract` description says the same (descriptions only, `0.14.0-draft` unchanged); the federation page, known limitations and the writer role page follow. Ledger rows `WR-3-retract-refused` and `SVC-2-retraction`, the latter required by both single-operator claims; `packages/dpp-overlay/test/federation.test.ts` shows a retraction on one index not offered to its peer and the peer withdrawing it itself (bsv-blockchain/dpp-issues#82).
+
+### 2026-11-05, the UNTP pilot rationale
+
+- Ledger row `UNTP-0.7.0-dpp`, the `untp-0.7.0-pilot` rationale in `dpp-release-2026-11` and the credentials page describe the reference application's pilot as it is: a function-level credential that names the pinned 0.7.0 context and validates against the pinned schema when the caller supplies the artefact bytes, with no exposed route and ES256K outside UNTP's test tooling. The row stays a gap and the claim withheld, because none of it is public evidence (bsv-blockchain/dpp-issues#114).
+
 ### 2026-11-03, the documentation and contract wording follow managed-custody@2
 
 - The pages, specification sentences and contract descriptions that still named `managed-custody@1` or said the custodian holds its identity key outside its wallet now describe the November candidate's rule: the custodian signs acceptance and instruction records through its BRC-100 wallet under `managed-custody@2`, and the published October set is named as the one that selects `managed-custody@1`. `contracts/overlay.yaml` keeps `0.14.0-draft`, since only its descriptions change; `spec/profiles.md`, `spec/writing.md` and `spec/verification.md` name the current profile; the application starter's template labels its custody code and reader policy with version 2; the ledger's `MC-6-instruction-record` note counts the seven refusals of its fixture and the `managed-custody-1` claim says who still writes version 1 (bsv-blockchain/dpp-issues#124).

@@ -86,7 +86,7 @@ The reference application, whose source is not public, issues and verifies compa
 | Capability | Ledger status and remaining work |
 |---|---|
 | The exact upstream VSC context and its test suite | `unassessed` (rows `VSC-context-upstream`, `VSC-conformance-suite`): the reviewed upstream context and an executable suite are unavailable, so the package uses its own declared context |
-| United Nations Transparency Protocol (UNTP) 0.7.0 passport | `gap` (row `UNTP-0.7.0-dpp`): an application pilot exists, but its credential still lacks the pinned UNTP context, terms and issuing-software block and does not validate against the pinned schema |
+| United Nations Transparency Protocol (UNTP) 0.7.0 passport | `gap` (row `UNTP-0.7.0-dpp`): a function-level application pilot exists whose credential names the pinned UNTP context and validates against the pinned schema only when the caller supplies the artefact bytes; no route exposes it, and none of it is public evidence |
 | UNTP traceability event | `gap` (row `UNTP-0.7.0-dte`): no event export exists, and the mapping needs actual event evidence |
 | An optional ES256 application signer | Not implemented; the tested ES256K signer does not provide it (row `EXCH-4-signer`) |
 

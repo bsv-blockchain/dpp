@@ -697,7 +697,11 @@ paths:
         with its reason. A deployment without a header source
         (CHAIN_TRACKER=scripts-only) cannot ask the network; the answer then
         carries networkChecked false and a note saying so, and the capability
-        document lists retraction-network-check as unsupported.
+        document lists retraction-network-check as unsupported. A retraction
+        is local to this index: synchronisation carries admissions only, so a
+        peer that pulled the output keeps it until that peer's operator
+        withdraws it through its own retraction route (spec/services.md
+        section 2).
       security:
         - {}
         - bearer: []
