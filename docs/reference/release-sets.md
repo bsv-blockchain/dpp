@@ -74,7 +74,7 @@ These steps check npm bytes against the approved plan and public source revision
 
    ```sh
    npm init -y
-   npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/dpp-credentials@0.2.0-beta.3
+   npm install --save-exact @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3
    npm audit signatures
    ```
 
@@ -83,7 +83,7 @@ These steps check npm bytes against the approved plan and public source revision
 2. **Compare each archive with the approved plan.** Print the registry's integrity for each package and the [approved plan](beta-4-publication-plan.json)'s recorded integrity:
 
    ```sh
-   for p in @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/dpp-credentials@0.2.0-beta.3; do echo "$p $(npm view "$p" dist.integrity)"; done
+   for p in @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3; do echo "$p $(npm view "$p" dist.integrity)"; done
    node -e "for (const c of require('./docs/reference/beta-4-publication-plan.json').candidates) console.log(c.name + '@' + c.version, c.integrity)"
    ```
 
