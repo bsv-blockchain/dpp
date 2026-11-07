@@ -4,11 +4,13 @@
 
 ## Install
 
-This is a pre-1.0 candidate. Install the exact published version from npm:
+This is a pre-1.0 candidate. The published version is `@bsv/dpp-credentials@0.2.0-beta.5`, selected by the October set; this source tree is the November candidate, `0.2.0-beta.6`, which is not yet published and differs from beta.5 only in a development dependency of its manifest. Install the exact published version from npm:
 
 ```sh
-npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
+npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
 ```
+
+[Install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test the candidate; after publication, `npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6` applies.
 
 The runtime and its exchange and EPCIS subpaths require Node >=22 and ECMAScript modules. Browser runtime use is unsupported; artefact exports are plain data. No repository checkout or package build is needed after installation.
 

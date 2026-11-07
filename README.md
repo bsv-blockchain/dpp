@@ -108,7 +108,7 @@ docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .
 
 Before running it, configure publisher keys, persistent storage, the network, access tokens and an export signing key using the [configuration reference](packages/dpp-overlay/README.md#configuration).
 
-The index receives records and proofs; writers' wallets broadcast transactions. Peer synchronisation uses explicitly configured peers, with no automatic discovery. Running two nodes demonstrates synchronisation, but does not establish independent operation. The [deployment guide](docs/deployment.md) explains the supporting services and operational limits.
+The index receives records and proofs; writers' wallets broadcast transactions. Peer synchronisation pulls from explicitly configured peers; the runtime's SHIP discovery and advertising are opt-in settings, off unless set, and the hosted index does not use them. Running two nodes demonstrates synchronisation, but does not establish independent operation. The [deployment guide](docs/deployment.md) explains the supporting services and operational limits.
 
 ## Specifications and conformance
 
