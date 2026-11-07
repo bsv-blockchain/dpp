@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-08, licence follow-ups
+
+- `GOVERNANCE.md` says under which terms a contribution is accepted: the repository's Apache 2.0 licence, section 5, with no separate contributor agreement. The `untp-0.7.0` source row records the standing decision that the GPL-licensed UNTP artefacts are pinned by digest and never copied, in place of a review that is no longer planned (bsv-blockchain/dpp-issues#27).
+
 ### 2026-11-05, retraction is a writer duty and stays local to an index
 
 - `spec/writing.md` §3: a writer that announces before sending MUST withdraw a draft the network refused from every index it announced it to, with the network's answer as the reason, before it builds on the same tip; §11 adds the withdrawal to the self-report list. `spec/services.md` §2 says what the retraction route does and that a retraction is local: synchronisation carries admissions only, a peer that pulled the withdrawn state keeps it, and that peer's operator withdraws it through its own route under the same checks. The overlay contract's `/retract` description says the same (descriptions only, `0.14.0-draft` unchanged); the federation page, known limitations and the writer role page follow. Ledger rows `WR-3-retract-refused` and `SVC-2-retraction`, the latter required by both single-operator claims; `packages/dpp-overlay/test/federation.test.ts` shows a retraction on one index not offered to its peer and the peer withdrawing it itself (bsv-blockchain/dpp-issues#82).
