@@ -120,7 +120,7 @@
       "id": "untp-0.7.0-pilot",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "The UNTP 0.7.0 schemas and context are pinned by digest, but the application pilot names no UNTP context and validates nothing against them, and UNTP's own tooling verifies Ed25519 under did:web only; the profile remains proposed."
+      "rationale": "The UNTP 0.7.0 schemas and context are pinned by digest, and the reference application's pilot is function-level: its credential names the pinned context and validates against the pinned schema only when the caller supplies artefact bytes that hash to the pinned digest, no route exposes it, and it is secured with ES256K, which UNTP's own tooling does not verify (Ed25519 under did:web only). None of that is public evidence, so the profile remains proposed and the claim withheld."
     },
     {
       "id": "eu-dpp-system-conformance",

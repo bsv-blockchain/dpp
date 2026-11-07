@@ -438,6 +438,47 @@ describe('two operators under one publisher policy (federated-operators@1, the l
     expect((await tipOn(B)).merklePath?.blockHeight).toBe(800_201)
   })
 
+  it('a retraction on A stays on A: the next round does not offer the withdrawn state, and B keeps it until B withdraws it itself', async () => {
+    const policy = writePolicy([federatedChain().genesis])
+    const { A, states } = await operatorAWithHistory(policy)
+    const B = await startOperator('B', policy, { peers: [A.base] })
+    await syncOnce(B)
+    const tip = states[2]
+    const holds = async (operator: Operator): Promise<string[]> =>
+      (await lookup(operator, 'ls_dpp', { passportId: PASSPORT_ID })).map((o) => Transaction.fromBEEF(o.beef).id('hex'))
+    expect(await holds(B)).toContain(tip.id('hex'))
+
+    // The network refused the tip after A admitted it, so its writer withdraws
+    // it from A. Neither node has a header source here, so nothing asks the
+    // network; the retraction runs on the local proof check alone.
+    const retractOn = async (operator: Operator): Promise<Response> =>
+      fetch(`${operator.base}/retract`, {
+        method: 'POST',
+        headers: { ...JSON_BODY, Authorization: `Bearer ${operator.token}` },
+        body: JSON.stringify({ txid: tip.id('hex'), outputIndex: 0, reason: 'the network refused the transaction after the index admitted it' }),
+      })
+    const onA = await retractOn(A)
+    expect(onA.status).toBe(200)
+    expect(await bodyOf(onA)).toMatchObject({ status: 'retracted', restoredTip: { txid: states[1].id('hex'), outputIndex: 0 } })
+    expect(await holds(A)).not.toContain(tip.id('hex'))
+
+    // Synchronisation carries admissions only. A no longer offers the
+    // withdrawn output, and nothing tells B that an output it holds is gone,
+    // so B serves the phantom as the tip until its own operator withdraws it.
+    await syncOnce(B)
+    expect(await holds(B)).toContain(tip.id('hex'))
+    expect(historyItems(await historyOf(B)).map(([txid]) => txid)).toContain(tip.id('hex'))
+    const onB = await retractOn(B)
+    expect(onB.status).toBe(200)
+    expect(await bodyOf(onB)).toMatchObject({ status: 'retracted', restoredTip: { txid: states[1].id('hex'), outputIndex: 0 } })
+    expect(await holds(B)).toEqual(await holds(A))
+    expect(historyItems(await historyOf(B))).toEqual(historyItems(await historyOf(A)))
+
+    // A later round changes nothing: the withdrawn state is on neither node.
+    await syncOnce(B)
+    expect(await holds(B)).not.toContain(tip.id('hex'))
+  })
+
   it('A stops and B keeps serving the complete history, verified from the bytes', async () => {
     const policy = writePolicy([federatedChain().genesis])
     const { A, states } = await operatorAWithHistory(policy)
