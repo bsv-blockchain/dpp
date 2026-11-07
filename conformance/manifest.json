@@ -246,7 +246,7 @@
       "attribution": "UN/CEFACT",
       "notes": "The 0.7.0 release, tagged v0.7.0 on 4 May 2026 at the GitLab home; the GitHub repository uncefact/spec-untp is archived at 0.6.1 and points here; main was last active on 4 September 2026 (df03d8f87e74f676ccfece87ba77cd8f804fe111); no 1.0 release exists. The documentation site refuses non-browser clients. The DigitalProductPassport, DigitalTraceabilityEvent and ConformityCredential schemas and the single UNTP context are pinned by SHA-256 in packages/dpp-profiles/manifests/exchange/untp-0.7.0-jose@1.json.",
       "retrievedAt": "2026-09-06",
-      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0; pinned by digest and not copied into this repository pending a licence review"
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0. Standing decision (bsv-blockchain/dpp-issues#27, 8 November 2026): the artefacts are pinned by digest and never copied into this repository or its packages; a consumer that validates against them obtains the bytes itself and checks them against the pinned digests."
     },
     {
       "id": "gs1-digital-link",

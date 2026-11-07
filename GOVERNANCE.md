@@ -10,7 +10,7 @@ Once published, the contents of `spec/`, `contracts/` and `fixtures/` are normat
 
 - **Maintainers** accept changes. The maintainer is the BSV Association, and adding a maintainer is itself a change under this process.
 - **Implementing parties** run a conforming implementation against real records. Today there are two: the reference implementation in this repository and the attestation registry maintained by a second party. A wire shape that both must produce identically is not settled until both have accepted it in writing, and the specification says so where it applies.
-- **Contributors** propose changes. Anyone may.
+- **Contributors** propose changes. Anyone may. A contribution is accepted under the repository's licence, the Apache License, Version 2.0, on the terms of its section 5: the contributor licenses what they submit under the same terms, and no separate contributor agreement exists.
 
 ## Versioning
 
