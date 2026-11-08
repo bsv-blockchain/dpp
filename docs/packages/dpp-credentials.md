@@ -41,7 +41,7 @@ npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 |---|---|
 | Package | `@bsv/dpp-credentials` 0.2.0-beta.6 |
 | Current source candidate | `dpp-release-2026-11`; the [release page](../reference/release-sets.md) distinguishes it from the latest published set. |
-| Change | beta.5 repacked with no code change |
+| Change | Under `epcis-vsc@1`, an inspection, repair or sensor reading reporting `active` is now refused as `maintenance-observation`, as the published profile says; the proposed `epcis-vsc@2` mapping profile is added |
 | Other candidate packages | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
 | Runtime | Node only, ECMAScript modules; artefact files are plain data ([support table](support-table.md)). |
 
@@ -51,7 +51,7 @@ A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin
 
 | Entry point | Main functions | A runnable call |
 |---|---|---|
-| `@bsv/dpp-credentials` | `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL. The root also re-exports every `/epcis-source` function | `npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
+| `@bsv/dpp-credentials` | `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL under `epcis-vsc@1`, or under `epcis-vsc@2` with its CBV disposition crosswalk. The root also re-exports every `/epcis-source` function | `npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
 | `@bsv/dpp-credentials/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
 | `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
 | `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files | |

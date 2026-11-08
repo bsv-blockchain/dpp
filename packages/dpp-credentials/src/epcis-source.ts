@@ -45,6 +45,9 @@ export type EpcisEventType = (typeof EPCIS_EVENT_TYPES)[number];
 /** The signed source-reference vocabulary a mapped credential carries beside the round-trip event. */
 export const EPCIS_SOURCE_VOCABULARY = 'urn:bsv:dpp:epcis-source:1';
 export const EPCIS_MAPPING_PROFILE = 'epcis-vsc@1';
+/** The mapping profiles the report answers under: epcis-vsc@1 is the default and stays as published; epcis-vsc@2 adds the CBV 2.0 disposition crosswalk. */
+export const EPCIS_MAPPING_PROFILES = ['epcis-vsc@1', 'epcis-vsc@2'] as const;
+export type EpcisMappingProfile = (typeof EPCIS_MAPPING_PROFILES)[number];
 export const EPCIS_SOURCE_PROFILE = 'epcis-json@1';
 export const EPCIS_MEDIA_TYPES = ['application/json', 'application/ld+json'] as const;
 

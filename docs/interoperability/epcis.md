@@ -7,7 +7,8 @@ Electronic Product Code Information Services (EPCIS) is the GS1 standard for obs
 | Profile | Result |
 |---|---|
 | `epcis-json@1` | Retains EPCIS 2.0.1 JSON or JSON-LD exactly as received. |
-| `epcis-vsc@1` | Maps events to unsigned SEALs, the Verifiable Supply Chain (VSC) profile's event credentials. A separately authorised issuer may sign them. |
+| `epcis-vsc@1` | Maps events to unsigned SEALs, the Verifiable Supply Chain (VSC) profile's event credentials. A separately authorised issuer may sign them. The default. |
+| `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. Proposed. |
 
 ## Inputs and runtime
 
@@ -60,7 +61,7 @@ Call `mapEpcisEventWithReport(event, options, { sourceReference, validation })` 
 | `unsupported` | `missing` names an event the profile cannot express or a missing mapping decision | Resolve the decision or retain the source without a credential. |
 | `insufficient-data` | `missing` names source inputs the mapper will not invent | Obtain the inputs or retain source evidence alone. |
 
-A valid source may remain evidence without a credential. `mapEpcisEvent` performs plain mapping without a report. Both mapping functions come from the root package; `@bsv/dpp-credentials/epcis-source` supplies parsing functions and artefacts.
+A valid source may remain evidence without a credential. `mapEpcisEvent` performs plain mapping without a report. Under `epcis-vsc@1`, an inspection, repair or sensor reading recorded as an `OBSERVE` event or a `TransformationEvent` that reports the disposition `active` is `unsupported` with the reason `maintenance-observation`, because it records no custody step. Both mapping functions come from the root package; `@bsv/dpp-credentials/epcis-source` supplies parsing functions and artefacts.
 
 Map every event in the same fixture:
 
@@ -109,13 +110,33 @@ Or supply your EPCIS 2.0.1 document:
 node examples/import-epcis.mjs <document.json>
 ```
 
-It ends `Nothing was retained, issued, anchored or written to a token by this example.` Run package mapping tests:
+It ends `Nothing was retained, issued, anchored or written to a token by this example.`
+
+## Map under the CBV disposition crosswalk
+
+Pass `{ profile: 'epcis-vsc@2' }` as the third argument to decide each disposition through the crosswalk in the `epcis-vsc@2` profile manifest before a SEAL is built. The result depends on the event type and action as well as the disposition: only an `ObjectEvent` whose action is `ADD` commissions its objects, while `ADD` on an aggregation, association or transaction adds objects that already exist. A source reference must name the same profile, through `epcisSourceReference({ ..., mappingProfile: 'epcis-vsc@2' })`.
+
+| CBV disposition | Result under `epcis-vsc@2` |
+|---|---|
+| `active` on an `ObjectEvent` whose action is `ADD` (commissioning) | Carried verbatim: the custody origin. |
+| `in_transit`, `returned` | Carried verbatim: in transit. |
+| `dispensed`, `destroyed` | Carried verbatim: terminal. |
+| `active` on any other event, a transformation included; `conformant`, `non_conformant`, `damaged`, `needs_replacement`, `in_progress`, `sellable_accessible`, `recalled` and the other conditions; no disposition on an `OBSERVE` event | `unsupported`, `custody-neutral`: the event records no custody state a SEAL can carry, and none is substituted. |
+| Any of those at a `receiving` or `accepting` step | `unsupported`, `custody-destination-unnamed`: a hand-over at the destination, whose only VSC term, `received`, is not a CBV disposition. |
+| A transit or terminal disposition on an `ObjectEvent` whose action is `ADD`; a transit disposition on one whose action is `DELETE` | `unsupported`, `lifecycle-conflict`: commissioned objects can only start at the origin, and decommissioned ones are not in transit. |
+| `retail_sold`, `partially_dispensed`, `disposed`, `inactive`, `stolen` | `unsupported`, `custody-transition-unnamed`: a custody change for which no VSC term is a CBV value. |
+| Anything that is not a CBV 2.0 disposition, including `stored`, `transshipped`, `transformed` and `received` | `unsupported`, `non-cbv-disposition`. |
+| Any event carrying an `errorDeclaration` | `unsupported`, `error-declaration`: it says an earlier event was wrong, so a SEAL would assert a step the source retracted. |
+
+Each `unsupported` reason starts with the limit id in the table. An `ADD` or `DELETE` event without a disposition stays `insufficient-data`. Retain refused events as evidence; the VSC custody rules are never bent to give one a SEAL. The [specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md), section 5, gives the reasons. The vector file `fixtures/vectors/dpp/interoperability/epcis/v2.json` pins every outcome.
+
+Run the package mapping tests:
 
 ```sh
 npm run test -w @bsv/dpp-credentials -- test/epcis.test.ts test/epcis-source.test.ts test/epcis-report.test.ts
 ```
 
-Expected result: 49 tests, all passing.
+Expected result: 61 tests, all passing.
 
 ## Keep the source with the result
 
@@ -143,6 +164,6 @@ Retain source references and mapping findings with resulting credentials. Never 
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) |
 | Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) |
 | Use reference parsing and mapping | [VSC package](../packages/dpp-credentials.md) |
-| Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json) |
+| Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |
 
 The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records exercised import and pull outcomes. Next: [verifiable credentials](../learn/verifiable-credentials.md), to issue and anchor a mapped SEAL.
