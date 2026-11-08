@@ -1,0 +1,80 @@
+{
+  "manifestVersion": "1",
+  "id": "epcis-event-vc",
+  "version": "1",
+  "profile": "epcis-event-vc@1",
+  "kind": "exchange",
+  "status": "proposed",
+  "title": "Directly signed EPCIS events as VC 2.0 credentials keyed by the CBV 2.0 Event Hash ID",
+  "description": "The exchange profile for a GS1 EPCIS 2.0 event signed by the party that observed or performed the step: a W3C Verifiable Credentials Data Model 2.0 credential whose subject is the event, whose id is the event's CBV 2.0 Event Hash ID, secured as a compact JWS under ES256K with the party's one published credential key, and committed by the exact JWS bytes under the generic anchor. No custody model and no mapping stand between the event and its proof; several parties may sign one event, and uniqueness is per hash ID and issuer. The hash algorithm's scope under this version is fixed in spec/epcis-event-profile.md section 3, with refusals by name where the ratified text and the two independent reference generators part. Not a UNTP traceability event: the shape follows UNTP's prose for an EPCIS event carried as a credential and validates against no UNTP schema.",
+  "representation": "epcis-event-vc@1",
+  "mediaType": "application/vc+jwt",
+  "dataModel": "W3C Verifiable Credentials Data Model 2.0 with one GS1 EPCIS 2.0.1 event as the credential subject",
+  "specification": "spec/epcis-event-profile.md",
+  "artefacts": [
+    { "id": "vc-v2-context", "kind": "jsonld-context", "uri": "https://www.w3.org/ns/credentials/v2", "version": "2.0", "digest": "59955ced6697d61e03f2b2556febe5308ab16842846f5b586d7f1f7adec92734", "retrieval": "pinned", "licence": "W3C document licence", "notes": "Retrieved 2026-09-06 (10131 bytes); carried at packages/dpp-credentials/artifacts/w3c/credentials-v2.jsonld. The first context entry of every credential; its name is checked, its bytes are never fetched." },
+    { "id": "epcis-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld", "version": "2.0.1", "digest": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737", "retrieval": "pinned", "licence": "GS1 EPCIS 2.0.1, as published by GS1", "notes": "20690 bytes, carried at packages/dpp-credentials/artifacts/epcis/epcis-context-2.0.1.jsonld. The second context entry of every credential, named by this IRI or by https://ref.gs1.org/epcis/; the prefixes it declares (epcis, cbv, cbvmda, gs1, rdfs, owl, xsd, dcterms) are the ones an event's extension members may use without an inline declaration, held equal to the carried bytes by a test." },
+    { "id": "epcis-json-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json", "version": "2.0.1", "digest": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af", "retrieval": "pinned", "licence": "GS1 EPCIS 2.0.1, as published by GS1", "notes": "Carried at packages/dpp-credentials/artifacts/epcis/epcis-json-schema-2.0.1.json. A writer refuses an event that fails it before signing; a verifier reports it through the caller's supplied check." },
+    { "id": "gs1-cbv-2.0", "kind": "specification", "uri": "https://ref.gs1.org/standards/cbv/", "version": "2.0, ratified June 2022", "retrieval": "not-retrieved", "notes": "Section 8.9.2, the EPCIS Event Hash ID: rules 1 to 23 and the canonical property order. The profile follows the text where it is clear and refuses by name where it leaves two readings (spec/epcis-event-profile.md section 3)." },
+    { "id": "gs1-digital-link-uri-syntax", "kind": "specification", "uri": "https://ref.gs1.org/standards/digital-link/uri-syntax/", "version": "1.2 and later", "retrieval": "not-retrieved", "notes": "The canonical Digital Link form rule 16 converts EPC URIs to, and the constrained form rule 17 reduces Digital Link URIs to." },
+    { "id": "w3c-vc-data-model-2", "kind": "specification", "uri": "https://www.w3.org/TR/vc-data-model-2.0/", "version": "2.0 Recommendation", "retrieval": "not-retrieved" },
+    { "id": "w3c-vc-jose-cose", "kind": "specification", "uri": "https://www.w3.org/TR/vc-jose-cose/", "version": "current TR at review", "retrieval": "not-retrieved", "notes": "The compact JWS carriage: typ vc+jwt, cty vc, kid a DID URL, the credential as the whole payload." },
+    { "id": "ietf-rfc-8812", "kind": "specification", "uri": "https://www.rfc-editor.org/rfc/rfc8812", "version": "RFC 8812", "retrieval": "not-retrieved", "notes": "ES256K: ECDSA over secp256k1 with SHA-256, the signature as 64 fixed-width octets." },
+    { "id": "ietf-rfc-6920", "kind": "specification", "uri": "https://www.rfc-editor.org/rfc/rfc6920", "version": "RFC 6920", "retrieval": "not-retrieved", "notes": "The ni URI scheme the hash ID is written in." }
+  ],
+  "proofSuites": [
+    { "id": "ES256K", "support": "issue-and-verify", "keyRule": "The party's one published credential key: the BRC-42 child of its identity key under [1, 'dpp epcis event v1'] with key identifier 'credential' and counterparty anyone, listed under assertionMethod in the party's DID document or published as a did:key that is then the issuer. Never the native anchoring key, never a per-event child, never a P-256 key relabelled.", "consumerMustConfirm": true, "notes": "A JOSE library that omits ES256K is a compatibility limit, not a signature defect. Any other alg is reported suite-unsupported. Issued and verified with the BSV SDK; the verification cross-check against a second JOSE library is the reference application's test." }
+  ],
+  "anchoring": {
+    "format": "bsv-attestation-anchor-v1",
+    "bytesCommitted": "the exact compact JWS string as issued; a re-serialised copy is a different credential with a different digest and the same id",
+    "attestationIdRule": "the credential id, which is the Event Hash ID; uniqueness is per (attestationId, issuer): a second issuer for the same hash ID is a second attestation and is accepted, a second byte string for the same hash ID and issuer is refused, never a replacement",
+    "subjectRule": "the lexically first, by code point, of the event's object identifiers in canonical form: parentID, the members of epcList, childEPCs, inputEPCList and outputEPCList, and the epcClass of every quantity element; an event naming none is not anchored",
+    "attestationType": "the EPCIS event type: ObjectEvent, AggregationEvent, TransformationEvent, TransactionEvent or AssociationEvent"
+  },
+  "nativeEvidenceExtension": {
+    "schema": "contracts/native-evidence-extension.schema.json",
+    "version": "1",
+    "carried": "not-applicable",
+    "notes": "The subject is the EPCIS event as the party holds it; whether an extension member may reference native evidence is a question for a later version, not this one."
+  },
+  "mappings": [
+    { "nativeOperation": "ACTIVATE", "externalEvent": "none: a signed event is one party's observation of a step and drives no token operation", "requires": "a separately authorised native operation with its own authority and evidence", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "SOLD", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "RESOLD", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "TRANSFER", "externalEvent": "none: a shipping or receiving event signed by any party cannot move token control", "requires": "the current controller's authorised transfer and the recipient's acceptance", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "REPAIRED", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "EDIT", "externalEvent": "none", "requires": "as above", "withoutEvidence": "insufficient-data" },
+    { "nativeOperation": "RECYCLED", "externalEvent": "none: a decommissioning or destroying event does not retire a lineage", "requires": "as above", "withoutEvidence": "insufficient-data" }
+  ],
+  "storage": {
+    "nativeClaim": "none; the credential is independent evidence",
+    "originalSecured": "the exact compact JWS string as received, with mediaType, byteLength, sha256, the credential id (the hash ID), issuer, receivedAt, the profile identifier and the intake verification reference",
+    "decoded": "the strictly parsed credential and its event, for reading and never re-serialised as the original",
+    "projection": "any derived document, an EPCIS document assembled from signed events included, has its own identity and inherits neither a credential's proof nor its anchor"
+  },
+  "unsupported": [
+    { "id": "error-declarations", "reason": "An event carrying errorDeclaration computes no hash ID of its own under CBV 2.0 and is not signable under @1; a corrective event is an ordinary event." },
+    { "id": "epc-schemes-outside-the-subset", "reason": "Only sgtin, the lgtin class, the sgtin pattern, sscc, sgln, pgln, grai, giai, gsrn, gdti and cpi are converted; any other EPC scheme, class or pattern is refused rather than hashed over an unconverted value." },
+    { "id": "digital-link-short-names-and-non-canonical-gtins", "reason": "A short-name path (/gtin/, /ser/), a GTIN that is not fourteen digits and a qualifier rule 17 does not keep are refused; the reference generators neither pad nor agree." },
+    { "id": "sensor-element-extensions", "reason": "An extension inside a sensor element, sensor metadata or sensor report has no agreed pre-hash form: the text names the extension point without fixing the prefix and the generators disagree." },
+    { "id": "compact-iri-vocabulary-values", "reason": "A vocabulary value spelled as a compact IRI is kept verbatim by the generators where JSON-LD would expand it; refused rather than hashed two ways." },
+    { "id": "certification-info-lists", "reason": "A list of certifications has no agreed pre-hash form under @1." },
+    { "id": "batching", "reason": "One anchor per credential; a commitment over several credentials is a later representation over this one." },
+    { "id": "untp-traceability-event-conformance", "reason": "The credential follows the shape UNTP describes in prose for an EPCIS event carried as a traceability credential; it validates against neither the 0.7.0 traceability event schema nor the unreleased draft that follows it, and no UNTP conformance is claimed." },
+    { "id": "custody-evaluation", "reason": "An EPCIS event has no custody state in this profile and the representation invents none; what a party retracts is a later signed event or a status bit." },
+    { "id": "holder-presentation", "reason": "No presentation protocol, challenge or holder binding is implemented." },
+    { "id": "did-resolution", "reason": "A did:key issuer resolves from its own bytes; every other method resolves through the caller's bounded resolver, and a key the verifier cannot obtain leaves the proof unknown." }
+  ],
+  "sourceRefs": [
+    { "id": "gs1-cbv-2.0", "name": "GS1 Core Business Vocabulary (CBV) Standard, release 2.0", "reference": "https://ref.gs1.org/standards/cbv/", "version": "2.0, ratified June 2022", "attribution": "GS1 AISBL", "use": "Section 8.9.2, the EPCIS Event Hash ID algorithm this profile applies." },
+    { "id": "gs1-epcis-2.0.1", "name": "GS1 EPCIS Standard, release 2.0.1", "reference": "https://ref.gs1.org/standards/epcis/", "version": "2.0.1", "attribution": "GS1 AISBL", "use": "The event model, the pinned JSON-LD context and the pinned JSON Schema." },
+    { "id": "gs1-digital-link-uri-syntax", "name": "GS1 Digital Link Standard: URI Syntax", "reference": "https://ref.gs1.org/standards/digital-link/uri-syntax/", "attribution": "GS1 AISBL", "use": "The canonical and constrained canonical Digital Link forms of rules 16 and 17." },
+    { "id": "w3c-vc-data-model-2", "name": "W3C Verifiable Credentials Data Model 2.0", "reference": "https://www.w3.org/TR/vc-data-model-2.0/", "attribution": "W3C", "use": "The data model." },
+    { "id": "w3c-vc-jose-cose", "name": "W3C Securing Verifiable Credentials using JOSE and COSE", "reference": "https://www.w3.org/TR/vc-jose-cose/", "attribution": "W3C", "use": "The compact JWS carriage." },
+    { "id": "ietf-rfc-8812", "name": "IETF RFC 8812, CBOR Object Signing and Encryption (COSE) and JSON Object Signing and Encryption (JOSE) Registrations for Web Authentication (WebAuthn) Algorithms", "reference": "https://www.rfc-editor.org/rfc/rfc8812", "attribution": "IETF", "use": "The ES256K algorithm and its signature encoding." },
+    { "id": "ietf-rfc-6920", "name": "IETF RFC 6920, Naming Things with Hashes", "reference": "https://www.rfc-editor.org/rfc/rfc6920", "attribution": "IETF", "use": "The ni URI scheme the hash ID is written in." },
+    { "id": "epcis2.js", "name": "epcis2.js 2.7.3", "reference": "https://www.npmjs.com/package/epcis2.js", "version": "2.7.3", "attribution": "its authors, Apache-2.0", "use": "An independent implementation of the hash algorithm, run against every positive vector; its answers are recorded in the vectors and never copied into this repository." },
+    { "id": "epcis-event-hash-generator", "name": "epcis-event-hash-generator 1.9.3", "reference": "https://pypi.org/project/epcis-event-hash-generator/", "version": "1.9.3", "attribution": "its authors at GS1 Germany, MIT", "use": "The algorithm author's implementation, run against every positive vector; its answers are recorded in the vectors and never copied into this repository." }
+  ]
+}

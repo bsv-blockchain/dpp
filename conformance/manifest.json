@@ -32,7 +32,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/rules.md",
-      "digest": "5c6d83e9779d1251ccf1455350ca008733cda0b66cbc472298b5b97c67b4ae57"
+      "digest": "04210df45d90d95dcce8d275f7cbfa054ed6ca3b3dbebc6d8fa675202b2b1ca0"
     },
     {
       "id": "spec-identity",
@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "c167e3ad98f49a8983378192b07528e9ea96ea70e8ddcd1be3a68f27bbf47162"
+      "digest": "a0a63bf7c67d62c2eccb3994d27702378ea6a8485298a05b47337a6815e664ed"
     },
     {
       "id": "spec-conformance",
@@ -117,10 +117,10 @@
     {
       "id": "contract-registry",
       "uri": "contracts/registry.yaml",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3"
+      "digest": "a609543c71d6e24b0f9b881d9bdefddbd801b1339ebb65534e3a16f2adeb0ab9"
     },
     {
       "id": "contract-report-schema",
@@ -128,7 +128,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/verification-report.schema.json",
-      "digest": "6d2bfa73e28a5b0d83be35a1769a3feb97669799a2ee3bff070c2474d3892fb2"
+      "digest": "144b1388d372900ccdc39cad36717bdf78aee28e842c8633afcba6a1f39fffca"
     },
     {
       "id": "contract-capabilities-schema",
@@ -410,7 +410,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/exchange.md",
-      "digest": "e3f643c12408651c199b02a0d37078755ff3e3efb823a763a7047a56c392d7b4"
+      "digest": "446676fd774134033dd7e960317abfb0b6cda8c7e19a098734e8c46376dfa4d0"
     },
     {
       "id": "contract-native-evidence-extension",
@@ -538,7 +538,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
+      "digest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
     },
     {
       "id": "spec-external-credential-profile",
@@ -683,6 +683,14 @@
       "kind": "public",
       "attribution": "European Union",
       "notes": "The Union digital product passport registry; no adapter is implemented and the readiness gate is recorded outside the repository."
+    },
+    {
+      "id": "spec-epcis-event-profile",
+      "uri": "spec/epcis-event-profile.md",
+      "version": "epcis-event-vc@1",
+      "kind": "local",
+      "path": "spec/epcis-event-profile.md",
+      "digest": "8a5a5e7e5ff3d49548299e7150948216c565b41656105701acd57f8031953c32"
     }
   ],
   "requirements": [
@@ -4061,7 +4069,7 @@
       "id": "REG-contract-routes",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.5.0",
+      "sourceVersion": "0.6.0",
       "clause": "paths",
       "summary": "Every operation the registry contract lists answers in the documented shape, and no served route is absent from the contract.",
       "layer": "role",
@@ -4779,7 +4787,7 @@
       "id": "REG-1-insert-first-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.5.0",
+      "sourceVersion": "0.6.0",
       "clause": "POST /attestations",
       "summary": "Two identical concurrent submissions store one record and anchor once: intake inserts the claim identifier first, then anchors, then replaces, on every store backend.",
       "layer": "role",
@@ -5321,7 +5329,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -5407,7 +5415,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
     },
     {
       "id": "EPCIS-5-source-reference",
@@ -5436,7 +5444,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
@@ -5465,7 +5473,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279",
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d",
       "notes": "Until 2026-11-08 the reference mapped an inspection, repair or sensor reading reporting active, contrary to the published maintenance-observation limit of epcis-vsc@1; a repair with nothing else to report came back lossless. Such an observation (an OBSERVE event, or a TransformationEvent, whose action is the caller's decision) is now refused; an ObjectEvent that commissions or decommissions its objects at those steps is not an observation and maps as before. The published v1 vectors, which hold no such event, are unchanged. v2.json pins the outcomes under epcis-vsc@2."
     },
     {
@@ -5521,7 +5529,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279",
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
@@ -5547,7 +5555,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279",
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
@@ -5578,7 +5586,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
+      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
     },
     {
       "id": "EPCIS-11-cbv-dispositions",
@@ -5726,7 +5734,7 @@
       "id": "EXTC-5-registry-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.5.0",
+      "sourceVersion": "0.6.0",
       "clause": "POST /attestations, vc-di-ecdsa-rdfc-2019@1",
       "summary": "The registry accepts the representation as exact bytes under the operator's external policy, refuses a failing credential with nothing stored, refuses a credential id collision, and anchors accepted bytes through the existing anchor and topic with metadata matching the credential.",
       "layer": "role",
@@ -5745,9 +5753,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3",
+      "sourceDigest": "a609543c71d6e24b0f9b881d9bdefddbd801b1339ebb65534e3a16f2adeb0ab9",
       "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged."
     },
     {
@@ -6074,6 +6082,124 @@
       "reviewedAt": "2026-09-06",
       "reviewOwner": "dpp maintainers",
       "notes": "A readiness record with article citations is kept outside the repository; the capability documents carry the statement verbatim."
+    },
+    {
+      "id": "EPEV-1-hash-id",
+      "sourceId": "spec-epcis-event-profile",
+      "sourceUri": "spec/epcis-event-profile.md",
+      "sourceVersion": "epcis-event-vc@1",
+      "layer": "profile",
+      "applicability": "when epcis-event-vc@1 is selected",
+      "profileId": "epcis-event-vc@1 (proposed)",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "8a5a5e7e5ff3d49548299e7150948216c565b41656105701acd57f8031953c32",
+      "clause": "\u00a73",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier",
+        "registry"
+      ],
+      "summary": "The Event Hash ID is CBV 2.0 \u00a78.9.2 with the @1 scope: the canonical order with certificationInfo after the offset, identifiers converted within the subset and Digital Links constrained, vocabulary expanded from bare and URN spellings, extensions from carried prefix declarations, timestamps in UTC with milliseconds, empty lists and eventID and recordTime ignored; error declarations, identifiers outside the subset, compact IRI values, sensor extensions and undeclared prefixes are refused by name.",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/epcisEvent.ts#epcisEventHashId",
+        "packages/dpp-protocol/src/epcisEvent.ts#canonicalEpcisIdentifier"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/epcisEvent.test.ts",
+        "packages/dpp-protocol/test/epcis-event-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/hash-v1.json"
+      ],
+      "status": "tested",
+      "notes": "Fifteen positive vectors with pre-hash strings and fifteen refusals. Every positive vector agrees with at least one of two independent generators run on 9 November 2026 (epcis2.js 2.7.3 and epcis-event-hash-generator 1.9.3) and seven agree with both; each difference is recorded in the vector with the clause the profile follows. Tested on this repository's vectors only; no second implementation has reproduced them."
+    },
+    {
+      "id": "EPEV-2-credential-and-signature",
+      "sourceId": "spec-epcis-event-profile",
+      "sourceUri": "spec/epcis-event-profile.md",
+      "sourceVersion": "epcis-event-vc@1",
+      "layer": "profile",
+      "applicability": "when epcis-event-vc@1 is selected",
+      "profileId": "epcis-event-vc@1 (proposed)",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "8a5a5e7e5ff3d49548299e7150948216c565b41656105701acd57f8031953c32",
+      "clause": "\u00a72, \u00a74, \u00a75 and \u00a77",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "summary": "A credential of exactly the profile's members over the pinned contexts, secured as a compact JWS under ES256K by the party's one published credential key, parsed strictly and verified from the bytes: the hash ID recomputed against id and eventID, the signature against the key kid names (a did:key from its own bytes, others through the caller's resolver), the validity interval, and status, schema and authority through supplied verifiers, each reported separately; another alg is suite-unsupported.",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/epcisEvent.ts#buildEpcisEventCredential",
+        "packages/dpp-protocol/src/epcisEvent.ts#signEpcisEventCredential",
+        "packages/dpp-protocol/src/epcisEvent.ts#verifyEpcisEventCredential",
+        "packages/dpp-protocol/src/epcisEvent.ts#epcisEventCredentialVerifierFor"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/epcisEvent.test.ts",
+        "packages/dpp-protocol/test/epcis-event-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json"
+      ],
+      "status": "tested",
+      "notes": "Eighteen credential vectors with published test scalars. Signing goes through createSignature, so a BRC-100 wallet and a ProtoWallet produce the same bytes; the vectors are produced with a ProtoWallet. No credential has yet been issued through a connected wallet and verified by a JOSE library other than this implementation."
+    },
+    {
+      "id": "EPEV-3-anchor-and-uniqueness",
+      "sourceId": "spec-epcis-event-profile",
+      "sourceUri": "spec/epcis-event-profile.md",
+      "sourceVersion": "epcis-event-vc@1",
+      "layer": "profile",
+      "applicability": "when epcis-event-vc@1 is selected",
+      "profileId": "epcis-event-vc@1 (proposed)",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "8a5a5e7e5ff3d49548299e7150948216c565b41656105701acd57f8031953c32",
+      "clause": "\u00a76",
+      "roles": [
+        "registry",
+        "attestation-verifier"
+      ],
+      "summary": "The anchor commits to the exact JWS bytes with attestationId the hash ID, issuer the credential issuer, subject the lexically first object identifier in canonical form and attestationType the event type, derived only from a credential whose proof held; uniqueness is per (attestationId, issuer): a second issuer for one hash ID is accepted, a second byte string from the same issuer is refused and never replaces the first.",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/epcisEvent.ts#epcisEventAnchorMetadata",
+        "contracts/registry.yaml (EpcisEventEnvelope and the 409 rule)"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/epcisEvent.test.ts",
+        "packages/dpp-protocol/test/epcis-event-vectors.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json"
+      ],
+      "status": "tested",
+      "notes": "The anchor fields are tested; the pair rule is stated by the registry contract and pinned by the re-encoded-copy and second-issuer vectors as expected intake outcomes. Its enforcement is the registry's and is a gap (EPEV-4-registry-intake)."
+    },
+    {
+      "id": "EPEV-4-registry-intake",
+      "sourceId": "spec-epcis-event-profile",
+      "sourceUri": "spec/epcis-event-profile.md",
+      "sourceVersion": "epcis-event-vc@1",
+      "layer": "profile",
+      "applicability": "when epcis-event-vc@1 is selected",
+      "profileId": "epcis-event-vc@1 (proposed)",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "8a5a5e7e5ff3d49548299e7150948216c565b41656105701acd57f8031953c32",
+      "clause": "\u00a76 and \u00a77",
+      "roles": [
+        "registry"
+      ],
+      "summary": "A registry accepts the representation in its explicit envelope, verifies it under the profile, retains the exact JWS, enforces the pair rule and anchors it under the derived fields.",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "notes": "The reference registry (not published) does not yet accept epcis-event-vc@1; the contract (registry.yaml 0.6.0) states the envelope and the collision rule."
     }
   ],
   "claims": [
@@ -6574,6 +6700,20 @@
         "PROF-2-manifest-version-2",
         "PROF-3-applicability-evaluator",
         "PROF-4-frozen-unchanged"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "epcis-event-signing-1",
+      "description": "A verifier of directly signed EPCIS events under epcis-event-vc@1: the hash ID with its @1 scope, the credential and its ES256K proof, and the anchor fields and pair rule, from fixtures alone. The registry's intake (EPEV-4-registry-intake) is outside this claim.",
+      "role": "attestation-verifier",
+      "profileId": "epcis-event-vc@1",
+      "requires": [
+        "EPEV-1-hash-id",
+        "EPEV-2-credential-and-signature",
+        "EPEV-3-anchor-and-uniqueness",
+        "EXCH-1-representations",
+        "EXCH-6-exact-byte-anchoring"
       ],
       "minimumStatus": "tested"
     }

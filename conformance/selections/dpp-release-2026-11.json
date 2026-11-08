@@ -158,6 +158,12 @@
       "kind": "governance",
       "disposition": "withheld",
       "rationale": "No implementation by another implementing party has passed every fixture; the programme-authored Python reader is engineering evidence, not independence."
+    },
+    {
+      "id": "epcis-event-signing-1",
+      "kind": "component",
+      "disposition": "withheld",
+      "rationale": "epcis-event-vc@1 is proposed: its rows are tested on this repository's vectors alone, no deployment signs or anchors an event under it, the reference registry does not accept it (EPEV-4-registry-intake is a gap) and no second implementation has reproduced the hash vectors. A later release claims it once those exist."
     }
   ],
   "exclusions": [],

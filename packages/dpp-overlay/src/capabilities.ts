@@ -10,6 +10,8 @@
 import { readFileSync } from 'node:fs'
 import {
   ATTESTATION_ANCHOR_PREFIX,
+  EPCIS_EVENT_MEDIA_TYPE,
+  EPCIS_EVENT_REPRESENTATION,
   LIFECYCLE_MEDIA_TYPE,
   LIFECYCLE_REPRESENTATION,
   MANAGED_CUSTODY_PROFILE,
@@ -303,6 +305,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
     representations: [
       { id: LIFECYCLE_REPRESENTATION, mediaType: LIFECYCLE_MEDIA_TYPE, verification: 'commitment-only' },
       { id: VSC_SEAL_REPRESENTATION, mediaType: VSC_SEAL_MEDIA_TYPE, verification: 'commitment-only' },
+      { id: EPCIS_EVENT_REPRESENTATION, mediaType: EPCIS_EVENT_MEDIA_TYPE, verification: 'commitment-only' },
     ],
     proofSuites: [],
     anchorFormats: [

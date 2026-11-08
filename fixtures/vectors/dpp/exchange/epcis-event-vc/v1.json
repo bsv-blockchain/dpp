@@ -1,0 +1,803 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.exchange.epcis-event-vc.v1",
+  "name": "DPP exchange profile epcis-event-vc@1: EPCIS events as VC 2.0 credentials keyed by their Event Hash ID, signed ES256K as compact JWS by the party's published credential key, with their findings and anchor fields",
+  "brc": [],
+  "version": "1.0.0",
+  "reference_impl": "dpp-protocol@0.3.0",
+  "parity_class": "required",
+  "notes": "checkedAt is fixed so the time findings are reproducible. Two parties sign: their identity key scalars are published in keys, the credential key of each is the BRC-42 child under [1, \"dpp epcis event v1\"] with key identifier \"credential\" and counterparty anyone, and each issuer is the did:key of that credential key. Nothing derived from these scalars will ever hold value. The JWS bytes are the committed representation: digest_hex is SHA-256 over the exact string.",
+  "keys": {
+    "party_a": {
+      "identity_private_key_hex": "7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+      "identity_key_hex": "03e05ce435e462ec503143305feb6c00e06a3ad52fbf939e85c65f3a765bb7baac",
+      "credential_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+      "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+      "kid": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz#zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz"
+    },
+    "party_b": {
+      "identity_private_key_hex": "7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b",
+      "identity_key_hex": "03032ee87ce307cbf86f3eeecea732f73a19698cd07d13394a0c14b52d35798304",
+      "credential_key_hex": "02a5eb8d2d2dda7c7c4efc3e6d777029d2f9b50f2a88f9e0d266d102b1bdb90c00",
+      "issuer": "did:key:zQ3shYaUMEjEmqFYykFMbjyxuFekEUJUXLKjrb6DuXxcnbD7u",
+      "kid": "did:key:zQ3shYaUMEjEmqFYykFMbjyxuFekEUJUXLKjrb6DuXxcnbD7u#zQ3shYaUMEjEmqFYykFMbjyxuFekEUJUXLKjrb6DuXxcnbD7u"
+    }
+  },
+  "vectors": [
+    {
+      "id": "positive",
+      "description": "The commissioning event signed by party A under its one published credential key, the BRC-42 child of its identity key under [1, \"dpp epcis event v1\"] and the key identifier \"credential\", published as a did:key. The hash ID is the credential id, the signature verifies against the kid, the interval includes checkedAt, no status entry, no authority policy.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0.cEQ7plGSwtnBJ3SQxGCKiDq7mx1RyQCYsyO3cd5d1C13VtYgzUNeotfagTfSdzrxaR8QFNxXFT6KNWYk1VaOow",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "a5565672630d455043184050533845fabd1947f20f019be0a4ee21a90c9eb11f",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "a5565672630d455043184050533845fabd1947f20f019be0a4ee21a90c9eb11f",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        }
+      }
+    },
+    {
+      "id": "re-encoded-copy",
+      "description": "The same credential serialised with another member order and whitespace, signed by the same party: a different byte string with a different digest and the same id. Its proof holds. A registry that already holds a credential for this hash ID and issuer refuses it: one party signs one event once, unless the bytes are equal.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.ewogImNyZWRlbnRpYWxTdWJqZWN0IjogewogICJ0eXBlIjogIk9iamVjdEV2ZW50IiwKICAiZXZlbnRUaW1lIjogIjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsCiAgImV2ZW50VGltZVpvbmVPZmZzZXQiOiAiKzAwOjAwIiwKICAicmVjb3JkVGltZSI6ICIyMDI2LTAzLTAyVDA5OjAwOjAwLjAwMFoiLAogICJldmVudElEIjogInVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsCiAgImVwY0xpc3QiOiBbCiAgICJ1cm46ZXBjOmlkOnNndGluOjk1MjEyMzQuMDEyMzQ1LlNFUjEiCiAgXSwKICAiYWN0aW9uIjogIkFERCIsCiAgImJpelN0ZXAiOiAiY29tbWlzc2lvbmluZyIsCiAgImRpc3Bvc2l0aW9uIjogImFjdGl2ZSIsCiAgInJlYWRQb2ludCI6IHsKICAgImlkIjogInVybjplcGM6aWQ6c2dsbjo5NTIxMjM0LjAwMDAxLjAiCiAgfSwKICAiYml6TG9jYXRpb24iOiB7CiAgICJpZCI6ICJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMi4wIgogIH0KIH0sCiAidmFsaWRGcm9tIjogIjIwMjYtMTEtMDlUMDA6MDA6MDBaIiwKICJpc3N1ZXIiOiAiZGlkOmtleTp6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6IiwKICJpZCI6ICJuaTovLy9zaGEtMjU2OzZlOTcxZTViMTYyODZjMGU5NmY2ZTVkMmUwMzUyMTIwOThiOGU2NmQyNGZhYzk4OTkwYWFkODVlMDkwZDhjY2E_dmVyPUNCVjIuMCIsCiAidHlwZSI6IFsKICAiRGlnaXRhbFRyYWNlYWJpbGl0eUV2ZW50IiwKICAiVmVyaWZpYWJsZUNyZWRlbnRpYWwiCiBdLAogIkBjb250ZXh0IjogWwogICJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLAogICJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCIKIF0KfQ.DfVYDQevF4uO8_QothoRhgbuAXoXvZWf628n7EK1M-UD4Re-weBlvqqCF9Zb1XoH5WV8nn8EDy5NrtkfDFXwQg",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "d793eb63b13d0f16efc26da3e339e84b809e027c2c6d9ceb3926671cd1dd18c7",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "d793eb63b13d0f16efc26da3e339e84b809e027c2c6d9ceb3926671cd1dd18c7",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        },
+        "pair_rule": "refused: a second byte string for a hash ID and issuer the registry already holds"
+      }
+    },
+    {
+      "id": "second-issuer",
+      "description": "The same event signed by party B: a second attestation of one hash ID by another issuer, accepted beside the first.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hZYVVNRWpFbXFGWXlrRk1ianl4dUZla0VVSlVYTEtqcmI2RHVYeGNuYkQ3dSN6UTNzaFlhVU1FakVtcUZZeWtGTWJqeXh1RmVrRVVKVVhMS2pyYjZEdVh4Y25iRDd1In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoWWFVTUVqRW1xRll5a0ZNYmp5eHVGZWtFVUpVWExLanJiNkR1WHhjbmJEN3UiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0.AK2JmCVvc8CN6vp9WDlRwh3RPxgEg7ZX0hjvjU7EcaIZHAbeHuXIVF3sCKU7R92A2MD0QQvW7pGRdoDV2sa3qQ",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "ef0293a2c7d29e6ae8ec96842bfcdf3eb33c3ad87b74e63d44bd2445a1c33c58",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shYaUMEjEmqFYykFMbjyxuFekEUJUXLKjrb6DuXxcnbD7u",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02a5eb8d2d2dda7c7c4efc3e6d777029d2f9b50f2a88f9e0d266d102b1bdb90c00",
+        "anchor": {
+          "digest": "ef0293a2c7d29e6ae8ec96842bfcdf3eb33c3ad87b74e63d44bd2445a1c33c58",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:key:zQ3shYaUMEjEmqFYykFMbjyxuFekEUJUXLKjrb6DuXxcnbD7u",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        },
+        "pair_rule": "accepted: a different issuer for the same hash ID"
+      }
+    },
+    {
+      "id": "tampered-record-time",
+      "description": "The positive credential with the subject's recordTime changed after signing: the hash ID still holds, because recordTime is not hashed, and the signature fails.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTozMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0.cEQ7plGSwtnBJ3SQxGCKiDq7mx1RyQCYsyO3cd5d1C13VtYgzUNeotfagTfSdzrxaR8QFNxXFT6KNWYk1VaOow",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "signature-invalid"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "306164bce607a76c69c75e1794448369f60c9a9a6ae9b678e3ee04018148e961",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117"
+      }
+    },
+    {
+      "id": "tampered-biz-step",
+      "description": "The positive credential with the subject's bizStep changed after signing: the subject no longer hashes to the id (and the signature fails); the proof reports the hash mismatch first.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJkZWNvbW1pc3Npb25pbmciLCJkaXNwb3NpdGlvbiI6ImFjdGl2ZSIsInJlYWRQb2ludCI6eyJpZCI6InVybjplcGM6aWQ6c2dsbjo5NTIxMjM0LjAwMDAxLjAifSwiYml6TG9jYXRpb24iOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMi4wIn19fQ.cEQ7plGSwtnBJ3SQxGCKiDq7mx1RyQCYsyO3cd5d1C13VtYgzUNeotfagTfSdzrxaR8QFNxXFT6KNWYk1VaOow",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "event-hash-mismatch"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "f1f33b5e023c891c13b81750089b2d047603dd4499aff0dfa9025d99f185fb37",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;a54eecb100526cd2e0c1a5106bf9e5390208148e67cd31ec8e65345f794efd8a?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117"
+      }
+    },
+    {
+      "id": "kid-of-another-party",
+      "description": "The positive credential re-headed with party B's kid: a kid that names no verification method of the issuer fails the proof before any key is tried.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hZYVVNRWpFbXFGWXlrRk1ianl4dUZla0VVSlVYTEtqcmI2RHVYeGNuYkQ3dSN6UTNzaFlhVU1FakVtcUZZeWtGTWJqeXh1RmVrRVVKVVhMS2pyYjZEdVh4Y25iRDd1In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0.cEQ7plGSwtnBJ3SQxGCKiDq7mx1RyQCYsyO3cd5d1C13VtYgzUNeotfagTfSdzrxaR8QFNxXFT6KNWYk1VaOow",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "signature-invalid"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "043292abd990f40de587bc907792767c23086d6e77c967e9c42cf63ca94d23de",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent"
+      }
+    },
+    {
+      "id": "event-id-not-its-hash",
+      "description": "A subject whose eventID is a hash ID other than the one it hashes to: the credential id is right and the subject contradicts it.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6Im5pOi8vL3NoYS0yNTY7MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMD92ZXI9Q0JWMi4wIiwiZXBjTGlzdCI6WyJ1cm46ZXBjOmlkOnNndGluOjk1MjEyMzQuMDEyMzQ1LlNFUjEiXSwiYWN0aW9uIjoiQUREIiwiYml6U3RlcCI6ImNvbW1pc3Npb25pbmciLCJkaXNwb3NpdGlvbiI6ImFjdGl2ZSIsInJlYWRQb2ludCI6eyJpZCI6InVybjplcGM6aWQ6c2dsbjo5NTIxMjM0LjAwMDAxLjAifSwiYml6TG9jYXRpb24iOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMi4wIn19fQ.b6rbEAS-r3sAViZxbrhihXhG_F679QfuRiT7377Lo70U4lnpUECpOCkZYX6PaCRJDw5I1ePLAMt-MqOUxJ9-8A",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "event-hash-mismatch"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "f8a4148129335622726929bb98f05491d79eac571365770a1610a72925878371",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117"
+      }
+    },
+    {
+      "id": "error-declaration",
+      "description": "A subject carrying an errorDeclaration cannot be hashed under @1 and the proof fails by that name.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9LCJlcnJvckRlY2xhcmF0aW9uIjp7ImRlY2xhcmF0aW9uVGltZSI6IjIwMjYtMDMtMTJUMDk6MDA6MDBaIiwicmVhc29uIjoiaW5jb3JyZWN0X2RhdGEifX19.OASygysCdYkNn9WwQjw-m21RjRLV19SR19TuJh98OlET_R65kOJ5DPezm3qInfbbBbK-s410QgVj2x-dEB8tqg",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "error-declaration-unsupported"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "a4d28092310462cc37aebfd089f317d3eccf343f9b1e0715d59eb9bad1c90bba",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117"
+      }
+    },
+    {
+      "id": "unsupported-identifier",
+      "description": "A subject naming an EPC scheme outside the @1 subset: the hash is uncomputable and the proof fails by that name.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpnaWQ6OTUyMTIuMzQuNTYiXSwiYWN0aW9uIjoiQUREIiwiYml6U3RlcCI6ImNvbW1pc3Npb25pbmciLCJkaXNwb3NpdGlvbiI6ImFjdGl2ZSIsInJlYWRQb2ludCI6eyJpZCI6InVybjplcGM6aWQ6c2dsbjo5NTIxMjM0LjAwMDAxLjAifSwiYml6TG9jYXRpb24iOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMi4wIn19fQ.mJsSI8NqOSAShhsrST9W3SfYbfGM0lL6Su896GmVMdMFjvTTOg-Hya7OtCSoMoBVtpn62f0ZDrCTU2u9E7FLRw",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "event-hash-unsupported"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "bd2b23e43d1433902aad6070561d56e5e143c6f2dbb5e28614c820a8502877cf",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117"
+      }
+    },
+    {
+      "id": "multi-object-subject",
+      "description": "The transaction event names one EPC, a source party and a destination party; the subjects are the object identifiers only, sorted, and the anchor subject is the first.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1NjsyOGZjM2NkOTVjY2NkMzdlYjViYzdmNGNiYWEwYWYyYzE1YWRiYzEyZWQyYjAwZTgzYzRkZWQxNDk2NWNmZWVmP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJUcmFuc2FjdGlvbkV2ZW50IiwiZXZlbnRUaW1lIjoiMjAyNi0wMy0wMlQxMDowMDowMC4wMDBaIiwiZXZlbnRUaW1lWm9uZU9mZnNldCI6IiswMDowMCIsInJlY29yZFRpbWUiOiIyMDI2LTAzLTAyVDA5OjAwOjAwLjAwMFoiLCJldmVudElEIjoidXJuOnV1aWQ6MDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDA2IiwiYml6VHJhbnNhY3Rpb25MaXN0IjpbeyJ0eXBlIjoicG8iLCJiaXpUcmFuc2FjdGlvbiI6InVybjplcGNnbG9iYWw6Y2J2OmJ0Ojk1MjEyMzQwMDAwMTg6UE8tNzcifV0sImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJzaGlwcGluZyIsImRpc3Bvc2l0aW9uIjoiaW5fdHJhbnNpdCIsInJlYWRQb2ludCI6eyJpZCI6InVybjplcGM6aWQ6c2dsbjo5NTIxMjM0LjAwMDAxLjAifSwic291cmNlTGlzdCI6W3sidHlwZSI6Im93bmluZ19wYXJ0eSIsInNvdXJjZSI6InVybjplcGM6aWQ6cGdsbjo5NTIxMjM0LjAwMDAzIn1dLCJkZXN0aW5hdGlvbkxpc3QiOlt7InR5cGUiOiJvd25pbmdfcGFydHkiLCJkZXN0aW5hdGlvbiI6InVybjplcGM6aWQ6cGdsbjo5NTIxMjM0LjAwMDA0In1dfX0.-AdaqxlvEbe06KbiZCKpA90RUnNhArP-1DAJzFk-35wJRNL28ZXEwapuGbPIcx9lqzVc85sD_iDGQUY4LXrfCw",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "a99c44b3fdd2dbac734e69d45dc3612d7e95205da7d2e79acf466909da0c9791",
+        "id": "ni:///sha-256;28fc3cd95cccd37eb5bc7f4cbaa0af2c15adbc12ed2b00e83c4ded14965cfeef?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;28fc3cd95cccd37eb5bc7f4cbaa0af2c15adbc12ed2b00e83c4ded14965cfeef?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "TransactionEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "a99c44b3fdd2dbac734e69d45dc3612d7e95205da7d2e79acf466909da0c9791",
+          "attestationId": "ni:///sha-256;28fc3cd95cccd37eb5bc7f4cbaa0af2c15adbc12ed2b00e83c4ded14965cfeef?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "TransactionEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        }
+      }
+    },
+    {
+      "id": "sensor-event-with-extension-context",
+      "description": "The sensor observation under an inline prefix declaration carried as the third context entry.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCIseyJleGFtcGxlIjoiaHR0cHM6Ly9leGFtcGxlLm9yZy92b2NhYi8iLCJpbG1keCI6Imh0dHBzOi8vZXhhbXBsZS5vcmcvaWxtZC8ifV0sInR5cGUiOlsiRGlnaXRhbFRyYWNlYWJpbGl0eUV2ZW50IiwiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiaWQiOiJuaTovLy9zaGEtMjU2OzhmOGYyMjExZTVmMDk5N2MzOTVmODM0YmNiNGIyN2I3ZjBmZWE3NzExYzA0YzMyNmJiMmM3NGZkMmUxMzBiMzI_dmVyPUNCVjIuMCIsImlzc3VlciI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiIsInZhbGlkRnJvbSI6IjIwMjYtMTEtMDlUMDA6MDA6MDBaIiwiY3JlZGVudGlhbFN1YmplY3QiOnsidHlwZSI6Ik9iamVjdEV2ZW50IiwiZXZlbnRUaW1lIjoiMjAyNi0wMy0wM1QwNjowMDowMC4wMDBaIiwiZXZlbnRUaW1lWm9uZU9mZnNldCI6IiswMDowMCIsInJlY29yZFRpbWUiOiIyMDI2LTAzLTAzVDA2OjA1OjAwLjAwMFoiLCJlcGNMaXN0IjpbInVybjplcGM6aWQ6c2d0aW46OTUyMTIzNC4wMTIzNDUuU0VSMSJdLCJhY3Rpb24iOiJPQlNFUlZFIiwiYml6U3RlcCI6InNlbnNvcl9yZXBvcnRpbmciLCJkaXNwb3NpdGlvbiI6ImluX3RyYW5zaXQiLCJzZW5zb3JFbGVtZW50TGlzdCI6W3sic2Vuc29yTWV0YWRhdGEiOnsidGltZSI6IjIwMjYtMDMtMDNUMDY6MDA6MDAuMDAwWiIsImRldmljZUlEIjoidXJuOmVwYzppZDpnaWFpOjk1MjEyMzQuU0VOU09SLTEifSwic2Vuc29yUmVwb3J0IjpbeyJ0eXBlIjoiVGVtcGVyYXR1cmUiLCJ2YWx1ZSI6MjcuNSwidW9tIjoiQ0VMIn1dfV0sImV4YW1wbGU6bm90ZSI6InRlbXBlcmF0dXJlIG9ic2VydmVkIGluIHRyYW5zaXQifX0.JfU5rEQBS41vRUp-aBn4DuTloRWS91ni4ykunOVui_tyU_ABBEoz-5FhMOdv44ci-2CCwjpzBW1wesQopR1DMw",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "59736bc55600dc185b71b2cfc327c302639c956c7b516f90d8f545b942540408",
+        "id": "ni:///sha-256;8f8f2211e5f0997c395f834bcb4b27b7f0fea7711c04c326bb2c74fd2e130b32?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;8f8f2211e5f0997c395f834bcb4b27b7f0fea7711c04c326bb2c74fd2e130b32?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "59736bc55600dc185b71b2cfc327c302639c956c7b516f90d8f545b942540408",
+          "attestationId": "ni:///sha-256;8f8f2211e5f0997c395f834bcb4b27b7f0fea7711c04c326bb2c74fd2e130b32?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        }
+      }
+    },
+    {
+      "id": "not-yet-valid",
+      "description": "validFrom after checkedAt.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTEyLTAxVDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0.Px7_NT5W_IwW5rwThxcBYlbh-xLikLwGdLWO1lmPvo9DE483AxAZNf7-t6Eom-UjZ_rv31khc8aPjQxY72z_TQ",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "fail",
+          "reason_code": "not-yet-valid"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "80747ff743f9d4eeca2064137009754910c52b5950f9a3e0d220141e90e0efda",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "80747ff743f9d4eeca2064137009754910c52b5950f9a3e0d220141e90e0efda",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        }
+      }
+    },
+    {
+      "id": "expired",
+      "description": "validUntil before checkedAt.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fSwidmFsaWRVbnRpbCI6IjIwMjYtMTEtMDlUMDY6MDA6MDBaIn0.lWtIEaO4PedvCpDTh7ALwwTkrPbsnnkfbEDlFT-bmogU5EE3P_pQR0PwLkw9KqmxOtesplcKJzpxOoU3aEZgHw",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "fail",
+          "reason_code": "expired"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "ad9307de2169fec8900191f2bbdc000131cf49e68ff68c5cef7761302190c759",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "ad9307de2169fec8900191f2bbdc000131cf49e68ff68c5cef7761302190c759",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        }
+      }
+    },
+    {
+      "id": "status-entry-without-verifier",
+      "description": "A credential with a Bitstring Status List entry verified without a status verifier: status is unknown, never passed.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fSwiY3JlZGVudGlhbFN0YXR1cyI6eyJpZCI6Imh0dHBzOi8vaXNzdWVyLmV4YW1wbGUvc3RhdHVzLzEjNyIsInR5cGUiOiJCaXRzdHJpbmdTdGF0dXNMaXN0RW50cnkiLCJzdGF0dXNQdXJwb3NlIjoicmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6IjciLCJzdGF0dXNMaXN0Q3JlZGVudGlhbCI6Imh0dHBzOi8vaXNzdWVyLmV4YW1wbGUvc3RhdHVzLzEifX0.2yhPRKXGRSACAXwn1F8aoz4shl8wSL9FjZ0GaxpFDB5HvGcnlyuU1xfqcAUYqpZmeVusd20pxw6_1Cya3esoiQ",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "c9409d64b6fcfd542fde79e169afad7b02e088889fc4e61e8bcdaecf456411b4",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "c9409d64b6fcfd542fde79e169afad7b02e088889fc4e61e8bcdaecf456411b4",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:key:zQ3shRDJCKGFRqMzNKxjRFdiAqrpgPTTVCGvvtbvWRWWhNiEz",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        }
+      }
+    },
+    {
+      "id": "alg-es256",
+      "description": "The positive credential re-headed as ES256: another suite, reported unsupported, not failed.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK2p3dCIsImN0eSI6InZjIiwia2lkIjoiZGlkOmtleTp6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6I3pRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoifQ.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0.cEQ7plGSwtnBJ3SQxGCKiDq7mx1RyQCYsyO3cd5d1C13VtYgzUNeotfagTfSdzrxaR8QFNxXFT6KNWYk1VaOow",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "suite-unsupported"
+        },
+        "schema": {
+          "status": "fail",
+          "reason_code": "suite-unsupported"
+        },
+        "time": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "status": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "authority": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "digest_hex": "c48f03603f881f068687b5f7e996d1938e7045a45a5151cae86e74c825a22193"
+      }
+    },
+    {
+      "id": "malformed-two-parts",
+      "description": "Two parts are not a compact JWS.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fX0",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "schema-invalid"
+        },
+        "schema": {
+          "status": "fail",
+          "reason_code": "schema-invalid"
+        },
+        "time": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "status": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "authority": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "digest_hex": "164a1e6131af9049bfd60bb34e6e0852e983905c0db0cde0924180955e72f7df"
+      }
+    },
+    {
+      "id": "unknown-credential-member",
+      "description": "A member the profile does not define (name) is a shape failure.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDprZXk6elEzc2hSREpDS0dGUnFNek5LeGpSRmRpQXFycGdQVFRWQ0d2dnRidldSV1doTmlFeiN6UTNzaFJESkNLR0ZScU16Tkt4alJGZGlBcXJwZ1BUVFZDR3Z2dGJ2V1JXV2hOaUV6In0.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6a2V5OnpRM3NoUkRKQ0tHRlJxTXpOS3hqUkZkaUFxcnBnUFRUVkNHdnZ0YnZXUldXaE5pRXoiLCJ2YWxpZEZyb20iOiIyMDI2LTExLTA5VDAwOjAwOjAwWiIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJPYmplY3RFdmVudCIsImV2ZW50VGltZSI6IjIwMjYtMDMtMDJUMDg6MDA6MDAuMDAwWiIsImV2ZW50VGltZVpvbmVPZmZzZXQiOiIrMDA6MDAiLCJyZWNvcmRUaW1lIjoiMjAyNi0wMy0wMlQwOTowMDowMC4wMDBaIiwiZXZlbnRJRCI6InVybjp1dWlkOjAwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMyIsImVwY0xpc3QiOlsidXJuOmVwYzppZDpzZ3Rpbjo5NTIxMjM0LjAxMjM0NS5TRVIxIl0sImFjdGlvbiI6IkFERCIsImJpelN0ZXAiOiJjb21taXNzaW9uaW5nIiwiZGlzcG9zaXRpb24iOiJhY3RpdmUiLCJyZWFkUG9pbnQiOnsiaWQiOiJ1cm46ZXBjOmlkOnNnbG46OTUyMTIzNC4wMDAwMS4wIn0sImJpekxvY2F0aW9uIjp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDIuMCJ9fSwibmFtZSI6IkNvbW1pc3Npb25pbmcifQ.cEQ7plGSwtnBJ3SQxGCKiDq7mx1RyQCYsyO3cd5d1C13VtYgzUNeotfagTfSdzrxaR8QFNxXFT6KNWYk1VaOow",
+        "checked_at": "2026-11-09T12:00:00Z"
+      },
+      "expected": {
+        "proof": {
+          "status": "fail",
+          "reason_code": "schema-invalid"
+        },
+        "schema": {
+          "status": "fail",
+          "reason_code": "schema-invalid"
+        },
+        "time": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "status": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "authority": {
+          "status": "unknown",
+          "reason_code": "schema-invalid"
+        },
+        "digest_hex": "e018ed99eda85c6394b6583a22cfa4e46ff34c074e62daad4a34ff9bc6a65a17"
+      }
+    },
+    {
+      "id": "did-web-issuer-with-resolver",
+      "description": "A did:web issuer whose kid resolves through the caller's resolver to party A's credential key: the proof holds; without a resolver it is unknown.",
+      "input": {
+        "representation": "epcis-event-vc@1",
+        "media_type": "application/vc+jwt",
+        "jws": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJ2Yytqd3QiLCJjdHkiOiJ2YyIsImtpZCI6ImRpZDp3ZWI6aXNzdWVyLmV4YW1wbGUjY3JlZGVudGlhbCJ9.eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvbnMvY3JlZGVudGlhbHMvdjIiLCJodHRwczovL3JlZi5nczEub3JnL3N0YW5kYXJkcy9lcGNpcy8yLjAuMS9lcGNpcy1jb250ZXh0Lmpzb25sZCJdLCJ0eXBlIjpbIkRpZ2l0YWxUcmFjZWFiaWxpdHlFdmVudCIsIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImlkIjoibmk6Ly8vc2hhLTI1Njs2ZTk3MWU1YjE2Mjg2YzBlOTZmNmU1ZDJlMDM1MjEyMDk4YjhlNjZkMjRmYWM5ODk5MGFhZDg1ZTA5MGQ4Y2NhP3Zlcj1DQlYyLjAiLCJpc3N1ZXIiOiJkaWQ6d2ViOmlzc3Vlci5leGFtcGxlIiwidmFsaWRGcm9tIjoiMjAyNi0xMS0wOVQwMDowMDowMFoiLCJjcmVkZW50aWFsU3ViamVjdCI6eyJ0eXBlIjoiT2JqZWN0RXZlbnQiLCJldmVudFRpbWUiOiIyMDI2LTAzLTAyVDA4OjAwOjAwLjAwMFoiLCJldmVudFRpbWVab25lT2Zmc2V0IjoiKzAwOjAwIiwicmVjb3JkVGltZSI6IjIwMjYtMDMtMDJUMDk6MDA6MDAuMDAwWiIsImV2ZW50SUQiOiJ1cm46dXVpZDowMDAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDMiLCJlcGNMaXN0IjpbInVybjplcGM6aWQ6c2d0aW46OTUyMTIzNC4wMTIzNDUuU0VSMSJdLCJhY3Rpb24iOiJBREQiLCJiaXpTdGVwIjoiY29tbWlzc2lvbmluZyIsImRpc3Bvc2l0aW9uIjoiYWN0aXZlIiwicmVhZFBvaW50Ijp7ImlkIjoidXJuOmVwYzppZDpzZ2xuOjk1MjEyMzQuMDAwMDEuMCJ9LCJiaXpMb2NhdGlvbiI6eyJpZCI6InVybjplcGM6aWQ6c2dsbjo5NTIxMjM0LjAwMDAyLjAifX19.WvcR3vRlUP-3683S5wF7pdW2LY6DipHvyMObwVpTaZBlh6aOFZYXbWk8p8eGyZnHYWSX7V8hMQKogxtY5q9HoQ",
+        "checked_at": "2026-11-09T12:00:00Z",
+        "resolver_keys_hex": {
+          "did:web:issuer.example#credential": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117"
+        }
+      },
+      "expected": {
+        "proof": {
+          "status": "pass"
+        },
+        "schema": {
+          "status": "unknown",
+          "reason_code": "verifier-not-supplied"
+        },
+        "time": {
+          "status": "pass"
+        },
+        "status": {
+          "status": "not-applicable",
+          "reason_code": "status-unset"
+        },
+        "authority": {
+          "status": "not-applicable",
+          "reason_code": "authority-not-required"
+        },
+        "digest_hex": "f24f5d96990187065d7dc19303557e121b1fd29a9d05fe02cdd154ee148efa1a",
+        "id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "issuer": "did:web:issuer.example",
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ],
+        "attestation_type": "ObjectEvent",
+        "verification_key_hex": "02387d10a5c9ae81bf913b4191bee88ac875a7e2686dd6bedcac29f4f9db870117",
+        "anchor": {
+          "digest": "f24f5d96990187065d7dc19303557e121b1fd29a9d05fe02cdd154ee148efa1a",
+          "attestationId": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+          "issuer": "did:web:issuer.example",
+          "subject": "https://id.gs1.org/01/09521234123453/21/SER1",
+          "attestationType": "ObjectEvent",
+          "representation": "epcis-event-vc@1",
+          "mediaType": "application/vc+jwt"
+        },
+        "without_resolver": {
+          "proof": {
+            "status": "unknown",
+            "reason_code": "referenced-artefact-unavailable"
+          }
+        }
+      }
+    }
+  ]
+}

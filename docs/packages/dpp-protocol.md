@@ -321,6 +321,18 @@ Field 6's controller key names the passport controller and locks each state. Lat
 | `buildAttestationAnchor(metadata, signer)` | All eight metadata fields, as text: `digest` (the claim's digest), `attestationId` (`urn:sha256:` and that digest), the claim's `issuer`, `subject` (its `passportId`), `attestationType` (its `eventType`), `representation` (`LIFECYCLE_REPRESENTATION`), `mediaType` (`LIFECYCLE_MEDIA_TYPE`) and `anchoredBy` (the anchoring service's identity key); and that service's signer | Anchor `LockingScript`; missing field throws `anchor metadata must be text`, another signing key throws `signer does not match anchoredBy` |
 | `inspectAttestationAnchor(script)` | An anchor output's script | Its metadata, key derivation and signature findings |
 
+**Signed EPCIS events** (`epcis-event-vc@1`, proposed; [sign an event](../interoperability/epcis.md#sign-an-event))
+
+| Function | Takes | Returns |
+|---|---|---|
+| `epcisEventHashId(event, context?)` | One EPCIS 2.0.1 event, and the contexts it travels under (the pinned EPCIS context and inline prefix objects) | `{ hashId, preHash }`: the CBV 2.0 Event Hash ID and the string it hashes; throws `EpcisEventHashError` with `code` and `path` for what the profile refuses |
+| `epcisEventCredentialKey(identityKey)` | A party's compressed identity key | Its one published credential key, the BRC-42 child under `[1, 'dpp epcis event v1']` with key identifier `credential` |
+| `buildEpcisEventCredential({ event, issuer, validFrom, extensionContexts?, credentialStatus? })` | The event, the party's DID and the signing time | The credential before enveloping, its `id` the hash ID; refuses what the hash refuses |
+| `signEpcisEventCredential(credential, { kid, signer })` | The credential, the DID URL of the party's credential key and a BRC-100 wallet or `ProtoWallet` | The compact JWS, whose exact bytes are the committed representation |
+| `verifyEpcisEventCredential(jws, { checkedAt, resolveKey?, statusVerifier?, eventSchemaValidator?, authorityVerifier? })` | The JWS and the caller's resolvers | Findings for proof, schema, time, status and authority, with the hash ID, the subjects and the digest |
+| `epcisEventAnchorMetadata(verification)` | A verification whose proof held | The eight anchor fields but `anchoredBy`: digest, hash ID, issuer, first subject, event type, representation, media type |
+| `epcisEventCredentialVerifierFor(options)` | The same resolvers | The `credentialVerifier` the report takes; any other representation is `representation-unsupported` |
+
 **Publisher policy and evidence packages**
 
 | Function | Takes | Returns |
