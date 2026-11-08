@@ -61,7 +61,7 @@ There is no released turnkey application service or registry package. [Applicati
 | Header and proof source | Blockchain inclusion checks where applicable | Compatible evidence source; the reference index currently uses WhatsOnChain |
 | Publisher countersigning | Issuing or updating | Authorised application signing or agreed service; running an index does not supply it automatically |
 | Claims registry and anchoring | Selected claim storage and publication workflow | Compatible registry or your implementation of its contract. Storage and transaction anchoring are separate responsibilities. |
-| GS1 resolution service | Selected profile needs link selection, linksets or related resolution | Implement or arrange it. A GS1-shaped identifier does not require every platform to run a resolver. |
+| GS1 resolution service | Passport identifiers are GS1 Digital Links | Your identifier host resolves them, or redirects every `/01/` request to a resolver ([GS1 discovery](../interoperability/gs1-discovery.md)). |
 | DID resolution | Selected identity method requires it | Supported method resolution; `did:key` resolves locally |
 | Additional index peers | Replication, availability or interoperability goals require them | Agree admission compatibility and data flow with operators. Not required for every first integration. |
 | Product and restricted-evidence storage | Promised retention of data and referenced artefacts | Application storage or provider, with access and recovery arrangements |

@@ -46,4 +46,4 @@ A passport reference `:ref` is the URL-encoded passport identifier, for example 
 
 ## The passport page
 
-The API serves the built web app for every path outside `/api`, including a passport's own identifier path `/01/<gtin>/21/<serial>`, so a label's QR code opens the passport page. The page reconstructs the identifier from the current origin and that path, then calls `GET /api/verify` and `GET /api/passports/:ref`.
+The API serves the built web app for every path outside `/api`, including a passport's own identifier path `/01/<gtin>/21/<serial>`, so a label's QR code opens the passport page. The page reconstructs the identifier from the current origin and that path, then calls `GET /api/verify` and `GET /api/passports/:ref`. Serving the page at the identifier's path does not yet meet the standard's GS1 discovery profile, which asks that host to resolve `/01/` paths or redirect them to a resolver; the README's next steps say what to change.

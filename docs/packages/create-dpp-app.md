@@ -70,6 +70,8 @@ The source check installs the packed generator, creates the app, installs local 
 | A journal-driven worker for proofs and re-announcements | Scheduling and monitoring |
 | GS1 Digital Link identifiers under the demonstration prefix 952 | A licensed GS1 prefix |
 
+**The starter's passport host is not yet a resolver.** It answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so it does not meet the rule in [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) that the host a GS1 Digital Link identifier is minted under be a GS1-Conformant Resolver or redirect every `/01/` request to one. The generated README's next steps say what to change.
+
 Change any of these files; the standard prefers none of these choices. [Issue and update passports](build-an-application.md) explains the included writer; [choose packages and services](../start/choose-components-and-services.md) identifies remaining services.
 
 ## Automated setup
