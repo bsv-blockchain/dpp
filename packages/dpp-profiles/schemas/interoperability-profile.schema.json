@@ -55,8 +55,10 @@
       "enum": [
         "proposed",
         "current",
-        "superseded"
-      ]
+        "superseded",
+        "parked"
+      ],
+      "description": "parked: the profile is kept, built and tested, with its artefacts and vectors as published and its manifest changed only in this status, but no release selection requires it, it is not under development and an implementer need not support it. A parked profile is not current: what it supports is what its ledger rows say, and a claim on it rests on those rows."
     },
     "supersededBy": {
       "type": "string",

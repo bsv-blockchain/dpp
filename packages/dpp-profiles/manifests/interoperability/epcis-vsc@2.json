@@ -5,7 +5,7 @@
   "profile": "epcis-vsc@2",
   "kind": "interoperability",
   "role": "mapping",
-  "status": "proposed",
+  "status": "parked",
   "title": "EPCIS event to VSC SEAL mapping with a CBV 2.0 disposition crosswalk",
   "description": "The bounded projection of one retained EPCIS 2.0.1 event into the existing vsc-draft-compat@0.1.0 SEAL, as packages/dpp-credentials mapEpcisEventWithReport implements it under the profile option epcis-vsc@2 and spec/epcis-interoperability.md section 5 defines it. It differs from epcis-vsc@1 in how the disposition is decided: through the crosswalk this manifest records, before a SEAL is built, so a CBV 2.0 disposition is carried verbatim when it is a custody state the event enters, as its type and action agree, and is otherwise refused under a named mapping limit; and an event carrying an error declaration is refused rather than mapped. The outcomes, the round-trip extension, the signed source reference urn:bsv:dpp:epcis-source:1 (naming epcis-vsc@2) and the attribution rule are those of epcis-vsc@1, which stays selectable and is the default. Mapping never issues: issuance needs the actual issuer, key, role, jurisdiction, status and custody evidence and the complete SEAL must pass the VSC profile unchanged.",
   "specification": "spec/epcis-interoperability.md",

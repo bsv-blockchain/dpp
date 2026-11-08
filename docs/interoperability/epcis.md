@@ -8,11 +8,11 @@ Electronic Product Code Information Services (EPCIS) is the GS1 standard for obs
 |---|---|---|
 | `epcis-json@1` | Retains EPCIS 2.0.1 JSON or JSON-LD exactly as received, with its validation findings, event digests and arrival classification. | Current |
 | `epcis-vsc@1` | Maps events to unsigned SEALs, the Verifiable Supply Chain (VSC) profile's event credentials. A separately authorised issuer may sign them. | Parked |
-| `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. | Parked, proposed |
+| `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. | Parked, never current |
 
-The two mapping profiles are parked with the VSC profile: they are still built and tested, but no release requires them and the programme does not currently develop them. [Parked: map events to SEALs](#parked-map-events-to-seals) keeps their procedures for existing users.
+The two mapping profiles are parked with the VSC profile, and their manifests say so with the status `parked`: they are still built and tested, but no release requires them and the programme does not currently develop them. [Parked: map events to SEALs](#parked-map-events-to-seals) keeps their procedures for existing users.
 
-The current candidate, `dpp-release-2026-11`, makes no EPCIS conformance claim: the ledger's only EPCIS claim, `epcis-source-exchange-1`, also covers the parked `epcis-vsc@1` mapping, so its selection withholds it. `epcis-json@1` itself is not parked, and its rows stay tested.
+The current candidate, `dpp-release-2026-11`, claims `epcis-source-import-1`: the `epcis-json@1` source helpers, which are strict parsing under the disclosed limits, validation against the pinned schema, event-body digests and arrival classification. Its selection withholds the earlier `epcis-source-exchange-1`, whose rows also cover the parked `epcis-vsc@1` mapping. The durable import record, the separation from token operations and the pull client are left out of the new claim because only the reference application, whose source is private, exercises them; their ledger rows stay tested.
 
 ## Inputs and runtime
 
@@ -52,6 +52,20 @@ JS
 | Vector named `five-event-document` | Seven is still the expected count. |
 
 This example encodes a synthetic fixture object. An importer must retain actual received bytes, rather than serialise a parsed object and call it the original.
+
+For the complete import exercise, [examples/import-epcis.mjs](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/import-epcis.mjs) reports one sentence per finding: source digest, contexts, schema validation, and each event's identity and body digest. It maps nothing. Run the fixture:
+
+```sh
+node examples/import-epcis.mjs
+```
+
+Or supply your EPCIS 2.0.1 document:
+
+```sh
+node examples/import-epcis.mjs <document.json>
+```
+
+It ends `No event was mapped`, naming the parked mapping and the `not-attempted` outcome an import record would carry, then `Nothing was retained, issued, anchored or written to a token by this example.`
 
 ## Keep the source with the result
 
@@ -123,16 +137,16 @@ Expect one line per event:
 | First `ObjectEvent` | `lossless` |
 | Remaining events | `transformed`, naming meaning retained only in the round-trip extension, such as `multi-product-event` or `business-transactions, source-destination-parties`. |
 
-For the complete exercise, [examples/import-epcis.mjs](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/import-epcis.mjs) sets `transformationAction` to `ADD`. It reports one sentence per finding: source digest, contexts, schema validation, each event's identity and body digest, and mapping outcome. Run the fixture:
+For the complete exercise, run the import example with `--map-vsc`, which sets `transformationAction` to `ADD` and adds each event's mapping outcome to the import findings. Run the fixture:
 
 ```sh
-node examples/import-epcis.mjs
+node examples/import-epcis.mjs --map-vsc
 ```
 
 Or supply your EPCIS 2.0.1 document:
 
 ```sh
-node examples/import-epcis.mjs <document.json>
+node examples/import-epcis.mjs <document.json> --map-vsc
 ```
 
 It ends `Nothing was retained, issued, anchored or written to a token by this example.`

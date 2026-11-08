@@ -5,7 +5,7 @@
   "profile": "epcis-vsc@1",
   "kind": "interoperability",
   "role": "mapping",
-  "status": "current",
+  "status": "parked",
   "title": "EPCIS event to VSC SEAL mapping with explicit outcomes",
   "description": "The bounded projection of one retained EPCIS 2.0.1 event into the existing vsc-draft-compat@0.1.0 SEAL, as packages/vsc mapEpcisEventWithReport implements it and spec/epcis-interoperability.md section 3 defines it. Every mapping returns one of lossless, transformed, unsupported or insufficient-data with its losses or missing inputs named; the source event is retained in the signed round-trip extension and the exact source bytes and pointer are named in the signed source reference urn:bsv:dpp:epcis-source:1. Mapping never issues: issuance needs the actual issuer, key, role, jurisdiction, status and custody evidence and the complete SEAL must pass the VSC profile unchanged.",
   "specification": "spec/epcis-interoperability.md",

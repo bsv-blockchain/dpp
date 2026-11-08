@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "6cd9ffee02c866046f9ba343d8bea9c4c81c6fbb4cea573f0901a4434056f31c"
+      "digest": "efe2b1044eb94b3c6739c0e10b8a500b6574a52af1e6ea6f6808492e37ed2e78"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -426,7 +426,7 @@
       "version": "1",
       "kind": "local",
       "path": "packages/dpp-profiles/schemas/exchange-profile.schema.json",
-      "digest": "51b4fcbd4453b58d7c04ba165a5098364a926c40e81316574a76678ea7b2ffbe"
+      "digest": "c1fee14cc50205d8c5c440dbbf15a71d9c9420a307a651458fe9e8d5b1021e93"
     },
     {
       "id": "profiles-operator-schema",
@@ -522,7 +522,7 @@
       "version": "0.1.0",
       "kind": "local",
       "path": "packages/dpp-profiles/src/combinations.ts",
-      "digest": "f274c069d98e1ac23bfb519d4fad1d89c56a9cb42f5e960ed510d2c6e1a0f988"
+      "digest": "1fc6de919e1019e5c0ccf71b9c4a1026d87d9563dff401e4294ed6f78d4a7217"
     },
     {
       "id": "spec-gs1-discovery",
@@ -538,7 +538,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
+      "digest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
     },
     {
       "id": "spec-external-credential-profile",
@@ -562,7 +562,7 @@
       "version": "0.1.0-draft",
       "kind": "local",
       "path": "contracts/interoperability.yaml",
-      "digest": "adc11c1a78ba67989956b72c4261b36943128f44468baea3ae9f01c93c627b6a"
+      "digest": "aa4fcdad2e1642fa3bc16fa23c093d2142711d970711a8a9b7f1f2349a7fb6aa"
     },
     {
       "id": "contract-epcis-import",
@@ -570,7 +570,7 @@
       "version": "1",
       "kind": "local",
       "path": "contracts/epcis-import.schema.json",
-      "digest": "23c4167319c6b269a908426d6d23499fe8c19ab9949342f3de8e13b4885b4bdb"
+      "digest": "7406e539087a08b5b6673d6e8c86f9e8f6797a2ef3af9b0b27091e5d1ce9482b"
     },
     {
       "id": "contract-passport-source",
@@ -602,7 +602,7 @@
       "version": "1",
       "kind": "local",
       "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
-      "digest": "23e168e1b81137fd199241f77205fce331c4b4be4170027cc49134ee3276646a"
+      "digest": "08ec9b54464fe0a241d1acddeff0b9ab5aadaf2463bc8d433296688d8a3d1f69"
     },
     {
       "id": "profiles-manifest-v2-schema",
@@ -2069,7 +2069,7 @@
       "sourceUri": "spec/rules.md",
       "sourceVersion": "working draft",
       "clause": "§4",
-      "summary": "Two representations with distinct hashed bytes: canonical complete signed native claim, exact UTF-8 VSC credential; duplicate JSON keys refused; a presentation never inherits the anchored digest; the native canonical rule sorts at every level, so a claim with evidence nests one object and a claim without one keeps its flat bytes.",
+      "summary": "A native claim and a secured credential hash distinct bytes: the canonical complete signed native claim, and the exact UTF-8 bytes of the issued credential including its proof; duplicate JSON keys refused; a presentation never inherits the anchored digest; the native canonical rule sorts at every level, so a claim with evidence nests one object and a claim without one keeps its flat bytes.",
       "layer": "core",
       "roles": [
         "attestation-issuer",
@@ -2081,19 +2081,22 @@
       "implementationRefs": [
         "packages/dpp-protocol/src/attestation.ts#lifecycleClaimBytes",
         "packages/dpp-protocol/src/canonical.ts",
-        "packages/dpp-credentials/src/validation.ts#parseStrictJsonBytes"
+        "packages/dpp-credentials/src/validation.ts#parseStrictJsonBytes",
+        "packages/dpp-credentials/src/exchange.ts#parseExternalCredentialBytes"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/attestation.test.ts",
         "packages/dpp-protocol/test/canonical.test.ts",
+        "packages/dpp-credentials/test/exchange.test.ts",
         "packages/dpp-credentials/test/verification.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json#representationHex"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-01",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Reworded 2026-11-09 to name no credential representation; the meaning for a native claim is unchanged. The §4 table still lists only vsc-seal-json-v1, now parked, as a secured representation; exchange.md §1 gives vc-di-ecdsa-rdfc-2019@1 the same exact-byte rule, which EXTC-1 and EXTC-4 carry, and exchange.test.ts exercises its duplicate-key refusal through parseExternalCredentialBytes."
     },
     {
       "id": "RULES-5-anchor",
@@ -3538,18 +3541,21 @@
       "applicability": "whenever a credential carries a status entry",
       "profileId": "core",
       "implementationRefs": [
+        "packages/dpp-credentials/src/exchange.ts#verifyBitstringStatus",
         "packages/dpp-credentials/src/verification.ts#verifyCredentialStatus",
         "the reference registry (not published)"
       ],
       "testRefs": [
+        "packages/dpp-credentials/test/exchange.test.ts",
+        "packages/dpp-credentials/test/exchange-vectors.test.ts",
         "packages/dpp-credentials/test/verification.test.ts",
         "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "The registry's historical path only verifies when an operator verifier is configured and abstains otherwise."
+      "notes": "The registry's historical path only verifies when an operator verifier is configured and abstains otherwise. verifyBitstringStatus, which the external credential verifier uses, applies the same algorithm with the list's proof checked by that profile's suite; its tests exercise an authenticated list, a set revocation bit, a list from an issuer the policy has not delegated to, an unavailable list, stale evidence and a missing policy. The refusal of a list whose proof fails or whose purpose differs is exercised through the parked SEAL verifier, verifyCredentialStatus."
     },
     {
       "id": "STATUS-purpose-suspension",
@@ -4889,7 +4895,7 @@
       "sourceUri": "packages/dpp-profiles/src/combinations.ts",
       "sourceVersion": "0.1.0",
       "clause": "whole module",
-      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a write or claim under a superseded industry version, a claim on a proposed exchange or operator profile or on unpinned artefacts, single-operator@1 declaring peers, GASP or advertisement, single-operator@2 without peers or discovery or with two operators, a federation of one or without discovery, and unknown identifiers; single-operator@2 with named or discovered peers passes.",
+      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a write or claim under a superseded industry version, a claim on a proposed exchange or operator profile or on unpinned artefacts, single-operator@1 declaring peers, GASP or advertisement, single-operator@2 without peers or discovery or with two operators, a federation of one or without discovery, and unknown identifiers; single-operator@2 with named or discovered peers passes, and a parked exchange profile passes with a note naming it parked for every purpose, never read as current.",
       "layer": "profile",
       "roles": [
         "all"
@@ -4904,9 +4910,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "A current exchange profile with unretrieved upstream artefacts supports the implemented-subset claim with a note; the ledger's claim gate keeps the full claim blocked."
+      "notes": "A current exchange profile with unretrieved upstream artefacts supports the implemented-subset claim with a note; the ledger's claim gate keeps the full claim blocked. checkSelection refuses nothing for a parked exchange profile, such as vsc-draft-compat@0.1.0 since 2026-11-09, and names it parked in a note with any unretrieved artefacts."
     },
     {
       "id": "OVL-1-refused-spend-eviction",
@@ -5294,7 +5300,7 @@
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§2",
+      "clause": "§1",
       "summary": "A source is read as exact bytes under the disclosed limits; malformed UTF-8, duplicate keys, depth over 64, non-finite or inexact numbers and oversized documents are refused before anything is retained; a safely parsed document that fails validation is retained with its findings and is not publishable.",
       "layer": "profile",
       "roles": [
@@ -5315,7 +5321,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -5380,7 +5386,7 @@
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§3",
+      "clause": "§2",
       "summary": "Under a scoped event identity a repeat is a duplicate, a changed record time or error declaration is a new observation, and a changed body is a conflict retained with both digests visible; an event without an identifier receives a labelled local identity.",
       "layer": "profile",
       "roles": [
@@ -5401,7 +5407,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
     },
     {
       "id": "EPCIS-5-source-reference",
@@ -5430,7 +5436,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
@@ -5459,7 +5465,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85",
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279",
       "notes": "Until 2026-11-08 the reference mapped an inspection, repair or sensor reading reporting active, contrary to the published maintenance-observation limit of epcis-vsc@1; a repair with nothing else to report came back lossless. Such an observation (an OBSERVE event, or a TransformationEvent, whose action is the caller's decision) is now refused; an ObjectEvent that commissions or decommissions its objects at those steps is not an observation and maps as before. The published v1 vectors, which hold no such event, are unchanged. v2.json pins the outcomes under epcis-vsc@2."
     },
     {
@@ -5486,17 +5492,17 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "23c4167319c6b269a908426d6d23499fe8c19ab9949342f3de8e13b4885b4bdb",
-      "notes": "The record validates against the schema; the exact bytes and digest survive a store round trip and a simulated restart on a real mongod."
+      "sourceDigest": "7406e539087a08b5b6673d6e8c86f9e8f6797a2ef3af9b0b27091e5d1ce9482b",
+      "notes": "The record validates against the schema; the exact bytes and digest survive a store round trip and a simulated restart on a real mongod. Re-read 2026-11-09 after the profileRefs and mapping descriptions stopped presenting epcis-vsc@1 as the usual profile and said that an import without a mapping profile records not-attempted; the record's shape is unchanged. The public test ref validates the interoperability manifests only; no public test builds or validates an import record, which only the reference application exercises."
     },
     {
       "id": "EPCIS-8-no-token-operation",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§6",
+      "clause": "§7",
       "summary": "Import, pull and rendering never invoke Issue, Update, Transfer or Retire; publication of a mapped event is a separately authorised action under a named policy, and an EPCIS error declaration is not a VSC correction or an authority grant.",
       "layer": "role",
       "roles": [
@@ -5515,7 +5521,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85",
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
@@ -5523,7 +5529,7 @@
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§4",
+      "clause": "§3",
       "summary": "The pull client consumes the standard events query, follows next links within the run limits, checkpoints only after a durable page, revalidates every target, forwards no credential across origins, and answers one of the eight source outcomes, never mistaking one for another.",
       "layer": "role",
       "roles": [
@@ -5541,7 +5547,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85",
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
@@ -5572,7 +5578,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
+      "sourceDigest": "274ddd37e30c3473ea4796ccb0b98ef31e8c96cdc74183bf79ae9062d4d3f279"
     },
     {
       "id": "EPCIS-11-cbv-dispositions",
@@ -6512,6 +6518,18 @@
         "EPCIS-7-import-record",
         "EPCIS-8-no-token-operation",
         "EPCIS-9-pull-outcomes"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "epcis-source-import-1",
+      "description": "The epcis-json@1 source helpers without the parked epcis-vsc mappings: exact-byte reading under the disclosed limits with unsafe sources refused before retention, validation against the pinned schema without repair, stable event-body digests and arrival classification. The durable import record, the separation from token operations and the bounded pull client (EPCIS-7, EPCIS-8 and EPCIS-9) are exercised only in the reference application, which is not published, so this claim does not require them.",
+      "profileId": "epcis-json@1",
+      "requires": [
+        "EPCIS-1-strict-parse",
+        "EPCIS-2-schema-validation",
+        "EPCIS-3-body-digest",
+        "EPCIS-4-arrival-classification"
       ],
       "minimumStatus": "tested"
     },

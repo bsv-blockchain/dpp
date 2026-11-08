@@ -91,6 +91,14 @@ export function checkSelection(selection: ProfileSelection): SelectionResult {
     if (!(EXCHANGE_PROFILE_IDS as readonly string[]).includes(id)) { conflict('exchange-unknown', `${id} is not an exchange profile in this catalogue`); continue }
     const profile = readExchangeProfile(id as ExchangeProfileId) as { status: string; artefacts?: Array<{ id: string; retrieval?: string }> }
     const unpinned = (profile.artefacts ?? []).filter((a) => a.retrieval === 'not-retrieved').map((a) => a.id)
+    if (profile.status === 'parked') {
+      // A parked profile is kept, built and tested, and no release requires
+      // it. Selecting one contradicts nothing, because its ledger rows still
+      // say what it supports, but it is never read as current: the note says
+      // so for every purpose.
+      notes.push(`${id} is parked: kept, built and tested, required by no release and not under development${selection.purpose === 'claim' ? '; a claim on it rests on its own ledger rows, which no release selection requires' : ''}${unpinned.length > 0 ? `; artefacts not retrieved (${unpinned.join(', ')}) keep its full-conformance claim blocked in the ledger` : ''}`)
+      continue
+    }
     if (selection.purpose === 'claim') {
       if (profile.status !== 'current') {
         conflict('exchange-proposed', `${id} is ${profile.status}; no conformance claim rests on a profile that is not current`)
