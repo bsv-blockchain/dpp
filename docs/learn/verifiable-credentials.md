@@ -75,7 +75,7 @@ node examples/verify-external-credential.mjs
 
 The parked VSC profile keeps working for existing callers, though the current candidate, `dpp-release-2026-11`, no longer claims it:
 
-- **Issue a SEAL:** pass the prepared issuance inputs to `issueSealEd25519` or `issueSealBbs` from `@bsv/dpp-credentials`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md#issuance-and-verification) shows the call with its document loader and policies.
+- **Issue a SEAL:** pass the prepared issuance inputs to `issueSealEd25519` or `issueSealBbs` from `@bsv/dpp-credentials`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/packages/dpp-credentials/README.md#issuance-and-verification) shows the call with its document loader and policies.
 - **Verify a SEAL:** call `verifySeal` from `@bsv/dpp-credentials` with the credential and verification inputs above.
 
 Read proof, issuer authority, subject binding, time and status separately. Stop short of claiming verification for a finding left `unknown` by missing status or authority evidence, even if the proof passes ([evidence and its limits](evidence-and-freshness.md)). Anchor only the original secured bytes: a derived presentation or reformatted copy has different bytes and a different commitment.
@@ -93,7 +93,7 @@ The reference application, whose source is not public, issues and verifies compa
 | UNTP traceability event | `gap` (row `UNTP-0.7.0-dte`): no event export exists, and the mapping needs actual event evidence |
 | An optional ES256 application signer | Not implemented; the tested ES256K signer does not provide it (row `EXCH-4-signer`) |
 
-The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) and the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md) define the two representations. The BSV DID method does not replace the DID method, proof purpose or curve a profile selects.
+The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) and the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/vsc-profile.md) define the two representations. The BSV DID method does not replace the DID method, proof purpose or curve a profile selects.
 
 ## Next
 

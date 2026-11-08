@@ -61,7 +61,7 @@ Retain the exact source bytes and their findings with anything derived from them
 |---|---|
 | Import and custody | Imports establish no custody or passport transfer. No import, pull, mapping or export writes `ISSUE`, `UPDATE`, `TRANSFER` or `RETIRE`. |
 | Later passport workflow | May cite retained source when requesting a state. The passport service independently checks tip, actor authority and recipient acceptance. |
-| Event body digest | SHA-256 of the event's RFC 8785 canonical JSON without `recordTime` and `errorDeclaration`, together with sorted digests of the contexts used to read it ([specification](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md), section 2). The stripped event alone cannot reproduce it. |
+| Event body digest | SHA-256 of the event's RFC 8785 canonical JSON without `recordTime` and `errorDeclaration`, together with sorted digests of the contexts used to read it ([specification](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md), section 2). The stripped event alone cannot reproduce it. |
 
 ## The application's HTTP routes
 
@@ -153,7 +153,7 @@ Pass `{ profile: 'epcis-vsc@2' }` as the third argument to decide each dispositi
 | Anything that is not a CBV 2.0 disposition, including `stored`, `transshipped`, `transformed` and `received` | `unsupported`, `non-cbv-disposition`. |
 | Any event carrying an `errorDeclaration` | `unsupported`, `error-declaration`: it says an earlier event was wrong, so a SEAL would assert a step the source retracted. |
 
-Each `unsupported` reason starts with the limit id in the table. An `ADD` or `DELETE` event without a disposition stays `insufficient-data`. Retain refused events as evidence; the VSC custody rules are never bent to give one a SEAL. The [specification](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md), section 5, gives the reasons. The vector file `fixtures/vectors/dpp/interoperability/epcis/v2.json` pins every outcome.
+Each `unsupported` reason starts with the limit id in the table. An `ADD` or `DELETE` event without a disposition stays `insufficient-data`. Retain refused events as evidence; the VSC custody rules are never bent to give one a SEAL. The [specification](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md), section 5, gives the reasons. The vector file `fixtures/vectors/dpp/interoperability/epcis/v2.json` pins every outcome.
 
 Run the package mapping tests:
 
@@ -167,7 +167,7 @@ Expected result: 61 tests, all passing.
 
 | Task | Source |
 |---|---|
-| Select parsing and digest behaviour, and the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md) |
+| Select parsing and digest behaviour, and the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md) |
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) |
 | Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) |
 | Use reference parsing, and the parked mapping | [Credentials package](../packages/dpp-credentials.md) |
