@@ -112,7 +112,7 @@ const makerPriv = PrivateKey.fromHex('11'.repeat(32))
 const serverPriv = PrivateKey.fromHex('22'.repeat(32))
 const ownerPriv = PrivateKey.fromHex('33'.repeat(32))
 const SERVER_ID = serverPriv.toPublicKey().toString()
-const PASSPORT_ID = 'https://id.gs1.org/01/09506000134352/21/HTTP-1'
+const PASSPORT_ID = 'https://dpp.example.org/01/09521234000013/21/HTTP-1'
 const UID = 'HTTP-UID-1'
 const ANYONE = new LockingScript([{ op: 0x51 }])
 

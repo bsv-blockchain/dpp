@@ -31,6 +31,7 @@ Build a resolver with published `@bsv/dpp-profiles` helpers, or name an external
 | Helper | Task |
 |---|---|
 | `resolutionRecordProblems` | Check records before storage |
+| `resolutionSetProblems` | Check the stored set as a whole, so every request under a GTIN walks up to a default |
 | `matchRecords`, `resolveLinks` | Answer requests |
 | `linksetDocument` | Build linksets |
 | `describeResolver` | Build description files |
@@ -56,6 +57,7 @@ The [specification](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf8264
    | `gs1:defaultLink` | Default link |
    | `gs1:dpp` | Digital product passport page |
    | `gs1:pip` | Product information |
+   | `gs1:epcisRepository` | EPCIS repository of visibility event data. It replaces the deprecated `gs1:epcis`, but the two are not aliases: ask for `gs1:epcis` by name only to read an older linkset, and record which relation you found |
    | `https://dpp.bsvb.net/link/evidencePackage/1`, exported as `DPP_EVIDENCE_PACKAGE_LINK_TYPE` | Portable evidence package. This standard defines the relation because GS1 has none. |
 
    The result is one link with anchor and scope, ambiguous candidates, or not found with available relations. Keep ambiguity visible instead of choosing an unsupported match. A GTIN-anchor link is inherited model information, not an item fact.
@@ -95,11 +97,11 @@ The qualifier is the serial; `demonstration: true` identifies prefix 952. No req
 node examples/resolve-digital-link.mjs
 ```
 
-The [example](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/examples/resolve-digital-link.mjs) checks three demonstration model/lot/item records, parses the URI, resolves for a public audience, builds a linkset, selects links and builds the description. Expect thirteen `Holds:` sentences, including the redirect to the item's passport page, the evidence-package link at item level and no restricted links reaching the public, then `Every sentence above holds.` Supply a URI argument to try another, including compressed input.
+The [example](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/examples/resolve-digital-link.mjs) checks three demonstration model/lot/item records one by one and as a set, parses the URI, resolves for a public audience, builds a linkset, selects links and builds the description. Expect fourteen `Holds:` sentences, including the redirect to the item's passport page, the evidence-package link at item level and no restricted links reaching the public, then `Every sentence above holds.` Supply a URI argument to try another, including compressed input.
 
 ## Add a passport link to a resolver you already run
 
-Register links on the item's serial-level record: the passport page under `gs1:dpp` as the item's default, and evidence under `https://dpp.bsvb.net/link/evidencePackage/1`. This makes them item facts. Register one default on the GTIN-level record too, such as a product page under `gs1:pip`, so requests for the GTIN or a lot still redirect.
+Register links on the item's serial-level record: the passport page under `gs1:dpp` as the item's default, and evidence under `https://dpp.bsvb.net/link/evidencePackage/1`. This makes them item facts. Register one public default on the GTIN-level record too, such as a product page under `gs1:pip`, so requests for the GTIN or a lot still redirect; `resolutionSetProblems` refuses a set without it. Register an event repository under `gs1:epcisRepository`, not the deprecated `gs1:epcis`.
 
 `examples/resolve-digital-link.mjs` shows these item-record fields:
 

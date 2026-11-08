@@ -160,7 +160,7 @@ docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-
 
 ### 5. Put a passport on the first index and watch it arrive
 
-If your writer announces to the first index, look up one of its passports on both indexes (item 3). For a wallet-free rehearsal, save the following files at the built checkout root. They select the hosted reference's five-state passport; the bounded package is suitable only for passports with no more than 500 states.
+If your writer announces to the first index, look up one of its passports on both indexes (item 3). For a wallet-free rehearsal, save the following files at the built checkout root. They select the hosted reference's three-state passport under the demonstration prefix 952; the bounded package is suitable only for passports with no more than 500 states.
 
 Save as `restore-package.mjs`. Its source URL, passport and expected export signer default to the hosted reference. It stops on inspection failures or incomplete coverage before submitting anything:
 
@@ -170,7 +170,7 @@ import { inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 // The key the source index signs its packages with. This default is the hosted reference's.
 const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
@@ -205,7 +205,7 @@ Save as `lookup.mjs`:
 import { Transaction } from '@bsv/sdk'
 
 const indexUrl = process.env.INDEX_URL ?? 'https://dpp-overlay.bsvb.net'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 
 const response = await fetch(new URL('/lookup', indexUrl), {
   method: 'POST',
@@ -227,7 +227,7 @@ Then copy the live passport into the first index:
    SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs
    ```
 
-   Expect a checked package and five lines ending `200 tm_dpp=admitted`. Stop on a failure before comparing indexes.
+   Expect a checked package and three lines ending `200 tm_dpp=admitted`. Stop on a failure before comparing indexes.
 3. After the second index's next round, a minute at most, run the [passport lookup](../reference/contracts.md#find-passport-records) against each index:
 
    ```sh
@@ -235,8 +235,8 @@ Then copy the live passport into the first index:
    INDEX_URL=http://localhost:8081 node lookup.mjs
    ```
 
-   Both print `output-list with 5 outputs from ...` and the same five transaction identifiers (checked with two local indexes, the second under the step 3 policy).
-4. Check the copy independently with `node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A http://localhost:8081`, which ends `Inclusion across the chain: verified.`
+   Both print `output-list with 3 outputs from ...` and the same three transaction identifiers (checked with two local indexes, the second under the step 3 policy).
+4. Check the copy independently with `node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 http://localhost:8081`, which ends `Inclusion across the chain: verified.`
 
 The copy stays in both indexes until `down -v` on a preset removes everything that index holds. Use that only on rehearsal indexes, then set your own key again.
 

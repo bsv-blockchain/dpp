@@ -50,7 +50,7 @@ describe('the exchange and operator profile catalogue', () => {
   it('validates a native evidence extension and refuses a circular or malformed one', () => {
     const good = {
       type: 'urn:bsv:dpp:native-evidence:1',
-      passportId: 'https://id.gs1.org/01/09506000134352/21/JERSEY-001',
+      passportId: 'https://dpp.example.org/01/09521234000013/21/JERSEY-001',
       state: { txid: 'ab'.repeat(32), outputIndex: 0, op: 'REPAIRED' },
       nativeClaim: { representation: 'dpp-lifecycle-json-v1', digest: 'cd'.repeat(32), eventType: 'Transformation' },
       anchor: { txid: 'ef'.repeat(32), outputIndex: 1, format: 'bsv-attestation-anchor-v1' },

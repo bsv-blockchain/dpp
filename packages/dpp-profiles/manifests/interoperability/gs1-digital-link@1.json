@@ -27,7 +27,7 @@
   "inputs": [
     { "id": "uncompressed-uri", "mediaType": "text/uri-list", "format": "GS1 Digital Link URI, uncompressed, primary key 01", "notes": "Optional qualifiers 22, 10, 21 in that order; data attributes and linkType in the query; one trailing slash tolerated." },
     { "id": "compressed-epc-uri", "mediaType": "text/uri-list", "format": "GS1 Digital Link URI, special compressed form carrying an EPC binary string (eh or ex)", "notes": "SGTIN-96 and SGTIN-198 only." },
-    { "id": "resolution-record", "mediaType": "application/json", "format": "ResolutionRecord", "notes": "A key, its qualifiers, an established passport binding where one exists, authorised links with disclosure and a configuration revision; validated at ingestion by resolutionRecordProblems." },
+    { "id": "resolution-record", "mediaType": "application/json", "format": "ResolutionRecord", "notes": "A key, its qualifiers, an established passport binding where one exists, authorised links with disclosure and a configuration revision; validated at ingestion by resolutionRecordProblems, and as a set by resolutionSetProblems." },
     { "id": "linkset", "mediaType": "application/linkset+json", "format": "RFC 9264 linkset as the GS1 resolver schema shapes it", "notes": "What the discovery client reads from this or any other GS1-Conformant Resolver." }
   ],
   "outputs": [

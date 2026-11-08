@@ -43,7 +43,18 @@ export const GS1_LINK_TYPES = {
   masterData: `${GS1_VOCABULARY}masterData`,
   sustainabilityInfo: `${GS1_VOCABULARY}sustainabilityInfo`,
   certificationInfo: `${GS1_VOCABULARY}certificationInfo`,
+  /**
+   * @deprecated GS1 Web Vocabulary 1.18 marks `gs1:epcis` archaic and
+   * deprecated and names `gs1:epcisRepository` as its replacement; register
+   * `epcisRepository`. Kept so code that names it still compiles and a linkset
+   * written under it can still be read by asking for it. The two are not
+   * aliases: the vocabulary replaces one with the other without declaring them
+   * equivalent, so nothing here answers a request or a selection for one with
+   * a link registered under the other (`spec/gs1-discovery.md` §4).
+   */
   epcis: `${GS1_VOCABULARY}epcis`,
+  /** An EPCIS repository of visibility event data: an actual EPCIS service or standard query resource (`spec/gs1-discovery.md` §4). */
+  epcisRepository: `${GS1_VOCABULARY}epcisRepository`,
   traceability: `${GS1_VOCABULARY}traceability`,
   recallStatus: `${GS1_VOCABULARY}recallStatus`,
   handledBy: `${GS1_VOCABULARY}handledBy`,
@@ -439,7 +450,10 @@ export interface ResolutionRecord {
  * serial never registered beside a variant or a lot, at most one single
  * default link with no optional attributes, and every link with an `https`
  * target, a title, a relation the linkset schema can carry, and declared
- * disclosure. An empty list means the record is admissible.
+ * disclosure. A link under the deprecated `gs1:epcis` is admitted, so a
+ * resolver can keep a record written before the deprecation; a writer
+ * registers `gs1:epcisRepository` (`spec/gs1-discovery.md` §4). An empty list
+ * means the record is admissible.
  */
 export function resolutionRecordProblems(record: ResolutionRecord): string[] {
   const problems: string[] = []
@@ -471,6 +485,49 @@ export function resolutionRecordProblems(record: ResolutionRecord): string[] {
     if (link.hreflang != null && link.hreflang.length === 0) problems.push(`${where}: hreflang is an array of at least one tag`)
     if (link.context != null && link.context.length === 0) problems.push(`${where}: context is an array of at least one value`)
     if (link.disclosure !== 'public' && link.disclosure !== 'restricted') problems.push(`${where}: disclosure must be public or restricted`)
+  }
+  return problems
+}
+
+/** A record's key tuple with its qualifiers in the syntax's order, spelled without validating anything, so a set check never throws on a record the record check refuses. */
+function recordTuple(record: ResolutionRecord): string {
+  const rank = (ai: string): number => (GTIN_QUALIFIER_ORDER as readonly string[]).indexOf(ai)
+  const qualifiers = [...record.qualifiers].sort((a, b) => rank(a.ai) - rank(b.ai))
+  return [`01:${record.key.value}`, ...qualifiers.map((q) => `${q.ai}:${q.value}`)].join('|')
+}
+
+/**
+ * The rules the records a resolver answers from must meet together, which no
+ * one record can show. Every GTIN the set holds a record for, at any level,
+ * has exactly one single default at the GTIN level, and that default is
+ * public, so a request for the GTIN, for a lot or serial nobody registered,
+ * or for a registered entity without a default of its own walks up to a
+ * definite answer for every audience (resolver standard §2.5.9: a default is
+ * available at the entry level or above). And no identified entity has more
+ * than one single default across the records registered at it. Each record is
+ * checked by `resolutionRecordProblems` first. Every rule concerns the records
+ * of one GTIN, so this function over one GTIN's records alone gives that
+ * GTIN's problems: a resolver compares them before and after a write, a
+ * removal included, and refuses the write when a GTIN whose records were
+ * admissible would be left inadmissible, so a set written before the rule can
+ * be repaired a record at a time. An empty list means the set is admissible.
+ */
+export function resolutionSetProblems(records: readonly ResolutionRecord[]): string[] {
+  const problems: string[] = []
+  const gtins: string[] = []
+  const defaults = new Map<string, ResolutionLink[]>()
+  for (const record of records) {
+    if (!gtins.includes(record.key.value)) gtins.push(record.key.value)
+    const tuple = recordTuple(record)
+    defaults.set(tuple, [...(defaults.get(tuple) ?? []), ...record.links.filter((l) => l.default === 'single')])
+  }
+  for (const [tuple, singles] of defaults) {
+    if (singles.length > 1) problems.push(`${tuple} has ${singles.length} single default links across its records; an identified entity has at most one`)
+  }
+  for (const gtin of gtins) {
+    const singles = defaults.get(`01:${gtin}`) ?? []
+    if (singles.length === 0) problems.push(`GTIN ${gtin} has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)`)
+    else if (singles.length === 1 && singles[0].disclosure !== 'public') problems.push(`the GTIN-level default link of ${gtin} is restricted, so a public request under it can have no default to walk up to (resolver standard section 2.5.9)`)
   }
   return problems
 }

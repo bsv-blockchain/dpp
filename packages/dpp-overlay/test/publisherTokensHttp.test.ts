@@ -22,7 +22,7 @@ afterEach(async () => {
 
 const walletA = new ProtoWallet(K1)
 const walletB = new ProtoWallet(K2)
-const PASSPORT_B = 'https://id.gs1.org/01/09506000134352/21/TOKENS-B'
+const PASSPORT_B = 'https://dpp.example.org/01/09521234000013/21/TOKENS-B'
 
 /** One policy naming both publishers from the start, so both write to one index. */
 function twoPublishers(): TestNode {

@@ -9,7 +9,7 @@ import { InMemoryDppStorage, type DppRecord } from '../src/storage.js'
  * MongoDppStorage would run whatever object reaches it as a filter.
  */
 
-const PASSPORT_ID = 'https://id.gs1.org/01/09506000134352/21/LS-1'
+const PASSPORT_ID = 'https://dpp.example.org/01/09521234000013/21/LS-1'
 const UID = 'LS-UID-1'
 
 function record(n: number, overrides: Partial<DppRecord> = {}): DppRecord {

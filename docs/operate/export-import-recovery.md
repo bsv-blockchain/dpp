@@ -80,7 +80,7 @@ import { inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 // The key the source index signs its packages with. This default is the hosted reference's.
 const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
@@ -118,11 +118,9 @@ SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs
 
 ```
 package checked: signed by 02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116, complete for its snapshot
-proofs/1730153134890f8c1223d92850ec5a9d4c9cc84242fdf56d05e08e407aadaada.beef 200 tm_dpp=admitted
-proofs/79d3f93d3b6c517ea67c411f775887f489ac5f915b0b5e92e494f59184b6fab4.beef 200 tm_dpp=admitted
-proofs/1dea31ba2fdf78aedc6ce0692485e6309b38f8116703081d371939319461154c.beef 200 tm_dpp=admitted
-proofs/2a2693e6fa39bad3f2cf9d2acd21e161111759cba9f5aad86140d45f811ce528.beef 200 tm_dpp=admitted
-proofs/1947027e0cd40613795bc2ec005defff03ada9695c1f1e323da26797b9bf4150.beef 200 tm_dpp=admitted
+proofs/debfc9c9125a490cb6642669fcc1da49ece52aff06ad52715abef1ca0c0091e2.beef 200 tm_dpp=admitted
+proofs/52d31ed5272b874f1036712f55e32e5a075d3278027ed9ea7df87f1a4d26161c.beef 200 tm_dpp=admitted
+proofs/122bb72c201f115c81ab2313058ab164ba3ba7f4a09ecb360431afabc311221d.beef 200 tm_dpp=admitted
 ```
 
 The package lists states oldest first, so `proofs/` files restore each predecessor before its successor.
@@ -153,7 +151,7 @@ import { joinEvidenceExport } from '@bsv/dpp-overlay'
 
 const source = process.env.SOURCE_INDEX ?? 'http://localhost:8080'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8081'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 const expectedSigner = process.env.EXPORT_SIGNER
 if (!expectedSigner) throw new Error('set EXPORT_SIGNER to the public key the source index signs exports with')
 
@@ -191,7 +189,7 @@ for (const [path, bytes] of joined.files) {
 EXPORT_TOKEN=<source export token> EXPORT_SIGNER=<source export signer> SUBMIT_TOKEN=<replacement submit token> REPLACEMENT_INDEX=http://localhost:8081 node restore-export.mjs
 ```
 
-3. Check the joined result and admission lines. Between two local indexes, the example printed `export joined: 1 part(s) of snapshot <id>, complete` and the same five `200 tm_dpp=admitted` lines as the package restore.
+3. Check the joined result and admission lines. Between two local indexes, the example printed `export joined: 1 part(s) of snapshot <id>, complete` and the same three `200 tm_dpp=admitted` lines as the package restore.
 
 | Failure | Cause | Retry or stop |
 |---|---|---|
@@ -205,13 +203,13 @@ EXPORT_TOKEN=<source export token> EXPORT_SIGNER=<source export signer> SUBMIT_T
 2. Verify the returned bytes:
 
 ```sh
-node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A http://localhost:8081
+node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 http://localhost:8081
 ```
 
 For the restored passport above, the last lines were:
 
 ```
-State 5 (TRANSFER, 1947027e0cd4): user signature verifies; linkage holds; inclusion verified.
+State 3 (TRANSFER, 122bb72c201f): user signature verifies; linkage holds; inclusion verified.
 The chain as a whole is valid.
 Inclusion across the chain: verified.
 ```

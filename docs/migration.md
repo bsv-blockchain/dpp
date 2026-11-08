@@ -204,7 +204,7 @@ Compare old and new readers on identical evidence. Unchanged transactions must n
 | `dpp-release-2026-09-5` | beta.3 (VSC beta.2) | `921a1d36e6a1888ef0d1b08aaf2cf7df54525d81` |
 | `dpp-release-2026-09-4` | beta.2 | `f54e750de4c7731a30563e5f1caad762adbfb737` |
 
-To try the comparison before you have a scratch index, point both runs at the hosted index and its version 2 passport, `node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/345A8EAF501F https://dpp-overlay.bsvb.net --report`. On 2 October 2026 the two reports differed only in their `checked at` line.
+To try the comparison before you have a scratch index, point both runs at the hosted index and a version 2 passport it holds, `node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 https://dpp-overlay.bsvb.net --report`. On 2 October 2026, for the version 2 passport then listed on the hosted reference page, the two reports differed only in their `checked at` line.
 
 An application that installs the packages from npm compares its own reader the same way: run it against the scratch index once with the old lockfile and once with the new, and compare the reports. The reader in [build an application](packages/build-an-application.md) step 1 prints one line per check.
 

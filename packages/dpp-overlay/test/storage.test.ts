@@ -12,8 +12,8 @@ import { InMemoryDppStorage, MongoDppStorage, selectorFilter, type DppRecordInpu
  * would prove the fake.
  */
 
-const PASSPORT = 'https://id.gs1.org/01/09506000134352/21/STORE-1'
-const OTHER = 'https://id.gs1.org/01/09506000134352/21/STORE-2'
+const PASSPORT = 'https://dpp.example.org/01/09521234000013/21/STORE-1'
+const OTHER = 'https://dpp.example.org/01/09521234000013/21/STORE-2'
 
 function input(n: number, overrides: Partial<DppRecordInput> = {}): DppRecordInput {
   return {
@@ -105,11 +105,11 @@ describe.each(harnesses)('the record store, %s', (_name, fresh) => {
   it('derives the GS1 key from the passport identifier and finds by it, under any host', async () => {
     const store = fresh()
     await store.insert(input(0))
-    await store.insert(input(1, { passportId: 'https://dpp.example.com/01/9506000134352/21/STORE-1' }))
+    await store.insert(input(1, { passportId: 'https://dpp.example.com/01/9521234000013/21/STORE-1' }))
     await store.insert(input(2, { passportId: OTHER }))
-    const rows = await store.findByGs1Key('01:09506000134352|21:STORE-1')
-    expect(rows.map((r) => r.passportId)).toEqual([PASSPORT, 'https://dpp.example.com/01/9506000134352/21/STORE-1'])
-    expect(rows.every((r) => r.gs1Key === '01:09506000134352|21:STORE-1')).toBe(true)
+    const rows = await store.findByGs1Key('01:09521234000013|21:STORE-1')
+    expect(rows.map((r) => r.passportId)).toEqual([PASSPORT, 'https://dpp.example.com/01/9521234000013/21/STORE-1'])
+    expect(rows.every((r) => r.gs1Key === '01:09521234000013|21:STORE-1')).toBe(true)
     expect(await store.findByGs1Key('')).toEqual([])
   })
 
@@ -161,8 +161,8 @@ describe('the record store, mongodb, rows older than the GS1 key', () => {
     await db.collection('dppRecords').insertOne({ ...input(0), sequence: 1 })
     await db.collection('dppCounters').insertOne({ _id: 'dppRecords', value: 1 } as never)
     const store = new MongoDppStorage(db)
-    expect((await store.findByGs1Key('01:09506000134352|21:STORE-1')).map((r) => r.sequence)).toEqual([1])
-    expect((await db.collection('dppRecords').findOne({ sequence: 1 }))?.gs1Key).toBe('01:09506000134352|21:STORE-1')
+    expect((await store.findByGs1Key('01:09521234000013|21:STORE-1')).map((r) => r.sequence)).toEqual([1])
+    expect((await db.collection('dppRecords').findOne({ sequence: 1 }))?.gs1Key).toBe('01:09521234000013|21:STORE-1')
   })
 })
 

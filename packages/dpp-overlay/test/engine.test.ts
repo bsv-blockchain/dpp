@@ -47,7 +47,7 @@ const serverWallet = new ProtoWallet(serverPriv)
 const SERVER_ID = serverPriv.toPublicKey().toString()
 const lockKey: PublicKey = makerPriv.toPublicKey()
 
-const PASSPORT_ID = 'https://id.gs1.org/01/09506000134352/21/ENGINE-1'
+const PASSPORT_ID = 'https://dpp.example.org/01/09521234000013/21/ENGINE-1'
 const UID = 'ENGINE-UID-1'
 const ANYONE = new LockingScript([{ op: 0x51 }])
 const SIGHASH = TransactionSignature.SIGHASH_ALL | TransactionSignature.SIGHASH_FORKID

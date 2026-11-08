@@ -57,7 +57,7 @@
           "disclosure": "public"
         },
         {
-          "rel": "https://ref.gs1.org/voc/epcis",
+          "rel": "https://ref.gs1.org/voc/epcisRepository",
           "href": "https://epcis.example.org/events",
           "title": "Event query service",
           "type": "application/json",
@@ -816,7 +816,7 @@
             "qualifiers": []
           },
           "audience": "public",
-          "linkType": "https://ref.gs1.org/voc/epcis",
+          "linkType": "https://ref.gs1.org/voc/epcisRepository",
           "resolverRoot": "https://id.example.org"
         }
       },
@@ -828,7 +828,7 @@
             "granularity": "model"
           }
         ],
-        "requested": "https://ref.gs1.org/voc/epcis",
+        "requested": "https://ref.gs1.org/voc/epcisRepository",
         "links": [
           {
             "rel": "https://ref.gs1.org/voc/pip",
@@ -882,7 +882,7 @@
             "qualifiers": []
           },
           "audience": "authorised",
-          "linkType": "https://ref.gs1.org/voc/epcis",
+          "linkType": "https://ref.gs1.org/voc/epcisRepository",
           "resolverRoot": "https://id.example.org"
         }
       },
@@ -934,7 +934,7 @@
             "disclosure": "public"
           },
           {
-            "rel": "https://ref.gs1.org/voc/epcis",
+            "rel": "https://ref.gs1.org/voc/epcisRepository",
             "href": "https://epcis.example.org/events",
             "anchor": "https://id.example.org/01/09521234000013",
             "granularity": "model",
@@ -1171,6 +1171,294 @@
       },
       "expected": {
         "outcome": "no-records"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "unregistered-lot-walks-up",
+      "description": "A lot nobody registered walks up to the GTIN-level default, the walk-up the resolver standard section 2.5.9 requires and its test suite checks; the link is model information.",
+      "input": {
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "10",
+                "value": "KL8G"
+              }
+            ]
+          },
+          "audience": "public",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "redirect",
+        "matched": [
+          {
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model"
+          }
+        ],
+        "href": "https://products.example.org/cell-pack",
+        "anchor": "https://id.example.org/01/09521234000013",
+        "granularity": "model",
+        "links": [
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/fr/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/pip",
+            "href": "https://products.example.org/en/cell-pack",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://products.example.org/cell-pack/sustainability",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          },
+          {
+            "rel": "https://ref.gs1.org/voc/sustainabilityInfo",
+            "href": "https://api.example.org/cell-pack/sustainability.json",
+            "anchor": "https://id.example.org/01/09521234000013",
+            "granularity": "model",
+            "disclosure": "public"
+          }
+        ]
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "item-only-set-cannot-walk-up",
+      "description": "Over a set holding only the item record, the same request finds no record at its level or above: 404 where the standard requires a default. The set rule below refuses such a set.",
+      "input": {
+        "recordIndexes": [
+          4
+        ],
+        "request": {
+          "key": {
+            "ai": "01",
+            "value": "09521234000013",
+            "qualifiers": [
+              {
+                "ai": "10",
+                "value": "KL8G"
+              }
+            ]
+          },
+          "audience": "public",
+          "resolverRoot": "https://id.example.org"
+        }
+      },
+      "expected": {
+        "outcome": "no-records"
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "set-admitted",
+      "description": "The five records together: every GTIN they name has one public single default at the GTIN level, and no entity has two.",
+      "input": {
+        "recordIndexes": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expected": {
+        "problems": []
+      },
+      "tags": [
+        "happy-path"
+      ]
+    },
+    {
+      "id": "refuse-set-without-gtin-default",
+      "description": "The item record alone: its GTIN has no default at the GTIN level, so a request for the GTIN or any lot under it has nothing to walk up to.",
+      "input": {
+        "recordIndexes": [
+          4
+        ]
+      },
+      "expected": {
+        "problems": [
+          "GTIN 09521234000013 has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)"
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-set-qualified-records-without-gtin-record",
+      "description": "The variant, lot, variant-and-lot and item records without the GTIN-level record: refused for the same reason, however many qualified records there are.",
+      "input": {
+        "recordIndexes": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expected": {
+        "problems": [
+          "GTIN 09521234000013 has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)"
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-set-gtin-record-with-refined-defaults-only",
+      "description": "The four qualified records with a GTIN-level record whose only defaults are refined ones (multi), which the record check admits: refused, because the GTIN has no single default for a request to fall back to.",
+      "input": {
+        "recordIndexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "addedRecords": [
+          {
+            "key": {
+              "ai": "01",
+              "value": "09521234000013"
+            },
+            "qualifiers": [],
+            "configurationRevision": "cfg-7",
+            "links": [
+              {
+                "rel": "https://ref.gs1.org/voc/pip",
+                "href": "https://products.example.org/fr/cell-pack",
+                "title": "Fiche produit",
+                "hreflang": [
+                  "fr"
+                ],
+                "default": "multi",
+                "disclosure": "public"
+              },
+              {
+                "rel": "https://ref.gs1.org/voc/pip",
+                "href": "https://products.example.org/en/cell-pack",
+                "title": "Product information",
+                "hreflang": [
+                  "en"
+                ],
+                "default": "multi",
+                "disclosure": "public"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "problems": [
+          "GTIN 09521234000013 has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)"
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-set-restricted-gtin-default",
+      "description": "The four qualified records with a GTIN-level record whose single default is restricted: refused, because a public request under the GTIN then has no default to walk up to.",
+      "input": {
+        "recordIndexes": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "addedRecords": [
+          {
+            "key": {
+              "ai": "01",
+              "value": "09521234000013"
+            },
+            "qualifiers": [],
+            "configurationRevision": "cfg-7",
+            "links": [
+              {
+                "rel": "https://ref.gs1.org/voc/pip",
+                "href": "https://products.example.org/cell-pack",
+                "title": "Product information",
+                "default": "single",
+                "disclosure": "restricted"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "problems": [
+          "the GTIN-level default link of 09521234000013 is restricted, so a public request under it can have no default to walk up to (resolver standard section 2.5.9)"
+        ]
+      },
+      "tags": [
+        "error-case"
+      ]
+    },
+    {
+      "id": "refuse-set-two-defaults-for-one-entity",
+      "description": "The five records with a second GTIN-level record carrying another single default: refused, because an identified entity has at most one single default across its records.",
+      "input": {
+        "recordIndexes": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "addedRecords": [
+          {
+            "key": {
+              "ai": "01",
+              "value": "09521234000013"
+            },
+            "qualifiers": [],
+            "configurationRevision": "cfg-7",
+            "links": [
+              {
+                "rel": "https://ref.gs1.org/voc/pip",
+                "href": "https://products.example.org/cell-pack/other",
+                "title": "Another product page",
+                "default": "single",
+                "disclosure": "public"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "problems": [
+          "01:09521234000013 has 2 single default links across its records; an identified entity has at most one"
+        ]
       },
       "tags": [
         "error-case"

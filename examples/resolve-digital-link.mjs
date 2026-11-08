@@ -27,6 +27,7 @@ import {
   parseAcceptLanguage,
   parseGs1DigitalLinkUri,
   resolutionRecordProblems,
+  resolutionSetProblems,
   resolveLinks,
   selectLink,
 } from '@bsv/dpp-profiles'
@@ -55,7 +56,7 @@ const records = [
       { rel: GS1_LINK_TYPES.pip, href: 'https://products.example.org/cell-pack', title: 'Product information', default: 'single', disclosure: 'public' },
       { rel: GS1_LINK_TYPES.pip, href: 'https://products.example.org/fr/cell-pack', title: 'Fiche produit', hreflang: ['fr'], default: 'multi', disclosure: 'public' },
       { rel: GS1_LINK_TYPES.sustainabilityInfo, href: 'https://products.example.org/cell-pack/sustainability', title: 'Sustainability', type: 'text/html', disclosure: 'public' },
-      { rel: GS1_LINK_TYPES.epcis, href: 'https://epcis.example.org/events', title: 'Event query service', type: 'application/json', disclosure: 'restricted' },
+      { rel: GS1_LINK_TYPES.epcisRepository, href: 'https://epcis.example.org/events', title: 'Event query service', type: 'application/json', disclosure: 'restricted' },
     ],
   },
   {
@@ -80,6 +81,10 @@ for (const record of records) {
   const problems = resolutionRecordProblems(record)
   say(problems.length === 0, `the record at ${record.qualifiers.map((q) => `${q.ai}=${q.value}`).join(' ') || 'the GTIN level'} is admissible${problems.length === 0 ? '' : `: ${problems.join('; ')}`}.`)
 }
+// The set as a whole: the GTIN-level record's one public default is what a
+// request for a lot or serial nobody registered walks up to (§2.5.9).
+const setProblems = resolutionSetProblems(records)
+say(setProblems.length === 0, `the records are admissible as a set: the GTIN has one public default at the GTIN level for every request under it to walk up to${setProblems.length === 0 ? '' : `: ${setProblems.join('; ')}`}.`)
 
 // 1. The URI, read or decompressed.
 let parsed = parseGs1DigitalLinkUri(input)
@@ -126,7 +131,7 @@ if (linkset != null) {
   say(selected.outcome === 'selected', selected.outcome === 'selected' ? `a client asking for gs1:pip in French selects ${selected.link.href}, whose anchor is ${selected.scope.granularity}-level.` : `a client asking for gs1:pip in French gets ${selected.outcome}.`)
   const evidence = selectLink(linkset, { rel: DPP_EVIDENCE_PACKAGE_LINK_TYPE })
   say(true, evidence.outcome === 'selected' ? `the evidence package link is ${evidence.link.href}, at the ${evidence.scope.granularity} level.` : `no evidence package link is registered at any level this request reaches; available relations: ${evidence.outcome === 'not-found' ? evidence.available.join(', ') : 'ambiguous'}.`)
-  const events = selectLink(linkset, { rel: 'gs1:epcis' })
+  const events = selectLink(linkset, { rel: 'gs1:epcisRepository' })
   say(events.outcome === 'not-found', 'the restricted event service is absent from the public linkset, and the client learns only that the relation is unavailable.')
 }
 

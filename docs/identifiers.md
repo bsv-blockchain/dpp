@@ -60,7 +60,7 @@ A passport identifier is usually a GS1 Digital Link URI:
    |---|---|
    | Your application | Resolve `/01/` paths as `gs1-digital-link@1` specifies, with the passport page at its own path as the item's `gs1:dpp` default; see [GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver) |
    | Separate resolver | Your host redirects every `/01/` request with 307 to a resolver that holds the same records, with the passport page as the item's `gs1:dpp` default |
-   | `id.gs1.org` | Answers only for GTINs whose licensee registered link targets with GS1 |
+   | `id.gs1.org` | Answers only for GTINs whose licensee registered link targets with GS1, and for an item usually at GTIN level ([what registering with GS1 gives you](#what-registering-with-gs1-gives-you)) |
 
 5. **Give each item its own serial** using the constraints above. `buildGs1DigitalLink` checks the GTIN and serial before building the identifier:
 
@@ -76,6 +76,24 @@ A passport identifier is usually a GS1 Digital Link URI:
    Expect `https://dpp.example.com/01/09521234567899/21/SN0001`. The helper refuses a wrong check digit, serials longer than 20 characters and characters outside the set.
 
 The [record model](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md) section 3 defines these rules. An application account is not a GS1 licensee; establish GTIN entitlement separately.
+
+## What registering with GS1 gives you
+
+A brand that licenses a GS1 Company Prefix registers links for its GTINs through its GS1 Member Organisation, such as a default link, a product page under `gs1:pip` and a passport under `gs1:dpp`. GS1's registry then answers for those GTINs at `id.gs1.org`, so anyone holding the GTIN, from any Digital Link carrying it, can discover the product at model level there.
+
+| Request at `id.gs1.org` | Answer |
+|---|---|
+| A registered GTIN, `/01/<gtin>` | The links the licensee registered for that GTIN |
+| An item, `/01/<gtin>/21/<serial>`, under a GTIN registered at GTIN level only | The GTIN's links, anchored at the GTIN: model information, not that item's passport (GS1-Conformant Resolver 1.2.1 §2.5.9) |
+| A GTIN under 952 | 404: GS1 registers no links under the demonstration prefix |
+
+Item-level resolution, one item's code reaching that item's passport, needs one of these:
+
+- the brand's own resolving host in the data carrier, as step 4 of [get an identifier](#get-an-identifier) describes;
+- a Member Organisation resolver that supports URI templates, building each item's target from the request (GS1-Conformant Resolver 1.2.1 §2.5.1);
+- a Member Organisation resolver that delegates the brand's GTINs to the brand's own resolver with `gs1:handledBy`, keeping the item path (§2.8).
+
+Some Member Organisation resolvers currently answer an item path only at GTIN level, so check what yours does with a serial before printing codes under `id.gs1.org`. Registration makes a product discoverable and records its licensee; it does not make a passport's states true, which only their signatures and proofs establish.
 
 ## Use the identifier throughout the request
 
