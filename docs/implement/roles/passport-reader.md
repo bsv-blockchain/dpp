@@ -104,6 +104,6 @@ These are gaps in the standard and the reference package, not faults in your rea
 - [spec/custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md)
 - [spec/managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md)
 - [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md)
-- [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/README.md)
+- [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/fixtures/README.md)
 
 Record results as [evidence reporting](../reporting.md) describes. Stop on an unexpected mismatch and record both results; the [source gaps](../fixture-runner.md#source-gaps) remain open. Next: the [attestation verifier](attestation-verifier.md), which adds claims and anchors to the same report.

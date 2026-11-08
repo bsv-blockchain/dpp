@@ -37,7 +37,7 @@ Build a resolver with published `@bsv/dpp-profiles` helpers, or name an external
 | `describeResolver` | Build description files |
 | `selectLink` | Select links on the client |
 
-The [specification](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/gs1-discovery.md), section 4, also names the reference registry's resolver. That registry has no public source, package or image ([registry](../implement/roles/registry.md)). Despite its name, `dpp-resolver.bsvb.net` is the claim registry: its capability document reports `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. The hosted application at `dpp.bsvb.net` resolves the identifiers minted under that host: it publishes `/.well-known/gs1resolver`, and each passport page is at `/passport/01/<gtin>/21/<serial>`, registered as the item's `gs1:dpp` default ([hosted reference](../deployment.md#the-hosted-reference)).
+The [specification](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/spec/gs1-discovery.md), section 4, also names the reference registry's resolver. That registry has no public source, package or image ([registry](../implement/roles/registry.md)). Despite its name, `dpp-resolver.bsvb.net` is the claim registry: its capability document reports `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. The hosted application at `dpp.bsvb.net` resolves the identifiers minted under that host: it publishes `/.well-known/gs1resolver`, and each passport page is at `/passport/01/<gtin>/21/<serial>`, registered as the item's `gs1:dpp` default ([hosted reference](../deployment.md#the-hosted-reference)).
 
 ## Follow a scanned identifier
 
@@ -97,7 +97,7 @@ The qualifier is the serial; `demonstration: true` identifies prefix 952. No req
 node examples/resolve-digital-link.mjs
 ```
 
-The [example](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/examples/resolve-digital-link.mjs) checks three demonstration model/lot/item records one by one and as a set, parses the URI, resolves for a public audience, builds a linkset, selects links and builds the description. Expect fourteen `Holds:` sentences, including the redirect to the item's passport page, the evidence-package link at item level and no restricted links reaching the public, then `Every sentence above holds.` Supply a URI argument to try another, including compressed input.
+The [example](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/examples/resolve-digital-link.mjs) checks three demonstration model/lot/item records one by one and as a set, parses the URI, resolves for a public audience, builds a linkset, selects links and builds the description. Expect fourteen `Holds:` sentences, including the redirect to the item's passport page, the evidence-package link at item level and no restricted links reaching the public, then `Every sentence above holds.` Supply a URI argument to try another, including compressed input.
 
 ## Add a passport link to a resolver you already run
 
@@ -127,9 +127,9 @@ These are open standard questions; [known limitations](../operate/limitations.md
 
 | Integration input | Source |
 |---|---|
-| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/gs1-discovery.md) |
-| Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/packages/dpp-profiles/src/gs1-resolution.ts) |
-| The reference registry's resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml); its `https://id.example.org` is a placeholder origin |
+| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/spec/gs1-discovery.md) |
+| Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-profiles/src/gs1-resolution.ts) |
+| The reference registry's resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml); its `https://id.example.org` is a placeholder origin |
 | Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/gs1) |
 
 Next: the [passport reader](../implement/roles/passport-reader.md) verifies discovered evidence.

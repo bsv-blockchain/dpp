@@ -144,7 +144,7 @@ In production, replace the `ProtoWallet` with your BRC-100 wallet, for example `
 
 ## 3. Store it
 
-Send the signed claim to the registry you arranged ([registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml)).
+Send the signed claim to the registry you arranged ([registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml)).
 
 | Request or response | Required content or meaning |
 |---|---|
