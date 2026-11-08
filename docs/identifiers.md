@@ -75,7 +75,7 @@ A passport identifier is usually a GS1 Digital Link URI:
 
    Expect `https://dpp.example.com/01/09521234567899/21/SN0001`. The helper refuses a wrong check digit, serials longer than 20 characters and characters outside the set.
 
-The [record model](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md) section 3 defines these rules. An application account is not a GS1 licensee; establish GTIN entitlement separately.
+The [record model](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md) section 3 defines these rules. An application account is not a GS1 licensee; establish GTIN entitlement separately.
 
 ## Use the identifier throughout the request
 
@@ -113,8 +113,8 @@ The host is written into every state. Existing passports keep their original ide
 
 | Task | Source or guide |
 |---|---|
-| Choose a passport identifier | [Record identifier requirements](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md#L35-L54) |
-| Use GS1 Digital Link or a demonstration identifier | [GS1 allocation and demonstration scope](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md#L46-L54) |
+| Choose a passport identifier | [Record identifier requirements](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md#L35-L54) |
+| Use GS1 Digital Link or a demonstration identifier | [GS1 allocation and demonstration scope](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md#L46-L54) |
 | Locate a passport from that identifier | [GS1 discovery](interoperability/gs1-discovery.md) |
 | Use the reference parsing and validation helpers | [Profiles package](packages/dpp-profiles.md) |
 
