@@ -236,7 +236,7 @@ describe('GET /evidence-package', () => {
 
   it('carries at most 500 states, the newest, and declares the rest absent by outpoint', async () => {
     const node = newNode()
-    const passportId = 'https://id.gs1.org/01/09506000134352/21/LONG-1'
+    const passportId = 'https://dpp.example.org/01/09521234000013/21/LONG-1'
     const txidOf = (n: number): string => `${n}`.padStart(64, '0')
     for (let n = 0; n < 505; n++) {
       await node.records.insert({
@@ -268,7 +268,7 @@ describe('GET /evidence-package', () => {
     expect(await bodyOf(refused)).toMatchObject({ status: 'error', error: 'export-unavailable' })
 
     const base = await serve(newNode())
-    const unknown = await fetch(`${base}/evidence-package?passportId=${encodeURIComponent('https://id.gs1.org/01/09506000134352/21/NOBODY')}`)
+    const unknown = await fetch(`${base}/evidence-package?passportId=${encodeURIComponent('https://dpp.example.org/01/09521234000013/21/NOBODY')}`)
     expect(unknown.status).toBe(404)
     expect((await bodyOf(unknown)).error).toBe('passport-unknown')
     const missing = await fetch(`${base}/evidence-package`)

@@ -45,7 +45,7 @@ curl --fail http://localhost:8080/capabilities
 import { Transaction } from '@bsv/sdk'
 
 const indexUrl = process.env.INDEX_URL ?? 'https://dpp-overlay.bsvb.net'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 
 const response = await fetch(new URL('/lookup', indexUrl), {
   method: 'POST',
@@ -58,29 +58,27 @@ console.log(`${answer.type} with ${answer.outputs.length} outputs from ${indexUr
 for (const output of answer.outputs) console.log(`  ${Transaction.fromBEEF(output.beef).id('hex')} output ${output.outputIndex}`)
 ```
 
-2. Run `node lookup.mjs`. The default request returns this live version 1 passport:
+2. Run `node lookup.mjs`. The default request returns this live version 2 passport under the demonstration prefix 952:
 
 ```
-output-list with 5 outputs from https://dpp-overlay.bsvb.net
-  1730153134890f8c1223d92850ec5a9d4c9cc84242fdf56d05e08e407aadaada output 0
-  79d3f93d3b6c517ea67c411f775887f489ac5f915b0b5e92e494f59184b6fab4 output 0
-  1dea31ba2fdf78aedc6ce0692485e6309b38f8116703081d371939319461154c output 0
-  2a2693e6fa39bad3f2cf9d2acd21e161111759cba9f5aad86140d45f811ce528 output 0
-  1947027e0cd40613795bc2ec005defff03ada9695c1f1e323da26797b9bf4150 output 0
+output-list with 3 outputs from https://dpp-overlay.bsvb.net
+  debfc9c9125a490cb6642669fcc1da49ece52aff06ad52715abef1ca0c0091e2 output 0
+  52d31ed5272b874f1036712f55e32e5a075d3278027ed9ea7df87f1a4d26161c output 0
+  122bb72c201f115c81ab2313058ab164ba3ba7f4a09ecb360431afabc311221d output 0
 ```
 
 | Setting or selector | Value and result |
 |---|---|
 | `INDEX_URL` | Default `https://dpp-overlay.bsvb.net`; use `INDEX_URL=http://localhost:8080 node lookup.mjs` for a local index |
-| `PASSPORT_ID` | Select another passport; [hosted references](../deployment.md) lists three live ones |
+| `PASSPORT_ID` | Select another passport; [hosted references](../deployment.md#passports-to-try) lists live ones |
 | Empty result | `output-list with 0 outputs`, including from a new index holding no states for this passport |
-| GTIN and serial only | `query: { gs1Key: '01/09506000134352/21/7AC18477503A' }` |
+| GTIN and serial only | `query: { gs1Key: '01/09529530005688/21/E18E296BB180' }` |
 
-The tuple `01:09506000134352|21:7AC18477503A` is another GS1-key selector. A GS1-key query returns states for every matching passport under any host, each under its exact identifier. Verify those identifiers as [identifier handling](../identifiers.md#use-the-identifier-throughout-the-request) describes. An index on an earlier release refuses the query.
+The tuple `01:09529530005688|21:E18E296BB180` is another GS1-key selector. A GS1-key query returns states for every matching passport under any host, each under its exact identifier. Verify those identifiers as [identifier handling](../identifiers.md#use-the-identifier-throughout-the-request) describes. An index on an earlier release refuses the query.
 
 3. Verify the returned outputs with a [reader](../implement/roles/passport-reader.md), or `node examples/verify-passport.mjs <passportId> <indexUrl>`. Each output carries BEEF, which bundles a transaction, its ancestors and merkle proofs. HTTP 200 does not establish a valid history or inclusion.
 
-Compare indexes by transaction identifiers and proofs. The contract leaves lookup BEEF form open. For the passport above, the hosted index and a local index restored from its package returned the same five transactions, each 36 bytes apart.
+Compare indexes by transaction identifiers and proofs. The contract leaves lookup BEEF form open. For the passport above, the hosted index and a local index restored from its package returned the same three transactions, each 36 bytes apart.
 
 ## Index routes
 
@@ -145,13 +143,13 @@ The answer names its contract and checks, with a shared `report` when the subjec
 | Condition | Interpretation |
 |---|---|
 | Validation only | Does not store or anchor the claim |
-| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml#L773-L823)) |
+| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml#L773-L823)) |
 | HTTP 400 | A malformed or ambiguous request, including unreadable token history; resolve it before interpreting verification |
 | Refused connection | No registry runs at the chosen URL |
 
 ## Registry routes
 
-[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
+[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
 
 | Route | Access | What it does |
 |---|---|---|

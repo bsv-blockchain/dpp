@@ -65,7 +65,7 @@ Stop on `Cannot find package`: the install did not finish in this project. Decod
 
 ## Gather a passport's evidence
 
-A report is only as complete as its evidence and policy. This reader gathers everything the hosted reference holds for a version 2 passport with three anchored claims:
+A report is only as complete as its evidence and policy. This reader gathers everything the hosted reference holds for a version 2 passport under the demonstration prefix 952 with three anchored claims:
 
 | Evidence | Source |
 |---|---|
@@ -101,13 +101,13 @@ function pacedTracker(inner, gapMs = 400) {
 
 const index = 'https://dpp-overlay.bsvb.net'
 const registry = 'https://dpp-resolver.bsvb.net'
-const passportId = 'https://id.gs1.org/01/09506000134352/21/345A8EAF501F'
+const passportId = 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 
 // The parties you accept. These wrote this passport on the hosted reference;
 // a reader of its own takes them from its own list, never from the evidence.
 const trusted = {
   genesisIssuers: ['02f316d2efb06630406ce1765f254be19acb522c4df33710e8b1bd77bcdc4616b6'],
-  claimIssuers: ['did:key:zQ3shnfXGt4rjzyJjK671B4PpRMqRYL7C5ueftenGtm5CL2Gq'],
+  claimIssuers: ['did:key:zQ3shueJ69URDxEmBkyJjUnkrQtCSv3pRTb4Nb4UVcNPDmqFb'],
   anchoringServices: ['036564081bb854af4d049245f775f48495a5c4ffae830db5d3f1dbc05f9bf403e2'],
 }
 

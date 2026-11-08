@@ -75,18 +75,18 @@ That example matches the first state to its fixture byte for byte, refuses an in
 
 ## Read a live passport
 
-This optional network exercise reads an existing version 1 passport for compatibility. It is not the template for a new version 2 write.
+This optional network exercise reads a live record version 2 passport under the demonstration prefix 952: issued, repaired and then transferred under managed custody.
 
 ```sh
-node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A https://dpp-overlay.bsvb.net
+node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 https://dpp-overlay.bsvb.net
 ```
 
 You should see:
 
 ```
-The index returned 5 outputs; merged, their BEEFs reconstruct a chain of 5 states.
-Operations, genesis to tip: ACTIVATE -> REPAIRED -> TRANSFER -> TRANSFER -> TRANSFER.
-State 1 (ACTIVATE, 173015313489): user signature verifies; linkage holds; inclusion verified.
+The index returned 3 outputs; merged, their BEEFs reconstruct a chain of 3 states.
+Operations, genesis to tip: ISSUE -> UPDATE -> TRANSFER.
+State 1 (ISSUE, debfc9c9125a): user signature verifies; linkage holds; inclusion verified.
 ...
 The chain as a whole is valid.
 Inclusion across the chain: verified.
@@ -94,13 +94,13 @@ Inclusion across the chain: verified.
 
 | Result or limit | Meaning and action |
 |---|---|
-| Verified history | The script obtains five states from the [hosted index](deployment.md#the-hosted-reference), rebuilds the history and checks every signature, link and block proof itself. It trusts none of the index's assertions about the bytes |
+| Verified history | The script obtains three states from the [hosted index](deployment.md#the-hosted-reference), rebuilds the history and checks every signature, link and block proof itself. It trusts none of the index's assertions about the bytes |
 | Freshness | The script relies on the index to return the newest state |
 | Full report | Add `--report` for one line per check; [reading the report](learn/evidence-and-freshness.md) explains the answers |
 | `inclusion pending` | WhatsOnChain limited the header check. Retry, or set `WOC_API_KEY` to a WhatsOnChain API key |
 | Node 26 warning | `ExperimentalWarning: localStorage is not available` is harmless |
 
-This passport is an older record version 1 lineage under GS1's own example number on `id.gs1.org`. New passports are record version 2, with the operations `ISSUE`, `UPDATE`, `TRANSFER` and `RETIRE`, minted under a host the writer controls ([identifiers](identifiers.md)).
+This passport is record version 2, whose operations are `ISSUE`, `UPDATE`, `TRANSFER` and `RETIRE`, and its identifier is minted under `dpp.bsvb.net`, a host that resolves it, as a writer's own host should ([identifiers](identifiers.md)). Older version 1 lineages under GS1's documentation example number on `id.gs1.org` are listed as [legacy identifiers](deployment.md#legacy-identifiers), for testing a reader against historical records.
 
 ## Sign a claim
 

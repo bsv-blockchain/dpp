@@ -22,6 +22,7 @@ import {
   parseAcceptLanguage,
   parseGs1DigitalLinkUri,
   resolutionRecordProblems,
+  resolutionSetProblems,
   resolveLinks,
   sameGs1Key,
   selectLink,
@@ -67,7 +68,7 @@ function records(): ResolutionRecord[] {
         { rel: REL.pip, href: 'https://products.example.org/en/cell-pack', title: 'Product information', hreflang: ['en'], default: 'multi', disclosure: 'public' },
         { rel: REL.sustainabilityInfo, href: 'https://products.example.org/cell-pack/sustainability', title: 'Sustainability', type: 'text/html', disclosure: 'public' },
         { rel: REL.sustainabilityInfo, href: 'https://api.example.org/cell-pack/sustainability.json', title: 'Sustainability data', type: 'application/json', disclosure: 'public' },
-        { rel: REL.epcis, href: 'https://epcis.example.org/events', title: 'Event query service', type: 'application/json', disclosure: 'restricted' },
+        { rel: REL.epcisRepository, href: 'https://epcis.example.org/events', title: 'Event query service', type: 'application/json', disclosure: 'restricted' },
       ],
     },
     {
@@ -246,6 +247,72 @@ describe('resolution records', () => {
   })
 })
 
+describe('the record set a resolver answers from', () => {
+  it('admits the demonstration set, whose GTIN-level record carries one public single default', () => {
+    expect(resolutionSetProblems(records())).toEqual([])
+    expect(resolutionSetProblems([])).toEqual([])
+  })
+
+  it('refuses a set in which a GTIN has records but no single default at the GTIN level, because walk-up then finds nothing', () => {
+    const [model, , , , item] = records()
+    const itemOnly = [item]
+    expect(resolutionSetProblems(itemOnly)).toEqual([`GTIN ${GTIN} has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)`])
+    // What the rule prevents: the resolver test suite asks for a lot nobody
+    // registered under a GTIN it knows and expects the walk-up to a default.
+    const unregisteredLot: Gs1Key = { ai: '01', value: GTIN, qualifiers: [{ ai: '10', value: 'KL8G' }] }
+    expect(resolveLinks(itemOnly, request({ key: unregisteredLot }))).toEqual({ outcome: 'no-records', matched: [] })
+    const walked = resolveLinks(records(), request({ key: unregisteredLot }))
+    expect(walked.outcome === 'redirect' && walked.link.anchor).toBe(`${ROOT}/01/${GTIN}`)
+    const withoutDefault: ResolutionRecord = { ...model, links: model.links.filter((l) => l.default == null) }
+    expect(resolutionRecordProblems(withoutDefault)).toEqual([])
+    expect(resolutionSetProblems([withoutDefault, item]).join('; ')).toContain('no single default link at the GTIN level')
+    expect(resolutionSetProblems([withoutDefault]).join('; ')).toContain('no single default link at the GTIN level')
+    const otherGtin: ResolutionRecord = { ...item, key: { ai: '01', value: OTHER_GTIN } }
+    expect(resolutionSetProblems([...records(), otherGtin])).toEqual([`GTIN ${OTHER_GTIN} has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)`])
+  })
+
+  it('refuses a restricted GTIN-level default, and more than one single default for one entity across records', () => {
+    const [model, variant, lot, both, item] = records()
+    const restricted: ResolutionRecord = { ...model, links: model.links.map((l) => (l.default === 'single' ? { ...l, disclosure: 'restricted' as const } : l)) }
+    expect(resolutionSetProblems([restricted, item])).toEqual([`the GTIN-level default link of ${GTIN} is restricted, so a public request under it can have no default to walk up to (resolver standard section 2.5.9)`])
+    const secondModel: ResolutionRecord = { ...model, links: [{ rel: REL.pip, href: 'https://products.example.org/other', title: 'Another page', default: 'single', disclosure: 'public' }] }
+    expect(resolutionSetProblems([model, secondModel, item])).toEqual([`01:${GTIN} has 2 single default links across its records; an identified entity has at most one`])
+    const page = { rel: REL.dpp, href: `${ROOT}/passport/01/${GTIN}/21/SER-0001`, title: 'Digital product passport', default: 'single' as const, disclosure: 'public' as const }
+    const twice: ResolutionRecord[] = [model, variant, lot, both, { ...item, links: [page] }, { ...item, links: [{ ...page, href: `${ROOT}/passport/elsewhere` }] }]
+    expect(resolutionSetProblems(twice)).toEqual([`01:${GTIN}|21:SER-0001 has 2 single default links across its records; an identified entity has at most one`])
+    expect(resolutionSetProblems([model, variant, lot, both, { ...item, links: [page] }])).toEqual([])
+  })
+
+  it('refuses a GTIN-level record whose only defaults are refined ones, which the record check alone admits', () => {
+    const [model, variant, lot, both, item] = records()
+    const refinedOnly: ResolutionRecord = { ...model, links: model.links.filter((l) => l.default !== 'single') }
+    expect(refinedOnly.links.filter((l) => l.default === 'multi')).toHaveLength(2)
+    expect(resolutionRecordProblems(refinedOnly)).toEqual([])
+    expect(resolutionSetProblems([refinedOnly, variant, lot, both, item])).toEqual([`GTIN ${GTIN} has no single default link at the GTIN level, so a request under it can have no default to walk up to (resolver standard section 2.5.9)`])
+    // What the rule prevents: a request that matches no refined default has
+    // nothing to fall back to.
+    expect(resolveLinks([refinedOnly, item], request({ key: modelKey, acceptLanguage: ['de'] })).outcome).toBe('not-found')
+  })
+
+  it('gives each GTIN its own problems, so a write is judged by the GTINs it would leave inadmissible and an inadmissible set is repaired a record at a time', () => {
+    const [model, , , , item] = records()
+    const otherItem: ResolutionRecord = { ...item, key: { ai: '01', value: OTHER_GTIN } }
+    const ofGtin = (set: ResolutionRecord[], gtin: string): string[] => resolutionSetProblems(set.filter((r) => r.key.value === gtin))
+    const before = [item, otherItem]
+    expect(resolutionSetProblems(before)).toEqual([...ofGtin(before, GTIN), ...ofGtin(before, OTHER_GTIN)])
+    expect(ofGtin(before, GTIN)).toHaveLength(1)
+    // Adding the GTIN-level record repairs GTIN and leaves OTHER_GTIN as it
+    // was, so a resolver admits the write although the set is not yet
+    // admissible as a whole.
+    const after = [model, ...before]
+    expect(ofGtin(after, GTIN)).toEqual([])
+    expect(ofGtin(after, OTHER_GTIN)).toEqual(ofGtin(before, OTHER_GTIN))
+    expect(resolutionSetProblems(after)).toEqual(ofGtin(after, OTHER_GTIN))
+    // Removing it again would leave an admissible GTIN inadmissible: refused.
+    expect(ofGtin(after.filter((r) => r !== model), GTIN)).not.toEqual([])
+  })
+})
+
 describe('resolution against the records, as the standard\'s flow chart reads them', () => {
   it('walks up the tree: a serialised request inherits model links, each kept at its own granularity', () => {
     const result = resolveLinks(records(), request({ key: itemKey }))
@@ -258,7 +325,7 @@ describe('resolution against the records, as the standard\'s flow chart reads th
     expect(result.link.anchor).toBe(`${ROOT}/01/${GTIN}`)
     const evidence = result.links.find((l) => l.rel === DPP_EVIDENCE_PACKAGE_LINK_TYPE)
     expect(evidence?.granularity).toBe('item')
-    expect(result.links.some((l) => l.rel === REL.epcis)).toBe(false)
+    expect(result.links.some((l) => l.rel === REL.epcisRepository)).toBe(false)
   })
 
   it('unions exactly the registration levels the standard names for a variant-and-lot request', () => {
@@ -316,13 +383,13 @@ describe('resolution against the records, as the standard\'s flow chart reads th
   })
 
   it('never shows a restricted link to a public audience, and flags it to an authorised one', () => {
-    const publicView = resolveLinks(records(), request({ key: modelKey, linkType: REL.epcis }))
+    const publicView = resolveLinks(records(), request({ key: modelKey, linkType: REL.epcisRepository }))
     expect(publicView.outcome).toBe('not-found')
-    const authorised = resolveLinks(records(), request({ key: modelKey, linkType: REL.epcis, audience: 'authorised' }))
+    const authorised = resolveLinks(records(), request({ key: modelKey, linkType: REL.epcisRepository, audience: 'authorised' }))
     expect(authorised.outcome === 'redirect' && authorised.link.disclosure).toBe('restricted')
     const doc = linksetDocument(records(), request({ key: modelKey, audience: 'authorised' }))
     const entry = doc?.linkset[0] as Record<string, Array<{ public?: boolean }>>
-    expect(entry[REL.epcis][0].public).toBe(false)
+    expect(entry[REL.epcisRepository][0].public).toBe(false)
     const publicDoc = linksetDocument(records(), request({ key: modelKey }))
     expect(JSON.stringify(publicDoc)).not.toContain('epcis.example.org')
   })
@@ -367,13 +434,37 @@ describe('linksets and the discovery client', () => {
     expect(ambiguous.outcome).toBe('ambiguous')
     const absent = selectLink(doc, { rel: REL.traceability })
     expect(absent.outcome === 'not-found' && absent.available).toContain(REL.pip)
-    const foreign: LinksetDocument = { linkset: [{ anchor: 'https://other.example.org/01/09521234000013', 'http://gs1.org/voc/pip': [{ href: 'https://other.example.org/p', title: 'Elsewhere' }] }, { anchor: 'urn:opaque:1', 'http://gs1.org/voc/epcis': [{ href: 'https://other.example.org/e', title: 'Events' }] }] }
+    const foreign: LinksetDocument = { linkset: [{ anchor: 'https://other.example.org/01/09521234000013', 'http://gs1.org/voc/pip': [{ href: 'https://other.example.org/p', title: 'Elsewhere' }] }, { anchor: 'urn:opaque:1', 'http://gs1.org/voc/epcisRepository': [{ href: 'https://other.example.org/e', title: 'Events' }] }] }
     const fromForeign = selectLink(foreign, { rel: REL.pip })
     expect(fromForeign.outcome === 'selected' && fromForeign.scope.granularity).toBe('model')
-    const opaque = selectLink(foreign, { rel: REL.epcis })
+    const opaque = selectLink(foreign, { rel: 'gs1:epcisRepository' })
     expect(opaque.outcome === 'selected' && opaque.scope.granularity).toBe('unknown')
     expect(normaliseLinkType('https://gs1.org/voc/pip')).toBe(REL.pip)
     expect(normaliseLinkType(DPP_EVIDENCE_PACKAGE_LINK_TYPE)).toBe(DPP_EVIDENCE_PACKAGE_LINK_TYPE)
+  })
+
+  it('keeps the deprecated gs1:epcis and its replacement gs1:epcisRepository apart: neither answers for the other', () => {
+    // GS1 Web Vocabulary 1.18 replaces gs1:epcis with gs1:epcisRepository
+    // without declaring them equivalent, so a client that wants the event
+    // service asks for the replacement and, finding none, may ask for the old
+    // relation by name; nothing folds one into the other.
+    expect(REL.epcisRepository).toBe(`${GS1_VOCABULARY}epcisRepository`)
+    expect(normaliseLinkType('http://gs1.org/voc/epcis')).toBe(REL.epcis)
+    expect(normaliseLinkType(REL.epcis)).not.toBe(REL.epcisRepository)
+    const older: LinksetDocument = { linkset: [{ anchor: `${ROOT}/01/${GTIN}`, [REL.epcis]: [{ href: 'https://epcis.example.org/events', title: 'Events' }] }] }
+    const replacement = selectLink(older, { rel: 'gs1:epcisRepository' })
+    expect(replacement).toEqual({ outcome: 'not-found', available: [REL.epcis] })
+    const byName = selectLink(older, { rel: 'gs1:epcis' })
+    expect(byName.outcome === 'selected' && byName.link.href).toBe('https://epcis.example.org/events')
+    const asked = resolveLinks(records(), request({ key: modelKey, linkType: REL.epcis, audience: 'authorised' }))
+    expect(asked.outcome).toBe('not-found')
+    // A record written before the deprecation stays admissible, so a resolver
+    // can keep it; a writer registers the replacement.
+    const [model] = records()
+    const written: ResolutionRecord = { ...model, links: model.links.map((l) => (l.rel === REL.epcisRepository ? { ...l, rel: REL.epcis } : l)) }
+    expect(resolutionRecordProblems(written)).toEqual([])
+    const kept = resolveLinks([written], request({ key: modelKey, linkType: REL.epcis, audience: 'authorised' }))
+    expect(kept.outcome === 'redirect' && kept.link.rel).toBe(REL.epcis)
   })
 
   it('describes the resolver in a file that validates against the pinned description schema, for one primary key', () => {
@@ -472,6 +563,26 @@ function resolutionVectors() {
     }
   }
   const resolve = (id: string, description: string, req: Omit<ResolutionRequest, 'resolverRoot'>, tags: string[]) => ({ id, description, input: { request: { ...req, resolverRoot: ROOT } }, expected: strip(resolveLinks(held, { ...req, resolverRoot: ROOT })), tags })
+  /**
+   * A set vector runs over the records of the file's own `records` it names by
+   * position, followed by any `addedRecords` it carries, so the set is stated
+   * without repeating the records the file already holds.
+   */
+  const setVector = (id: string, description: string, recordIndexes: number[], tags: string[], addedRecords: ResolutionRecord[] = []) => ({
+    id,
+    description,
+    input: addedRecords.length === 0 ? { recordIndexes } : { recordIndexes, addedRecords },
+    expected: { problems: resolutionSetProblems([...recordIndexes.map((i) => held[i]), ...addedRecords]) },
+    tags,
+  })
+  const gtinRecord = (links: ResolutionRecord['links']): ResolutionRecord => ({ key: { ai: '01', value: GTIN }, qualifiers: [], configurationRevision: 'cfg-7', links })
+  const refinedDefaultsOnly = gtinRecord([
+    { rel: REL.pip, href: 'https://products.example.org/fr/cell-pack', title: 'Fiche produit', hreflang: ['fr'], default: 'multi', disclosure: 'public' },
+    { rel: REL.pip, href: 'https://products.example.org/en/cell-pack', title: 'Product information', hreflang: ['en'], default: 'multi', disclosure: 'public' },
+  ])
+  const restrictedDefault = gtinRecord([{ rel: REL.pip, href: 'https://products.example.org/cell-pack', title: 'Product information', default: 'single', disclosure: 'restricted' }])
+  const secondDefault = gtinRecord([{ rel: REL.pip, href: 'https://products.example.org/cell-pack/other', title: 'Another product page', default: 'single', disclosure: 'public' }])
+  const unregisteredLot: Gs1Key = { ai: '01', value: GTIN, qualifiers: [{ ai: '10', value: 'KL8G' }] }
   const item = itemKey
   const lot: Gs1Key = { ai: '01', value: GTIN, qualifiers: [{ ai: '10', value: 'LOT-2026-01' }] }
   const both: Gs1Key = { ai: '01', value: GTIN, qualifiers: [{ ai: '22', value: '2A' }, { ai: '10', value: 'LOT-2026-01' }] }
@@ -492,12 +603,26 @@ function resolutionVectors() {
       resolve('language-refines-default', 'Accept-Language fr picks the French refined default.', { key: modelKey, audience: 'public', acceptLanguage: ['fr'] }, ['happy-path']),
       resolve('language-without-match-falls-back', 'Accept-Language de matches no refined default, so the single default answers.', { key: modelKey, audience: 'public', acceptLanguage: ['de'] }, ['happy-path']),
       resolve('media-type-picks-json', 'A requested type with two representations is decided by the Accept header.', { key: modelKey, audience: 'public', linkType: REL.sustainabilityInfo, accept: ['application/json'] }, ['happy-path']),
-      resolve('restricted-hidden-from-public', 'A restricted link type requested by a public audience is not found; it is not disclosed by refusal wording either.', { key: modelKey, audience: 'public', linkType: REL.epcis }, ['error-case']),
-      resolve('restricted-shown-to-authorised', 'The same request from an authorised audience redirects, with the link flagged restricted.', { key: modelKey, audience: 'authorised', linkType: REL.epcis }, ['happy-path']),
+      resolve('restricted-hidden-from-public', 'A restricted link type requested by a public audience is not found; it is not disclosed by refusal wording either.', { key: modelKey, audience: 'public', linkType: REL.epcisRepository }, ['error-case']),
+      resolve('restricted-shown-to-authorised', 'The same request from an authorised audience redirects, with the link flagged restricted.', { key: modelKey, audience: 'authorised', linkType: REL.epcisRepository }, ['happy-path']),
       resolve('undeclared-language-outranks-mismatch', 'Three product pages, one with no language declared and two contradicting Vietnamese: the one that makes no claim answers.', { key: modelKey, audience: 'public', linkType: REL.pip, acceptLanguage: ['vi'] }, ['happy-path']),
       resolve('multiple-choices-on-tie', 'Two sustainability representations under an Accept of */*: neither is better, so the resolver answers 300 rather than choosing.', { key: modelKey, audience: 'public', linkType: REL.sustainabilityInfo, accept: ['*/*'] }, ['error-case']),
       resolve('type-not-available', 'A requested type nobody registered is 404 with the available links beside it.', { key: modelKey, audience: 'public', linkType: REL.traceability }, ['error-case']),
       resolve('unknown-gtin', 'A GTIN nobody registered is 404 with nothing beside it.', { key: { ai: '01', value: OTHER_GTIN, qualifiers: [] }, audience: 'public' }, ['error-case']),
+      resolve('unregistered-lot-walks-up', 'A lot nobody registered walks up to the GTIN-level default, the walk-up the resolver standard section 2.5.9 requires and its test suite checks; the link is model information.', { key: unregisteredLot, audience: 'public' }, ['happy-path']),
+      {
+        id: 'item-only-set-cannot-walk-up',
+        description: 'Over a set holding only the item record, the same request finds no record at its level or above: 404 where the standard requires a default. The set rule below refuses such a set.',
+        input: { recordIndexes: [4], request: { key: unregisteredLot, audience: 'public', resolverRoot: ROOT } },
+        expected: strip(resolveLinks([held[4]], { key: unregisteredLot, audience: 'public', resolverRoot: ROOT })),
+        tags: ['error-case'],
+      },
+      setVector('set-admitted', 'The five records together: every GTIN they name has one public single default at the GTIN level, and no entity has two.', [0, 1, 2, 3, 4], ['happy-path']),
+      setVector('refuse-set-without-gtin-default', 'The item record alone: its GTIN has no default at the GTIN level, so a request for the GTIN or any lot under it has nothing to walk up to.', [4], ['error-case']),
+      setVector('refuse-set-qualified-records-without-gtin-record', 'The variant, lot, variant-and-lot and item records without the GTIN-level record: refused for the same reason, however many qualified records there are.', [1, 2, 3, 4], ['error-case']),
+      setVector('refuse-set-gtin-record-with-refined-defaults-only', 'The four qualified records with a GTIN-level record whose only defaults are refined ones (multi), which the record check admits: refused, because the GTIN has no single default for a request to fall back to.', [1, 2, 3, 4], ['error-case'], [refinedDefaultsOnly]),
+      setVector('refuse-set-restricted-gtin-default', 'The four qualified records with a GTIN-level record whose single default is restricted: refused, because a public request under the GTIN then has no default to walk up to.', [1, 2, 3, 4], ['error-case'], [restrictedDefault]),
+      setVector('refuse-set-two-defaults-for-one-entity', 'The five records with a second GTIN-level record carrying another single default: refused, because an identified entity has at most one single default across its records.', [0, 1, 2, 3, 4], ['error-case'], [secondDefault]),
       {
         id: 'linkset-document-item',
         description: 'The linkset document for the serialised request, which validates against the pinned GS1 linkset schema.',

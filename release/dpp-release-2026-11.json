@@ -467,7 +467,7 @@
     },
     {
       "path": "contracts/registry.yaml",
-      "sha256": "8f993a1e94639da7540e56d523c90ee21355fefb21ec94eee432b8d1dff81cc0",
+      "sha256": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3",
       "pins": "the registry contract, with the claim schema that refuses any recordId but an outpoint and carries the evidence facets"
     }
   ],

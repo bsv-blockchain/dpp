@@ -97,7 +97,7 @@ describe('tm_dpp under a publisher key policy', () => {
     // The retired key, shown on a state that spends nothing: the Engine treats
     // a refused spend of a tip as that tip's consumption and evicts it, which
     // is its own behaviour and not this policy's.
-    const other = 'https://id.gs1.org/01/09506000134352/21/EXT-2'
+    const other = 'https://dpp.example.org/01/09521234000013/21/EXT-2'
     const { tx: late } = await genesisTx({ passportId: other, timestamp: AFTER_ROTATION }, new ProtoWallet(K1))
     expect((await node.engine.submit({ beef: late.toBEEF(), topics: ['tm_dpp'] })).tm_dpp.outputsToAdmit).toEqual([])
     const { tx: current } = await genesisTx({ passportId: other, timestamp: AFTER_ROTATION }, new ProtoWallet(K2))
@@ -116,7 +116,7 @@ async function anchorBeefBy(service: PrivateKey): Promise<number[]> {
       digest: '11'.repeat(32),
       attestationId: 'urn:uuid:22222222-2222-4222-8222-222222222222',
       issuer: 'did:key:z6MkExample',
-      subject: 'https://id.gs1.org/01/09506000134352/21/POLICY-1',
+      subject: 'https://dpp.example.org/01/09521234000013/21/POLICY-1',
       attestationType: 'Origin',
       representation: 'dpp-lifecycle-json-v1',
       mediaType: 'application/json',

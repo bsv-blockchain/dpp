@@ -293,7 +293,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
   })
 
   describe('a passport funded from another lineage\'s change', () => {
-    const OTHER_ID = 'https://id.gs1.org/01/09506000134352/21/EXT-2'
+    const OTHER_ID = 'https://dpp.example.org/01/09521234000013/21/EXT-2'
 
     /**
      * A holds a new passport whose unproven genesis spends the change of a
@@ -505,7 +505,7 @@ describe('two operators under one publisher policy (federated-operators@1, the l
   it('a peer offering a state countersigned by a key outside the policy is refused by B, and the refusal is logged', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const policy = writePolicy([federatedChain().genesis])
-    const forgedPassport = 'https://id.gs1.org/01/09506000134352/21/FORGED-1'
+    const forgedPassport = 'https://dpp.example.org/01/09521234000013/21/FORGED-1'
     const { tx: forged } = await genesisTx({ passportId: forgedPassport, timestamp: IN_WINDOW }, new ProtoWallet(STRANGER))
     const funding = forged.inputs[0].sourceTransaction!
     const served: string[] = []

@@ -19,7 +19,7 @@ Index operators and teams replacing a provider can use this guide to back up an 
 | A backup of the index's MongoDB volume | Everything the index admitted: outputs, transactions, the passport and anchor indexes and the synchronisation checkpoints | Keys, registry claims, restricted tiers | The operator, on the host |
 | The bounded package, `GET /evidence-package` | One passport's newest 500 states: each raw transaction, its BEEF with the merkle path once the index has one, the publisher policy chain, spend observations and a report, inventoried in a signed manifest | States beyond the newest 500, which it declares absent; restricted tiers | Anyone, from an index that sets `EXPORT_SIGNING_KEY` (otherwise 503) |
 | The complete export, `GET /evidence-export` | Every state of one passport, in signed parts over one snapshot | Restricted tiers; the report, which the reader produces over the joined parts | Anyone holding the source index's `EXPORT_TOKEN` when it sets one. The hosted reference sets one and does not give it to outsiders, so use this route on your own index or ask the source operator |
-| A registry export | The claims a registry holds and their evidence, under the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml) | Token history, restricted material, keys | Depends on the registry |
+| A registry export | The claims a registry holds and their evidence, under the [registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml) | Token history, restricted material, keys | Depends on the registry |
 | The custody keys | The ability to spend or update the passport, which restoring public evidence does not recover | | Only their holder: no export recovers a lost key |
 
 | Term or limit | Meaning |
@@ -80,7 +80,7 @@ import { inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 // The key the source index signs its packages with. This default is the hosted reference's.
 const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
@@ -118,11 +118,9 @@ SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs
 
 ```
 package checked: signed by 02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116, complete for its snapshot
-proofs/1730153134890f8c1223d92850ec5a9d4c9cc84242fdf56d05e08e407aadaada.beef 200 tm_dpp=admitted
-proofs/79d3f93d3b6c517ea67c411f775887f489ac5f915b0b5e92e494f59184b6fab4.beef 200 tm_dpp=admitted
-proofs/1dea31ba2fdf78aedc6ce0692485e6309b38f8116703081d371939319461154c.beef 200 tm_dpp=admitted
-proofs/2a2693e6fa39bad3f2cf9d2acd21e161111759cba9f5aad86140d45f811ce528.beef 200 tm_dpp=admitted
-proofs/1947027e0cd40613795bc2ec005defff03ada9695c1f1e323da26797b9bf4150.beef 200 tm_dpp=admitted
+proofs/debfc9c9125a490cb6642669fcc1da49ece52aff06ad52715abef1ca0c0091e2.beef 200 tm_dpp=admitted
+proofs/52d31ed5272b874f1036712f55e32e5a075d3278027ed9ea7df87f1a4d26161c.beef 200 tm_dpp=admitted
+proofs/122bb72c201f115c81ab2313058ab164ba3ba7f4a09ecb360431afabc311221d.beef 200 tm_dpp=admitted
 ```
 
 The package lists states oldest first, so `proofs/` files restore each predecessor before its successor.
@@ -153,7 +151,7 @@ import { joinEvidenceExport } from '@bsv/dpp-overlay'
 
 const source = process.env.SOURCE_INDEX ?? 'http://localhost:8080'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8081'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 const expectedSigner = process.env.EXPORT_SIGNER
 if (!expectedSigner) throw new Error('set EXPORT_SIGNER to the public key the source index signs exports with')
 
@@ -191,7 +189,7 @@ for (const [path, bytes] of joined.files) {
 EXPORT_TOKEN=<source export token> EXPORT_SIGNER=<source export signer> SUBMIT_TOKEN=<replacement submit token> REPLACEMENT_INDEX=http://localhost:8081 node restore-export.mjs
 ```
 
-3. Check the joined result and admission lines. Between two local indexes, the example printed `export joined: 1 part(s) of snapshot <id>, complete` and the same five `200 tm_dpp=admitted` lines as the package restore.
+3. Check the joined result and admission lines. Between two local indexes, the example printed `export joined: 1 part(s) of snapshot <id>, complete` and the same three `200 tm_dpp=admitted` lines as the package restore.
 
 | Failure | Cause | Retry or stop |
 |---|---|---|
@@ -205,13 +203,13 @@ EXPORT_TOKEN=<source export token> EXPORT_SIGNER=<source export signer> SUBMIT_T
 2. Verify the returned bytes:
 
 ```sh
-node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A http://localhost:8081
+node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 http://localhost:8081
 ```
 
 For the restored passport above, the last lines were:
 
 ```
-State 5 (TRANSFER, 1947027e0cd4): user signature verifies; linkage holds; inclusion verified.
+State 3 (TRANSFER, 122bb72c201f): user signature verifies; linkage holds; inclusion verified.
 The chain as a whole is valid.
 Inclusion across the chain: verified.
 ```
@@ -232,8 +230,8 @@ The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8d
 |---|---|
 | One passport within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-package.schema.json) |
 | A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [part schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
-| Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml) |
-| The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
+| Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml) |
+| The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
 
 The [portable-evidence requirements](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) and [exchange requirements](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md) define packages, exports and how a reader joins them.
 

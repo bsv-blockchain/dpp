@@ -223,7 +223,7 @@ describe('GET /history', () => {
   })
 
   it('answers an empty, complete page for a passport it does not hold', async () => {
-    const { status, body } = await page({ passportId: 'https://id.gs1.org/01/09506000134352/21/NOBODY' })
+    const { status, body } = await page({ passportId: 'https://dpp.example.org/01/09521234000013/21/NOBODY' })
     expect(status).toBe(200)
     expect(validatePage(body)).toBe(true)
     expect(body).toMatchObject({ items: [], nextCursor: null, truncated: false, completeForSnapshot: true })

@@ -160,7 +160,7 @@ docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-
 
 ### 5. Put a passport on the first index and watch it arrive
 
-If your writer announces to the first index, look up one of its passports on both indexes (item 3). For a wallet-free rehearsal, save the following files at the built checkout root. They select the hosted reference's five-state passport; the bounded package is suitable only for passports with no more than 500 states.
+If your writer announces to the first index, look up one of its passports on both indexes (item 3). For a wallet-free rehearsal, save the following files at the built checkout root. They select the hosted reference's three-state passport under the demonstration prefix 952; the bounded package is suitable only for passports with no more than 500 states.
 
 Save as `restore-package.mjs`. Its source URL, passport and expected export signer default to the hosted reference. It stops on inspection failures or incomplete coverage before submitting anything:
 
@@ -170,7 +170,7 @@ import { inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 // The key the source index signs its packages with. This default is the hosted reference's.
 const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
@@ -205,7 +205,7 @@ Save as `lookup.mjs`:
 import { Transaction } from '@bsv/sdk'
 
 const indexUrl = process.env.INDEX_URL ?? 'https://dpp-overlay.bsvb.net'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 
 const response = await fetch(new URL('/lookup', indexUrl), {
   method: 'POST',
@@ -227,7 +227,7 @@ Then copy the live passport into the first index:
    SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs
    ```
 
-   Expect a checked package and five lines ending `200 tm_dpp=admitted`. Stop on a failure before comparing indexes.
+   Expect a checked package and three lines ending `200 tm_dpp=admitted`. Stop on a failure before comparing indexes.
 3. After the second index's next round, a minute at most, run the [passport lookup](../reference/contracts.md#find-passport-records) against each index:
 
    ```sh
@@ -235,8 +235,8 @@ Then copy the live passport into the first index:
    INDEX_URL=http://localhost:8081 node lookup.mjs
    ```
 
-   Both print `output-list with 5 outputs from ...` and the same five transaction identifiers (checked with two local indexes, the second under the step 3 policy).
-4. Check the copy independently with `node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A http://localhost:8081`, which ends `Inclusion across the chain: verified.`
+   Both print `output-list with 3 outputs from ...` and the same three transaction identifiers (checked with two local indexes, the second under the step 3 policy).
+4. Check the copy independently with `node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 http://localhost:8081`, which ends `Inclusion across the chain: verified.`
 
 The copy stays in both indexes until `down -v` on a preset removes everything that index holds. Use that only on rehearsal indexes, then set your own key again.
 
@@ -589,7 +589,7 @@ Retry repairs nothing: admission still refuses an unacceptable state, and a grap
 | Nothing: the peer keeps the previous tip of a passport it holds | The new state is unproven. The overlay SDK needs an unproven state's parent in the graph it assembles but leaves out a parent the peer already holds, so the state cannot arrive; a new passport can. | Push the state's proof to the node the peer pulls from. The next round carries the state with its proof, and the peer admits it on the tip it holds. |
 | Nothing: the state arrived, but readers of the peer see `inclusion` pending | A proof that arrives after a peer synchronised the state does not follow it. | Deliver the proof to the peer (below), or [take it from the chain](#take-a-record-from-the-chain) yourself. |
 
-A proof reaches an index only through that index's own `POST /arc-ingest`, and a peer's `/arc-ingest` answers 404 until the state has arrived there. A writer that knows its index's peers can deliver each proof to them too, retrying that 404, with each peer's own callback token from that peer's operator ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). Nobody is named yet to do this: a writer offers each proof to the indexes it announced the state to ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 7), and the [overlay package](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md#running-two-operators-locally) expects a writer or gateway to push it to every operator it knows. The [federation test](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/federation.test.ts#L395-L419) shows a later proof staying on one index until it is pushed to the other.
+A proof reaches an index only through that index's own `POST /arc-ingest`, and a peer's `/arc-ingest` answers 404 until the state has arrived there. A writer that knows its index's peers can deliver each proof to them too, retrying that 404, with each peer's own callback token from that peer's operator ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). Nobody is named yet to do this: a writer offers each proof to the indexes it announced the state to ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 7), and the [overlay package](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md#running-two-operators-locally) expects a writer or gateway to push it to every operator it knows. The [federation test](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-overlay/test/federation.test.ts#L395-L419) shows a later proof staying on one index until it is pushed to the other.
 
 A retraction does not reach a peer either. Synchronisation carries admissions only: when a writer withdraws a refused draft from the index it announced it to, that index stops offering the output, and a peer that already pulled it keeps serving it as the tip, with nothing in a later round saying it is gone. The peer's operator withdraws it with the same request on their own index, `POST /retract` with the outpoint and the reason behind their submit token ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). The same checks apply there, so a state the peer has since proven, or whose transaction the peer's header source knows, is refused, which is the case where the retraction was wrong. Agree with peer operators who tells whom, as for proofs.
 

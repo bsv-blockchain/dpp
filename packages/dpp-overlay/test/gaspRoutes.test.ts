@@ -150,7 +150,7 @@ describe('POST /requestForeignGASPNode', () => {
     expect((await bodyOf(await post(base, '/requestSyncResponse', { version: 1, since: answer.UTXOList[0].score + 1 }, { 'X-BSV-Topic': 'tm_dpp' }))).UTXOList).toEqual([])
     // The limit reaches the storage: two more passports make three tips, and a page of two lists two.
     for (const suffix of ['TWO', 'THREE']) {
-      const { tx: other } = await genesisTx({ passportId: `https://id.gs1.org/01/09506000134352/21/EXT-${suffix}` })
+      const { tx: other } = await genesisTx({ passportId: `https://dpp.example.org/01/09521234000013/21/EXT-${suffix}` })
       expect((await submitBeef(base, other.toBEEF())).status).toBe(200)
     }
     expect((await bodyOf(await post(base, '/requestSyncResponse', { version: 1, since: 0 }, { 'X-BSV-Topic': 'tm_dpp' }))).UTXOList).toHaveLength(3)

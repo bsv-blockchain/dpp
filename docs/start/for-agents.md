@@ -117,7 +117,7 @@ Keep published, source and deployed capabilities separate. The published beta.10
 ## Never
 
 - Write a passport under a GTIN the brand is not entitled to. For tests, use GS1 demonstration prefix 952 on a host you control.
-- Use `id.gs1.org` as the host for a new passport's identifier.
+- Mint a new passport's identifier under a host that does not answer for it. `id.gs1.org` answers only for GTINs whose licensee has registered link targets with GS1, and never for one under 952, so use a host you control unless that registration exists ([what registering with GS1 gives you](../identifiers.md#what-registering-with-gs1-gives-you)).
 - Send one index's token to another index.
 - Treat an index's or registry's answer as proof. Verify the bytes yourself, as every reading example does.
 - Describe a result as compliance, certification or product qualification. The standard claims none of these.

@@ -101,7 +101,7 @@ describe('verifyChain, invariants (§6)', () => {
     const { txs, outputIndexes } = await buildChainFixture()
     const s = await signedState(
       makeData({
-        passportId: 'https://id.gs1.org/01/09506000134352/21/OTHER',
+        passportId: 'https://dpp.example.org/01/09521234000013/21/OTHER',
         op: 'SOLD',
         eventData: '{"x":1}',
         previousTxid: txs[0].id('hex'),

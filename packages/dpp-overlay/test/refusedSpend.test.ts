@@ -45,7 +45,7 @@ describe('a refused spend of the tip', () => {
     // Two refusals that spend the tip: one countersigned by a stranger, one
     // breaking a chain invariant (passport_id changes).
     const { tx: wrongKey } = await eventTx(tip, { timestamp: '2026-07-26T11:00:00Z' }, new ProtoWallet(PrivateKey.fromHex('44'.repeat(32))))
-    const { tx: wrongPassport } = await eventTx(tip, { timestamp: '2026-07-26T11:00:00Z', passportId: 'https://id.gs1.org/01/09506000134352/21/OTHER-1' })
+    const { tx: wrongPassport } = await eventTx(tip, { timestamp: '2026-07-26T11:00:00Z', passportId: 'https://dpp.example.org/01/09521234000013/21/OTHER-1' })
     for (const [refused, reason] of [[wrongKey, 'publisher-not-authorised'], [wrongPassport, 'link-broken']] as const) {
       const response = await submitBeef(base, refused.toBEEF())
       expect(response.status).toBe(200)

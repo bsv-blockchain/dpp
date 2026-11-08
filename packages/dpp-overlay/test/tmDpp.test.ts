@@ -34,7 +34,7 @@ const serverWallet = new ProtoWallet(serverPriv)
 const SERVER_ID = serverPriv.toPublicKey().toString()
 const lockKey: PublicKey = makerPriv.toPublicKey()
 
-const PASSPORT_ID = 'https://id.gs1.org/01/09506000134352/21/TM-TEST-1'
+const PASSPORT_ID = 'https://dpp.example.org/01/09521234000013/21/TM-TEST-1'
 
 function makeData(overrides: Partial<DppStateData> = {}): DppStateData {
   return {
@@ -270,7 +270,7 @@ describe('tm_dpp refusal codes, the reason /submit sends as X-Admission-Refusal'
     const tm = new DppTopicManager(SERVER_ID)
     const { tx: g } = await genesis()
     await tm.identifyAdmissibleOutputs(g.toBEEF(true), [])
-    const moved = await event(g, { passportId: 'https://id.gs1.org/01/09506000134352/21/OTHER-1' })
+    const moved = await event(g, { passportId: 'https://dpp.example.org/01/09521234000013/21/OTHER-1' })
     await tm.identifyAdmissibleOutputs(moved.toBEEF(true), [0])
     expect(tm.refusalFor(moved.id('hex'))).toBe('link-broken')
 

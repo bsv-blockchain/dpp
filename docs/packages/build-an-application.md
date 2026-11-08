@@ -110,7 +110,7 @@ For deployment, connect a compatible index or create a separate project with [th
 
 ## 1. Read a passport
 
-Save this as `read-passport.mjs` in the checkout root and run `node read-passport.mjs`. With no settings it reads a version 1 demonstration passport from the [hosted reference](../deployment.md#the-hosted-reference), which serves lookups to anyone. Later it checks what you write.
+Save this as `read-passport.mjs` in the checkout root and run `node read-passport.mjs`. With no settings it reads a version 2 demonstration passport under the prefix 952 from the [hosted reference](../deployment.md#the-hosted-reference), which serves lookups to anyone. Later it checks what you write.
 
 ```js
 import { Beef, WhatsOnChain } from '@bsv/sdk'
@@ -137,7 +137,7 @@ function pacedTracker(inner, gapMs = 400) {
 
 // Which index to ask, and about which passport. Section 3 sets both to read your own back.
 const index = process.env.INDEX_URL ?? 'https://dpp-overlay.bsvb.net'
-const passportId = process.env.PASSPORT_ID ?? 'https://id.gs1.org/01/09506000134352/21/7AC18477503A'
+const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8'
 
 const { publisherPolicy } = await (await fetch(`${index}/capabilities`)).json()
 const response = await fetch(`${index}/lookup`, {
@@ -175,7 +175,7 @@ inclusion pass
 
 | Other result | Meaning and action |
 |---|---|
-| Claim checks: `unknown`, `no-evidence` | This passport carries no claim |
+| Claim checks: `unknown`, `no-evidence` | This reader supplies no claims or anchors; [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) adds them |
 | `issuerAuthority`: `unknown`, `policy-missing` | No issuer policy was supplied |
 | `inclusion`: `unknown`, `header-source-unavailable` | The header source refused a question. Retry after a few seconds or prefix the command with `WOC_API_KEY=<your key>` |
 

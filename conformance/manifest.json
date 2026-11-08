@@ -117,10 +117,10 @@
     {
       "id": "contract-registry",
       "uri": "contracts/registry.yaml",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "8f993a1e94639da7540e56d523c90ee21355fefb21ec94eee432b8d1dff81cc0"
+      "digest": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3"
     },
     {
       "id": "contract-report-schema",
@@ -490,7 +490,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "fc95312f0325536d9e864c6892bce55de4e852cf0147a386e13fe03bd07120fb"
+      "digest": "61a0afcd2a8f95034ce3988280c0db9457fcded01c31f8ff87440fbb82d8f3f2"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -530,7 +530,7 @@
       "version": "gs1-digital-link@1",
       "kind": "local",
       "path": "spec/gs1-discovery.md",
-      "digest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993"
+      "digest": "5f1020ec7db969f50eec10d9d8dbfbdc355df5051c6564de0a67f0f22cc36c66"
     },
     {
       "id": "spec-epcis-interoperability",
@@ -4047,7 +4047,7 @@
       "id": "REG-contract-routes",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.4.0",
+      "sourceVersion": "0.5.0",
       "clause": "paths",
       "summary": "Every operation the registry contract lists answers in the documented shape, and no served route is absent from the contract.",
       "layer": "role",
@@ -4064,9 +4064,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-06",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance and GET /showcase. contracts/registry.yaml is the byte-identical mirror."
+      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance and GET /showcase. contracts/registry.yaml is its mirror, byte-identical until 2026-11-08, when the description of DigitalLinkResolution.passportId here was corrected from a stored identifier \"canonically hosted at id.gs1.org\" to one under the host it was minted with; the registry's own copy takes the same correction in its next change, and no route or shape differs."
     },
     {
       "id": "STACK-vector-format",
@@ -4757,7 +4757,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-28",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
       "notes": "The commands listed are the ones CI runs, so the page is exercised indirectly; nothing checks the prose against the commands."
     },
@@ -4765,7 +4765,7 @@
       "id": "REG-1-insert-first-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.4.0",
+      "sourceVersion": "0.5.0",
       "clause": "POST /attestations",
       "summary": "Two identical concurrent submissions store one record and anchor once: intake inserts the claim identifier first, then anchors, then replaces, on every store backend.",
       "layer": "role",
@@ -4782,7 +4782,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-06",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
       "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process."
     },
@@ -5060,7 +5060,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993"
+      "sourceDigest": "5f1020ec7db969f50eec10d9d8dbfbdc355df5051c6564de0a67f0f22cc36c66"
     },
     {
       "id": "GS1D-2-key-tuple",
@@ -5088,7 +5088,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993"
+      "sourceDigest": "5f1020ec7db969f50eec10d9d8dbfbdc355df5051c6564de0a67f0f22cc36c66"
     },
     {
       "id": "GS1D-3-decompression",
@@ -5224,8 +5224,8 @@
       "status": "tested",
       "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993",
-      "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests). The 2026-11-08 review did not re-test it against the header rule §4 added that day: its resolver handlers set Vary, but its answers to OPTIONS, to a path that is not valid percent-encoding and to an internal error carry CORS without Vary, as the section itself records. Its status is left for a later review."
+      "sourceDigest": "5f1020ec7db969f50eec10d9d8dbfbdc355df5051c6564de0a67f0f22cc36c66",
+      "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests). The 2026-11-08 review did not re-test it against the header rule §4 added that day: its resolver handlers set Vary, but its answers to OPTIONS, to a path that is not valid percent-encoding and to an internal error carry CORS without Vary, as the section itself records. Its status is left for a later review. The same review found that the registry checks each resolution record with resolutionRecordProblems at write and does not yet check the record set §4 now requires (resolutionSetProblems), so it can hold item records under a GTIN with no GTIN-level default; GS1D-9 covers the rule in the package."
     },
     {
       "id": "GS1D-8-discovery-client",
@@ -5250,8 +5250,36 @@
       "status": "tested",
       "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993",
+      "sourceDigest": "5f1020ec7db969f50eec10d9d8dbfbdc355df5051c6564de0a67f0f22cc36c66",
       "notes": "Description file and linkset validated against the pinned GS1 schemas, selection through the profiles helper, a broader anchor labelled with its granularity, an external resolver through the same client, cross-origin redirects refused and no credential ever returned. Not exercised against an identifier host that redirects every /01/ path to a resolver on another origin (§1): the client refuses that redirect, as §5 now says, and reaches such a resolver only when configured with its origin."
+    },
+    {
+      "id": "GS1D-9-record-set",
+      "sourceId": "spec-gs1-discovery",
+      "sourceUri": "spec/gs1-discovery.md",
+      "sourceVersion": "gs1-digital-link@1",
+      "clause": "§4, the record set",
+      "summary": "resolutionSetProblems admits a record set only when every GTIN it holds a record for has exactly one public single default at the GTIN level, so every request under the GTIN walks up to a default (resolver standard §2.5.9), and no identified entity has more than one single default across its records.",
+      "layer": "profile",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when the discovery profile is selected",
+      "profileId": "gs1-digital-link@1",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/gs1-resolution.ts#resolutionSetProblems"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/gs1-resolution.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/gs1/resolution.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-08",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "5f1020ec7db969f50eec10d9d8dbfbdc355df5051c6564de0a67f0f22cc36c66",
+      "notes": "Tested in the package: the demonstration set is admitted; an item record alone, qualified records without a GTIN-level record, a GTIN-level record without a default or with refined defaults only, a restricted GTIN-level default and two single defaults for one entity are each refused, and each GTIN's problems are its records' alone, so a write is judged by the GTINs it would leave inadmissible and an older set is repaired a record at a time. The vectors pin the walk-up an admitted set gives, the 404 the refused item-only set gives, and every refusal reason. The reference registry does not yet apply it (GS1D-7)."
     },
     {
       "id": "EPCIS-1-strict-parse",
@@ -5623,7 +5651,7 @@
       "id": "EXTC-5-registry-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.4.0",
+      "sourceVersion": "0.5.0",
       "clause": "POST /attestations, vc-di-ecdsa-rdfc-2019@1",
       "summary": "The registry accepts the representation as exact bytes under the operator's external policy, refuses a failing credential with nothing stored, refuses a credential id collision, and anchors accepted bytes through the existing anchor and topic with metadata matching the credential.",
       "layer": "role",
@@ -5642,10 +5670,10 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-01",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "8f993a1e94639da7540e56d523c90ee21355fefb21ec94eee432b8d1dff81cc0",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise."
+      "sourceDigest": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged."
     },
     {
       "id": "PROJ-1-source-revisions",
@@ -6386,7 +6414,7 @@
     },
     {
       "id": "gs1-discovery-1",
-      "description": "The gs1-digital-link@1 discovery profile: grammar, key tuples, EPC-binary decompression, hierarchy with anchors, the resolution flow and schema-valid linksets, with the hosted route and the discovery client.",
+      "description": "The gs1-digital-link@1 discovery profile: grammar, key tuples, EPC-binary decompression, hierarchy with anchors over a record set that always walks up to a default, the resolution flow and schema-valid linksets, with the hosted route and the discovery client.",
       "profileId": "gs1-digital-link@1",
       "requires": [
         "GS1D-1-grammar",
@@ -6396,7 +6424,8 @@
         "GS1D-5-resolution-flow",
         "GS1D-6-linkset-schema",
         "GS1D-7-hosted-route",
-        "GS1D-8-discovery-client"
+        "GS1D-8-discovery-client",
+        "GS1D-9-record-set"
       ],
       "minimumStatus": "tested"
     },

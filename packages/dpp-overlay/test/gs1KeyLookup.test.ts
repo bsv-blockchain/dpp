@@ -26,9 +26,9 @@ describe('POST /lookup with gs1Key', () => {
     for (const tx of [genesis, event]) expect((await submitBeef(base, tx.toBEEF())).headers.get('x-admission')).toBe('tm_dpp=admitted')
 
     const txids = (outputs: Array<{ beef: number[] }>) => outputs.map((o) => Transaction.fromBEEF(o.beef).id('hex')).sort()
-    const exact = txids(await lookupPassport(base, { passportId: 'https://id.gs1.org/01/09506000134352/21/EXT-1' }))
+    const exact = txids(await lookupPassport(base, { passportId: 'https://dpp.example.org/01/09521234000013/21/EXT-1' }))
     expect(exact).toHaveLength(2)
-    expect(txids(await lookupPassport(base, { gs1Key: '01/09506000134352/21/EXT-1' }))).toEqual(exact)
-    expect(txids(await lookupPassport(base, { gs1Key: '01:09506000134352|21:EXT-1' }))).toEqual(exact)
+    expect(txids(await lookupPassport(base, { gs1Key: '01/09521234000013/21/EXT-1' }))).toEqual(exact)
+    expect(txids(await lookupPassport(base, { gs1Key: '01:09521234000013|21:EXT-1' }))).toEqual(exact)
   })
 })

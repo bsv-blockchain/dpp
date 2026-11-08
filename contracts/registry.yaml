@@ -369,7 +369,7 @@ paths:
                   detail: { type: string }
                   gtin: { type: string }
                   serial: { type: string }
-                  passportId: { type: string, description: The identifier that was looked up. }
+                  passportId: { type: string, description: The first identifier looked up, the path under the first minting root the registry tries. }
                   found: { type: boolean, enum: [false] }
 
   /resolve/gs1/01/{gtin}/21/{serial}:
@@ -2111,7 +2111,7 @@ components:
       properties:
         passportId:
           type: string
-          description: The stored identifier, canonically hosted at `id.gs1.org`.
+          description: The stored identifier, under the host it was minted with.
         gtin:
           type: string
           description: GTIN-14, left-padded if the path carried fewer digits.

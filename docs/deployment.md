@@ -51,23 +51,22 @@ The operator does not distribute tokens for general use. To publish, [create an 
 
 ## Passports to try
 
-Three live passports to look up with the [passport lookup](reference/contracts.md#find-passport-records):
+Two live passports to look up with the [passport lookup](reference/contracts.md#find-passport-records). Each identifier is under the demonstration prefix 952 at `dpp.bsvb.net`, a host that resolves it: a 307 to the passport page, or the linkset on request.
 
 | Passport | What it shows |
 |---|---|
-| `https://id.gs1.org/01/09506000134352/21/7AC18477503A` | A version 1 lineage of five states, repairs and a transfer |
-| `https://id.gs1.org/01/09506000134352/21/345A8EAF501F` | A version 2 lineage: issue, update and a managed transfer, with three anchored claims |
-| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host resolves it: a 307 to the passport page, or the linkset on request. Its payload declares the draft `battery@4` |
+| `https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180` | A version 2 lineage: issue, a repair and a managed transfer, with three anchored claims. Its payload declares the draft `textile@4` |
+| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | A version 2 lineage: issue and two updates recording installation and a firmware repair, with three anchored claims. Its payload declares the draft `battery@4` |
 
-Use these to test reading and verifying, not as payload examples. The first, a version 1 lineage under GS1's example GTIN, predates the demonstration `notice` rule and carries none; the other two carry one. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. A report made with the profiles package's payload validator reads `schema` as `fail` with `schema-invalid` for each of them, and one made without a validator reads `unknown`; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile)). Start your own payload from `node examples/sample-payload.mjs`.
+Use these to test reading and verifying, not as payload examples. Both carry the demonstration `notice`. The second's states do not satisfy the public schema of the profile they declare: they lack required fields, such as `labelMeaning` and `separateCollectionSymbol`. The first's states do, but their `waterUse` of 1.9 fails the schema's `multipleOf: 0.1` check in a validator that evaluates it in binary floating point, as Ajv does by default. A report made with the profiles package's payload validator and Ajv set up as that page shows reads `schema` as `fail` with `schema-invalid` for each of them, and one made without a validator reads `unknown`; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile)). Start your own payload from `node examples/sample-payload.mjs`.
 
 To verify the first passport, run the existing reader from the checkout root:
 
 ```sh
-node examples/verify-passport.mjs https://id.gs1.org/01/09506000134352/21/7AC18477503A https://dpp-overlay.bsvb.net
+node examples/verify-passport.mjs https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180 https://dpp-overlay.bsvb.net
 ```
 
-It reconstructs five states and should finish:
+It reconstructs three states and should finish:
 
 ```text
 The chain as a whole is valid.
@@ -75,6 +74,15 @@ Inclusion across the chain: verified.
 ```
 
 This checks the supplied history, not freshness or profile validity. If header rate limits leave `inclusion pending`, retry or supply `WOC_API_KEY`.
+
+### Legacy identifiers
+
+The hosted index also holds passports minted before the demonstration prefix rule, under `https://id.gs1.org/01/09506000134352/`. That GTIN is GS1's own documentation example, not a demonstration number, and `id.gs1.org` answers these identifiers with a 307 to a product page of GS1's fictitious demonstration brand, never to a passport. Their states cannot be withdrawn, so they stay readable. Use them only to test a reader against older records, such as a version 1 lineage, and never as the pattern for a new identifier ([identifiers](identifiers.md)):
+
+| Legacy passport | What it shows |
+|---|---|
+| `https://id.gs1.org/01/09506000134352/21/7AC18477503A` | A version 1 lineage of five states, repairs and a transfer, from before the demonstration `notice` rule |
+| `https://id.gs1.org/01/09506000134352/21/345A8EAF501F` | A version 2 lineage: issue, update and a managed transfer, with three anchored claims |
 
 ## Where the hosted services fall short
 

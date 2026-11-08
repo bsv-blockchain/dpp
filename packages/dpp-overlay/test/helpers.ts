@@ -42,7 +42,7 @@ export const serverWallet = new ProtoWallet(serverPriv)
 export const SERVER_ID = serverPriv.toPublicKey().toString()
 export const lockKey: PublicKey = makerPriv.toPublicKey()
 
-export const PASSPORT_ID = 'https://id.gs1.org/01/09506000134352/21/EXT-1'
+export const PASSPORT_ID = 'https://dpp.example.org/01/09521234000013/21/EXT-1'
 export const UID = 'EXT-UID-1'
 export const ANYONE = new LockingScript([{ op: 0x51 }])
 const SIGHASH = TransactionSignature.SIGHASH_ALL | TransactionSignature.SIGHASH_FORKID

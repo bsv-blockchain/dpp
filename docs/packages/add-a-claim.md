@@ -58,7 +58,7 @@ import {
 const index = 'https://dpp-overlay.bsvb.net'
 const registry = 'https://dpp-resolver.bsvb.net'
 // The passport you worked on: take its identifier from the product's label, never from a lookup result.
-const passportId = 'https://id.gs1.org/01/09506000134352/21/345A8EAF501F'
+const passportId = 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 
 // Your signing key. A throwaway test key here; in production, your BRC-100 wallet.
 const wallet = new ProtoWallet(PrivateKey.fromRandom())
@@ -119,7 +119,7 @@ console.log('anchor signature', inspection.signatureValid, '; key derivation', i
 It prints, with your own `did:key` and digest:
 
 ```
-signed by did:key:zQ3sh... about state ead4346e0571
+signed by did:key:zQ3sh... about state 122bb72c201f
 signature verified
 registry answered 200 verified
   nativeAttestationSignature pass
@@ -130,7 +130,7 @@ anchor signature true ; key derivation true ; commits to urn:sha256:40a5b2499a2.
 
 | Output | Meaning and next action |
 |---|---|
-| `ead4346e0571` | Beginning of the latest state's identifier when this page was written; your `did:key` and digest differ |
+| `122bb72c201f` | Beginning of the latest state's identifier when this page was written; your `did:key` and digest differ |
 | `verified` | Signature only. Also check `subjectBinding` against the passport named in `subject` |
 | `subjectBinding fail subject-mismatch` | A different passport's claim can still have a `verified` signature |
 | `credentialTime` | Checks that the claim is within its time |
@@ -144,7 +144,7 @@ In production, replace the `ProtoWallet` with your BRC-100 wallet, for example `
 
 ## 3. Store it
 
-Send the signed claim to the registry you arranged ([registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml)).
+Send the signed claim to the registry you arranged ([registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml)).
 
 | Request or response | Required content or meaning |
 |---|---|
@@ -178,7 +178,7 @@ The anchoring service uses its own BRC-100 wallet and follows the [writer order]
 
 Tell the passport's publisher, and the readers you expect, which registry holds your claims and what your issuer DID is, because nothing in the passport or the anchor names the registry. A reader accepts your claims only if its policy lists your DID in `claimIssuers`; otherwise it reports `issuerAuthority` as `fail` with `authority-unconfirmed`.
 
-Save this as `find-claims.mjs`; it reads the three anchored claims the hosted reference holds for its version 2 passport:
+Save this as `find-claims.mjs`; it reads the three anchored claims the hosted reference holds for its version 2 passport under the demonstration prefix 952:
 
 ```js
 import { Beef } from '@bsv/sdk'
@@ -186,7 +186,7 @@ import { inspectAttestationAnchor } from '@bsv/dpp-protocol'
 
 const index = 'https://dpp-overlay.bsvb.net'
 const registry = 'https://dpp-resolver.bsvb.net'
-const passportId = 'https://id.gs1.org/01/09506000134352/21/345A8EAF501F'
+const passportId = 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
 
 // The anchors: any index that holds them finds them by subject (one page here; continue with `after` for more).
 const { outputs } = await (await fetch(`${index}/lookup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'ls_attestation', query: { subject: passportId } }) })).json()
@@ -204,9 +204,9 @@ for (const { beef, outputIndex } of outputs) {
 `node find-claims.mjs` prints:
 
 ```
-Transformation did:key:zQ3shnfXGt4r claim held by this registry
-Transfer did:key:zQ3shnfXGt4r claim held by this registry
-Origin did:key:zQ3shnfXGt4r claim held by this registry
+Transformation did:key:zQ3shueJ69UR claim held by this registry
+Transfer did:key:zQ3shueJ69UR claim held by this registry
+Origin did:key:zQ3shueJ69UR claim held by this registry
 ```
 
 For your claim, select your passport, submission index and registry. Run [the full reader](dpp-protocol.md#gather-a-passports-evidence) with your DID in `claimIssuers` and anchoring key in `anchoringServices`. Expect `nativeAttestationSignature`, all three anchor checks and `issuerAuthority` to pass. An anchor without claim bytes leaves six checks `unknown`, listed on that page.
