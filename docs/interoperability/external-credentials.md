@@ -16,7 +16,7 @@ This profile accepts VC Data Model 2.0, a `did:web` issuer, one identified subje
 | JSON-LD contexts | Pin the credential's contexts in advance. The verifier never fetches a context from a URL the credential names. |
 | Evaluation and trust policies | Supply the evaluation time, a status policy and status-list fetcher, and an authority policy naming trusted issuers or explicitly requiring none. |
 
-Use `@bsv/dpp-credentials/exchange`. The root `@bsv/dpp-credentials` verifies Verifiable Supply Chain (VSC) SEAL credentials, a different representation with different rules. JSON parsing alone does not select the representation.
+Use `@bsv/dpp-credentials/exchange`. The root `@bsv/dpp-credentials` verifies the parked Verifiable Supply Chain (VSC) SEAL credentials, a different representation with different rules. JSON parsing alone does not select the representation.
 
 ## Verify the vector file's credentials
 
@@ -143,7 +143,7 @@ The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab
 |---|---|
 | Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
 | Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/src/exchange.ts) |
-| Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) |
+| Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/verification.md) |
 | Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability) |
 
 Next: the [attestation verifier](../implement/roles/attestation-verifier.md), which checks the anchor once a registry has anchored the credential's exact bytes.

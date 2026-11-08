@@ -1,6 +1,8 @@
 # VSC draft compatibility profile
 
-**Profile: vsc-draft-compat/0.1.0. Status: implementation draft.** This profile selects and implements a documented subset of the Verifiable Supply Chain Community Group drafts. It is not a W3C Standard or certification. It is separate from native BSV token validity and the generic anchor format.
+**Profile: vsc-draft-compat/0.1.0. Status: implementation draft, parked.** This profile selects and implements a documented subset of the Verifiable Supply Chain Community Group drafts. It is not a W3C Standard or certification. It is separate from native BSV token validity and the generic anchor format.
+
+**Parked.** This is an optional compatibility profile that no release selection requires and that the programme does not currently develop. The reference implementation, `@bsv/dpp-credentials`, keeps it built and tested, and its manifest, artefacts and fixtures stay as published. An implementer need not support it. A reader that meets its representation, `vsc-seal-json-v1`, without implementing it follows [`exchange.md`](exchange.md) §1: it indexes the commitment and does not verify the content, and its report under [`verification.md`](verification.md) §4 answers `anchorDigestAndMetadataBinding` `unknown` with the reason `representation-unsupported`. Credentials other parties issue are verified under [`external-credential-profile.md`](external-credential-profile.md), which states its own rules and is not parked.
 
 ## 1. Sources, precedence and scope
 

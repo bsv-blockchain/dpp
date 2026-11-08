@@ -1,7 +1,7 @@
 {
   "selectionVersion": "1",
   "selectionId": "dpp-release-2026-11",
-  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
+  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added and epcis-source-exchange-1 withheld: from 9 November 2026 the VSC compatibility profile and the EPCIS-to-SEAL mappings are parked, and that claim's rows include the mapping. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
   "releaseSet": "dpp-release-2026-11",
   "claims": [
     {
@@ -45,11 +45,6 @@
       "disposition": "required"
     },
     {
-      "id": "vsc-draft-compat-0.1.0-implemented-subset",
-      "kind": "draft-compatibility",
-      "disposition": "required"
-    },
-    {
       "id": "profile-governance",
       "kind": "component",
       "disposition": "required"
@@ -90,11 +85,6 @@
       "disposition": "required"
     },
     {
-      "id": "epcis-source-exchange-1",
-      "kind": "component",
-      "disposition": "required"
-    },
-    {
       "id": "external-credential-ecdsa-1",
       "kind": "component",
       "disposition": "required"
@@ -111,10 +101,28 @@
       "rationale": "Two processes under one administration prove the synchronisation mechanism and never independence; EXPORT-3-durable-publication is a gap until separately administered operators exercise replication and recovery."
     },
     {
+      "id": "vsc-draft-compat-0.1.0-implemented-subset",
+      "kind": "draft-compatibility",
+      "disposition": "withheld",
+      "rationale": "Parked: vsc-draft-compat/0.1.0 is an optional compatibility profile that no release requires and the programme does not currently develop. The reference implementation keeps it built and tested and its rows stay tested, but this release does not claim it."
+    },
+    {
       "id": "vsc-draft-compat-0.1.0-full",
       "kind": "draft-compatibility",
       "disposition": "withheld",
-      "rationale": "The upstream context and executable suite are unavailable at the pinned revision; only the implemented subset is claimed."
+      "rationale": "The upstream context and executable suite are unavailable at the pinned revision, and the profile is parked; neither the full profile nor the implemented subset is claimed."
+    },
+    {
+      "id": "epcis-source-exchange-1",
+      "kind": "component",
+      "disposition": "withheld",
+      "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange: EPCIS-5-source-reference and EPCIS-6-mapping-outcomes belong to the mapping, which no release requires. Every row stays tested and the reference keeps the source exchange and the mapping built and tested, but the ledger defines no claim over the source exchange alone, so this release makes none."
+    },
+    {
+      "id": "epcis-vsc-mapping-2",
+      "kind": "component",
+      "disposition": "withheld",
+      "rationale": "Parked with the VSC compatibility profile it maps into: epcis-vsc@2 is an optional mapping profile that no release requires and the programme does not currently develop. The reference keeps it built and tested."
     },
     {
       "id": "untp-0.7.0-pilot",
@@ -148,7 +156,7 @@
     }
   ],
   "exclusions": [],
-  "reviewedAt": "2026-09-27",
+  "reviewedAt": "2026-11-09",
   "reviewOwner": "dpp maintainers",
   "notes": "The qualification of this selection says which claims the ledger's evidence supports for the packages of the candidate set. It is not a statement about the deployed index, the registry runtime, the application, product compliance or any European standard."
 }

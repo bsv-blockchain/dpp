@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-credentials",
   "version": "0.2.0-beta.6",
-  "description": "Experimental prerelease: Versioned VSC draft compatibility profile with its proof suites and verification, the EPCIS source helpers with pinned EPCIS 2.0.1 artefacts, and the external ecdsa-rdfc-2019 credential verifier",
+  "description": "Experimental prerelease: W3C Verifiable Credential verification (external ecdsa-rdfc-2019 credentials, Bitstring Status List status, did:web resolution, strict parsing) and the EPCIS 2.0.1 source helpers, with the parked VSC draft compatibility profile still exported",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",

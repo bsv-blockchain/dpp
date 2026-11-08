@@ -69,7 +69,7 @@ Match these gaps to your version using [known limitations and open questions](..
 
 ## Conformance evidence
 
-The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/manifest.json) records implementation and evidence per requirement; read it with the [November candidate selection](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/selections/dpp-release-2026-11.json). Conformance claims are separate from passport lifecycle claims.
+The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/manifest.json) records implementation and evidence per requirement; read it with the [November candidate selection](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/conformance/selections/dpp-release-2026-11.json). Conformance claims are separate from passport lifecycle claims.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|
@@ -78,7 +78,7 @@ The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970
 | `EXPORT-3-durable-publication` | gap | An independently administered replica and deployment recovery objectives have not been demonstrated. |
 | `READY-2-eu-registry` | gap | No Union DPP Registry integration. |
 
-The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/demonstrations/independent-implementation-2026-09.json) has no recorded full completion. Its custody scenario still names version 1 pending the second party's acceptance of version 2. The selection continues to withhold federated operation, full VSC compatibility, the UNTP pilot, European conformity, battery product qualification and version 1.0 readiness. Inspect evidence through [conformance review](../reference/conformance.md). Passing tests or publishing packages does not establish these outcomes.
+The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/demonstrations/independent-implementation-2026-09.json) has no recorded full completion. Its custody scenario still names version 1 pending the second party's acceptance of version 2. The selection continues to withhold federated operation, full VSC compatibility, the UNTP pilot, European conformity, battery product qualification and version 1.0 readiness. Since 9 November 2026 it also withholds the implemented subset of the VSC compatibility profile and the `epcis-vsc@2` mapping, both parked: still built and tested, required by no release. It withholds `epcis-source-exchange-1` too, because that claim's rows include the parked `epcis-vsc@1` mapping and the ledger has no claim over the source exchange alone, so `epcis-json@1` stays implemented and tested but is not claimed. Inspect evidence through [conformance review](../reference/conformance.md). Passing tests or publishing packages does not establish these outcomes.
 
 ## Open decisions
 

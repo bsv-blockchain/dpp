@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-08",
+  "updatedAt": "2026-11-09",
   "sources": [
     {
       "id": "spec-record-model",
@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "4879ef37e3ee9c78398b8a910f2fde71feac9f36f0f7086d60d4625ee5c2d385"
+      "digest": "3945eb85c043ae3d2beb87d3d23405bb1e048b23983908e9ba0b8f25c5a69d9a"
     },
     {
       "id": "spec-verification",
@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "c4914af1ea5eca1139526e36a233cd0a0efe70cec90aac87572577339d1045cd"
+      "digest": "c167e3ad98f49a8983378192b07528e9ea96ea70e8ddcd1be3a68f27bbf47162"
     },
     {
       "id": "spec-conformance",
@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "24b1f9d862a4830ab127a199921714fceb96cda448c731bed8724cd5c8e8e47b"
+      "digest": "6cd9ffee02c866046f9ba343d8bea9c4c81c6fbb4cea573f0901a4434056f31c"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -410,7 +410,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/exchange.md",
-      "digest": "985ba0365cb32077e9c4001f0df3c2f6cad698a82bd73f183239c90bb8a59d47"
+      "digest": "e3f643c12408651c199b02a0d37078755ff3e3efb823a763a7047a56c392d7b4"
     },
     {
       "id": "contract-native-evidence-extension",
@@ -538,7 +538,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
+      "digest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
     },
     {
       "id": "spec-external-credential-profile",
@@ -2794,7 +2794,7 @@
         "fixtures/attestation-anchor-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
       "notes": "Implemented in the registry repository against the shared fixture; assessed there, recorded here."
     },
@@ -4356,7 +4356,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -5313,9 +5313,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -5399,9 +5399,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
     },
     {
       "id": "EPCIS-5-source-reference",
@@ -5428,9 +5428,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
@@ -5457,9 +5457,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616",
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85",
       "notes": "Until 2026-11-08 the reference mapped an inspection, repair or sensor reading reporting active, contrary to the published maintenance-observation limit of epcis-vsc@1; a repair with nothing else to report came back lossless. Such an observation (an OBSERVE event, or a TransformationEvent, whose action is the caller's decision) is now refused; an ObjectEvent that commissions or decommissions its objects at those steps is not an observation and maps as before. The published v1 vectors, which hold no such event, are unchanged. v2.json pins the outcomes under epcis-vsc@2."
     },
     {
@@ -5513,9 +5513,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616",
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
@@ -5539,9 +5539,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616",
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
@@ -5570,9 +5570,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
+      "sourceDigest": "590c2516f090872ed0e5512a7cf91422cbf186b3aa3e086a69e151e74f8c6b85"
     },
     {
       "id": "EPCIS-11-cbv-dispositions",

@@ -66,7 +66,7 @@ A claim never spends the passport or requires its controller's agreement. A vali
 
 A native claim has no payload. Today it records the event type, the time, the issuer and the subject, but not what was done: a repair claim cannot say which part was replaced or who did the work. A mapping to an external event model therefore finds none of the evidence it asks for, and reports `insufficient-data` wherever the profile requires that evidence. Where such details belong is not settled in the standard yet ([known limitations](../operate/limitations.md)).
 
-Partners requesting W3C verifiable credentials receive a third representation; native builds do not need it ([verifiable credentials](verifiable-credentials.md)).
+A W3C verifiable credential a partner issues is a third representation, which the packages verify beside the passport when it uses the supported external profile; native builds do not need it ([verifiable credentials](verifiable-credentials.md)).
 
 ## Choose which to create
 
@@ -106,7 +106,7 @@ Retrieving an updated passport does not establish that its repair claim was retr
 | Native claims, their event types and their anchors | [Attestation rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) |
 | Access tiers and the owner tier | [Profiles](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) section 3, [record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md#7-the-owner-tier-binding) section 7 |
 | Historical anchor records | [Historical format](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) |
-| Credential representations | [VSC profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md), [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
+| Credential representations | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md), the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/vsc-profile.md) |
 
 The record format selects its source. The [fixture guide](../implement/fixture-runner.md#source-gaps) lists source disagreements. Historical-anchor issuers beyond `did:key` remain an [open decision](../start/status.md#open-decisions); new anchors are unaffected.
 

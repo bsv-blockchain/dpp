@@ -13,6 +13,8 @@ A representation is one exact byte contract for one credential format, identifie
 | `untp-0.7.0-jose@1` (proposed) | `application/vc+jwt` | Exact compact JWS bytes as issued | ES256K, and where a consumer requires it a separately keyed ES256 | §5 and the exchange profile manifest |
 | `vc-di-ecdsa-rdfc-2019@1` | `application/vc+ld+json` | Exact UTF-8 bytes of the issued credential including its proof | DataIntegrityProof `ecdsa-rdfc-2019` over a P-256 Multikey, verify only | [`external-credential-profile.md`](external-credential-profile.md) |
 
+`vsc-seal-json-v1` is parked with its profile: it stays registered and the reference implementation keeps it built and tested, but no release requires it and an implementer need not implement it.
+
 A reader that meets a representation it does not implement indexes the commitment and reports content verification `unsupported` (`representation-unsupported` in [`verification.md`](verification.md)); it never guesses, never downgrades to a weaker check and never reads one representation's bytes under another's rules. Adding a representation is a new profile manifest and a new row here, never a change to an existing row.
 
 ## 2. Exchange profile manifests

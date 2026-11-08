@@ -44,13 +44,13 @@ This example refuses nothing; use [the cases to run](#the-cases-to-run) for refu
 3. **Verify a native claim** (rules section 3). Accept exactly the allowed properties. Serialise all except `signature` as restricted canonical JSON, hash with SHA-256, and verify the DER signature under the issuer key's BRC-42 child: protocol `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. A `did:key` issuer names the key; otherwise `issuerKeyDid` names it, and its relationship to the issuer needs separate evidence.
 4. **Decode the anchor** (rules section 5). Check every layout and derivation rule in the anchor table below.
 5. **Bind the anchor to the claim** (rules section 6). Field 2 must equal the complete secured bytes' SHA-256; for native claims, hash restricted canonical JSON including `signature`. The anchor's issuer, subject, type, representation and media type must equal the verified claim's.
-6. **Compare the subject** ([verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) section 3) with the identifier your caller expects.
+6. **Compare the subject** ([verification](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/verification.md) section 3) with the identifier your caller expects.
 7. **Report each check separately** (verification section 4): `nativeAttestationSignature`, `anchorSignature`, `anchorKeyDerivation`, `anchorDigestAndMetadataBinding`, `subjectBinding`, `issuerAuthority` and `evidenceAvailability`, among the sixteen. A valid claim without an anchor is not a completed anchor check; a valid anchor without the claim cannot establish what the claim says.
 
 | Representation | Format and proof rules |
 |---|---|
 | `dpp-lifecycle-json-v1` | Native claim, rules section 3 |
-| `vsc-seal-json-v1` | SEAL, the event credential of the Verifiable Supply Chain (VSC) profile |
+| `vsc-seal-json-v1` | SEAL, the event credential of the parked Verifiable Supply Chain (VSC) profile; a verifier need not implement it |
 | `vc-di-ecdsa-rdfc-2019@1` | [External W3C credential](../../interoperability/external-credentials.md) |
 | `legacy-uora-json` | Record predating the native format; [legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) sections 3 to 5 |
 
@@ -154,7 +154,7 @@ Live identity assurance is Ring 0: the platform vouches only for the account and
 
 - [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md)
 - [spec/identity.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/identity.md)
-- [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md)
+- [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/verification.md)
 - [spec/legacy-uora-anchor-v3.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md), for the historical anchor
 - [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/attestation-anchor-v1.json) and its [vector form](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/attestation-anchor/v1.json)
 

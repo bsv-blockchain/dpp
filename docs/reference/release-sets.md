@@ -22,7 +22,7 @@ Installers, implementers and reviewers can use this page to select a release set
 | Licence | Apache 2.0 |
 | npm tag | `latest`; install exact versions and retain the lockfile |
 | Receipt | None yet; the [beta.11 receipt](beta-11-publication.md) covers the last published set |
-| Selection | `conformance/selections/dpp-release-2026-11.json`, retaining the claims required and withheld by the preceding candidate ([conformance](conformance.md)) |
+| Selection | `conformance/selections/dpp-release-2026-11.json`, retaining the claims required and withheld by the preceding candidate, except that it withholds the parked VSC compatibility profile and the EPCIS claims whose rows include its mappings ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-10`, this set carries the seven decisions of bsv-blockchain/dpp#177:
 

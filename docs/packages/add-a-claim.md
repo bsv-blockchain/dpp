@@ -216,7 +216,7 @@ For your claim, select your passport, submission index and registry. Run [the fu
 - **Finding the registry.** No anchor, passport state, capability document or GS1 link names it, so a reader learns it from the passport's publisher, outside the standard.
 - **The `recordId` spelling.** The specification calls it the exact state reference without fixing its form.
 - **What was done.** A claim carries no payload, only the event's type and time, so it cannot say what was repaired, by whom or where, or hold the evidence a profile's event mapping asks for.
-- **Which types exist.** None of the four lifecycle event types is for a test or certification as such. A certifier needing its own vocabulary can issue a W3C credential with [@bsv/dpp-credentials](dpp-credentials.md) instead.
+- **Which types exist.** None of the four lifecycle event types is for a test or certification as such. A certifier needing its own vocabulary can issue a W3C credential with its own tooling instead; [@bsv/dpp-credentials](dpp-credentials.md) verifies it under `vc-di-ecdsa-rdfc-2019@1`.
 - **Being accepted.** Identity is at Ring 0: your key identifies you, and only the platform account vouches for who holds it. No route yet puts a claimant on readers' lists, and a role such as a notified body for conformity claims would need an identity ring that is not live ([identity and authority](../learn/identity-and-authority.md)).
 - **Writing to the hosted services.** Storing on the hosted registry and announcing to the hosted index need tokens the programme holds.
 
@@ -228,6 +228,6 @@ For your claim, select your passport, submission index and registry. Run [the fu
 |---|---|
 | Decide between a claim and a passport update | [Passport states and attestations](../learn/passport-and-attestations.md) |
 | See how readers decide whom to accept | [Identity and authority](../learn/identity-and-authority.md) |
-| Issue a claim as a W3C credential instead | [Verifiable credentials](../learn/verifiable-credentials.md), [external credential verification](../interoperability/external-credentials.md) |
+| Issue a W3C credential with your own tooling instead | [Verifiable credentials](../learn/verifiable-credentials.md), [external credential verification](../interoperability/external-credentials.md) |
 | Hold claims yourself | [Registry](../implement/roles/registry.md) |
 | Read the report a reader makes of your claim | [Gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence) |

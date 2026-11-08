@@ -20,7 +20,7 @@ The standard defines roles and rules; packages implement some rules; services ru
 | Check supplied passport evidence | Reader and evidence for its checks | Wallet funding, live publishing, own index and registry |
 | Read live passports | Reader, index holding records, referenced evidence, required header/proof source | Own index, writer and registry |
 | Issue or update passports | Authorised issuer and publisher signing, selected custody behaviour, valid data and identifier, funded write path, admitting index, retained evidence | Claims, credential exchange, additional peer indexes |
-| Add native lifecycle claims | Native signing/verification; registry and anchoring for the published storage workflow | VSC, unless the credential or exchange format requires it |
+| Add native lifecycle claims | Native signing/verification; registry and anchoring for the published storage workflow | W3C credentials, unless a partner's credential or exchange format requires them |
 | Operate an index | Compatible implementation, admission policy, storage, evidence checking, operational controls | Passport user interface and registry outside your service scope |
 | Implement independently | Role specifications, contracts, fixtures and evidence report | Reference libraries |
 
@@ -37,7 +37,7 @@ These libraries are code components. Dependencies included by a starter or anoth
 | `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers; select when using these reference helpers |
 | `@bsv/dpp-profiles` | Profile manifests, payload schemas and supported helpers; select for its product data or interoperability tooling |
 | `@bsv/dpp-overlay` | Index runtime, topics and lookups; included by the index starter, installed directly only for a custom or embedded index |
-| `@bsv/dpp-credentials` | Supported credential and exchange features; select for those formats. Native lifecycle claims do not require it. |
+| `@bsv/dpp-credentials` | Verification of W3C credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers), and EPCIS source import; select for those formats. Native lifecycle claims do not require it. |
 
 ### Runtime and version choice
 
