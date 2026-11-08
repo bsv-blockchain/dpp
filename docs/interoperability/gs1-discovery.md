@@ -36,7 +36,7 @@ Build a resolver with published `@bsv/dpp-profiles` helpers, or name an external
 | `describeResolver` | Build description files |
 | `selectLink` | Select links on the client |
 
-The [specification](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/gs1-discovery.md), section 4, also names the reference registry's resolver. That registry has no public source, package or image ([registry](../implement/roles/registry.md)). Despite its name, `dpp-resolver.bsvb.net` is the claim registry: its capability document reports `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. A resolver for the identifiers the hosted application issued is being rolled out at `dpp.bsvb.net`; rely on it only once `https://dpp.bsvb.net/.well-known/gs1resolver` answers with a description file ([hosted reference](../deployment.md#the-hosted-reference)).
+The [specification](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/gs1-discovery.md), section 4, also names the reference registry's resolver. That registry has no public source, package or image ([registry](../implement/roles/registry.md)). Despite its name, `dpp-resolver.bsvb.net` is the claim registry: its capability document reports `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. The hosted application at `dpp.bsvb.net` resolves the identifiers minted under that host: it publishes `/.well-known/gs1resolver`, and each passport page is at `/passport/01/<gtin>/21/<serial>`, registered as the item's `gs1:dpp` default ([hosted reference](../deployment.md#the-hosted-reference)).
 
 ## Follow a scanned identifier
 
