@@ -50,7 +50,7 @@ This example refuses nothing; use [the cases to run](#the-cases-to-run) for refu
 | Representation | Format and proof rules |
 |---|---|
 | `dpp-lifecycle-json-v1` | Native claim, rules section 3 |
-| `vsc-seal-json-v1` | SEAL, the event credential of the Verifiable Supply Chain (VSC) profile |
+| `vsc-seal-json-v1` | SEAL, the event credential of the parked Verifiable Supply Chain (VSC) profile; a verifier need not implement it |
 | `vc-di-ecdsa-rdfc-2019@1` | [External W3C credential](../../interoperability/external-credentials.md) |
 | `legacy-uora-json` | Record predating the native format; [legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) sections 3 to 5 |
 

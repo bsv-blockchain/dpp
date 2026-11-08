@@ -59,7 +59,7 @@ The latest complete publication with a receipt here is `dpp-release-2026-10-10` 
 |---|---|---|---|
 | Protocol | `@bsv/dpp-protocol@0.3.0-beta.9` | `0.3.0-beta.10` | Passport records, verification and native lifecycle claims |
 | Profiles | `@bsv/dpp-profiles@0.3.0-beta.9` | `0.3.0-beta.10` | Manifests, payload schemas and supported projection/discovery helpers |
-| Credentials | `@bsv/dpp-credentials@0.2.0-beta.5` | `0.2.0-beta.6` | Selected VSC credential/exchange features; unnecessary for native lifecycle-claim signing |
+| Credentials | `@bsv/dpp-credentials@0.2.0-beta.5` | `0.2.0-beta.6` | W3C credential verification and EPCIS source import, with the parked VSC profile still exported; unnecessary for native lifecycle-claim signing |
 | Overlay | `@bsv/dpp-overlay@0.4.0-beta.12` | `0.4.0-beta.13` | Embedded topic managers/lookup services; starters declare it, HTTP clients need none |
 | SDK | `@bsv/sdk@2.8.10` | `2.8.10` | Declare directly when importing wallet or transaction APIs |
 
@@ -92,7 +92,7 @@ Use this workflow map, then follow [build an application](build-an-application.m
 | Sign, anchor and verify lifecycle claims | Protocol `signLifecycleClaim`, `buildAttestationAnchor`, `verifyLifecycleClaim` | Retain exact secured bytes; fund and broadcast the separate anchor; configure authority and status evidence | Rules and services |
 | Find passport states and anchors | Overlay topic managers and lookup services, or the BRC-24 HTTP contract | Choose an operator; retrieve and verify the returned evidence; retry announcement using the same transaction | Overlay services |
 | Validate profiles and project data | Profiles `readManifest`, `missingRequired`, `projectPassport` and data exports | Select exact profile versions; supply sources, policy and a format-asserting schema validator | Profiles and projections |
-| Credentials and source exchange | VSC `verifySeal`, `./exchange`, `./epcis-source` | Supply selected suites, authority/status evidence and durable source retention | Credential and interoperability profiles |
+| Credentials and source exchange | `./exchange`, `./epcis-source`, and the parked VSC `verifySeal` | Supply selected suites, authority/status evidence and durable source retention | Credential and interoperability profiles |
 | Export and import evidence | Protocol `signEvidenceManifest`, `inspectEvidencePackage`; overlay `buildEvidenceExportPart`, `joinEvidenceExport` | Retain and transport files; check digests and reverify under the reader's own policy | Portable evidence |
 
 The application service is outside this release. Supply application adapters rather than inheriting its demonstration persistence and identities. Reference packages supply shared protocol rules, excluding a hosted registry, accounts and durable operation scheduling.

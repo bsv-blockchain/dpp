@@ -49,6 +49,6 @@ Readers, application teams and operators can use this glossary to interpret DPP 
 | Topic | The admission rules an index applies to one kind of record: `tm_dpp` for passport states, `tm_attestation` for claim anchors. |
 | Two rails | The passport's state chain and, separately, claims with their anchors. Each can be checked without the other. |
 | UHRP | A content address derived from a file's hash. The owner tier's hash is already its UHRP address; store its encrypted file anywhere serving that address. |
-| VSC | Verifiable Supply Chain, a W3C Community Group draft for supply-chain credentials called SEALs. `@bsv/dpp-credentials` implements a documented subset; it is not a W3C Standard. |
+| VSC | Verifiable Supply Chain, a W3C Community Group draft for supply-chain credentials called SEALs. `@bsv/dpp-credentials` implements a documented subset; it is not a W3C Standard. The subset is parked: still built and tested, required by no release. |
 | W3C Verifiable Credential | A signed credential in the W3C format. The packages verify selected external formats beside the native claim. |
 | WhatsOnChain | The public BSV block explorer the packages use as their header source. |

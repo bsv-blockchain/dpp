@@ -16,7 +16,7 @@ This profile accepts VC Data Model 2.0, a `did:web` issuer, one identified subje
 | JSON-LD contexts | Pin the credential's contexts in advance. The verifier never fetches a context from a URL the credential names. |
 | Evaluation and trust policies | Supply the evaluation time, a status policy and status-list fetcher, and an authority policy naming trusted issuers or explicitly requiring none. |
 
-Use `@bsv/dpp-credentials/exchange`. The root `@bsv/dpp-credentials` verifies Verifiable Supply Chain (VSC) SEAL credentials, a different representation with different rules. JSON parsing alone does not select the representation.
+Use `@bsv/dpp-credentials/exchange`. The root `@bsv/dpp-credentials` verifies the parked Verifiable Supply Chain (VSC) SEAL credentials, a different representation with different rules. JSON parsing alone does not select the representation.
 
 ## Verify the vector file's credentials
 

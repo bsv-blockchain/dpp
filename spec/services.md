@@ -28,7 +28,7 @@ Announcement failure changes discoverability, not transaction inclusion. Retry t
 
 ## 3. The attestation registry
 
-The registry stores immutable secured bytes, evaluates the selected representation and trust policy, and may anchor accepted evidence. Issuer, registry, anchoring service and overlay are separate roles. New submissions select either the native claim format or the VSC representation explicitly. Invalid or unsupported full credentials MUST NOT fall through to legacy intake.
+The registry stores immutable secured bytes, evaluates the selected representation and trust policy, and may anchor accepted evidence. Issuer, registry, anchoring service and overlay are separate roles. New submissions select the native claim format or a registered credential representation ([`exchange.md`](exchange.md) §1) explicitly. Invalid or unsupported full credentials MUST NOT fall through to legacy intake.
 
 [The registry contract](../contracts/registry.yaml) defines the implementation profile's intake, validation, history, proof and capability routes. It is our service contract, not a claim that VSC standardises these paths. Native records retain an explicit tokenRecordId for token-history assembly. A VSC credential does not acquire a fabricated token state merely by being stored.
 

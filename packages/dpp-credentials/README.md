@@ -1,10 +1,19 @@
-# VSC draft compatibility profile
+# @bsv/dpp-credentials
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
+`@bsv/dpp-credentials` verifies W3C Verifiable Credentials that other parties issue in one supported profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers), and reads GS1 EPCIS 2.0.1 source documents as evidence beside a passport. It has no BSV runtime dependency. It does not claim W3C certification, completion of upstream conformance tests, or regulatory compliance.
+
+| Entry point | What it is for |
+|---|---|
+| `@bsv/dpp-credentials/exchange` | Verify-only intake of external credentials under `vc-di-ecdsa-rdfc-2019@1`: `verifyExternalCredential`, strict parsing of the exact bytes (`parseExternalCredentialBytes`), authenticated Bitstring Status List checking (`verifyBitstringStatus`), bounded `did:web` resolution through `createExternalDocumentLoader`, and `externalCredentialVerifierFor` for the passport verification report. |
+| `@bsv/dpp-credentials/epcis-source` | The EPCIS 2.0.1 source helpers of `epcis-json@1`, with the pinned schema and context. |
+| `@bsv/dpp-credentials` | Re-exports the EPCIS source helpers and the general `createDidWebResolver` and `parseStrictJsonBytes`. It also still exports the parked VSC compatibility profile and its EPCIS mappings, described under [Parked: VSC draft compatibility profile](#parked-vsc-draft-compatibility-profile). |
+| `@bsv/dpp-credentials/artifacts/*` | The pinned W3C, EPCIS and external passport artefacts and the parked profile's owned context and schemas, as files. |
+
 ## Install
 
-This is a pre-1.0 candidate. The published version is `@bsv/dpp-credentials@0.2.0-beta.5`, selected by the October set; this source tree is the November candidate, `0.2.0-beta.6`, which is not yet published and differs from beta.5 only in a development dependency of its manifest. Install the exact published version from npm:
+This is a pre-1.0 candidate. The published version is `@bsv/dpp-credentials@0.2.0-beta.5`, selected by the October set; this source tree is the November candidate, `0.2.0-beta.6`, which is not yet published. It refuses a maintenance observation under `epcis-vsc@1` as that profile's published limit says, adds the proposed `epcis-vsc@2` mapping profile, and describes the package with the VSC profile parked. Install the exact published version from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
@@ -14,11 +23,23 @@ npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
 
 The runtime and its exchange and EPCIS subpaths require Node >=22 and ECMAScript modules. Browser runtime use is unsupported; artefact exports are plain data. No repository checkout or package build is needed after installation.
 
-`@bsv/dpp-credentials` implements the local `vsc-draft-compat/0.1.0` profile against the VSC Community Group draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It has no BSV runtime dependency. It does not claim W3C certification, completion of upstream conformance tests, or regulatory compliance.
+## External credential verification
 
-The package includes strict secured SEAL parsing, an owned JSON-LD context and schema, Ed25519Signature2020 issuance and verification, BBS issuance and request-bound selective disclosure, authenticated status and issuer-authority checks, and custody DAG and correction evaluation. It preserves all five EPCIS event types in signed round-trip extensions. Unsupported or insufficient mappings fail instead of inventing event information.
+`@bsv/dpp-credentials/exchange` is a separate entry point for the `vc-di-ecdsa-rdfc-2019@1` representation of `spec/external-credential-profile.md`: a W3C Verifiable Credentials 2.0 credential secured with a `DataIntegrityProof` under `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists the key for assertion. `verifyExternalCredential` reports parse, context set, payload schema, proof, issuer binding, subject binding, temporal, status, authority and availability as separate checks; a P-384 key, another cryptosuite, an inline context or a second credential subject is `unsupported`, never a pass and never a silent fail. The proof primitives are the maintained `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` and `@digitalbazaar/ecdsa-multikey`; no signature or canonicalisation code is written here. The main entry point's `verifySeal` and `verifyCredentialProof` are untouched and keep refusing every context outside the SEAL set. `externalCredentialVerifierFor` adapts the result to the verification report's credential checks, and a reformatted credential whose RDF proof still verifies is reported apart from the exact bytes an anchor commits to, which differ.
 
-## Issuance and verification
+A worked call, with the policy mapped from the vector file, is on the [external credentials page](../../docs/interoperability/external-credentials.md).
+
+## EPCIS source exchange
+
+`@bsv/dpp-credentials/epcis-source` carries the pinned EPCIS 2.0.1 JSON Schema and JSON-LD context (`artifacts/epcis/`, with their digests in `NOTICE.md`) and the helpers of the `epcis-json@1` source exchange profile (`spec/epcis-interoperability.md` of the standard). `parseEpcisSource` reads exact bytes under the disclosed limits (2 MiB, depth 64, duplicate keys, malformed UTF-8 and inexact numbers refused before anything is retained) and answers with the envelope kind, every event's JSON pointer and identifier, and the context declarations as written; `validateEpcisDocument` validates against the pinned schema and checks claimed GS1 identifiers without mutating, coercing or stripping a field; `epcisEventBodyDigest` is the RFC 8785 digest of an event body without its `recordTime` and `errorDeclaration`, so equivalent formatting yields one digest and a changed body another; `classifyEventArrival` names a repeat `duplicate`, a changed record time or error declaration `new-observation` and a changed body `conflict`; `localEventIdentity` labels an event that carries no identifier. `epcisSourceReference` builds the signed source reference `urn:bsv:dpp:epcis-source:1` that a SEAL from the parked mapping carries beside the round-trip extension.
+
+## Parked: VSC draft compatibility profile
+
+The `vsc-draft-compat/0.1.0` profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. Their modules stay exported from the root entry point and are still built and tested, with unchanged behaviour, and an implementer need not support them. The `dpp-release-2026-11` candidate does not claim them, nor `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping; earlier sets, including the published `dpp-release-2026-10-10` that selects `0.2.0-beta.5`, claimed the implemented subset and `epcis-vsc@1`. New work that verifies credentials from other issuers belongs on `@bsv/dpp-credentials/exchange`.
+
+The root entry point implements the local `vsc-draft-compat/0.1.0` profile against the Verifiable Supply Chain (VSC) Community Group draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It includes strict secured SEAL parsing, an owned JSON-LD context and schema, Ed25519Signature2020 issuance and verification, BBS issuance and request-bound selective disclosure, authenticated status and issuer-authority checks, and custody DAG and correction evaluation. It preserves all five EPCIS event types in signed round-trip extensions. Unsupported or insufficient mappings fail instead of inventing event information.
+
+### Issuance and verification
 
 ```ts
 import {
@@ -62,7 +83,7 @@ Required issuer authority uses signed `VscEventAuthorisation` credentials. Their
 
 `createDocumentLoader` supplies pinned standard and local contexts. The optional `createDidWebResolver({allowedOrigins})` resolves permitted HTTPS origins, refusing redirects and bounding time and size. Other DID methods can be supplied through the document-loader interface. The loader must return the requested issuer DID document, its authorised assertion methods and associated public key material. Resolving a key does not by itself authorise that key to sign for an issuer.
 
-## Proofs and selective disclosure
+### Proofs and selective disclosure
 
 `issueSealEd25519` uses the maintained Ed25519Signature2020 suite with JSON-LD/RDF canonicalisation. It does not substitute an Ed25519 JWS or a signature over JSON text. `issueSealBbs` uses the maintained `bbs-2023` cryptosuite. These use different keys and produce independently secured representations; a key's DID relationship must authorise its actual proof purpose.
 
@@ -72,7 +93,7 @@ The disclosure helper is a cryptographic primitive, not an access-control endpoi
 
 This profile always discloses the credential subject, including mirrored predecessor references. Optional custody fields, location details and domain extensions can be withheld. Empty/null RDF values do not produce statements; the original-record `correctionOf: null` marker is restored after derivation. Non-null correction references are mandatory signed disclosures. A disclosed credential is verified for its revealed claims and request binding, not mistaken for the complete originally anchored byte representation.
 
-## Custody and corrections
+### Custody and corrections
 
 Graph verification uses backward parent references, path-local cycle detection and a completed-node cache. Valid diamond graphs are permitted. Default limits are depth 64, 1,024 visited credentials, 256 parents and a 30-second graph resolution deadline. A limit or missing predecessor yields indeterminate verification.
 
@@ -84,7 +105,7 @@ Corrections retain the original credential and use a separate chain identifier w
 
 Results apply to the supplied/discovered evidence, recorded as `evidenceScope: 'provided-evidence'`. They do not establish global freshness, physical truth, legal ownership, or product-to-label binding.
 
-## Identifiers and BSV integration
+### Identifiers and BSV integration
 
 A VSC actor DID identifies the asserting actor. A physical product may separately use a UORA-style object DID in `eventVector.what.productIdentifiers`. Accounts, credential subjects, physical objects, controllers, custodians and signing keys are separate roles. No account-to-brand mapping or mandatory co-controller is inferred.
 
@@ -92,23 +113,15 @@ A VSC actor DID identifies the asserting actor. A physical product may separatel
 
 BSV tokenisation, wallet funding, token spend authority, transaction inclusion and overlay discovery stay outside this package. A BSV adapter can anchor the exact complete secured credential bytes and report those additional guarantees separately. Reading or verifying a SEAL requires no blockchain access. Physical-object DID addressing and secure physical binding remain separate capabilities from actor identity and cryptographic credential verification.
 
-## Artefacts and limits
+### Artefacts and limits
 
 The [manifest](artifacts/profile-0.1.0.json) records source revisions, implementation decisions and unresolved upstream conformance gates. The owned context uses `urn:bsv:vsc:context:0.1.0`; no invented bytes are served under the upstream draft's missing W3C context URL. Share the versioned artefacts through the package. General upstream interoperability without prior context distribution remains an explicit unmet gate.
 
 Pharmaceutical/food regulatory profiles, a full presentation HTTP protocol, independent implementation interoperability certification, regulatory rule engines and secure physical binding are not claimed by this package. Its tests exercise actual suites and evidence checks. Direct upstream-suite verification is useful interoperability evidence, but does not count as an independent implementation certification.
 
-## EPCIS source exchange
+### Mapping EPCIS events to SEALs
 
-`@bsv/dpp-credentials/epcis-source` carries the pinned EPCIS 2.0.1 JSON Schema and JSON-LD context (`artifacts/epcis/`, with their digests in `NOTICE.md`) and the helpers of the `epcis-json@1`, `epcis-vsc@1` and `epcis-vsc@2` interoperability profiles (`spec/epcis-interoperability.md` of the standard). `parseEpcisSource` reads exact bytes under the disclosed limits (2 MiB, depth 64, duplicate keys, malformed UTF-8 and inexact numbers refused before anything is retained) and answers with the envelope kind, every event's JSON pointer and identifier, and the context declarations as written; `validateEpcisDocument` validates against the pinned schema and checks claimed GS1 identifiers without mutating, coercing or stripping a field; `epcisEventBodyDigest` is the RFC 8785 digest of an event body without its `recordTime` and `errorDeclaration`, so equivalent formatting yields one digest and a changed body another; `classifyEventArrival` names a repeat `duplicate`, a changed record time or error declaration `new-observation` and a changed body `conflict`; `localEventIdentity` labels an event that carries no identifier; `epcisSourceReference` builds the signed source reference `urn:bsv:dpp:epcis-source:1` a mapped SEAL carries beside the round-trip extension.
-
-Both are exported from the root `@bsv/dpp-credentials`, not from `@bsv/dpp-credentials/epcis-source`. `mapEpcisEventWithReport` wraps `mapEpcisEvent`, which is unchanged, and answers with one of the four mapping outcomes: `lossless` only when every member of the event is expressed in the SEAL event vector or retained in the round-trip extension with nothing the profile's mapping limits name dropped, `transformed` with the unmapped semantics listed, `unsupported` for an event type, action or disposition the VSC profile does not express, and `insufficient-data` with every missing requirement named. The report answers under `epcis-vsc@1` by default; `{ profile: 'epcis-vsc@2' }` refuses an event carrying an error declaration and decides the disposition first through `CBV_DISPOSITION_CROSSWALK`, which classifies every CBV 2.0 disposition: the five the VSC custody model shares are carried verbatim where the event's type and action agree (`active` only on an `ObjectEvent` that commissions its objects, `in_transit` and `returned` on no `ObjectEvent` that commissions or decommissions them, `dispensed` and `destroyed` on no `ObjectEvent` that commissions them), and every other event is `unsupported` with a reason that opens with the mapping limit it cites (`custody-neutral`, `custody-destination-unnamed`, `lifecycle-conflict`, `custody-transition-unnamed`, `non-cbv-disposition`, `error-declaration`). Under `epcis-vsc@1` an inspection, repair or sensor reading recorded as an `OBSERVE` event or a `TransformationEvent` that reports `active` is `unsupported` as `maintenance-observation`, as its manifest says. A supplied source reference must name the profile the report is made under. Retention is never a lossless claim, nothing physical is fabricated to satisfy the SEAL, and a valid EPCIS event may remain evidence-only. Publication, idempotency, checkpoints and the pull client belong to the application service.
-
-## External credential verification
-
-`@bsv/dpp-credentials/exchange` is a separate entry point for the `vc-di-ecdsa-rdfc-2019@1` representation of `spec/external-credential-profile.md`: a W3C Verifiable Credentials 2.0 credential secured with a `DataIntegrityProof` under `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists the key for assertion. `verifyExternalCredential` reports parse, context set, payload schema, proof, issuer binding, subject binding, temporal, status, authority and availability as separate checks; a P-384 key, another cryptosuite, an inline context or a second credential subject is `unsupported`, never a pass and never a silent fail. The proof primitives are the maintained `@digitalbazaar/ecdsa-rdfc-2019-cryptosuite` and `@digitalbazaar/ecdsa-multikey`; no signature or canonicalisation code is written here. The main entry point's `verifySeal` and `verifyCredentialProof` are untouched and keep refusing every context outside the SEAL set. `externalCredentialVerifierFor` adapts the result to the verification report's credential checks, and a reformatted credential whose RDF proof still verifies is reported apart from the exact bytes an anchor commits to, which differ.
-
-A worked call, with the policy mapped from the vector file, is on the [external credentials page](../../docs/interoperability/external-credentials.md).
+`mapEpcisEvent` and `mapEpcisEventWithReport` are exported from the root `@bsv/dpp-credentials`, not from `@bsv/dpp-credentials/epcis-source`. `mapEpcisEventWithReport` wraps `mapEpcisEvent`, which is unchanged, and answers with one of the four mapping outcomes: `lossless` only when every member of the event is expressed in the SEAL event vector or retained in the round-trip extension with nothing the profile's mapping limits name dropped, `transformed` with the unmapped semantics listed, `unsupported` for an event type, action or disposition the VSC profile does not express, and `insufficient-data` with every missing requirement named. The report answers under `epcis-vsc@1` by default; `{ profile: 'epcis-vsc@2' }` refuses an event carrying an error declaration and decides the disposition first through `CBV_DISPOSITION_CROSSWALK`, which classifies every CBV 2.0 disposition: the five the VSC custody model shares are carried verbatim where the event's type and action agree (`active` only on an `ObjectEvent` that commissions its objects, `in_transit` and `returned` on no `ObjectEvent` that commissions or decommissions them, `dispensed` and `destroyed` on no `ObjectEvent` that commissions them), and every other event is `unsupported` with a reason that opens with the mapping limit it cites (`custody-neutral`, `custody-destination-unnamed`, `lifecycle-conflict`, `custody-transition-unnamed`, `non-cbv-disposition`, `error-declaration`). Under `epcis-vsc@1` an inspection, repair or sensor reading recorded as an `OBSERVE` event or a `TransformationEvent` that reports `active` is `unsupported` as `maintenance-observation`, as its manifest says. A supplied source reference must name the profile the report is made under. Retention is never a lossless claim, nothing physical is fabricated to satisfy the SEAL, and a valid EPCIS event may remain evidence-only. Publication, idempotency, checkpoints and the pull client belong to the application service.
 
 ## Licence
 

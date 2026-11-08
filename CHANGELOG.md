@@ -12,6 +12,12 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, the VSC profile and the EPCIS-to-SEAL mappings are parked
+
+- `vsc-draft-compat/0.1.0` and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and the programme does not currently develop. Their code, manifests, artefacts and vectors stay, still built and tested, and no export changes. `spec/vsc-profile.md`, `spec/epcis-interoperability.md` and `spec/exchange.md` §1 say so, and `spec/verification.md` and `spec/services.md` §3 no longer name the SEAL as the credential route; the `epcis-json@1` source exchange is unchanged.
+- `dpp-release-2026-11` withholds `vsc-draft-compat-0.1.0-implemented-subset`, `epcis-source-exchange-1`, whose rows include the mapping, and `epcis-vsc-mapping-2`, so the candidate makes no EPCIS conformance claim; `external-credential-ecdsa-1` stays required and the selection qualifies. Ledger statuses are unchanged.
+- `@bsv/dpp-credentials` is refocused on W3C Verifiable Credential verification: its README, package description and documentation page lead with external credential verification, status, `did:web` resolution, strict parsing and the EPCIS source helpers, and list the VSC modules as a parked profile. The documentation moves the SEAL and the mapping off the main path without removing a page.
+
 ### 2026-11-08, epcis-vsc@2 and the CBV disposition crosswalk
 
 - Fix: `mapEpcisEventWithReport` under `epcis-vsc@1` mapped an inspection, a repair or a sensor reading that reports the disposition `active`, although the published manifest's `maintenance-observation` limit refuses it; a repair with nothing else to report came back `lossless`. Such an observation, an `OBSERVE` event or a `TransformationEvent` (whose action is the caller's decision), is now `unsupported`, its reason opening `maintenance-observation:`. In the VSC custody model `active` is the origin, which no step enters, so the SEAL would have opened a new custody chain at an inspection or failed custody verification. An `ObjectEvent` whose action is `ADD` or `DELETE` commissions or decommissions its objects and is not an observation, and a maintenance step that reports a custody state, such as a sensor reading in transit, is a custody step: both map as before. `mapEpcisEvent` is unchanged and `fixtures/vectors/dpp/interoperability/epcis/v1.json` does not move.

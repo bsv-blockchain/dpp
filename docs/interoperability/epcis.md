@@ -1,14 +1,18 @@
 # EPCIS source exchange
 
-Teams with EPCIS 2.0 events from manufacturing, logistics or traceability systems can use this guide to retain unchanged source evidence beside a passport and map events to credential views. Imports never write passport states.
+Teams with EPCIS 2.0 events from manufacturing, logistics or traceability systems can use this guide to retain unchanged source evidence beside a passport. Imports never write passport states.
 
-Electronic Product Code Information Services (EPCIS) is the GS1 standard for observations such as making, packing or shipping an item. Both profiles below are implemented in `@bsv/dpp-credentials`:
+Electronic Product Code Information Services (EPCIS) is the GS1 standard for observations such as making, packing or shipping an item. `@bsv/dpp-credentials` implements these profiles:
 
-| Profile | Result |
-|---|---|
-| `epcis-json@1` | Retains EPCIS 2.0.1 JSON or JSON-LD exactly as received. |
-| `epcis-vsc@1` | Maps events to unsigned SEALs, the Verifiable Supply Chain (VSC) profile's event credentials. A separately authorised issuer may sign them. The default. |
-| `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. Proposed. |
+| Profile | Result | Status |
+|---|---|---|
+| `epcis-json@1` | Retains EPCIS 2.0.1 JSON or JSON-LD exactly as received, with its validation findings, event digests and arrival classification. | Current |
+| `epcis-vsc@1` | Maps events to unsigned SEALs, the Verifiable Supply Chain (VSC) profile's event credentials. A separately authorised issuer may sign them. | Parked |
+| `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. | Parked, proposed |
+
+The two mapping profiles are parked with the VSC profile: they are still built and tested, but no release requires them and the programme does not currently develop them. [Parked: map events to SEALs](#parked-map-events-to-seals) keeps their procedures for existing users.
+
+The current candidate, `dpp-release-2026-11`, makes no EPCIS conformance claim: the ledger's only EPCIS claim, `epcis-source-exchange-1`, also covers the parked `epcis-vsc@1` mapping, so its selection withholds it. `epcis-json@1` itself is not parked, and its rows stay tested.
 
 ## Inputs and runtime
 
@@ -18,11 +22,10 @@ Electronic Product Code Information Services (EPCIS) is the GS1 standard for obs
 | Fixture exercises | Checkout fixture `fixtures/vectors/dpp/interoperability/epcis/v1.json`. The issuer, status entry and custody chain are synthetic; no issuer keys or external service are required. Nothing is signed or issued. |
 | Own-document exercise | An EPCIS 2.0.1 `<document.json>` from your source system. |
 
-## Parse before mapping
+## Parse and validate
 
 1. Parse to establish what arrived and each event's location.
 2. Validate structure against the pinned EPCIS 2.0.1 schema.
-3. Map each event to assess whether the credential profile can express it without losing meaning.
 
 Run the fixture parse and validation:
 
@@ -50,7 +53,29 @@ JS
 
 This example encodes a synthetic fixture object. An importer must retain actual received bytes, rather than serialise a parsed object and call it the original.
 
-## Map the events
+## Keep the source with the result
+
+Retain the exact source bytes and their findings with anything derived from them. Never invent a custody event or measurement to complete output.
+
+| Boundary | Rule |
+|---|---|
+| Import and custody | Imports establish no custody or passport transfer. No import, pull, mapping or export writes `ISSUE`, `UPDATE`, `TRANSFER` or `RETIRE`. |
+| Later passport workflow | May cite retained source when requesting a state. The passport service independently checks tip, actor authority and recipient acceptance. |
+| Event body digest | SHA-256 of the event's RFC 8785 canonical JSON without `recordTime` and `errorDeclaration`, together with sorted digests of the contexts used to read it ([specification](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md), section 2). The stripped event alone cannot reproduce it. |
+
+## The application's HTTP routes
+
+| Interface fact | Value |
+|---|---|
+| Import/pull routes | Reference application routes under `/api/interoperability/epcis`, described by [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml). |
+| Availability and obligation | [Application service](../packages/application-service.md) source is private. These routes are not required by any conformance role. |
+| Own application | Use the contract as a model if offering EPCIS import over HTTP. |
+
+## Parked: map events to SEALs
+
+The `epcis-vsc@1` and `epcis-vsc@2` mapping profiles and the [VSC profile](../packages/dpp-credentials.md#parked-the-vsc-compatibility-profile) they map into are parked. The mapping functions stay in the root `@bsv/dpp-credentials` with unchanged behaviour. The current candidate, `dpp-release-2026-11`, does not claim them; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed `epcis-vsc@1` within `epcis-source-exchange-1`. An implementation that leaves them out records each event's mapping outcome as `not-attempted` in its import record.
+
+### Map the events
 
 Call `mapEpcisEventWithReport(event, options, { sourceReference, validation })` from the root `@bsv/dpp-credentials` for one event:
 
@@ -112,7 +137,7 @@ node examples/import-epcis.mjs <document.json>
 
 It ends `Nothing was retained, issued, anchored or written to a token by this example.`
 
-## Map under the CBV disposition crosswalk
+### Map under the CBV disposition crosswalk
 
 Pass `{ profile: 'epcis-vsc@2' }` as the third argument to decide each disposition through the crosswalk in the `epcis-vsc@2` profile manifest before a SEAL is built. The result depends on the event type and action as well as the disposition: only an `ObjectEvent` whose action is `ADD` commissions its objects, while `ADD` on an aggregation, association or transaction adds objects that already exist. A source reference must name the same profile, through `epcisSourceReference({ ..., mappingProfile: 'epcis-vsc@2' })`.
 
@@ -138,32 +163,14 @@ npm run test -w @bsv/dpp-credentials -- test/epcis.test.ts test/epcis-source.tes
 
 Expected result: 61 tests, all passing.
 
-## Keep the source with the result
-
-Retain source references and mapping findings with resulting credentials. Never invent a custody event or measurement to complete output.
-
-| Boundary | Rule |
-|---|---|
-| Import and custody | Imports establish no custody or passport transfer. No import, pull, mapping or export writes `ISSUE`, `UPDATE`, `TRANSFER` or `RETIRE`. |
-| Later passport workflow | May cite retained source when requesting a state. The passport service independently checks tip, actor authority and recipient acceptance. |
-| Event body digest | SHA-256 of the event's RFC 8785 canonical JSON without `recordTime` and `errorDeclaration`, together with sorted digests of the contexts used to read it ([specification](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md), section 2). The stripped event alone cannot reproduce it. |
-
-## The application's HTTP routes
-
-| Interface fact | Value |
-|---|---|
-| Import/pull routes | Reference application routes under `/api/interoperability/epcis`, described by [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml). |
-| Availability and obligation | [Application service](../packages/application-service.md) source is private. These routes are not required by any conformance role. |
-| Own application | Use the contract as a model if offering EPCIS import over HTTP. |
-
 ## Source definitions
 
 | Task | Source |
 |---|---|
-| Select parsing, digest and mapping behaviour | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md) |
+| Select parsing and digest behaviour, and the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md) |
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) |
 | Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) |
-| Use reference parsing and mapping | [VSC package](../packages/dpp-credentials.md) |
-| Run every selected case, including mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |
+| Use reference parsing, and the parked mapping | [Credentials package](../packages/dpp-credentials.md) |
+| Run every selected case, including the parked mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records exercised import and pull outcomes. Next: [verifiable credentials](../learn/verifiable-credentials.md), to issue and anchor a mapped SEAL.
+The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records exercised import and pull outcomes. Next: [external credentials](external-credentials.md), to verify a partner's W3C credential beside the passport.
