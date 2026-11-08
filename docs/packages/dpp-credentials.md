@@ -114,7 +114,7 @@ schema: pass ; findings: 0
 | 3. Read | Exact bytes to `parseSealBytes`; retain bytes separately | Strictly parsed credential |
 | 4. Verify | Credential, loader, status resolver, authority policy and custody-chain evidence to `verifySeal` | Proof, status, issuer authority and custody findings; inspect each before reliance. |
 
-A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md) shows the calls with each policy.
+A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/packages/dpp-credentials/README.md) shows the calls with each policy.
 
 ## Limits
 
@@ -129,8 +129,8 @@ A credential's own claim that its issuer is trusted is never enough. The [packag
 
 | Entry point | Source |
 |---|---|
-| `@bsv/dpp-credentials` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md) |
-| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md) |
+| `@bsv/dpp-credentials` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/vsc-profile.md) |
+| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md) |
 | `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
 | `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 
