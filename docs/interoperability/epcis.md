@@ -53,7 +53,7 @@ JS
 
 This example encodes a synthetic fixture object. An importer must retain actual received bytes, rather than serialise a parsed object and call it the original.
 
-For the complete import exercise, [examples/import-epcis.mjs](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/import-epcis.mjs) reports one sentence per finding: source digest, contexts, schema validation, and each event's identity and body digest. It maps nothing. Run the fixture:
+For the complete import exercise, [examples/import-epcis.mjs](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/examples/import-epcis.mjs) reports one sentence per finding: source digest, contexts, schema validation, and each event's identity and body digest. It maps nothing. Run the fixture:
 
 ```sh
 node examples/import-epcis.mjs
@@ -75,13 +75,13 @@ Retain the exact source bytes and their findings with anything derived from them
 |---|---|
 | Import and custody | Imports establish no custody or passport transfer. No import, pull, mapping or export writes `ISSUE`, `UPDATE`, `TRANSFER` or `RETIRE`. |
 | Later passport workflow | May cite retained source when requesting a state. The passport service independently checks tip, actor authority and recipient acceptance. |
-| Event body digest | SHA-256 of the event's RFC 8785 canonical JSON without `recordTime` and `errorDeclaration`, together with sorted digests of the contexts used to read it ([specification](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md), section 2). The stripped event alone cannot reproduce it. |
+| Event body digest | SHA-256 of the event's RFC 8785 canonical JSON without `recordTime` and `errorDeclaration`, together with sorted digests of the contexts used to read it ([specification](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/epcis-interoperability.md), section 2). The stripped event alone cannot reproduce it. |
 
 ## The application's HTTP routes
 
 | Interface fact | Value |
 |---|---|
-| Import/pull routes | Reference application routes under `/api/interoperability/epcis`, described by [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml). |
+| Import/pull routes | Reference application routes under `/api/interoperability/epcis`, described by [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/contracts/interoperability.yaml). |
 | Availability and obligation | [Application service](../packages/application-service.md) source is private. These routes are not required by any conformance role. |
 | Own application | Use the contract as a model if offering EPCIS import over HTTP. |
 
@@ -167,7 +167,7 @@ Pass `{ profile: 'epcis-vsc@2' }` as the third argument to decide each dispositi
 | Anything that is not a CBV 2.0 disposition, including `stored`, `transshipped`, `transformed` and `received` | `unsupported`, `non-cbv-disposition`. |
 | Any event carrying an `errorDeclaration` | `unsupported`, `error-declaration`: it says an earlier event was wrong, so a SEAL would assert a step the source retracted. |
 
-Each `unsupported` reason starts with the limit id in the table. An `ADD` or `DELETE` event without a disposition stays `insufficient-data`. Retain refused events as evidence; the VSC custody rules are never bent to give one a SEAL. The [specification](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md), section 5, gives the reasons. The vector file `fixtures/vectors/dpp/interoperability/epcis/v2.json` pins every outcome.
+Each `unsupported` reason starts with the limit id in the table. An `ADD` or `DELETE` event without a disposition stays `insufficient-data`. Retain refused events as evidence; the VSC custody rules are never bent to give one a SEAL. The [specification](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/epcis-interoperability.md), section 5, gives the reasons. The vector file `fixtures/vectors/dpp/interoperability/epcis/v2.json` pins every outcome.
 
 Run the package mapping tests:
 
@@ -181,9 +181,9 @@ Expected result: 61 tests, all passing.
 
 | Task | Source |
 |---|---|
-| Select parsing and digest behaviour, and the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md) |
-| Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) |
-| Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) |
+| Select parsing and digest behaviour, and the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/epcis-interoperability.md) |
+| Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/contracts/epcis-import.schema.json) |
+| Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/contracts/interoperability.yaml) |
 | Use reference parsing, and the parked mapping | [Credentials package](../packages/dpp-credentials.md) |
 | Run every selected case, including the parked mapping outcomes | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |
 
