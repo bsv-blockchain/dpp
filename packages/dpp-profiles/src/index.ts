@@ -167,10 +167,10 @@ export function readOperatorProfile(profile: OperatorProfileId): Record<string, 
  * (spec/epcis-interoperability.md). Neither industry profiles nor signed
  * credential formats, and never a mapping to a native operation.
  */
-export const INTEROPERABILITY_PROFILE_IDS = ['gs1-digital-link@1', 'epcis-json@1', 'epcis-vsc@1'] as const
+export const INTEROPERABILITY_PROFILE_IDS = ['gs1-digital-link@1', 'epcis-json@1', 'epcis-vsc@1', 'epcis-vsc@2'] as const
 export type InteroperabilityProfileId = (typeof INTEROPERABILITY_PROFILE_IDS)[number]
 
-/** The manifest of one interoperability profile: role, pinned standards and artefacts, formats, dependencies, limits and what it cannot map. */
+/** The manifest of one interoperability profile: role, pinned standards and artefacts, formats, dependencies, limits, what it cannot map and, for a mapping profile with one, its crosswalk. */
 export function readInteroperabilityProfile(profile: InteroperabilityProfileId): Record<string, unknown> {
   return readJson(`manifests/interoperability/${published(INTEROPERABILITY_PROFILE_IDS, profile, 'interoperability')}.json`)
 }

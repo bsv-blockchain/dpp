@@ -41,7 +41,7 @@ npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 |---|---|
 | Package | `@bsv/dpp-credentials` 0.2.0-beta.6 |
 | Current source candidate | `dpp-release-2026-11`; the [release page](../reference/release-sets.md) distinguishes it from the latest published set. |
-| Change | beta.5 repacked with no code change |
+| Change | Under `epcis-vsc@1`, an inspection, repair or sensor reading reporting `active` is now refused as `maintenance-observation`, as the published profile says; the proposed `epcis-vsc@2` mapping profile is added |
 | Other candidate packages | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
 | Runtime | Node only, ECMAScript modules; artefact files are plain data ([support table](support-table.md)). |
 
@@ -51,7 +51,7 @@ A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin
 
 | Entry point | Main functions | A runnable call |
 |---|---|---|
-| `@bsv/dpp-credentials` | `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL. The root also re-exports every `/epcis-source` function | `npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
+| `@bsv/dpp-credentials` | `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL under `epcis-vsc@1`, or under `epcis-vsc@2` with its CBV disposition crosswalk. The root also re-exports every `/epcis-source` function | `npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
 | `@bsv/dpp-credentials/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
 | `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
 | `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files | |
@@ -114,7 +114,7 @@ schema: pass ; findings: 0
 | 3. Read | Exact bytes to `parseSealBytes`; retain bytes separately | Strictly parsed credential |
 | 4. Verify | Credential, loader, status resolver, authority policy and custody-chain evidence to `verifySeal` | Proof, status, issuer authority and custody findings; inspect each before reliance. |
 
-A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/README.md) shows the calls with each policy.
+A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/packages/dpp-credentials/README.md) shows the calls with each policy.
 
 ## Limits
 
@@ -129,8 +129,8 @@ A credential's own claim that its issuer is trusted is never enough. The [packag
 
 | Entry point | Source |
 |---|---|
-| `@bsv/dpp-credentials` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/vsc-profile.md) |
-| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/epcis-interoperability.md) |
+| `@bsv/dpp-credentials` | [Selected credential profile](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/vsc-profile.md) |
+| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/b245177be5efc8513e956ff110a69be53acc6d12/spec/epcis-interoperability.md) |
 | `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
 | `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 

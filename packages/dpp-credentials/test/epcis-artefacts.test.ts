@@ -5,7 +5,9 @@ import { describe, expect, it } from 'vitest';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { EPCIS_ARTEFACTS, EPCIS_CONTEXT_DIGEST, EPCIS_DEFAULT_LIMITS } from '../src/epcis-source.js';
-import { epcisInteroperabilityVectors } from './epcis-fixture.js';
+import { CBV_DISPOSITION_CROSSWALK, mapEpcisEventWithReport } from '../src/epcis.js';
+import type { JsonObject } from '../src/types.js';
+import { MAPPING_OPTIONS, PACK, T0, epcisInteroperabilityVectors, epcisVsc2Vectors } from './epcis-fixture.js';
 
 const root = join(import.meta.dirname, '..');
 const repo = join(root, '..', '..');
@@ -25,11 +27,11 @@ describe('the pinned EPCIS artefacts', () => {
     expect(EPCIS_ARTEFACTS.find((a) => a.id === 'epcis-context')?.sha256).toBe(EPCIS_CONTEXT_DIGEST);
   });
 
-  it('validates the two interoperability manifests against their schema and holds them to the constants', () => {
+  it('validates the three EPCIS interoperability manifests against their schema and holds them to the constants', () => {
     const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true });
     addFormats(ajv);
     const validate = ajv.compile(JSON.parse(readFileSync(join(repo, 'packages/dpp-profiles/schemas/interoperability-profile.schema.json'), 'utf8')));
-    for (const id of ['epcis-json@1', 'epcis-vsc@1']) {
+    for (const id of ['epcis-json@1', 'epcis-vsc@1', 'epcis-vsc@2']) {
       const manifest = JSON.parse(readFileSync(join(repo, `packages/dpp-profiles/manifests/interoperability/${id}.json`), 'utf8')) as { profile: string; artefacts: Array<{ id: string; retrieval: string; digest?: string; carried?: string; byteLength?: number }>; limits: Record<string, number>; dependencies: Array<{ name: string; version: string }> };
       expect(validate(manifest), `${id}: ${JSON.stringify(validate.errors)}`).toBe(true);
       expect(manifest.profile).toBe(id);
@@ -39,9 +41,15 @@ describe('the pinned EPCIS artefacts', () => {
         expect(artefact.retrieval).toBe('pinned');
         expect(artefact.digest).toBe(pinned.sha256);
         expect(artefact.byteLength).toBe(pinned.byteLength);
-        // The frozen manifests record the directory the package had when they were frozen, packages/vsc; a manifest cannot change without a new frozen version.
-        if (pinned.carried) expect(artefact.carried).toBe(`packages/vsc/${pinned.path}`);
+        // The version 1 manifests record the directory the package had when they were frozen, packages/vsc; a manifest cannot change without a new version, and epcis-vsc@2 records the directory it has now.
+        if (pinned.carried) expect(artefact.carried).toBe(`packages/${id === 'epcis-vsc@2' ? 'dpp-credentials' : 'vsc'}/${pinned.path}`);
         else expect(artefact.carried).toBeUndefined();
+      }
+    }
+    for (const id of ['epcis-vsc@1', 'epcis-vsc@2']) {
+      const manifest = JSON.parse(readFileSync(join(repo, `packages/dpp-profiles/manifests/interoperability/${id}.json`), 'utf8')) as { artefacts: Array<{ id: string; digest?: string; carried?: string }> };
+      for (const artefact of manifest.artefacts.filter((a) => a.carried?.startsWith('packages/dpp-credentials/'))) {
+        expect(sha256(readFileSync(join(repo, artefact.carried!))), `${id} ${artefact.id}`).toBe(artefact.digest);
       }
     }
     const source = JSON.parse(readFileSync(join(repo, 'packages/dpp-profiles/manifests/interoperability/epcis-json@1.json'), 'utf8')) as { limits: Record<string, number>; dependencies: Array<{ name: string; version: string }> };
@@ -50,13 +58,58 @@ describe('the pinned EPCIS artefacts', () => {
     expect(source.dependencies.find((d) => d.name === 'ajv')?.version).toBe(ajvVersion);
   });
 
-  it('publishes fixtures/vectors/dpp/interoperability/epcis/v1.json as the generator produces it, in the stack shape', () => {
-    const generated = JSON.parse(JSON.stringify(epcisInteroperabilityVectors())) as { id: string; vectors: Array<{ id: string; tags: string[] }> };
-    const path = join(repo, 'fixtures/vectors/dpp/interoperability/epcis/v1.json');
+  it('records in the epcis-vsc@2 manifest the crosswalk the code applies, with every condition, limit and replacement it cites', () => {
+    type Row = { vocabulary: string; value: string; effect: string; carriedAs?: string; condition?: string; limit?: string; replaces?: string; replacedBy?: string };
+    const manifest = JSON.parse(readFileSync(join(repo, 'packages/dpp-profiles/manifests/interoperability/epcis-vsc@2.json'), 'utf8')) as { crosswalk: Row[]; mappingLimits: Array<{ id: string }> };
+    const dispositions = manifest.crosswalk.filter((e) => e.vocabulary === 'cbv-2.0-disposition');
+    const steps = manifest.crosswalk.filter((e) => e.vocabulary === 'cbv-2.0-bizstep');
+    expect(dispositions.length + steps.length).toBe(manifest.crosswalk.length);
+    expect(Object.fromEntries(dispositions.map((e) => [e.value, { effect: e.effect, ...(e.replacedBy == null ? {} : { replacedBy: e.replacedBy }) }]))).toEqual(CBV_DISPOSITION_CROSSWALK);
+    const limits = new Set(manifest.mappingLimits.map((l) => l.id));
+    for (const entry of manifest.crosswalk) if (entry.limit != null) expect(limits.has(entry.limit), entry.value).toBe(true);
+    for (const id of ['non-cbv-disposition', 'custody-neutral', 'custody-destination-unnamed', 'custody-transition-unnamed', 'lifecycle-conflict', 'error-declaration']) expect(limits.has(id), id).toBe(true);
+    const options = MAPPING_OPTIONS();
+    const v2 = { profile: 'epcis-vsc@2' as const };
+    const limitOf = (missing: string[]): string | undefined => /^([a-z-]+): /.exec(missing[0] ?? '')?.[1];
+    const PALLET_ID = 'urn:epc:id:sscc:9521234.0000000009';
+    const events: Array<{ name: string; commissioning: boolean; decommissioning: boolean; make: (disposition: string | undefined, bizStep: string) => JsonObject }> = [
+      ...(['ADD', 'OBSERVE', 'DELETE'] as const).map((action) => ({ name: `ObjectEvent ${action}`, commissioning: action === 'ADD', decommissioning: action === 'DELETE', make: (d: string | undefined, bizStep: string): JsonObject => ({ type: 'ObjectEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, epcList: [PACK], action, bizStep, ...(d == null ? {} : { disposition: d }) }) })),
+      { name: 'AggregationEvent ADD', commissioning: false, decommissioning: false, make: (d, bizStep) => ({ type: 'AggregationEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, parentID: PALLET_ID, childEPCs: [PACK], action: 'ADD', bizStep, ...(d == null ? {} : { disposition: d }) }) },
+      { name: 'TransformationEvent', commissioning: false, decommissioning: false, make: (d, bizStep) => ({ type: 'TransformationEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, inputEPCList: [PACK], outputEPCList: [PALLET_ID], bizStep, ...(d == null ? {} : { disposition: d }) }) },
+    ];
+    // The condition of each carried row, as its text in the manifest states it.
+    const carriedOn = (row: Row, e: (typeof events)[number]): boolean => row.effect === 'origin' ? e.commissioning : row.effect === 'transit' ? !e.commissioning && !e.decommissioning : row.effect === 'terminal' ? !e.commissioning : false;
+    for (const row of dispositions) {
+      if (row.carriedAs != null) expect(row.carriedAs, row.value).toBe(row.value);
+      expect(row.condition != null, row.value).toBe(['origin', 'transit', 'terminal'].includes(row.effect));
+      for (const e of events) {
+        const report = mapEpcisEventWithReport(e.make(row.value, 'other'), options, v2);
+        const label = `${row.value} on ${e.name}`;
+        if (carriedOn(row, e)) {
+          expect(report.seal?.eventVector.how.disposition, label).toBe(row.carriedAs);
+          for (const step of steps) expect(mapEpcisEventWithReport(e.make(row.value, step.value), options, v2).seal?.eventVector.how.disposition, `${label} at ${step.value}`).toBe(row.carriedAs);
+          continue;
+        }
+        expect(report.mapping, label).toBe('unsupported');
+        expect(limitOf(report.missing), label).toBe(row.limit);
+        // A business step row puts its limit in place of the one it replaces, and only that one.
+        for (const step of steps) expect(limitOf(mapEpcisEventWithReport(e.make(row.value, step.value), options, v2).missing), `${label} at ${step.value}`).toBe(row.limit === step.replaces ? step.limit : row.limit);
+      }
+    }
+    for (const step of steps) {
+      expect(step.limit != null && step.replaces != null && limits.has(step.replaces), step.value).toBe(true);
+      expect(limitOf(mapEpcisEventWithReport(events[1]!.make(undefined, step.value), options, v2).missing), `no disposition at ${step.value}`).toBe(step.limit);
+    }
+    expect(limitOf(mapEpcisEventWithReport(events[1]!.make(undefined, 'other'), options, v2).missing)).toBe('custody-neutral');
+  });
+
+  for (const [file, generator, vectorId] of [['v1.json', epcisInteroperabilityVectors, 'dpp.interoperability.epcis.v1'], ['v2.json', epcisVsc2Vectors, 'dpp.interoperability.epcis.v2']] as const) it(`publishes fixtures/vectors/dpp/interoperability/epcis/${file} as the generator produces it, in the stack shape`, () => {
+    const generated = JSON.parse(JSON.stringify(generator())) as { id: string; vectors: Array<{ id: string; tags: string[] }> };
+    const path = join(repo, `fixtures/vectors/dpp/interoperability/epcis/${file}`);
     if (process.env.REGENERATE_FIXTURES === '1') writeFileSync(path, JSON.stringify(generated, null, 2) + '\n');
     expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual(generated);
     for (const key of ['id', 'name', 'version', 'reference_impl', 'parity_class', 'vectors']) expect(generated).toHaveProperty(key);
-    expect(generated.id).toBe('dpp.interoperability.epcis.v1');
+    expect(generated.id).toBe(vectorId);
     const ids = generated.vectors.map((v) => v.id);
     expect(new Set(ids).size).toBe(ids.length);
     const hexOnly = (value: unknown, where: string): void => {

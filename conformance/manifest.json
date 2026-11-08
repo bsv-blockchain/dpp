@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "e295966237d7e6f266316426f19d03290bf05de9cd8305b2e2a5618fbe3087ba"
+      "digest": "24b1f9d862a4830ab127a199921714fceb96cda448c731bed8724cd5c8e8e47b"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -535,10 +535,10 @@
     {
       "id": "spec-epcis-interoperability",
       "uri": "spec/epcis-interoperability.md",
-      "version": "epcis-json@1, epcis-vsc@1",
+      "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
+      "digest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
     },
     {
       "id": "spec-external-credential-profile",
@@ -602,7 +602,7 @@
       "version": "1",
       "kind": "local",
       "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
-      "digest": "7a1dfd887af7b278b25c2a5d6f19c409790825da558416a9d55b2b7509fa922f"
+      "digest": "23e168e1b81137fd199241f77205fce331c4b4be4170027cc49134ee3276646a"
     },
     {
       "id": "profiles-manifest-v2-schema",
@@ -643,6 +643,14 @@
       "kind": "public",
       "attribution": "GS1",
       "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) carried under packages/dpp-credentials/artifacts/epcis/ and the REST binding pinned by digest 3d33792c... in the epcis-json@1 manifest."
+    },
+    {
+      "id": "cbv-2.0",
+      "uri": "https://ref.gs1.org/standards/cbv/",
+      "version": "2.0 (ratified June 2022)",
+      "kind": "public",
+      "attribution": "GS1",
+      "notes": "Section 7.2.3, the disposition values and definitions, and section 7.2.3.1, the deprecated values, which the epcis-vsc@2 crosswalk classifies."
     },
     {
       "id": "w3c-vc-di-ecdsa",
@@ -5285,7 +5293,7 @@
       "id": "EPCIS-1-strict-parse",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§2",
       "summary": "A source is read as exact bytes under the disclosed limits; malformed UTF-8, duplicate keys, depth over 64, non-finite or inexact numbers and oversized documents are refused before anything is retained; a safely parsed document that fails validation is retained with its findings and is not publishable.",
       "layer": "profile",
@@ -5305,9 +5313,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -5371,7 +5379,7 @@
       "id": "EPCIS-4-arrival-classification",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§3",
       "summary": "Under a scoped event identity a repeat is a duplicate, a changed record time or error declaration is a new observation, and a changed body is a conflict retained with both digests visible; an event without an identifier receives a labelled local identity.",
       "layer": "profile",
@@ -5391,23 +5399,23 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
     },
     {
       "id": "EPCIS-5-source-reference",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§5",
-      "summary": "A mapped SEAL carries the signed source reference urn:bsv:dpp:epcis-source:1 (source digest, media type, event pointer, event identifier, context digests, mapping profile) beside the round-trip extension, and the source reporter is never the signing issuer.",
+      "summary": "A mapped SEAL carries the signed source reference urn:bsv:dpp:epcis-source:1 (source digest, media type, event pointer, event identifier, context digests, mapping profile) beside the round-trip extension; the reference names the mapping profile the report was made under, and the source reporter is never the signing issuer.",
       "layer": "profile",
       "roles": [
         "attestation-issuer"
       ],
       "applicability": "when the mapping profile is selected",
-      "profileId": "epcis-vsc@1",
+      "profileId": "epcis-vsc@1 and epcis-vsc@2",
       "implementationRefs": [
         "packages/dpp-credentials/src/epcis-source.ts#epcisSourceReference",
         "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport"
@@ -5416,26 +5424,27 @@
         "packages/dpp-credentials/test/epcis-report.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json",
+        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§5",
-      "summary": "mapEpcisEventWithReport answers lossless, transformed, unsupported or insufficient-data with every missing requirement and unmapped semantic named; nothing physical is fabricated and the VSC custody rules are not changed to admit an event.",
+      "summary": "mapEpcisEventWithReport answers lossless, transformed, unsupported or insufficient-data under the mapping profile it is asked for, with every missing requirement and unmapped semantic named; under epcis-vsc@1 an inspection, repair or sensor reading observed by an OBSERVE event or a TransformationEvent and reporting active is unsupported as maintenance-observation; nothing physical is fabricated and the VSC custody rules are not changed to admit an event.",
       "layer": "profile",
       "roles": [
         "attestation-issuer"
       ],
       "applicability": "when the mapping profile is selected",
-      "profileId": "epcis-vsc@1",
+      "profileId": "epcis-vsc@1 and epcis-vsc@2",
       "implementationRefs": [
         "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport"
       ],
@@ -5444,12 +5453,14 @@
         "packages/dpp-credentials/test/epcis.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/vectors/dpp/interoperability/epcis/v1.json"
+        "fixtures/vectors/dpp/interoperability/epcis/v1.json",
+        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102"
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616",
+      "notes": "Until 2026-11-08 the reference mapped an inspection, repair or sensor reading reporting active, contrary to the published maintenance-observation limit of epcis-vsc@1; a repair with nothing else to report came back lossless. Such an observation (an OBSERVE event, or a TransformationEvent, whose action is the caller's decision) is now refused; an ObjectEvent that commissions or decommissions its objects at those steps is not an observation and maps as before. The published v1 vectors, which hold no such event, are unchanged. v2.json pins the outcomes under epcis-vsc@2."
     },
     {
       "id": "EPCIS-7-import-record",
@@ -5484,7 +5495,7 @@
       "id": "EPCIS-8-no-token-operation",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§6",
       "summary": "Import, pull and rendering never invoke Issue, Update, Transfer or Retire; publication of a mapped event is a separately authorised action under a named policy, and an EPCIS error declaration is not a VSC correction or an authority grant.",
       "layer": "role",
@@ -5502,16 +5513,16 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102",
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
       "id": "EPCIS-9-pull-outcomes",
       "sourceId": "spec-epcis-interoperability",
       "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§4",
       "summary": "The pull client consumes the standard events query, follows next links within the run limits, checkpoints only after a durable page, revalidates every target, forwards no credential across origins, and answers one of the eight source outcomes, never mistaking one for another.",
       "layer": "role",
@@ -5528,10 +5539,68 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0b7365b39974d57c9389119a777787c4bbe2bbe2cd2b226890c46fccb712d102",
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
+    },
+    {
+      "id": "EPCIS-10-disposition-crosswalk",
+      "sourceId": "spec-epcis-interoperability",
+      "sourceUri": "spec/epcis-interoperability.md",
+      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
+      "clause": "§5",
+      "summary": "Under epcis-vsc@2 an event carrying an error declaration is unsupported as error-declaration, and the disposition is decided through the published crosswalk before a SEAL is built: active on an ObjectEvent that commissions its objects, in_transit and returned on no ObjectEvent that commissions or decommissions them, and dispensed and destroyed on no ObjectEvent that commissions them are carried verbatim; every other event is unsupported, its reason opening with custody-neutral (custody-destination-unnamed in its place at a receiving or accepting step), lifecycle-conflict, custody-transition-unnamed or non-cbv-disposition; an OBSERVE event without a disposition is custody-neutral; no VSC-only term is written for a CBV event and no custody rule is changed to give a custody-neutral event a SEAL.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when the mapping profile epcis-vsc@2 is selected",
+      "profileId": "epcis-vsc@2",
+      "implementationRefs": [
+        "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport",
+        "packages/dpp-credentials/src/epcis.ts#CBV_DISPOSITION_CROSSWALK",
+        "packages/dpp-profiles/manifests/interoperability/epcis-vsc@2.json"
+      ],
+      "testRefs": [
+        "packages/dpp-credentials/test/epcis-report.test.ts",
+        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-08",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "38b6a5d388529a450d536a599850e75a5ab912e8122c95a59949167e987ca616"
+    },
+    {
+      "id": "EPCIS-11-cbv-dispositions",
+      "sourceId": "cbv-2.0",
+      "sourceUri": "https://ref.gs1.org/standards/cbv/",
+      "sourceVersion": "2.0 (ratified June 2022)",
+      "clause": "§7.2.3 and §7.2.3.1",
+      "summary": "The epcis-vsc@2 crosswalk names every CBV 2.0 disposition and every deprecated value exactly as the standard spells it, reads the bare, URN and Web URI spellings as one value, treats a deprecated value as the value that replaces it, and refuses any other value, a different case included.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer"
+      ],
+      "applicability": "when the mapping profile epcis-vsc@2 is selected",
+      "profileId": "epcis-vsc@2",
+      "implementationRefs": [
+        "packages/dpp-credentials/src/epcis.ts#CBV_DISPOSITION_CROSSWALK"
+      ],
+      "testRefs": [
+        "packages/dpp-credentials/test/epcis-report.test.ts",
+        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-08",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Checked against the section 7.2.3 table of the ratified CBV 2.0 text: 33 values, no_pedigree_match among them as deprecated in 2.0, and the five values section 7.2.3.1 replaces. The definitions behind each custody effect are in the profile manifest notes."
     },
     {
       "id": "EXTC-1-representation",
@@ -6443,6 +6512,18 @@
         "EPCIS-7-import-record",
         "EPCIS-8-no-token-operation",
         "EPCIS-9-pull-outcomes"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "epcis-vsc-mapping-2",
+      "description": "The epcis-vsc@2 mapping profile: the four mapping outcomes, the CBV 2.0 disposition crosswalk with every refusal named, a custody-neutral event and an error declaration left without a SEAL, and the signed source reference naming the profile.",
+      "profileId": "epcis-vsc@2",
+      "requires": [
+        "EPCIS-5-source-reference",
+        "EPCIS-6-mapping-outcomes",
+        "EPCIS-10-disposition-crosswalk",
+        "EPCIS-11-cbv-dispositions"
       ],
       "minimumStatus": "tested"
     },

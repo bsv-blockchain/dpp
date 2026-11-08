@@ -1,0 +1,111 @@
+{
+  "manifestVersion": "1",
+  "id": "epcis-vsc",
+  "version": "2",
+  "profile": "epcis-vsc@2",
+  "kind": "interoperability",
+  "role": "mapping",
+  "status": "proposed",
+  "title": "EPCIS event to VSC SEAL mapping with a CBV 2.0 disposition crosswalk",
+  "description": "The bounded projection of one retained EPCIS 2.0.1 event into the existing vsc-draft-compat@0.1.0 SEAL, as packages/dpp-credentials mapEpcisEventWithReport implements it under the profile option epcis-vsc@2 and spec/epcis-interoperability.md section 5 defines it. It differs from epcis-vsc@1 in how the disposition is decided: through the crosswalk this manifest records, before a SEAL is built, so a CBV 2.0 disposition is carried verbatim when it is a custody state the event enters, as its type and action agree, and is otherwise refused under a named mapping limit; and an event carrying an error declaration is refused rather than mapped. The outcomes, the round-trip extension, the signed source reference urn:bsv:dpp:epcis-source:1 (naming epcis-vsc@2) and the attribution rule are those of epcis-vsc@1, which stays selectable and is the default. Mapping never issues: issuance needs the actual issuer, key, role, jurisdiction, status and custody evidence and the complete SEAL must pass the VSC profile unchanged.",
+  "specification": "spec/epcis-interoperability.md",
+  "standards": [
+    { "id": "epcis", "name": "GS1 EPCIS", "version": "2.0.1", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/", "scope": "The five event types and their identifier, time, place, step, disposition and action members." },
+    { "id": "cbv", "name": "GS1 Core Business Vocabulary", "version": "2.0.0", "uri": "https://ref.gs1.org/standards/cbv/", "scope": "Section 7.2.3 dispositions and the deprecated values of 7.2.3.1, each crosswalked to a VSC custody effect and carried verbatim or refused by name; business steps carried as the JSON binding spells them, with receiving and accepting crosswalked as a hand-over at the destination." },
+    { "id": "vsc-draft-compat", "name": "VSC draft compatibility profile", "version": "0.1.0", "uri": "spec/vsc-profile.md", "scope": "The SEAL structure, custody state model and correction rules the mapped credential must satisfy unchanged." }
+  ],
+  "artefacts": [
+    { "id": "epcis-json-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json", "version": "2.0.1", "digest": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af", "byteLength": 55680, "retrieval": "pinned", "carried": "packages/dpp-credentials/artifacts/epcis/epcis-json-schema-2.0.1.json" },
+    { "id": "epcis-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld", "version": "2.0.1", "digest": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737", "byteLength": 20690, "retrieval": "pinned", "carried": "packages/dpp-credentials/artifacts/epcis/epcis-context-2.0.1.jsonld" },
+    { "id": "owned-seal-schema", "kind": "json-schema", "uri": "urn:bsv:vsc:schema:0.1.0", "version": "0.1.0", "digest": "839123ea6a2ca459c62143a9a38ece281a7b91e719dca057b28baf4d53106d15", "retrieval": "owned", "carried": "packages/dpp-credentials/artifacts/seal-0.1.0.schema.json", "notes": "The mapped SEAL validates against the owned schema before it is returned." },
+    { "id": "owned-context", "kind": "jsonld-context", "uri": "urn:bsv:vsc:context:0.1.0", "version": "0.1.0", "digest": "3c74b79c50ebb151086c8bbe05222d0177a9d20c6f7b725b4e3a60645274cccc", "retrieval": "owned", "carried": "packages/dpp-credentials/artifacts/context-0.1.0.jsonld" }
+  ],
+  "inputs": [
+    { "id": "retained-event", "mediaType": "application/json", "format": "one event of a retained EPCISDocument or EPCISQueryDocument, with its pointer, source digest and pinned context digests" },
+    { "id": "mapping-options", "mediaType": "application/json", "format": "issuer DID, assertion method, actor role, jurisdiction, issuance time, credential status entry, custody chain and, for a TransformationEvent, the explicit action decision", "notes": "Every option is the signing issuer's own evidence, never read from the event." }
+  ],
+  "outputs": [
+    { "id": "mapping-report", "mediaType": "application/json", "format": "the mapping profile, mapping outcome, missing inputs (a crosswalk refusal opening with the id of the mapping limit it cites), unmapped semantics, preserved members and the unsigned SEAL when one exists" },
+    { "id": "unsigned-seal", "mediaType": "application/vc+ld+json", "format": "vsc-seal-json-v1 without proof, carrying the round-trip extension urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0 and the source reference urn:bsv:dpp:epcis-source:1 naming epcis-vsc@2", "notes": "Issuance, status, authority, custody evaluation and anchoring are separate steps under the VSC profile and the registry contract." }
+  ],
+  "dependencies": [],
+  "limits": {
+    "maxProductIdentifiers": 256,
+    "extensionVocabularies": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0, urn:bsv:dpp:epcis-source:1"
+  },
+  "mappingLimits": [
+    { "id": "non-cbv-disposition", "outcome": "unsupported", "reason": "A disposition that is not a CBV 2.0 value in its bare, URN or Web URI spelling is refused: among them the four VSC-only terms stored, transshipped, transformed and received, and any private vocabulary. This profile carries CBV values only and never writes a VSC-only term for a CBV event." },
+    { "id": "custody-neutral", "outcome": "unsupported", "reason": "An event that records no custody state a SEAL can carry has no SEAL: a disposition that records a condition (the neutral rows of the crosswalk), active on an event that does not commission its objects, and no disposition on an OBSERVE event, which EPCIS 2.0 section 7.3.6.2.1 reads as unchanged. vsc-draft-compat@0.1.0 requires every SEAL to carry one of its nine custody terms and reads the SEAL's custody state from it: a neutral value is none of them, substituting one such as in_transit would assert a custody state the event did not record, and active would open a new custody chain for objects that already exist, a transformation's inputs among them. The event stays evidence; the VSC custody rules are not changed to admit it." },
+    { "id": "lifecycle-conflict", "outcome": "unsupported", "reason": "An ObjectEvent whose action is ADD commissions its objects (EPCIS 2.0 section 7.4.2), so its SEAL can only open their custody chain at the origin and maps only with active; one whose action is DELETE decommissions them, after which they do not exist and are not observed again, so it does not map with a transit disposition. Carrying the disposition would give the SEAL a custody state the action contradicts." },
+    { "id": "custody-destination-unnamed", "outcome": "unsupported", "reason": "A receiving or accepting step whose disposition is neutral, active or absent records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition. It is refused rather than substituted. A chain of mapped SEALs therefore never reaches Q3, and a mapped dispensed or destroyed SEAL verifies only after a Q3 SEAL issued natively under the VSC profile." },
+    { "id": "custody-transition-unnamed", "outcome": "unsupported", "reason": "A disposition that records a custody change for which no VSC term is a CBV value (retail_sold, partially_dispensed, disposed, inactive, stolen and the deprecated non_sellable_disposed) is refused: carrying it verbatim fails the SEAL schema, and substituting a VSC term would assert an event the source did not record." },
+    { "id": "multi-product-event", "outcome": "transformed", "reason": "Several product identifiers are carried in what.productIdentifiers, but linear custody continuity and subject scope are evaluated per identifier by the VSC profile; a multi-product event is not a custody step for any one product." },
+    { "id": "transformation-action-decision", "outcome": "transformed", "reason": "A TransformationEvent carries no action; the action in the SEAL is the caller's explicit decision, not a source fact. Without the decision the mapping is unsupported." },
+    { "id": "sensor-elements", "outcome": "transformed", "reason": "Sensor reports, their units and metadata are retained in the round-trip extension only; the event vector carries no measurement." },
+    { "id": "source-destination-parties", "outcome": "transformed", "reason": "Owning and possessing party lists are retained, never projected into who: the SEAL's actor is the signing issuer and a named party is not attributed with the event." },
+    { "id": "business-transactions", "outcome": "transformed", "reason": "Business transaction references are retained in the round-trip extension only." },
+    { "id": "quantities", "outcome": "transformed", "reason": "Quantity lists and their units are retained; the SEAL's single quantity is not populated from a list." },
+    { "id": "persistent-disposition", "outcome": "transformed", "reason": "Set and unset persistent dispositions are retained, not evaluated." },
+    { "id": "instance-lot-master-data", "outcome": "transformed", "reason": "ILMD is retained under its own keys without interpretation." },
+    { "id": "certification-info", "outcome": "transformed", "reason": "A certificationInfo reference is retained; it is not certification evidence until separately verified." },
+    { "id": "error-declaration", "outcome": "unsupported", "reason": "An event carrying an EPCIS error declaration asserts that the prior event it repeats is in error (EPCIS 2.0 section 7.4.1.2), not that its step happened, so it has no SEAL: a SEAL would assert the step the source retracted. The declaration is retained and reported; it is not a VSC correctionOf and grants no correction authority, and only a correction under vsc-draft-compat@0.1.0 retracts a SEAL." },
+    { "id": "transformation-id", "outcome": "transformed", "reason": "The transformation identifier linking stages is retained in the extension; the VSC chain does not carry it." },
+    { "id": "event-level-context", "outcome": "transformed", "reason": "An event-level @context is retained; only the document-level pinned context enters the digest and the mapping." },
+    { "id": "extension-members", "outcome": "transformed", "reason": "Members outside the five event types' schema are retained verbatim under extension:<name> and never interpreted." },
+    { "id": "insufficient-event-vector", "outcome": "insufficient-data", "reason": "Missing eventTime, eventTimeZoneOffset, bizStep, recordTime (with no recordedAt) or product identifiers, or a missing disposition on an ADD or DELETE event, are never fabricated." }
+  ],
+  "unsupported": [
+    { "id": "automatic-issuance", "reason": "A mapping result is not a credential; issuing the SEAL is a separately authorised operation with its own issuer, status, authority and custody inputs." },
+    { "id": "native-token-operations", "reason": "No mapped event invokes Issue, Update, Transfer or Retire; shipping, receiving or owning-party fields never establish token authority or acceptance." },
+    { "id": "vsc-correction-from-error-declaration", "reason": "A VSC correction requires the existing issuer or delegation, chain and reason evidence; an EPCIS error declaration alone does not create one." },
+    { "id": "reporter-attribution", "reason": "A SEAL signed by this service attests to receipt and mapping of a report; it does not assert that the service performed the physical event and the source reporter is named only in the retained extension." },
+    { "id": "custody-neutral-seal", "reason": "No SEAL is issued for an event that records no custody state: every SEAL carries one of the nine VSC custody terms, and substituting one would assert a state the event did not record. An observation, an inspection outcome or a condition is retained as evidence instead." }
+  ],
+  "crosswalk": [
+    { "vocabulary": "cbv-2.0-disposition", "value": "active", "effect": "origin", "carriedAs": "active", "condition": "The event is an ObjectEvent whose action is ADD, which commissions its objects: only that event enters the origin state Q1.", "limit": "custody-neutral", "notes": "On any other event active records no custody step: Q1 is the single entry point and no transition enters it. An AggregationEvent, AssociationEvent or TransactionEvent whose action is ADD adds objects that already exist to a parent or a business transaction, and a TransformationEvent's SEAL carries its inputs, which exist before it, while the VSC profile places a transformation in transit under its term transformed, which is not a CBV value." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "available", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "completeness_inferred", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "completeness_verified", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "conformant", "effect": "neutral", "limit": "custody-neutral", "notes": "The outcome of a passed inspection or repair." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "container_closed", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "container_open", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "damaged", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "destroyed", "effect": "terminal", "carriedAs": "destroyed", "condition": "The event is not an ObjectEvent whose action is ADD: an event that commissions its objects can only open their chain at the origin.", "limit": "lifecycle-conflict", "notes": "Q4. A Q4 SEAL verifies only after a destination (Q3) SEAL, and CBV has no destination disposition (see custody-destination-unnamed)." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "dispensed", "effect": "terminal", "carriedAs": "dispensed", "condition": "The event is not an ObjectEvent whose action is ADD: an event that commissions its objects can only open their chain at the origin.", "limit": "lifecycle-conflict", "notes": "Q4. A Q4 SEAL verifies only after a destination (Q3) SEAL, and CBV has no destination disposition (see custody-destination-unnamed)." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "disposed", "effect": "unnamed-transition", "limit": "custody-transition-unnamed", "notes": "Handed over for disposal; the VSC terms name no disposal state, and destroyed is a different CBV value." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "encoded", "effect": "neutral", "limit": "custody-neutral", "notes": "An identifier written before commissioning; no object is in custody yet." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "expired", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "in_progress", "effect": "neutral", "limit": "custody-neutral", "notes": "CBV defines it as an object proceeding through the supply chain and recommends omitting it. At a receiving or accepting step the refusal is custody-destination-unnamed." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "in_transit", "effect": "transit", "carriedAs": "in_transit", "condition": "The event is not an ObjectEvent whose action is ADD or DELETE: an event that commissions its objects can only open their chain at the origin, and decommissioned objects are not in transit.", "limit": "lifecycle-conflict", "notes": "Q2." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "inactive", "effect": "unnamed-transition", "limit": "custody-transition-unnamed", "notes": "Decommissioned and possibly reintroduced; the VSC terminal state Q4 admits no re-entry." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "mismatch_class", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "mismatch_instance", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "mismatch_quantity", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "needs_replacement", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "no_pedigree_match", "effect": "neutral", "limit": "custody-neutral", "notes": "Deprecated in CBV 2.0 without a replacement." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_conformant", "effect": "neutral", "limit": "custody-neutral", "notes": "The outcome of a failed inspection or repair." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_sellable_other", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "partially_dispensed", "effect": "unnamed-transition", "limit": "custody-transition-unnamed", "notes": "A portion leaves custody while the identified object stays; the VSC chain has no partial terminal state." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "recalled", "effect": "neutral", "limit": "custody-neutral", "notes": "A condition of the object; the shipment back is a separate event, in_transit or returned." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "reserved", "effect": "neutral", "limit": "custody-neutral", "notes": "An identifier allocated before commissioning; no object is in custody yet." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "retail_sold", "effect": "unnamed-transition", "limit": "custody-transition-unnamed", "notes": "A sale to an end user; the VSC terms place that in Q4 as dispensed, which is a different CBV value." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "returned", "effect": "transit", "carriedAs": "returned", "condition": "The event is not an ObjectEvent whose action is ADD or DELETE: an event that commissions its objects can only open their chain at the origin, and decommissioned objects are not in transit.", "limit": "lifecycle-conflict", "notes": "Q2. A return from the destination (Q3 to Q2) also needs the issuer's returnReason in an extension, which the mapping does not supply." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "sellable_accessible", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "sellable_not_accessible", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "stolen", "effect": "unnamed-transition", "limit": "custody-transition-unnamed", "notes": "Custody lost; the VSC terms name no loss state." },
+    { "vocabulary": "cbv-2.0-disposition", "value": "unavailable", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "unknown", "effect": "neutral", "limit": "custody-neutral" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_sellable_expired", "effect": "neutral", "limit": "custody-neutral", "replacedBy": "expired" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_sellable_damaged", "effect": "neutral", "limit": "custody-neutral", "replacedBy": "damaged" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_sellable_disposed", "effect": "unnamed-transition", "limit": "custody-transition-unnamed", "replacedBy": "disposed" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_sellable_no_pedigree_match", "effect": "neutral", "limit": "custody-neutral", "replacedBy": "no_pedigree_match" },
+    { "vocabulary": "cbv-2.0-disposition", "value": "non_sellable_recalled", "effect": "neutral", "limit": "custody-neutral", "replacedBy": "recalled" },
+    { "vocabulary": "cbv-2.0-bizstep", "value": "receiving", "effect": "destination", "limit": "custody-destination-unnamed", "replaces": "custody-neutral", "notes": "A hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition. Wherever a disposition row, or an OBSERVE event without a disposition, would cite custody-neutral, this step cites custody-destination-unnamed instead." },
+    { "vocabulary": "cbv-2.0-bizstep", "value": "accepting", "effect": "destination", "limit": "custody-destination-unnamed", "replaces": "custody-neutral", "notes": "As receiving." }
+  ],
+  "sourceRefs": [
+    { "id": "epcis-2.0.1", "name": "GS1 EPCIS 2.0.1", "reference": "https://ref.gs1.org/standards/epcis/2.0.1/", "version": "2.0.1", "attribution": "GS1 AISBL", "use": "The event members mapped or retained." },
+    { "id": "vsc-core", "name": "VSC Core draft", "reference": "https://w3c-cg.github.io/vsc/specs/vsc-core.html", "version": "c279de3debcd6eab94a77034584d1750f5d65e6a", "attribution": "Verifiable Supply Chain Community Group", "use": "The SEAL and custody rules the mapped credential must satisfy." },
+    { "id": "cbv-2.0", "name": "GS1 Core Business Vocabulary 2.0", "reference": "https://ref.gs1.org/standards/cbv/", "version": "2.0.0", "attribution": "GS1 AISBL", "use": "The disposition values and definitions of section 7.2.3 the crosswalk classifies." }
+  ]
+}

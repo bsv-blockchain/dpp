@@ -1,0 +1,2604 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.epcis.v2",
+  "name": "EPCIS 2.0.1 event to VSC SEAL mapping under the CBV 2.0 disposition crosswalk (epcis-vsc@2)",
+  "version": "1.0.0",
+  "reference_impl": "dpp-credentials@0.2.0",
+  "parity_class": "required",
+  "brc": [],
+  "notes": "The source exchange vectors stay in dpp.interoperability.epcis.v1; this file pins epcis-vsc@2 only. Pinned EPCIS 2.0.1 context 5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737. Every identifier uses the GS1 demonstration prefix 952 and example.org hosts.",
+  "vectors": [
+    {
+      "id": "crosswalk-every-disposition",
+      "description": "Every CBV 2.0 disposition of section 7.2.3, with the values section 7.2.3.1 deprecates, placed in the same ObjectEvent at the business step other under the actions ADD, OBSERVE and DELETE. The five values CBV shares with the VSC custody model are carried verbatim where the action agrees: active only under ADD, which commissions the objects; in_transit and returned only under OBSERVE; dispensed and destroyed under OBSERVE or DELETE. Every other combination is refused, its reason opening with the mapping limit it cites. A conforming epcis-vsc@2 implementation reproduces each outcome and limit.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "event_template": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "other",
+          "disposition": "in_transit",
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          }
+        },
+        "replaced_member": "disposition",
+        "actions": [
+          "ADD",
+          "OBSERVE",
+          "DELETE"
+        ],
+        "dispositions": [
+          "active",
+          "available",
+          "completeness_inferred",
+          "completeness_verified",
+          "conformant",
+          "container_closed",
+          "container_open",
+          "damaged",
+          "destroyed",
+          "dispensed",
+          "disposed",
+          "encoded",
+          "expired",
+          "in_progress",
+          "in_transit",
+          "inactive",
+          "mismatch_class",
+          "mismatch_instance",
+          "mismatch_quantity",
+          "needs_replacement",
+          "no_pedigree_match",
+          "non_conformant",
+          "non_sellable_other",
+          "partially_dispensed",
+          "recalled",
+          "reserved",
+          "retail_sold",
+          "returned",
+          "sellable_accessible",
+          "sellable_not_accessible",
+          "stolen",
+          "unavailable",
+          "unknown",
+          "non_sellable_expired",
+          "non_sellable_damaged",
+          "non_sellable_disposed",
+          "non_sellable_no_pedigree_match",
+          "non_sellable_recalled"
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "disposition": "active",
+            "action": "ADD",
+            "effect": "origin",
+            "mapping": "lossless",
+            "disposition_carried": "active"
+          },
+          {
+            "disposition": "active",
+            "action": "OBSERVE",
+            "effect": "origin",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "active",
+            "action": "DELETE",
+            "effect": "origin",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "available",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "available",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "available",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "completeness_inferred",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "completeness_inferred",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "completeness_inferred",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "completeness_verified",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "completeness_verified",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "completeness_verified",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "conformant",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "conformant",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "conformant",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "container_closed",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "container_closed",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "container_closed",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "container_open",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "container_open",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "container_open",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "damaged",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "damaged",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "damaged",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "destroyed",
+            "action": "ADD",
+            "effect": "terminal",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "disposition": "destroyed",
+            "action": "OBSERVE",
+            "effect": "terminal",
+            "mapping": "lossless",
+            "disposition_carried": "destroyed"
+          },
+          {
+            "disposition": "destroyed",
+            "action": "DELETE",
+            "effect": "terminal",
+            "mapping": "lossless",
+            "disposition_carried": "destroyed"
+          },
+          {
+            "disposition": "dispensed",
+            "action": "ADD",
+            "effect": "terminal",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "disposition": "dispensed",
+            "action": "OBSERVE",
+            "effect": "terminal",
+            "mapping": "lossless",
+            "disposition_carried": "dispensed"
+          },
+          {
+            "disposition": "dispensed",
+            "action": "DELETE",
+            "effect": "terminal",
+            "mapping": "lossless",
+            "disposition_carried": "dispensed"
+          },
+          {
+            "disposition": "disposed",
+            "action": "ADD",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "disposed",
+            "action": "OBSERVE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "disposed",
+            "action": "DELETE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "encoded",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "encoded",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "encoded",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "expired",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "expired",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "expired",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "in_progress",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "in_progress",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "in_progress",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "in_transit",
+            "action": "ADD",
+            "effect": "transit",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "disposition": "in_transit",
+            "action": "OBSERVE",
+            "effect": "transit",
+            "mapping": "lossless",
+            "disposition_carried": "in_transit"
+          },
+          {
+            "disposition": "in_transit",
+            "action": "DELETE",
+            "effect": "transit",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "disposition": "inactive",
+            "action": "ADD",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "inactive",
+            "action": "OBSERVE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "inactive",
+            "action": "DELETE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "mismatch_class",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_class",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_class",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_instance",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_instance",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_instance",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_quantity",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_quantity",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "mismatch_quantity",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "needs_replacement",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "needs_replacement",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "needs_replacement",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "no_pedigree_match",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "no_pedigree_match",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "no_pedigree_match",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_conformant",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_conformant",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_conformant",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_other",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_other",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_other",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "partially_dispensed",
+            "action": "ADD",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "partially_dispensed",
+            "action": "OBSERVE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "partially_dispensed",
+            "action": "DELETE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "recalled",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "recalled",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "recalled",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "reserved",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "reserved",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "reserved",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "retail_sold",
+            "action": "ADD",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "retail_sold",
+            "action": "OBSERVE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "retail_sold",
+            "action": "DELETE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "returned",
+            "action": "ADD",
+            "effect": "transit",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "disposition": "returned",
+            "action": "OBSERVE",
+            "effect": "transit",
+            "mapping": "lossless",
+            "disposition_carried": "returned"
+          },
+          {
+            "disposition": "returned",
+            "action": "DELETE",
+            "effect": "transit",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "disposition": "sellable_accessible",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "sellable_accessible",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "sellable_accessible",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "sellable_not_accessible",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "sellable_not_accessible",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "sellable_not_accessible",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "stolen",
+            "action": "ADD",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "stolen",
+            "action": "OBSERVE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "stolen",
+            "action": "DELETE",
+            "effect": "unnamed-transition",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "unavailable",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "unavailable",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "unavailable",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "unknown",
+            "action": "ADD",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "unknown",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "unknown",
+            "action": "DELETE",
+            "effect": "neutral",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_expired",
+            "action": "ADD",
+            "effect": "neutral",
+            "replaced_by": "expired",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_expired",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "replaced_by": "expired",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_expired",
+            "action": "DELETE",
+            "effect": "neutral",
+            "replaced_by": "expired",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_damaged",
+            "action": "ADD",
+            "effect": "neutral",
+            "replaced_by": "damaged",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_damaged",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "replaced_by": "damaged",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_damaged",
+            "action": "DELETE",
+            "effect": "neutral",
+            "replaced_by": "damaged",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_disposed",
+            "action": "ADD",
+            "effect": "unnamed-transition",
+            "replaced_by": "disposed",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "non_sellable_disposed",
+            "action": "OBSERVE",
+            "effect": "unnamed-transition",
+            "replaced_by": "disposed",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "non_sellable_disposed",
+            "action": "DELETE",
+            "effect": "unnamed-transition",
+            "replaced_by": "disposed",
+            "mapping": "unsupported",
+            "limit": "custody-transition-unnamed"
+          },
+          {
+            "disposition": "non_sellable_no_pedigree_match",
+            "action": "ADD",
+            "effect": "neutral",
+            "replaced_by": "no_pedigree_match",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_no_pedigree_match",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "replaced_by": "no_pedigree_match",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_no_pedigree_match",
+            "action": "DELETE",
+            "effect": "neutral",
+            "replaced_by": "no_pedigree_match",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_recalled",
+            "action": "ADD",
+            "effect": "neutral",
+            "replaced_by": "recalled",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_recalled",
+            "action": "OBSERVE",
+            "effect": "neutral",
+            "replaced_by": "recalled",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "disposition": "non_sellable_recalled",
+            "action": "DELETE",
+            "effect": "neutral",
+            "replaced_by": "recalled",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "crosswalk"
+      ]
+    },
+    {
+      "id": "origin-and-lifecycle",
+      "description": "The action means what EPCIS 2.0 section 7.4.2 and its siblings say it means for each event type. Only an ObjectEvent whose action is ADD commissions its objects, so only it carries active, the VSC origin: an AggregationEvent, AssociationEvent or TransactionEvent whose action is ADD adds objects that already exist to a parent or a business transaction, and a TransformationEvent carries its inputs, so each reporting active is custody-neutral. A commissioning ObjectEvent can only open the chain, so a transit or terminal disposition on it is a lifecycle-conflict, and so is a transit disposition on a decommissioning ObjectEvent (DELETE); on the other event types ADD and DELETE leave transit and terminal dispositions carried. The transformation action decision is ADD.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "transformation_action": "ADD",
+        "events": [
+          {
+            "name": "ObjectEvent ADD commissioning active",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "commissioning",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "AggregationEvent ADD packing active",
+            "event": {
+              "type": "AggregationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "parentID": "urn:epc:id:sscc:9521234.0000000001",
+              "childEPCs": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "packing",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "AssociationEvent ADD installing active",
+            "event": {
+              "type": "AssociationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "parentID": "urn:epc:id:sgtin:9521234.012345.SER1",
+              "childEPCs": [
+                "urn:epc:id:sgtin:9521234.022222.CELL-A"
+              ],
+              "action": "ADD",
+              "bizStep": "installing",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "TransactionEvent ADD shipping active",
+            "event": {
+              "type": "TransactionEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "bizTransactionList": [
+                {
+                  "type": "po",
+                  "bizTransaction": "urn:epcglobal:cbv:bt:9521234000018:PO-77"
+                }
+              ],
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "shipping",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "TransformationEvent assembling active",
+            "event": {
+              "type": "TransformationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "inputEPCList": [
+                "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                "urn:epc:id:sgtin:9521234.022222.CELL-B"
+              ],
+              "outputEPCList": [
+                "urn:epc:id:sgtin:9521234.044444.MOD-1"
+              ],
+              "bizStep": "assembling",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "TransformationEvent assembling in_transit",
+            "event": {
+              "type": "TransformationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "inputEPCList": [
+                "urn:epc:id:sgtin:9521234.022222.CELL-A",
+                "urn:epc:id:sgtin:9521234.022222.CELL-B"
+              ],
+              "outputEPCList": [
+                "urn:epc:id:sgtin:9521234.044444.MOD-1"
+              ],
+              "bizStep": "assembling",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "AggregationEvent ADD packing in_transit",
+            "event": {
+              "type": "AggregationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "parentID": "urn:epc:id:sscc:9521234.0000000001",
+              "childEPCs": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "packing",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "AggregationEvent DELETE unpacking in_transit",
+            "event": {
+              "type": "AggregationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "parentID": "urn:epc:id:sscc:9521234.0000000001",
+              "childEPCs": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "DELETE",
+              "bizStep": "unpacking",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "ObjectEvent ADD commissioning in_transit",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "commissioning",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "ObjectEvent ADD commissioning destroyed",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "commissioning",
+              "disposition": "destroyed",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "ObjectEvent DELETE decommissioning returned",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "DELETE",
+              "bizStep": "decommissioning",
+              "disposition": "returned",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "ObjectEvent DELETE destroying destroyed",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "DELETE",
+              "bizStep": "destroying",
+              "disposition": "destroyed",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "name": "ObjectEvent ADD commissioning active",
+            "mapping": "lossless",
+            "disposition_carried": "active"
+          },
+          {
+            "name": "AggregationEvent ADD packing active",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "name": "AssociationEvent ADD installing active",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "name": "TransactionEvent ADD shipping active",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "name": "TransformationEvent assembling active",
+            "mapping": "unsupported",
+            "limit": "custody-neutral"
+          },
+          {
+            "name": "TransformationEvent assembling in_transit",
+            "mapping": "transformed",
+            "disposition_carried": "in_transit"
+          },
+          {
+            "name": "AggregationEvent ADD packing in_transit",
+            "mapping": "transformed",
+            "disposition_carried": "in_transit"
+          },
+          {
+            "name": "AggregationEvent DELETE unpacking in_transit",
+            "mapping": "transformed",
+            "disposition_carried": "in_transit"
+          },
+          {
+            "name": "ObjectEvent ADD commissioning in_transit",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "name": "ObjectEvent ADD commissioning destroyed",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "name": "ObjectEvent DELETE decommissioning returned",
+            "mapping": "unsupported",
+            "limit": "lifecycle-conflict"
+          },
+          {
+            "name": "ObjectEvent DELETE destroying destroyed",
+            "mapping": "lossless",
+            "disposition_carried": "destroyed"
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "crosswalk"
+      ]
+    },
+    {
+      "id": "disposition-spellings",
+      "description": "The bare, URN and Web URI spellings of one CBV disposition are the same value: each commissioning event maps, the SEAL carries the CBV term, and the round-trip extension keeps the spelling the source used.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "commissioning",
+            "disposition": "active",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "commissioning",
+            "disposition": "urn:epcglobal:cbv:disp:active",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "commissioning",
+            "disposition": "https://ref.gs1.org/cbv/Disp-active",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "mapping": "lossless",
+            "disposition_carried": "active",
+            "unmapped": [],
+            "source_spelling_retained": "active"
+          },
+          {
+            "mapping": "lossless",
+            "disposition_carried": "active",
+            "unmapped": [],
+            "source_spelling_retained": "urn:epcglobal:cbv:disp:active"
+          },
+          {
+            "mapping": "lossless",
+            "disposition_carried": "active",
+            "unmapped": [],
+            "source_spelling_retained": "https://ref.gs1.org/cbv/Disp-active"
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "crosswalk"
+      ]
+    },
+    {
+      "id": "non-cbv-dispositions",
+      "description": "A disposition outside CBV 2.0 is refused as non-cbv-disposition under epcis-vsc@2, among them the four VSC-only terms stored, transshipped, transformed and received, which epcis-vsc@1 still maps; a VSC-only term is never written for a CBV event. CBV values are lower case, so Active is not one.",
+      "input": {
+        "event_template": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "other",
+          "disposition": "in_transit",
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          }
+        },
+        "replaced_member": "disposition",
+        "dispositions": [
+          "stored",
+          "transshipped",
+          "transformed",
+          "received",
+          "urn:epcglobal:cbv:disp:received",
+          "urn:epcglobal:cbv:disp:sold",
+          "https://example.org/disp/sold",
+          "Active"
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "disposition": "stored",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "lossless"
+          },
+          {
+            "disposition": "transshipped",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "lossless"
+          },
+          {
+            "disposition": "transformed",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "lossless"
+          },
+          {
+            "disposition": "received",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "lossless"
+          },
+          {
+            "disposition": "urn:epcglobal:cbv:disp:received",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "lossless"
+          },
+          {
+            "disposition": "urn:epcglobal:cbv:disp:sold",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "unsupported"
+          },
+          {
+            "disposition": "https://example.org/disp/sold",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "unsupported"
+          },
+          {
+            "disposition": "Active",
+            "epcis_vsc_2": "non-cbv-disposition",
+            "epcis_vsc_1": "unsupported"
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "error-case"
+      ]
+    },
+    {
+      "id": "absent-disposition",
+      "description": "EPCIS 2.0 makes the disposition optional and reads its absence as unchanged. Under epcis-vsc@2 an OBSERVE event without one is custody-neutral (custody-destination-unnamed at a receiving step) and has no SEAL; an ADD or DELETE event without one stays insufficient-data, as under epcis-vsc@1.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "inspecting",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "commissioning",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "DELETE",
+            "bizStep": "decommissioning",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "receiving",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "mapping": "unsupported",
+            "missing": [
+              "custody-neutral: an OBSERVE event without a disposition leaves the disposition unchanged and records no custody state; every SEAL carries one of the nine VSC custody terms, and none is substituted for a state the event did not record"
+            ]
+          },
+          {
+            "mapping": "insufficient-data",
+            "missing": [
+              "disposition"
+            ]
+          },
+          {
+            "mapping": "insufficient-data",
+            "missing": [
+              "disposition"
+            ]
+          },
+          {
+            "mapping": "unsupported",
+            "missing": [
+              "custody-destination-unnamed: business step \"receiving\" with no disposition records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition"
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "error-case"
+      ]
+    },
+    {
+      "id": "custody-destination",
+      "description": "A receiving or accepting step whose disposition is neutral, active or absent records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition: it is refused as custody-destination-unnamed rather than substituted. A receiving step that reports returned is carried as returned; one that reports retail_sold is refused as custody-transition-unnamed.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "receiving",
+            "disposition": "in_progress",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "receiving",
+            "disposition": "sellable_not_accessible",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "accepting",
+            "disposition": "active",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "receiving",
+            "disposition": "returned",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "receiving",
+            "disposition": "retail_sold",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "mapping": "unsupported",
+            "missing": [
+              "custody-destination-unnamed: business step \"receiving\" with disposition \"in_progress\" records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition"
+            ]
+          },
+          {
+            "mapping": "unsupported",
+            "missing": [
+              "custody-destination-unnamed: business step \"receiving\" with disposition \"sellable_not_accessible\" records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition"
+            ]
+          },
+          {
+            "mapping": "unsupported",
+            "missing": [
+              "custody-destination-unnamed: business step \"accepting\" with disposition \"active\" records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition"
+            ]
+          },
+          {
+            "mapping": "lossless",
+            "disposition_carried": "returned",
+            "unmapped": []
+          },
+          {
+            "mapping": "unsupported",
+            "missing": [
+              "custody-transition-unnamed: disposition \"retail_sold\" records a custody change for which no VSC term is a CBV value; carrying it fails the SEAL schema and no VSC term is substituted"
+            ]
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "crosswalk"
+      ]
+    },
+    {
+      "id": "error-declarations",
+      "description": "An event carrying an EPCIS error declaration asserts that the prior event it repeats is in error (EPCIS 2.0 section 7.4.1.2), not that its step happened. epcis-vsc@2 refuses it as error-declaration, so no SEAL asserts the step the source retracted; epcis-vsc@1 maps it with the loss error-declaration, as its manifest publishes. The corrective event is an ordinary event and maps under both. Only a VSC correction retracts a SEAL.",
+      "input": {
+        "events": [
+          {
+            "name": "declared error of a receiving event",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-04T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "eventID": "urn:uuid:00000000-0000-4000-8000-00000000000a",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "receiving",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              },
+              "errorDeclaration": {
+                "declarationTime": "2026-03-04T10:00:00.000Z",
+                "reason": "incorrect_data",
+                "correctiveEventIDs": [
+                  "urn:uuid:00000000-0000-4000-8000-00000000000b"
+                ]
+              }
+            }
+          },
+          {
+            "name": "the corrective event it names",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-04T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "eventID": "urn:uuid:00000000-0000-4000-8000-00000000000b",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "receiving",
+              "disposition": "returned",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "declared error whose corrective event is not supplied",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-05T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "eventID": "urn:uuid:00000000-0000-4000-8000-00000000000c",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "inspecting",
+              "disposition": "active",
+              "errorDeclaration": {
+                "declarationTime": "2026-03-05T10:00:00.000Z",
+                "reason": "did_not_occur",
+                "correctiveEventIDs": [
+                  "urn:uuid:00000000-0000-4000-8000-00000000000d"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "name": "declared error of a receiving event",
+            "epcis_vsc_1": {
+              "mapping": "transformed",
+              "unmapped": [
+                "error-declaration"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "limit": "error-declaration"
+            }
+          },
+          {
+            "name": "the corrective event it names",
+            "epcis_vsc_1": {
+              "mapping": "lossless",
+              "unmapped": []
+            },
+            "epcis_vsc_2": {
+              "mapping": "lossless",
+              "disposition_carried": "returned",
+              "unmapped": []
+            }
+          },
+          {
+            "name": "declared error whose corrective event is not supplied",
+            "epcis_vsc_1": {
+              "mapping": "unsupported",
+              "missing": [
+                "maintenance-observation: business step \"inspecting\" with disposition \"active\" records no custody transition, and the VSC custody rules are not changed to admit it"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "limit": "error-declaration"
+            }
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping",
+        "error-case"
+      ]
+    },
+    {
+      "id": "maintenance-observations-under-both-profiles",
+      "description": "The same events under both mapping profiles. epcis-vsc@1 refuses an observation (an OBSERVE event or a TransformationEvent) at an inspection, repair or sensor reading step that reports active as maintenance-observation, as its manifest publishes, and maps a maintenance step that reports a custody state and an ObjectEvent that commissions its objects. epcis-vsc@2 decides by the custody effect instead: active enters the origin state only on an ObjectEvent that commissions its objects, so every observation reporting active is custody-neutral, whatever its step, and so is a repair recorded as a transformation, whose SEAL would carry objects that already exist. The transformation action decision is ADD.",
+      "input": {
+        "transformation_action": "ADD",
+        "events": [
+          {
+            "name": "repair reporting active",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "repairing",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "inspection reporting active",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "inspecting",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "sensor reading reporting active",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "sensor_reporting",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              },
+              "sensorElementList": [
+                {
+                  "sensorReport": [
+                    {
+                      "type": "Temperature",
+                      "value": 4.5,
+                      "uom": "CEL"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "repair recorded as a transformation",
+            "event": {
+              "type": "TransformationEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "inputEPCList": [
+                "urn:epc:id:sgtin:9521234.044444.MOD-1"
+              ],
+              "outputEPCList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "bizStep": "repairing",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "inspection in transit",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "inspecting",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "sensor reading in transit",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "sensor_reporting",
+              "disposition": "in_transit",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              },
+              "sensorElementList": [
+                {
+                  "sensorReport": [
+                    {
+                      "type": "Temperature",
+                      "value": 4.5,
+                      "uom": "CEL"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "storing reporting active",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "OBSERVE",
+              "bizStep": "storing",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          },
+          {
+            "name": "commissioning at a repair step",
+            "event": {
+              "type": "ObjectEvent",
+              "eventTime": "2026-03-02T08:00:00.000Z",
+              "eventTimeZoneOffset": "+00:00",
+              "recordTime": "2026-03-02T09:00:00.000Z",
+              "epcList": [
+                "urn:epc:id:sgtin:9521234.012345.SER1"
+              ],
+              "action": "ADD",
+              "bizStep": "repairing",
+              "disposition": "active",
+              "readPoint": {
+                "id": "urn:epc:id:sgln:9521234.00001.0"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "name": "repair reporting active",
+            "epcis_vsc_1": {
+              "mapping": "unsupported",
+              "missing": [
+                "maintenance-observation: business step \"repairing\" with disposition \"active\" records no custody transition, and the VSC custody rules are not changed to admit it"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "missing": [
+                "custody-neutral: disposition \"active\" on an ObjectEvent whose action is OBSERVE records no custody step; active is the VSC origin state, which only an ObjectEvent that commissions its objects (action ADD) enters, and a SEAL carrying it would open a new custody chain for objects that already exist"
+              ]
+            }
+          },
+          {
+            "name": "inspection reporting active",
+            "epcis_vsc_1": {
+              "mapping": "unsupported",
+              "missing": [
+                "maintenance-observation: business step \"inspecting\" with disposition \"active\" records no custody transition, and the VSC custody rules are not changed to admit it"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "missing": [
+                "custody-neutral: disposition \"active\" on an ObjectEvent whose action is OBSERVE records no custody step; active is the VSC origin state, which only an ObjectEvent that commissions its objects (action ADD) enters, and a SEAL carrying it would open a new custody chain for objects that already exist"
+              ]
+            }
+          },
+          {
+            "name": "sensor reading reporting active",
+            "epcis_vsc_1": {
+              "mapping": "unsupported",
+              "missing": [
+                "maintenance-observation: business step \"sensor_reporting\" with disposition \"active\" records no custody transition, and the VSC custody rules are not changed to admit it"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "missing": [
+                "custody-neutral: disposition \"active\" on an ObjectEvent whose action is OBSERVE records no custody step; active is the VSC origin state, which only an ObjectEvent that commissions its objects (action ADD) enters, and a SEAL carrying it would open a new custody chain for objects that already exist"
+              ]
+            }
+          },
+          {
+            "name": "repair recorded as a transformation",
+            "epcis_vsc_1": {
+              "mapping": "unsupported",
+              "missing": [
+                "maintenance-observation: business step \"repairing\" with disposition \"active\" records no custody transition, and the VSC custody rules are not changed to admit it"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "missing": [
+                "custody-neutral: disposition \"active\" on a TransformationEvent records no custody state a SEAL can carry: the SEAL would carry the inputs, which exist before the transformation, as a new custody chain at the origin, and the VSC term for a transformation step, transformed, is not a CBV value"
+              ]
+            }
+          },
+          {
+            "name": "inspection in transit",
+            "epcis_vsc_1": {
+              "mapping": "lossless",
+              "unmapped": []
+            },
+            "epcis_vsc_2": {
+              "mapping": "lossless",
+              "unmapped": []
+            }
+          },
+          {
+            "name": "sensor reading in transit",
+            "epcis_vsc_1": {
+              "mapping": "transformed",
+              "unmapped": [
+                "sensor-elements"
+              ]
+            },
+            "epcis_vsc_2": {
+              "mapping": "transformed",
+              "unmapped": [
+                "sensor-elements"
+              ]
+            }
+          },
+          {
+            "name": "storing reporting active",
+            "epcis_vsc_1": {
+              "mapping": "lossless",
+              "unmapped": []
+            },
+            "epcis_vsc_2": {
+              "mapping": "unsupported",
+              "missing": [
+                "custody-neutral: disposition \"active\" on an ObjectEvent whose action is OBSERVE records no custody step; active is the VSC origin state, which only an ObjectEvent that commissions its objects (action ADD) enters, and a SEAL carrying it would open a new custody chain for objects that already exist"
+              ]
+            }
+          },
+          {
+            "name": "commissioning at a repair step",
+            "epcis_vsc_1": {
+              "mapping": "lossless",
+              "unmapped": []
+            },
+            "epcis_vsc_2": {
+              "mapping": "lossless",
+              "unmapped": []
+            }
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping"
+      ]
+    },
+    {
+      "id": "mapping-outcomes",
+      "description": "The five-event document of dpp.interoperability.epcis.v1 (its five-event-document vector carries the same bytes) mapped under epcis-vsc@2 with source references that name epcis-vsc@2. The commissioning ObjectEvent is lossless; the assembling transformations, which report in_progress, and the association, which reports active for a pack the commissioning event already opened, are custody-neutral; the aggregation, transaction and in-transit sensor reading map with their losses named. No SEAL is issued, and nothing touches a token.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "source_sha256_hex": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+        "context_digests_hex": [
+          "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+          "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+        ],
+        "issuer": "did:web:issuer.example",
+        "transformation_action": "ADD"
+      },
+      "expected": {
+        "outcomes": [
+          {
+            "pointer": "/epcisBody/eventList/0",
+            "type": "TransformationEvent",
+            "mapping": "unsupported",
+            "missing": [
+              "custody-neutral: disposition \"in_progress\" records a condition and no custody state; every SEAL carries one of the nine VSC custody terms, and none is substituted for a state the event did not record"
+            ],
+            "unmapped": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/1",
+            "type": "TransformationEvent",
+            "mapping": "unsupported",
+            "missing": [
+              "custody-neutral: disposition \"in_progress\" records a condition and no custody state; every SEAL carries one of the nine VSC custody terms, and none is substituted for a state the event did not record"
+            ],
+            "unmapped": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/2",
+            "type": "ObjectEvent",
+            "mapping": "lossless",
+            "missing": [],
+            "unmapped": [],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000002f2",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000002f2"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T08:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  },
+                  "businessLocation": {
+                    "id": "urn:epc:id:sgln:9521234.00002.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "ObjectEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "commissioning",
+                  "disposition": "active",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "ObjectEvent",
+                      "eventTime": "2026-03-02T08:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+                      "epcList": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "commissioning",
+                      "disposition": "active",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      },
+                      "bizLocation": {
+                        "id": "urn:epc:id:sgln:9521234.00002.0"
+                      }
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/2",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000003",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@2"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/3",
+            "type": "AssociationEvent",
+            "mapping": "unsupported",
+            "missing": [
+              "custody-neutral: disposition \"active\" on an AssociationEvent (action ADD), whose objects exist before it, records no custody step; active is the VSC origin state, which only an ObjectEvent that commissions its objects (action ADD) enters, and a SEAL carrying it would open a new custody chain for objects that already exist"
+            ],
+            "unmapped": []
+          },
+          {
+            "pointer": "/epcisBody/eventList/4",
+            "type": "AggregationEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "multi-product-event"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000002f4",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000002f4"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    },
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sscc:9521234.0000000001",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T09:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "AggregationEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "packing",
+                  "disposition": "in_transit",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "AggregationEvent",
+                      "eventTime": "2026-03-02T09:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000005",
+                      "parentID": "urn:epc:id:sscc:9521234.0000000001",
+                      "childEPCs": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "packing",
+                      "disposition": "in_transit",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      }
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/4",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000005",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@2"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/5",
+            "type": "TransactionEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "business-transactions",
+              "source-destination-parties"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000002f5",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000002f5"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-02T10:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU",
+                  "readPoint": {
+                    "id": "urn:epc:id:sgln:9521234.00001.0"
+                  }
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "TransactionEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "shipping",
+                  "disposition": "in_transit",
+                  "action": "ADD"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "TransactionEvent",
+                      "eventTime": "2026-03-02T10:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "eventID": "urn:uuid:00000000-0000-4000-8000-000000000006",
+                      "bizTransactionList": [
+                        {
+                          "type": "po",
+                          "bizTransaction": "urn:epcglobal:cbv:bt:9521234000018:PO-77"
+                        }
+                      ],
+                      "epcList": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "ADD",
+                      "bizStep": "shipping",
+                      "disposition": "in_transit",
+                      "readPoint": {
+                        "id": "urn:epc:id:sgln:9521234.00001.0"
+                      },
+                      "sourceList": [
+                        {
+                          "type": "owning_party",
+                          "source": "urn:epc:id:pgln:9521234.00003"
+                        }
+                      ],
+                      "destinationList": [
+                        {
+                          "type": "owning_party",
+                          "destination": "urn:epc:id:pgln:9521234.00004"
+                        }
+                      ]
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/5",
+                    "eventId": "urn:uuid:00000000-0000-4000-8000-000000000006",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@2"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          },
+          {
+            "pointer": "/epcisBody/eventList/6",
+            "type": "ObjectEvent",
+            "mapping": "transformed",
+            "missing": [],
+            "unmapped": [
+              "extension:example:note",
+              "sensor-elements"
+            ],
+            "seal": {
+              "@context": [
+                "https://www.w3.org/ns/credentials/v2",
+                "urn:bsv:vsc:context:0.1.0",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+                "https://w3id.org/security/data-integrity/v2"
+              ],
+              "type": [
+                "VerifiableCredential",
+                "VSC-SEAL"
+              ],
+              "id": "urn:uuid:00000000-0000-4000-8000-0000000002f6",
+              "issuer": "did:web:issuer.example",
+              "issuanceDate": "2026-03-02T08:00:00.000Z",
+              "validFrom": "2026-03-02T08:00:00.000Z",
+              "sealVersion": "1.0",
+              "sealTimestamp": "2026-03-02T08:00:00.000Z",
+              "correctionOf": null,
+              "credentialSubject": {
+                "id": "urn:uuid:00000000-0000-4000-8000-0000000002f6"
+              },
+              "credentialStatus": {
+                "id": "https://issuer.example/status/1#0",
+                "type": "BitstringStatusListEntry",
+                "statusPurpose": "revocation",
+                "statusListIndex": "0",
+                "statusListCredential": "https://issuer.example/status/1"
+              },
+              "eventVector": {
+                "what": {
+                  "productIdentifiers": [
+                    {
+                      "scheme": "EPC",
+                      "value": "urn:epc:id:sgtin:9521234.012345.SER1",
+                      "schemeAuthority": "GS1"
+                    }
+                  ]
+                },
+                "when": {
+                  "eventTime": "2026-03-03T06:00:00.000Z",
+                  "recordedAt": "2026-03-02T09:00:00.000Z",
+                  "timezone": "+00:00",
+                  "timePrecision": "millisecond"
+                },
+                "where": {
+                  "jurisdiction": "AU"
+                },
+                "who": {
+                  "actorDid": "did:web:issuer.example",
+                  "actorRole": "manufacturer",
+                  "assertionMethod": "did:web:issuer.example#ed"
+                },
+                "how": {
+                  "eventType": "ObjectEvent",
+                  "eventTypeVocab": "urn:epcis:cbv:v2",
+                  "businessStep": "sensor_reporting",
+                  "disposition": "in_transit",
+                  "action": "OBSERVE"
+                }
+              },
+              "extensions": {
+                "+Dn": {
+                  "+D1": {
+                    "vocabularyUrn": "urn:bsv:vsc:vocab:epcis-roundtrip:0.1.0",
+                    "event": {
+                      "type": "ObjectEvent",
+                      "eventTime": "2026-03-03T06:00:00.000Z",
+                      "eventTimeZoneOffset": "+00:00",
+                      "recordTime": "2026-03-02T09:00:00.000Z",
+                      "epcList": [
+                        "urn:epc:id:sgtin:9521234.012345.SER1"
+                      ],
+                      "action": "OBSERVE",
+                      "bizStep": "sensor_reporting",
+                      "disposition": "in_transit",
+                      "sensorElementList": [
+                        {
+                          "sensorMetadata": {
+                            "time": "2026-03-03T06:00:00.000Z",
+                            "deviceID": "urn:epc:id:giai:9521234.SENSOR-1"
+                          },
+                          "sensorReport": [
+                            {
+                              "type": "Temperature",
+                              "value": 27.5,
+                              "uom": "CEL"
+                            }
+                          ]
+                        }
+                      ],
+                      "example:note": "temperature observed in transit"
+                    }
+                  },
+                  "urn:bsv:dpp:epcis-source:1": {
+                    "vocabularyUrn": "urn:bsv:dpp:epcis-source:1",
+                    "sourceDigest": "5ecde6efc2731e99cb4d9d8d0fb84395371411dadfac07af59f0359e5799fc98",
+                    "mediaType": "application/ld+json",
+                    "eventPointer": "/epcisBody/eventList/6",
+                    "contextDigests": [
+                      "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+                      "b75a2ba9723d875ca8bee640b1eb00ce61ae85b13cd892aacb54e5b155119052"
+                    ],
+                    "mappingProfile": "epcis-vsc@2"
+                  }
+                }
+              },
+              "chainOfCustody": {
+                "chainId": "urn:uuid:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+                "sequenceNumber": 1,
+                "parentSeals": [],
+                "topology": "linear"
+              }
+            },
+            "seal_structure_valid": true
+          }
+        ]
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping"
+      ]
+    },
+    {
+      "id": "attribution",
+      "description": "An event naming an owning party and a business location maps under epcis-vsc@2 with the configured issuer as actor, never with the party or location the event names; the party list stays in the round-trip extension.",
+      "input": {
+        "profile": "epcis-vsc@2",
+        "event": {
+          "type": "ObjectEvent",
+          "eventTime": "2026-03-02T08:00:00.000Z",
+          "eventTimeZoneOffset": "+00:00",
+          "recordTime": "2026-03-02T09:00:00.000Z",
+          "epcList": [
+            "urn:epc:id:sgtin:9521234.012345.SER1"
+          ],
+          "action": "OBSERVE",
+          "bizStep": "shipping",
+          "disposition": "in_transit",
+          "readPoint": {
+            "id": "urn:epc:id:sgln:9521234.00001.0"
+          },
+          "bizLocation": {
+            "id": "urn:epc:id:sgln:9521234.00002.0"
+          },
+          "sourceList": [
+            {
+              "type": "owning_party",
+              "source": "urn:epc:id:pgln:9521234.00004"
+            }
+          ]
+        },
+        "issuer": "did:web:issuer.example"
+      },
+      "expected": {
+        "mapping": "transformed",
+        "unmapped": [
+          "source-destination-parties"
+        ],
+        "actor_did": "did:web:issuer.example",
+        "issuer": "did:web:issuer.example"
+      },
+      "tags": [
+        "epcis",
+        "vsc-mapping"
+      ]
+    }
+  ]
+}

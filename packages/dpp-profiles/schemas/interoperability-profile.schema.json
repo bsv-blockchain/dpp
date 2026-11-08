@@ -283,6 +283,62 @@
         }
       }
     },
+    "crosswalk": {
+      "type": "array",
+      "description": "For a mapping profile, how each value of a source vocabulary is treated: carried as the named target term, under the stated condition when there is one, or refused under the named mapping limit. A row of a context vocabulary, such as a business step, may put its limit in place of the limit another row cites. An implementation reproduces the table with its conditions and replacements, not an interpretation of it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "vocabulary",
+          "value",
+          "effect"
+        ],
+        "properties": {
+          "vocabulary": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The source vocabulary, for example cbv-2.0-disposition."
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The source value as its standard spells it."
+          },
+          "effect": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the value means in the target profile's terms."
+          },
+          "carriedAs": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The target term the value is carried as, when it is carried."
+          },
+          "condition": {
+            "type": "string",
+            "description": "When the value is carried; outside it, the named limit applies."
+          },
+          "limit": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The mappingLimits id a refusal of this value cites."
+          },
+          "replaces": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The mappingLimits id that this row's limit takes the place of when the value is present: a refusal that would cite it cites this row's limit instead."
+          },
+          "replacedBy": {
+            "type": "string",
+            "description": "For a value its standard deprecates, the value that replaces it, whose treatment it shares."
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "sourceRefs": {
       "type": "array",
       "items": {
