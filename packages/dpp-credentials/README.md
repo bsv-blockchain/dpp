@@ -13,7 +13,7 @@
 
 ## Install
 
-This is a pre-1.0 candidate. The published version is `@bsv/dpp-credentials@0.2.0-beta.5`, selected by the October set; this source tree is the November candidate, `0.2.0-beta.6`, which is not yet published. It refuses a maintenance observation under `epcis-vsc@1` as that profile's published limit says, adds the proposed `epcis-vsc@2` mapping profile, and describes the package with the VSC profile parked. Install the exact published version from npm:
+This is a pre-1.0 candidate. The published version is `@bsv/dpp-credentials@0.2.0-beta.5`, selected by the October set; this source tree is the November candidate, `0.2.0-beta.6`, which is not yet published. It refuses a maintenance observation under `epcis-vsc@1` as that profile's published limit says, adds the `epcis-vsc@2` mapping profile, and describes the package with the VSC profile and both mappings parked. Install the exact published version from npm:
 
 ```sh
 npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.5
@@ -35,7 +35,7 @@ A worked call, with the policy mapped from the vector file, is on the [external 
 
 ## Parked: VSC draft compatibility profile
 
-The `vsc-draft-compat/0.1.0` profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. Their modules stay exported from the root entry point and are still built and tested, with unchanged behaviour, and an implementer need not support them. The `dpp-release-2026-11` candidate does not claim them, nor `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping; earlier sets, including the published `dpp-release-2026-10-10` that selects `0.2.0-beta.5`, claimed the implemented subset and `epcis-vsc@1`. New work that verifies credentials from other issuers belongs on `@bsv/dpp-credentials/exchange`.
+The `vsc-draft-compat/0.1.0` profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. Their modules stay exported from the root entry point and are still built and tested, with unchanged behaviour, and an implementer need not support them. The `dpp-release-2026-11` candidate does not claim them, nor `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping, and requires the narrower `epcis-source-import-1` for the source helpers in its place; earlier sets, including the published `dpp-release-2026-10-10` that selects `0.2.0-beta.5`, claimed the implemented subset and `epcis-vsc@1`. New work that verifies credentials from other issuers belongs on `@bsv/dpp-credentials/exchange`.
 
 The root entry point implements the local `vsc-draft-compat/0.1.0` profile against the Verifiable Supply Chain (VSC) Community Group draft at revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It includes strict secured SEAL parsing, an owned JSON-LD context and schema, Ed25519Signature2020 issuance and verification, BBS issuance and request-bound selective disclosure, authenticated status and issuer-authority checks, and custody DAG and correction evaluation. It preserves all five EPCIS event types in signed round-trip extensions. Unsupported or insufficient mappings fail instead of inventing event information.
 

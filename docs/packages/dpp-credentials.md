@@ -40,7 +40,7 @@ npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 |---|---|
 | Package | `@bsv/dpp-credentials` 0.2.0-beta.6 |
 | Current source candidate | `dpp-release-2026-11`; the [release page](../reference/release-sets.md) distinguishes it from the latest published set. |
-| Change | Under `epcis-vsc@1`, an inspection, repair or sensor reading reporting `active` is now refused as `maintenance-observation`, as the published profile says; the proposed `epcis-vsc@2` mapping profile is added. Both mapping profiles are parked with the VSC profile. |
+| Change | Under `epcis-vsc@1`, an inspection, repair or sensor reading reporting `active` is now refused as `maintenance-observation`, as the published profile says; the `epcis-vsc@2` mapping profile is added. Both mapping profiles are parked with the VSC profile. |
 | Other candidate packages | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
 | Runtime | Node only, ECMAScript modules; artefact files are plain data ([support table](support-table.md)). |
 
@@ -102,7 +102,8 @@ schema: pass ; findings: 0
 | Command | Expected result |
 |---|---|
 | `node epcis-first.mjs` | One `ObjectEvent` at `/epcisBody/eventList/0`; schema `pass`, zero findings |
-| `node examples/import-epcis.mjs` | Reads the seven-event fixture and, through the parked SEAL mapping, prints `lossless`, `transformed` or `unsupported` for each event, with what was lost. |
+| `node examples/import-epcis.mjs` | Reads the seven-event fixture and prints each event's identity and body digest; it maps nothing. |
+| `node examples/import-epcis.mjs --map-vsc` | Also prints, through the parked SEAL mapping, `lossless`, `transformed` or `unsupported` for each event, with what was lost. |
 
 To verify a partner's credential instead, follow [external credential verification](../interoperability/external-credentials.md), which runs the vector file's credentials through `verifyExternalCredential`.
 
@@ -112,7 +113,7 @@ To verify a partner's credential instead, follow [external credential verificati
 
 **A SEAL** is a VSC credential for one signed event: products (`what`), when, where, who acted and how, linked to earlier SEALs in the product's custody chain. This W3C credential uses an `Ed25519Signature2020` or `bbs-2023` proof, a different format from `@bsv/dpp-protocol`'s native lifecycle claim.
 
-The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. They stay exported, built and tested, so existing callers keep working, and an implementer need not support them. The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds them, together with `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`.
+The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. They stay exported, built and tested, so existing callers keep working, and an implementer need not support them. The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds them, together with `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping, and requires the narrower `epcis-source-import-1` for the source helpers in its place; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`.
 
 ### Select issuance or verification inputs
 
@@ -123,7 +124,7 @@ The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are p
 | 3. Read | Exact bytes to `parseSealBytes`; retain bytes separately | Strictly parsed credential |
 | 4. Verify | Credential, loader, issuer DID documents, status resolver, authority policy and custody-chain evidence from configured evidence sources to `verifySeal` | Proof, status, issuer authority and custody findings; inspect each before reliance. |
 
-A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/packages/dpp-credentials/README.md) shows the calls with each policy.
+A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/packages/dpp-credentials/README.md) shows the calls with each policy.
 
 ## Limits
 
@@ -139,8 +140,8 @@ A credential's own claim that its issuer is trusted is never enough. The [packag
 | Entry point | Source |
 |---|---|
 | `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
-| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/epcis-interoperability.md) |
-| `@bsv/dpp-credentials`, parked VSC modules | [Parked credential profile](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/vsc-profile.md) |
+| `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/epcis-interoperability.md) |
+| `@bsv/dpp-credentials`, parked VSC modules | [Parked credential profile](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/vsc-profile.md) |
 | `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 
 ## Next

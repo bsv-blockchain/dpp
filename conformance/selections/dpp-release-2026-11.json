@@ -1,7 +1,7 @@
 {
   "selectionVersion": "1",
   "selectionId": "dpp-release-2026-11",
-  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added and epcis-source-exchange-1 withheld: from 9 November 2026 the VSC compatibility profile and the EPCIS-to-SEAL mappings are parked, and that claim's rows include the mapping. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
+  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added, epcis-source-exchange-1 withheld and the narrower epcis-source-import-1 required in its place: from 9 November 2026 the VSC compatibility profile and the EPCIS-to-SEAL mappings are parked, and the withheld claim's rows include the mapping. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
   "releaseSet": "dpp-release-2026-11",
   "claims": [
     {
@@ -95,6 +95,11 @@
       "disposition": "required"
     },
     {
+      "id": "epcis-source-import-1",
+      "kind": "component",
+      "disposition": "required"
+    },
+    {
       "id": "overlay-federated-operators-1",
       "kind": "operation",
       "disposition": "withheld",
@@ -116,7 +121,7 @@
       "id": "epcis-source-exchange-1",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange: EPCIS-5-source-reference and EPCIS-6-mapping-outcomes belong to the mapping, which no release requires. Every row stays tested and the reference keeps the source exchange and the mapping built and tested, but the ledger defines no claim over the source exchange alone, so this release makes none."
+      "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange: EPCIS-5-source-reference and EPCIS-6-mapping-outcomes belong to the mapping, which no release requires. Every row stays tested and the reference keeps the source exchange and the mapping built and tested; this release requires epcis-source-import-1 instead, which covers the source helpers alone."
     },
     {
       "id": "epcis-vsc-mapping-2",

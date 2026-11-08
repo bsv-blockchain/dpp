@@ -12,6 +12,13 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, a narrower EPCIS import claim and a machine-readable parked status
+
+- New ledger claim `epcis-source-import-1` (`epcis-json@1`): EPCIS-1 to EPCIS-4, strict parsing, schema validation, event-body digests and arrival classification. `dpp-release-2026-11` requires it in place of `epcis-source-exchange-1`, which the release still withholds. EPCIS-7, EPCIS-8 and EPCIS-9 stay out because only the unpublished reference application exercises them, and the clauses of EPCIS-1, EPCIS-4, EPCIS-8 and EPCIS-9 now cite the sections that hold them.
+- The exchange and interoperability profile schemas gain the status `parked`, which `vsc-draft-compat@0.1.0`, `epcis-vsc@1` and `epcis-vsc@2` now carry, the one manifest field that changes, as `spec/vsc-profile.md` and `spec/epcis-interoperability.md` now say; `checkSelection` names a parked exchange profile in a note for every purpose and refuses nothing for it. `contracts/interoperability.yaml` marks `publishMappedEvent` `x-dpp-status: parked`, and `contracts/epcis-import.schema.json` no longer presents `epcis-vsc@1` as the usual profile; no shape, path, status code or contract version changes.
+- `examples/import-epcis.mjs` imports without mapping by default and maps under the parked `epcis-vsc@1` only with `--map-vsc`; CI runs both. The library default `EPCIS_MAPPING_PROFILE` is unchanged.
+- RULES-4 no longer names the VSC credential and also cites the external verifier's duplicate-key test, STATUS-validate-algorithm also cites `verifyBitstringStatus` and its tests, and the release set describes `@bsv/dpp-credentials` by external credential verification and the EPCIS source helpers first.
+
 ### 2026-11-09, the VSC profile and the EPCIS-to-SEAL mappings are parked
 
 - `vsc-draft-compat/0.1.0` and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and the programme does not currently develop. Their code, manifests, artefacts and vectors stay, still built and tested, and no export changes. `spec/vsc-profile.md`, `spec/epcis-interoperability.md` and `spec/exchange.md` §1 say so, and `spec/verification.md` and `spec/services.md` §3 no longer name the SEAL as the credential route; the `epcis-json@1` source exchange is unchanged.

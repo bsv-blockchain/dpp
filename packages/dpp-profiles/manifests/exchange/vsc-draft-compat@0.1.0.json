@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "profile": "vsc-draft-compat@0.1.0",
   "kind": "exchange",
-  "status": "current",
+  "status": "parked",
   "title": "VSC draft compatibility, as implemented by @bsv/vsc",
   "description": "The catalogue entry for the exchange profile spec/vsc-profile.md defines and packages/vsc implements: a documented subset of the Verifiable Supply Chain Community Group drafts at a pinned revision, with an owned context, genuine Ed25519Signature2020 and bbs-2023 proofs, authenticated status, scoped authority and custody graph validation. Not W3C certification and not full upstream conformance.",
   "representation": "vsc-seal-json-v1",

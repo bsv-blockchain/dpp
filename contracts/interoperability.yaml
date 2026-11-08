@@ -13,7 +13,9 @@ info:
     performs a native token operation: Issue, Update, Transfer and Retire stay
     with the passport service under spec/managed-custody.md.
 
-    Status codes are fixed by spec/epcis-interoperability.md section 6.3: 400
+    Publication of a mapped event belongs to the epcis-vsc mapping profiles, which are parked with the VSC compatibility profile they map into: kept, built and tested, required by no release, and not under development. Its operation is marked `x-dpp-status: parked`. An application that selects no mapping profile need not offer that route, and records each event's mapping outcome as not-attempted in the import record. Every other operation here belongs to the epcis-json@1 source exchange or to the passport projections and is not parked.
+
+    Status codes are fixed by spec/epcis-interoperability.md section 4: 400
     for a malformed request, 401 or 403 for authentication and authorisation,
     404 for a record that does not exist or may not be disclosed, 409 for an
     idempotency or content conflict, 413 for a size limit, 415 for a transport
@@ -123,8 +125,11 @@ paths:
     post:
       tags: [epcis]
       operationId: publishMappedEvent
-      summary: Separately authorised publication of one retained event as a VSC SEAL.
+      x-dpp-status: parked
+      summary: Parked. Separately authorised publication of one retained event as a VSC SEAL under an epcis-vsc mapping profile.
       description: |
+        Parked with the epcis-vsc mapping profiles and the VSC compatibility profile (spec/epcis-interoperability.md): no release requires this route, and an application that selects no mapping profile need not offer it. What follows binds only an application that does.
+
         `eventRef` is the opaque URL-safe reference the import record gives
         each event; it resolves to the retained source pointer and never
         exposes the source location. Publication requires the actual signing

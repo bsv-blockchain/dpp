@@ -31,6 +31,27 @@ describe('profile combinations (conformance.md §4)', () => {
     expect(codes({ baseline: 'native-baseline@1', exchange: ['vsc-draft-compat@0.1.0', 'vsc-draft-compat@0.1.0'], purpose: 'read' })).toEqual(['exchange-duplicate'])
   })
 
+  it('lets a claim on a current exchange profile with unretrieved artefacts cover the implemented subset only', () => {
+    const claim = checkSelection({ baseline: 'native-baseline@2', exchange: ['vc-di-ecdsa-rdfc-2019@1'], purpose: 'claim' })
+    expect(claim).toMatchObject({ ok: true, conflicts: [] })
+    expect(claim.notes).toHaveLength(1)
+    expect(claim.notes[0]).toMatch(/^vc-di-ecdsa-rdfc-2019@1: the claim covers the implemented subset; artefacts not retrieved \(vc-data-model-2, vc-di-ecdsa, rdf-canon\)/)
+    const read = checkSelection({ baseline: 'native-baseline@2', exchange: ['vc-di-ecdsa-rdfc-2019@1'], purpose: 'read' })
+    expect(read.ok).toBe(true)
+    expect(read.notes[0]).toMatch(/^vc-di-ecdsa-rdfc-2019@1 is current with unpinned artefacts/)
+  })
+
+  it('names a parked exchange profile for every purpose, never as current, and refuses nothing for it', () => {
+    for (const purpose of ['read', 'write', 'claim'] as const) {
+      const result = checkSelection({ baseline: 'native-baseline@1', exchange: ['vsc-draft-compat@0.1.0'], purpose })
+      expect(result.ok, purpose).toBe(true)
+      expect(result.notes, purpose).toHaveLength(1)
+      expect(result.notes[0], purpose).toMatch(/^vsc-draft-compat@0\.1\.0 is parked: kept, built and tested, required by no release and not under development/)
+      expect(result.notes[0], purpose).toMatch(/artefacts not retrieved \(vsc-core, vsc-requirements\)/)
+    }
+    expect(checkSelection({ baseline: 'native-baseline@1', exchange: ['vsc-draft-compat@0.1.0'], purpose: 'claim' }).notes[0]).toMatch(/a claim on it rests on its own ledger rows/)
+  })
+
   it('refuses a single operator with federation options and a federation of one or without discovery', () => {
     expect(codes({ baseline: 'native-baseline@1', operator: 'single-operator@1', deployment: { gasp: true }, purpose: 'write' })).toEqual(['operator-single-with-federation-options'])
     expect(codes({ baseline: 'native-baseline@1', operator: 'single-operator@1', deployment: { operators: 2 }, purpose: 'write' })).toEqual(['operator-single-with-federation-options'])

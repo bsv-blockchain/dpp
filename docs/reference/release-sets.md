@@ -22,7 +22,7 @@ Installers, implementers and reviewers can use this page to select a release set
 | Licence | Apache 2.0 |
 | npm tag | `latest`; install exact versions and retain the lockfile |
 | Receipt | None yet; the [beta.11 receipt](beta-11-publication.md) covers the last published set |
-| Selection | `conformance/selections/dpp-release-2026-11.json`, retaining the claims required and withheld by the preceding candidate, except that it withholds the parked VSC compatibility profile and the EPCIS claims whose rows include its mappings ([conformance](conformance.md)) |
+| Selection | `conformance/selections/dpp-release-2026-11.json`, retaining the claims required and withheld by the preceding candidate, except that it withholds the parked VSC compatibility profile and the EPCIS claims whose rows include its mappings, and requires the narrower `epcis-source-import-1` for the EPCIS source helpers ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-10`, this set carries the seven decisions of bsv-blockchain/dpp#177:
 
@@ -113,6 +113,6 @@ The steps above use the values of the published beta.4 set, `dpp-release-2026-10
 
 ## How a set is made
 
-The [release tooling](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
+The [release tooling](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
 
 Next: install the current set with [install the selected release](../packages/README.md), or check what it claims on [conformance](conformance.md).
