@@ -21,7 +21,7 @@ Read each service's `/capabilities` for what that deployment reports. The index 
 
 | Host | Serves | Runs |
 |---|---|---|
-| `https://dpp.bsvb.net` | The reference application: the brand console and, for every `/01/<gtin>/21/<serial>` it issued, the passport page that address leads a browser to | The `dpp-release-2026-10-10` set: `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12` and `@bsv/dpp-credentials@0.2.0-beta.5` |
+| `https://dpp.bsvb.net` | The reference application: the brand console, a GS1-Conformant Resolver at `/01/...` for the identifiers it issued, and each passport page at `/passport/01/<gtin>/21/<serial>` | The `dpp-release-2026-10-10` set: `@bsv/dpp-protocol@0.3.0-beta.9`, `@bsv/dpp-profiles@0.3.0-beta.9`, `@bsv/dpp-overlay@0.4.0-beta.12` and `@bsv/dpp-credentials@0.2.0-beta.5` |
 | `https://dpp-overlay.bsvb.net` | The index: `tm_dpp`, `tm_attestation` and the historical `tm_uora_dpp`, their lookups, `/history`, the bounded and complete exports, proof ingestion, the two synchronisation routes and its signed publisher policy | `@bsv/dpp-overlay@0.4.0-beta.12`, `single-operator@2` under publisher policy version 1, pulling all three topics from one peer run under the same administration, with discovery and advertising off |
 | `https://dpp-resolver.bsvb.net` | The registry: claim validation, storage, anchoring and proofs | `attestation-registry/1` |
 | `https://dpp-proof.bsvb.net` | The anchor proof page: the claims a registry holds, each compared with its anchor; the hosted registry unless you type another registry's address ([run your own](implement/roles/attestation-verifier.md#run-an-anchor-proof-page)) | A static page over a registry's showcase routes |
@@ -57,7 +57,7 @@ Three live passports to look up with the [passport lookup](reference/contracts.m
 |---|---|
 | `https://id.gs1.org/01/09506000134352/21/7AC18477503A` | A version 1 lineage of five states, repairs and a transfer |
 | `https://id.gs1.org/01/09506000134352/21/345A8EAF501F` | A version 2 lineage: issue, update and a managed transfer, with three anchored claims |
-| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host leads a browser to the passport page. Its payload declares the draft `battery@4` |
+| `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | The newest shape: an identifier under the demonstration prefix 952 whose host resolves it: a 307 to the passport page, or the linkset on request. Its payload declares the draft `battery@4` |
 
 Use these to test reading and verifying, not as payload examples. The first, a version 1 lineage under GS1's example GTIN, predates the demonstration `notice` rule and carries none; the other two carry one. None of their states satisfies the public schema of the profile it declares: each lacks required fields, such as `labelMeaning` and `separateCollectionSymbol`. A report made with the profiles package's payload validator reads `schema` as `fail` with `schema-invalid` for each of them, and one made without a validator reads `unknown`; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile)). Start your own payload from `node examples/sample-payload.mjs`.
 
@@ -78,7 +78,7 @@ This checks the supplied history, not freshness or profile validity. If header r
 
 ## Where the hosted services fall short
 
-The registry runs no GS1 resolver despite its `resolver` hostname: its capability document reads `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. A GS1-Conformant Resolver for the identifiers `dpp.bsvb.net` issued is being rolled out on that host, as [GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver) recommends; until `https://dpp.bsvb.net/.well-known/gs1resolver` answers with a description file, expect that host to answer an identifier's path with its passport page whatever the `Accept` header asks for. The registry contract's `https://id.example.org` is a placeholder for the resolver origin a deployment configures, not a hosted service.
+The registry runs no GS1 resolver despite its `resolver` hostname: its capability document reads `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. The hosted application at `dpp.bsvb.net` is the GS1-Conformant Resolver for the identifiers minted under that host, as [GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver) recommends: it publishes `/.well-known/gs1resolver`, answers an identifier with a 307 to its passport page at `/passport/01/<gtin>/21/<serial>`, the item's `gs1:dpp` default, and answers `Accept: application/linkset+json` with the JSON linkset. On 8 November 2026 it passed the checks of GS1's resolver test suite 1.2.1 for `/01/09522156492290/21/792B7797E3D8` except the trailing-slash form, which the suite only warns about; it does not yet decode compressed Digital Link URIs. The registry contract's `https://id.example.org` is a placeholder for the resolver origin a deployment configures, not a hosted service.
 
 The application's check at `https://dpp.bsvb.net/verify` uses only the hosted index and accepts a state countersigned by any publisher key it names:
 

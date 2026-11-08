@@ -12,6 +12,10 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-08, the hosted resolver is live
+
+- The hosted reference and GS1 discovery pages say `dpp.bsvb.net` now resolves the identifiers minted under it, checked on 8 November 2026 against GS1's resolver test suite 1.2.1, with the trailing-slash form a warning and compressed Digital Link URIs not yet decoded.
+
 ### 2026-11-08, the identifier host resolves
 
 - `spec/gs1-discovery.md` §1: when `passport_id` is a GS1 Digital Link URI, the host it is minted under SHOULD be a GS1-Conformant Resolver for primary key 01, and a host that is not one SHALL answer every `/01/` path with 307 to the same path under a resolver that is; the resolver standard names no redirect status, so 307 is this profile's choice. A resolver never shares an origin with a route that answers `/01/` paths under another contract, such as the legacy evidence route. §4 states the status codes (307 for a redirect, 200 for a linkset, an HTML error page keeping its 400 or 404), CORS for GET, HEAD and OPTIONS and `Vary: Accept, Accept-Language` on every answer, and the records a resolver answering for an identifier host holds, at that host or as the target of its redirect: the item's passport page under `gs1:dpp` as its single default, at a URL of its own, with the evidence package where it can name one, and one single default at the GTIN level so every request under the GTIN still redirects, at a target that is not itself a Digital Link URI, since a resolver should not redirect a request to a less granular one (resolver standard §2.5.9). It may synthesise those records on request. §4 records that the reference registry's answers to OPTIONS, to a malformed path and to an internal error do not yet carry `Vary`. §5 says a client configured with a resolver's origin does not follow an identifier host's redirect to another origin. §6 follows. The four rows citing it were re-reviewed; the GS1D-7 and GS1D-8 notes record what the review did not re-test, and their statuses are unchanged.
