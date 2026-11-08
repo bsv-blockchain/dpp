@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-02",
+  "updatedAt": "2026-11-08",
   "sources": [
     {
       "id": "spec-record-model",
@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "92be415b29f0488c35eec82e7ec59581821336fe6610384368ec7b10bd0e89db"
+      "digest": "7cd3f7df25a95161da3f2222e32fb182438fe1749a5cda18f591cadbf18183ab"
     },
     {
       "id": "spec-record-model-v2",
@@ -530,7 +530,7 @@
       "version": "gs1-digital-link@1",
       "kind": "local",
       "path": "spec/gs1-discovery.md",
-      "digest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a"
+      "digest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993"
     },
     {
       "id": "spec-epcis-interoperability",
@@ -764,7 +764,7 @@
         "fixtures/record-v1.json#uncompressedKey"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -791,7 +791,7 @@
         "docs/identifiers.md"
       ],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
       "notes": "The writer computes check digits and recognises the demonstration prefix; allocation under a licensed prefix is a brand fact the writer cannot verify, so the rule stays a duty stated to the writer. The version-1 fixtures keep the GS1 example number by the fixture policy; the sample brands' move to a 952 number is prepared (demonstrationGtin) and is a product decision."
     },
@@ -5058,9 +5058,9 @@
         "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a"
+      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993"
     },
     {
       "id": "GS1D-2-key-tuple",
@@ -5086,9 +5086,9 @@
         "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a"
+      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993"
     },
     {
       "id": "GS1D-3-decompression",
@@ -5205,7 +5205,7 @@
       "sourceUri": "spec/gs1-discovery.md",
       "sourceVersion": "gs1-digital-link@1",
       "clause": "§4",
-      "summary": "The registry serves the resolver on a configured origin distinct from its API origin: the description file, the qualifier routes, the compressed route, linksets, redirects with the query forwarded, negotiation and cache headers; the legacy evidence route is kept and aliased.",
+      "summary": "The registry serves the resolver on a configured origin distinct from its API origin, whose /01/ paths keep the legacy evidence contract: the description file, the qualifier routes, the compressed route, linksets, redirects with the query forwarded, negotiation and cache headers; the legacy evidence route is kept and aliased.",
       "layer": "role",
       "roles": [
         "registry"
@@ -5222,10 +5222,10 @@
         "contracts/registry.yaml#/paths/~1.well-known~1gs1resolver"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a",
-      "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests)."
+      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993",
+      "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests). The 2026-11-08 review did not re-test it against the header rule §4 added that day: its resolver handlers set Vary, but its answers to OPTIONS, to a path that is not valid percent-encoding and to an internal error carry CORS without Vary, as the section itself records. Its status is left for a later review."
     },
     {
       "id": "GS1D-8-discovery-client",
@@ -5248,10 +5248,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-02",
+      "reviewedAt": "2026-11-08",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e7244dd9e21aa7ec65e72506ad3c2ceff2b7f4fc23e0b3d16b177c98c5c2e55a",
-      "notes": "Description file and linkset validated against the pinned GS1 schemas, selection through the profiles helper, a broader anchor labelled with its granularity, an external resolver through the same client, cross-origin redirects refused and no credential ever returned."
+      "sourceDigest": "c6171cbe45505a55e1c4dec0a7bb23204b2ef1239e115cc29eb6295cfdbea993",
+      "notes": "Description file and linkset validated against the pinned GS1 schemas, selection through the profiles helper, a broader anchor labelled with its granularity, an external resolver through the same client, cross-origin redirects refused and no credential ever returned. Not exercised against an identifier host that redirects every /01/ path to a resolver on another origin (§1): the client refuses that redirect, as §5 now says, and reaches such a resolver only when configured with its origin."
     },
     {
       "id": "EPCIS-1-strict-parse",

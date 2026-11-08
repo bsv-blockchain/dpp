@@ -38,6 +38,9 @@ export const GS1_LINK_TYPES = {
   defaultLink: `${GS1_VOCABULARY}defaultLink`,
   defaultLinkMulti: `${GS1_VOCABULARY}defaultLinkMulti`,
   pip: `${GS1_VOCABULARY}pip`,
+  /** The digital product passport page, the item's single default at an identifier host that resolves (`spec/gs1-discovery.md` §4). */
+  dpp: `${GS1_VOCABULARY}dpp`,
+  masterData: `${GS1_VOCABULARY}masterData`,
   sustainabilityInfo: `${GS1_VOCABULARY}sustainabilityInfo`,
   certificationInfo: `${GS1_VOCABULARY}certificationInfo`,
   epcis: `${GS1_VOCABULARY}epcis`,

@@ -58,7 +58,7 @@
     { "id": "target-url-templates", "reason": "Links are stored as complete target URLs; RFC 6570 templating of targets from the request is not implemented." },
     { "id": "pattern-based-redirection", "reason": "Redirection of whole prefixes to another resolver (gs1:handledBy) is a deployment's configuration, not part of this profile's reference code." },
     { "id": "context-value-lists", "reason": "The context keyword is matched against values a link declares; no external list of context values is fetched." },
-    { "id": "html-linkset-page", "reason": "The reference code produces the JSON linkset; a human-readable page for text/html requests is the hosting route's presentation, reusing the existing passport page." }
+    { "id": "html-linkset-page", "reason": "The reference code produces the JSON linkset; a human-readable page for a text/html linkset request is the hosting route's own presentation of the same links, never the passport page, which is a link target under gs1:dpp." }
   ],
   "sourceRefs": [
     { "id": "gs1-uri-syntax", "name": "GS1 Digital Link: URI Syntax 1.7.0", "reference": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/", "version": "1.7.0", "attribution": "GS1 AISBL", "use": "The grammar of the request URI." },

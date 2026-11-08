@@ -54,12 +54,12 @@ A passport identifier is usually a GS1 Digital Link URI:
 
    Expect `09521234567899`, `checkDigitValid: true` and `demonstration: true`.
 
-4. **Choose a host that answers the identifier's path with the passport page**, such as your application. The host need not be a GS1-Conformant Resolver. Keep the name under a domain the brand controls: it becomes part of the identifier and cannot change after the first state.
+4. **Choose a host that resolves the identifier**, such as your application. It should be a GS1-Conformant Resolver for GTINs that sends a browser to the passport page, or redirect every `/01/` request to one. Keep the name under a domain the brand controls: it becomes part of the identifier and cannot change after the first state.
 
    | Host option | Requirement |
    |---|---|
-   | Your application | Answer the identifier's path with the passport page |
-   | Optional resolver | `gs1-digital-link@1` on its own origin, with linksets, negotiated redirects and a description file; see [GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver) |
+   | Your application | Resolve `/01/` paths as `gs1-digital-link@1` specifies, with the passport page at its own path as the item's `gs1:dpp` default; see [GS1 discovery](interoperability/gs1-discovery.md#do-you-need-a-resolver) |
+   | Separate resolver | Your host redirects every `/01/` request with 307 to a resolver that holds the same records, with the passport page as the item's `gs1:dpp` default |
    | `id.gs1.org` | Answers only for GTINs whose licensee registered link targets with GS1 |
 
 5. **Give each item its own serial** using the constraints above. `buildGs1DigitalLink` checks the GTIN and serial before building the identifier:
@@ -75,7 +75,7 @@ A passport identifier is usually a GS1 Digital Link URI:
 
    Expect `https://dpp.example.com/01/09521234567899/21/SN0001`. The helper refuses a wrong check digit, serials longer than 20 characters and characters outside the set.
 
-The [record model](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md) section 3 defines these rules. An application account is not a GS1 licensee; establish GTIN entitlement separately.
+The [record model](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md) section 3 defines these rules. An application account is not a GS1 licensee; establish GTIN entitlement separately.
 
 ## Use the identifier throughout the request
 
@@ -113,8 +113,8 @@ The host is written into every state. Existing passports keep their original ide
 
 | Task | Source or guide |
 |---|---|
-| Choose a passport identifier | [Record identifier requirements](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md#L35-L54) |
-| Use GS1 Digital Link or a demonstration identifier | [GS1 allocation and demonstration scope](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/record-model.md#L46-L54) |
+| Choose a passport identifier | [Record identifier requirements](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md#L35-L54) |
+| Use GS1 Digital Link or a demonstration identifier | [GS1 allocation and demonstration scope](https://github.com/bsv-blockchain/dpp/blob/12eb2b313b9cf826475f2b0e8968c4a64a3b8a83/spec/record-model.md#L46-L54) |
 | Locate a passport from that identifier | [GS1 discovery](interoperability/gs1-discovery.md) |
 | Use the reference parsing and validation helpers | [Profiles package](packages/dpp-profiles.md) |
 

@@ -7,7 +7,7 @@
  * would return, and select one link from that linkset as a client would.
  *
  *   node examples/resolve-digital-link.mjs
- *   node examples/resolve-digital-link.mjs https://id.example.org/01/09521234000013/21/SER-0001?linkType=gs1:pip
+ *   node examples/resolve-digital-link.mjs https://dpp.example.org/01/09521234000013/21/SER-0001?linkType=gs1:pip
  *   node examples/resolve-digital-link.mjs https://example.com/exMBZFlvQMDly-mRqD
  *
  * Every host is an example name and every GTIN is under the demonstration
@@ -31,7 +31,8 @@ import {
   selectLink,
 } from '@bsv/dpp-profiles'
 
-const ROOT = 'https://id.example.org'
+// The resolver answers at the host the identifiers are minted under (spec/gs1-discovery.md §1).
+const ROOT = 'https://dpp.example.org'
 const GTIN = '09521234000013'
 const input = process.argv[2] ?? `${ROOT}/01/${GTIN}/10/LOT-2026-01/21/SER-0001`
 
@@ -42,6 +43,8 @@ const say = (ok, sentence) => {
 }
 
 // The records one demonstration resolver holds: the model, one lot and one item.
+// The item's single default is its passport page, at a path of its own rather
+// than the identifier's; the model's default answers every other request.
 const records = [
   {
     key: { ai: '01', value: GTIN },
@@ -64,10 +67,13 @@ const records = [
   {
     key: { ai: '01', value: GTIN },
     qualifiers: [{ ai: '21', value: 'SER-0001' }],
-    passportId: `https://dpp.example.org/01/${GTIN}/21/SER-0001`,
+    passportId: `${ROOT}/01/${GTIN}/21/SER-0001`,
     bindingRef: 'the genesis state that carries this identifier',
     configurationRevision: 'example-1',
-    links: [{ rel: DPP_EVIDENCE_PACKAGE_LINK_TYPE, href: 'https://registry.example.org/passports/example/evidence-package', title: 'Evidence package', type: 'application/json', disclosure: 'public' }],
+    links: [
+      { rel: GS1_LINK_TYPES.dpp, href: `${ROOT}/passport/01/${GTIN}/21/SER-0001`, title: 'Digital product passport', default: 'single', disclosure: 'public' },
+      { rel: DPP_EVIDENCE_PACKAGE_LINK_TYPE, href: 'https://registry.example.org/passports/example/evidence-package', title: 'Evidence package', type: 'application/json', disclosure: 'public' },
+    ],
   },
 ]
 for (const record of records) {
@@ -96,7 +102,7 @@ switch (outcome.outcome) {
     say(true, 'this resolver holds nothing under that key: 404, with nothing beside it.')
     break
   case 'redirect':
-    say(true, `the resolver redirects to ${outcome.link.href}, a ${outcome.link.granularity}-level link anchored at ${outcome.link.anchor}${outcome.link.granularity !== 'item' && key.qualifiers.some((q) => q.ai === '21') ? ', so it is model information the item inherits, not an item fact' : ''}.`)
+    say(true, `the resolver redirects to ${outcome.link.href}, ${outcome.link.granularity === 'item' ? 'an' : 'a'} ${outcome.link.granularity}-level link anchored at ${outcome.link.anchor}${outcome.link.granularity !== 'item' && key.qualifiers.some((q) => q.ai === '21') ? ', so it is model information the item inherits, not an item fact' : ''}.`)
     break
   case 'multiple-choices':
     say(true, `the resolver cannot choose between ${outcome.candidates.length} links of that type: 300 with the candidates.`)
