@@ -1,7 +1,7 @@
 {
   "selectionVersion": "1",
   "selectionId": "dpp-release-2026-11",
-  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added, epcis-source-exchange-1 withheld and the narrower epcis-source-import-1 required in its place: from 9 November 2026 the VSC compatibility profile and the EPCIS-to-SEAL mappings are parked, and the withheld claim's rows include the mapping. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
+  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added, epcis-source-exchange-1 withheld and the narrower epcis-source-import-1 required in its place: from 9 November 2026 the VSC compatibility profile and the EPCIS-to-SEAL mappings are parked, and the withheld claim's rows include the mapping. authenticated-status-service is withheld from the same day, because registry contract 0.6.0 defines no status list publication. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
   "releaseSet": "dpp-release-2026-11",
   "claims": [
     {
@@ -42,7 +42,8 @@
     {
       "id": "authenticated-status-service",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "The reference registry no longer publishes status lists: from 9 November 2026 the registry contract defines no status list routes, and STATUS-secured-publication records no implementation. Checking the lists credential issuers publish stays, under STATUS-validate-algorithm, which registry-current-intake still requires."
     },
     {
       "id": "profile-governance",

@@ -62,7 +62,7 @@ Use this inventory to assign the platform's keys and secrets to their holders.
 | Callback token | The index operator and whoever pushes proofs | `POST /arc-ingest` on that index | `ARC_CALLBACK_TOKEN` on the index; one per index, never shared with another |
 | Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |
 | Anchoring service key | The anchoring service's wallet | Signs claim anchors (`anchoredBy`) | The service's wallet; indexes may list it in `ANCHOR_SERVICE_KEYS` |
-| Registry write token | The registry operator | Storing claims and changing status lists | The registry's own configuration |
+| Registry write token | The registry operator | Storing claims and registering certifications | The registry's own configuration |
 | WhatsOnChain key | Readers and indexes using the reference header source | Header lookups without the anonymous rate limit | `WOC_API_KEY` |
 
 ## Duties that run on their own
