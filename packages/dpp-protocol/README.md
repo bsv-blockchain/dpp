@@ -72,6 +72,7 @@ specifier anything needs:
 | `evidence.ts` | `verifyPassportEvidence`, the one verification contract of `spec/verification.md`: sixteen named checks, four answers each, an expected subject and a latest-state observation, across the token, attestation, anchor and credential rails |
 | `anchor.ts` | The generic complete-representation anchor `bsv-attestation-anchor-v1` (`spec/rules.md` §5): build, strict decode and check-by-check inspection |
 | `attestation.ts` | Native lifecycle claims `dpp-lifecycle-v1` (`spec/rules.md` §3): validate, sign, verify and digest |
+| `epcisEvent.ts` | Directly signed EPCIS events `epcis-event-vc@1` (`spec/epcis-event-profile.md`): the CBV 2.0 Event Hash ID with the profile's scope rules, the credential, its ES256K compact JWS signing and verification, the anchor fields and the report's credential verifier |
 | `blob.ts` | Owner-tier blob hash binding (§7) |
 | `canonical.ts` | The canonical bytes an attestation is signed and hashed over: a refusing subset of JCS (`spec/rules.md` §4) |
 | `constants.ts`, `types.ts` | The shared vocabulary both of the above are written against |

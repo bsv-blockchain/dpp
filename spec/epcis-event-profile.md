@@ -1,0 +1,95 @@
+# Directly signed EPCIS events: epcis-event-vc@1
+
+**Status: working draft, pre-1.0; the profile is proposed.** This document defines one credential representation beside the native record: a GS1 EPCIS 2.0 event signed directly by the party that observed or performed the step, carried as a W3C Verifiable Credential 2.0 whose subject is the event and whose identifier is the event's CBV 2.0 Event Hash ID, secured as a compact JWS under ES256K with the party's own published key, and committed on chain by the generic anchor over the exact JWS bytes. It defines the hash algorithm's scope under this version, what a verifier checks and how each finding is reported, the anchor fields and the uniqueness rule, and what is deliberately outside the profile. It changes nothing about the native record, the native claim, the generic anchor or the EPCIS source exchange; [`exchange.md`](exchange.md) registers the representation, [`rules.md`](rules.md) §4 to §6 carry its anchor and [`verification.md`](verification.md) fixes the report every finding lands in.
+
+## 1. Scope
+
+The profile is `epcis-event-vc@1`, manifest `packages/dpp-profiles/manifests/exchange/epcis-event-vc@1.json`, representation identifier `epcis-event-vc@1`, media type `application/vc+jwt`. Its subject is one EPCIS 2.0 event of the five types `ObjectEvent`, `AggregationEvent`, `TransformationEvent`, `TransactionEvent` and `AssociationEvent`, exactly as the signing party holds it. The party signs what it observed; the credential asserts that the party made that observation and nothing more. No custody model, no disposition crosswalk and no issuer other than the party stands between the event and its proof, and several parties may sign one event, each signature its own attestation of the same hash ID.
+
+What the profile is not: not an EPCIS repository, not capture, not a claim that the event is true, not a token operation and not a UNTP traceability event. The credential takes the shape the UN Transparency Protocol describes in prose for an EPCIS event carried as a traceability credential, but it validates against neither the 0.7.0 traceability event schema nor the unreleased draft that follows it, and the manifest claims no UNTP relation. The reference implementation is `@bsv/dpp-protocol` (`epcisEvent.ts`), which verifies the hash, the shape, the signature and the bytes with the BSV SDK alone; status checking, DID document resolution and the EPCIS schema check are supplied by the caller, as they are for every other representation the report takes.
+
+## 2. The credential
+
+The credential, before enveloping, is a JSON object with exactly these members: `@context`, `type`, `id`, `issuer`, `validFrom`, optionally `validUntil`, optionally `credentialStatus`, and `credentialSubject`. Any other member is a shape failure.
+
+| Member | Requirement |
+|---|---|
+| `@context` | An array whose first entry is `https://www.w3.org/ns/credentials/v2`, whose second is the pinned EPCIS 2.0.1 context by its versioned IRI `https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld` or by the unversioned name `https://ref.gs1.org/epcis/`, which names the same pinned bytes and is never fetched, and whose remaining entries, if any, are inline objects that map prefix names to namespace IRIs and nothing else. A context named by any other IRI is a shape failure. |
+| `type` | `DigitalTraceabilityEvent` and `VerifiableCredential`, in either order, and no third type. |
+| `id` | The Event Hash ID of the subject (§3): `ni:///sha-256;` followed by 64 lower-case hexadecimal characters and `?ver=CBV2.0`. |
+| `issuer` | The party's DID, without a path, query or fragment. |
+| `validFrom` | The signing time, an ISO 8601 date-time with a timezone. `validUntil` the same when present. |
+| `credentialStatus` | Optional, an object; when present it is evaluated through the caller's status verifier, which the kept credentials package provides for the W3C Bitstring Status List. |
+| `credentialSubject` | One EPCIS event as an object. It carries no `@context` of its own and no `errorDeclaration`. Its `eventID`, when present, is carried as received; when it is itself an `ni:` hash ID it must equal `id`. |
+
+The subject's extension members use prefixes the pinned EPCIS context declares (`cbvmda`, `gs1` and the others it names) or prefixes the credential's inline context objects declare. Nothing is fetched to resolve a prefix.
+
+## 3. The Event Hash ID and its scope under this version
+
+The identifier is the EPCIS Event Hash ID of CBV 2.0 §8.9.2: the pre-hash string of rules 1 to 20 over the canonical property order, hashed with SHA-256 and written as `ni:///sha-256;<hex>?ver=CBV2.0` under rules 21 to 23. The hash covers the event's intrinsic values only: `eventID` and `recordTime` are not hashed, so a party that signs an event another system recorded signs the same hash ID whatever identifier or record time that system gave it.
+
+The standard adds nothing to the algorithm. What it fixes is the scope an implementation of `@1` covers and what it answers when it cannot, because the ratified text leaves several points to interpretation and the two independent reference generators (the npm package epcis2.js 2.7.3 and the Python epcis-event-hash-generator 1.9.3 by the algorithm's author) give different answers on a number of them. Wherever the text is clear the profile follows the text; wherever the text leaves two readings and the generators part, the profile refuses the input by name rather than choosing silently. A refusal is `event-hash-unsupported`, naming the member, or `error-declaration-unsupported`; an event that is not well-formed EPCIS is `schema-invalid`.
+
+- **Canonical order.** The twenty-five properties of the ratified text, with `certificationInfo` written after `eventTimeZoneOffset`, where both reference generators place it although the ratified order omits it; `type` is written as `eventType`. `epcList` precedes `parentID`, as the text says. `sourceList` precedes `destinationList`, as the text says. An empty list adds nothing, not even its name (rule 4).
+- **Values.** Whitespace at either end is removed (rule 5). A number is written in its shortest decimal form without trailing zeros (rules 6 and 7); a number in exponent notation is refused. A boolean is `true` or `false`. A timestamp (`eventTime`, the sensor times) is expressed in UTC with `Z` and three millisecond digits, zero-filled (rules 8 and 9); `eventTimeZoneOffset` is carried as written. Only the members EPCIS types as date-times are treated as timestamps; an identifier, a transformation identifier or an extension value that happens to parse as a date is carried verbatim.
+- **Vocabulary (rules 14 and 15).** A bare CBV term expands to its Web URI (`bizStep` to `https://ref.gs1.org/cbv/BizStep-`, `disposition` and the persistent disposition lists to `Disp-`, a business transaction type to `BTT-`, a source or destination type to `SDT-`, a sensor component to `Comp-`), a `urn:epcglobal:cbv:` value expands to the same Web URI, and a Web URI is carried as written. A bare sensor measurement type or alarm type expands to `https://gs1.org/voc/` followed by the term. A value spelled as a compact IRI (`gs1:Humidity`, `cbv:BizStep-shipping`) is refused, because the generators keep it verbatim where JSON-LD would expand it.
+- **Identifiers (rules 16 and 17).** An EPC URI of the subset is converted to its canonical GS1 Digital Link URI: `sgtin`, the `lgtin` class and the `sgtin` pattern to `/01/`, `sscc` to `/00/`, `sgln` to `/414/` with `/254/` for an extension other than `0`, `pgln` to `/417/`, `grai` to `/8003/`, `giai` to `/8004/`, `gsrn` to `/8018/`, `gdti` to `/253/` and `cpi` to `/8010/` with `/8011/`, each with its GS1 check digit and a serial, lot or extension drawn from letters, digits, full stop, hyphen and underscore. Any other EPC scheme, class or pattern, and a serial outside that character set, is refused. A URL whose path carries one of the keys `00`, `01`, `253`, `255`, `401`, `402`, `414`, `417`, `8003`, `8004`, `8006`, `8010`, `8017` or `8018` is a GS1 Digital Link and is constrained: the host becomes `https://id.gs1.org`, the query and fragment are dropped, a consumer product variant (`22`) is dropped, and only the most fine-grained key and qualifier pair of rule 17 is kept (`21`, then `235`, then `10` under `01`; `254` under `414`; `21`, then `10` under `8006`; `8011` under `8010`). A GTIN in a Digital Link is fourteen digits or the identifier is refused; a short-name path (`/gtin/`, `/ser/`) and a qualifier the rule does not keep are refused. A URL without a GS1 key and any URN other than an EPC URI is carried verbatim, as rule 17 permits.
+- **Extensions (rules 18 to 20).** A member whose name is `prefix:localName` is written as `{namespace}localName` from the prefix's declaration; a nested object writes its sorted children after the name, a list writes one entry per item, and the strings are sorted and appended after the ordered properties. ILMD is written the same way after `ilmd`. An extension inside `readPoint` or `bizLocation` is prefixed with that field name and appended with the event-level extensions, as rule 20 says. An extension inside a sensor element, sensor metadata or sensor report is refused, because the text names the field as an extension point without fixing the prefix and the generators disagree. An extension inside a quantity element, a business transaction, a source or a destination, a member with no prefix, a prefix no carried context declares, an event-level `@context`, and a `certificationInfo` list are refused.
+- **Error declarations.** CBV says an event that declares an error should carry the original event's identifier and compute no hash ID of its own. Under `@1` an event carrying `errorDeclaration` is not signable: `error-declaration-unsupported`. A corrective event is an ordinary event and is signed like one.
+
+The vectors of §8 record, for every positive case, what each reference generator answered on the same input, so an implementer who starts from one of them knows which of its answers this profile departs from and under which clause.
+
+## 4. The enveloping proof
+
+The credential is secured as a compact JWS under the W3C securing mechanism for JOSE: header `alg` `ES256K`, `typ` `vc+jwt`, `cty` `vc` and `kid` a DID URL naming a verification method of the issuer, and no other header member; the credential as the whole payload, never nested under a `vc` claim; the signature ECDSA over secp256k1 with SHA-256 of the ASCII signing input, written as the 64 octets `r || s` of RFC 8812 with no leading octet dropped. The exact compact JWS string as issued is the committed representation: its SHA-256 is the anchor's digest, and a re-serialised copy, however small the change, is a different credential with a different digest and the same `id`.
+
+A verifier parses strictly: a header or payload with a duplicate member name, malformed UTF-8, nesting beyond 64 levels, a number literal a double cannot carry exactly or a compact serialisation above the 2 MiB bound is refused before anything is interpreted, and the parsed value is never re-serialised as if it were the original. `ES256K` is the one suite; another `alg` is reported `suite-unsupported`, not failed, as [`exchange.md`](exchange.md) §4 says of a consumer that omits it.
+
+## 5. The credential key
+
+A party signs with one published credential key: the BRC-42 child of its identity key under the protocol `[1, 'dpp epcis event v1']`, key identifier `credential`, counterparty anyone. The party publishes that key under `assertionMethod` in its DID document, and `kid` names that method; a party with no document publishes the key as a `did:key` and that DID is the issuer, so `kid` is the DID followed by its own key as the fragment. A wallet signs through `createSignature` with that protocol and key identifier over the signing input, which the wallet hashes once; no private key is handled by the profile's code. A verifier resolves `kid` to a compressed key: a `did:key` issuer resolves from its own bytes, any other method through the caller's bounded resolver, and a key the verifier cannot obtain leaves the proof `unknown`. The binding of the issuer DID to the party, and the party's entitlement to the identifiers the event names, are the authority check of [`verification.md`](verification.md), reported separately and never inferred from the signature.
+
+## 6. Anchoring and uniqueness
+
+A credential whose proof held is committed with the generic anchor of [`rules.md`](rules.md) §5, one anchor per credential:
+
+| Field | Value |
+|---|---|
+| `digest` | SHA-256 of the exact compact JWS bytes |
+| `attestationId` | The credential `id`, which is the Event Hash ID |
+| `issuer` | The credential issuer |
+| `subject` | The lexically first, by code point, of the event's object identifiers in canonical form: `parentID`, the members of `epcList`, `childEPCs`, `inputEPCList` and `outputEPCList`, and the `epcClass` of every quantity element |
+| `attestationType` | The EPCIS event type |
+| `representation` | `epcis-event-vc@1` |
+| `mediaType` | `application/vc+jwt` |
+
+The anchor has one subject field and an event may name many objects; the rule is deterministic and every other identifier is discoverable from the bytes, as the VSC rule already allows, and discovery by any identifier the event names is the lookup service's job. A party that names no object identifier has nothing to anchor under and its credential is not anchored.
+
+Uniqueness is per `(attestationId, issuer)`. Two parties signing one event are two attestations of one hash ID, accepted beside each other, which is the point of keying on the hash. One party signing one event twice is refused unless the bytes are equal: a registry that already holds a credential for a hash ID and issuer refuses a second byte string under them, never replaces the first. This is a per-representation rule the registry contract carries beside the per-identifier rule of the other representations; nothing changes for them. Batching several credentials under one commitment is not defined here and not precluded: a later representation may commit a root over credential digests with the same anchor.
+
+## 7. Verification and the report
+
+The representation verifier takes the exact JWS bytes and returns findings; `verifyPassportEvidence` receives it as the `credentialVerifier` a caller supplies, and a registry calls it at intake. Each finding lands in the sixteen-check report of [`verification.md`](verification.md):
+
+| Finding | Check | Reason codes |
+|---|---|---|
+| The compact JWS has three parts, a header of the four members with `ES256K`, and a payload that parses strictly into the credential shape of §2 | `schema` | `schema-invalid`; `suite-unsupported` for another `alg` |
+| The subject's hash ID equals `id`, and equals the subject's `eventID` when that is a hash ID | `externalCredentialProof` | `event-hash-mismatch`, `event-hash-unsupported`, `error-declaration-unsupported` |
+| The signature verifies against the key `kid` names, and `kid` names a method of the issuer | `externalCredentialProof` | `signature-invalid`; `unknown` with `referenced-artefact-unavailable` when no key could be obtained |
+| `validFrom` is at or before the evaluation time, and `validUntil`, when present, at or after it | `credentialTime` | `not-yet-valid`, `expired` |
+| `credentialStatus`, when present, through the supplied status verifier | `credentialStatus` | the shared status codes; `unknown` with `verifier-not-supplied` when none is supplied; `not-applicable` with `status-unset` when the credential carries no entry |
+| The anchor's fields equal the verified content and its digest equals the bytes | `anchorDigestAndMetadataBinding` | the shared anchor codes |
+| The subject validates against the pinned EPCIS 2.0.1 schema, through the supplied check | `schema` | `schema-invalid`; `unknown` with `verifier-not-supplied` when the shape held and no check was supplied |
+| The issuer holds the authority the named policy requires | `issuerAuthority` | the shared authority codes; `not-applicable` with `authority-not-required` when no policy is supplied |
+
+The proof check reports the hash finding and the signature finding together, worst first, so a subject that no longer hashes to its `id` is reported as a hash mismatch whether or not the signature also failed. No custody evaluation takes place: an EPCIS event has none and the representation invents none. What a party later retracts is a further EPCIS event, an error declaration or a corrective event, signed in its turn, or a status bit if the issuer chose to carry status.
+
+A writer under this profile refuses an event that fails the pinned EPCIS 2.0.1 schema before signing it, and refuses before signing whatever §3 refuses; the verifier reports the schema separately because a credential may reach it from a writer that did not.
+
+## 8. Vectors
+
+`fixtures/vectors/dpp/interoperability/epcis/hash-v1.json` pins the hash: the pre-hash string and the hash ID for fifteen positive cases covering the five event types, the identifier forms of §3, the vocabulary spellings, the timestamp forms, the extension forms, empty lists and ignored members, each with what the two reference generators answered on 9 November 2026 and, where one differs, the clause the profile follows; and fifteen refusals by name. `fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json` pins the credential: a positive credential signed by a party whose identity key scalar is published, with its credential key, `did:key` issuer and `kid`; the same credential re-serialised, whose proof holds and whose digest differs, refused under the pair rule; the same event signed by a second party, accepted; a changed `recordTime`, whose hash holds while the signature fails; a changed `bizStep`, whose hash fails; a `kid` of another party; an `eventID` that names another hash; an error declaration; an unsupported identifier; a multi-object subject with its anchor subject; a credential under an inline extension context; not yet valid and expired intervals; a status entry without a verifier; another `alg`; a malformed serialisation; a member the profile does not define; and a `did:web` issuer with and without a resolver. Nothing derived from the published scalars will ever hold value.
+
+## 9. Normative and implementation
+
+What a conforming party reproduces: the credential shape (§2), the hash algorithm with the `@1` scope and refusals (§3), the enveloping proof and the strict parse (§4), the credential key rule and the `kid` binding (§5), the anchor fields and the pair rule (§6), the separate reporting of every finding under the shared reason codes (§7), and the pinned vectors (§8). What is a build's own: which DID methods it resolves and how, whether it checks status, which issuer authority policy it applies, how it stores the four artefacts of [`exchange.md`](exchange.md) §3, and which identifiers it indexes a credential under beyond the anchor's one subject.

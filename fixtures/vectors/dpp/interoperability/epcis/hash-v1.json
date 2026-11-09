@@ -1,0 +1,1169 @@
+{
+  "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
+  "id": "dpp.interoperability.epcis.hash.v1",
+  "name": "DPP epcis-event-vc@1: the CBV 2.0 Event Hash ID under the @1 scope rules, with pre-hash strings and refusals by name",
+  "brc": [],
+  "version": "1.0.0",
+  "reference_impl": "dpp-protocol@0.3.0",
+  "parity_class": "required",
+  "notes": "CBV 2.0 §8.9.2 (release 2.0, ratified June 2022) with certificationInfo after eventTimeZoneOffset as the reference generators place it. Every identifier uses the GS1 demonstration prefix 952 and example.org hosts. Each positive vector records what epcis2.js 2.7.3 and epcis-event-hash-generator 1.9.3 answered for the same input on 9 November 2026 under the pinned EPCIS 2.0.1 context served offline; a difference is named with the clause the reference follows. Where every event in a vector hashes alike, the expected values hold for each.",
+  "vectors": [
+    {
+      "id": "object-event-commissioning",
+      "description": "The commissioning ObjectEvent of the source exchange vectors: sgtin, bare CBV terms, sgln read point and business location, a UUID eventID and a recordTime, which the hash ignores.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-02T08:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "eventID": "urn:uuid:00000000-0000-4000-8000-000000000003",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "commissioning",
+            "disposition": "active",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            },
+            "bizLocation": {
+              "id": "urn:epc:id:sgln:9521234.00002.0"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;6e971e5b16286c0e96f6e5d2e035212098b8e66d24fac98990aad85e090d8cca?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-02T08:00:00.000ZeventTimeZoneOffset=+00:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=ADDbizStep=https://ref.gs1.org/cbv/BizStep-commissioningdisposition=https://ref.gs1.org/cbv/Disp-activereadPointid=https://id.gs1.org/414/9521234000013bizLocationid=https://id.gs1.org/414/9521234000020",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "association-event",
+      "description": "An AssociationEvent: parentID and two child EPCs sorted by code point.",
+      "input": {
+        "events": [
+          {
+            "type": "AssociationEvent",
+            "eventTime": "2026-03-02T08:30:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "eventID": "urn:uuid:00000000-0000-4000-8000-000000000004",
+            "parentID": "urn:epc:id:sgtin:9521234.012345.SER1",
+            "childEPCs": [
+              "urn:epc:id:sgtin:9521234.022222.CELL-A",
+              "urn:epc:id:sgtin:9521234.022222.CELL-B"
+            ],
+            "action": "ADD",
+            "bizStep": "installing",
+            "disposition": "active",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;99508cf84096fe2abc19f05c55b8843144bcc84f7e0fde51d655131aae76a3b7?ver=CBV2.0",
+        "pre_hash": "eventType=AssociationEventeventTime=2026-03-02T08:30:00.000ZeventTimeZoneOffset=+00:00parentID=https://id.gs1.org/01/09521234123453/21/SER1childEPCsepc=https://id.gs1.org/01/09521234222224/21/CELL-Aepc=https://id.gs1.org/01/09521234222224/21/CELL-Baction=ADDbizStep=https://ref.gs1.org/cbv/BizStep-installingdisposition=https://ref.gs1.org/cbv/Disp-activereadPointid=https://id.gs1.org/414/9521234000013",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1",
+          "https://id.gs1.org/01/09521234222224/21/CELL-A",
+          "https://id.gs1.org/01/09521234222224/21/CELL-B"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "transformation-event-ilmd-and-quantities",
+      "description": "A TransformationEvent with an lgtin class in an output quantity, an integer quantity and nested ILMD under an inline prefix declaration.",
+      "input": {
+        "events": [
+          {
+            "type": "TransformationEvent",
+            "eventTime": "2026-03-08T08:00:00Z",
+            "eventTimeZoneOffset": "+00:00",
+            "inputEPCList": [
+              "urn:epc:id:sgtin:9521234.022222.CELL-A"
+            ],
+            "outputEPCList": [
+              "urn:epc:id:sgtin:9521234.044444.MOD-9"
+            ],
+            "outputQuantityList": [
+              {
+                "epcClass": "urn:epc:class:lgtin:9521234.033333.LOT8",
+                "quantity": 1,
+                "uom": "EA"
+              }
+            ],
+            "bizStep": "commissioning",
+            "disposition": "active",
+            "transformationID": "urn:example:transformation:t9",
+            "ilmd": {
+              "ilmdx:lot": "LOT8",
+              "ilmdx:bestBefore": "2027-01-01",
+              "ilmdx:nested": {
+                "ilmdx:a": "1",
+                "ilmdx:b": "2"
+              }
+            }
+          }
+        ],
+        "context": [
+          "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+          {
+            "example": "https://example.org/vocab/",
+            "ilmdx": "https://example.org/ilmd/"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;9278eeb6ee5b4295859356d3d038b620d4fa5096da9a5e168b7d47743bfe0543?ver=CBV2.0",
+        "pre_hash": "eventType=TransformationEventeventTime=2026-03-08T08:00:00.000ZeventTimeZoneOffset=+00:00inputEPCListepc=https://id.gs1.org/01/09521234222224/21/CELL-AoutputEPCListepc=https://id.gs1.org/01/09521234444442/21/MOD-9outputQuantityListquantityElementepcClass=https://id.gs1.org/01/09521234333333/10/LOT8quantity=1uom=EAtransformationID=urn:example:transformation:t9bizStep=https://ref.gs1.org/cbv/BizStep-commissioningdisposition=https://ref.gs1.org/cbv/Disp-activeilmd{https://example.org/ilmd/}bestBefore=2027-01-01{https://example.org/ilmd/}lot=LOT8{https://example.org/ilmd/}nested{https://example.org/ilmd/}a=1{https://example.org/ilmd/}b=2",
+        "subjects": [
+          "https://id.gs1.org/01/09521234222224/21/CELL-A",
+          "https://id.gs1.org/01/09521234333333/10/LOT8",
+          "https://id.gs1.org/01/09521234444442/21/MOD-9"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "transformation-event-two-stage",
+      "description": "The second transformation of the source exchange vectors: input and output EPC and quantity lists, an sgtin pattern as a class, a decimal quantity, and a transformationID that is an opaque URN.",
+      "input": {
+        "events": [
+          {
+            "type": "TransformationEvent",
+            "eventTime": "2026-03-01T12:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "eventID": "urn:uuid:00000000-0000-4000-8000-000000000002",
+            "inputEPCList": [
+              "urn:epc:id:sgtin:9521234.044444.MOD-1"
+            ],
+            "inputQuantityList": [
+              {
+                "epcClass": "urn:epc:class:lgtin:9521234.033333.LOT7",
+                "quantity": 4,
+                "uom": "EA"
+              }
+            ],
+            "outputEPCList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "outputQuantityList": [
+              {
+                "epcClass": "urn:epc:idpat:sgtin:9521234.055555.*",
+                "quantity": 0.5,
+                "uom": "KGM"
+              }
+            ],
+            "bizStep": "assembling",
+            "disposition": "in_progress",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            },
+            "bizLocation": {
+              "id": "urn:epc:id:sgln:9521234.00002.0"
+            },
+            "transformationID": "urn:example:transformation:stage-2"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;7e2398253735ab65ee35b019122ee489349828715cb7a1d29c777798c88ae84c?ver=CBV2.0",
+        "pre_hash": "eventType=TransformationEventeventTime=2026-03-01T12:00:00.000ZeventTimeZoneOffset=+00:00inputEPCListepc=https://id.gs1.org/01/09521234444442/21/MOD-1inputQuantityListquantityElementepcClass=https://id.gs1.org/01/09521234333333/10/LOT7quantity=4uom=EAoutputEPCListepc=https://id.gs1.org/01/09521234123453/21/SER1outputQuantityListquantityElementepcClass=https://id.gs1.org/01/09521234555551quantity=0.5uom=KGMtransformationID=urn:example:transformation:stage-2bizStep=https://ref.gs1.org/cbv/BizStep-assemblingdisposition=https://ref.gs1.org/cbv/Disp-in_progressreadPointid=https://id.gs1.org/414/9521234000013bizLocationid=https://id.gs1.org/414/9521234000020",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1",
+          "https://id.gs1.org/01/09521234333333/10/LOT7",
+          "https://id.gs1.org/01/09521234444442/21/MOD-1",
+          "https://id.gs1.org/01/09521234555551"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "differs: formats the transformationID urn:example:transformation:stage-2 as a timestamp (2001-02-01T00:00:00.000Z); rules 8 and 9 apply to timestamps only",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "aggregation-event-sscc-parent",
+      "description": "An AggregationEvent whose parent is an SSCC: the extension digit leads the serial reference once, then the company prefix, the reference and the check digit (18 digits).",
+      "input": {
+        "events": [
+          {
+            "type": "AggregationEvent",
+            "eventTime": "2026-03-02T09:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "eventID": "urn:uuid:00000000-0000-4000-8000-000000000005",
+            "parentID": "urn:epc:id:sscc:9521234.0000000001",
+            "childEPCs": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "packing",
+            "disposition": "in_transit",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;d256ab900c48357b51f14b136dc97cd3d77be4dc8e74116df0aeb809057a8f89?ver=CBV2.0",
+        "pre_hash": "eventType=AggregationEventeventTime=2026-03-02T09:00:00.000ZeventTimeZoneOffset=+00:00parentID=https://id.gs1.org/00/095212340000000013childEPCsepc=https://id.gs1.org/01/09521234123453/21/SER1action=ADDbizStep=https://ref.gs1.org/cbv/BizStep-packingdisposition=https://ref.gs1.org/cbv/Disp-in_transitreadPointid=https://id.gs1.org/414/9521234000013",
+        "subjects": [
+          "https://id.gs1.org/00/095212340000000013",
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "differs: converts the SSCC to 19 digits, carrying the extension digit twice (0952123400000000017); rule 16 and the Digital Link canonical form give 18",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "transaction-event-source-destination",
+      "description": "A TransactionEvent with a business transaction, a source and a destination: source list before destination list, as the canonical property order says.",
+      "input": {
+        "events": [
+          {
+            "type": "TransactionEvent",
+            "eventTime": "2026-03-02T10:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-02T09:00:00.000Z",
+            "eventID": "urn:uuid:00000000-0000-4000-8000-000000000006",
+            "bizTransactionList": [
+              {
+                "type": "po",
+                "bizTransaction": "urn:epcglobal:cbv:bt:9521234000018:PO-77"
+              }
+            ],
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "ADD",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            },
+            "sourceList": [
+              {
+                "type": "owning_party",
+                "source": "urn:epc:id:pgln:9521234.00003"
+              }
+            ],
+            "destinationList": [
+              {
+                "type": "owning_party",
+                "destination": "urn:epc:id:pgln:9521234.00004"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;28fc3cd95cccd37eb5bc7f4cbaa0af2c15adbc12ed2b00e83c4ded14965cfeef?ver=CBV2.0",
+        "pre_hash": "eventType=TransactionEventeventTime=2026-03-02T10:00:00.000ZeventTimeZoneOffset=+00:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=ADDbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transitreadPointid=https://id.gs1.org/414/9521234000013bizTransactionListtype=https://ref.gs1.org/cbv/BTT-pobizTransaction=urn:epcglobal:cbv:bt:9521234000018:PO-77sourceListtype=https://ref.gs1.org/cbv/SDT-owning_partysource=https://id.gs1.org/417/9521234000037destinationListtype=https://ref.gs1.org/cbv/SDT-owning_partydestination=https://id.gs1.org/417/9521234000044",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "differs: writes destinationList before sourceList; the canonical property order is sourceList (21) then destinationList (22)"
+      }
+    },
+    {
+      "id": "object-event-sensor-report",
+      "description": "A sensor observation without an eventID: sensorMetadata, a bare measurement type expanded to its GS1 Web Vocabulary URI, a decimal value and an event-level extension.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-03T06:00:00.000Z",
+            "eventTimeZoneOffset": "+00:00",
+            "recordTime": "2026-03-03T06:05:00.000Z",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "sensor_reporting",
+            "disposition": "in_transit",
+            "sensorElementList": [
+              {
+                "sensorMetadata": {
+                  "time": "2026-03-03T06:00:00.000Z",
+                  "deviceID": "urn:epc:id:giai:9521234.SENSOR-1"
+                },
+                "sensorReport": [
+                  {
+                    "type": "Temperature",
+                    "value": 27.5,
+                    "uom": "CEL"
+                  }
+                ]
+              }
+            ],
+            "example:note": "temperature observed in transit"
+          }
+        ],
+        "context": [
+          "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+          {
+            "example": "https://example.org/vocab/",
+            "ilmdx": "https://example.org/ilmd/"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;8f8f2211e5f0997c395f834bcb4b27b7f0fea7711c04c326bb2c74fd2e130b32?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-03T06:00:00.000ZeventTimeZoneOffset=+00:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-sensor_reportingdisposition=https://ref.gs1.org/cbv/Disp-in_transitsensorElementListsensorElementsensorMetadatatime=2026-03-03T06:00:00.000ZdeviceID=https://id.gs1.org/8004/9521234SENSOR-1sensorReporttype=https://gs1.org/voc/Temperaturevalue=27.5uom=CEL{https://example.org/vocab/}note=temperature observed in transit",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "differs: leaves the bare measurement type Temperature unexpanded; rule 15 expands every bare standard vocabulary value"
+      }
+    },
+    {
+      "id": "vocabulary-spellings",
+      "description": "One shipping event in two spellings, bare CBV terms and Web URI or urn:epcglobal:cbv forms, with and without milliseconds: both hash alike, so the expected values hold for each event in the list.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "https://id.gs1.org/01/09521234000012/21/SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "readPoint": {
+              "id": "https://id.gs1.org/414/9521234000012"
+            },
+            "bizTransactionList": [
+              {
+                "type": "po",
+                "bizTransaction": "urn:epcglobal:cbv:bt:9521234000005:PO-1"
+              }
+            ],
+            "sourceList": [
+              {
+                "type": "owning_party",
+                "source": "https://id.gs1.org/417/9521234000036"
+              }
+            ]
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30.000Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "https://id.gs1.org/01/09521234000012/21/SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "https://ref.gs1.org/cbv/BizStep-shipping",
+            "disposition": "urn:epcglobal:cbv:disp:in_transit",
+            "readPoint": {
+              "id": "https://id.gs1.org/414/9521234000012"
+            },
+            "bizTransactionList": [
+              {
+                "type": "urn:epcglobal:cbv:btt:po",
+                "bizTransaction": "urn:epcglobal:cbv:bt:9521234000005:PO-1"
+              }
+            ],
+            "sourceList": [
+              {
+                "type": "https://ref.gs1.org/cbv/SDT-owning_party",
+                "source": "https://id.gs1.org/417/9521234000036"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;b940df9e2eb38a1217d0119a2756910e3664bb28f61875b0ff3b08187fae87ca?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/01/09521234000012/21/SER1action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transitreadPointid=https://id.gs1.org/414/9521234000012bizTransactionListtype=https://ref.gs1.org/cbv/BTT-pobizTransaction=urn:epcglobal:cbv:bt:9521234000005:PO-1sourceListtype=https://ref.gs1.org/cbv/SDT-owning_partysource=https://id.gs1.org/417/9521234000036",
+        "subjects": [
+          "https://id.gs1.org/01/09521234000012/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "differs: keeps urn:epcglobal:cbv values unexpanded; rule 14 expands them to their Web URIs",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "epc-schemes-and-typed-lists",
+      "description": "The EPC schemes of the @1 subset beside sgtin (grai, giai, gsrn, gdti, cpi, an sgln with and without an extension, a pgln source), two typed business transactions and a persistent disposition.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1",
+              "urn:epc:id:grai:9521234.00001.A1",
+              "urn:epc:id:giai:9521234.TOOL-9",
+              "urn:epc:id:gsrn:9521234.0000000001",
+              "urn:epc:id:gdti:9521234.00001.DOC7",
+              "urn:epc:id:cpi:9521234.PART-1.42"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0"
+            },
+            "bizLocation": {
+              "id": "urn:epc:id:sgln:9521234.00002.EXT1"
+            },
+            "bizTransactionList": [
+              {
+                "type": "po",
+                "bizTransaction": "urn:epcglobal:cbv:bt:9521234000005:PO-1"
+              },
+              {
+                "type": "inv",
+                "bizTransaction": "urn:epcglobal:cbv:bt:9521234000005:INV-77"
+              }
+            ],
+            "sourceList": [
+              {
+                "type": "owning_party",
+                "source": "urn:epc:id:pgln:9521234.00003"
+              }
+            ],
+            "persistentDisposition": {
+              "set": [
+                "completeness_verified"
+              ],
+              "unset": [
+                "completeness_inferred"
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;b3ffce910ec00d83bf0dc0e27781cf40eef23dc0e8997f7ce18e27cc698fae0e?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1epc=https://id.gs1.org/253/9521234000013DOC7epc=https://id.gs1.org/8003/09521234000013A1epc=https://id.gs1.org/8004/9521234TOOL-9epc=https://id.gs1.org/8010/9521234PART-1/8011/42epc=https://id.gs1.org/8018/952123400000000017action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transitpersistentDispositionset=https://ref.gs1.org/cbv/Disp-completeness_verifiedunset=https://ref.gs1.org/cbv/Disp-completeness_inferredreadPointid=https://id.gs1.org/414/9521234000013bizLocationid=https://id.gs1.org/414/9521234000020/254/EXT1bizTransactionListtype=https://ref.gs1.org/cbv/BTT-invbizTransaction=urn:epcglobal:cbv:bt:9521234000005:INV-77type=https://ref.gs1.org/cbv/BTT-pobizTransaction=urn:epcglobal:cbv:bt:9521234000005:PO-1sourceListtype=https://ref.gs1.org/cbv/SDT-owning_partysource=https://id.gs1.org/417/9521234000037",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1",
+          "https://id.gs1.org/253/9521234000013DOC7",
+          "https://id.gs1.org/8003/09521234000013A1",
+          "https://id.gs1.org/8004/9521234TOOL-9",
+          "https://id.gs1.org/8010/9521234PART-1/8011/42",
+          "https://id.gs1.org/8018/952123400000000017"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "digital-link-constrained-canonical-form",
+      "description": "GS1 Digital Link URIs in constrained canonical form (rule 17): a custom domain and query dropped, a consumer product variant and a lot dropped in favour of the serial, a lot kept when it is the finest qualifier, a variant alone reduced to the key, a GLN extension kept, an SSCC kept.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "https://example.com/01/09521234000012/21/ABC?linkType=all",
+              "https://id.gs1.org/01/09521234000012/22/CPV1/10/LOT1/21/S1",
+              "https://id.gs1.org/414/9521234000050/254/EXT",
+              "https://id.gs1.org/01/09521234000012/10/LOT2",
+              "https://id.gs1.org/01/09521234000012/22/CPV9",
+              "https://id.gs1.org/00/095212340000000013"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;d70b155544c147411b9ee8c59672412314e11709a253dfbfe683f20897dbc116?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/00/095212340000000013epc=https://id.gs1.org/01/09521234000012epc=https://id.gs1.org/01/09521234000012/10/LOT2epc=https://id.gs1.org/01/09521234000012/21/ABCepc=https://id.gs1.org/01/09521234000012/21/S1epc=https://id.gs1.org/414/9521234000050/254/EXTaction=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transit",
+        "subjects": [
+          "https://id.gs1.org/00/095212340000000013",
+          "https://id.gs1.org/01/09521234000012",
+          "https://id.gs1.org/01/09521234000012/10/LOT2",
+          "https://id.gs1.org/01/09521234000012/21/ABC",
+          "https://id.gs1.org/01/09521234000012/21/S1",
+          "https://id.gs1.org/414/9521234000050/254/EXT"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "differs: keeps the consumer product variant (22) in the path and does not reduce to the most fine-grained key and qualifier pair",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "non-gs1-identifiers-and-certification-info",
+      "description": "Identifiers that are not GS1 (an HTTPS URL without a GS1 key, a UUID URN) are carried verbatim, certificationInfo follows the time zone offset, and an opaque transformationID stays as written.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1",
+              "https://example.org/items/plain-identifier",
+              "urn:uuid:7b9e2c3a-6d1f-4a8b-9c2d-0e1f2a3b4c5d"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "certificationInfo": "https://example.org/certificates/battery-safety",
+            "transformationID": "urn:example:transformation:stage-one"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;5f94bfef48a5defb9a94a056b261e65d412fe55a57c9df8fd17c7d5e0d7161c4?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00certificationInfo=https://example.org/certificates/battery-safetyepcListepc=https://example.org/items/plain-identifierepc=https://id.gs1.org/01/09521234123453/21/SER1epc=urn:uuid:7b9e2c3a-6d1f-4a8b-9c2d-0e1f2a3b4c5daction=OBSERVEtransformationID=urn:example:transformation:stage-onebizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transit",
+        "subjects": [
+          "https://example.org/items/plain-identifier",
+          "https://id.gs1.org/01/09521234123453/21/SER1",
+          "urn:uuid:7b9e2c3a-6d1f-4a8b-9c2d-0e1f2a3b4c5d"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "event-level-extensions",
+      "description": "Event-level user extensions (rule 19): a padded string trimmed, a nested object, a list, a number and a boolean, each named {namespace}localName and sorted.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "example:note": "  padded note  ",
+            "example:grade": {
+              "example:value": "A",
+              "example:scale": "letters"
+            },
+            "example:tags": [
+              "b",
+              "a"
+            ],
+            "example:count": 3,
+            "example:flag": true
+          }
+        ],
+        "context": [
+          "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+          {
+            "example": "https://example.org/vocab/",
+            "ilmdx": "https://example.org/ilmd/"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;1815132b6da8c3a04358317b6f132fb07c58d610bc40763b3a561f318ad694f4?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transit{https://example.org/vocab/}count=3{https://example.org/vocab/}flag=true{https://example.org/vocab/}grade{https://example.org/vocab/}scale=letters{https://example.org/vocab/}value=A{https://example.org/vocab/}note=padded note{https://example.org/vocab/}tags=a{https://example.org/vocab/}tags=b",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "differs: writes the boolean as True, the Python spelling; JSON booleans are true and false"
+      }
+    },
+    {
+      "id": "read-point-and-biz-location-extensions",
+      "description": "Extensions inside readPoint and bizLocation (rule 20): prefixed with the field name and appended among the event-level extensions, sorted, not written inline after the id.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "readPoint": {
+              "id": "urn:epc:id:sgln:9521234.00001.0",
+              "example:dock": "D4"
+            },
+            "bizLocation": {
+              "id": "urn:epc:id:sgln:9521234.00002.0",
+              "example:zone": "Z1"
+            }
+          }
+        ],
+        "context": [
+          "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+          {
+            "example": "https://example.org/vocab/",
+            "ilmdx": "https://example.org/ilmd/"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;1a7b334ebed42a382c23f793b394aa2707cc313bf7f1440183e104e771575f43?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transitreadPointid=https://id.gs1.org/414/9521234000013bizLocationid=https://id.gs1.org/414/9521234000020bizLocation{https://example.org/vocab/}zone=Z1readPoint{https://example.org/vocab/}dock=D4",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "differs: writes the extension inline after the id without the field-name prefix; rule 20 prefixes it and rule 19 appends it with the other extensions"
+      }
+    },
+    {
+      "id": "empty-lists-and-ignored-members",
+      "description": "An empty quantityList and an empty bizTransactionList add nothing, not even their names (rule 4); eventID and recordTime are not hashed. The event hashes exactly as it would without them.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "quantityList": [],
+            "bizTransactionList": [],
+            "eventID": "urn:uuid:7b9e2c3a-6d1f-4a8b-9c2d-0e1f2a3b4c5e",
+            "recordTime": "2026-03-05T10:20:00Z"
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;d66bc174162fde5e54b006743edfe5a6a2130f5132430530e2d304a4873fff44?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transit",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "differs: fails on an empty list (res.customFields is not iterable)",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "timestamp-forms",
+      "description": "Timestamps (rules 8 and 9): a time with an offset is expressed in UTC with Z, a fraction is carried to three digits, a missing fraction is zero-filled; eventTimeZoneOffset stays as written.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T12:15:30+02:00",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          },
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30.000Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "hash_id": "ni:///sha-256;d66bc174162fde5e54b006743edfe5a6a2130f5132430530e2d304a4873fff44?ver=CBV2.0",
+        "pre_hash": "eventType=ObjectEventeventTime=2026-03-05T10:15:30.000ZeventTimeZoneOffset=+02:00epcListepc=https://id.gs1.org/01/09521234123453/21/SER1action=OBSERVEbizStep=https://ref.gs1.org/cbv/BizStep-shippingdisposition=https://ref.gs1.org/cbv/Disp-in_transit",
+        "subjects": [
+          "https://id.gs1.org/01/09521234123453/21/SER1"
+        ]
+      },
+      "oracles": {
+        "epcis2.js@2.7.3": "agrees",
+        "epcis-event-hash-generator@1.9.3": "agrees"
+      }
+    },
+    {
+      "id": "refuse-error-declaration",
+      "description": "An event carrying an errorDeclaration computes no hash ID of its own (CBV 2.0 §8.9.2) and is not signable under @1.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "eventID": "urn:uuid:00000000-0000-4000-8000-00000000a009",
+            "errorDeclaration": {
+              "declarationTime": "2026-03-12T09:00:00Z",
+              "reason": "incorrect_data",
+              "correctiveEventIDs": [
+                "urn:uuid:00000000-0000-4000-8000-00000000a00a"
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "error-declaration-unsupported",
+          "path": "event.errorDeclaration"
+        }
+      }
+    },
+    {
+      "id": "refuse-unsupported-epc-scheme",
+      "description": "An EPC scheme outside the @1 subset (gid) is refused rather than hashed over an unconverted value.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:gid:95212.34.56",
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.epcList[0]"
+        }
+      }
+    },
+    {
+      "id": "refuse-digital-link-gtin-not-fourteen-digits",
+      "description": "A Digital Link whose GTIN is not 14 digits is refused under @1: the reference generators neither pad nor agree.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "https://id.gs1.org/01/9521234000012/21/SER2"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.epcList[0]"
+        }
+      }
+    },
+    {
+      "id": "refuse-digital-link-short-names",
+      "description": "Digital Link short names (/gtin/, /ser/) are outside the @1 subset.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "https://brand.example/gtin/09521234000012/ser/Q"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.epcList[0]"
+        }
+      }
+    },
+    {
+      "id": "refuse-undeclared-prefix",
+      "description": "An extension member whose prefix no carried context declares cannot be named (rule 19).",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "undeclared:note": "x"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.undeclared:note"
+        }
+      }
+    },
+    {
+      "id": "refuse-unprefixed-member",
+      "description": "An event-level member that is neither a standard member nor a prefixed extension has no namespace to hash under.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "note": "x"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.note"
+        }
+      }
+    },
+    {
+      "id": "refuse-sensor-extension",
+      "description": "An extension inside sensorMetadata or sensorReport has no agreed pre-hash form under @1: the text names the field as an extension point and the reference generators disagree on the prefix.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "sensorElementList": [
+              {
+                "sensorMetadata": {
+                  "time": "2026-03-05T08:00:00Z",
+                  "example:fw": "1.2"
+                },
+                "sensorReport": [
+                  {
+                    "type": "Temperature",
+                    "value": 26,
+                    "uom": "CEL"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "context": [
+          "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+          {
+            "example": "https://example.org/vocab/",
+            "ilmdx": "https://example.org/ilmd/"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.sensorElementList[0].sensorMetadata.example:fw"
+        }
+      }
+    },
+    {
+      "id": "refuse-compact-iri-vocabulary",
+      "description": "A vocabulary value spelled as a compact IRI (gs1:Humidity) is refused: the generators keep it verbatim where JSON-LD would expand it.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "sensorElementList": [
+              {
+                "sensorReport": [
+                  {
+                    "type": "gs1:Humidity",
+                    "value": 50,
+                    "uom": "A93"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.sensorElementList[0].sensorReport[0].type"
+        }
+      }
+    },
+    {
+      "id": "refuse-extension-event-type",
+      "description": "An extension event type is retained by the source exchange and signed by nobody under @1.",
+      "input": {
+        "events": [
+          {
+            "type": "ExtensionEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.type"
+        }
+      }
+    },
+    {
+      "id": "refuse-event-level-context",
+      "description": "A @context inside the event is refused; the credential carries the contexts.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "@context": [
+              "https://ref.gs1.org/epcis/"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.@context"
+        }
+      }
+    },
+    {
+      "id": "refuse-certification-info-list",
+      "description": "A list of certifications has no agreed pre-hash form under @1.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit",
+            "certificationInfo": [
+              "https://example.org/certificates/a",
+              "https://example.org/certificates/b"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.certificationInfo"
+        }
+      }
+    },
+    {
+      "id": "refuse-serial-outside-subset",
+      "description": "An EPC serial with characters outside the @1 subset (percent-encoding) is refused rather than encoded two ways.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER%2F2"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "event-hash-unsupported",
+          "path": "event.epcList[0]"
+        }
+      }
+    },
+    {
+      "id": "invalid-missing-event-time",
+      "description": "Not an EPCIS event: eventTime is required.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "schema-invalid",
+          "path": "event.eventTime"
+        }
+      }
+    },
+    {
+      "id": "invalid-timestamp",
+      "description": "A calendar date that does not exist is not a timestamp.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-02-30T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "OBSERVE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "schema-invalid",
+          "path": "event.eventTime"
+        }
+      }
+    },
+    {
+      "id": "invalid-action",
+      "description": "action is ADD, OBSERVE or DELETE.",
+      "input": {
+        "events": [
+          {
+            "type": "ObjectEvent",
+            "eventTime": "2026-03-05T10:15:30Z",
+            "eventTimeZoneOffset": "+02:00",
+            "epcList": [
+              "urn:epc:id:sgtin:9521234.012345.SER1"
+            ],
+            "action": "UPDATE",
+            "bizStep": "shipping",
+            "disposition": "in_transit"
+          }
+        ]
+      },
+      "expected": {
+        "refused": {
+          "code": "schema-invalid",
+          "path": "event.action"
+        }
+      }
+    }
+  ]
+}

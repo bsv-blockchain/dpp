@@ -71,7 +71,7 @@ The checks form four groups. The second column uses the short labels from `@bsv/
 
 | Check | Passes when | Otherwise, usually |
 |---|---|---|
-| `externalCredentialProof` | Every credential verifies under its own proof suite | `not-applicable` `no-external-credential` when you supplied none; `unknown` `verifier-not-supplied` |
+| `externalCredentialProof` | Every credential verifies under its own proof suite | `not-applicable` `no-external-credential` when you supplied none; `unknown` `verifier-not-supplied`; for a signed EPCIS event, `fail` `event-hash-mismatch`, `event-hash-unsupported` or `error-declaration-unsupported` when the subject does not hash to the credential's `id` |
 | `credentialTime` | Every credential is within its validity period | `unknown` `no-evidence` |
 | `credentialStatus` | No credential is revoked or suspended | `not-applicable` `format-defines-no-status` for native claims; `unknown` `no-evidence` |
 

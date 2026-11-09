@@ -347,7 +347,7 @@
     },
     {
       "path": "contracts/verification-report.schema.json",
-      "sha256": "6d2bfa73e28a5b0d83be35a1769a3feb97669799a2ee3bff070c2474d3892fb2",
+      "sha256": "144b1388d372900ccdc39cad36717bdf78aee28e842c8633afcba6a1f39fffca",
       "pins": "the report schema and reason codes"
     },
     {
@@ -467,7 +467,7 @@
     },
     {
       "path": "contracts/registry.yaml",
-      "sha256": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3",
+      "sha256": "a609543c71d6e24b0f9b881d9bdefddbd801b1339ebb65534e3a16f2adeb0ab9",
       "pins": "the registry contract, with the claim schema that refuses any recordId but an outpoint and carries the evidence facets"
     }
   ],
