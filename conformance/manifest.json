@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "3945eb85c043ae3d2beb87d3d23405bb1e048b23983908e9ba0b8f25c5a69d9a"
+      "digest": "d29f1a50bf1b3847632e7deeea76287e5d9f7b157f771be80f41dc8b43b4c930"
     },
     {
       "id": "spec-verification",
@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "efe2b1044eb94b3c6739c0e10b8a500b6574a52af1e6ea6f6808492e37ed2e78"
+      "digest": "13f8241864f55e1909f4a8c4966952f22466dfb7e5aeb86ee052d97753f24ad0"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -117,10 +117,10 @@
     {
       "id": "contract-registry",
       "uri": "contracts/registry.yaml",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3"
+      "digest": "0551f02293e5a969effff0ae8b703ac487638050288552b781604aba078e10e8"
     },
     {
       "id": "contract-report-schema",
@@ -2779,7 +2779,7 @@
       "sourceUri": "spec/services.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "The registry stores complete original bytes, media type, representation, digest, verified metadata and a scoped report; current representations never fall through to legacy intake; a VSC credential acquires no fabricated token state.",
+      "summary": "The registry stores complete original bytes, media type, representation, digest, verified metadata and a scoped report; current representations never fall through to legacy intake; a representation it does not implement, the parked SEAL among them, is refused as unsupported with nothing stored or anchored, and records stored under it stay readable; a VSC credential acquires no fabricated token state.",
       "layer": "role",
       "roles": [
         "registry"
@@ -2799,7 +2799,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Implemented in the registry repository against the shared fixture; assessed there, recorded here."
+      "notes": "Implemented in the registry repository against the shared fixture; assessed there, recorded here. Re-read 2026-11-09 after §3 stated the refusal of a representation the registry does not implement: its tests refuse the parked SEAL in its envelope and as the request body with 422 and representation-unsupported, nothing stored or anchored, never through the legacy door even with legacy intake enabled, and serve a SEAL stored before byte for byte on the proof, chain, collection, report and evidence package routes."
     },
     {
       "id": "SVC-3-legacy-intake",
@@ -3596,19 +3596,13 @@
       ],
       "applicability": "when a registry operates a status service",
       "profileId": "core",
-      "implementationRefs": [
-        "the reference registry (not published)"
-      ],
-      "testRefs": [
-        "the reference registry (not published)"
-      ],
-      "evidenceRefs": [
-        "the reference registry (not published)"
-      ],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Lists are signed Ed25519 credentials by the configured issuer key; atomic index allocation that never recycles, monotonic revocation, explicit suspension clearing, forward-only publication pointer, cache invalidation; a revoke-then-publish race settles on one version carrying every bit (memory, JSONL and Mongo stores). The unsigned constructor is test-only."
+      "notes": "Deliberately unclaimed from 9 November 2026: the reference registry no longer publishes status lists, and registry contract 0.6.0 defines no status list routes. Until then it issued lists as signed Ed25519 credentials by the configured issuer key, with atomic index allocation that never recycled, monotonic revocation, explicit suspension clearing, a forward-only publication pointer and cache invalidation, tested on the memory, JSONL and Mongo stores; that service and its tests are removed. Checking the lists credential issuers publish stays under STATUS-validate-algorithm, STATUS-purpose-suspension and STATUS-fetch-bounds. The rule still applies, as stated, to a registry that operates a status service."
     },
     {
       "id": "STATUS-fetch-bounds",
@@ -4061,7 +4055,7 @@
       "id": "REG-contract-routes",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.5.0",
+      "sourceVersion": "0.6.0",
       "clause": "paths",
       "summary": "Every operation the registry contract lists answers in the documented shape, and no served route is absent from the contract.",
       "layer": "role",
@@ -4078,9 +4072,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance and GET /showcase. contracts/registry.yaml is its mirror, byte-identical until 2026-11-08, when the description of DigitalLinkResolution.passportId here was corrected from a stored identifier \"canonically hosted at id.gs1.org\" to one under the host it was minted with; the registry's own copy takes the same correction in its next change, and no route or shape differs."
+      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance, GET /showcase and the resolver origin's GET /01/* catch-all. contracts/registry.yaml describes the same operations and omissions, with three additions the registry's copy does not yet carry: the recordId pattern and evidence facets of NativeLifecycleClaim, the optional anchoredBy of Capabilities and the optional blockHeight and merklePath of an anchor reference. Re-read 2026-11-09 for contract 0.6.0: the six /status routes are gone from the router and from both documents, and the refusal of the parked vsc-seal-json-v1 changes no path; the operation set of the two documents is identical. The registry's tests check response shapes by their keys, not against the schemas' enums, and both documents share a gap such a check would find: a stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with a representation those enums do not list, and GET /history reports its own credential type outside UoraType. Only the report's representation enum lists it so far; the collection filter, the three response enums and UoraType are to change in both documents together."
     },
     {
       "id": "STACK-vector-format",
@@ -4631,9 +4625,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Relations supersedes, revokes, suspends and expires (derived at evaluation time) are recorded and served with their source and reason; disputes has no producing path and is listed as not produced; conflicts under different frameworks or anchors are returned unresolved with every candidate named; independent assessments do not compete; the competing-claim fixture shows authority-first and timestamp-first choosing different claims."
+      "notes": "Relations supersedes, revokes, suspends and expires (derived at evaluation time) are recorded and served with their source and reason; disputes has no producing path and is listed as not produced; conflicts under different frameworks or anchors are returned unresolved with every candidate named; independent assessments do not compete; the competing-claim fixture shows authority-first and timestamp-first choosing different claims. From 9 November 2026 the reference registry no longer produces the sources vsc-correction, vsc-parent and status-publication, because it accepts no new SEAL and publishes no status lists; relations recorded under them stay served, which its tests exercise. revokes and suspends now have one producing path, an authenticated status observation made while reporting on a stored record (status-observation); the relation store tests persist and clear relations of that source, but no test yet drives an observation through a report into a relation."
     },
     {
       "id": "LIFE-2-mapping-results",
@@ -4779,7 +4773,7 @@
       "id": "REG-1-insert-first-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.5.0",
+      "sourceVersion": "0.6.0",
       "clause": "POST /attestations",
       "summary": "Two identical concurrent submissions store one record and anchor once: intake inserts the claim identifier first, then anchors, then replaces, on every store backend.",
       "layer": "role",
@@ -4796,9 +4790,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process."
+      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored; the insert-first order for accepted submissions is unchanged."
     },
     {
       "id": "BATT-1-demonstration-lifecycle",
@@ -5726,7 +5720,7 @@
       "id": "EXTC-5-registry-intake",
       "sourceId": "contract-registry",
       "sourceUri": "contracts/registry.yaml",
-      "sourceVersion": "0.5.0",
+      "sourceVersion": "0.6.0",
       "clause": "POST /attestations, vc-di-ecdsa-rdfc-2019@1",
       "summary": "The registry accepts the representation as exact bytes under the operator's external policy, refuses a failing credential with nothing stored, refuses a credential id collision, and anchors accepted bytes through the existing anchor and topic with metadata matching the credential.",
       "layer": "role",
@@ -5745,10 +5739,10 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "2c4d818c41658ea37320ce1d4b42aa067631f96b1f4769b3ba6516979fbfb5c3",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged."
+      "sourceDigest": "0551f02293e5a969effff0ae8b703ac487638050288552b781604aba078e10e8",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes and dropped vscProfile and vscConformance from the capability document; the external intake shapes are unchanged."
     },
     {
       "id": "PROJ-1-source-revisions",

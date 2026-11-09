@@ -12,6 +12,11 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, the registry contract refuses new SEALs and drops status list publication
+
+- The registry contract (`0.6.0`) refuses a `vsc-seal-json-v1` submission, in its envelope or as the body, with outcome `unsupported` and `representation-unsupported`: 422 on `POST /attestations`, 200 with `reportOmitted` on `POST /validate`. The SEAL request shapes, the six `/status` routes and their schemas, `vscProfile` and `vscConformance` are removed, and the capability document lists `vsc-seal-json-v1` under `unsupported`. Read routes keep serving stored SEALs byte for byte. `spec/services.md` §3 and `spec/vsc-profile.md` say so.
+- `dpp-release-2026-11` withholds `authenticated-status-service`, since the registry contract defines no status list publication, and `STATUS-secured-publication` is a gap; checking other parties' lists stays under `STATUS-validate-algorithm`. The rows citing the contract, `SVC-3-registry-bytes` and `LIFE-1-relations` were re-reviewed.
+
 ### 2026-11-09, a narrower EPCIS import claim and a machine-readable parked status
 
 - New ledger claim `epcis-source-import-1` (`epcis-json@1`): EPCIS-1 to EPCIS-4, strict parsing, schema validation, event-body digests and arrival classification. `dpp-release-2026-11` requires it in place of `epcis-source-exchange-1`, which the release still withholds. EPCIS-7, EPCIS-8 and EPCIS-9 stay out because only the unpublished reference application exercises them, and the clauses of EPCIS-1, EPCIS-4, EPCIS-8 and EPCIS-9 now cite the sections that hold them.

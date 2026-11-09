@@ -1,18 +1,12 @@
 openapi: 3.1.0
 info:
   title: Attestation registry API
-  version: 0.5.0
-  summary: Verified native lifecycle claims and VSC SEAL credentials with independent BSV anchors.
+  version: 0.6.0
+  summary: Verified native lifecycle claims and external credentials with independent BSV anchors.
   description: |
-    Current intake uses explicit signed native or VSC representations. Missing proof,
-    status, authority or issuer-binding evidence fails closed. Anchor broadcast,
-    credential verification, discovery and confirmed chain inclusion are separate claims.
-    VSC support targets vsc-draft-compat/0.1.0, a pinned Community Group draft compatibility
-    profile, not W3C certification. Historical UORA representations remain readable and
-    legacy intake is disabled unless LEGACY_INTAKE=1.
-externalDocs:
-  description: Pinned VSC Community Group source
-  url: https://github.com/w3c-cg/vsc/tree/c279de3debcd6eab94a77034584d1750f5d65e6a
+    Current intake uses explicit signed native claims or the external vc-di-ecdsa-rdfc-2019@1 credential representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
+
+    The VSC SEAL representation (vsc-seal-json-v1) is parked with its vsc-draft-compat/0.1.0 profile: new submissions are refused as representation-unsupported, and records stored before remain readable without content verification. The contract defines no status list publication: a registry checks the status lists credential issuers publish. Historical UORA representations remain readable and legacy intake is disabled unless LEGACY_INTAKE=1.
 servers:
   - url: https://dpp-resolver.bsvb.net
     description: The hosted demonstration deployment (the API origin)
@@ -63,16 +57,6 @@ tags:
       the deployment sets `SHOWCASE=1`. `GET /showcase` additionally serves
       a self-contained HTML page (text/html) that reads the two JSON routes
       below; it also deploys as a static file to a separate host.
-  - name: status
-    description: |
-      Bitstring Status Lists this registry publishes for credentials it
-      anchors. Positions are allocated by an atomic counter and never
-      recycled, a revocation bit is never cleared, suspension bits are
-      cleared explicitly, and every change publishes a freshly signed list
-      atomically: the new signed document is written first and the current
-      pointer moved to it, so a reader never sees a partial list. Publication
-      needs `STATUS_ISSUER_KEY_FILE` and `STATUS_LIST_BASE_URL`; unset, the
-      write operations answer 503 and `GET /status/{listId}` 404s.
 
 # Routes the router serves that this document deliberately does not describe.
 # The reference registry's contract test checks its router against this
@@ -245,24 +229,7 @@ paths:
       operationId: getEvidencePackage
       summary: The dpp-evidence-package@1 for one passport, as this build's JSON envelope.
       description: |
-        Everything this registry holds about a passport as content-addressed
-        files under a signed manifest (the standard's portable evidence,
-        section 2): native claims as their canonical stored bytes under
-        `native-claims/`, original secured credentials byte for byte with
-        their representation and media type under `external-credentials/`,
-        retained anchor scripts and any raw anchor transaction the registry
-        still holds under `transactions/`, the newest authenticated status
-        observation of each referenced list under `status/`, registered
-        certifications of the records' issuers and the verification policy in
-        force under `authority/`, and the verification report of each record
-        at export under `reports/`. Disclosure scope is `public` and the
-        package is not a recovery backup. `completeness` names the store
-        snapshot the export was read at, what the registry holds and withholds
-        (the operator's verification bundle, the status issuer key, intake
-        results superseded by the reports), and what a record references that
-        the registry could not produce (token history, unretained anchor
-        scripts or transactions, unobserved status lists, unregistered
-        certifications, historical records without secured bytes).
+        Everything this registry holds about a passport as content-addressed files under a signed manifest (the standard's portable evidence, section 2): native claims as their canonical stored bytes under `native-claims/`, original secured credentials byte for byte with their representation and media type under `external-credentials/`, retained anchor scripts and any raw anchor transaction the registry still holds under `transactions/`, the newest authenticated status observation of each referenced list under `status/`, registered certifications of the records' issuers and the verification policy in force under `authority/`, and the verification report of each record at export under `reports/`. Disclosure scope is `public` and the package is not a recovery backup. `completeness` names the store snapshot the export was read at, what the registry holds and withholds (the operator's verification bundle and the intake results superseded by the reports), and what a record references that the registry could not produce (token history, unretained anchor scripts or transactions, unobserved status lists, unregistered certifications, historical records without secured bytes).
 
         The manifest is signed by the registry's anchoring wallet, the
         identity every anchor names as `anchoredBy`: `exporter.id` is that
@@ -608,6 +575,7 @@ paths:
           schema: { type: string }
         - name: representation
           in: query
+          description: The stored representation. `vsc-seal-json-v1` selects records stored before that representation was parked.
           schema: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, legacy-uora-json] }
         - name: type
           in: query
@@ -640,9 +608,7 @@ paths:
       operationId: postAttestation
       summary: Verify and store an explicit secured representation, then report its independent anchor.
       description: |
-        Native signature verification precedes storage and anchoring. VSC requires real
-        Data Integrity, authenticated status and configured authority evidence. Current
-        representations never fall through into the historical placeholder path.
+        Native signature verification precedes storage and anchoring. An external credential requires its proof, status and authority evidence under the operator's policy. Current representations never fall through into the historical placeholder path. The parked `vsc-seal-json-v1` representation, in its envelope or as a SEAL posted as the body, is refused with 422, outcome `unsupported` and an issue naming `representation-unsupported`; nothing is verified, stored or anchored. The request schema does not admit a SEAL: a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400.
       requestBody:
         required: true
         content:
@@ -650,7 +616,6 @@ paths:
             schema:
               oneOf:
                 - $ref: '#/components/schemas/NativeLifecycleSubmission'
-                - $ref: '#/components/schemas/SealSubmission'
                 - $ref: '#/components/schemas/ExternalCredentialSubmission'
       responses:
         '202':
@@ -664,10 +629,10 @@ paths:
                   accepted: { const: true }
                   attestationId: { type: string }
                   digest: { type: string, pattern: '^[0-9a-f]{64}$' }
-                  representation: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] }
+                  representation: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] }
                   mediaType: { enum: [application/json, application/vc+ld+json] }
                   verdict: { const: valid }
-                  verification: { type: object, description: Named checks and their evidence scope; native validity does not imply VSC conformance. }
+                  verification: { type: object, description: Named checks and their evidence scope. }
                   anchored: { type: boolean }
                   anchorStatus: { enum: [unanchored, broadcast] }
                   inclusion: { const: not-evaluated }
@@ -682,7 +647,7 @@ paths:
             for the same bytes, `credential_id_collision` for different bytes
             under one identifier, whose earlier bytes are kept. Nothing is
             stored or anchored either way.
-        '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement answers here with outcome unsupported." }
+        '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement, and any submission of the parked vsc-seal-json-v1 representation, answer here with outcome unsupported." }
       security:
         - {}
         - writeToken: []
@@ -776,20 +741,13 @@ paths:
       operationId: postValidate
       summary: Verify an explicit current representation without storing or anchoring it.
       description: |
-        One response shape, discriminated by `contract`. A current
-        representation (a signed native claim or a VSC envelope) answers under
-        `attestation-registry/1` with the registry's named outcome and checks
-        and, whenever the evidence names one subject or the caller names one,
-        the shared verification `report`. Historical inputs answer under
-        `legacy-uora` with the seven-phase pipeline's verdict and phases, with
-        their historical assurance and conformance limitations.
+        One response shape, discriminated by `contract`. A current representation (a signed native claim or an external credential envelope) answers under `attestation-registry/1` with the registry's named outcome and checks and, whenever the evidence names one subject or the caller names one, the shared verification `report`. A SEAL, in the parked `vsc-seal-json-v1` envelope or as the body, answers under `attestation-registry/1` with outcome `unsupported`, an issue naming `representation-unsupported` and `reportOmitted`; the request schema does not admit a SEAL, and a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400. Historical inputs answer under `legacy-uora` with the seven-phase pipeline's verdict and phases, with their historical assurance and conformance limitations.
 
         `tokenHistory` is a request property of this operation: a BEEF as hex
         carrying the passport's token states, so the report's token checks can
         run. It is never part of a signed claim or a credential envelope and is
         removed before the bytes are verified. The `subject` query parameter
-        names the passport the caller expects (`source: request-context`); the
-        VSC envelope's `subject` counts the same way.
+        names the passport the caller expects (`source: request-context`).
       parameters:
         - name: subject
           in: query
@@ -803,7 +761,6 @@ paths:
             schema:
               oneOf:
                 - $ref: '#/components/schemas/ValidateNativeRequest'
-                - $ref: '#/components/schemas/ValidateSealRequest'
                 - $ref: '#/components/schemas/ValidateExternalRequest'
                 - $ref: '#/components/schemas/ValidateRequest'
       responses:
@@ -821,166 +778,6 @@ paths:
                     attestation-registry/1: '#/components/schemas/SecuredValidateResult'
                     legacy-uora: '#/components/schemas/ValidateResult'
         '400': { description: Malformed or ambiguous request, or a tokenHistory that does not read as a BEEF. }
-
-  /status:
-    post:
-      tags: [status]
-      operationId: createStatusList
-      summary: Create a status list and publish its first, empty, signed version.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/StatusListCreate' }
-      responses:
-        '201':
-          description: Created and published.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/StatusListSummary' }
-        '400': { description: The list identifier or purpose is not acceptable. }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '409': { description: A list of that identifier already exists. }
-        '503': { description: Publication is not configured on this deployment. }
-      security:
-        - {}
-        - writeToken: []
-
-  /status/{listId}:
-    get:
-      tags: [status]
-      operationId: getStatusList
-      summary: The current signed status list, byte for byte as published.
-      description: |
-        Served as `application/vc+ld+json` in exactly the bytes that were
-        signed and stored, so the digest a verifier records is the digest of
-        what this registry published. Authenticated by its own proof, not by
-        the transport: a verifier checks the proof, the issuer, the purpose,
-        the signed validity window and its freshness bounds before reading a
-        bit, and never reads a bit from a list it did not authenticate.
-      parameters:
-        - name: listId
-          in: path
-          required: true
-          schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' }
-      responses:
-        '200':
-          description: The signed BitstringStatusListCredential.
-          content:
-            application/vc+ld+json:
-              schema: { type: object, additionalProperties: true }
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /status/{listId}/allocate:
-    post:
-      tags: [status]
-      operationId: allocateStatusIndex
-      summary: Allocate the next position in a list, never recycled.
-      parameters:
-        - name: listId
-          in: path
-          required: true
-          schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' }
-      responses:
-        '201':
-          description: The position and the entry a credential carries for it.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/StatusIndexAllocation' }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409': { description: Every position is taken; positions are never recycled, so publish a new list. }
-        '503': { description: Publication is not configured on this deployment. }
-      security:
-        - {}
-        - writeToken: []
-
-  /status/{listId}/revoke:
-    post:
-      tags: [status]
-      operationId: revokeStatusIndex
-      summary: Set a revocation bit and publish. Monotonic; a revocation bit is never cleared.
-      parameters:
-        - name: listId
-          in: path
-          required: true
-          schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/StatusBitChange' }
-      responses:
-        '200':
-          description: Published with the bit set.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/StatusListSummary' }
-        '400': { description: Not a revocation list, an unallocated position, or an unreadable index. }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '503': { description: Publication is not configured on this deployment. }
-      security:
-        - {}
-        - writeToken: []
-
-  /status/{listId}/suspend:
-    post:
-      tags: [status]
-      operationId: suspendStatusIndex
-      summary: Set a suspension bit and publish.
-      parameters:
-        - name: listId
-          in: path
-          required: true
-          schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/StatusBitChange' }
-      responses:
-        '200':
-          description: Published with the bit set.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/StatusListSummary' }
-        '400': { description: Not a suspension list, an unallocated position, or an unreadable index. }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '503': { description: Publication is not configured on this deployment. }
-      security:
-        - {}
-        - writeToken: []
-
-  /status/{listId}/clear:
-    post:
-      tags: [status]
-      operationId: clearStatusSuspension
-      summary: Clear a suspension bit and publish. Refused by name on a revocation list.
-      parameters:
-        - name: listId
-          in: path
-          required: true
-          schema: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/StatusBitChange' }
-      responses:
-        '200':
-          description: Published with the bit cleared.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/StatusListSummary' }
-        '400': { description: A revocation list (`revocation_is_monotonic`), an unallocated position, or an unreadable index. }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '503': { description: Publication is not configured on this deployment. }
-      security:
-        - {}
-        - writeToken: []
 
   /certifications:
     post:
@@ -1120,14 +917,7 @@ components:
       type: http
       scheme: bearer
       description: |
-        A deployment choice, exactly as persistence is: when the deployment
-        sets `WRITE_TOKEN`, the write operations (`POST /attestations`,
-        `POST /certifications` and the status list writes under `/status`)
-        require it as a bearer, because writes store state and, with a
-        treasury configured, spend real satoshis anchoring it. Unset, writes
-        stay open and local development is unchanged, which is why each write
-        operation also lists an empty security requirement. Reads never
-        require it.
+        A deployment choice, exactly as persistence is: when the deployment sets `WRITE_TOKEN`, the write operations (`POST /attestations` and `POST /certifications`) require it as a bearer, because writes store state and, with a treasury configured, spend real satoshis anchoring it. Unset, writes stay open and local development is unchanged, which is why each write operation also lists an empty security requirement. Reads never require it.
 
   parameters:
     limit:
@@ -1308,35 +1098,11 @@ components:
       properties:
         tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
       unevaluatedProperties: false
-    SealEnvelope:
-      type: object
-      required: [representation, credential]
-      properties:
-        representation: { const: vsc-seal-json-v1 }
-        credential: { type: string, description: Exact UTF-8 JSON string of the complete issued credential including its Data Integrity proof. }
-        subject:
-          type: string
-          description: >-
-            Required when selecting among multiple signed product identifiers.
-            For `POST /validate` it also names the expected subject, reported
-            with `source: request-context`.
-    SealSubmission:
-      allOf:
-        - $ref: '#/components/schemas/SealEnvelope'
-      unevaluatedProperties: false
     ExternalCredentialEnvelope:
       type: object
       required: [representation, credential]
       description: |
-        The external ecdsa-rdfc-2019 credential representation of the
-        standard's `spec/external-credential-profile.md`: a W3C Verifiable
-        Credentials 2.0 credential secured with a `DataIntegrityProof` under
-        `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists
-        the key for assertion. Verified through the VSC package's separate
-        `exchange` entry point under the `external` section of the operator's
-        verification bundle, never under the SEAL rules. The exact issued
-        bytes are what is retained and anchored; a reformatted copy has a
-        different digest even where its RDF proof still verifies.
+        The external ecdsa-rdfc-2019 credential representation of the standard's `spec/external-credential-profile.md`: a W3C Verifiable Credentials 2.0 credential secured with a `DataIntegrityProof` under `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists the key for assertion. Verified through the `exchange` entry point of `@bsv/dpp-credentials` under the `external` section of the operator's verification bundle. The exact issued bytes are what is retained and anchored; a reformatted copy has a different digest even where its RDF proof still verifies.
       properties:
         representation: { const: 'vc-di-ecdsa-rdfc-2019@1' }
         credential: { type: string, description: Exact UTF-8 JSON string of the complete issued credential including its proof, at most 256 KiB. }
@@ -1360,15 +1126,16 @@ components:
       unevaluatedProperties: false
     Capabilities:
       type: object
-      required: [protocol, topic, lookupService, representations, vscProfile, vscConformance, proofSuites, interoperability, unsupported, legacyIntake]
+      required: [protocol, topic, lookupService, representations, proofSuites, interoperability, unsupported, legacyIntake]
       properties:
         protocol: { const: attestation-registry/1 }
         topic: { const: tm_attestation }
         lookupService: { const: ls_attestation }
-        representations: { type: array, items: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] } }
-        vscProfile: { const: vsc-draft-compat/0.1.0 }
-        vscConformance: { const: not-certified }
-        proofSuites: { type: array, items: { enum: [Ed25519Signature2020, bbs-2023, ecdsa-rdfc-2019] } }
+        representations:
+          type: array
+          description: The representations intake accepts. The parked `vsc-seal-json-v1` is not among them and is named under `unsupported`.
+          items: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] }
+        proofSuites: { type: array, items: { enum: [ecdsa-rdfc-2019] } }
         interoperability:
           type: object
           required: [discovery, externalCredential, externalCredentialPolicy]
@@ -1478,13 +1245,6 @@ components:
       properties:
         outcome: { enum: [inserted, replaced] }
         record: { $ref: '#/components/schemas/ResolutionRecord' }
-    ValidateSealRequest:
-      description: A VSC envelope for `POST /validate`, with the operation's own `tokenHistory` beside it.
-      allOf:
-        - $ref: '#/components/schemas/SealEnvelope'
-      properties:
-        tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
-      unevaluatedProperties: false
     TokenHistory:
       type: string
       pattern: '^([0-9a-fA-F]{2})+$'
@@ -1561,9 +1321,11 @@ components:
       required: [contract, outcome, issues]
       properties:
         contract: { const: attestation-registry/1 }
-        outcome: { enum: [verified, invalid, indeterminate] }
+        outcome:
+          enum: [verified, invalid, indeterminate, unsupported]
+          description: '`unsupported` names a representation, or a feature of one, this registry does not implement: an external credential on another curve, suite or structure, or the parked `vsc-seal-json-v1`, whose issue names `representation-unsupported`.'
         issues: { type: array, items: {} }
-        checks: { description: "The registry's named checks with their evidence scope; for VSC, the package's full verification result including custody and corrections." }
+        checks: { description: "The registry's named checks with their evidence scope." }
         tokenRecordId: { type: string, pattern: '^[0-9a-f]{64}$' }
         report: { $ref: '#/components/schemas/EvidenceReport' }
         reportOmitted: { type: string, description: Why no report accompanies this answer. }
@@ -1576,7 +1338,10 @@ components:
       properties:
         contract: { const: attestation-registry/1 }
         attestationId: { type: string }
-        representation: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1] }
+        representation:
+          enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1', vsc-seal-json-v1]
+          description: >-
+            A stored `vsc-seal-json-v1` record, from before that representation was parked, is reported without content verification. No credential verifier is attached, so `anchorDigestAndMetadataBinding` answers `unknown` with `representation-unsupported` and the credential checks answer `unknown`.
         anchorRetained:
           type: boolean
           description: Whether the anchor's locking script was retained at anchoring time. False on records older than the retention; their anchor checks are then unknown.
@@ -1588,15 +1353,7 @@ components:
     ClaimRelation:
       type: object
       description: |
-        What one claim says about another, recorded independently of token
-        spending and never implied by a passport changing hands. `from` is the
-        relating artefact (an attestation identifier, or a status list position
-        `<list>#<index>`), `to` the attestation the relation is about. A claim
-        can be historically authentic and currently superseded; both records
-        stay. `expires` is derived from a signed `validUntil` at evaluation time
-        and never stored. `disputes` has no producing path yet: no current
-        representation carries a field naming a disputed claim, and none is
-        inferred; SEAL correction and parent fields are recorded as supersession.
+        What one claim says about another, recorded independently of token spending and never implied by a passport changing hands. `from` is the relating artefact (an attestation identifier, or a status list position `<list>#<index>`), `to` the attestation the relation is about. A claim can be historically authentic and currently superseded; both records stay. `expires` is derived from a signed `validUntil` at evaluation time and never stored. `disputes` has no producing path yet: no current representation carries a field naming a disputed claim, and none is inferred. The sources `vsc-correction`, `vsc-parent` and `status-publication` are no longer produced, since the SEAL representation is parked and the contract defines no status list publication; relations recorded under them stay readable.
       required: [kind, from, to, source, reason, recordedAt]
       properties:
         kind: { enum: [supersedes, revokes, suspends, expires, disputes] }
@@ -1698,47 +1455,6 @@ components:
         detail: { type: string }
         attestationId: { type: string }
         representation: { type: string }
-    StatusEntry:
-      type: object
-      description: The `credentialStatus` entry a credential carries for a position this registry allocated.
-      required: [type, statusPurpose, statusListIndex, statusListCredential]
-      properties:
-        type: { const: BitstringStatusListEntry }
-        statusPurpose: { enum: [revocation, suspension] }
-        statusListIndex: { type: string, pattern: '^(0|[1-9][0-9]*)$' }
-        statusListCredential: { type: string, format: uri }
-    StatusListCreate:
-      type: object
-      required: [listId, purpose]
-      properties:
-        listId: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' }
-        purpose: { enum: [revocation, suspension] }
-    StatusListSummary:
-      type: object
-      required: [listId, id, purpose, version, publishedAt, validFrom, validUntil]
-      properties:
-        listId: { type: string }
-        id: { type: string, format: uri, description: The list credential's identifier, the URL it is served at. }
-        purpose: { enum: [revocation, suspension] }
-        version: { type: integer, minimum: 1, description: The published state's version; each change publishes the next. }
-        publishedAt: { type: string, format: date-time }
-        validFrom: { type: string, format: date-time }
-        validUntil: { type: string, format: date-time, description: The signed window's end; five minutes after validFrom by default, which fits status-pilot@1. }
-        index: { type: integer, minimum: 0, description: Present on a bit change. }
-        value: { enum: [set, unset], description: Present on a bit change. }
-    StatusIndexAllocation:
-      type: object
-      required: [listId, index, purpose, entry]
-      properties:
-        listId: { type: string }
-        index: { type: integer, minimum: 0 }
-        purpose: { enum: [revocation, suspension] }
-        entry: { $ref: '#/components/schemas/StatusEntry' }
-    StatusBitChange:
-      type: object
-      required: [index]
-      properties:
-        index: { type: integer, minimum: 0, description: An allocated position in the list. }
     Problem:
       type: object
       required: [error]

@@ -154,10 +154,9 @@ The answer names its contract and checks, with a shared `report` when the subjec
 | Route | Access | What it does |
 |---|---|---|
 | `POST /validate?subject=` | Open | Verifies a claim without storing or anchoring it |
-| `POST /attestations` | Bearer write token when the registry sets one | Verifies and stores a claim, then reports its anchor; 422 when verification fails, with nothing stored |
+| `POST /attestations` | Bearer write token when the registry sets one | Verifies and stores a claim, then reports its anchor; 422 when verification fails or the representation is unsupported, such as a parked `vsc-seal-json-v1` SEAL, with nothing stored |
 | `GET /attestations`, `GET /attestations/{id}/proof`, `GET /attestations/{id}/report` | Open | The stored claims in pages, everything a third party needs to check one claim's anchor, and its verification report |
 | `GET /history`, `GET /chain`, `GET /passports/{passportId}/evidence-package` | Open | A passport's lifecycle history and custody timeline, and its evidence package |
-| `POST /status`, `POST /status/{listId}/allocate`, `/revoke`, `/suspend`, `/clear`; `GET /status/{listId}` | Write routes need the write token; reading a list is open | Status lists for issued credentials |
 | `GET /capabilities`, `GET /health` | Open | The registry's own capability document, which may name its anchoring key as `anchoredBy`, and its health |
 
 The registry contract also defines GS1 resolver routes; [GS1 discovery](../interoperability/gs1-discovery.md) covers them. The [interoperability contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) defines EPCIS import and passport projection routes ([interoperability](../interoperability/README.md)).

@@ -36,7 +36,7 @@ The index names peers statically. beta.12 supports opt-in discovery, advertising
 | Index | `POST /arc-ingest` | Broadcaster's callback token |
 | Index | `GET /evidence-export` | Export token |
 | Index | Lookups, `/history`, `/capabilities`, `/publisher-policy`, `/evidence-package`, `/health`, synchronisation routes | Open |
-| Registry | Store a claim or change a status list | Write token |
+| Registry | Store a claim or register a certification | Write token |
 | Registry | Validation and reads | Open |
 
 | Verification input | Value and use |

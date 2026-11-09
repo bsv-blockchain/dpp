@@ -39,7 +39,7 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-11.json
 | Check | Output and conclusion |
 |---|---|
 | Diagnostic, first command | About 170 lines, one finding each. Checks the ledger, baseline, reports and capability example against one another and their pinned sources. |
-| Qualification gate, second command | One line per required claim and ten `withheld:` lines with reasons, including federated operation, European conformity, battery product qualification, version 1.0 readiness and the parked VSC compatibility profile and EPCIS mappings. Checks the named selection against the ledger. |
+| Qualification gate, second command | One line per required claim and eleven `withheld:` lines with reasons, including federated operation, European conformity, battery product qualification, version 1.0 readiness, the parked VSC compatibility profile and EPCIS mappings, and the status service, which registry contract 0.6.0 no longer defines. Checks the named selection against the ledger. |
 
 The diagnostic ends:
 
