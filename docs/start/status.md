@@ -70,7 +70,7 @@ Match these gaps to your version using [known limitations and open questions](..
 
 ## Conformance evidence
 
-The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/manifest.json) records implementation and evidence per requirement; read it with the [November candidate selection](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/conformance/selections/dpp-release-2026-11.json). Conformance claims are separate from passport lifecycle claims.
+The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/manifest.json) records implementation and evidence per requirement; read it with the [November candidate selection](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/conformance/selections/dpp-release-2026-11.json). Conformance claims are separate from passport lifecycle claims.
 
 | Evidence | Ledger status | What remains |
 |---|---|---|

@@ -16,7 +16,7 @@ Registry implementers can use this guide to build validation, storage and retrie
 
 1. Implement `POST /validate`. It accepts a supported secured representation as JSON. For the native exercise, the body is the signed claim and `subject` is the independently expected passport identifier.
 2. Call `verifyLifecycleClaim(claim, { passportId: subject })` from `@bsv/dpp-protocol` for signature and subject binding ([issuer quick start](../../quick-start.md#sign-a-claim)). Call `verifyPassportEvidence` for the shared report when the request carries token history or your registry holds evidence for that passport.
-3. Return the named outcome, checks and report under `attestation-registry/1`, as the [validate operation](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/contracts/registry.yaml#L738-L780) defines. Store nothing.
+3. Return the named outcome, checks and report under `attestation-registry/1`, as the [validate operation](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml#L743-L786) defines. Store nothing.
 4. Run this [validation request](../../quick-start.md#ask-a-registry-to-check-the-claim). It reads the fixture, avoiding manual transcription. Set `REGISTRY_URL` to your service; the shown hosted demonstration URL needs no credentials and stores nothing.
 
 ```sh
@@ -53,11 +53,11 @@ The DPP checkout starts no registry; no registry package or container image is p
 
 ## The minimum a registry serves
 
-Implement these operations in this order, testing each with a malformed input, a missing-evidence input and a valid input before starting the next. The [contract](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/contracts/registry.yaml) defines every request and response shape.
+Implement these operations in this order, testing each with a malformed input, a missing-evidence input and a valid input before starting the next. The [contract](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml) defines every request and response shape.
 
 | Operation | What it must do | Package support |
 |---|---|---|
-| `GET /capabilities` | Declare the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries, and name your anchoring key, under `publisherPolicy.anchoringServices` in the schema's document or as `anchoredBy` in the contract's, so a verifier can tell your anchors from others'; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/capabilities.schema.json) and the contract's [capabilities operation](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/contracts/registry.yaml#L539-L547), which define two different documents (see below) |
+| `GET /capabilities` | Declare the representations, proof suites, topic and lookup service, interoperability profiles and explicit `unsupported` entries, and name your anchoring key, under `publisherPolicy.anchoringServices` in the schema's document or as `anchoredBy` in the contract's, so a verifier can tell your anchors from others'; never a certification claim | The [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/capabilities.schema.json) and the contract's [capabilities operation](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml#L539-L547), which define two different documents (see below) |
 | `POST /validate` | Verify without storing, as above | `verifyLifecycleClaim`, `verifyPassportEvidence` |
 | `POST /attestations` | Verify the explicit secured representation under the declared policy; store the exact bytes with their media type, representation, digest and scoped report; refuse an invalid or unsupported submission by name (a `vsc-seal-json-v1` SEAL, whose profile is parked, as `unsupported` with `representation-unsupported`); store a duplicate once; report acceptance, anchoring and inclusion as separate fields | `verifyLifecycleClaim`, `lifecycleClaimBytes`, `lifecycleClaimDigest` |
 | `GET /attestations` and `GET /attestations/{id}/report` | Page the held records over a stable snapshot; return the stored report for one record | The contract's cursor and snapshot rules |
@@ -102,8 +102,8 @@ Treat a registry archive as one recovery input. The reference archive does not c
 
 ## Exact implementation sources
 
-- [contracts/registry.yaml](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/contracts/registry.yaml)
-- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/spec/services.md)
+- [contracts/registry.yaml](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml)
+- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/spec/services.md)
 - [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/verification.md)
 - [spec/portable-evidence.md](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/portable-evidence.md)
 

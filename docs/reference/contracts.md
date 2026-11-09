@@ -143,13 +143,13 @@ The answer names its contract and checks, with a shared `report` when the subjec
 | Condition | Interpretation |
 |---|---|
 | Validation only | Does not store or anchor the claim |
-| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/contracts/registry.yaml#L738-L780)) |
+| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml#L743-L786)) |
 | HTTP 400 | A malformed or ambiguous request, including unreadable token history; resolve it before interpreting verification |
 | Refused connection | No registry runs at the chosen URL |
 
 ## Registry routes
 
-[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
+[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
 
 | Route | Access | What it does |
 |---|---|---|
