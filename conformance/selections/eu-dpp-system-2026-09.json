@@ -8,9 +8,9 @@
     { "id": "attestation-verifier-native-baseline-1", "kind": "component", "disposition": "required" },
     { "id": "overlay-single-operator-1", "kind": "component", "disposition": "required" },
     { "id": "registry-current-intake", "kind": "component", "disposition": "required" },
-    { "id": "authenticated-status-service", "kind": "component", "disposition": "required" },
+    { "id": "authenticated-status-service", "kind": "component", "disposition": "withheld", "rationale": "From 9 November 2026 the registry contract defines no status list publication and STATUS-secured-publication records no implementation, so the reference provides no status service for a system claim; checking the lists credential issuers publish stays under STATUS-validate-algorithm." },
     { "id": "gs1-discovery-1", "kind": "component", "disposition": "required" },
-    { "id": "epcis-source-exchange-1", "kind": "component", "disposition": "required" },
+    { "id": "epcis-source-exchange-1", "kind": "component", "disposition": "withheld", "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange; the EPCIS requirements a system claim needs are to be selected again when this gate is reviewed against the EN texts." },
     { "id": "external-credential-ecdsa-1", "kind": "component", "disposition": "required" },
     { "id": "passport-projection-1", "kind": "component", "disposition": "required" },
     { "id": "profile-governance", "kind": "component", "disposition": "required" },
@@ -32,7 +32,7 @@
       "reviewOwner": "dpp maintainers"
     }
   ],
-  "reviewedAt": "2026-09-06",
+  "reviewedAt": "2026-11-09",
   "reviewOwner": "dpp maintainers",
   "notes": "A qualified answer to this selection would mean the ledger's evidence supports the named claims for the named editions and roles. It would not be a conformity certificate, a legal declaration, proof of product compliance, evidence of deployed operation or a third party's test result; each of those is a separate statement with separate evidence."
 }
