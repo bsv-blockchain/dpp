@@ -132,10 +132,13 @@ describe('admission with named anchoring services', () => {
 describe('admission with no named service', () => {
   const open = new UoraAnchorTopicManager()
 
-  it('admits any well-formed anchor, which is why the node warns about it', async () => {
+  it('admits nothing: the historical rail is closed to new writes unless a service is named', async () => {
     expect(
       await open.identifyAdmissibleOutputs(txWith(await anchorScript('att-1', strangerWallet)))
-    ).toEqual({ outputsToAdmit: [0], coinsToRetain: [] })
+    ).toEqual({ outputsToAdmit: [], coinsToRetain: [] })
+    expect(
+      await open.identifyAdmissibleOutputs(txWith(await anchorScript('att-1')))
+    ).toEqual({ outputsToAdmit: [], coinsToRetain: [] })
   })
 
   it('still refuses something that is not the format', async () => {

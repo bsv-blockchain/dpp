@@ -62,12 +62,12 @@ x-dpp-profile:
       The digest commits to a declared complete secured representation.
       Credential proof, identity, authority and status are separate checks.
     tm_uora_dpp: >-
-      The legacy native anchor rail, under spec/legacy-uora-anchor-v3.md. Admits an anchor output when it decodes under
-      spec/legacy-uora-anchor-v3.md section 5, its field-8 signature verifies over the
-      length-delimited preimage, and its locking key equals the derived child
-      of the field-7 identity key. Attribution comes from the output's own
-      bytes, so a shared index admits anchors from services it was never
-      configured to know.
+      Historical and closed to new writes. Serves the uora-anchor-v3 outputs
+      already on chain: an output is admitted only when it decodes under
+      spec/legacy-uora-anchor-v3.md section 5, its field-8 signature verifies,
+      its locking key equals the derived child of the field-7 identity key, and
+      that identity key is one the operator names; an index names the
+      historical anchoring-service keys it carries and admits nothing else.
   lookupServices:
     ls_dpp: passportLookup
     ls_attestation: anchorLookup

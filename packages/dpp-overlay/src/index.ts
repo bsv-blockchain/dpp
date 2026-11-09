@@ -1618,6 +1618,11 @@ async function engineFromEnvironment(
         `${ATTESTATION_TOPIC} admits any well-formed anchor, whoever wrote it. Name the anchoring services on any deployment a stranger can reach.`
     )
   }
+  // The historical rail reads the list the other way round (spec/rules.md §7):
+  // it is closed to new writes, so an empty list admits nothing there.
+  if (acceptedAnchorServices.length === 0) {
+    console.log(`${UORA_TOPIC} is historical and closed: ANCHOR_SERVICE_KEYS names no anchoring service, so it admits nothing new and serves what it already holds.`)
+  }
 
   const ownerConsent = ownerConsentPolicy()
   const versionTwo = versionTwoAdmission()
