@@ -63,6 +63,7 @@ Signing and commitment preimages are different:
 |---|---|---|
 | dpp-lifecycle-json-v1 | application/json | Restricted canonical JSON of the complete signed native claim, INCLUDING signature |
 | vsc-seal-json-v1 | application/vc+ld+json | Exact UTF-8 bytes of the complete issued VSC compatibility credential, INCLUDING its Data Integrity proof |
+| epcis-event-vc@1 | application/vc+jwt | Exact bytes of the compact JWS as issued, INCLUDING its signature ([epcis-event-profile.md](epcis-event-profile.md) §4) |
 
 Restricted canonical JSON sorts property names by Unicode code point, uses JSON string escaping, no whitespace, and only string values or safe integers, at every level: the one nested object a native claim may carry, `evidence`, is sorted the same way, and its `outputs` list keeps its order. Other values are rejected. An omitted optional property differs from an empty value. For a claim without `evidence` the bytes are exactly those of the flat form every earlier claim was signed under, so no existing claim changes digest. This rule applies to the native claim only. VSC Data Integrity signatures use their selected suite's JSON-LD/RDF canonicalisation; they MUST NOT use the native canonicaliser.
 
@@ -83,7 +84,7 @@ The prefix is `bsv-attestation-anchor-v1`. The locking script is exactly:
 | 3 | attestationId | At most 256 UTF-8 bytes |
 | 4 | issuer | Carried identifier, at most 512 UTF-8 bytes; no secp256k1 restriction |
 | 5 | subject | Carried product/passport identifier, at most 512 UTF-8 bytes |
-| 6 | attestationType | At most 128 UTF-8 bytes; native eventType or VSC-SEAL |
+| 6 | attestationType | At most 128 UTF-8 bytes; native eventType, VSC-SEAL or the type the representation's profile names |
 | 7 | representation | Versioned representation identifier, at most 128 UTF-8 bytes |
 | 8 | mediaType | At most 128 UTF-8 bytes |
 | 9 | anchoredBy | Anchoring service identity key, canonical lowercase compressed secp256k1 hex |
@@ -97,7 +98,7 @@ The anchor carries searchable metadata publicly as well as a digest. Issuers and
 
 ## 6. Verification and discovery
 
-A reader checks the exact script, service signature and key derivation, then checks the supplied secured bytes against the digest. It verifies the representation using its own rules and compares the verified issuer, subject, identifier and type with all carried metadata. For native claims, the registry identifier is `urn:sha256:` followed by the complete-representation digest. For VSC, attestationId is the credential id; subject MUST be one of its signed product identifiers. An unsupported or unavailable content check remains distinct from a verified anchor.
+A reader checks the exact script, service signature and key derivation, then checks the supplied secured bytes against the digest. It verifies the representation using its own rules and compares the verified issuer, subject, identifier and type with all carried metadata. For native claims, the registry identifier is `urn:sha256:` followed by the complete-representation digest. For VSC, attestationId is the credential id; subject MUST be one of its signed product identifiers. For `epcis-event-vc@1`, attestationId is the credential id, which is the event's CBV 2.0 Event Hash ID, subject is the lexically first of the event's object identifiers in canonical form, and uniqueness is per (attestationId, issuer): two issuers may anchor one hash ID and one issuer anchors it once ([epcis-event-profile.md](epcis-event-profile.md) §6). An unsupported or unavailable content check remains distinct from a verified anchor.
 
 Mining proof and block-header validation are separate. The new topic is tm_attestation and the lookup service is ls_attestation. They return anchor transaction evidence, not a credential-validity assertion. [The overlay contract](../contracts/overlay.yaml) defines bounded cursor queries. One or multiple operators may serve the same evidence under these rules.
 
@@ -105,6 +106,6 @@ Mining proof and block-header validation are separate. The new topic is tm_attes
 
 Existing uora-anchor-v3 outputs remain historical native commitments over the old unsigned canonical claim. They MUST NOT be interpreted under the new signature-inclusive digest rule. The old uora_type field, prefixes and BRC derivations are preserved only for historical decoding; new native writes use eventType and claimFormat. Superseded uora-anchor-v2 remains refused.
 
-Legacy topics tm_uora_dpp and ls_uora_dpp are separate historical interfaces, not aliases for new-format evidence. Migration adds new stores and indexes, retains original bytes and uses explicit format selection. It never rewrites an old anchor or silently re-ranks historical claims under another policy.
+Legacy topics tm_uora_dpp and ls_uora_dpp are separate historical interfaces, not aliases for new-format evidence. They take no new writes: no current writer produces a uora-anchor-v1 or uora-anchor-v3 output, and an index serving them admits only the outputs its operator names by anchoring-service key. Migration adds new stores and indexes, retains original bytes and uses explicit format selection. It never rewrites an old anchor or silently re-ranks historical claims under another policy.
 
 [The portable anchor fixture](../fixtures/attestation-anchor-v1.json) fixes the signed claim, about the genesis of the version 1 fixture chain, its complete representation bytes, digest, nine framed fields, derived key, signature and script, and under `claimWithEvidence` a second claim carrying the repair facets with its nested canonical bytes and digest. Independent readers and writers MUST agree on these bytes and reject the mutation cases in the reference tests.

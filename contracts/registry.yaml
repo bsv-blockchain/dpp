@@ -2,9 +2,9 @@ openapi: 3.1.0
 info:
   title: Attestation registry API
   version: 0.6.0
-  summary: Verified native lifecycle claims and external credentials with independent BSV anchors.
+  summary: Verified native lifecycle claims, external and directly signed EPCIS event credentials with independent BSV anchors.
   description: |
-    Current intake uses explicit signed native claims or the external vc-di-ecdsa-rdfc-2019@1 credential representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
+    Current intake uses explicit signed native claims, the external vc-di-ecdsa-rdfc-2019@1 credential representation or the proposed epcis-event-vc@1 directly signed EPCIS event representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
 
     The VSC SEAL representation (vsc-seal-json-v1) is parked with its vsc-draft-compat/0.1.0 profile: new submissions are refused as representation-unsupported, and records stored before remain readable without content verification. The contract defines no status list publication: a registry checks the status lists credential issuers publish. Historical UORA representations remain readable and legacy intake is disabled unless LEGACY_INTAKE=1.
 servers:
@@ -576,7 +576,7 @@ paths:
         - name: representation
           in: query
           description: The stored representation. `vsc-seal-json-v1` selects records stored before that representation was parked.
-          schema: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, legacy-uora-json] }
+          schema: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1', legacy-uora-json] }
         - name: type
           in: query
           description: The attestation type (a native event type, VSC-SEAL, or a historical type).
@@ -617,6 +617,7 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/NativeLifecycleSubmission'
                 - $ref: '#/components/schemas/ExternalCredentialSubmission'
+                - $ref: '#/components/schemas/EpcisEventSubmission'
       responses:
         '202':
           description: Verified input accepted. Anchored can be false; broadcast is not confirmed inclusion.
@@ -629,8 +630,8 @@ paths:
                   accepted: { const: true }
                   attestationId: { type: string }
                   digest: { type: string, pattern: '^[0-9a-f]{64}$' }
-                  representation: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] }
-                  mediaType: { enum: [application/json, application/vc+ld+json] }
+                  representation: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+                  mediaType: { enum: [application/json, application/vc+ld+json, application/vc+jwt] }
                   verdict: { const: valid }
                   verification: { type: object, description: Named checks and their evidence scope. }
                   anchored: { type: boolean }
@@ -646,7 +647,11 @@ paths:
             The identifier is already secured here: `duplicate_attestation`
             for the same bytes, `credential_id_collision` for different bytes
             under one identifier, whose earlier bytes are kept. Nothing is
-            stored or anchored either way.
+            stored or anchored either way. For `epcis-event-vc@1` the
+            identifier is the Event Hash ID and the collision is judged per
+            issuer: another issuer's credential for the same hash ID is a
+            second attestation and is accepted; the same issuer's different
+            bytes are `credential_id_collision`.
         '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement, and any submission of the parked vsc-seal-json-v1 representation, answer here with outcome unsupported." }
       security:
         - {}
@@ -741,7 +746,7 @@ paths:
       operationId: postValidate
       summary: Verify an explicit current representation without storing or anchoring it.
       description: |
-        One response shape, discriminated by `contract`. A current representation (a signed native claim or an external credential envelope) answers under `attestation-registry/1` with the registry's named outcome and checks and, whenever the evidence names one subject or the caller names one, the shared verification `report`. A SEAL, in the parked `vsc-seal-json-v1` envelope or as the body, answers under `attestation-registry/1` with outcome `unsupported`, an issue naming `representation-unsupported` and `reportOmitted`; the request schema does not admit a SEAL, and a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400. Historical inputs answer under `legacy-uora` with the seven-phase pipeline's verdict and phases, with their historical assurance and conformance limitations.
+        One response shape, discriminated by `contract`. A current representation (a signed native claim, an external credential envelope or a directly signed EPCIS event envelope) answers under `attestation-registry/1` with the registry's named outcome and checks and, whenever the evidence names one subject or the caller names one, the shared verification `report`. A SEAL, in the parked `vsc-seal-json-v1` envelope or as the body, answers under `attestation-registry/1` with outcome `unsupported`, an issue naming `representation-unsupported` and `reportOmitted`; the request schema does not admit a SEAL, and a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400. Historical inputs answer under `legacy-uora` with the seven-phase pipeline's verdict and phases, with their historical assurance and conformance limitations.
 
         `tokenHistory` is a request property of this operation: a BEEF as hex
         carrying the passport's token states, so the report's token checks can
@@ -762,6 +767,7 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/ValidateNativeRequest'
                 - $ref: '#/components/schemas/ValidateExternalRequest'
+                - $ref: '#/components/schemas/ValidateEpcisEventRequest'
                 - $ref: '#/components/schemas/ValidateRequest'
       responses:
         '200':
@@ -1117,6 +1123,38 @@ components:
       allOf:
         - $ref: '#/components/schemas/ExternalCredentialEnvelope'
       unevaluatedProperties: false
+    EpcisEventEnvelope:
+      type: object
+      required: [representation, credential]
+      description: |
+        The directly signed EPCIS event representation of the standard's
+        `spec/epcis-event-profile.md`: a W3C Verifiable Credentials 2.0
+        credential whose subject is one GS1 EPCIS 2.0 event and whose `id` is
+        the event's CBV 2.0 Event Hash ID, secured as a compact JWS under
+        ES256K by the party's published credential key. The exact JWS string
+        is what is retained and anchored; uniqueness is per hash ID and issuer.
+      properties:
+        representation: { const: 'epcis-event-vc@1' }
+        credential: { type: string, description: The exact compact JWS as issued, at most 2 MiB. }
+        subject:
+          type: string
+          description: >-
+            The object identifier the caller expects, in canonical GS1 Digital
+            Link form where it is one. It must be among the identifiers the
+            event names, else the submission is refused as a subject mismatch;
+            the anchor's subject is the profile's first identifier whatever the
+            caller names.
+    EpcisEventSubmission:
+      allOf:
+        - $ref: '#/components/schemas/EpcisEventEnvelope'
+      unevaluatedProperties: false
+    ValidateEpcisEventRequest:
+      description: A directly signed EPCIS event envelope for `POST /validate`, with the operation's own `tokenHistory` beside it.
+      allOf:
+        - $ref: '#/components/schemas/EpcisEventEnvelope'
+      properties:
+        tokenHistory: { $ref: '#/components/schemas/TokenHistory' }
+      unevaluatedProperties: false
     ValidateExternalRequest:
       description: An external credential envelope for `POST /validate`, with the operation's own `tokenHistory` beside it.
       allOf:
@@ -1134,8 +1172,8 @@ components:
         representations:
           type: array
           description: The representations intake accepts. The parked `vsc-seal-json-v1` is not among them and is named under `unsupported`.
-          items: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1'] }
-        proofSuites: { type: array, items: { enum: [ecdsa-rdfc-2019] } }
+          items: { enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
+        proofSuites: { type: array, items: { enum: [ecdsa-rdfc-2019, ES256K] } }
         interoperability:
           type: object
           required: [discovery, externalCredential, externalCredentialPolicy]
@@ -1339,7 +1377,7 @@ components:
         contract: { const: attestation-registry/1 }
         attestationId: { type: string }
         representation:
-          enum: [dpp-lifecycle-json-v1, 'vc-di-ecdsa-rdfc-2019@1', vsc-seal-json-v1]
+          enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1']
           description: >-
             A stored `vsc-seal-json-v1` record, from before that representation was parked, is reported without content verification. No credential verifier is attached, so `anchorDigestAndMetadataBinding` answers `unknown` with `representation-unsupported` and the credential checks answer `unknown`.
         anchorRetained:
@@ -1648,7 +1686,7 @@ components:
         envelope:
           type: string
           description: The exact secured bytes of a current record (the bytes its digest commits to), or the canonical bytes of a historical record.
-        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1] }
+        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
         tokenRecordId:
           type: string
           pattern: '^[0-9a-f]{64}$'
@@ -1667,7 +1705,7 @@ components:
         attestationId: { type: string }
         passportId: { type: string }
         issuer: { type: string }
-        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1] }
+        representation: { enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] }
         attestationType: { type: string }
         timestamp: { type: string }
         receivedAt: { type: string, format: date-time }
@@ -1785,9 +1823,9 @@ components:
           type: string
           description: Exact secured representation bytes expressed as a UTF-8 JSON string, present on current records.
         representation:
-          enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1]
+          enum: [legacy-uora-json, dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1']
         mediaType:
-          enum: [application/json, application/vc+ld+json]
+          enum: [application/json, application/vc+ld+json, application/vc+jwt]
         assurance:
           type: object
           additionalProperties: true

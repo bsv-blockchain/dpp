@@ -47,7 +47,7 @@
       "kind": "custody",
       "options": {
         "acceptanceCommitment": "not-selected",
-          "instructionCommitment": "not-selected",
+        "instructionCommitment": "not-selected",
         "controlAuthorities": []
       }
     }
@@ -61,6 +61,11 @@
     {
       "id": "vsc-seal-json-v1",
       "mediaType": "application/vc+ld+json",
+      "verification": "commitment-only"
+    },
+    {
+      "id": "epcis-event-vc@1",
+      "mediaType": "application/vc+jwt",
       "verification": "commitment-only"
     }
   ],

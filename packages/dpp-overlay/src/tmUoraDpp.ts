@@ -44,14 +44,18 @@ const NONE: AdmittanceInstructions = { outputsToAdmit: [], coinsToRetain: [] }
  * every admitted anchor is attributable without this topic being told anything.
  *
  * That is the part v1 could not express, and the reason the service key is a
- * field rather than a configuration value. A shared overlay serving several DPP
- * deployments should not need a key list amended every time one is added, and a
- * key list is not a security boundary anyway: it is a preference about whose
- * anchors to carry.
+ * field rather than a configuration value: every admitted anchor names its
+ * author checkably whatever this topic was told.
  *
- * Which is exactly what the optional list is. Name services and this instance
- * carries only theirs; name none and it carries any well-formed anchor, each of
- * which still says whose it is.
+ * ## Historical and closed to new writes
+ *
+ * The rail is historical (`spec/rules.md` §7): no current writer produces a
+ * UORA anchor, and an index serving the topic exists to keep the outputs
+ * already on chain readable. So the key list is the admission rule, not a
+ * preference. Name the historical anchoring services and this instance admits
+ * their anchors; name none and it admits nothing, which is what a closed rail
+ * means. A well-formed anchor from a key the operator did not name is turned
+ * away however valid its bytes are.
  *
  * ## Only v3
  *
@@ -102,7 +106,8 @@ export class UoraAnchorTopicManager implements TopicManager {
         }
         continue
       }
-      if (this.accepted.length > 0 && !this.accepted.includes(anchor.anchoredBy)) continue
+      // The rail is closed: only anchors from the named historical services are admitted, and none when none is named.
+      if (!this.accepted.includes(anchor.anchoredBy)) continue
       outputsToAdmit.push(outputIndex)
     }
 
@@ -145,8 +150,10 @@ export class UoraAnchorTopicManager implements TopicManager {
       "the claim itself is worth is settled by the attestation's own signature,",
       'which is not on chain.',
       '',
-      'An instance may narrow to named anchoring services. That is a preference',
-      'about whose anchors to carry, not a security boundary.',
+      'This topic is historical and closed to new writes (spec/rules.md section 7):',
+      'it admits anchors only from the anchoring services its operator names, and',
+      'nothing when none is named. It exists to keep the outputs already on chain',
+      'readable, not to take new ones.',
       '',
       'Anchors are leaves: never spent, nothing retained, no transition rules.',
       'Every valid anchor in a transaction is admitted, so anchors may be batched.',

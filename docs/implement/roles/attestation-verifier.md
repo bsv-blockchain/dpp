@@ -52,6 +52,7 @@ This example refuses nothing; use [the cases to run](#the-cases-to-run) for refu
 | `dpp-lifecycle-json-v1` | Native claim, rules section 3 |
 | `vsc-seal-json-v1` | SEAL, the event credential of the parked Verifiable Supply Chain (VSC) profile; a verifier need not implement it |
 | `vc-di-ecdsa-rdfc-2019@1` | [External W3C credential](../../interoperability/external-credentials.md) |
+| `epcis-event-vc@1` | Directly signed EPCIS event, `spec/epcis-event-profile.md` sections 3 to 7: recompute the CBV 2.0 Event Hash ID from the subject, verify the ES256K compact JWS against the key its `kid` names, and bind the anchor to the exact JWS bytes ([sign an event](../../interoperability/epcis.md#sign-an-event)) |
 | `legacy-uora-json` | Record predating the native format; [legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) sections 3 to 5 |
 
 | Anchor element | Required value or check |

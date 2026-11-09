@@ -142,7 +142,7 @@ export function readConsumerDocument(profile: ProfileId): Record<string, unknown
 }
 
 /** Exchange profiles this package catalogues (spec/exchange.md section 2). */
-export const EXCHANGE_PROFILE_IDS = ['untp-0.7.0-jose@1', 'vsc-draft-compat@0.1.0', 'vc-di-ecdsa-rdfc-2019@1'] as const
+export const EXCHANGE_PROFILE_IDS = ['untp-0.7.0-jose@1', 'vsc-draft-compat@0.1.0', 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] as const
 export type ExchangeProfileId = (typeof EXCHANGE_PROFILE_IDS)[number]
 
 /** Operator profiles this package catalogues (spec/services.md, spec/conformance.md section 4). */
