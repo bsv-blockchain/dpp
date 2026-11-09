@@ -113,6 +113,6 @@ The steps above use the values of the published beta.4 set, `dpp-release-2026-10
 
 ## How a set is made
 
-The [release tooling](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
+The [release tooling](https://github.com/bsv-blockchain/dpp/blob/496679c90e4b1648f8547d423e50ab8ac566c980/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
 
 Next: install the current set with [install the selected release](../packages/README.md), or check what it claims on [conformance](conformance.md).
