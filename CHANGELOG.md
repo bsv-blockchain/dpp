@@ -19,6 +19,12 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 - `examples/import-epcis.mjs` imports without mapping by default and maps under the parked `epcis-vsc@1` only with `--map-vsc`; CI runs both. The library default `EPCIS_MAPPING_PROFILE` is unchanged.
 - RULES-4 no longer names the VSC credential and also cites the external verifier's duplicate-key test, STATUS-validate-algorithm also cites `verifyBitstringStatus` and its tests, and the release set describes `@bsv/dpp-credentials` by external credential verification and the EPCIS source helpers first.
 
+### 2026-11-09, the historical UORA rail is closed to new writes
+
+- `spec/rules.md` §7 and `spec/services.md` say what was only customary: the legacy topics `tm_uora_dpp` and `ls_uora_dpp` take no new writes, no current writer produces a `uora-anchor-v1` or `uora-anchor-v3` output, and an index serving them admits only the outputs its operator names by anchoring-service key. `contracts/overlay.yaml` describes `tm_uora_dpp` as historical and closed, with the operator's named keys as part of admission; the contract version is unchanged because no route or shape moved.
+- `@bsv/dpp-overlay`: `UoraAnchorTopicManager` admits an anchor only from a named anchoring service, and nothing when `ANCHOR_SERVICE_KEYS` names none; before, an empty list admitted any well-formed anchor. `tm_attestation` is unchanged. The topic documentation, the README row and the boot log say so.
+- Readers, fixtures, the legacy specification and the ledger's compatibility row stay: the outputs already on chain and the records that point at them remain verifiable.
+
 ### 2026-11-09, the VSC profile and the EPCIS-to-SEAL mappings are parked
 
 - `vsc-draft-compat/0.1.0` and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and the programme does not currently develop. Their code, manifests, artefacts and vectors stay, still built and tested, and no export changes. `spec/vsc-profile.md`, `spec/epcis-interoperability.md` and `spec/exchange.md` §1 say so, and `spec/verification.md` and `spec/services.md` §3 no longer name the SEAL as the credential route; the `epcis-json@1` source exchange is unchanged.
