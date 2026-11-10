@@ -8,6 +8,7 @@
     "create-dpp-app": "dist/index.js"
   },
   "files": [
+    "NOTICE",
     "dist",
     "template",
     "README.md",
