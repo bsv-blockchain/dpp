@@ -22,6 +22,8 @@
     "./artifacts/*": "./artifacts/*"
   },
   "files": [
+    "LICENSE",
+    "NOTICE",
     "dist",
     "artifacts",
     "README.md"

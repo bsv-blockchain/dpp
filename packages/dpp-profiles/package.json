@@ -17,6 +17,7 @@
     "./frozen.json": "./frozen.json"
   },
   "files": [
+    "NOTICE",
     "dist",
     "manifests",
     "schemas",

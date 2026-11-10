@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "bin": { "create-dpp-index": "src/index.mjs" },
-  "files": ["src", "template", "README.md", "LICENSE"],
+  "files": ["NOTICE", "src", "template", "README.md", "LICENSE"],
   "engines": { "node": ">=22" },
   "scripts": {
     "build": "node --check src/index.mjs",
