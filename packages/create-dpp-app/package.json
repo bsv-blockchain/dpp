@@ -8,6 +8,7 @@
     "create-dpp-app": "dist/index.js"
   },
   "files": [
+    "PATENTS",
     "NOTICE",
     "dist",
     "template",
@@ -18,7 +19,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE'])fs.copyFileSync('../../'+f,f)\"",
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE','PATENTS'])fs.copyFileSync('../../'+f,f)\"",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test test/*.test.mjs",
