@@ -20,6 +20,7 @@
     "schemas"
   ],
   "scripts": {
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE'])fs.copyFileSync('../../'+f,f)\"",
     "build": "tsc -p tsconfig.json && node ../../scripts/package-schemas.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
