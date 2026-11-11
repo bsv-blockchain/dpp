@@ -1,5 +1,5 @@
 import type { DocumentLoader, JsonObject } from './types.js';
-import { parseStrictJsonBytes } from './validation.js';
+import { parseStrictJsonBytes } from './strict-json.js';
 
 /** Resolve did:web using explicit operator-approved origins, with bounded reads and no redirects. */
 export function createDidWebResolver({ allowedOrigins, fetcher = globalThis.fetch, timeoutMs = 5000, maxBytes = 262144 }: {

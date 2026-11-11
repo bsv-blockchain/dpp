@@ -87,10 +87,10 @@ export function operatorProfileFor(policy: PublisherPolicyConfig | undefined, sy
 }
 
 /**
- * The VSC seal representation this node indexes commitments to. Its rules live
- * in the `@bsv/dpp-credentials` workspace, which this package does not depend on, so the
- * two identifiers are repeated here; a test holds them equal to
- * `conformance/baseline-native-1.json`.
+ * The VSC seal representation this node indexes commitments to. Its rules are
+ * those of the parked profile in `spec/vsc-profile.md`, which no package in this
+ * repository implements, so the two identifiers are repeated here; a test
+ * holds them equal to `conformance/baseline-native-1.json`.
  */
 export const VSC_SEAL_REPRESENTATION = 'vsc-seal-json-v1'
 export const VSC_SEAL_MEDIA_TYPE = 'application/vc+ld+json'

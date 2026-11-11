@@ -13,14 +13,12 @@ import {
   parseEpcisSource,
   pinnedContextDigests,
   preservedEventExtensions,
-  readEpcisSourceReference,
   resolveEpcisLimits,
   unresolvedCorrections,
   validateEpcisDocument,
 } from '../src/epcis-source.js';
-import { mapEpcisEvent } from '../src/epcis.js';
 import type { JsonObject } from '../src/types.js';
-import { CELL_A, MAPPING_OPTIONS, PACK, PACK_LINK, correctionEvents, epcisDocument, epcisQueryDocument, fiveEventList, refusedTransports, schemaInvalidDocument } from './epcis-fixture.js';
+import { CELL_A, PACK, PACK_LINK, correctionEvents, epcisDocument, epcisQueryDocument, fiveEventList, refusedTransports, schemaInvalidDocument } from './epcis-fixture.js';
 
 const utf8 = (text: string): Uint8Array => new TextEncoder().encode(text);
 const bytesOf = (value: unknown, pretty = false): Uint8Array => utf8(pretty ? JSON.stringify(value, null, 2) + '\n' : JSON.stringify(value));
@@ -216,13 +214,10 @@ describe('digests, identities and references', () => {
     expect(contextReferences(undefined)).toEqual([]);
   });
 
-  it('builds and reads the source-reference extension a mapped SEAL carries', () => {
+  it('builds the source reference with the base media type, sorted context digests and the named or default mapping profile', () => {
     const reference = epcisSourceReference({ sourceSha256: 'd'.repeat(64), mediaType: 'application/ld+json; charset=utf-8', pointer: '/epcisBody/eventList/2', eventId: 'urn:uuid:1', contextDigests: ['b'.repeat(64), 'a'.repeat(64)] });
     expect(reference).toEqual({ vocabularyUrn: 'urn:bsv:dpp:epcis-source:1', sourceDigest: 'd'.repeat(64), mediaType: 'application/ld+json', eventPointer: '/epcisBody/eventList/2', eventId: 'urn:uuid:1', contextDigests: ['a'.repeat(64), 'b'.repeat(64)], mappingProfile: 'epcis-vsc@1' });
-    const seal = mapEpcisEvent(commissioning, MAPPING_OPTIONS());
-    expect(readEpcisSourceReference(seal)).toBeUndefined();
-    seal.extensions['+Dn']['urn:bsv:dpp:epcis-source:1'] = reference;
-    expect(readEpcisSourceReference(seal)).toEqual(reference);
+    expect(epcisSourceReference({ sourceSha256: 'd'.repeat(64), mediaType: 'application/json', pointer: '', contextDigests: [], mappingProfile: 'epcis-vsc@2' })).toEqual({ vocabularyUrn: 'urn:bsv:dpp:epcis-source:1', sourceDigest: 'd'.repeat(64), mediaType: 'application/json', eventPointer: '', contextDigests: [], mappingProfile: 'epcis-vsc@2' });
     expect(() => epcisSourceReference({ sourceSha256: 'x', mediaType: 'application/json', pointer: '', contextDigests: [] })).toThrow();
     expect(() => epcisSourceReference({ sourceSha256: 'd'.repeat(64), mediaType: 'application/xml', pointer: '', contextDigests: [] })).toThrow();
   });

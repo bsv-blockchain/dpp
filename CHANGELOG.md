@@ -12,6 +12,11 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, @bsv/dpp-credentials drops the parked VSC code
+
+- `@bsv/dpp-credentials` `0.2.0-beta.6`, still unpublished, no longer exports the parked `vsc-draft-compat/0.1.0` profile or the `epcis-vsc@1` and `epcis-vsc@2` mappings, and drops the four Ed25519 and BBS suite dependencies they used. `./exchange` and the root's `parseStrictJsonBytes`, `createDidWebResolver` and `verifyTemporal` stay; `./epcis-source` loses only `readEpcisSourceReference` and `EPCIS_MAPPING_PROFILES`, which served the mappings. The code stays in history at commit `8c82c5e`; the parked manifests' owned artefacts and the mapping vectors stay as published.
+- The rows of the parked profiles are gaps, `STATUS-validate-algorithm` and `RULES-4-representation-bytes` cite only kept code, and `examples/import-epcis.mjs` loses `--map-vsc`. A parked profile's code may now leave the packages.
+
 ### 2026-11-09, the registry contract refuses new SEALs and drops status list publication
 
 - The registry contract (`0.6.0`) refuses a `vsc-seal-json-v1` submission, in its envelope or as the body, with outcome `unsupported` and `representation-unsupported`: 422 on `POST /attestations`, 200 with `reportOmitted` on `POST /validate`. The SEAL request shapes, the six `/status` routes and their schemas, `vscProfile` and `vscConformance` are removed, the capability document's representations and proof suites no longer name the SEAL or its suites, and it lists `vsc-seal-json-v1` under `unsupported`. Read routes keep serving stored SEALs byte for byte. `spec/services.md` §3 and `spec/vsc-profile.md` say so.

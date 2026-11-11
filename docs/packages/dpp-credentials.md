@@ -24,7 +24,7 @@ It also reads GS1 EPCIS 2.0.1 event documents under `epcis-json@1`: exact receiv
 | Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-protocol](dpp-protocol.md) |
 | Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/dpp-credentials/exchange` |
 | Import EPCIS 2.0.1 event documents | Yes, `@bsv/dpp-credentials/epcis-source` |
-| Issue or verify SEALs, or map EPCIS events to SEALs | Only for the parked VSC compatibility profile, through the root entry point ([parked profile](#parked-the-vsc-compatibility-profile)) |
+| Issue or verify SEALs, or map EPCIS events to SEALs | No: the parked VSC compatibility profile and its mappings left the package in 0.2.0-beta.6 ([parked profile](#parked-the-vsc-compatibility-profile)) |
 
 Wallet funding, passport movement and index lookups stay with [@bsv/dpp-protocol](dpp-protocol.md) and your wallet. This package has no BSV runtime dependency.
 
@@ -40,7 +40,7 @@ npm install --save-exact @bsv/dpp-credentials@0.2.0-beta.6
 |---|---|
 | Package | `@bsv/dpp-credentials` 0.2.0-beta.6 |
 | Current source candidate | `dpp-release-2026-11`; the [release page](../reference/release-sets.md) distinguishes it from the latest published set. |
-| Change | Under `epcis-vsc@1`, an inspection, repair or sensor reading reporting `active` is now refused as `maintenance-observation`, as the published profile says; the `epcis-vsc@2` mapping profile is added. Both mapping profiles are parked with the VSC profile. |
+| Change | The parked VSC compatibility profile and the EPCIS-to-SEAL mappings leave the package, with the Ed25519 and BBS suites they used ([removed names](#removed-names)). External credential verification is unchanged; the EPCIS source helpers lose only `readEpcisSourceReference` and `EPCIS_MAPPING_PROFILES`, which served the mappings. |
 | Other candidate packages | Protocol and profiles beta.10; overlay beta.13. Each package numbers its own prereleases. |
 | Runtime | Node only, ECMAScript modules; artefact files are plain data ([support table](support-table.md)). |
 
@@ -52,8 +52,8 @@ A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin
 |---|---|---|
 | `@bsv/dpp-credentials/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `parseExternalCredentialBytes` reads its exact bytes strictly; `verifyBitstringStatus` checks status; `createExternalDocumentLoader` serves pinned contexts and resolves `did:web` within allowed origins; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
 | `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
-| `@bsv/dpp-credentials` | Re-exports every `/epcis-source` function, `createDidWebResolver` and `parseStrictJsonBytes`. Still exports the parked VSC profile: `issueSealEd25519` and `issueSealBbs` issue a SEAL; `verifySeal` verifies one, with its proof, status, issuer authority and custody chain; `parseSealBytes` reads received bytes strictly; `createDocumentLoader` supplies the pinned contexts; `mapEpcisEventWithReport` maps an EPCIS event to an unsigned SEAL under `epcis-vsc@1`, or under `epcis-vsc@2` with its CBV disposition crosswalk | `npm run test -w @bsv/dpp-credentials -- test/crypto.test.ts test/verification.test.ts` in a checkout, from [verifiable credentials](../learn/verifiable-credentials.md#run-the-credential-exercises) |
-| `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files | |
+| `@bsv/dpp-credentials` | Re-exports every `/epcis-source` function, `createDidWebResolver`, `parseStrictJsonBytes` and `verifyTemporal`, with the shared credential and check types; it loads no proof suite | `npm run test -w @bsv/dpp-credentials -- test/strict-json.test.ts test/temporal.test.ts` in a checkout |
+| `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files, including the owned context and schemas the parked VSC manifests pin | |
 
 ## First call
 
@@ -103,34 +103,40 @@ schema: pass ; findings: 0
 |---|---|
 | `node epcis-first.mjs` | One `ObjectEvent` at `/epcisBody/eventList/0`; schema `pass`, zero findings |
 | `node examples/import-epcis.mjs` | Reads the seven-event fixture and prints each event's identity and body digest; it maps nothing. |
-| `node examples/import-epcis.mjs --map-vsc` | Also prints, through the parked SEAL mapping, `lossless`, `transformed` or `unsupported` for each event, with what was lost. |
 
 To verify a partner's credential instead, follow [external credential verification](../interoperability/external-credentials.md), which runs the vector file's credentials through `verifyExternalCredential`.
 
 ## Parked: the VSC compatibility profile
 
-**Verifiable Supply Chain (VSC)** is the W3C Verifiable Supply Chain Community Group's draft for supply-chain event credentials. The root entry point implements a selected subset as `vsc-draft-compat/0.1.0`, against revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It is not a W3C standard; the package claims no W3C certification.
+**Verifiable Supply Chain (VSC)** is the W3C Verifiable Supply Chain Community Group's draft for supply-chain event credentials. `vsc-draft-compat/0.1.0` is a selected subset of it, against revision `c279de3debcd6eab94a77034584d1750f5d65e6a`. It is not a W3C standard.
 
 **A SEAL** is a VSC credential for one signed event: products (`what`), when, where, who acted and how, linked to earlier SEALs in the product's custody chain. This W3C credential uses an `Ed25519Signature2020` or `bbs-2023` proof, a different format from `@bsv/dpp-protocol`'s native lifecycle claim.
 
-The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. They stay exported, built and tested, so existing callers keep working, and an implementer need not support them. The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds them, together with `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping, and requires the narrower `epcis-source-import-1` for the source helpers in its place; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`.
+The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are parked: optional compatibility profiles that no release requires and that the programme does not currently develop. From 0.2.0-beta.6 their code is no longer part of this package: SEAL issuance, parsing and verification, the two proof suites, custody chains and corrections, and `mapEpcisEvent` and `mapEpcisEventWithReport`. The owned context and schemas their manifests pin stay under `artifacts/`, and their vectors stay as published.
 
-### Select issuance or verification inputs
+| If you | Then |
+|---|---|
+| Import any of the [removed names](#removed-names) | Stay on the published `0.2.0-beta.5`, which exports the profile and `epcis-vsc@1`, or take the code from the repository history at commit [`8c82c5e`](https://github.com/bsv-blockchain/dpp/tree/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials), which also carries `epcis-vsc@2` and the tests. |
+| Verify credentials other parties issue | Use `@bsv/dpp-credentials/exchange`, which is not parked. |
+| Import EPCIS events | Use `@bsv/dpp-credentials/epcis-source`, and record each event's mapping outcome as `not-attempted`. |
 
-| Step | Inputs and call | Output or decision |
-|---|---|---|
-| 1. Prepare | Configured documents to `createDocumentLoader` | Loader for pinned contexts and issuer DID documents |
-| 2. Issue | The application's unsigned SEAL, an issuer key and the loader to `issueSealEd25519` or `issueSealBbs` | SEAL signed with the selected suite |
-| 3. Read | Exact bytes to `parseSealBytes`; retain bytes separately | Strictly parsed credential |
-| 4. Verify | Credential, loader, issuer DID documents, status resolver, authority policy and custody-chain evidence from configured evidence sources to `verifySeal` | Proof, status, issuer authority and custody findings; inspect each before reliance. |
+The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds the profile and both mappings, together with `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping, and requires the narrower `epcis-source-import-1` for the source helpers in its place; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. A credential's own claim that its issuer is trusted is never enough; the [package guide](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/packages/dpp-credentials/README.md) of an earlier commit shows the SEAL calls with each policy.
 
-A credential's own claim that its issuer is trusted is never enough. The [package guide](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/packages/dpp-credentials/README.md) shows the calls with each policy.
+### Removed names
+
+These names left the root `@bsv/dpp-credentials` in 0.2.0-beta.6. The three marked `./epcis-source` also left that subpath; nothing else left it, and `./exchange` exports what it did.
+
+| Kind | Names |
+|---|---|
+| Functions | `verifySeal`, `issueSealEd25519`, `issueSealBbs`, `parseSealBytes`, `signCredentialEd25519`, `verifyCredentialProof`, `verifyCredentialStatus`, `verifyIssuerAuthority`, `validateSealStructure`, `validateSealPresentationStructure`, `extractSealMetadata`, `deriveSealPresentation`, `verifySealPresentation`, `presentationHeader`, `createDocumentLoader`, `mapEpcisEvent`, `mapEpcisEventWithReport`, `extractEpcisEvent`, and `readEpcisSourceReference` (`./epcis-source`) |
+| Constants | `sealSchema`, `disclosureSchema`, `PROFILE_ID`, `UPSTREAM_REVISION`, `CONTEXT_URL`, `PROFILE_CONTEXT`, `SEAL_CONTEXTS`, `ALWAYS_DISCLOSED`, `EPCIS_TYPES`, `EPCIS_VOCABULARY`, `CBV_DISPOSITION_CROSSWALK`, and `EPCIS_MAPPING_PROFILES` (`./epcis-source`) |
+| Types | `Seal`, `SigningKey`, `ProductIdentifier`, `Topology`, `PresentationBinding`, `AuthorityPolicy`, `VerificationOptions`, `VerificationResult`, `EpcisMappingOptions`, `EpcisMappingOutcome`, `EpcisMappingReport`, `CbvCustodyEffect`, and `EpcisMappingProfile` (`./epcis-source`) |
 
 ## Limits
 
 | Limit | Meaning |
 |---|---|
-| Parked VSC subset | The current candidate, `dpp-release-2026-11`, does not claim it; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset. The current candidate's selection withholds the implemented subset as parked and whole-draft conformance as before, because the upstream context and test suite were unavailable for comparison ([earlier release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json)). Passing tests is not product qualification. |
+| Parked VSC subset | Not in this package from 0.2.0-beta.6, and not claimed by the current candidate, `dpp-release-2026-11`; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset on the tests of that time. Whole-draft conformance was never claimed, because the upstream context and test suite were unavailable for comparison ([earlier release selection](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selections/dpp-release-2026-10.json)). Passing tests is not product qualification. |
 | Ring 0 identity | A passing proof identifies the signing key, not the claimed issuer. Only the platform account vouches for the key holder ([identity and authority](../learn/identity-and-authority.md)). |
 
 [Known limitations](../operate/limitations.md) lists the reference services' other open gaps.
@@ -141,7 +147,7 @@ A credential's own claim that its issuer is trusted is never enough. The [packag
 |---|---|
 | `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
 | `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/epcis-interoperability.md) |
-| `@bsv/dpp-credentials`, parked VSC modules | [Parked credential profile](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/vsc-profile.md) |
+| The parked VSC profile, no longer in the package | [Parked credential profile](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/spec/vsc-profile.md) |
 | `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 
 ## Next

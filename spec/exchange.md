@@ -14,7 +14,7 @@ A representation is one exact byte contract for one credential format, identifie
 | `vc-di-ecdsa-rdfc-2019@1` | `application/vc+ld+json` | Exact UTF-8 bytes of the issued credential including its proof | DataIntegrityProof `ecdsa-rdfc-2019` over a P-256 Multikey, verify only | [`external-credential-profile.md`](external-credential-profile.md) |
 | `epcis-event-vc@1` (proposed) | `application/vc+jwt` | Exact compact JWS bytes as issued | ES256K by the party's one published credential key; the credential `id` is the event's CBV 2.0 Event Hash ID | [`epcis-event-profile.md`](epcis-event-profile.md) |
 
-`vsc-seal-json-v1` is parked with its profile: it stays registered and the reference implementation keeps it built and tested, but no release requires it and an implementer need not implement it.
+`vsc-seal-json-v1` is parked with its profile: it stays registered, but no release requires it, an implementer need not implement it, and from `@bsv/dpp-credentials` 0.2.0-beta.6 the reference packages no longer implement it.
 
 A reader that meets a representation it does not implement indexes the commitment and reports content verification `unsupported` (`representation-unsupported` in [`verification.md`](verification.md)); it never guesses, never downgrades to a weaker check and never reads one representation's bytes under another's rules. Adding a representation is a new profile manifest and a new row here, never a change to an existing row.
 

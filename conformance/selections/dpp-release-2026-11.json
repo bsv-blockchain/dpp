@@ -110,7 +110,7 @@
       "id": "vsc-draft-compat-0.1.0-implemented-subset",
       "kind": "draft-compatibility",
       "disposition": "withheld",
-      "rationale": "Parked: vsc-draft-compat/0.1.0 is an optional compatibility profile that no release requires and the programme does not currently develop. The reference implementation keeps it built and tested and its rows stay tested, but this release does not claim it."
+      "rationale": "Parked: vsc-draft-compat/0.1.0 is an optional compatibility profile that no release requires and the programme does not currently develop. Its code left @bsv/dpp-credentials in 0.2.0-beta.6 and stays in the repository history, and its rows are gaps, so this release does not claim it."
     },
     {
       "id": "vsc-draft-compat-0.1.0-full",
@@ -122,13 +122,13 @@
       "id": "epcis-source-exchange-1",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange: EPCIS-5-source-reference and EPCIS-6-mapping-outcomes belong to the mapping, which no release requires. Every row stays tested and the reference keeps the source exchange and the mapping built and tested; this release requires epcis-source-import-1 instead, which covers the source helpers alone."
+      "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange: EPCIS-5-source-reference and EPCIS-6-mapping-outcomes belong to the mapping, which no release requires, and are gaps since the mapping left @bsv/dpp-credentials in 0.2.0-beta.6. This release requires epcis-source-import-1 instead, which covers the source helpers alone."
     },
     {
       "id": "epcis-vsc-mapping-2",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "Parked with the VSC compatibility profile it maps into: epcis-vsc@2 is an optional mapping profile that no release requires and the programme does not currently develop. The reference keeps it built and tested."
+      "rationale": "Parked with the VSC compatibility profile it maps into: epcis-vsc@2 is an optional mapping profile that no release requires and the programme does not currently develop. It left @bsv/dpp-credentials in 0.2.0-beta.6 before any publication, and its rows are gaps."
     },
     {
       "id": "untp-0.7.0-pilot",
