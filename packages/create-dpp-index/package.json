@@ -5,10 +5,10 @@
   "license": "Apache-2.0",
   "type": "module",
   "bin": { "create-dpp-index": "src/index.mjs" },
-  "files": ["NOTICE", "src", "template", "README.md", "LICENSE"],
+  "files": ["PATENTS", "NOTICE", "src", "template", "README.md", "LICENSE"],
   "engines": { "node": ">=22" },
   "scripts": {
-    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE'])fs.copyFileSync('../../'+f,f)\"",
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE','PATENTS'])fs.copyFileSync('../../'+f,f)\"",
     "build": "node --check src/index.mjs",
     "test": "node --test test/*.test.mjs",
     "scaffold:check": "node scripts/scaffold-check.mjs"

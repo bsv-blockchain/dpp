@@ -17,6 +17,7 @@
     "./frozen.json": "./frozen.json"
   },
   "files": [
+    "PATENTS",
     "NOTICE",
     "dist",
     "manifests",
@@ -27,7 +28,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE'])fs.copyFileSync('../../'+f,f)\"",
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE','PATENTS'])fs.copyFileSync('../../'+f,f)\"",
     "build": "tsc -p tsconfig.json && node scripts/build.mjs",
     "generate": "node scripts/build.mjs",
     "changes": "node scripts/profile-changes.mjs",
