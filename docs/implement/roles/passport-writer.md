@@ -10,7 +10,7 @@ Implementers adding a passport writer can use this guide with the packages or th
 | Live writes: passport identifier | GS1 Digital Link on a host you control, using demonstration prefix 952 until you have your own ([identifiers](../../identifiers.md)) |
 | Live writes: wallet | Funded BRC-100 wallet ([choose a wallet](../../operate/wallet-broadcast-proofs.md#choose-a-wallet)) |
 | Live writes: publisher | A key the index admits under `publisherPolicy.publisherKeys` in `GET /capabilities`. Your wallet's identity key can be the publisher ([application setup](../../packages/build-an-application.md#2-run-your-own-index), step 2). |
-| Live writes: index access | URL, submit token for `POST /submit` and `POST /retract`, callback token for `POST /arc-ingest`. Use [your own index](../../packages/create-dpp-index.md) or an agreed provider that admits your key and grants access. The hosted reference offers no general write credentials ([service choices](../../start/choose-components-and-services.md)). |
+| Live writes: index access | URL, submit token for `POST /submit` and `POST /retract`, callback token for `POST /arc-ingest`. Use [your own index](../../operate/README.md) or an agreed provider that admits your key and grants access. The hosted reference offers no general write credentials ([service choices](../../start/choose-components-and-services.md)). |
 | Live writes: payload | An [industry profile](../../profiles/README.md) |
 | Live example below | Unused prefix-952 identifier, running index naming your key, unlocked funded wallet, network access and authority to spend. Stop until these are established. |
 
@@ -109,13 +109,13 @@ node examples/write-passport-v2.mjs <passportId> http://localhost:8080 \
 |---|---|
 | `<passportId>` | Your unused identifier; the demonstration writer refuses identifiers outside prefix 952 |
 | `<indexUrl>` | Your own index, shown as `http://localhost:8080`; required, never defaulted to the hosted reference |
-| `--submit-token=<t>` | Index operator's `SUBMIT_TOKEN`; 401 or 403 stops the run |
-| `--callback-token=<t>` | Index operator's `ARC_CALLBACK_TOKEN`, sent as `X-Callback-Token` for proofs |
+| `--submit-token=<t>` | Index operator's submit token for your publisher key, or its operator-wide `SUBMIT_TOKEN`; 401 or 403 stops the run |
+| `--callback-token=<t>` | Index operator's callback token for your key, or its `ARC_CALLBACK_TOKEN`, sent as `X-Callback-Token` for proofs |
 | `--wait-proof=<minutes>` | Wait for each wallet merkle path; default 0. With 30, prove each state before writing the next, about two blocks in total. |
 | `--originator=<host>` | Hostname the wallet knows the program by; default `localhost` |
 | `--journal=<dir>` | Journal directory; default `./dpp-journal` |
 
-For a generated index, its `.app.env` supplies `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. Command-line tokens remain in shell history; use replaceable secrets. Stay for wallet prompts: an unanswered prompt stops the run and the journal records progress. Success ends `Every sentence above holds.` with exit code 0 and a journal file in `dpp-journal/` named for the identifier's digest.
+An operator running the Compose preset hands you a connection file from `dpp-index connection`: its `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN` supply these three. Command-line tokens remain in shell history; use replaceable secrets. Stay for wallet prompts: an unanswered prompt stops the run and the journal records progress. Success ends `Every sentence above holds.` with exit code 0 and a journal file in `dpp-journal/` named for the identifier's digest.
 
 ## Prove it: the writer's self-report
 

@@ -19,13 +19,13 @@ Application developers can generate an editable passport app with `@bsv/create-d
 | Your generated project | Holds the web app, the API, its wallet, configuration and deployment files | Run its commands to develop, test and deploy |
 | `@bsv/dpp-protocol` and `@bsv/dpp-profiles` | Write and read passports inside that project | Included automatically with the project's dependencies |
 
-Connect over HTTP to a compatible index, or create a separate project with [the index starter](create-dpp-index.md) and its included runtime. The app's Compose file starts only its database, never an index.
+Connect over HTTP to a compatible index, or [run your own](../operate/README.md) from the repository's Compose preset. The app's Compose file starts only its database, never an index.
 
 ## Create your project
 
 | Starter route | Pinned release | Runtime versions |
 |---|---|---|
-| Published `0.1.0-beta.1` | `dpp-release-2026-10-10`, superseded as the source target but the last published set; also used by the index starter | Protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12`, SDK `2.8.10` |
+| Published `0.1.0-beta.1` | `dpp-release-2026-10-10`, superseded as the source target but the last published set; also used by the published, now retired, index starter | Protocol and profiles `0.3.0-beta.9`, overlay `0.4.0-beta.12`, SDK `2.8.10` |
 | Source | Current candidate `dpp-release-2026-11`, not yet published | Protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` |
 
 ### Create and check offline
@@ -57,7 +57,7 @@ The source check installs the packed generator, creates the app, installs local 
 
 ### Stop before activating live writes
 
-`npm run go-live` registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. Use the generated README for each check's inputs and mainnet settings. Its `connect-index` and `add-index` commands connect another provider's index or your own.
+`npm run go-live` registers the app's publisher key with the default testnet index, checks the wallet, funds and admission, and switches real writes on. Use the generated README for each check's inputs and mainnet settings. Its `connect-index` command connects another provider's index or your own: with `--from`, it takes the connection file an index operator writes with `dpp-index connection` ([connect an application](../operate/README.md#connect-an-application)). It then runs the same checks and, when all pass, switches real writes on as `go-live` does.
 
 ## What is included
 

@@ -34,7 +34,8 @@ MANAGED_IDENTITY_SECRET=
 # hosted testnet index (mainnet: https://dpp-overlay.bsvb.net with NETWORK=main). Until
 # `npm run go-live` has registered the app's publisher key and stored the two tokens below, the
 # API runs an index in this process instead. `npm run connect-index` takes another provider's
-# address and tokens; `npm run add-index` creates your own index project beside this app.
+# address and tokens, or with --from the connection file an index operator wrote with
+# `dpp-index connection`, your own index's included.
 INDEX_URL=https://dpp-overlay-testnet.bsvb.net
 INDEX_SUBMIT_TOKEN=
 INDEX_CALLBACK_TOKEN=

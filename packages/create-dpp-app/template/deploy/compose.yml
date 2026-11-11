@@ -3,7 +3,7 @@
 #   docker compose -f deploy/compose.yml --env-file .env up -d
 #
 # Connect the app to an existing index with INDEX_URL and its access tokens,
-# or operate one in a separate project made with @bsv/create-dpp-index.
+# or operate one separately with the DPP repository's operator preset (deploy/).
 # This Compose file does not start an index. See README.md, Connect an index.
 name: dpp-platform
 

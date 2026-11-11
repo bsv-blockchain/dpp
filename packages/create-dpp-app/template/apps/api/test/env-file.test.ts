@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
-import { readEnvFile, updateEnvFile } from '../src/env-file.js'
+import { generateRootKey, readEnvFile, updateEnvFile } from '../src/env-file.js'
 
 const temps: string[] = []
 afterAll(() => {
@@ -18,6 +18,17 @@ function envFile(content: string): string {
 }
 
 describe('the .env file', () => {
+  it('generates a wallet root key into a file that has none, and keeps one already there', async () => {
+    const path = envFile('NETWORK=test\nWALLET_ROOT_KEY=\n')
+    const env: NodeJS.ProcessEnv = {}
+    expect(await generateRootKey(path, env)).toBe(true)
+    expect(env.WALLET_ROOT_KEY).toMatch(/^[0-9a-f]{64}$/)
+    expect(readEnvFile(path)).toEqual({ NETWORK: 'test', WALLET_ROOT_KEY: env.WALLET_ROOT_KEY })
+    const kept = env.WALLET_ROOT_KEY
+    expect(await generateRootKey(path, env)).toBe(false)
+    expect(readEnvFile(path).WALLET_ROOT_KEY).toBe(kept)
+  })
+
   it('rewrites the named keys in place, keeps every other line and comment, and appends a key the file lacks', async () => {
     const path = envFile('# The chain\nNETWORK=main\n\n# Index\nINDEX_URL=\nINDEX_SUBMIT_TOKEN=\nLIVE_PUBLISHING=false\n')
     await updateEnvFile(path, { INDEX_URL: 'https://index.example', INDEX_SUBMIT_TOKEN: 'a'.repeat(64), WALLET_ROOT_KEY: 'b'.repeat(64) })

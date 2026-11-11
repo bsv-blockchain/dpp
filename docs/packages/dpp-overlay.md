@@ -2,7 +2,7 @@
 
 Developers and operators building custom integrations can use `@bsv/dpp-overlay` to embed an index or run one over HTTP. Its library components and server admit passport states and claim anchors, then answer lookups for those records.
 
-For a new index, use [Create an index](create-dpp-index.md). It installs this runtime with the generated project's dependencies; no second installation or service is needed.
+For a new index, follow [Run an index from source](../operate/README.md): the repository's Docker Compose preset builds this runtime's image and runs it with MongoDB, so no installation is needed.
 
 An app connecting to an existing index over HTTP needs its URL and access settings; it does not need this hosting package.
 
@@ -29,7 +29,7 @@ An app connecting to an existing index over HTTP needs its URL and access settin
 
 ## Library or service
 
-The source candidate exports its library at `@bsv/dpp-overlay` and HTTP host at `@bsv/dpp-overlay/server`; neither starts on import. `dpp-index` runs the configured operator process. Earlier published versions need repository or container startup. Check generated-project publication status in the [starter guide](create-dpp-index.md).
+The source candidate exports its library at `@bsv/dpp-overlay` and HTTP host at `@bsv/dpp-overlay/server`; neither starts on import. `dpp-index` runs the configured operator process; `dpp-index connection` writes an application's connection file. Earlier published versions need repository or container startup.
 
 | Route | Use it when | Start here |
 |---|---|---|
@@ -38,7 +38,7 @@ The source candidate exports its library at `@bsv/dpp-overlay` and HTTP host at 
 
 ## Install
 
-Install directly for custom embedding or configuration. Generated `@bsv/create-dpp-index` projects already declare the runtime; follow their installation and startup commands.
+Install directly for custom embedding or configuration. The Compose preset builds the runtime from source and needs no installation.
 
 **Publication pending:** this page describes the renamed source candidate. [Install its local archives](README.md#use-the-renamed-source-candidate) now:
 
@@ -156,15 +156,13 @@ Before relying on an embedded index, persist records across restarts, ingest lat
 
 ## Run it as a service
 
-[Create an index](create-dpp-index.md) includes the runtime, persistent storage, deployment files, startup checks and app connection settings. Follow the generated README for startup and maintenance.
+The repository's Compose preset runs this host with persistent storage from one environment file. [Run an index from source](../operate/README.md) covers its startup, checks and an application's connection file; it is the route for a new index.
 
 The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /arc-ingest` for block proofs, `GET /capabilities`, `GET /history`, the evidence exports, `POST /retract` and the synchronisation routes. Its configuration is all environment.
 
-### Advanced alternatives from source
+### Other routes from source
 
-These repository routes replace the starter setup; generated projects need neither:
-
-- **With the repository's Compose preset.** Follow [run an index from source](../operate/README.md): it explains the publisher key, the tokens, storage and the first health and capability checks. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
+- **With the repository's Compose preset.** Follow [run an index from source](../operate/README.md): it explains the publisher key, the tokens, storage, the first health and capability checks and the application's connection. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
 - **From a checkout.** Run `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` at the built checkout root: port 8080, in-memory storage, `GET /health` returns `"status":"ok"`. Startup warns for every disabled protection. Before exposing it to strangers, set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md) lists every variable.
 
 ### Check access and registration outcomes
@@ -176,7 +174,7 @@ These repository routes replace the starter setup; generated projects need neith
 | Per-publisher binding | A token belongs to one publisher key and one use: only states countersigned by that key or anchors naming it as anchoring service are accepted. |
 | Operator-wide alternative | One shared token per route may coexist. |
 
-Tokens are required when configured, as on the hosted reference. Writers obtain both tokens from the operator, who uses `dpp-index tokens issue` and can revoke each separately.
+Tokens are required when configured, as on the hosted reference. Writers obtain both tokens from the operator, who uses `dpp-index connection` for an application's pair and its connection file, or `dpp-index tokens issue` for one token, and can revoke each separately.
 
 | Refusal | Meaning |
 |---|---|
@@ -218,7 +216,7 @@ For self-service registration:
 
 | To | Go to |
 |---|---|
-| Run an index for your own writer | [Create an index](create-dpp-index.md) |
+| Run an index for your own writer | [Run an index from source](../operate/README.md) |
 | Exchange records with another index | [Federation with static peers](../operate/federation.md) |
 | Write passports to your index | [Build an application](build-an-application.md), steps 2 and 3 |
 | Build an index without these packages | [The overlay role](../implement/roles/overlay.md) |

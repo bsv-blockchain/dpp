@@ -7,7 +7,7 @@ Index operators and teams replacing a provider can use this guide to back up an 
 | Procedure | Inputs and where to get them |
 |---|---|
 | Whole-index backup or restore | Operator access to the Docker host, the Compose checkout and its `deploy/operator.env`; an empty destination volume for restoration |
-| Passport restoration, either route | Passport identifier and source URL from the publisher; replacement URL and submit token from its operator; a built [checkout](../quick-start.md#get-the-code) or the package specified below |
+| Passport restoration, either route | Passport identifier and source URL from the publisher; replacement URL and a submit token from its operator, operator-wide or issued for the passport's publisher key; a built [checkout](../quick-start.md#get-the-code) or the package specified below |
 | Trust and admission, either route | Export signer from the source operator; replacement settings that admit the passport's publisher keys through `SERVICE_IDENTITY_KEY` or a [signed publisher policy](federation.md#3-sign-a-publisher-policy) |
 | Bounded package | Source index with an export key; no source token. Use only for a passport with no more than 500 states. |
 | Complete export | Source index's `EXPORT_TOKEN` and export signer from [enable exports](#enable-exports-on-your-index). The hosted token is not public; its operator names recipients [on request](../deployment.md#join-the-hosted-reference). |
@@ -108,7 +108,7 @@ for (const [path, bytes] of files) {
 }
 ```
 
-2. Run it with the replacement's submit token. Set `REPLACEMENT_INDEX` if it is not `http://localhost:8080`:
+2. Run it with a submit token for the replacement: its operator-wide `SUBMIT_TOKEN`, or a token its operator issued for the passport's publisher key with `dpp-index tokens issue --publisher <key> --use submit`. Set `REPLACEMENT_INDEX` if it is not `http://localhost:8080`:
 
 ```sh
 SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs

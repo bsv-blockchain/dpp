@@ -26,9 +26,9 @@ The standard defines roles and rules; packages implement some rules; services ru
 
 ## Pick only the packages your task uses
 
-1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or a separate index project.
-2. For a new reference index, use [Create an index](../packages/create-dpp-index.md). `@bsv/create-dpp-index` includes `@bsv/dpp-overlay` as the generated project's runtime dependency. Follow that one setup path; do not install the runtime separately. The guide identifies its current publication prerequisite.
-3. To connect to an existing compatible index over HTTP, use its operator-supplied connection settings. Neither index package is needed.
+1. For a new application, use [the application starter](../packages/create-dpp-app.md). `@bsv/create-dpp-app` creates the app and declares selected dependencies. Deployment needs an existing index provider or an index of your own.
+2. For a new reference index, use [Run an index from source](../operate/README.md). The repository's Docker Compose preset builds `@bsv/dpp-overlay` into its image and runs it with MongoDB; do not install the runtime separately. The retired index starter is [replaced by it](../packages/create-dpp-index.md).
+3. To connect to an existing compatible index over HTTP, use its operator-supplied connection settings. No index package is needed.
 
 These libraries are code components. Dependencies included by a starter or another package are already supplied.
 
@@ -36,7 +36,7 @@ These libraries are code components. Dependencies included by a starter or anoth
 |---|---|
 | `@bsv/dpp-protocol` | Passport records, verification and native lifecycle claim helpers; select when using these reference helpers |
 | `@bsv/dpp-profiles` | Profile manifests, payload schemas and supported helpers; select for its product data or interoperability tooling |
-| `@bsv/dpp-overlay` | Index runtime, topics and lookups; included by the index starter, installed directly only for a custom or embedded index |
+| `@bsv/dpp-overlay` | Index runtime, topics and lookups; built into the Compose preset's image, installed directly only for a custom or embedded index |
 | `@bsv/dpp-credentials` | Verification of W3C credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers), and EPCIS source import; select for those formats. Native lifecycle claims do not require it. |
 
 ### Runtime and version choice
@@ -56,7 +56,7 @@ There is no released turnkey application service or registry package. [Applicati
 
 | Capability | When needed | Arrangement |
 |---|---|---|
-| Index, also called overlay | Documented live lookup and publication workflow | Compatible provider with agreed access, or [your own index](../packages/create-dpp-index.md) |
+| Index, also called overlay | Documented live lookup and publication workflow | Compatible provider with agreed access, or [your own index](../operate/README.md) |
 | Wallet and broadcast | Funding and submitting live transactions | Integrate or connect a suitable wallet; the reference writer uses BRC-100. A reader does not need a funded wallet. |
 | Header and proof source | Blockchain inclusion checks where applicable | Compatible evidence source; the reference index currently uses WhatsOnChain |
 | Publisher countersigning | Issuing or updating | Authorised application signing or agreed service; running an index does not supply it automatically |

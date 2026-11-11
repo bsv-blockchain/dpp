@@ -20,9 +20,9 @@ Index implementers can use this guide to build the standard's overlay role or ad
 
 ## Two ways to build one
 
-To operate the reference index, start with [Create an index](../../packages/create-dpp-index.md). It includes the runtime. Continue here when customising an integration or implementing the role yourself.
+To operate the reference index, start with [Run an index from source](../../operate/README.md). Its Compose preset builds the runtime. Continue here when customising an integration or implementing the role yourself.
 
-- **Reuse the runtime in your own integration.** `@bsv/dpp-overlay` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [runtime reference](../../packages/dpp-overlay.md) shows, and an HTTP host you can [run from source](../../operate/README.md). These are advanced alternatives to the starter.
+- **Reuse the runtime in your own integration.** `@bsv/dpp-overlay` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [runtime reference](../../packages/dpp-overlay.md) shows, and an HTTP host you can [run from source](../../operate/README.md). These are advanced alternatives to the Compose preset.
 - **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
 
 Use the build order below for either route.

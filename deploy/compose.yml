@@ -1,10 +1,14 @@
 # The reference index node with persistent storage: one MongoDB, one node,
 # both data and configuration on named volumes and an env file, so a restart
 # or a host move keeps every admitted state. The image is this repository's
-# (packages/dpp-overlay/Dockerfile), built from the repository root.
+# (packages/dpp-overlay/Dockerfile), built from the repository root. This is
+# the operator preset: everything an index operator runs, with the
+# application's connection file issued by the node's own command line.
 #
 #   cp deploy/operator.env.example deploy/operator.env   # then fill it in
 #   docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
+#   docker compose -f deploy/compose.yml --env-file deploy/operator.env exec -T overlay \
+#     node packages/dpp-overlay/dist/cli.js connection > deploy/app.env
 #
 # What the node does and does not do is unchanged from running it by hand:
 # it admits and serves, it does not broadcast, proofs reach it through
@@ -35,20 +39,39 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+    # The node keeps nothing on disk (MongoDB holds everything admitted and the
+    # policy mount is read-only), so it runs as the image's unprivileged node
+    # user on a read-only filesystem with no capabilities, under an init that
+    # passes the stop signal on, with time for the graceful shutdown to finish
+    # its writes.
+    user: node
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 30s
     ports:
       - "${OVERLAY_PORT:-8080}:8080"
     environment:
       PORT: "8080"
-      MONGO_URL: mongodb://mongo:27017
+      # The bundled MongoDB, reachable only on this Compose network. Set
+      # MONGO_URL to a managed database's authenticated URI instead; the
+      # bundled one then holds nothing.
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017}
       MONGO_DB: ${MONGO_DB:-dpp}
       NETWORK: ${NETWORK:-main}
       # One of the two identity settings is required; the public key is the
       # one to set, the node never needs the private half.
       SERVICE_IDENTITY_KEY: ${SERVICE_IDENTITY_KEY:-}
       SERVER_PRIVATE_KEY: ${SERVER_PRIVATE_KEY:-}
-      SUBMIT_TOKEN: ${SUBMIT_TOKEN:?set SUBMIT_TOKEN in the env file}
-      ARC_CALLBACK_TOKEN: ${ARC_CALLBACK_TOKEN:?set ARC_CALLBACK_TOKEN in the env file}
-      # Optional: per-publisher write tokens, hashed, issued with dpp-index tokens issue.
+      # Write access is per publisher: tokens bound to one key and one use,
+      # hashed in this MongoDB and issued with dpp-index connection or
+      # dpp-index tokens issue. Until one is issued every write is refused.
+      # The two operator-wide tokens are optional, accepted for any publisher.
+      SUBMIT_TOKEN: ${SUBMIT_TOKEN:-}
+      ARC_CALLBACK_TOKEN: ${ARC_CALLBACK_TOKEN:-}
       PUBLISHER_TOKENS_FILE: ${PUBLISHER_TOKENS_FILE:-}
       REGISTRATION: ${REGISTRATION:-}
       OPERATOR_SIGNING_KEY: ${OPERATOR_SIGNING_KEY:-}
@@ -61,6 +84,7 @@ services:
       OWNER_CONSENT: ${OWNER_CONSENT:-}
       TRANSFER_AUTHORITIES: ${TRANSFER_AUTHORITIES:-}
       ACCEPTANCE_COMMITMENT: ${ACCEPTANCE_COMMITMENT:-}
+      INSTRUCTION_COMMITMENT: ${INSTRUCTION_COMMITMENT:-}
       CONTROL_AUTHORITIES: ${CONTROL_AUTHORITIES:-}
       PUBLISHER_POLICY_FILE: ${PUBLISHER_POLICY_FILE:-}
       PUBLISHER_POLICY_JSON: ${PUBLISHER_POLICY_JSON:-}
@@ -73,6 +97,13 @@ services:
       SYNC_PEERS: ${SYNC_PEERS:-}
       SYNC_INTERVAL_MS: ${SYNC_INTERVAL_MS:-}
       SYNC_LEGACY: ${SYNC_LEGACY:-}
+      SYNC_DISCOVERY: ${SYNC_DISCOVERY:-}
+      SLAP_TRACKERS: ${SLAP_TRACKERS:-}
+      SYNC_MAX_DISCOVERED: ${SYNC_MAX_DISCOVERED:-}
+      # Optional SHIP/SLAP advertising, funded by a separate wallet.
+      ADVERTISE: ${ADVERTISE:-}
+      ADVERTISER_PRIVATE_KEY: ${ADVERTISER_PRIVATE_KEY:-}
+      ADVERTISER_STORAGE_URL: ${ADVERTISER_STORAGE_URL:-}
     volumes:
       # The publisher policy chain, when PUBLISHER_POLICY_FILE names one under /config.
       - ./config:/config:ro

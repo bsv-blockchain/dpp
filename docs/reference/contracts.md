@@ -8,7 +8,7 @@ The index (overlay in the reference software) admits passport states and claim a
 
 | Procedure | Input and source |
 |---|---|
-| Check a service | `curl` and its URL from the operator. Start a local index with [Create an index](../packages/create-dpp-index.md), or use `https://dpp-overlay.bsvb.net`. |
+| Check a service | `curl` and its URL from the operator. Start a local index with [Run an index from source](../operate/README.md), or use `https://dpp-overlay.bsvb.net`. |
 | Run JavaScript requests | Node.js 22 or later. Use the checkout root after `npm ci` and `npm run build`; the lookup also runs in a project with `@bsv/sdk@2.8.10` installed. |
 | Look up records | Expected passport identifier from the caller, or its GTIN and serial. Select the index URL below. |
 | Validate a claim | A registry URL, secured native claim and expected product identifier from the caller. The example uses the checkout fixture and hosted registry. Validation is open. |

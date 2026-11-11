@@ -19,7 +19,7 @@ AI agents planning, reading, issuing, verifying or operating digital product pas
 | Verify a passport | [Quick start](../quick-start.md), [identifiers](../identifiers.md), [evidence reports](../learn/evidence-and-freshness.md) | Report naming subject/source, checks and missing-evidence reasons |
 | Issue or update | [Build an application](../packages/build-an-application.md), [writer details](../packages/how-the-writer-works.md), [wallet and proofs](../operate/wallet-broadcast-proofs.md) | Controlled writes, authorised signing, valid data, journal and retained evidence |
 | Add a native claim | [Add a claim](../packages/add-a-claim.md), [registry role](../implement/roles/registry.md), [contracts](../reference/contracts.md) | Supported claim; separate validation, storage, anchor and authority results |
-| Operate an index | [Create an index](../packages/create-dpp-index.md), [operator hub](../operate/overview.md), [access details](../deployment.md), [recovery](../operate/export-import-recovery.md) | One generated project and included runtime, correct role/access settings, recovery evidence; peers only if selected |
+| Operate an index | [Run an index from source](../operate/README.md), [operator hub](../operate/overview.md), [access details](../deployment.md), [recovery](../operate/export-import-recovery.md) | One Compose preset running the built runtime, correct role/access settings, the application's connection file, recovery evidence; peers only if selected |
 | Implement a role independently | [Independent implementation](../implement/README.md), the selected role guide, [specifications](../reference/specifications.md), [reporting](../implement/reporting.md) | Requirements and fixture evidence, with disagreements recorded |
 
 Read relevant [limitations](../operate/limitations.md) before promising an outcome. Find other routes in [the full task index](choose-your-path.md). Select only the packages and services the task needs.
@@ -48,7 +48,7 @@ Read relevant [limitations](../operate/limitations.md) before promising an outco
 | Command or block | Where and how to run it |
 |---|---|
 | Shell blocks | [Reviewed checkout](../quick-start.md#get-the-code) root after `npm ci` and `npm run build`, unless another directory or revision is named. Examples import workspace builds. |
-| Starter commands | Inside the generated project. |
+| Starter commands | Inside the generated application project. |
 | Historical reproduction | Use the receipt's revision; matching version strings do not establish identical source and npm archives. |
 | JavaScript blocks | Save as `name.mjs` in a project with exact package versions installed; run `node name.mjs`. They use top-level `await`. |
 | A block marked as a fragment | One step, not runnable alone; links the complete example. |
@@ -61,7 +61,7 @@ Read relevant [limitations](../operate/limitations.md) before promising an outco
 | Runtime | Use the [support table](../packages/support-table.md). Node/ESM support does not establish browser module support. Declare the SDK if directly imported; follow profile asset-packaging instructions. |
 | Product data | Check its declared profile separately; a valid transaction report does not establish profile validity. Start with `node examples/sample-payload.mjs` and [profile validation](../packages/dpp-profiles.md#check-a-payload-against-its-profile), not an unchecked hosted sample. |
 | Services | Native lifecycle claims use core helpers without a mandatory VSC dependency. Readers need no funded wallet; HTTP index clients need no overlay hosting package. |
-| Index scaffold | `@bsv/create-dpp-index` includes runtime dependency `@bsv/dpp-overlay`. Do not separately install it or start the repository index alongside it. Custom alternatives: direct runtime integration or source deployment. |
+| Index | Run it from the repository's Compose preset, `deploy/compose.yml` with `deploy/operator.env`; its image builds `@bsv/dpp-overlay`, so do not install the runtime separately. `@bsv/create-dpp-index` is retired. Custom alternative: direct runtime integration. |
 
 For a GS1 key lookup, use the selected index URL:
 
@@ -83,7 +83,7 @@ node examples/lifecycle-v2.mjs
 node examples/check-registry.mjs --fixture
 ```
 
-The [index starter guide](../packages/create-dpp-index.md) supplies the publication prerequisite, setup, explicit flags, JSON configuration, results and app connection settings. Passing configuration checks establishes neither blockchain settlement nor production readiness.
+The [index operator guide](../operate/README.md) supplies the configuration, startup checks and the application's connection file, which `dpp-index connection` writes. Passing configuration checks establishes neither blockchain settlement nor production readiness.
 
 3. Interpret the output check by check.
 

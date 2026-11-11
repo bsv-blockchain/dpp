@@ -12,6 +12,14 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, the index starter folds into the operator preset
+
+- Remove `@bsv/create-dpp-index` from the workspace, its CI step, publication workflow and release scripts. The published `0.1.0-beta.1` stays on npm; deprecating it there is a maintainer action. A new index runs from `packages/dpp-overlay/Dockerfile` with `deploy/compose.yml` and `deploy/operator.env.example`.
+- `dpp-index connection` issues an application's submit and callback tokens for its publisher key, revoking the pair its label issued before, and prints `NETWORK`, `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. The application starter's `connect-index --from <file>` reads that file and replaces `add-index`.
+- The application starter's `npm run wallet` generates `WALLET_ROOT_KEY` on its first run, as `add-index` did, so the publisher key an index is given is never the stand-in test wallet's; without a `.env` to write to, it refuses.
+- The Compose preset makes `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` optional, since per-publisher tokens in its MongoDB refuse writes until issued, accepts `MONGO_URL` for a managed database, forwards `INSTRUCTION_COMMITMENT`, discovery and advertising settings it previously dropped, and runs the index container as the `node` user, read-only, without capabilities, under an init.
+- `docs/packages/create-dpp-index.md` becomes a short page mapping the starter onto the preset, differences included; every page that sent readers to the starter points at the operator guide, which moves back under Deploy and operate with a redirect from its old address.
+
 ### 2026-11-09, the registry contract refuses new SEALs and drops status list publication
 
 - The registry contract (`0.6.0`) refuses a `vsc-seal-json-v1` submission, in its envelope or as the body, with outcome `unsupported` and `representation-unsupported`: 422 on `POST /attestations`, 200 with `reportOmitted` on `POST /validate`. The SEAL request shapes, the six `/status` routes and their schemas, `vscProfile` and `vscConformance` are removed, the capability document's representations and proof suites no longer name the SEAL or its suites, and it lists `vsc-seal-json-v1` under `unsupported`. Read routes keep serving stored SEALs byte for byte. `spec/services.md` §3 and `spec/vsc-profile.md` say so.

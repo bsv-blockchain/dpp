@@ -156,7 +156,7 @@ Return to [Build or integrate](start/build-and-integrate.md) to choose your next
 | Next | Page |
 |---|---|
 | Build an application that issues and updates passports | [Build an application](packages/build-an-application.md) |
-| Run your own index | [Create an index](packages/create-dpp-index.md) |
+| Run your own index | [Run an index from source](operate/README.md) |
 | Choose the product data a passport carries | [Industry profiles](profiles/README.md) |
 | Write your own implementation instead of using the packages | [Implementer start](implement/README.md) |
 

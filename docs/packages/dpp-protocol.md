@@ -378,4 +378,4 @@ console.log(schema.$id)
 | Check a state's product data against its profile | [@bsv/dpp-profiles](dpp-profiles.md) |
 | Write passports with these functions | [Build an application](build-an-application.md), step 3 |
 | Add a claim to a passport you do not control | [Add a claim](add-a-claim.md) |
-| Run an index of your own | [Create an index](create-dpp-index.md), with the runtime included |
+| Run an index of your own | [Run an index from source](../operate/README.md), with the runtime built in |

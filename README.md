@@ -14,7 +14,7 @@ A digital product passport records information about a product and its history, 
 | Build with the reference packages | [Package guide](docs/packages/README.md) |
 | Build a new application | [Create an application](docs/packages/create-dpp-app.md) |
 | Implement the standard independently | [Implementer guide](docs/implement/README.md) |
-| Run your own index | [Create an index](docs/packages/create-dpp-index.md) |
+| Run your own index | [Run an index from source](docs/operate/README.md) |
 | Define product data for an industry | [Industry profiles](docs/profiles/README.md) |
 | Browse all documentation | [Documentation index](docs/README.md) |
 
@@ -69,16 +69,16 @@ Records can remain verifiable after a provider disappears if their transactions,
 
 ## Reference packages
 
-For a new application, use [`@bsv/create-dpp-app`](docs/packages/create-dpp-app.md). It creates the web app, API and application database configuration. Connect to an existing compatible index or create a separate index project.
+For a new application, use [`@bsv/create-dpp-app`](docs/packages/create-dpp-app.md), published at `0.1.0-beta.1`. It creates the web app, API and application database configuration. Connect to an existing compatible index or run your own.
 
-For a new index, use [`@bsv/create-dpp-index`](docs/packages/create-dpp-index.md). It creates your project and includes `@bsv/dpp-overlay` as its runtime dependency. There is no separate runtime installation step. Both starters are published at `0.1.0-beta.1`.
+For a new index, use the [operator preset](deploy/README.md): the overlay image and a persistent MongoDB on Docker Compose. The index starter `@bsv/create-dpp-index` is retired; its published `0.1.0-beta.1` stays on npm ([what replaces it](docs/packages/create-dpp-index.md)).
 
-The packages below are reusable components. Select them directly when integrating their APIs into your own code. An application using an existing index over HTTP needs neither the index starter nor the hosting runtime.
+The packages below are reusable components. Select them directly when integrating their APIs into your own code. An application using an existing index over HTTP needs no hosting runtime.
 
 | Package | Purpose |
 |---|---|
 | [`@bsv/dpp-protocol`](packages/dpp-protocol/README.md) | Read, write and verify passport records, signatures, history, attestations and portable evidence. Supports record versions 1, 2 and 3. |
-| [`@bsv/dpp-overlay`](packages/dpp-overlay/README.md) | Included index runtime for the starter. Direct installation is for custom or embedded indexes; it admits and retrieves records, exports evidence and synchronises with configured peers. |
+| [`@bsv/dpp-overlay`](packages/dpp-overlay/README.md) | The index runtime the operator preset builds. Direct installation is for custom or embedded indexes; it admits and retrieves records, exports evidence and synchronises with configured peers. |
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data schemas for batteries, textiles and general products, plus identifier, mapping and projection helpers. |
 | [`@bsv/dpp-credentials`](packages/dpp-credentials/README.md) | Verify W3C Verifiable Credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers) and import EPCIS 2.0.1 source documents; the parked VSC draft compatibility profile stays exported. |
 
@@ -96,11 +96,9 @@ Optional interoperability profiles cover GS1 Digital Link discovery, EPCIS event
 
 ## Run an index
 
-Start with [Create an index](docs/packages/create-dpp-index.md). The starter includes the runtime, persistent MongoDB configuration, deployment files, checks and application connection settings. Follow the generated project's README for startup and maintenance; its guide explains how to test the packed source candidate before a publication.
+The [repository's Docker Compose preset](deploy/README.md) builds the index from this checkout and runs it with persistent MongoDB storage, configured from one env file, with an optional second node. Once it runs, its `dpp-index connection` command writes the connection file an application reads. [Run an index from source](docs/operate/README.md) is the step-by-step guide.
 
-### Advanced alternative: run from source
-
-The [repository's Docker Compose deployment](deploy/README.md) builds the index directly from this checkout, with MongoDB storage and an optional second node. Choose this instead of the starter when you need a source deployment. To build the index image directly:
+To build the index image directly:
 
 ```sh
 docker build -f packages/dpp-overlay/Dockerfile -t dpp-overlay .

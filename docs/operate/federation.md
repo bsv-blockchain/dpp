@@ -221,7 +221,7 @@ for (const output of answer.outputs) console.log(`  ${Transaction.fromBEEF(outpu
 Then copy the live passport into the first index:
 
 1. Make both indexes admit the hosted reference application's publisher key. On a rehearsal first index, set `SERVICE_IDENTITY_KEY=0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24` in `deploy/operator.env` and apply it with `docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d`. The second needs the same key or the step 3 policy.
-2. Run the [package restore](export-import-recovery.md#restore-a-passport-from-the-bounded-package) with the first index's `SUBMIT_TOKEN`. Its default is `REPLACEMENT_INDEX=http://localhost:8080`:
+2. Run the [package restore](export-import-recovery.md#restore-a-passport-from-the-bounded-package) with a submit token for the first index: its `SUBMIT_TOKEN` if set, otherwise one issued for the step 1 key with `docker compose -f deploy/compose.yml --env-file deploy/operator.env exec overlay node packages/dpp-overlay/dist/cli.js tokens issue --publisher 0325a17b2c87de853f7b2f54f82db80f49f189810379170693261dc6fa0a06da24 --use submit`. Its default is `REPLACEMENT_INDEX=http://localhost:8080`:
 
    ```sh
    SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs

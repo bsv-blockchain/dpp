@@ -21,7 +21,7 @@ The fixed attestation role names refer to claims. Start with the reader; claim e
 | Passport writer | Writes each new state of a passport | [Build an application](../packages/build-an-application.md#3-write-a-passport), step 3 | [Passport writer](../implement/roles/passport-writer.md) |
 | Attestation issuer | Signs a claim about a product, such as a repair | [Build an application](../packages/build-an-application.md#4-sign-and-anchor-a-lifecycle-claim), step 4 | [Attestation issuer](../implement/roles/attestation-issuer.md) |
 | Registry | Validates and stores signed claims | No registry package is published; build one against the contract with the packages' calls ([registry](../implement/roles/registry.md)) | [Registry](../implement/roles/registry.md) |
-| Index (the overlay role) | Admits passport states and answers lookups | [Create an index](../packages/create-dpp-index.md); the starter includes the runtime. Direct embedding is an [advanced alternative](../packages/dpp-overlay.md) | [Overlay](../implement/roles/overlay.md) |
+| Index (the overlay role) | Admits passport states and answers lookups | [Run an index from source](../operate/README.md); the Compose preset builds the runtime. Direct embedding is an [advanced alternative](../packages/dpp-overlay.md) | [Overlay](../implement/roles/overlay.md) |
 
 ## Choose the build order
 

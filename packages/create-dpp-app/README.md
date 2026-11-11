@@ -18,8 +18,8 @@ You get a working application: a React web app with a brand dashboard, passport 
 | You want to | What to use |
 | --- | --- |
 | Build the application | `@bsv/create-dpp-app`, this starter |
-| Connect to an existing compatible index | Its URL, network and scoped access settings; no index starter required |
-| Operate your own index | A separate project created by `@bsv/create-dpp-index`, which includes its runtime |
+| Connect to an existing compatible index | Its URL, network and scoped access settings |
+| Operate your own index | The repository's operator preset, [`deploy/`](../../deploy/README.md): the index image and MongoDB on Docker Compose, whose `dpp-index connection` writes the file `npm run connect-index -- --from <file>` reads |
 
 The app's Compose file starts only its database, so connecting a separately operated index cannot start another index accidentally. The app includes overlay library components for its offline exercises; those components do not deploy a persistent index. Do not manually install another overlay package as part of app setup. See the generated README's **Connect an index** section and [service choices](../../docs/start/choose-components-and-services.md).
 
@@ -36,7 +36,7 @@ Every opinion is a file you can change. The standard itself prefers none of them
 
 ## Versions
 
-Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and SDK `2.8.10`, matching the index starter. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
+Each release of this package scaffolds one DPP release set, named under `dpp` in `package.json`, with the exact package versions it pins. This source candidate uses `dpp-release-2026-11`: protocol and profiles `0.3.0-beta.10`, overlay `0.4.0-beta.13` and SDK `2.8.10`, the runtime the repository's index image builds. The generated app imports `@bsv/dpp-protocol` directly. Once published, a new release set requires a new starter version.
 
 ## Development
 
