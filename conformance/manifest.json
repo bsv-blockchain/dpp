@@ -96,7 +96,7 @@
       "version": "vsc-draft-compat/0.1.0",
       "kind": "local",
       "path": "spec/vsc-profile.md",
-      "digest": "13f8241864f55e1909f4a8c4966952f22466dfb7e5aeb86ee052d97753f24ad0"
+      "digest": "b091de66dc84d8d5dcf396308c94df5e5e1ebdb2d9ceafc6c3c57fe7ac176a73"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -112,7 +112,7 @@
       "version": "0.10.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "346f9672c837b673e1b66a10fc68c7409ad28cc8f082099308f52d7c2f2cb088"
+      "digest": "5dc02c19a98a35b210c18c129cef3d01cb61b9ba2ebbfbe174651921267af175"
     },
     {
       "id": "contract-registry",
@@ -410,7 +410,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/exchange.md",
-      "digest": "446676fd774134033dd7e960317abfb0b6cda8c7e19a098734e8c46376dfa4d0"
+      "digest": "d7ef480cadaaa1fceb961209e0f46242af8152f2522909ffd2505b85e6222579"
     },
     {
       "id": "contract-native-evidence-extension",
@@ -426,7 +426,7 @@
       "version": "1",
       "kind": "local",
       "path": "packages/dpp-profiles/schemas/exchange-profile.schema.json",
-      "digest": "c1fee14cc50205d8c5c440dbbf15a71d9c9420a307a651458fe9e8d5b1021e93"
+      "digest": "ef08a16c2956b23519e5e393338c739d2bf35bfdc6654fc85388fc5b60cb54ed"
     },
     {
       "id": "profiles-operator-schema",
@@ -522,7 +522,7 @@
       "version": "0.1.0",
       "kind": "local",
       "path": "packages/dpp-profiles/src/combinations.ts",
-      "digest": "1fc6de919e1019e5c0ccf71b9c4a1026d87d9563dff401e4294ed6f78d4a7217"
+      "digest": "645afbb09f4e679a71a80da0e7d3e7e97f4e3582cda60373aecb88e34c18265a"
     },
     {
       "id": "spec-gs1-discovery",
@@ -538,7 +538,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
+      "digest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801"
     },
     {
       "id": "spec-external-credential-profile",
@@ -546,7 +546,7 @@
       "version": "vc-di-ecdsa-rdfc-2019@1",
       "kind": "local",
       "path": "spec/external-credential-profile.md",
-      "digest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
+      "digest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
     },
     {
       "id": "spec-passport-projections",
@@ -562,7 +562,7 @@
       "version": "0.1.0-draft",
       "kind": "local",
       "path": "contracts/interoperability.yaml",
-      "digest": "aa4fcdad2e1642fa3bc16fa23c093d2142711d970711a8a9b7f1f2349a7fb6aa"
+      "digest": "27508c428551453de9c743a658fe643e770e31fc5eef5c776f0ec8dc2b0b9814"
     },
     {
       "id": "contract-epcis-import",
@@ -602,7 +602,7 @@
       "version": "1",
       "kind": "local",
       "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
-      "digest": "08ec9b54464fe0a241d1acddeff0b9ab5aadaf2463bc8d433296688d8a3d1f69"
+      "digest": "1a12993154bc8396080d3808de8b6cca1095a8bbeb74fe9af48e033e40525c9e"
     },
     {
       "id": "profiles-manifest-v2-schema",
@@ -2089,14 +2089,14 @@
       "implementationRefs": [
         "packages/dpp-protocol/src/attestation.ts#lifecycleClaimBytes",
         "packages/dpp-protocol/src/canonical.ts",
-        "packages/dpp-credentials/src/validation.ts#parseStrictJsonBytes",
+        "packages/dpp-credentials/src/strict-json.ts#parseStrictJsonBytes",
         "packages/dpp-credentials/src/exchange.ts#parseExternalCredentialBytes"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/attestation.test.ts",
         "packages/dpp-protocol/test/canonical.test.ts",
         "packages/dpp-credentials/test/exchange.test.ts",
-        "packages/dpp-credentials/test/verification.test.ts"
+        "packages/dpp-credentials/test/strict-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json#representationHex"
@@ -2104,7 +2104,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Reworded 2026-11-09 to name no credential representation; the meaning for a native claim is unchanged. The §4 table still lists only vsc-seal-json-v1, now parked, as a secured representation; exchange.md §1 gives vc-di-ecdsa-rdfc-2019@1 the same exact-byte rule, which EXTC-1 and EXTC-4 carry, and exchange.test.ts exercises its duplicate-key refusal through parseExternalCredentialBytes."
+      "notes": "Reworded 2026-11-09 to name no credential representation; the meaning for a native claim is unchanged. The §4 table still lists only vsc-seal-json-v1, now parked, as a secured representation; exchange.md §1 gives vc-di-ecdsa-rdfc-2019@1 the same exact-byte rule, which EXTC-1 and EXTC-4 carry, and exchange.test.ts exercises its duplicate-key refusal through parseExternalCredentialBytes. From @bsv/dpp-credentials 0.2.0-beta.6 parseStrictJsonBytes lives in strict-json.ts with its own tests, and the parked SEAL parser that also used it is no longer in the package."
     },
     {
       "id": "RULES-5-anchor",
@@ -2308,19 +2308,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/validation.ts",
-        "packages/dpp-credentials/src/crypto.ts#issuerPurpose",
-        "packages/dpp-credentials/src/did-web.ts"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/verification.test.ts",
-        "packages/dpp-credentials/test/did-web.test.ts"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then validateSealStructure bound the actor DID to the issuer and the SEAL proof verifier required the verification method to be authorised for assertion in the issuer's DID document. createDidWebResolver, the bounded did:web resolution it used, stays in the package. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "ID-3-physical-object",
@@ -3311,21 +3305,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/validation.ts",
-        "packages/dpp-credentials/src/schema.ts",
-        "packages/dpp-credentials/artifacts/seal-0.1.0.schema.json"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/verification.test.ts",
-        "packages/dpp-credentials/test/artifacts.test.ts"
-      ],
-      "evidenceRefs": [
-        "packages/dpp-credentials/artifacts/profile-0.1.0.json"
-      ],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then the owned SEAL schema and validateSealStructure checked the structure, and parseSealBytes read the exact bytes strictly. The owned schemas, the owned context and the profile record, artifacts/profile-0.1.0.json, stay in the package at the digests the parked manifests pin. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "VSC-3-proofs",
@@ -3342,18 +3328,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/crypto.ts"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/crypto.test.ts",
-        "packages/dpp-credentials/test/verification.test.ts"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Holder authentication and the HTTPS presentation transport are not implemented and are declared as such."
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then the package issued and verified Ed25519Signature2020 and bbs-2023 proofs with their maintained suites and derived request-bound BBS disclosures; holder authentication and the HTTPS presentation transport were never implemented. The package no longer depends on either suite. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "VSC-4-status",
@@ -3369,16 +3350,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/verification.ts#verifyCredentialStatus"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/verification.test.ts"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifyCredentialStatus applied the validate algorithm to the lists a SEAL names. Checking the lists other issuers publish stays under STATUS-validate-algorithm, through verifyBitstringStatus. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "VSC-4-authority",
@@ -3394,16 +3372,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/verification.ts#verifyIssuerAuthority"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/verification.test.ts"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifyIssuerAuthority checked signed scoped VscEventAuthorisation grants from configured trust anchors, with their proof, validity and status. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "VSC-5-custody",
@@ -3419,18 +3394,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/verification.ts#verifySeal"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/verification.test.ts"
-      ],
-      "evidenceRefs": [
-        "packages/dpp-credentials/artifacts/profile-0.1.0.json#decisions DAG-01 CORR-01"
-      ],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifySeal evaluated custody graphs and corrections under the decisions DAG-01 and CORR-01 that artifacts/profile-0.1.0.json records and still carries. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "VSC-6-epcis",
@@ -3445,16 +3415,13 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/epcis.ts"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/epcis.test.ts"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then mapEpcisEvent mapped the five event types with the source event in the signed round-trip extension. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "VSC-context-upstream",
@@ -3471,17 +3438,15 @@
       ],
       "applicability": "when vsc-draft-compat/0.1.0 is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/context.ts"
-      ],
+      "implementationRefs": [],
       "testRefs": [],
       "evidenceRefs": [
         "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-CONTEXT"
       ],
       "status": "unassessed",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Cannot be assessed while the upstream artefact is unavailable; blocks any full-conformance claim by design."
+      "notes": "Cannot be assessed while the upstream artefact is unavailable; blocks any full-conformance claim by design. The owned context the profile serves instead stays in the package as artifacts/context-0.1.0.jsonld; the code that served it left @bsv/dpp-credentials in 0.2.0-beta.6 with the rest of the parked profile."
     },
     {
       "id": "VSC-conformance-suite",
@@ -3550,20 +3515,18 @@
       "profileId": "core",
       "implementationRefs": [
         "packages/dpp-credentials/src/exchange.ts#verifyBitstringStatus",
-        "packages/dpp-credentials/src/verification.ts#verifyCredentialStatus",
         "the reference registry (not published)"
       ],
       "testRefs": [
         "packages/dpp-credentials/test/exchange.test.ts",
         "packages/dpp-credentials/test/exchange-vectors.test.ts",
-        "packages/dpp-credentials/test/verification.test.ts",
         "the reference registry (not published)"
       ],
       "evidenceRefs": [],
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "The registry's historical path only verifies when an operator verifier is configured and abstains otherwise. verifyBitstringStatus, which the external credential verifier uses, applies the same algorithm with the list's proof checked by that profile's suite; its tests exercise an authenticated list, a set revocation bit, a list from an issuer the policy has not delegated to, an unavailable list, stale evidence and a missing policy. The refusal of a list whose proof fails or whose purpose differs is exercised through the parked SEAL verifier, verifyCredentialStatus."
+      "notes": "The registry's historical path only verifies when an operator verifier is configured and abstains otherwise. verifyBitstringStatus, which the external credential verifier uses, applies the algorithm with the list's proof checked by that profile's suite; its tests exercise an authenticated list, a set revocation bit, a list from an issuer the policy has not delegated to, a list under another identifier, a list whose proof fails, a list of another purpose, an unavailable list, stale evidence and a missing policy. The parked SEAL verifier's verifyCredentialStatus left @bsv/dpp-credentials in 0.2.0-beta.6."
     },
     {
       "id": "STATUS-purpose-suspension",
@@ -3654,17 +3617,13 @@
       ],
       "applicability": "when a W3C credential representation is selected",
       "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/validation.ts",
-        "packages/dpp-credentials/src/verification.ts#verifyTemporal"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/verification.test.ts"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [],
-      "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then validateSealStructure and verifyTemporal enforced these rules for a SEAL. verifyTemporal stays in the package, in src/temporal.ts, and the external credential verifier applies it under its own rows. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "W3C-VC-JOSE-ES256K",
@@ -5323,7 +5282,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -5409,7 +5368,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801"
     },
     {
       "id": "EPCIS-5-source-reference",
@@ -5424,21 +5383,14 @@
       ],
       "applicability": "when the mapping profile is selected",
       "profileId": "epcis-vsc@1 and epcis-vsc@2",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/epcis-source.ts#epcisSourceReference",
-        "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/epcis-report.test.ts"
-      ],
-      "evidenceRefs": [
-        "fixtures/vectors/dpp/interoperability/epcis/v1.json",
-        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
-      ],
-      "status": "tested",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801",
+      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The rule binds a mapped SEAL, which nothing in the packages now produces; epcisSourceReference, which builds the reference, stays in ./epcis-source with its own test. The published v1 and v2 vectors stay as they are. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
     },
     {
       "id": "EPCIS-6-mapping-outcomes",
@@ -5453,22 +5405,14 @@
       ],
       "applicability": "when the mapping profile is selected",
       "profileId": "epcis-vsc@1 and epcis-vsc@2",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/epcis-report.test.ts",
-        "packages/dpp-credentials/test/epcis.test.ts"
-      ],
-      "evidenceRefs": [
-        "fixtures/vectors/dpp/interoperability/epcis/v1.json",
-        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
-      ],
-      "status": "tested",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d",
-      "notes": "Until 2026-11-08 the reference mapped an inspection, repair or sensor reading reporting active, contrary to the published maintenance-observation limit of epcis-vsc@1; a repair with nothing else to report came back lossless. Such an observation (an OBSERVE event, or a TransformationEvent, whose action is the caller's decision) is now refused; an ObjectEvent that commissions or decommissions its objects at those steps is not an observation and maps as before. The published v1 vectors, which hold no such event, are unchanged. v2.json pins the outcomes under epcis-vsc@2."
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801",
+      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then mapEpcisEventWithReport answered the four outcomes under either profile; on 8 November 2026 it was corrected to refuse an inspection, repair or sensor reading reporting active under epcis-vsc@1 as maintenance-observation, which the published 0.2.0-beta.5 does not carry. The published v1 and v2 vectors stay as they are. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
     },
     {
       "id": "EPCIS-7-import-record",
@@ -5523,7 +5467,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d",
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801",
       "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
     },
     {
@@ -5549,7 +5493,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d",
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
@@ -5565,22 +5509,14 @@
       ],
       "applicability": "when the mapping profile epcis-vsc@2 is selected",
       "profileId": "epcis-vsc@2",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/epcis.ts#mapEpcisEventWithReport",
-        "packages/dpp-credentials/src/epcis.ts#CBV_DISPOSITION_CROSSWALK",
-        "packages/dpp-profiles/manifests/interoperability/epcis-vsc@2.json"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/epcis-report.test.ts",
-        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
-      ],
-      "evidenceRefs": [
-        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
-      ],
-      "status": "tested",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
       "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "e43cfbc2ae66a11971abc12cda15e8af4831ba1676ae3eb7cefe055fcfade97d"
+      "sourceDigest": "4dc85eed0cf7f7be874bd62b1aea88934621e85d1f88f19ae2036e4396c10801",
+      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. epcis-vsc@2 and CBV_DISPOSITION_CROSSWALK left before any publication, with the test that held the code to the crosswalk its manifest records. The manifest and v2.json stay as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
     },
     {
       "id": "EPCIS-11-cbv-dispositions",
@@ -5595,20 +5531,13 @@
       ],
       "applicability": "when the mapping profile epcis-vsc@2 is selected",
       "profileId": "epcis-vsc@2",
-      "implementationRefs": [
-        "packages/dpp-credentials/src/epcis.ts#CBV_DISPOSITION_CROSSWALK"
-      ],
-      "testRefs": [
-        "packages/dpp-credentials/test/epcis-report.test.ts",
-        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
-      ],
-      "evidenceRefs": [
-        "fixtures/vectors/dpp/interoperability/epcis/v2.json"
-      ],
-      "status": "tested",
-      "reviewedAt": "2026-11-08",
+      "implementationRefs": [],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "notes": "Checked against the section 7.2.3 table of the ratified CBV 2.0 text: 33 values, no_pedigree_match among them as deprecated in 2.0, and the five values section 7.2.3.1 replaces. The definitions behind each custody effect are in the profile manifest notes."
+      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The crosswalk was checked against the section 7.2.3 table of the ratified CBV 2.0 text: 33 values, no_pedigree_match among them as deprecated in 2.0, and the five values section 7.2.3.1 replaces; the epcis-vsc@2 manifest keeps it as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
     },
     {
       "id": "EXTC-1-representation",
@@ -5636,9 +5565,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
+      "sourceDigest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
     },
     {
       "id": "EXTC-2-proof-and-binding",
@@ -5691,9 +5620,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
+      "sourceDigest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
     },
     {
       "id": "EXTC-4-reformat-vs-bytes",
@@ -5720,9 +5649,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-15",
+      "reviewedAt": "2026-11-09",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "10ea53ad596dd86d67c1088a5934fd27980eb755679465f1c0497c975c2391f1"
+      "sourceDigest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
     },
     {
       "id": "EXTC-5-registry-intake",

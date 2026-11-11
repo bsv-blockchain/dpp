@@ -5,9 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { EPCIS_ARTEFACTS, EPCIS_CONTEXT_DIGEST, EPCIS_DEFAULT_LIMITS } from '../src/epcis-source.js';
-import { CBV_DISPOSITION_CROSSWALK, mapEpcisEventWithReport } from '../src/epcis.js';
-import type { JsonObject } from '../src/types.js';
-import { MAPPING_OPTIONS, PACK, T0, epcisInteroperabilityVectors, epcisVsc2Vectors } from './epcis-fixture.js';
+import { epcisSourceVectors } from './epcis-fixture.js';
 
 const root = join(import.meta.dirname, '..');
 const repo = join(root, '..', '..');
@@ -58,59 +56,36 @@ describe('the pinned EPCIS artefacts', () => {
     expect(source.dependencies.find((d) => d.name === 'ajv')?.version).toBe(ajvVersion);
   });
 
-  it('records in the epcis-vsc@2 manifest the crosswalk the code applies, with every condition, limit and replacement it cites', () => {
-    type Row = { vocabulary: string; value: string; effect: string; carriedAs?: string; condition?: string; limit?: string; replaces?: string; replacedBy?: string };
-    const manifest = JSON.parse(readFileSync(join(repo, 'packages/dpp-profiles/manifests/interoperability/epcis-vsc@2.json'), 'utf8')) as { crosswalk: Row[]; mappingLimits: Array<{ id: string }> };
-    const dispositions = manifest.crosswalk.filter((e) => e.vocabulary === 'cbv-2.0-disposition');
-    const steps = manifest.crosswalk.filter((e) => e.vocabulary === 'cbv-2.0-bizstep');
-    expect(dispositions.length + steps.length).toBe(manifest.crosswalk.length);
-    expect(Object.fromEntries(dispositions.map((e) => [e.value, { effect: e.effect, ...(e.replacedBy == null ? {} : { replacedBy: e.replacedBy }) }]))).toEqual(CBV_DISPOSITION_CROSSWALK);
-    const limits = new Set(manifest.mappingLimits.map((l) => l.id));
-    for (const entry of manifest.crosswalk) if (entry.limit != null) expect(limits.has(entry.limit), entry.value).toBe(true);
-    for (const id of ['non-cbv-disposition', 'custody-neutral', 'custody-destination-unnamed', 'custody-transition-unnamed', 'lifecycle-conflict', 'error-declaration']) expect(limits.has(id), id).toBe(true);
-    const options = MAPPING_OPTIONS();
-    const v2 = { profile: 'epcis-vsc@2' as const };
-    const limitOf = (missing: string[]): string | undefined => /^([a-z-]+): /.exec(missing[0] ?? '')?.[1];
-    const PALLET_ID = 'urn:epc:id:sscc:9521234.0000000009';
-    const events: Array<{ name: string; commissioning: boolean; decommissioning: boolean; make: (disposition: string | undefined, bizStep: string) => JsonObject }> = [
-      ...(['ADD', 'OBSERVE', 'DELETE'] as const).map((action) => ({ name: `ObjectEvent ${action}`, commissioning: action === 'ADD', decommissioning: action === 'DELETE', make: (d: string | undefined, bizStep: string): JsonObject => ({ type: 'ObjectEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, epcList: [PACK], action, bizStep, ...(d == null ? {} : { disposition: d }) }) })),
-      { name: 'AggregationEvent ADD', commissioning: false, decommissioning: false, make: (d, bizStep) => ({ type: 'AggregationEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, parentID: PALLET_ID, childEPCs: [PACK], action: 'ADD', bizStep, ...(d == null ? {} : { disposition: d }) }) },
-      { name: 'TransformationEvent', commissioning: false, decommissioning: false, make: (d, bizStep) => ({ type: 'TransformationEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, inputEPCList: [PACK], outputEPCList: [PALLET_ID], bizStep, ...(d == null ? {} : { disposition: d }) }) },
-    ];
-    // The condition of each carried row, as its text in the manifest states it.
-    const carriedOn = (row: Row, e: (typeof events)[number]): boolean => row.effect === 'origin' ? e.commissioning : row.effect === 'transit' ? !e.commissioning && !e.decommissioning : row.effect === 'terminal' ? !e.commissioning : false;
-    for (const row of dispositions) {
-      if (row.carriedAs != null) expect(row.carriedAs, row.value).toBe(row.value);
-      expect(row.condition != null, row.value).toBe(['origin', 'transit', 'terminal'].includes(row.effect));
-      for (const e of events) {
-        const report = mapEpcisEventWithReport(e.make(row.value, 'other'), options, v2);
-        const label = `${row.value} on ${e.name}`;
-        if (carriedOn(row, e)) {
-          expect(report.seal?.eventVector.how.disposition, label).toBe(row.carriedAs);
-          for (const step of steps) expect(mapEpcisEventWithReport(e.make(row.value, step.value), options, v2).seal?.eventVector.how.disposition, `${label} at ${step.value}`).toBe(row.carriedAs);
-          continue;
-        }
-        expect(report.mapping, label).toBe('unsupported');
-        expect(limitOf(report.missing), label).toBe(row.limit);
-        // A business step row puts its limit in place of the one it replaces, and only that one.
-        for (const step of steps) expect(limitOf(mapEpcisEventWithReport(e.make(row.value, step.value), options, v2).missing), `${label} at ${step.value}`).toBe(row.limit === step.replaces ? step.limit : row.limit);
-      }
-    }
-    for (const step of steps) {
-      expect(step.limit != null && step.replaces != null && limits.has(step.replaces), step.value).toBe(true);
-      expect(limitOf(mapEpcisEventWithReport(events[1]!.make(undefined, step.value), options, v2).missing), `no disposition at ${step.value}`).toBe(step.limit);
-    }
-    expect(limitOf(mapEpcisEventWithReport(events[1]!.make(undefined, 'other'), options, v2).missing)).toBe('custody-neutral');
+  // The epcis-vsc@1 and epcis-vsc@2 mappings left this package in 0.2.0-beta.6; their vectors stay as published, held here by digest.
+  const PARKED_V1 = { ids: ['mapping-outcomes', 'evidence-only-and-attribution'], sha256: '827c8e9177f886444ed11349125f287c03200d67e894131ce6aabd496e2ddeff' };
+  const PARKED_V2_SHA256 = 'd87221c67f7da1b7b48d444236bf1e3614b7ea77ded32fc8672ce33e6c1b8c29';
+  const vectorPath = (file: string): string => join(repo, `fixtures/vectors/dpp/interoperability/epcis/${file}`);
+
+  it('publishes the source exchange vectors of v1.json as the generator produces them, and keeps its two parked mapping vectors as published', () => {
+    const path = vectorPath('v1.json');
+    const published = JSON.parse(readFileSync(path, 'utf8')) as { id: string; vectors: Array<{ id: string; tags: string[] }> };
+    const generated = JSON.parse(JSON.stringify(epcisSourceVectors())) as Array<{ id: string; tags: string[] }>;
+    const parked = published.vectors.filter((v) => v.tags.includes('vsc-mapping'));
+    if (process.env.REGENERATE_FIXTURES === '1') writeFileSync(path, JSON.stringify({ ...published, vectors: [...generated, ...parked] }, null, 2) + '\n');
+    expect(published.id).toBe('dpp.interoperability.epcis.v1');
+    expect(published.vectors.filter((v) => !v.tags.includes('vsc-mapping'))).toEqual(generated);
+    expect(parked.map((v) => v.id)).toEqual(PARKED_V1.ids);
+    expect(sha256(Buffer.from(JSON.stringify(parked))), 'the parked mapping vectors of v1.json').toBe(PARKED_V1.sha256);
   });
 
-  for (const [file, generator, vectorId] of [['v1.json', epcisInteroperabilityVectors, 'dpp.interoperability.epcis.v1'], ['v2.json', epcisVsc2Vectors, 'dpp.interoperability.epcis.v2']] as const) it(`publishes fixtures/vectors/dpp/interoperability/epcis/${file} as the generator produces it, in the stack shape`, () => {
-    const generated = JSON.parse(JSON.stringify(generator())) as { id: string; vectors: Array<{ id: string; tags: string[] }> };
-    const path = join(repo, `fixtures/vectors/dpp/interoperability/epcis/${file}`);
-    if (process.env.REGENERATE_FIXTURES === '1') writeFileSync(path, JSON.stringify(generated, null, 2) + '\n');
-    expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual(generated);
-    for (const key of ['id', 'name', 'version', 'reference_impl', 'parity_class', 'vectors']) expect(generated).toHaveProperty(key);
-    expect(generated.id).toBe(vectorId);
-    const ids = generated.vectors.map((v) => v.id);
+  it('keeps v2.json, the parked epcis-vsc@2 vectors, byte for byte as published', () => {
+    const bytes = readFileSync(vectorPath('v2.json'));
+    expect(sha256(bytes)).toBe(PARKED_V2_SHA256);
+    const published = JSON.parse(bytes.toString('utf8')) as { id: string; vectors: Array<{ tags: string[] }> };
+    expect(published.id).toBe('dpp.interoperability.epcis.v2');
+    for (const v of published.vectors) expect(v.tags).toContain('vsc-mapping');
+  });
+
+  for (const file of ['v1.json', 'v2.json']) it(`holds fixtures/vectors/dpp/interoperability/epcis/${file} to the stack shape, documentation hosts and the demonstration prefix`, () => {
+    const text = readFileSync(vectorPath(file), 'utf8');
+    const published = JSON.parse(text) as { vectors: Array<{ id: string }> };
+    for (const key of ['id', 'name', 'version', 'reference_impl', 'parity_class', 'vectors']) expect(published).toHaveProperty(key);
+    const ids = published.vectors.map((v) => v.id);
     expect(new Set(ids).size).toBe(ids.length);
     const hexOnly = (value: unknown, where: string): void => {
       if (typeof value === 'string') expect(value, where).toMatch(/^[0-9a-f]*$/);
@@ -122,12 +97,11 @@ describe('the pinned EPCIS artefacts', () => {
       if (value == null || typeof value !== 'object') return;
       for (const [k, v] of Object.entries(value as Record<string, unknown>)) (k.endsWith('_hex') ? hexOnly : walk)(v, `${where}.${k}`);
     };
-    for (const v of generated.vectors) {
+    for (const v of published.vectors) {
       for (const key of ['id', 'description', 'input', 'expected', 'tags']) expect(v).toHaveProperty(key);
       expect(v.id).toMatch(/^[a-z0-9-]+$/);
       walk(v, v.id);
     }
-    const text = readFileSync(path, 'utf8');
     // Every host in the file is a documentation host and every GTIN is under the demonstration prefix: nothing real, nobody's name.
     expect(text).not.toContain('gs1.org/01/0950');
     for (const host of new Set([...text.matchAll(/https?:\/\/([a-z0-9.-]+)/g)].map((m) => m[1]))) expect(host, host).toMatch(/(^|\.)(example\.org|issuer\.example|gs1\.org|w3\.org|w3id\.org|githubusercontent\.com)$/);
