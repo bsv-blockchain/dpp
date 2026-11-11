@@ -2,7 +2,7 @@
 
 Operators can use this guide to run an index from the overlay image and the repository's Docker Compose preset, check its admission and access settings, and hand an application its connection file. The preset runs an index and a persistent MongoDB, not a complete passport platform. It is the supported way to run a new index; the retired index starter's projects [move to it](../packages/create-dpp-index.md#move-a-generated-project).
 
-Read [limitations](limitations.md) and [the hosted reference](../deployment.md) first. [Choose packages and services](../start/choose-components-and-services.md) covers an arranged provider and other capabilities your task may need. The [environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example) lists this preset's configuration.
+Read [limitations](limitations.md) and [the hosted reference](../deployment.md) first. [Choose packages and services](../start/choose-components-and-services.md) covers an arranged provider and other capabilities your task may need. The [environment example](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/operator.env.example) lists this preset's configuration.
 
 ## What to prepare
 
@@ -95,7 +95,7 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env logs --tail=
 docker compose -f deploy/compose.yml --env-file deploy/operator.env down
 ```
 
-The [Compose source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
+The [Compose source](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/compose.yml) fixes the local arrangement. The [host configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) defines the remaining options. Use the returned capability document when selecting clients; [contracts](../reference/contracts.md) identify its schema and the service interface.
 
 Follow [broadcast and proofs](wallet-broadcast-proofs.md), [export and recovery](export-import-recovery.md), and [peer synchronisation](federation.md) for exchange or replication. Overlay beta.10 onwards can discover peers and advertise when configured; see the federation guide.
 
@@ -153,8 +153,8 @@ Keep these roles separate in deployment configuration.
 
 | Configure | Source |
 |---|---|
-| Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/compose.yml) |
-| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) |
+| Index and database containers | [Compose preset](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/compose.yml) |
+| Environment and policy files | [Environment example](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/operator.env.example), [host configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) |
 | Wallet, broadcast and proof retrieval | [Integration guide](wallet-broadcast-proofs.md) |
 | Another operator | [Federation](federation.md) |
 | Retention and replacement provider | [Recovery](export-import-recovery.md) |
