@@ -5,10 +5,9 @@
 // key to the index's policy and answers with this app's two write tokens,
 // which go into .env beside the root key the first run generated. A passing
 // run writes LIVE_PUBLISHING=true; a failing run leaves it as it was.
-import { randomBytes } from 'node:crypto'
 import { INDEX_REGISTRATION_FORMAT, signRegistration } from '@bsv/dpp-protocol'
 import { KNOWN_INDEX_HOSTS, loadConfig, type Config } from './config.js'
-import { updateEnvFile } from './env-file.js'
+import { generateRootKey, ROOT_KEY_GENERATED, updateEnvFile } from './env-file.js'
 import { IndexClient } from './index-client.js'
 import { openPlatform as openDefaultPlatform, type Platform, type PlatformOptions } from './platform.js'
 
@@ -32,8 +31,6 @@ export interface GoLiveOptions {
   out: (line: string) => void
   openPlatform?: (options: PlatformOptions) => Promise<Platform>
   now?: () => Date
-  /** 'configuration' runs the first group only (connect-index and add-index before the index runs); 'all' is go-live. */
-  through?: 'configuration' | 'all'
 }
 
 export interface GoLiveResult {
@@ -110,15 +107,11 @@ export async function goLive(options: GoLiveOptions): Promise<GoLiveResult> {
   }
   if (failures.length > 0) return result()
   pass('configuration', `${config.network}, index ${indexUrl}`)
-  if (options.through === 'configuration') return result()
 
   // 2. Wallet.
-  if (config.wallet.rootKeyHex == null) {
-    const rootKey = randomBytes(32).toString('hex')
-    await updateEnvFile(options.envFile, { WALLET_ROOT_KEY: rootKey })
-    env.WALLET_ROOT_KEY = rootKey
+  if (config.wallet.rootKeyHex == null && (await generateRootKey(options.envFile, env))) {
     config = configuration(env)
-    out('Generated WALLET_ROOT_KEY into .env. Back the file up: this key is the wallet.')
+    out(ROOT_KEY_GENERATED)
   }
   let platform: Platform
   try {
@@ -148,7 +141,7 @@ export async function goLive(options: GoLiveOptions): Promise<GoLiveResult> {
       registrationMode = (document.profiles?.find((p) => p.kind === 'operator')?.options?.registration as string | undefined) ?? 'off'
       publisherKeys = document.publisherPolicy?.publisherKeys ?? []
       if (custodyProfile !== CUSTODY_PROFILE) {
-        fail('index', `${indexUrl} admits under custody profile ${custodyProfile ?? 'none'} and this app writes under ${CUSTODY_PROFILE}`, 'use an index that declares managed custody (the default indexes do), or run your own with npm run add-index')
+        fail('index', `${indexUrl} admits under custody profile ${custodyProfile ?? 'none'} and this app writes under ${CUSTODY_PROFILE}`, 'use an index that declares managed custody (the default indexes and the DPP operator preset do), then run npm run connect-index')
       }
     } catch (cause) {
       fail('index', `${indexUrl} could not be reached: ${describe(cause)}`, 'check the address and that the index is running; to use another index, run npm run connect-index -- --url <index>')
@@ -198,9 +191,9 @@ export async function goLive(options: GoLiveOptions): Promise<GoLiveResult> {
       } else if (status === 202) {
         fail('registration', `${indexUrl} holds the request for its operator's approval`, 'run npm run go-live again once the operator has approved; the tokens are handed over then')
       } else if (status === 404) {
-        fail('registration', `${indexUrl} does not register publishers itself`, 'ask its operator for admission and tokens, then run npm run connect-index -- --url <index> --submit-token <t> --callback-token <t>; or run your own index with npm run add-index')
+        fail('registration', `${indexUrl} does not register publishers itself`, 'ask its operator for admission and a connection file (dpp-index connection), then run npm run connect-index -- --from <file>; or run your own index from the DPP operator preset')
       } else if (status === 409 && body.error === 'already-registered') {
-        fail('registration', `${indexUrl} names this publisher key and holds no tokens for it to hand over`, 'ask the operator for this key\'s tokens, then run npm run connect-index -- --url <index> --submit-token <t> --callback-token <t>')
+        fail('registration', `${indexUrl} names this publisher key and holds no tokens for it to hand over`, 'ask the operator for this key\'s connection file (dpp-index connection), then run npm run connect-index -- --from <file>')
       } else {
         fail('registration', `${indexUrl} answered ${status}${body.error == null ? '' : ` ${body.error}`}${body.description == null ? '' : `: ${body.description}`}`, body.hint ?? 'read the message, change .env accordingly and run npm run go-live again')
       }

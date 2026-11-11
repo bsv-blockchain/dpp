@@ -37,14 +37,14 @@ Public read access does not imply submission, callback or export access.
 
 | Task | Guide | Check before moving on |
 |---|---|---|
-| Run a new reference index | [Create an index](../packages/create-dpp-index.md), with the runtime included | Network, admitted keys, trusted policy, tokens, persistent storage and evidence checking |
+| Run a new reference index | [Run an index from source](README.md), the Compose preset, with the runtime built in | Network, admitted keys, trusted policy, tokens, persistent storage and evidence checking |
 | Make live writes and proof delivery reliable | [Wallet, broadcast and proofs](wallet-broadcast-proofs.md) | Funding, operation recovery and responsibility for sending later proofs to every relevant index |
 | Exchange records with another index | [Federation](federation.md) | Direction of synchronisation, compatible admission, record agreement and operator independence |
 | Retain and recover evidence | [Export, import and recovery](export-import-recovery.md) | Complete rather than bounded history, snapshot expiry, trust keys and separate recovery of restricted data and secrets |
 | Supply a registry | [Registry implementation](../implement/roles/registry.md) | The complete selected role, including storage and retrieval; no released registry image is available |
 | Prepare a production release | [Production readiness](production-readiness.md) | Evidence for the chosen product and operating model, with owners for outstanding dependencies |
 
-The starter handles the index runtime dependency; you do not separately install `@bsv/dpp-overlay`. Its guide records the publication prerequisite. Direct installation and the repository's deployment recipe are [advanced alternatives](../packages/dpp-overlay.md).
+The Compose preset builds the index runtime into its image; you do not separately install `@bsv/dpp-overlay`. Direct installation is the [advanced alternative](../packages/dpp-overlay.md) for a custom or embedded index.
 
 Check [known limitations](limitations.md) against the deployed release or source revision; source features may be absent from hosted services.
 

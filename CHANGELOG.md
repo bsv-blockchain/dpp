@@ -12,6 +12,14 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, the index starter folds into the operator preset
+
+- Remove `@bsv/create-dpp-index` from the workspace, its CI step, publication workflow and release scripts. The published `0.1.0-beta.1` stays on npm; deprecating it there is a maintainer action. A new index runs from `packages/dpp-overlay/Dockerfile` with `deploy/compose.yml` and `deploy/operator.env.example`.
+- `dpp-index connection` issues an application's submit and callback tokens for its publisher key, revoking the pair its label issued before, and prints `NETWORK`, `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. The application starter's `connect-index --from <file>` reads that file and replaces `add-index`.
+- The application starter's `npm run wallet` generates `WALLET_ROOT_KEY` on its first run, as `add-index` did, so the publisher key an index is given is never the stand-in test wallet's; without a `.env` to write to, it refuses.
+- The Compose preset makes `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` optional, since per-publisher tokens in its MongoDB refuse writes until issued, accepts `MONGO_URL` for a managed database, forwards `INSTRUCTION_COMMITMENT`, discovery and advertising settings it previously dropped, and runs the index container as the `node` user, read-only, without capabilities, under an init.
+- `docs/packages/create-dpp-index.md` becomes a short page mapping the starter onto the preset, differences included; every page that sent readers to the starter points at the operator guide, which moves back under Deploy and operate with a redirect from its old address.
+
 ### 2026-11-09, @bsv/dpp-credentials drops the parked VSC code
 
 - `@bsv/dpp-credentials` `0.2.0-beta.6`, still unpublished, no longer exports the parked `vsc-draft-compat/0.1.0` profile or the `epcis-vsc@1` and `epcis-vsc@2` mappings, and drops the four Ed25519 and BBS suite dependencies they used. `./exchange` and the root's `parseStrictJsonBytes`, `createDidWebResolver` and `verifyTemporal` stay; `./epcis-source` loses only `readEpcisSourceReference` and `EPCIS_MAPPING_PROFILES`, which served the mappings. The code stays in history at commit `8c82c5e`; the parked manifests' owned artefacts and the mapping vectors stay as published.

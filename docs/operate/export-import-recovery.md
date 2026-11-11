@@ -7,7 +7,7 @@ Index operators and teams replacing a provider can use this guide to back up an 
 | Procedure | Inputs and where to get them |
 |---|---|
 | Whole-index backup or restore | Operator access to the Docker host, the Compose checkout and its `deploy/operator.env`; an empty destination volume for restoration |
-| Passport restoration, either route | Passport identifier and source URL from the publisher; replacement URL and submit token from its operator; a built [checkout](../quick-start.md#get-the-code) or the package specified below |
+| Passport restoration, either route | Passport identifier and source URL from the publisher; replacement URL and a submit token from its operator, operator-wide or issued for the passport's publisher key; a built [checkout](../quick-start.md#get-the-code) or the package specified below |
 | Trust and admission, either route | Export signer from the source operator; replacement settings that admit the passport's publisher keys through `SERVICE_IDENTITY_KEY` or a [signed publisher policy](federation.md#3-sign-a-publisher-policy) |
 | Bounded package | Source index with an export key; no source token. Use only for a passport with no more than 500 states. |
 | Complete export | Source index's `EXPORT_TOKEN` and export signer from [enable exports](#enable-exports-on-your-index). The hosted token is not public; its operator names recipients [on request](../deployment.md#join-the-hosted-reference). |
@@ -31,7 +31,7 @@ Index operators and teams replacing a provider can use this guide to back up an 
 
 ## Back up and restore a whole index
 
-The Compose preset backs up its MongoDB volume. Its [restart, back up and restore recipe](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/deploy/README.md#restart-back-up-restore) uses these steps from the checkout root:
+The Compose preset backs up its MongoDB volume. Its [restart, back up and restore recipe](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/README.md#restart-back-up-restore) uses these steps from the checkout root:
 
 1. Stop the index so files cannot change during copying.
 2. Copy the volume to `mongo-data.tgz`.
@@ -108,7 +108,7 @@ for (const [path, bytes] of files) {
 }
 ```
 
-2. Run it with the replacement's submit token. Set `REPLACEMENT_INDEX` if it is not `http://localhost:8080`:
+2. Run it with a submit token for the replacement: its operator-wide `SUBMIT_TOKEN`, or a token its operator issued for the passport's publisher key with `dpp-index tokens issue --publisher <key> --use submit`. Set `REPLACEMENT_INDEX` if it is not `http://localhost:8080`:
 
 ```sh
 SUBMIT_TOKEN=<replacement submit token> node restore-package.mjs
@@ -229,7 +229,7 @@ The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8d
 | Recovering | Source |
 |---|---|
 | One passport within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-package.schema.json) |
-| A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [part schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
+| A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [part schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
 | Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml) |
 | The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
 

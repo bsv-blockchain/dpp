@@ -47,7 +47,7 @@ The index names peers statically. beta.12 supports opt-in discovery, advertising
 
 These are documented rules; the latest capability check did not exercise authenticated writes. Keep each token with its intended endpoint.
 
-The operator does not distribute tokens for general use. To publish, [create an index](packages/create-dpp-index.md) or arrange access with a compatible provider. For a token or a hosted peer arrangement, [contact the programme](start/choose-your-path.md#contact-the-programme).
+The operator does not distribute tokens for general use. To publish, [run your own index](operate/README.md) or arrange access with a compatible provider. For a token or a hosted peer arrangement, [contact the programme](start/choose-your-path.md#contact-the-programme).
 
 ## Passports to try
 

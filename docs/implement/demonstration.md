@@ -7,7 +7,7 @@ Implementers whose components pass the fixtures can use this guide to exchange f
 | Input or scenario | Requirement and source |
 |---|---|
 | All scenarios | Passing fixture results, authorship and dependency records kept as [reporting](reporting.md) describes. |
-| Writer | Your funded BRC-100 wallet and index. [Create an index](../packages/create-dpp-index.md) includes the reference runtime; use your own implementation to claim the independent overlay role. |
+| Writer | Your funded BRC-100 wallet and index. [Run an index from source](../operate/README.md) runs the reference runtime; use your own implementation to claim the independent overlay role. |
 | Mined inclusion | Explicitly authorised, funded mainnet run, with transaction identifiers retained. Synthetic transactions under a scripts-only header setting prove admission and structure, never mining. |
 | Reference participation | Agree scenarios, endpoints and publisher keys with the programme below. |
 

@@ -67,18 +67,10 @@ A partial publication is not announced as a complete release. Qualification stil
 
 ## What a consumer does with it
 
-The index starter has a separate publication workflow, described below. It consumes this release set but is not itself a protocol conformance artefact.
-
 The hosted reference application consumes exact npm package versions, and the hosted registry consumes the packages as vendored tarballs packed from a named revision; each names the set it is aligned to and the revision it was packed from. The generic example with no brand, wallet or account prerequisite is `examples/lifecycle-v2.mjs` in this repository; the recommended journey through the set is in [`../docs/quick-start.md`](../docs/quick-start.md), and the support declaration of every entry point is in [`../docs/packages/support-table.md`](../docs/packages/support-table.md).
 
 For a step-by-step walkthrough of this profile release, see [publishing a profile package update](../docs/reference/publishing-profile-updates.md).
 
-## Index starter publication
+## Index starter, retired
 
-`@bsv/create-dpp-index` is released independently by `.github/workflows/publish-index-starter.yaml`. The runtime publication above must finish first. The starter workflow verifies the already published archives for the exact overlay, protocol and profiles versions pinned in its manifest before testing or publishing the starter. It never republishes the runtime packages.
-
-Use `npm run index-starter:release` for local preparation, then `npm run index-starter:release -- --check-registry` once the runtime is available. The ignored `release/index-starter/publication-plan.json` binds the starter and prerequisite archive digests, runtime release set, source revision, tag, authentication method and provenance choice. The generator publishes under `latest`, as its `publishConfig` binds, and the setup guides use its exact version. A working-tree plan cannot authorise publication.
-
-The [starter release instructions](../packages/create-dpp-index/README.md#prepare-a-release) cover the trusted publisher configuration, the separately approved interactive route for establishing a new npm package, recovery after interruption, and the fresh-cache registry checks. Commit and push the reviewed changes before preparing the final committed plan; publication requires approval of that exact plan.
-
-The workflow tests the packed starter against public runtime dependencies before publishing. After publication, `npm run index-starter:check -- --registry` exercises the actual npm create command and installed project without local archive substitutions. A source candidate check alone does not establish that a public npm installation works.
+`@bsv/create-dpp-index` is no longer released from this repository. Its published `0.1.0-beta.1` stays on npm, pinned to the superseded `dpp-release-2026-10-10`; marking it deprecated there is a maintainer action. An operator runs the index this set's image builds, `packages/dpp-overlay/Dockerfile`, with the Compose preset in [`../deploy/`](../deploy/README.md), whose `dpp-index connection` writes an application's connection file.

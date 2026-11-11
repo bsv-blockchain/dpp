@@ -91,9 +91,9 @@ npm run build
 npm run starter:check -- --directory ../my-app
 ```
 
-The candidate check installs the packed generator, creates the app at the chosen directory, installs local runtime archives, then builds, typechecks and tests it. Both starters pin `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives test unpublished source independently of the public npm command.
+The candidate check installs the packed generator, creates the app at the chosen directory, installs local runtime archives, then builds, typechecks and tests it. The application starter pins `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives test unpublished source independently of the public npm command.
 
-For deployment, connect a compatible index or create a separate project with [the index starter](create-dpp-index.md). The app's Compose file starts its database; the index starter includes its maintained runtime and needs no additional overlay installation. Offline success does not establish production readiness: complete the generated guide and [production checks](../operate/production-readiness.md).
+For deployment, connect a compatible index or [run your own](../operate/README.md) from the repository's Compose preset. The app's Compose file starts its database; the preset builds the maintained index runtime and needs no additional overlay installation. Offline success does not establish production readiness: complete the generated guide and [production checks](../operate/production-readiness.md).
 
 ## What you are building
 
@@ -188,8 +188,7 @@ Choose one index route:
 | Route | Procedure and completion check |
 |---|---|
 | Arranged provider | Verify the provider inputs listed above, then continue to step 3 with its settings |
-| New index project | Follow [Create an index](create-dpp-index.md) for runtime and deployment files; obtain the wallet key in 2.1 if needed. After `npm run doctor -- --online` passes, take its URL, submit token and proof callback token to step 3. Skip 2.2 to 2.5 |
-| Source deployment | Follow 2.1 to 2.5 below |
+| Your own index | Follow 2.1 to 2.5 below: the repository's Compose preset, [run an index from source](../operate/README.md) in brief |
 
 The hosted reference admits the programme's two publisher keys. It provides no general write entitlement or general-use `POST /submit` and `POST /arc-ingest` tokens ([access details](../deployment.md#what-is-open-and-what-needs-a-token)).
 
@@ -211,8 +210,6 @@ Expect 66 hexadecimal characters. `localhost` is the originator, the hostname by
 
 ### 2.2 Create the settings file and two secrets
 
-Continue here only for the repository's source deployment. A generated index already has its own configuration and secrets.
-
 If `deploy/operator.env` already exists, edit it instead of overwriting it. The two secrets must differ.
 
 ```sh
@@ -228,8 +225,8 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | Setting | Value | Why |
 |---|---|---|
 | `SERVICE_IDENTITY_KEY` | The 66 characters from 2.1 | The publisher key the index admits. It is a public key; leave `SERVER_PRIVATE_KEY` empty |
-| `SUBMIT_TOKEN` | The first secret | Guards `POST /submit` and `POST /retract`. Compose will not start without it |
-| `ARC_CALLBACK_TOKEN` | The second secret | Guards `POST /arc-ingest`, where a writer pushes a mined state's merkle path. Compose will not start without it |
+| `SUBMIT_TOKEN` | The first secret | Guards `POST /submit` and `POST /retract` for any publisher. Optional in the preset; `dpp-index connection` can instead issue tokens bound to your key ([connect an application](../operate/README.md#connect-an-application)) |
+| `ARC_CALLBACK_TOKEN` | The second secret | Guards `POST /arc-ingest`, where a writer pushes a mined state's merkle path. Optional in the same way |
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
 | `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects the managed custody profile, `managed-custody@2` in this candidate: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
@@ -310,13 +307,13 @@ node examples/write-passport-v2.mjs <passportId> http://localhost:8080 \
 |---|---|
 | `<passportId>` | Your identifier. Required, and refused unless it is under prefix 952 |
 | `<indexUrl>` | Your own index. Required, and never defaulted to the hosted reference |
-| `--submit-token=<t>` | The index's `SUBMIT_TOKEN`. A 401 or 403 from the index stops the run |
-| `--callback-token=<t>` | The index's `ARC_CALLBACK_TOKEN`, sent as `X-Callback-Token` when a proof is pushed |
+| `--submit-token=<t>` | The index's `SUBMIT_TOKEN`, or the submit token issued for your key. A 401 or 403 from the index stops the run |
+| `--callback-token=<t>` | The index's `ARC_CALLBACK_TOKEN`, or the callback token issued for your key, sent as `X-Callback-Token` when a proof is pushed |
 | `--wait-proof=<minutes>` | How long to wait for each state's merkle path from the wallet. Default 0. Use 30: a state is proven once a block holds it, about ten minutes on average |
 | `--originator=<host>` | The hostname your wallet knows the program by. Default `localhost` |
 | `--journal=<dir>` | Where the journal goes. Default `./dpp-journal` |
 
-For an index made with the starter, use `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN` from its generated `.app.env` as the URL, submit-token and callback-token arguments. These are connection settings for the existing index; the writer does not need a separate installation of its runtime.
+For an index whose operator issued you a connection file with `dpp-index connection`, use its `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN` as the URL, submit-token and callback-token arguments. These are connection settings for the existing index; the writer does not need a separate installation of its runtime.
 
 | Live-run condition | Action or expected result |
 |---|---|

@@ -1,14 +1,14 @@
 # @bsv/dpp-overlay
 
-The maintained DPP index runtime, included by [`@bsv/create-dpp-index`](../create-dpp-index/README.md).
+The maintained DPP index runtime.
 
-**To set up a new index, start with the starter.** It creates your project and installs this package as a dependency. There is no separate runtime installation step. This page covers direct integration and runtime configuration for custom or embedded indexes. An application that only connects to an existing index over HTTP needs neither hosting package.
+**To run a new index, use the repository's operator preset.** [`deploy/`](../../deploy/README.md) builds this package's image from [`Dockerfile`](Dockerfile) and runs it with a persistent MongoDB on Docker Compose, configured from one env file; `dpp-index connection` then writes the connection file an application server reads. This page covers direct integration and the runtime configuration both routes share. An application that only connects to an existing index over HTTP needs no hosting package.
 
 **Experimental prerelease:** For implementation and interoperability testing. APIs may change significantly before a stable release. Pin exact package versions and retain your lockfile. This package is not declared production-ready. Package versions are separate from the specification, wire-format and frozen profile versions they implement.
 
 ## Install
 
-For a custom integration, install the runtime directly. If you used the starter, follow your generated project's README instead; it already declares this dependency.
+For a custom integration, install the runtime directly. The operator preset builds it from source instead and needs no installation.
 
 **Publication pending:** [install the local candidate archives](../../docs/packages/README.md#use-the-renamed-source-candidate) to test this version. The following npm command applies after publication.
 
@@ -33,13 +33,15 @@ the demonstration app uses it: both components run in process against
 
 **As a service.** `@bsv/dpp-overlay/server` exports the HTTP host for the same topic and lookup components, speaking the ecosystem's standard wire (BRC-22 `POST /submit`, BRC-24 `POST /lookup`, `POST /arc-ingest` for Merkle proofs, plus `GET /health`), the extension routes documented below, and the GASP routes a synchronising peer reads. Importing starts nothing. Call `runFromEnvironment()` to run the configured operator process, or use the installed `dpp-index --env-file operator.env` command. `dpp-index --help` describes the entry point. Existing source and Docker startup paths still work.
 
-The [starter](../create-dpp-index/README.md) configures this HTTP host with MongoDB, deployment files, startup checks and application connection settings. Its default profile selects managed custody; custom integrations can configure their own policies.
+The [operator preset](../../deploy/README.md) runs this HTTP host with MongoDB, its configuration and the application connection command below. Its example configuration selects managed custody; custom integrations can configure their own policies.
+
+**An application's connection.** `dpp-index connection` issues one application its submit and callback tokens, bound to its publisher key, into the store `dpp-index tokens` uses, revokes the pair the same `--label` (default `app`) issued that key before, and prints the four settings the application starter reads as an env file on stdout: `NETWORK`, `INDEX_URL`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. The publisher defaults to `SERVICE_IDENTITY_KEY`, the address to `PUBLIC_URL`; `--publisher` and `--url` override them. Redirect the output into a private file: the tokens appear once and only their SHA-256 is stored.
 
 **Proofs.** The host does not broadcast, so no broadcaster's callback reaches it unasked. A writer pushes each state's merkle path to `POST /arc-ingest` once its wallet has it, or points its broadcaster's callback URL here; the proof is checked to contain the transaction and validated against the header source before the stored BEEF is updated, and the lookup then serves the state proven (`spec/services.md` §2, `spec/writing.md` §7). Re-announcing a mined state does nothing: the engine skips a txid it already holds.
 
 ## Running it
 
-These commands are for developing the runtime from this package's source directory. Generated projects have their own commands in their README.
+These commands are for developing the runtime from this package's source directory. The operator preset has its own commands in [`deploy/README.md`](../../deploy/README.md).
 
 ```
 npm run build      # tsc to dist/, needed before start and before the app imports it

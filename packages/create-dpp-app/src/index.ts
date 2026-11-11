@@ -132,5 +132,5 @@ Done. Next:
 
 .env holds fresh secrets and points at the default testnet index; go-live makes the wallet key and stores the tokens.
 An index is the service your app announces passports to and readers look them up in. The default one is hosted;
-npm run connect-index takes another provider's, npm run add-index creates your own beside this app.
+npm run connect-index takes another provider's, or your own run from the DPP operator preset.
 Read README.md for what go-live checks and for mainnet.`)

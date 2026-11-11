@@ -2,7 +2,7 @@
 
 Scaffolded by `@bsv/create-dpp-app`. Brands issue product passports as records on the BSV blockchain, hand them on along the supply chain, and anyone verifies a passport from its label. The records follow the open DPP standard; this application is one way of building what the standard requires, and every opinion it takes is yours to change.
 
-The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release-2026-11` runtime set as the index starter. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
+The application uses `@bsv/dpp-protocol` directly and pins the `dpp-release-2026-11` runtime set, the set the DPP repository's index image builds. Keep the declared versions together. A project prepared from the repository before npm publication uses local candidate archives; those checks do not establish that a public npm installation is available.
 
 ## What you have
 
@@ -14,7 +14,7 @@ The application uses `@bsv/dpp-protocol` directly and pins the same `dpp-release
 
 The API's routes are in [apps/api/API.md](apps/api/API.md).
 
-For deployment, `npm run go-live` registers this app with the default hosted index; `npm run connect-index` takes another provider's, and `npm run add-index` creates your own index project with `@bsv/create-dpp-index`. The app's Compose file starts only its database. The index runtime is included for offline exercises; you do not install it separately or use the index in this process as persistent service storage.
+For deployment, `npm run go-live` registers this app with the default hosted index; `npm run connect-index` takes another provider's or your own. The app's Compose file starts only its database. The index runtime is included for offline exercises; you do not install it separately or use the index in this process as persistent service storage.
 
 ## First run
 
@@ -84,7 +84,7 @@ An index is where your passports become findable: the app announces every state 
 
 **Another provider's index.** `npm run connect-index -- --url https://index.example` writes the address and runs the checks; `go-live` then registers if the index registers publishers. A provider that hands out tokens itself: `npm run connect-index -- --url https://index.example --submit-token <t> --callback-token <t>`. Match the wallet's network and the managed custody profile; public lookup access alone is insufficient.
 
-**Your own index.** `npm run add-index` creates an index project beside this app with `@bsv/create-dpp-index`, named with this app's publisher key and network, takes the connection its connection script wrote, and prints the two next commands: `npm run up` inside the index project, then `npm run go-live` here. The index project's README covers its own startup, hosting and recovery. The index starter version is pinned in this project's `package.json`; before that version is published, create the index from the DPP repository's candidate checks and connect it with `connect-index`.
+**Your own index.** Run it from the DPP repository's operator preset, `deploy/` in [github.com/bsv-blockchain/dpp](https://github.com/bsv-blockchain/dpp): the index image and a persistent MongoDB on Docker Compose, configured from one env file. Give it this app's publisher key as `SERVICE_IDENTITY_KEY`, and this app's `NETWORK`: `npm run wallet` prints the key, and its first run generates `WALLET_ROOT_KEY` into `.env` (back the file up). Once the index runs, its `dpp-index connection` command writes the connection file; `npm run connect-index -- --from <that file>` here writes the address and both tokens to `.env` and runs the go-live checks, and when every check passes it switches live publishing on. After fixing a failed check, such as funds, run `npm run go-live`. The preset's README covers hosting, backup and recovery.
 
 | App setting | Meaning |
 | --- | --- |

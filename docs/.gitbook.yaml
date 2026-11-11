@@ -132,3 +132,7 @@ redirects:
   technical-reference/packages-and-installation/dpp-overlay-topics: packages/dpp-overlay.md
   packages/vsc: packages/dpp-credentials.md
   technical-reference/packages-and-installation/vsc: packages/dpp-credentials.md
+
+  # The operator guide returned to Deploy and operate when the index starter
+  # was retired; this is its address under the index runtime page.
+  reference/packages/dpp-overlay/operate: operate/README.md

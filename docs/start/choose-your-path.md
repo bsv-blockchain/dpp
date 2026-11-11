@@ -24,7 +24,7 @@ Obtain each route's prerequisites from the owner or guide named below.
 | Build a new passport platform end to end | A product scope and decisions about which parts you supply | [Build a platform](#build-a-platform) |
 | Add a repair, test, certification or recycling claim | Your issuer key; registry and anchoring access for published storage. Hosted storage needs a write token from the [programme](#contact-the-programme) | [Add a claim](#add-a-claim) |
 | Hand a passport on, or receive one | A custodian application | [Hand on or receive](#hand-on-or-receive) |
-| Run an index | Node.js 22, npm, Docker Compose and your publisher public key; check the starter's publication status | [Run an index](#run-an-index) |
+| Run an index | Git, Docker Compose, a source checkout and your publisher public key | [Run an index](#run-an-index) |
 | Exchange records with the hosted reference | Your own index | [Exchange with the reference](#exchange-with-the-reference) |
 | Run a registry | Your implementation of its contract; no package or image is published. Reference helpers use Node.js 22 | [Run a registry](#run-a-registry) |
 | Use GS1 Digital Link, EPCIS or W3C credentials with what we have | Your existing system | [Connect other standards](#connect-other-standards) |
@@ -65,7 +65,7 @@ Obtain each route's prerequisites from the owner or guide named below.
 1. Identify [the application parts](../packages/what-an-application-offers.md) you will build.
 2. [Get an identifier](../identifiers.md#get-an-identifier): a GTIN, a host you control, or demonstration prefix 952 until you have both.
 3. [Choose a profile](../profiles/README.md): the product data your passports carry.
-4. [Arrange an admitting provider](choose-components-and-services.md#what-the-existing-hosted-services-allow) or [create an index](../packages/create-dpp-index.md). Announce every state to it.
+4. [Arrange an admitting provider](choose-components-and-services.md#what-the-existing-hosted-services-allow) or [run your own index](../operate/README.md). Announce every state to it.
 5. [Issue and update with a wallet](../packages/build-an-application.md#3-write-a-passport); [the writer example](../packages/how-the-writer-works.md) explains each step.
 6. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): send, prove and recover from interruptions.
 7. [Export, import and recovery](../operate/export-import-recovery.md): keep what you wrote.
@@ -101,7 +101,7 @@ Obtain each route's prerequisites from the owner or guide named below.
 
 ## Run an index
 
-1. [Create an index](../packages/create-dpp-index.md): generate, start with Docker and check configuration. The starter includes the runtime; do not separately install `@bsv/dpp-overlay`.
+1. [Run an index from source](../operate/README.md): configure the Compose preset, start it with Docker, check its configuration and write an application's connection file. The preset builds the runtime; do not separately install `@bsv/dpp-overlay`.
 2. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): how proofs reach your index.
 3. [Export, import and recovery](../operate/export-import-recovery.md): back up and restore.
 4. [Known limitations](../operate/limitations.md#index-host): what the index does not do yet.

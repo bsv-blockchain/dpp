@@ -25,7 +25,7 @@ Choose your intended outcome from the routes below. Optional demonstration acces
 | Run services or use a provider | [Deploy and operate](operate/overview.md) | Service choices, access requirements, deployment and recovery guidance |
 | Find precise rules or implement independently | [Technical reference](reference/README.md) | Specifications, contracts, package interfaces and conformance evidence |
 
-Starting from nothing? [Create an application](packages/create-dpp-app.md) or [create an index](packages/create-dpp-index.md): each generates a project in one command. Use [choose packages and services](start/choose-components-and-services.md) to select the pieces. AI agents should also read [the agent guide](start/for-agents.md); returning readers can use [all tasks](start/choose-your-path.md).
+Starting from nothing? [Create an application](packages/create-dpp-app.md), which generates a project in one command, or [run your own index](operate/README.md) from the repository's Docker Compose preset. Use [choose packages and services](start/choose-components-and-services.md) to select the pieces. AI agents should also read [the agent guide](start/for-agents.md); returning readers can use [all tasks](start/choose-your-path.md).
 
 ## Try the hosted demonstration
 

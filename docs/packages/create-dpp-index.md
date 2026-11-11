@@ -1,97 +1,39 @@
-# Create an index
+# Index starter (retired)
 
-Application operators can use `@bsv/create-dpp-index` to create, start and connect an editable index project: persistent MongoDB, access tokens, deployment files and an app connection helper. One service handles passport history and attestation anchors.
+The index starter, `@bsv/create-dpp-index`, is retired. Run a new index from the overlay image and the repository's Docker Compose preset: [Run an index from source](../operate/README.md) is the whole procedure, from configuration to the application's connection file. One service handles passport history and attestation anchors, and no separate runtime installation is needed.
 
-**Use the starter once. It includes the index runtime.** You do not separately install `@bsv/dpp-overlay` or create another service for it.
+Most of what the starter set up has a place in the preset. The rows marked as differences are not carried over, or not by default; decide on each before you rely on the preset:
 
-| Part | What it does | Your action |
-| --- | --- | --- |
-| `@bsv/create-dpp-index` | Creates your project | Run the setup command below |
-| Your generated project | Holds configuration, deployment files and a pinned runtime dependency | Run its commands to start and maintain your index |
-| `@bsv/dpp-overlay` | Runs the index inside that project | Included automatically with the project's dependencies |
-
-For an existing compatible index, obtain its URL and access settings from the operator; HTTP connections need neither package. Direct runtime installation supports [custom or embedded integrations](dpp-overlay.md).
-
-## Before creation
-
-| Required input | Source |
-|---|---|
-| Node 22 or later, npm, Docker with Compose v2 | Install on the machine running the generated project. |
-| Publisher key | Run `npm run wallet` in the app and use the public key it prints. |
-| Network | Select the network your application uses. |
-
-## Create your project
-
-| Selection | Version boundary |
-|---|---|
-| Published, installed by the command below | The published starter, `0.1.0-beta.1`, pins the published index runtime `@bsv/dpp-overlay@0.4.0-beta.12` of the superseded `dpp-release-2026-10-10`. |
-| Source candidate, not yet published | Starter `0.1.0-beta.2` pins `@bsv/dpp-overlay@0.4.0-beta.13` of current `dpp-release-2026-11`. |
-
-From the reviewed source checkout, `npm ci`, `npm run build` and `npm run index-starter:check` exercise the packed candidate outside the repository without publishing. Maintainers publish the runtime before the starter; the release workflow separately checks public npm setup before announcing a release.
-
-1. Create the project from npm:
-
-```sh
-npm create @bsv/dpp-index@0.1.0-beta.1 my-index
-```
-
-The guided setup explains the index, asks for the publisher key and network, and generates fresh secrets without printing them. It uses the app starter's managed custody without prompting; admitting self-custody states is an environment setting.
-
-## Start and connect
-
-2. Change into the generated `my-index` directory, then run:
-
-```sh
-npm test
-npm run up
-npm run doctor -- --online
-npm run connection
-```
-
-The generator installs dependencies unless you pass `--no-install`.
-
-| Command | Expected result |
-|---|---|
-| `npm test` | Generated-project checks pass. |
-| `up` | Builds from your lockfile and starts the index and MongoDB. HTTP binds to loopback; MongoDB's port stays private. |
-| `doctor` | Checks the running network, version, topics, custody profile and publisher keys. Resolve failures before connecting. |
-| `connection` | Writes the private `.app.env` described below. |
-
-3. Copy the connection settings into the app's server environment and restart it.
-
-| Connection input or location | Published starter (`0.1.0-beta.1`) behaviour |
-|---|---|
-| `.app.env` | Holds `INDEX_URL`, `NETWORK`, `INDEX_SUBMIT_TOKEN` and `INDEX_CALLBACK_TOKEN`. |
-| Token source | Copies the operator-wide `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN`. It issues no per-publisher tokens and creates no `config/publisher-tokens.json`. |
-| Separate hosts | Use `npm run connection -- --url https://index.example.org`. |
-| Container app | Use an address reachable from that container; its `localhost` is the container itself. |
-
-## What is included
-
-| Included | Your choice |
+| The starter gave you | The preset gives you |
 | --- | --- |
-| Passport and attestation topics on one service | Publisher public keys and network |
-| Persistent MongoDB with a dedicated user | Bundled Docker MongoDB or a managed database |
-| Published starter: separate operator-wide submit, callback and complete-export tokens | Which applications receive each shared secret; rotate it for every application using it |
-| Managed custody admission, as the app starter writes | Admitting self-custody states, by environment setting; no starter app writes them yet |
-| Header verification enabled | Header-source credentials and quota |
-| Evidence export with a separate signing key | Disable exports if you do not provide them |
-| Deployment, diagnostics and backup instructions | Hosting, TLS, monitoring and recovery rehearsal |
+| `npm create @bsv/dpp-index` | A [source checkout](README.md#source-access) with `deploy/compose.yml`, which builds `packages/dpp-overlay/Dockerfile` |
+| A generated `.env` | `deploy/operator.env`, copied from `deploy/operator.env.example` and filled in |
+| Persistent MongoDB | The bundled MongoDB on a named volume, private to the Compose network, or a managed database through `MONGO_URL` |
+| Operator-wide `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN`, copied into `.app.env` | The same settings, now optional, or per-publisher tokens that `dpp-index connection` issues, stored hashed in the preset's MongoDB |
+| `npm run connection` and `.app.env` | `dpp-index connection`, run in the index container, which prints the same four settings; a generated application takes the file with `npm run connect-index -- --from <file>` |
+| `npm run doctor -- --online` | `GET /health` and `GET /capabilities`, compared with the configuration as the operator guide shows |
+| A read-only index container, run as the `node` user without capabilities | The same container settings on the preset's `overlay` service |
+| Backup and recovery instructions | [Export and recovery](../operate/export-import-recovery.md) |
+| Difference: a dedicated, authenticated MongoDB user | The bundled MongoDB has no credentials and publishes no port; for authentication, set `MONGO_URL` to a managed database |
+| Difference: HTTP published on loopback only | The preset publishes on every interface; set `OVERLAY_PORT=127.0.0.1:8080` behind a TLS proxy on the same host |
+| Difference: `ANCHOR_SERVICE_KEYS` defaulted to the publisher key | Empty carries every treasury's anchors; set it to the publisher key to carry only that application's |
+| Difference: generated `EXPORT_TOKEN` and `EXPORT_SIGNING_KEY` | Empty, so both export routes answer 503 until you [enable exports](../operate/export-import-recovery.md#enable-exports-on-your-index) |
+| Difference: startup refused `CHAIN_TRACKER=scripts-only` | Nothing refuses it; leave `CHAIN_TRACKER` empty on any reachable index |
 
-Peer synchronisation, SHIP discovery and funded SHIP/SLAP advertising are optional. No funded wallet is needed merely to run the index. The included runtime brings the compatible protocol, profiles, SDK and MongoDB driver dependencies automatically. Application auth, a wallet service, claim storage and a resolver are separate responsibilities. [Choose packages and services](../start/choose-components-and-services.md) explains when you need them.
+## The published starter
 
-## Testing the source candidate
+`@bsv/create-dpp-index@0.1.0-beta.1` stays on npm and still creates the project it always did, pinned to the superseded `dpp-release-2026-10-10` runtime. It receives no further versions, and its unpublished source candidate is withdrawn. Marking the package deprecated on npm, with a message pointing here, is a maintainer action.
 
-The unpublished `0.1.0-beta.2` starter pins the November runtime candidate and uses per-publisher write tokens. Its `npm run connection` issues submit and callback tokens bound to the configured publisher key, stores hashes in `config/publisher-tokens.json` and app settings in `.app.env`. Reruns retain those tokens. The runtime reads file changes without restarting; operators can revoke one writer without changing another's token. Complete-export access remains operator-wide.
+## Move a generated project
 
-Use the packed candidate check above. npm beta.1 lacks these changes; upgrading only a generated project's runtime leaves its helper scripts unchanged. Read [migration](../migration.md#test-the-november-source-candidate) before upgrading.
+A project the published starter generated keeps running as it is. To move it to the preset:
 
-## Automated setup
+1. Copy every non-empty setting from the project's `.env` into `deploy/operator.env`, except `PORT`, `HOST`, `MONGO_URL`, `MONGO_INDEX_PASSWORD` and `MONGO_ROOT_PASSWORD`. That carries `MONGO_DB`, the keys, the tokens, `PUBLIC_URL` and every admission and synchronisation setting. Copy the project's `config/` into `deploy/config/` and change `PUBLISHER_POLICY_FILE` from `config/<file>` to `/config/<file>`, where the preset mounts it.
+2. Back up its index database with the project's own `mongodump` instructions. Before the preset's index first starts, restore that archive into the preset's MongoDB; it keeps the database name `MONGO_DB` now carries:
 
 ```sh
-npx @bsv/create-dpp-index@0.1.0-beta.1 my-index --publisher-key "$PUBLISHER_PUBLIC_KEY" --network main --yes --no-install --json
+docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --wait mongo
+docker compose -f deploy/compose.yml --env-file deploy/operator.env exec -T mongo mongorestore --archive --gzip < index.archive.gz
 ```
 
-Use `--config` for JSON settings or `--help` for every flag. Unknown options, missing required values and non-empty directories are refused. Inside the project, `node scripts/doctor.mjs --online --json` gives a structured result and returns non-zero on failure. No credentials appear in that result.
-
-The generated README and `OPERATIONS.md` cover customisation, deployment and recovery. Continue in that project; the repository's source deployment is an alternative setup, not an additional step. Keep secrets private and header checks enabled. The starter refuses the synthetic fixture setting `scripts-only`; successful scaffolding is not evidence that application writes or blockchain settlement have been exercised. See [wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md), [evidence and freshness](../learn/evidence-and-freshness.md) and [prepare for production](../operate/production-readiness.md) for the next checks.
+3. Start the preset, check it as [Run an index from source](../operate/README.md#start-and-inspect) shows, and [issue the application a new connection](../operate/README.md#connect-an-application). The carried `SUBMIT_TOKEN` and `ARC_CALLBACK_TOKEN` keep the application writing until it holds its own; then empty them.

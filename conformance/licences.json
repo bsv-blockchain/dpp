@@ -10,12 +10,6 @@
       "dependencies": []
     },
     {
-      "name": "@bsv/create-dpp-index",
-      "version": "0.1.0-beta.2",
-      "licence": "Apache-2.0",
-      "dependencies": []
-    },
-    {
       "name": "@bsv/dpp-credentials",
       "version": "0.2.0-beta.6",
       "licence": "Apache-2.0",

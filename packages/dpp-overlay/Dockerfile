@@ -30,7 +30,6 @@ COPY packages/dpp-overlay/package.json packages/dpp-overlay/
 COPY packages/dpp-credentials/package.json packages/dpp-credentials/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 COPY packages/create-dpp-app/package.json packages/create-dpp-app/
-COPY packages/create-dpp-index/package.json packages/create-dpp-index/
 RUN npm ci --ignore-scripts \
       -w @bsv/dpp-overlay -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root
 
@@ -52,7 +51,6 @@ COPY packages/dpp-overlay/package.json packages/dpp-overlay/
 COPY packages/dpp-credentials/package.json packages/dpp-credentials/
 COPY packages/dpp-profiles/package.json packages/dpp-profiles/
 COPY packages/create-dpp-app/package.json packages/create-dpp-app/
-COPY packages/create-dpp-index/package.json packages/create-dpp-index/
 RUN npm ci --omit=dev --ignore-scripts \
       -w @bsv/dpp-overlay -w @bsv/dpp-protocol -w @bsv/dpp-profiles --include-workspace-root \
     && npm cache clean --force

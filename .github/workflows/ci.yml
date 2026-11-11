@@ -63,7 +63,6 @@ jobs:
       - run: npm ci
       - run: node scripts/release-candidates.mjs
       - run: node scripts/consumer-check.mjs
-      - run: npm run index-starter:check
       # The implementer bundle assembles from the same tree, so a file it
       # would refuse to carry is caught here.
       - run: node scripts/implementer-bundle.mjs
@@ -86,16 +85,32 @@ jobs:
           [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
           docker build --build-arg BASE_IMAGE="$base" -f packages/dpp-overlay/Dockerfile -t dpp-overlay:ci .
       # A versioned smoke of the image: it boots on configuration alone,
-      # answers /health and names its capabilities.
+      # answers /health and names its capabilities, under the operator
+      # preset's container settings (node user, read-only, no capabilities, init).
       - run: |
           set -euo pipefail
           docker run -d --name smoke -p 18080:8080 \
+            --user node --init --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
             -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
             -e SUBMIT_TOKEN=smoke -e ARC_CALLBACK_TOKEN=smoke -e CHAIN_TRACKER=scripts-only \
             dpp-overlay:ci
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:18080/health && break; sleep 2; done
           curl -fsS http://127.0.0.1:18080/capabilities | head -c 400
           docker rm -f smoke
+      # The operator preset: the Compose file resolves from its own example
+      # configuration, and the image's connection command writes the four
+      # settings an application reads.
+      - run: |
+          set -euo pipefail
+          docker compose -f deploy/compose.yml --env-file deploy/operator.env.example config --quiet
+          docker run --rm --user node --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+            -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
+            -e PUBLISHER_TOKENS_FILE=/tmp/publisher-tokens.json -e PUBLIC_URL=http://localhost:8080 -e NETWORK=test \
+            dpp-overlay:ci node packages/dpp-overlay/dist/cli.js connection > connection.env
+          grep -Eq '^INDEX_SUBMIT_TOKEN=[0-9a-f]{64}$' connection.env
+          grep -Eq '^INDEX_CALLBACK_TOKEN=[0-9a-f]{64}$' connection.env
+          grep -qx 'INDEX_URL=http://localhost:8080' connection.env
+          rm connection.env
 
   # The starter: @bsv/create-dpp-app scaffolds an application from its bundled
   # template, pinned to the current release set. The CLI builds and tests,
