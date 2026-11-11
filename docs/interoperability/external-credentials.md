@@ -128,7 +128,7 @@ Keep exact bytes and proof results separately: reformatting can change the exact
 
 ## If you implement it yourself
 
-The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) defines each rule. A verifier in another language needs:
+The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/external-credential-profile.md) defines each rule. A verifier in another language needs:
 
 - strict JSON parsing that refuses duplicate keys, malformed UTF-8, excessive nesting and input over 256 KiB;
 - contexts pinned to recorded bytes, with the credential's `@context` matched exactly against the pinned sets;
@@ -141,8 +141,8 @@ The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/dab
 
 | Integration task | Source |
 |---|---|
-| Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/external-credential-profile.md) |
-| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/src/exchange.ts) |
+| Select representation and suite | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/external-credential-profile.md) |
+| Supply verification adapters | [Reference exchange API](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/packages/dpp-credentials/src/exchange.ts) |
 | Interpret the shared report | [Verification source](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/verification.md) |
 | Exercise the format | [Credential vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability) |
 

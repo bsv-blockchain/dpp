@@ -139,7 +139,7 @@ node scripts/release-candidates.mjs
 node scripts/consumer-check.mjs
 ```
 
-The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/release-candidates.mjs) records revision and digests in `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/f9d8e98658c7cf406702d49194ec5a8480cbca73/scripts/consumer-check.mjs) installs and exercises the tarballs in a separate project. Require `Every sentence above holds.` before using them; stop on failure.
+The [candidate tooling](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/scripts/release-candidates.mjs) records revision and digests in `release/candidates.json`. The [consumer check](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/scripts/consumer-check.mjs) installs and exercises the tarballs in a separate project. Require `Every sentence above holds.` before using them; stop on failure.
 
 To print the produced tarball paths, run:
 
