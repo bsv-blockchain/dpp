@@ -15,7 +15,7 @@
  * version 2 chain and the acceptance record, the artefacts the packages carry
  * are read from inside the installed packages, the licence file is present in
  * each, no private, test or environment file is inside any tarball, and the
- * declarations of all packages and the VSC subpaths are type-checked by
+ * declarations of all packages and the credentials subpaths are type-checked by
  * a strict TypeScript project. One sentence per assertion, naming what it
  * covered; never a score; exit 1 when any sentence does not hold.
  *
@@ -134,7 +134,7 @@ const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities
 const host = await import('@bsv/dpp-overlay/server')
 out.push(['overlay/server: importing starts no process and exposes the host', typeof host.startOverlayService === 'function' && typeof host.runFromEnvironment === 'function'])
 const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData } = await import('@bsv/dpp-profiles')
-const vsc = await import('@bsv/dpp-credentials')
+const credentials = await import('@bsv/dpp-credentials')
 const exchange = await import('@bsv/dpp-credentials/exchange')
 const epcisSource = await import('@bsv/dpp-credentials/epcis-source')
 const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
@@ -186,10 +186,10 @@ let historicalReviewRefused = false
 try { reviewProfileData('battery@2', {}) } catch { historicalReviewRefused = true }
 out.push(['profiles: version 4 data review refuses to reinterpret a historical profile', historicalReviewRefused])
 
-out.push(['vsc: root exports the SEAL verifier and document loader', typeof vsc.verifySeal === 'function' && typeof vsc.createDocumentLoader === 'function'])
-out.push(['vsc/exchange: verifies the external representation', typeof exchange.verifyExternalCredential === 'function' && exchange.EXTERNAL_REPRESENTATIONS.includes('vc-di-ecdsa-rdfc-2019@1')])
+out.push(['dpp-credentials: root re-exports strict parsing and the EPCIS source helpers, and none of the parked SEAL profile', typeof credentials.parseStrictJsonBytes === 'function' && typeof credentials.parseEpcisSource === 'function' && !('verifySeal' in credentials) && !('mapEpcisEventWithReport' in credentials)])
+out.push(['dpp-credentials/exchange: verifies the external representation', typeof exchange.verifyExternalCredential === 'function' && exchange.EXTERNAL_REPRESENTATIONS.includes('vc-di-ecdsa-rdfc-2019@1')])
 const parsed = epcisSource.parseEpcisSource(new TextEncoder().encode(JSON.stringify({ '@context': ['https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld'], type: 'EPCISDocument', schemaVersion: '2.0', creationDate: '2026-09-06T00:00:00Z', epcisBody: { eventList: [] } })), { mediaType: 'application/json' })
-out.push(['vsc/epcis-source: parses an empty document', parsed.ok === true])
+out.push(['dpp-credentials/epcis-source: parses an empty document', parsed.ok === true])
 out.push(['dpp-credentials: the pinned EPCIS schema is inside the installed package', existsSync(join('node_modules', '@bsv', 'dpp-credentials', 'artifacts', 'epcis', 'epcis-json-schema-2.0.1.json'))])
 console.log(JSON.stringify(out))
 `)
@@ -216,7 +216,7 @@ console.log(JSON.stringify(out))
     say(existsSync(join(pkgDir, 'LICENSE')) || existsSync(join(pkgDir, 'LICENSE.md')), `${c.name} carries its licence file.`)
   }
 
-  // 4. The types: a strict TypeScript project importing every package and every VSC subpath, using a declaration from each.
+  // 4. The types: a strict TypeScript project importing every package and every credentials subpath, using a declaration from each.
   run(['npm', 'install', '--no-save', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache, 'typescript@7.0.2', '@types/node@22.20.3'], dir)
   writeFileSync(join(dir, 'types.ts'), `
 import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, EvidencePackageManifest } from '@bsv/dpp-protocol'
@@ -224,7 +224,7 @@ import { verifyChain } from '@bsv/dpp-protocol'
 import { DppTopicManager, type DppRecordStore, type EvidenceExportPart } from '@bsv/dpp-overlay'
 import { startOverlayService, type OverlayHttpOptions } from '@bsv/dpp-overlay/server'
 import { readManifest, type ProfileManifest, type InteroperabilityProfileId } from '@bsv/dpp-profiles'
-import { verifySeal, type Seal } from '@bsv/dpp-credentials'
+import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
 import type { Transaction } from '@bsv/sdk'
@@ -241,11 +241,11 @@ export async function check(txs: Transaction[], key: string): Promise<{ v2: DppS
   return { v2: state != null && state.version === '2' ? state : undefined }
 }
 export function stores(store: DppRecordStore, part: EvidenceExportPart): [DppRecordStore, EvidenceExportPart] { return [store, part] }
-export async function credentials(seal: Seal, bytes: Uint8Array, policy: ExternalVerificationPolicy, limits: Partial<EpcisLimits>): Promise<[ExternalVerification, EpcisParseResult]> {
-  void verifySeal
+export async function credentials(credential: Credential, bytes: Uint8Array, policy: ExternalVerificationPolicy, limits: Partial<EpcisLimits>): Promise<[ExternalVerification, EpcisParseResult]> {
+  void parseStrictJsonBytes
   const external = await verifyExternalCredential({ bytes, representation: 'vc-di-ecdsa-rdfc-2019@1', policy })
   const parsed = parseEpcisSource(bytes, { mediaType: 'application/json', limits })
-  void seal
+  void credential
   return [external, parsed]
 }
 `)

@@ -23,7 +23,7 @@ import { readFileSync } from 'node:fs';
 import { Ajv } from 'ajv';
 import addFormats from 'ajv-formats';
 import { canonicalizeJcs } from './jcs.js';
-import type { JsonObject, Seal } from './types.js';
+import type { JsonObject } from './types.js';
 
 /* ------------------------------ artefacts ------------------------------- */
 
@@ -44,10 +44,8 @@ export const EPCIS_EVENT_TYPES = ['ObjectEvent', 'AggregationEvent', 'Transforma
 export type EpcisEventType = (typeof EPCIS_EVENT_TYPES)[number];
 /** The signed source-reference vocabulary a mapped credential carries beside the round-trip event. */
 export const EPCIS_SOURCE_VOCABULARY = 'urn:bsv:dpp:epcis-source:1';
+/** The mapping profile a source reference names when the caller names none. The mapping itself is parked and is not part of this package. */
 export const EPCIS_MAPPING_PROFILE = 'epcis-vsc@1';
-/** The mapping profiles the report answers under: epcis-vsc@1 is the default and stays as published; epcis-vsc@2 adds the CBV 2.0 disposition crosswalk. */
-export const EPCIS_MAPPING_PROFILES = ['epcis-vsc@1', 'epcis-vsc@2'] as const;
-export type EpcisMappingProfile = (typeof EPCIS_MAPPING_PROFILES)[number];
 export const EPCIS_SOURCE_PROFILE = 'epcis-json@1';
 export const EPCIS_MEDIA_TYPES = ['application/json', 'application/ld+json'] as const;
 
@@ -463,15 +461,6 @@ export function epcisSourceReference(input: { sourceSha256: string; mediaType: s
     contextDigests: [...input.contextDigests].sort(),
     mappingProfile: input.mappingProfile ?? EPCIS_MAPPING_PROFILE,
   };
-}
-
-/** The source reference a mapped SEAL carries, or undefined when it carries none. Reading it does not verify the credential. */
-export function readEpcisSourceReference(seal: Seal): EpcisSourceReference | undefined {
-  const value = seal.extensions?.['+Dn']?.[EPCIS_SOURCE_VOCABULARY];
-  if (value == null || typeof value !== 'object' || Array.isArray(value)) return undefined;
-  const ref = value as JsonObject;
-  if (ref.vocabularyUrn !== EPCIS_SOURCE_VOCABULARY || typeof ref.sourceDigest !== 'string' || typeof ref.eventPointer !== 'string' || !Array.isArray(ref.contextDigests)) return undefined;
-  return ref as EpcisSourceReference;
 }
 
 /* ------------------------------- validation ----------------------------- */

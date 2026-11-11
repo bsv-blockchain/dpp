@@ -10,7 +10,8 @@
  *   node scripts/release-candidates.mjs                       # the current candidate set
  *   node scripts/release-candidates.mjs release/<set>.json    # a named set
  *
- * Builds first, because a tarball packs dist/. Refuses a set that is not a
+ * Builds first, from an empty dist/ in each package, because a tarball packs
+ * dist/. Refuses a set that is not a
  * candidate, a package whose manifest version differs from the set's, a
  * manifest that does not export an entry point the set declares, and a set
  * that names no selection.
@@ -37,6 +38,9 @@ rmSync(out, { recursive: true, force: true })
 mkdirSync(out, { recursive: true })
 
 const run = (args, cwd = root) => execFileSync(args[0], args.slice(1), { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
+// A tarball packs all of dist/, and tsc never deletes output, so each package
+// builds from an empty dist/: a module since removed from src/ is not packed.
+for (const pkg of set.packages) rmSync(join(root, pkg.directory, 'dist'), { recursive: true, force: true })
 run(['npm', 'run', 'build'])
 const revision = (() => { try { return run(['git', 'rev-parse', 'HEAD']).trim() } catch { return 'unknown' } })()
 const dirty = (() => { try { return run(['git', 'status', '--porcelain']).trim() !== '' } catch { return true } })()

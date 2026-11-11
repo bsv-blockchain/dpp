@@ -6,8 +6,6 @@ import {
   DEFAULT_CONTEXT_SETS, EXTERNAL_CREDENTIAL_LIMIT_BYTES, EXTERNAL_PASSPORT_CONTEXT, EXTERNAL_PASSPORT_CONTEXT_URL, EXTERNAL_PASSPORT_SCHEMA, VC_V2_CONTEXT,
   createExternalDocumentLoader, externalCredentialVerifierFor, parseExternalCredentialBytes, verifyBitstringStatus, verifyExternalCredential, type ExternalVerificationPolicy,
 } from '../src/exchange.js';
-import { verifyCredentialProof } from '../src/crypto.js';
-import { createDocumentLoader, CONTEXT_URL } from '../src/context.js';
 import type { Credential, JsonObject } from '../src/types.js';
 import { ISSUER, NOW, PASSPORT_ID, STATUS_LIST, fixture, sign, statusList, unsignedPassport } from './exchange-fixture.js';
 
@@ -43,7 +41,7 @@ describe('the external document loader', () => {
     expect((await loader(EXTERNAL_PASSPORT_CONTEXT_URL)).document).toEqual(EXTERNAL_PASSPORT_CONTEXT);
     expect(JSON.parse(readFileSync(new URL('../artifacts/external/dpp-external-passport-1.context.jsonld', import.meta.url), 'utf8'))).toEqual(EXTERNAL_PASSPORT_CONTEXT);
     expect(JSON.parse(readFileSync(new URL('../artifacts/external/dpp-external-passport-1.schema.json', import.meta.url), 'utf8'))).toEqual(EXTERNAL_PASSPORT_SCHEMA);
-    await expect(loader(CONTEXT_URL)).rejects.toThrow('Unsupported context');
+    await expect(loader('urn:bsv:vsc:context:0.1.0')).rejects.toThrow('Unsupported context');
     await expect(loader('https://example.org/contexts/anything')).rejects.toThrow('No document available');
     await expect(loader('did:web:unpinned.example')).rejects.toThrow('No document available');
   });
@@ -126,6 +124,20 @@ describe('verifyExternalCredential', () => {
     const bounded = await verifyBitstringStatus(signed, { statusPolicy: { id: 'x', maxAgeMs: 8 * 24 * 3600 * 1000, resolve: async () => list as unknown as Credential }, evaluationTime: NOW }, async () => ({ outcome: 'verified', issues: [] }));
     expect(bounded.issues[0]?.code).toBe('status_policy_invalid');
   }, 30_000);
+  it('reads the status bit only from a list whose identity, proof and purpose hold', async () => {
+    const statusOf = async (document: JsonObject) => (await verifyExternalCredential({ bytes: bytes(signed), representation: 'vc-di-ecdsa-rdfc-2019@1', policy: policy({ statusPolicy: { id: 'urn:test:status', maxAgeMs: 86_400_000, resolve: async () => document as unknown as Credential } }) })).checks.status;
+    expect((await statusOf(list)).outcome).toBe('verified');
+    const elsewhere = await statusList(ISSUER, f.keys.issuer, loader, [], 'https://issuer.example/status/2');
+    expect((await statusOf(elsewhere)).issues[0]?.code).toBe('status_identity');
+    const altered = structuredClone(list);
+    (altered.credentialSubject as JsonObject).statusPurpose = 'suspension';
+    const unauthenticated = await statusOf(altered);
+    expect(unauthenticated.outcome).toBe('invalid');
+    expect(unauthenticated.issues[0]?.code).toBe('status_proof');
+    const { proof: _proof, ...unsignedList } = list;
+    const suspension = await sign({ ...unsignedList, credentialSubject: { ...(unsignedList.credentialSubject as JsonObject), statusPurpose: 'suspension' } }, f.keys.issuer, loader, '2026-09-06T00:00:00Z');
+    expect((await statusOf(suspension)).issues[0]?.code).toBe('status_payload');
+  }, 30_000);
   it('accepts only the pinned context sets, exactly and in order', async () => {
     expect(DEFAULT_CONTEXT_SETS[0]).toEqual([VC_V2_CONTEXT]);
     const reordered = structuredClone(signed) as JsonObject; reordered['@context'] = [EXTERNAL_PASSPORT_CONTEXT_URL, VC_V2_CONTEXT];
@@ -172,14 +184,12 @@ describe('the report adapter', () => {
   }, 30_000);
 });
 
-describe('the SEAL verifier is untouched by the external profile', () => {
-  it('still answers unsupported with context_unsupported for an ecdsa credential under the VC 2.0 contexts', async () => {
-    const check = await verifyCredentialProof({ credential: signed as unknown as Credential, documentLoader: createDocumentLoader(f.documents) });
-    expect(check.outcome).toBe('unsupported');
-    expect(check.issues[0]?.code).toBe('context_unsupported');
-  });
-  it('does not export the external entry point from the main entry', async () => {
+describe('the root entry point', () => {
+  it('does not export the external entry point, and exports none of the parked SEAL profile', async () => {
     const main = await import('../src/index.js');
     expect('verifyExternalCredential' in main).toBe(false);
+    for (const name of ['verifySeal', 'issueSealEd25519', 'issueSealBbs', 'parseSealBytes', 'createDocumentLoader', 'verifyCredentialProof', 'mapEpcisEvent', 'mapEpcisEventWithReport']) expect(name in main, name).toBe(false);
+    expect(typeof main.parseStrictJsonBytes).toBe('function');
+    expect(typeof main.parseEpcisSource).toBe('function');
   });
 });

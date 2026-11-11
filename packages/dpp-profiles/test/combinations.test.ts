@@ -46,7 +46,7 @@ describe('profile combinations (conformance.md §4)', () => {
       const result = checkSelection({ baseline: 'native-baseline@1', exchange: ['vsc-draft-compat@0.1.0'], purpose })
       expect(result.ok, purpose).toBe(true)
       expect(result.notes, purpose).toHaveLength(1)
-      expect(result.notes[0], purpose).toMatch(/^vsc-draft-compat@0\.1\.0 is parked: kept, built and tested, required by no release and not under development/)
+      expect(result.notes[0], purpose).toMatch(/^vsc-draft-compat@0\.1\.0 is parked: required by no release and not under development/)
       expect(result.notes[0], purpose).toMatch(/artefacts not retrieved \(vsc-core, vsc-requirements\)/)
     }
     expect(checkSelection({ baseline: 'native-baseline@1', exchange: ['vsc-draft-compat@0.1.0'], purpose: 'claim' }).notes[0]).toMatch(/a claim on it rests on its own ledger rows/)

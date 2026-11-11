@@ -1,18 +1,18 @@
 /**
- * The neutral EPCIS fixtures of the epcis-json@1, epcis-vsc@1 and epcis-vsc@2
- * profiles, and the generators of fixtures/vectors/dpp/interoperability/epcis/
- * v1.json and v2.json.
+ * The neutral EPCIS fixtures of the epcis-json@1 profile, and the generator
+ * of the source exchange vectors in fixtures/vectors/dpp/interoperability/
+ * epcis/v1.json. The two mapping vectors in that file and the whole of v2.json
+ * belong to the parked epcis-vsc@1 and epcis-vsc@2 mappings, which left this
+ * package in 0.2.0-beta.6; their generators stay in the repository history
+ * and the files stay as published.
  * Every identifier is synthetic: the GS1 demonstration prefix 952, example.org
- * hosts, did:web:issuer.example issuers. Nothing here was copied from any
- * published event source; the shapes exercise the profile's rules, not a
- * vendor's encoding.
+ * hosts. Nothing here was copied from any published event source; the shapes
+ * exercise the profile's rules, not a vendor's encoding.
  */
 import {
-  EPCIS_CONTEXT_DIGEST,
   EPCIS_CONTEXT_IRI,
   classifyEventArrival,
   epcisEventBodyDigest,
-  epcisSourceReference,
   localEventIdentity,
   parseEpcisSource,
   pinnedContextDigests,
@@ -20,10 +20,7 @@ import {
   validateEpcisDocument,
   type EpcisLimits,
 } from '../src/epcis-source.js';
-import { CBV_DISPOSITION_CROSSWALK, mapEpcisEventWithReport, type EpcisMappingReport } from '../src/epcis.js';
-import { validateSealStructure } from '../src/validation.js';
-import type { JsonObject, Seal } from '../src/types.js';
-import { ISSUER, unsignedSeal } from './fixtures.js';
+import type { JsonObject } from '../src/types.js';
 
 const utf8 = (text: string): Uint8Array => new TextEncoder().encode(text);
 
@@ -115,21 +112,17 @@ export function refusedTransports(): Array<{ id: string; description: string; by
   ];
 }
 
-export const MAPPING_OPTIONS = () => {
-  const base = unsignedSeal();
-  return { issuer: ISSUER, assertionMethod: `${ISSUER}#ed`, actorRole: 'manufacturer', jurisdiction: 'AU', issuedAt: T0, credentialStatus: base.credentialStatus, chainOfCustody: base.chainOfCustody, transformationAction: 'ADD' as const };
-};
-
 export function contextDigestsOf(document: JsonObject): string[] {
   return pinnedContextDigests(document['@context']).digests;
 }
 
 /**
- * The published vector file: parse outcomes, digests, arrival rules,
- * validation findings and mapping outcomes for every fixture above, in the
- * stack's vector format, generated so the file cannot drift from the code.
+ * The source exchange vectors of the published v1.json, in its order: parse
+ * outcomes, digests, arrival rules and validation findings for every fixture
+ * above, in the stack's vector format, generated so they cannot drift from
+ * the code.
  */
-export function epcisInteroperabilityVectors(): Record<string, unknown> {
+export function epcisSourceVectors(): Array<Record<string, unknown>> {
   const vectors: Array<Record<string, unknown>> = [];
   const documentBytes = utf8(JSON.stringify(epcisDocument(fiveEventList()), null, 2) + '\n');
   const parsed = parseEpcisSource(documentBytes, { mediaType: 'application/ld+json' });
@@ -247,203 +240,5 @@ export function epcisInteroperabilityVectors(): Record<string, unknown> {
     });
   }
 
-  const options = MAPPING_OPTIONS();
-  const mappingVectors = fiveEventList().map((record, index) => {
-    const pointer = `/epcisBody/eventList/${index}`;
-    const reference = epcisSourceReference({ sourceSha256: parsed.sha256, mediaType: 'application/ld+json', pointer, ...(typeof record.eventID === 'string' ? { eventId: record.eventID } : {}), contextDigests });
-    const report = mapEpcisEventWithReport(record, { ...options, id: `urn:uuid:00000000-0000-4000-8000-0000000000f${index}` }, { sourceReference: reference });
-    return { pointer, type: record.type, mapping: report.mapping, missing: report.missing, unmapped: report.unmapped, ...(report.seal == null ? {} : { seal: report.seal, seal_structure_valid: validateSealStructure(report.seal, { requireProof: false }).valid }) };
-  });
-  vectors.push({
-    id: 'mapping-outcomes',
-    description: 'Every event of the five-event document mapped into the VSC profile with an explicit outcome: the commissioning ObjectEvent is lossless and yields a structurally valid unsigned SEAL carrying the source reference; events with parties, transactions, sensors, quantities or a caller-decided transformation action are transformed with their losses named; an in_progress disposition the custody model does not name is unsupported. No SEAL is issued, and nothing touches a token.',
-    input: { source_sha256_hex: parsed.sha256, context_digests_hex: contextDigests, issuer: ISSUER, transformation_action: 'ADD' },
-    expected: { outcomes: mappingVectors },
-    tags: ['epcis', 'vsc-mapping'],
-  });
-
-  const insufficient: JsonObject = { type: 'ObjectEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', epcList: [PACK], action: 'OBSERVE', bizStep: 'inspecting' };
-  const partyOnly: JsonObject = { type: 'ObjectEvent', eventTime: T0, eventTimeZoneOffset: '+00:00', recordTime: T0, epcList: [PACK], action: 'OBSERVE', bizStep: 'storing', disposition: 'active', bizLocation: { id: ASSEMBLY_SITE }, sourceList: [{ type: 'owning_party', source: OWNING_PARTY_B }] };
-  const insufficientReport = mapEpcisEventWithReport(insufficient, options);
-  const partyReport = mapEpcisEventWithReport(partyOnly, { ...options, id: 'urn:uuid:00000000-0000-4000-8000-0000000000fa' });
-  vectors.push({
-    id: 'evidence-only-and-attribution',
-    description: 'Valid EPCIS that lacks a disposition is insufficient-data and stays evidence only; an event naming an owning party and a business location maps with the configured issuer as actor, never with the party or location the event names.',
-    input: { insufficient_event: insufficient, party_event: partyOnly, issuer: ISSUER },
-    expected: {
-      insufficient: { mapping: insufficientReport.mapping, missing: insufficientReport.missing },
-      party: { mapping: partyReport.mapping, unmapped: partyReport.unmapped, actor_did: (partyReport.seal as Seal).eventVector.who.actorDid, issuer: (partyReport.seal as Seal).issuer },
-    },
-    tags: ['epcis', 'vsc-mapping', 'error-case'],
-  });
-
-  return {
-    $schema: 'https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json',
-    id: 'dpp.interoperability.epcis.v1',
-    name: 'EPCIS 2.0.1 source exchange (epcis-json@1) and explicit VSC mapping (epcis-vsc@1)',
-    version: '1.0.0',
-    reference_impl: 'vsc@0.2.0',
-    parity_class: 'required',
-    brc: [],
-    notes: `Pinned EPCIS 2.0.1 JSON Schema 0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af and context ${EPCIS_CONTEXT_DIGEST}. Every identifier uses the GS1 demonstration prefix 952 and example.org hosts.`,
-    vectors,
-  };
-}
-
-/**
- * The epcis-vsc@2 vector file: the CBV 2.0 disposition crosswalk applied to
- * every value under ADD, OBSERVE and DELETE, the origin and the lifecycle
- * across the five event types, the spellings, the refusals by name, the
- * destination the CBV vocabulary does not name, a missing disposition, error
- * declarations, the maintenance observations under both mapping profiles, and
- * the five-event document mapped with source references that name epcis-vsc@2.
- */
-export function epcisVsc2Vectors(): Record<string, unknown> {
-  const vectors: Array<Record<string, unknown>> = [];
-  const v2 = { profile: 'epcis-vsc@2' as const };
-  const options = MAPPING_OPTIONS();
-  const object = (action: string, disposition: string | undefined, bizStep = 'other', extra: JsonObject = {}): JsonObject => event('ObjectEvent', { epcList: [PACK], action, bizStep, ...(disposition == null ? {} : { disposition }), readPoint: { id: READ_POINT }, ...extra });
-  const outcome = (report: EpcisMappingReport): Record<string, unknown> => ({ mapping: report.mapping, ...(report.seal == null ? { missing: report.missing } : { disposition_carried: report.seal.eventVector.how.disposition, unmapped: report.unmapped }) });
-  const limitOf = (report: EpcisMappingReport): string | undefined => report.mapping === 'unsupported' ? /^([a-z-]+): /.exec(report.missing[0] ?? '')?.[1] : undefined;
-
-  const template = object('OBSERVE', 'in_transit');
-  vectors.push({
-    id: 'crosswalk-every-disposition',
-    description: 'Every CBV 2.0 disposition of section 7.2.3, with the values section 7.2.3.1 deprecates, placed in the same ObjectEvent at the business step other under the actions ADD, OBSERVE and DELETE. The five values CBV shares with the VSC custody model are carried verbatim where the action agrees: active only under ADD, which commissions the objects; in_transit and returned only under OBSERVE; dispensed and destroyed under OBSERVE or DELETE. Every other combination is refused, its reason opening with the mapping limit it cites. A conforming epcis-vsc@2 implementation reproduces each outcome and limit.',
-    input: { profile: 'epcis-vsc@2', event_template: template, replaced_member: 'disposition', actions: ['ADD', 'OBSERVE', 'DELETE'], dispositions: Object.keys(CBV_DISPOSITION_CROSSWALK) },
-    expected: {
-      outcomes: Object.entries(CBV_DISPOSITION_CROSSWALK).flatMap(([disposition, entry]) => ['ADD', 'OBSERVE', 'DELETE'].map((action) => {
-        const report = mapEpcisEventWithReport(object(action, disposition), options, v2);
-        return { disposition, action, effect: entry.effect, ...(entry.replacedBy == null ? {} : { replaced_by: entry.replacedBy }), mapping: report.mapping, ...(report.seal == null ? { limit: limitOf(report) } : { disposition_carried: report.seal.eventVector.how.disposition }) };
-      })),
-    },
-    tags: ['epcis', 'vsc-mapping', 'crosswalk'],
-  });
-
-  const typed: Array<[string, JsonObject]> = [
-    ['ObjectEvent ADD commissioning active', object('ADD', 'active', 'commissioning')],
-    ['AggregationEvent ADD packing active', event('AggregationEvent', { parentID: PALLET, childEPCs: [PACK], action: 'ADD', bizStep: 'packing', disposition: 'active', readPoint: { id: READ_POINT } })],
-    ['AssociationEvent ADD installing active', event('AssociationEvent', { parentID: PACK, childEPCs: [CELL_A], action: 'ADD', bizStep: 'installing', disposition: 'active', readPoint: { id: READ_POINT } })],
-    ['TransactionEvent ADD shipping active', event('TransactionEvent', { bizTransactionList: [{ type: 'po', bizTransaction: 'urn:epcglobal:cbv:bt:9521234000018:PO-77' }], epcList: [PACK], action: 'ADD', bizStep: 'shipping', disposition: 'active', readPoint: { id: READ_POINT } })],
-    ['TransformationEvent assembling active', event('TransformationEvent', { inputEPCList: [CELL_A, CELL_B], outputEPCList: [MODULE], bizStep: 'assembling', disposition: 'active', readPoint: { id: READ_POINT } })],
-    ['TransformationEvent assembling in_transit', event('TransformationEvent', { inputEPCList: [CELL_A, CELL_B], outputEPCList: [MODULE], bizStep: 'assembling', disposition: 'in_transit', readPoint: { id: READ_POINT } })],
-    ['AggregationEvent ADD packing in_transit', event('AggregationEvent', { parentID: PALLET, childEPCs: [PACK], action: 'ADD', bizStep: 'packing', disposition: 'in_transit', readPoint: { id: READ_POINT } })],
-    ['AggregationEvent DELETE unpacking in_transit', event('AggregationEvent', { parentID: PALLET, childEPCs: [PACK], action: 'DELETE', bizStep: 'unpacking', disposition: 'in_transit', readPoint: { id: READ_POINT } })],
-    ['ObjectEvent ADD commissioning in_transit', object('ADD', 'in_transit', 'commissioning')],
-    ['ObjectEvent ADD commissioning destroyed', object('ADD', 'destroyed', 'commissioning')],
-    ['ObjectEvent DELETE decommissioning returned', object('DELETE', 'returned', 'decommissioning')],
-    ['ObjectEvent DELETE destroying destroyed', object('DELETE', 'destroyed', 'destroying')],
-  ];
-  vectors.push({
-    id: 'origin-and-lifecycle',
-    description: 'The action means what EPCIS 2.0 section 7.4.2 and its siblings say it means for each event type. Only an ObjectEvent whose action is ADD commissions its objects, so only it carries active, the VSC origin: an AggregationEvent, AssociationEvent or TransactionEvent whose action is ADD adds objects that already exist to a parent or a business transaction, and a TransformationEvent carries its inputs, so each reporting active is custody-neutral. A commissioning ObjectEvent can only open the chain, so a transit or terminal disposition on it is a lifecycle-conflict, and so is a transit disposition on a decommissioning ObjectEvent (DELETE); on the other event types ADD and DELETE leave transit and terminal dispositions carried. The transformation action decision is ADD.',
-    input: { profile: 'epcis-vsc@2', transformation_action: 'ADD', events: typed.map(([name, e]) => ({ name, event: e })) },
-    expected: { outcomes: typed.map(([name, e]) => { const r = mapEpcisEventWithReport(e, options, v2); return { name, mapping: r.mapping, ...(r.seal == null ? { limit: limitOf(r) } : { disposition_carried: r.seal.eventVector.how.disposition }) }; }) },
-    tags: ['epcis', 'vsc-mapping', 'crosswalk'],
-  });
-
-  const spellings = ['active', 'urn:epcglobal:cbv:disp:active', 'https://ref.gs1.org/cbv/Disp-active'];
-  vectors.push({
-    id: 'disposition-spellings',
-    description: 'The bare, URN and Web URI spellings of one CBV disposition are the same value: each commissioning event maps, the SEAL carries the CBV term, and the round-trip extension keeps the spelling the source used.',
-    input: { profile: 'epcis-vsc@2', events: spellings.map((d) => object('ADD', d, 'commissioning')) },
-    expected: { outcomes: spellings.map((d) => { const r = mapEpcisEventWithReport(object('ADD', d, 'commissioning'), options, v2); return { ...outcome(r), source_spelling_retained: (r.seal!.extensions['+Dn']['+D1'] as JsonObject & { event: JsonObject }).event.disposition }; }) },
-    tags: ['epcis', 'vsc-mapping', 'crosswalk'],
-  });
-
-  const nonCbv = ['stored', 'transshipped', 'transformed', 'received', 'urn:epcglobal:cbv:disp:received', 'urn:epcglobal:cbv:disp:sold', 'https://example.org/disp/sold', 'Active'];
-  vectors.push({
-    id: 'non-cbv-dispositions',
-    description: 'A disposition outside CBV 2.0 is refused as non-cbv-disposition under epcis-vsc@2, among them the four VSC-only terms stored, transshipped, transformed and received, which epcis-vsc@1 still maps; a VSC-only term is never written for a CBV event. CBV values are lower case, so Active is not one.',
-    input: { event_template: template, replaced_member: 'disposition', dispositions: nonCbv },
-    expected: { outcomes: nonCbv.map((d) => ({ disposition: d, epcis_vsc_2: limitOf(mapEpcisEventWithReport(object('OBSERVE', d), options, v2)), epcis_vsc_1: mapEpcisEventWithReport(object('OBSERVE', d), options).mapping })) },
-    tags: ['epcis', 'vsc-mapping', 'error-case'],
-  });
-
-  const absent = [object('OBSERVE', undefined, 'inspecting'), object('ADD', undefined, 'commissioning'), object('DELETE', undefined, 'decommissioning'), object('OBSERVE', undefined, 'receiving')];
-  vectors.push({
-    id: 'absent-disposition',
-    description: 'EPCIS 2.0 makes the disposition optional and reads its absence as unchanged. Under epcis-vsc@2 an OBSERVE event without one is custody-neutral (custody-destination-unnamed at a receiving step) and has no SEAL; an ADD or DELETE event without one stays insufficient-data, as under epcis-vsc@1.',
-    input: { profile: 'epcis-vsc@2', events: absent },
-    expected: { outcomes: absent.map((e) => outcome(mapEpcisEventWithReport(e, options, v2))) },
-    tags: ['epcis', 'vsc-mapping', 'error-case'],
-  });
-
-  const destination = [object('OBSERVE', 'in_progress', 'receiving'), object('OBSERVE', 'sellable_not_accessible', 'receiving'), object('OBSERVE', 'active', 'accepting'), object('OBSERVE', 'returned', 'receiving'), object('OBSERVE', 'retail_sold', 'receiving')];
-  vectors.push({
-    id: 'custody-destination',
-    description: 'A receiving or accepting step whose disposition is neutral, active or absent records a hand-over at the destination, the VSC state Q3, whose only VSC term received is not a CBV disposition: it is refused as custody-destination-unnamed rather than substituted. A receiving step that reports returned is carried as returned; one that reports retail_sold is refused as custody-transition-unnamed.',
-    input: { profile: 'epcis-vsc@2', events: destination },
-    expected: { outcomes: destination.map((e) => outcome(mapEpcisEventWithReport(e, options, v2))) },
-    tags: ['epcis', 'vsc-mapping', 'crosswalk'],
-  });
-
-  const { declared, corrective, orphanDeclared } = correctionEvents();
-  const declarations: Array<[string, JsonObject]> = [['declared error of a receiving event', declared], ['the corrective event it names', corrective], ['declared error whose corrective event is not supplied', orphanDeclared]];
-  vectors.push({
-    id: 'error-declarations',
-    description: 'An event carrying an EPCIS error declaration asserts that the prior event it repeats is in error (EPCIS 2.0 section 7.4.1.2), not that its step happened. epcis-vsc@2 refuses it as error-declaration, so no SEAL asserts the step the source retracted; epcis-vsc@1 maps it with the loss error-declaration, as its manifest publishes. The corrective event is an ordinary event and maps under both. Only a VSC correction retracts a SEAL.',
-    input: { events: declarations.map(([name, e]) => ({ name, event: e })) },
-    expected: { outcomes: declarations.map(([name, e]) => { const one = mapEpcisEventWithReport(e, options); const two = mapEpcisEventWithReport(e, options, v2); return { name, epcis_vsc_1: { mapping: one.mapping, ...(one.seal == null ? { missing: one.missing } : { unmapped: one.unmapped }) }, epcis_vsc_2: { mapping: two.mapping, ...(two.seal == null ? { limit: limitOf(two) } : { disposition_carried: two.seal.eventVector.how.disposition, unmapped: two.unmapped }) } }; }) },
-    tags: ['epcis', 'vsc-mapping', 'error-case'],
-  });
-
-  const sensors = [{ sensorReport: [{ type: 'Temperature', value: 4.5, uom: 'CEL' }] }];
-  const maintenance: Array<[string, JsonObject]> = [
-    ['repair reporting active', object('OBSERVE', 'active', 'repairing')],
-    ['inspection reporting active', object('OBSERVE', 'active', 'inspecting')],
-    ['sensor reading reporting active', object('OBSERVE', 'active', 'sensor_reporting', { sensorElementList: sensors })],
-    ['repair recorded as a transformation', event('TransformationEvent', { inputEPCList: [MODULE], outputEPCList: [PACK], bizStep: 'repairing', disposition: 'active', readPoint: { id: READ_POINT } })],
-    ['inspection in transit', object('OBSERVE', 'in_transit', 'inspecting')],
-    ['sensor reading in transit', object('OBSERVE', 'in_transit', 'sensor_reporting', { sensorElementList: sensors })],
-    ['storing reporting active', object('OBSERVE', 'active', 'storing')],
-    ['commissioning at a repair step', object('ADD', 'active', 'repairing')],
-  ];
-  vectors.push({
-    id: 'maintenance-observations-under-both-profiles',
-    description: 'The same events under both mapping profiles. epcis-vsc@1 refuses an observation (an OBSERVE event or a TransformationEvent) at an inspection, repair or sensor reading step that reports active as maintenance-observation, as its manifest publishes, and maps a maintenance step that reports a custody state and an ObjectEvent that commissions its objects. epcis-vsc@2 decides by the custody effect instead: active enters the origin state only on an ObjectEvent that commissions its objects, so every observation reporting active is custody-neutral, whatever its step, and so is a repair recorded as a transformation, whose SEAL would carry objects that already exist. The transformation action decision is ADD.',
-    input: { transformation_action: 'ADD', events: maintenance.map(([name, e]) => ({ name, event: e })) },
-    expected: { outcomes: maintenance.map(([name, e]) => { const one = mapEpcisEventWithReport(e, options); const two = mapEpcisEventWithReport(e, options, v2); return { name, epcis_vsc_1: { mapping: one.mapping, ...(one.seal == null ? { missing: one.missing } : { unmapped: one.unmapped }) }, epcis_vsc_2: { mapping: two.mapping, ...(two.seal == null ? { missing: two.missing } : { unmapped: two.unmapped }) } }; }) },
-    tags: ['epcis', 'vsc-mapping'],
-  });
-
-  const documentBytes = utf8(JSON.stringify(epcisDocument(fiveEventList()), null, 2) + '\n');
-  const parsed = parseEpcisSource(documentBytes, { mediaType: 'application/ld+json' });
-  if (!parsed.ok) throw new Error(parsed.detail);
-  const contextDigests = contextDigestsOf(parsed.document);
-  const mappingVectors = fiveEventList().map((record, index) => {
-    const pointer = `/epcisBody/eventList/${index}`;
-    const reference = epcisSourceReference({ sourceSha256: parsed.sha256, mediaType: 'application/ld+json', pointer, ...(typeof record.eventID === 'string' ? { eventId: record.eventID } : {}), contextDigests, mappingProfile: 'epcis-vsc@2' });
-    const report = mapEpcisEventWithReport(record, { ...options, id: `urn:uuid:00000000-0000-4000-8000-0000000002f${index}` }, { ...v2, sourceReference: reference });
-    return { pointer, type: record.type, mapping: report.mapping, missing: report.missing, unmapped: report.unmapped, ...(report.seal == null ? {} : { seal: report.seal, seal_structure_valid: validateSealStructure(report.seal, { requireProof: false }).valid }) };
-  });
-  vectors.push({
-    id: 'mapping-outcomes',
-    description: 'The five-event document of dpp.interoperability.epcis.v1 (its five-event-document vector carries the same bytes) mapped under epcis-vsc@2 with source references that name epcis-vsc@2. The commissioning ObjectEvent is lossless; the assembling transformations, which report in_progress, and the association, which reports active for a pack the commissioning event already opened, are custody-neutral; the aggregation, transaction and in-transit sensor reading map with their losses named. No SEAL is issued, and nothing touches a token.',
-    input: { profile: 'epcis-vsc@2', source_sha256_hex: parsed.sha256, context_digests_hex: contextDigests, issuer: ISSUER, transformation_action: 'ADD' },
-    expected: { outcomes: mappingVectors },
-    tags: ['epcis', 'vsc-mapping'],
-  });
-
-  const partyEvent = object('OBSERVE', 'in_transit', 'shipping', { bizLocation: { id: ASSEMBLY_SITE }, sourceList: [{ type: 'owning_party', source: OWNING_PARTY_B }] });
-  const partyReport = mapEpcisEventWithReport(partyEvent, { ...options, id: 'urn:uuid:00000000-0000-4000-8000-0000000002fa' }, v2);
-  vectors.push({
-    id: 'attribution',
-    description: 'An event naming an owning party and a business location maps under epcis-vsc@2 with the configured issuer as actor, never with the party or location the event names; the party list stays in the round-trip extension.',
-    input: { profile: 'epcis-vsc@2', event: partyEvent, issuer: ISSUER },
-    expected: { mapping: partyReport.mapping, unmapped: partyReport.unmapped, actor_did: (partyReport.seal as Seal).eventVector.who.actorDid, issuer: (partyReport.seal as Seal).issuer },
-    tags: ['epcis', 'vsc-mapping'],
-  });
-
-  return {
-    $schema: 'https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json',
-    id: 'dpp.interoperability.epcis.v2',
-    name: 'EPCIS 2.0.1 event to VSC SEAL mapping under the CBV 2.0 disposition crosswalk (epcis-vsc@2)',
-    version: '1.0.0',
-    reference_impl: 'dpp-credentials@0.2.0',
-    parity_class: 'required',
-    brc: [],
-    notes: `The source exchange vectors stay in dpp.interoperability.epcis.v1; this file pins epcis-vsc@2 only. Pinned EPCIS 2.0.1 context ${EPCIS_CONTEXT_DIGEST}. Every identifier uses the GS1 demonstration prefix 952 and example.org hosts.`,
-    vectors,
-  };
+  return vectors;
 }

@@ -12,6 +12,11 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-09, @bsv/dpp-credentials drops the parked VSC code
+
+- `@bsv/dpp-credentials` `0.2.0-beta.6`, still unpublished, no longer exports the parked `vsc-draft-compat/0.1.0` profile or the `epcis-vsc@1` and `epcis-vsc@2` mappings, and drops the four Ed25519 and BBS suite dependencies they used. `./exchange` and the root's `parseStrictJsonBytes`, `createDidWebResolver` and `verifyTemporal` stay; `./epcis-source` loses only `readEpcisSourceReference` and `EPCIS_MAPPING_PROFILES`, which served the mappings. The code stays in history at commit `8c82c5e`; the parked manifests' owned artefacts and the mapping vectors stay as published.
+- The rows of the parked profiles are gaps, `STATUS-validate-algorithm` and `RULES-4-representation-bytes` cite only kept code, and `examples/import-epcis.mjs` loses `--map-vsc`. A parked profile's code may now leave the packages.
+
 ### 2026-11-09, the overlay contract parses again and the EU gate withholds two claims
 
 - `contracts/overlay.yaml` was not valid YAML from 2 November: one list item in the profile summary held a colon inside a plain scalar, which a YAML parser reads as a key. The item is now a folded scalar with the same text.

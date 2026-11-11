@@ -1,9 +1,8 @@
 /**
  * External credential verification: the `vc-di-ecdsa-rdfc-2019@1` exchange
- * profile (`spec/external-credential-profile.md`), a separate entry point
- * (`@bsv/dpp-credentials/exchange`) from the SEAL verifier so that a foreign credential
- * is never routed through `verifySeal` and the main entry's proof verifier
- * keeps its pinned SEAL context allowlist.
+ * profile (`spec/external-credential-profile.md`), the entry point
+ * `@bsv/dpp-credentials/exchange`. The root entry point does not re-export it,
+ * so importing the EPCIS source helpers never loads the proof suites.
  *
  * What is verified, each as its own check and never folded into one word:
  * exact-byte parsing, the context set, the owned structural schema, the
@@ -30,8 +29,8 @@ import { contexts as multikeyContexts } from '@digitalbazaar/multikey-context';
 import { contexts as didContexts } from 'did-context';
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import { parseStrictJsonBytes } from './validation.js';
-import { verifyTemporal } from './verification.js';
+import { parseStrictJsonBytes } from './strict-json.js';
+import { verifyTemporal } from './temporal.js';
 import { createDidWebResolver } from './did-web.js';
 import type { Check, Credential, DocumentLoader, Issue, JsonObject, Proof, StatusPolicy } from './types.js';
 
@@ -89,8 +88,9 @@ export interface ExternalLoaderOptions {
  * Multikey and DID contexts, the owned payload context from the package's
  * own bytes, and the caller's pinned documents (issuer DID documents, keys,
  * status list credentials). Nothing else is served: a context or document a
- * credential names that is not pinned is unavailable, and the SEAL profile
- * context is refused by name so a foreign credential cannot borrow it.
+ * credential names that is not pinned is unavailable, and the owned context
+ * of the parked SEAL profile is refused by name so a foreign credential cannot
+ * borrow it.
  */
 export function createExternalDocumentLoader(documents: ReadonlyMap<string, JsonObject> = new Map(), options: ExternalLoaderOptions = {}): DocumentLoader {
   const builtins = new Map<string, JsonObject>([
@@ -297,8 +297,8 @@ function subjectBindingCheck(credential: JsonObject, policy: ExternalVerificatio
 }
 
 /**
- * The W3C Bitstring Status List rules of the SEAL verifier, with the proof
- * verifier a parameter so the list is checked under this profile's suite.
+ * The W3C Bitstring Status List rules, with the proof verifier a parameter
+ * so the list is checked under this profile's suite.
  * Identifier, authorised list issuer, proof, validity, signed freshness,
  * purpose, canonical encoding, bounded decompression and the bit are
  * separate refusals; a stale list stays stale however recently fetched.
@@ -352,8 +352,7 @@ function authorityCheck(issuer: string | undefined, policy: ExternalAuthorityPol
 /**
  * Verify one external credential from its exact bytes under the profile.
  * Every check answers for itself; `issues` is the union of their issues.
- * Nothing here consults a trust list the credential carries, and nothing
- * here reads the credential under the SEAL profile's rules.
+ * Nothing here consults a trust list the credential carries.
  */
 export async function verifyExternalCredential({ bytes, representation, policy }: { bytes: Uint8Array; representation: string; policy: ExternalVerificationPolicy }): Promise<ExternalVerification> {
   const digest = createHash('sha256').update(bytes).digest('hex');

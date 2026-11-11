@@ -1,7 +1,7 @@
 {
   "name": "@bsv/dpp-credentials",
   "version": "0.2.0-beta.6",
-  "description": "Experimental prerelease: W3C Verifiable Credential verification (external ecdsa-rdfc-2019 credentials, Bitstring Status List status, did:web resolution, strict parsing) and the EPCIS 2.0.1 source helpers, with the parked VSC draft compatibility profile still exported",
+  "description": "Experimental prerelease: W3C Verifiable Credential verification (external ecdsa-rdfc-2019 credentials, Bitstring Status List status, did:web resolution, strict parsing) and the EPCIS 2.0.1 source helpers",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,15 +36,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@digitalbazaar/bbs-2023-cryptosuite": "2.0.1",
-    "@digitalbazaar/bls12-381-multikey": "2.2.0",
     "@digitalbazaar/credentials-context": "3.2.0",
     "@digitalbazaar/data-integrity": "2.5.0",
     "@digitalbazaar/data-integrity-context": "2.0.1",
     "@digitalbazaar/ecdsa-multikey": "1.8.0",
     "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite": "1.3.0",
-    "@digitalbazaar/ed25519-signature-2020": "5.4.0",
-    "@digitalbazaar/ed25519-verification-key-2020": "4.2.0",
     "@digitalbazaar/multikey-context": "2.0.1",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",

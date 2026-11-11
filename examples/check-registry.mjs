@@ -224,7 +224,7 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
   }
 
   // 2. The claim's own signature. A native claim is checked with
-  // verifyLifecycleClaim; a SEAL credential needs @bsv/dpp-credentials.
+  // verifyLifecycleClaim; another representation needs its own verifier.
   let claim = proof.attestation
   if (proof.representation === 'dpp-lifecycle-json-v1') {
     claim = JSON.parse(proof.securedBytes)
@@ -234,7 +234,7 @@ async function checkRecord(record, { registry, chain, accepted, registryKeys }) 
   } else if (proof.representation === 'legacy-uora-json') {
     say('unknown', 'claim signature', 'not checked here: this example checks a legacy UORA record by its digest and its anchor')
   } else {
-    say('unknown', 'claim signature', `not checked here: ${proof.representation} needs its own verifier, such as @bsv/dpp-credentials for a SEAL credential`)
+    say('unknown', 'claim signature', `not checked here: ${proof.representation} needs its own verifier, such as @bsv/dpp-credentials/exchange for an external credential`)
   }
   if (subject != null) {
     say(claim?.passportId === subject ? 'pass' : 'fail', 'subject', `the claim names ${claim?.passportId}${claim?.passportId === subject ? ', the passport asked about' : `, not ${subject}`}`)
