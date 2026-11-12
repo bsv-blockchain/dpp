@@ -579,7 +579,7 @@ paths:
           schema: { enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1', legacy-uora-json] }
         - name: type
           in: query
-          description: The attestation type (a native event type, VSC-SEAL, or a historical type).
+          description: The attestation type (a native event type, VSC-SEAL, an external credential's own type, or a historical type).
           schema: { type: string }
         - name: from
           in: query
@@ -1568,7 +1568,10 @@ components:
       description: |
         Historical response property name retained for compatibility. Native
         values identify lifecycle events; VSC-SEAL identifies the credential representation.
-      enum: [Origin, Transfer, Transformation, Disposition, VSC-SEAL]
+        An external credential's value is its own type, the first entry of its `type` after VerifiableCredential (VerifiableCredential when it names no other), so any non-empty string is admitted beside the named values.
+      anyOf:
+        - enum: [Origin, Transfer, Transformation, Disposition, VSC-SEAL]
+        - { type: string, minLength: 1 }
 
     ChainIntegrity:
       type: string
@@ -1946,7 +1949,9 @@ components:
       properties:
         passportId: { type: string }
         recordId: { type: string }
-        uora_type: { $ref: '#/components/schemas/UoraType' }
+        uora_type:
+          description: The placeholder's lifecycle type. Closed, unlike UoraType in responses, which also carries an external credential's own type.
+          enum: [Origin, Transfer, Transformation, Disposition, VSC-SEAL]
         timestamp: { type: string, format: date-time }
 
     AttestationAccepted:

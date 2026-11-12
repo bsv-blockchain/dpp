@@ -342,7 +342,7 @@
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "5dc02c19a98a35b210c18c129cef3d01cb61b9ba2ebbfbe174651921267af175",
+      "sha256": "417a0d402fe287e0b2c3b7b960bfa2d92cd606a4455e6885e17d87d27bc2b85f",
       "pins": "the index's HTTP contract"
     },
     {
@@ -467,8 +467,8 @@
     },
     {
       "path": "contracts/registry.yaml",
-      "sha256": "328c8922f648c55ea1ee499a5186f454ff755787b1e8b3a5922a14f2faac0fd9",
-      "pins": "the registry contract, with the claim schema that refuses any recordId but an outpoint and carries the evidence facets, the envelope of the proposed epcis-event-vc@1, the refusal of the parked vsc-seal-json-v1 and no status list routes"
+      "sha256": "95d13273a9e9fb066a31c9ee4ad85cda575a24b21945aefb8a20a2f5a3866bf1",
+      "pins": "the registry contract, with the claim schema that refuses any recordId but an outpoint and carries the evidence facets, the envelope of the proposed epcis-event-vc@1, the refusal of the parked vsc-seal-json-v1, no status list routes and a UoraType that admits an external credential's own type"
     }
   ],
   "consumers": [

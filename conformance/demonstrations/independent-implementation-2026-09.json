@@ -8,7 +8,7 @@
   "parties": {
     "reference": "The reference application, registry and index at the revision the release set names, operated by the programme.",
     "independent": "The second application with its own DPP reader, verifier, writer and issuer written from the bundle, and its own registry and index instances where a scenario names separately operated services.",
-    "note": "Evidence produced by the same programme is engineering evidence. The organisational independence the governance milestone needs is recorded separately when another implementing party runs the same scenarios. The custody profile named here is the one the September 2026 run demonstrated, managed-custody@1, whose records were signed with the custodian's identity key directly; the release set has since selected managed-custody@2, and this record moves to it when the second implementing party accepts the version 2 signed shape in writing (bsv-blockchain/dpp-issues#78)."
+    "note": "Evidence produced by the same programme is engineering evidence. The organisational independence the governance milestone needs is recorded separately when another implementing party runs the same scenarios. The custody profile named here is the one the September 2026 run demonstrated, managed-custody@1, whose records were signed with the custodian's identity key directly; the release set has since selected managed-custody@2, and this record moves to it when the second implementing party accepts the version 2 signed shape in writing."
   },
   "scenarios": [
     {

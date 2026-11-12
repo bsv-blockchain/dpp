@@ -474,8 +474,10 @@ paths:
     get:
       summary: The signed publisher policy chain this index admits under (an extension; spec/services.md section 1)
       description: >-
-        The dpp-publisher-policy@1 chain, oldest first, exactly as the index
-        verified it at boot. GET /capabilities lists only the keys active now,
+        The dpp-publisher-policy@1 chain, oldest first, as the index verified
+        it at boot and, where it registers publishers, with every version
+        appended since, verified as an extension of the chain before it is
+        served. GET /capabilities lists only the keys active now,
         without their windows and without signatures; this is the chain a
         reader checks with verifyPolicyChain from @bsv/dpp-protocol, against
         operator identity keys it obtained from the operator and never from
