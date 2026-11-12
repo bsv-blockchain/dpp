@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-11",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; a managed custodian writes for a holder only on a committed dpp-managed-instruction@1 record, refused as instruction-commitment-absent where an index selects the rule; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the proposed epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. The custody profile is managed-custody@2: the custodian signs its acceptance and instruction records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. Record versions are those of dpp-release-2026-10-10. From 12 November 2026 the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, discovery, exchange and EPCIS profiles. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the proposed epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard and the holder instruction record is parked outside it. Record versions are those of dpp-release-2026-10-10. From 12 November 2026 the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, discovery, exchange and EPCIS profiles. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-11.json",
   "runtime": {
@@ -306,8 +306,7 @@
     "specification": "spec/managed-custody.md",
     "alsoSupported": [
       "managed-custody@1 records, read under spec/managed-custody.md section 9 and never written",
-      "record-model-baseline@2",
-      "owner-signed transfer (spec/custody.md section 4) for version 1 lineages"
+      "record-model-baseline@2"
     ]
   },
   "serviceInterface": {
@@ -337,22 +336,22 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "d43c11c15f67d9b20c2a75fa963b571dec306465906e4c330903b5ad096166a3",
+      "sha256": "10d074f01f1e7d2ea25ff462e07ada730bbfb7f45bbe275ebfbe1c85be4937a3",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "417a0d402fe287e0b2c3b7b960bfa2d92cd606a4455e6885e17d87d27bc2b85f",
+      "sha256": "7df8775ae972757abf054456a32f7453743b3747e8ea5903cb7f956e906c2e82",
       "pins": "the index's HTTP contract"
     },
     {
       "path": "contracts/verification-report.schema.json",
-      "sha256": "144b1388d372900ccdc39cad36717bdf78aee28e842c8633afcba6a1f39fffca",
+      "sha256": "7d19877a4ae61aff9c6825e9987cd805d500740170c671038b56f245341dc913",
       "pins": "the report schema and reason codes"
     },
     {
       "path": "contracts/capabilities.schema.json",
-      "sha256": "2b9bcdab73627a146689c1eb73772cf7d7a6ad40d1e71d67046f63d4db9f66d8",
+      "sha256": "d1255ea886896dc6ffa7e0351b73067cd8a5a1ca8c007e313cb9b3451a1df7f1",
       "pins": "the capability document"
     },
     {
@@ -417,12 +416,12 @@
     },
     {
       "path": "fixtures/evidence-v3.json",
-      "sha256": "dbe4a7775191c40fb338b580452187dca5e4128307892f07b4759cefcf900225",
+      "sha256": "760ec19652320ab2a80d62f0e4f7e4dd26a745a0f631832ae57cc1bb8105c98c",
       "pins": "the verification report for nine carried evidence cases"
     },
     {
       "path": "conformance/baseline-native-3.json",
-      "sha256": "fb4a157c3129c83dc8bbd405e55d4fb39cd154a7c8b5afada86b77f7c66b9762",
+      "sha256": "a957ae1ad544bbb42bc083beaf9d4daac49307ff5d6ea9007a531d2b90adb457",
       "pins": "the proposed baseline for the carried record, with every fixture digest"
     },
     {
@@ -444,16 +443,6 @@
       "path": "fixtures/vectors/dpp/index-registration/v1.json",
       "sha256": "fce5dc5bbccb7a5c068cda2e7b1887b1a0b524150f7092a3c0509d66f841e23a",
       "pins": "the same request in the stack vector format"
-    },
-    {
-      "path": "fixtures/managed-instruction-v1.json",
-      "sha256": "20d38ee1ecd2d94a0a28b6f5468758f24f57a4789720a8b738f7b2a9e8e7af66",
-      "pins": "the instruction record a managed custodian commits to after a hand on, with its binding and seven refusals"
-    },
-    {
-      "path": "fixtures/vectors/dpp/managed-instruction/v1.json",
-      "sha256": "a4913f07a1b5ff64e85e18d623b0aafcb38a1cc0eafc75710940f82a02c44e2f",
-      "pins": "the same record in the stack vector format"
     },
     {
       "path": "fixtures/attestation-anchor-v1.json",

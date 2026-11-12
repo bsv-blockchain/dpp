@@ -84,7 +84,7 @@ const anyone = new CachedKeyDeriver('anyone')
 /**
  * The key a version 2 record's signature verifies under: the BRC-42 child of
  * the custodian's identity key for `MANAGED_RECORD_PROTOCOL_ID`, the record's
- * `requestId` and counterparty 'anyone'. Shared by the instruction record.
+ * `requestId` and counterparty 'anyone'.
  */
 export function managedRecordVerificationKey(custodian: string, requestId: string): PublicKey {
   return anyone.derivePublicKey(MANAGED_RECORD_PROTOCOL_ID, requestId, custodian)

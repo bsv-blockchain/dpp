@@ -6,7 +6,6 @@
  *   node examples/verify-passport.mjs <passportId> [indexUrl] [--report]
  *   node examples/verify-passport.mjs 01/<gtin>/21/<serial> [indexUrl] [--report]
  *   node examples/verify-passport.mjs --fixture
- *   node examples/verify-passport.mjs --fixture --owner-consent [--authorities=<hex,hex>]
  *   node examples/verify-passport.mjs --fixture --report
  *   node examples/verify-passport.mjs --fixture --version=2 [--report]
  *   node examples/verify-passport.mjs --fixture --version=3 [--report]
@@ -29,16 +28,6 @@
  * With --fixture, it verifies fixtures/chain-v1.json offline instead, so the
  * recipe runs in CI without a network. Inclusion then reports pending, because
  * the fixture's transactions are synthetic and no header source holds them.
- *
- * With --owner-consent, it also runs the optional owner-signed transfer of
- * spec/custody.md section 4, as a verifier configured for a profile that
- * selects it would: every TRANSFER must prove its actor is the previous owner,
- * by equality or by owner_linkage, unless a transfer authority named with
- * --authorities made it. In fixture mode the flag also runs the fixture's
- * consent refusals, each under the option it names, and shows each accepted
- * again with the option off, which is the control that keeps the rule honest.
- * A check that is not run gets no sentence: without the flag, consent is not
- * mentioned.
  *
  * With --report, the same evidence is reported under the one verification
  * contract of spec/verification.md: sixteen named checks, four answers each,
@@ -102,7 +91,6 @@ function pacedTracker(inner, gapMs = 400) {
 const here = dirname(fileURLToPath(import.meta.url))
 const args = process.argv.slice(2)
 const fixtureMode = args.includes('--fixture')
-const consentFlag = args.includes('--owner-consent')
 const reportFlag = args.includes('--report')
 const versionFlag = args.find((a) => a.startsWith('--version='))?.slice('--version='.length) ?? '1'
 if (versionFlag !== '1' && versionFlag !== '2' && versionFlag !== '3') {
@@ -113,17 +101,11 @@ const versionTwo = versionFlag === '2'
 // Version 3 is the token carrier (spec/token-carrier.md): fixtures/chain-v3.json is a
 // carried lineage published by the custodian, verified under the custodian's key.
 const versionThree = versionFlag === '3'
-const authorities = args
-  .filter((a) => a.startsWith('--authorities='))
-  .flatMap((a) => a.slice('--authorities='.length).split(','))
-  .map((k) => k.trim())
-  .filter((k) => k !== '')
-const ownerConsent = consentFlag ? (authorities.length > 0 ? { authorities } : true) : undefined
 let passportId = args.find((a) => !a.startsWith('--'))
 const indexUrl = (args.filter((a) => !a.startsWith('--'))[1] ?? 'https://dpp-overlay.bsvb.net').replace(/\/+$/, '')
 
 if (!fixtureMode && passportId == null) {
-  console.error('usage: verify-passport.mjs <passportId> [indexUrl] [--report] | --fixture [--owner-consent] [--report]')
+  console.error('usage: verify-passport.mjs <passportId> [indexUrl] [--report] | --fixture [--version=2|3] [--report]')
   process.exit(2)
 }
 
@@ -157,7 +139,6 @@ function materialise(c) {
     ...(c.evidence.alternativeHistories == null ? {} : { alternativeHistories: c.evidence.alternativeHistories.map((h) => h.map((hex) => Transaction.fromHex(hex))) }),
     ...(c.evidence.nativeClaims == null ? {} : { nativeClaims: c.evidence.nativeClaims }),
     ...(c.evidence.acceptanceRecords == null ? {} : { acceptanceRecords: c.evidence.acceptanceRecords }),
-    ...(c.evidence.instructionRecords == null ? {} : { instructionRecords: c.evidence.instructionRecords }),
     ...(c.evidence.anchors == null ? {} : { anchors: c.evidence.anchors.map((a) => ({ ...a, lockingScript: LockingScript.fromHex(a.lockingScript) })) }),
   }
   let chainTracker = 'scripts only'
@@ -179,10 +160,8 @@ function materialise(c) {
     chainTracker,
     ...(c.policy.policyId == null ? {} : { policyId: c.policy.policyId }),
     ...(c.policy.publisherKeys == null ? {} : { publisherKeys: c.policy.publisherKeys }),
-    ...(c.policy.ownerConsent == null ? {} : { ownerConsent: c.policy.ownerConsent }),
     ...(c.policy.controlAuthorities == null ? {} : { controlAuthorities: c.policy.controlAuthorities }),
     ...(c.policy.managedAcceptance == null ? {} : { managedAcceptance: c.policy.managedAcceptance }),
-    ...(c.policy.managedInstruction == null ? {} : { managedInstruction: c.policy.managedInstruction }),
     ...(c.policy.authority == null ? {} : { authority: c.policy.authority }),
     ...(observers.length === 0 ? {} : { observers }),
   }
@@ -259,45 +238,19 @@ if (fixtureMode) {
 const ops = chain.map((tx) => findDppOutputs(tx)[0].state.op)
 console.log(`Operations, genesis to tip: ${ops.join(' -> ')}.`)
 
-if (consentFlag) {
-  console.log(`The owner-signed transfer is selected${authorities.length > 0 ? `, with ${authorities.length} transfer authorit${authorities.length === 1 ? 'y' : 'ies'}` : ', with no transfer authorities'}.`)
-}
-
 // The version 2 fixture is a managed-custody lineage published by the custodian, so it is
 // verified as a verifier configured for that profile and publisher would (spec/managed-custody.md §5).
 const versionTwoOptions = fixtureMode && versionTwo ? { managedAcceptance: true, serverIdentityKey: fixture.custodianKey } : {}
 if (fixtureMode && versionTwo) console.log('The managed-custody profile is selected, with the custodian as the publisher and no control authorities.')
 const versionThreeOptions = fixtureMode && versionThree ? { serverIdentityKey: fixture.custodianKey } : {}
 if (fixtureMode && versionThree) console.log(`The lineage is carried as a token of one unit; its token id is ${fixture.tokenId}. The custodian is the publisher and no control authorities are named.`)
-const result = await verifyChain(chain, { chainTracker: tracker, ownerConsent, ...versionTwoOptions, ...versionThreeOptions })
+const result = await verifyChain(chain, { chainTracker: tracker, ...versionTwoOptions, ...versionThreeOptions })
 
-const consentSentence = (s) =>
-  s.ownerConsentValid == null ? 'not applicable (not a TRANSFER)' : s.ownerConsentValid ? 'holds' : 'FAILS'
 for (const [i, s] of result.states.entries()) {
-  console.log(`State ${i + 1} (${s.op}, ${s.txid.slice(0, 12)}): user signature ${s.userSignatureValid ? 'verifies' : 'FAILS'}; linkage ${s.linkageValid ? 'holds' : 'FAILS'}; inclusion ${s.spv}${consentFlag ? `; owner consent ${consentSentence(s)}` : ''}.`)
+  console.log(`State ${i + 1} (${s.op}, ${s.txid.slice(0, 12)}): user signature ${s.userSignatureValid ? 'verifies' : 'FAILS'}; linkage ${s.linkageValid ? 'holds' : 'FAILS'}; inclusion ${s.spv}.`)
 }
 console.log(`The chain as a whole is ${result.valid ? 'valid' : 'INVALID'}${result.error ? `: ${result.error}` : ''}.`)
 console.log(`Inclusion across the chain: ${result.spv}${result.spv === 'pending' ? ' (a proof the verifier could not evaluate is evidence of nothing, never a failure)' : ''}.`)
-
-// The fixture's consent refusals, each under the option it names, and the
-// control: the same bytes accepted with the option off, and, where the fixture
-// says so, accepted again with the named transfer authorities.
-if (fixtureMode && consentFlag) {
-  const refusals = fixture.refusals.filter((r) => r.ownerConsent != null)
-  console.log(`Consent refusals in the fixture: ${refusals.length}.`)
-  for (const r of refusals) {
-    const prefix = fixture.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
-    const attempt = [...prefix, Transaction.fromHex(r.rawTx)]
-    const refused = await verifyChain(attempt, { chainTracker: 'scripts only', ownerConsent: r.ownerConsent })
-    say(!refused.valid && (refused.error ?? '').includes(r.error), `the verifier refuses ${r.name} under owner consent: ${r.error}.`)
-    const without = await verifyChain(attempt, { chainTracker: 'scripts only' })
-    say(without.valid, `and accepts the same bytes with the option off, as the record model alone requires.`)
-    if (r.acceptedUnder != null) {
-      const under = await verifyChain(attempt, { chainTracker: 'scripts only', ownerConsent: r.acceptedUnder })
-      say(under.valid, `and admits it with ${r.acceptedUnder.authorities.map((k) => k.slice(0, 12) + '...').join(', ')} as a transfer authority: a recovery, visibly.`)
-    }
-  }
-}
 
 // The version 2 fixture's refusals, each under the option it names, with the control
 // that the profile's rule accepts the same bytes with the profile off and that a named
@@ -307,15 +260,11 @@ if (fixtureMode && versionTwo) {
   for (const r of fixture.refusals) {
     const prefix = fixture.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
     const attempt = [...prefix, Transaction.fromHex(r.rawTx)]
-    const refused = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true, managedInstruction: r.managedInstruction === true })
+    const refused = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true })
     say(!refused.valid && (refused.error ?? '').includes(r.error), `the verifier refuses ${r.name}: ${r.error}.`)
     if (r.managedAcceptance) {
       const without = await verifyChain(attempt, { chainTracker: 'scripts only' })
       say(without.valid, 'and accepts the same bytes with the managed-custody profile off, as the record model alone requires.')
-    }
-    if (r.managedInstruction) {
-      const without = await verifyChain(attempt, { chainTracker: 'scripts only', managedAcceptance: true })
-      say(without.valid, "and accepts the same bytes with the profile's instruction rule off, as the acceptance rule alone requires.")
     }
     if (r.acceptedUnder != null) {
       const under = await verifyChain(attempt, { chainTracker: 'scripts only', controlAuthorities: r.acceptedUnder.authorities })
@@ -353,7 +302,7 @@ if (reportFlag && !fixtureMode) {
   const report = await verifyPassportEvidence(
     { tokenHistory: chain },
     { passportId, source: resolvedFromKey ? 'none' : 'request-context' },
-    { chainTracker: tracker, ownerConsent }
+    { chainTracker: tracker }
   )
   printReport(report)
 }

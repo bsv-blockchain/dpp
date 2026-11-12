@@ -76,7 +76,6 @@ describe('chain-v3 fixture: the reader accepts the lineage and verifies it', () 
     expect(inspection.states.map((s) => s.version)).toEqual(['3', '3', '3', '3', '3'])
     expect(inspection.states.map((s) => s.tokenId)).toEqual(Array<string>(5).fill(F.tokenId))
     expect(inspection.states.map((s) => s.controlValid)).toEqual([null, true, true, true, true])
-    expect(inspection.states.every((s) => s.ownerConsentValid === null)).toBe(true)
   })
 
   it('verifies every publisher signature against the custodian key', async () => {

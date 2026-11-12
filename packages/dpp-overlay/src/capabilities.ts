@@ -118,8 +118,6 @@ export interface CapabilityDocument {
     policyVersion: string
     publisherKeys: string[]
     anchoringServices: string[]
-    ownerConsent: 'not-selected' | 'required'
-    transferAuthorities: string[]
   }
   synchronisation: { profile: string; discovery: 'none' | 'ship-slap' | 'static-peers'; gasp: boolean; peers: string[] }
   limits: Record<string, number | string>
@@ -135,13 +133,10 @@ export interface CapabilityInput {
   serviceIdentityKey?: string
   /** ANCHOR_SERVICE_KEYS: the anchoring services admitted when no chain is configured. */
   anchorServiceKeys?: string[]
-  ownerConsent?: boolean | { authorities: string[] }
-  /** CONTROL_AUTHORITIES: identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted without a control proof. */
+  /** CONTROL_AUTHORITIES: identity keys whose version 2 or 3 UPDATE, TRANSFER or RETIRE is admitted without equality or linkage; none when unset. */
   controlAuthorities?: string[]
   /** ACCEPTANCE_COMMITMENT=required: the managed-custody profile is selected, so a version 2 TRANSFER must carry its acceptance commitment. */
   managedAcceptance?: boolean
-  /** INSTRUCTION_COMMITMENT=required: the profile's instruction rule is selected, so an UPDATE or RETIRE after a committed TRANSFER must carry its instruction commitment. */
-  managedInstruction?: boolean
   /** Whether EXPORT_SIGNING_KEY is set. */
   exportAvailable: boolean
   /** Whether EXPORT_TOKEN is set, so GET /evidence-export needs a bearer. */
@@ -204,11 +199,8 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   // topic and no static list, every well-formed anchor is. The second is
   // named under unsupported so the list is never read as the first.
   const anchorsUnrestricted = anchorPolicyKeys == null && anchoringServices.length === 0
-  const consentSelected = input.ownerConsent != null && input.ownerConsent !== false
-  const transferAuthorities = typeof input.ownerConsent === 'object' ? [...input.ownerConsent.authorities] : []
-  const controlAuthorities = input.controlAuthorities ?? transferAuthorities
+  const controlAuthorities = [...(input.controlAuthorities ?? [])]
   const managedAcceptance = input.managedAcceptance === true
-  const managedInstruction = managedAcceptance && input.managedInstruction === true
 
   const unsupported: CapabilityDocument['unsupported'] = [
     ...(input.syncDiscovery === true
@@ -297,7 +289,6 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
         kind: 'custody',
         options: {
           acceptanceCommitment: managedAcceptance ? 'required' : 'not-selected',
-          instructionCommitment: managedInstruction ? 'required' : 'not-selected',
           controlAuthorities,
         },
       },
@@ -320,8 +311,6 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       policyVersion: policy == null ? IMPLICIT_POLICY_VERSION : String((inForce ?? newestPolicy(policy)).policyVersion),
       publisherKeys,
       anchoringServices,
-      ownerConsent: consentSelected ? 'required' : 'not-selected',
-      transferAuthorities,
     },
     synchronisation: { profile: operatorProfile, discovery, gasp: synchronising, peers },
     limits: {

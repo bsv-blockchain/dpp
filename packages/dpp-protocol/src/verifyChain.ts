@@ -2,7 +2,7 @@ import { Beef, PublicKey, Transaction, type ChainTracker } from '@bsv/sdk'
 import { tryParseDppOutput } from './codec.js'
 import { verifyServerSignature, verifyUserSignature } from './signatures.js'
 import { publisherKeysAt, type PublisherPolicy } from './publisherPolicy.js'
-import { checkControl, checkOwnerConsent, normaliseTransferAuthorities } from './owner.js'
+import { checkControl, normaliseControlAuthorities } from './owner.js'
 import { checkGenesisState, checkTransition } from './transition.js'
 import { checkCarrier, tokenIdOf } from './carrier.js'
 import type { DppVersion } from './constants.js'
@@ -22,21 +22,12 @@ export interface VerifyChainOptions {
    */
   serverIdentityKey?: string
   /**
-   * The optional owner-signed transfer (`spec/custody.md` §4), selected by a
-   * profile for version 1 states. `true` runs the predicate on every version 1
-   * TRANSFER; an object also names the transfer authorities, identity keys
-   * whose TRANSFER passes without it (recovery). A malformed authority throws
+   * Identity keys the policy names as control authorities for version 2 and 3
+   * states (`spec/record-model-v2.md` §6): an UPDATE, TRANSFER or RETIRE by
+   * one of them passes without equality or linkage (recovery). Empty by
+   * default, which is the record model's baseline. A malformed key throws
    * before any state is read: a misconfigured authority must be loud, never
-   * silently unmatched. Version 2 states prove control on every UPDATE,
-   * TRANSFER and RETIRE regardless (`spec/record-model-v2.md` §6); the same
-   * authorities serve them unless `controlAuthorities` names others.
-   */
-  ownerConsent?: boolean | { authorities: string[] }
-  /**
-   * Identity keys the profile names as authorities for version 2 states: an
-   * UPDATE, TRANSFER or RETIRE by one of them passes without a control proof
-   * (recovery, or a scoped authority the profile defines). Defaults to the
-   * `ownerConsent` authorities. Malformed keys throw at construction.
+   * silently unmatched. Version 1 states have no control rule.
    */
   controlAuthorities?: string[]
   /**
@@ -46,13 +37,6 @@ export interface VerifyChainOptions {
    * record model alone is checked and the commitment is read but not required.
    */
   managedAcceptance?: boolean
-  /**
-   * The instruction rule of the same profile (`spec/managed-custody.md` §6):
-   * when selected, every version 2 or 3 UPDATE or RETIRE after a committed
-   * TRANSFER must carry an `authorisation_commitment`, unless its actor is a
-   * control authority. Off by default, and read but not required otherwise.
-   */
-  managedInstruction?: boolean
 }
 
 export interface DppOutputRef {
@@ -65,8 +49,6 @@ export interface DppOutputRef {
 
 /** What a reader reports when the managed-custody profile is selected and a version 2 TRANSFER carries no commitment. The text names no version: the rule is the same under every version of the profile. */
 export const ACCEPTANCE_COMMITMENT_REFUSAL = 'TRANSFER carries no authorisation_commitment under the managed-custody profile'
-/** The refusal of a version 2 or 3 UPDATE or RETIRE after a committed TRANSFER with no instruction commitment, under the profile. */
-export const INSTRUCTION_COMMITMENT_REFUSAL = 'UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under the managed-custody profile'
 
 /**
  * Locate THE DPP output of a transaction (§6 invariant 1: exactly one).
@@ -103,7 +85,7 @@ export interface InspectChainOptions extends VerifyChainOptions {
 }
 
 /** Why one state stopped the inspection, in the vocabulary the report uses. */
-export type ChainFailureKind = 'encoding' | 'userSignature' | 'serverSignature' | 'linkage' | 'consent' | 'inclusion'
+export type ChainFailureKind = 'encoding' | 'userSignature' | 'serverSignature' | 'linkage' | 'commitment' | 'inclusion'
 
 /** One inspected state: the verifier's findings plus what a report needs to name it. */
 export interface StateInspection extends StateCheck {
@@ -115,7 +97,8 @@ export interface StateInspection extends StateCheck {
   /** The token id of a carried lineage, `<deploy txid>_0`; present on every version 3 state (`spec/token-carrier.md` §5). */
   tokenId?: string
   linkError: string | null
-  consentError: string | null
+  /** The managed-custody profile's refusal of a TRANSFER without its acceptance commitment, when the profile is selected. */
+  commitmentError: string | null
   /**
    * The version 2 control proof (`spec/record-model-v2.md` §6): true when
    * the actor proved control of the predecessor, false when it did not, null
@@ -173,17 +156,10 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
   const publisherSelected = staticPublisherKeys.length > 0 || policy != null
   const publisherKeysFor = (state: DppState): string[] =>
     policy == null ? staticPublisherKeys : [...staticPublisherKeys, ...publisherKeysAt(policy, state.timestamp, 'state-publisher')]
-  const consentSelected = options.ownerConsent != null && options.ownerConsent !== false
-  const consentAuthorities =
-    typeof options.ownerConsent === 'object'
-      ? normaliseTransferAuthorities(options.ownerConsent.authorities)
-      : []
-  const controlAuthorities =
-    options.controlAuthorities != null ? normaliseTransferAuthorities(options.controlAuthorities) : consentAuthorities
+  const controlAuthorities = normaliseControlAuthorities(options.controlAuthorities ?? [])
 
   let prev: { state: DppState; txid: string; outputIndex: number } | null = null
   let genesis: Outpoint | undefined
-  let committedTransferSeen = false
   for (let i = 0; i < txs.length; i++) {
     const tx = txs[i]
     const txid = tx.id('hex')
@@ -230,29 +206,13 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       if (state.version !== '1') controlValid = checkControl(prev.state, state, controlAuthorities) == null
     }
 
-    // The eighth, optional invariant of version 1 runs only where it is
-    // defined: on a TRANSFER whose link holds, under a profile that selects
-    // it. Anywhere else it reports null, so a consumer prints "not applicable"
-    // and never a pass the predicate did not earn. The managed-custody
-    // profile's requirement on a version 2 TRANSFER is reported the same way.
-    let consentError: string | null = null
-    let ownerConsentValid: boolean | null = null
-    if (prev != null && linkError == null && state.op === 'TRANSFER') {
-      if (state.version === '1' && consentSelected) {
-        consentError = checkOwnerConsent(prev.state, state, consentAuthorities)
-        ownerConsentValid = consentError == null
-      } else if (state.version !== '1' && options.managedAcceptance === true && state.authorisationCommitment === '') {
-        consentError = ACCEPTANCE_COMMITMENT_REFUSAL
-      }
+    // The managed-custody profile's requirement on a version 2 or 3 TRANSFER
+    // whose link holds (`spec/managed-custody.md` §4), run only where the
+    // profile is selected.
+    let commitmentError: string | null = null
+    if (prev != null && linkError == null && state.op === 'TRANSFER' && state.version !== '1' && options.managedAcceptance === true && state.authorisationCommitment === '') {
+      commitmentError = ACCEPTANCE_COMMITMENT_REFUSAL
     }
-    // The instruction rule (`spec/managed-custody.md` §6): once a TRANSFER has
-    // committed to an acceptance, the holder is a recipient the custodian
-    // acts for, and every later UPDATE or RETIRE commits to the holder's
-    // instruction, unless a named control authority made it.
-    if (prev != null && linkError == null && state.version !== '1' && (state.op === 'UPDATE' || state.op === 'RETIRE') && options.managedInstruction === true && committedTransferSeen && state.authorisationCommitment === '' && !controlAuthorities.includes(state.actorIdentityKey)) {
-      consentError = INSTRUCTION_COMMITMENT_REFUSAL
-    }
-    if (state.version !== '1' && state.op === 'TRANSFER' && state.authorisationCommitment !== '') committedTransferSeen = true
 
     let spv: StateCheck['spv']
     let spvReason: StateInspection['spvReason']
@@ -329,11 +289,10 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       serverSignatureValid,
       ...(publisherOutsideWindow ? { publisherOutsideWindow: true } : {}),
       linkageValid: linkError == null,
-      ownerConsentValid,
       controlValid,
       spv,
       linkError,
-      consentError,
+      commitmentError,
       ...(spvReason == null ? {} : { spvReason }),
     })
 
@@ -349,7 +308,7 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       )
     }
     if (linkError != null) return stop(i, txid, 'linkage', linkError)
-    if (consentError != null) return stop(i, txid, 'consent', consentError)
+    if (commitmentError != null) return stop(i, txid, 'commitment', commitmentError)
     if (spv === 'failed') return stop(i, txid, 'inclusion', spvFailReason)
 
     prev = { state, txid, outputIndex }
@@ -371,7 +330,6 @@ function toStateCheck(s: StateInspection): StateCheck {
     userSignatureValid: s.userSignatureValid,
     serverSignatureValid: s.serverSignatureValid,
     linkageValid: s.linkageValid,
-    ownerConsentValid: s.ownerConsentValid,
     spv: s.spv,
   }
 }

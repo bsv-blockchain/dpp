@@ -7,36 +7,32 @@ import {
   type RevealSpecificKeyLinkageResult,
   type WalletProtocol,
 } from '@bsv/sdk'
-import {
-  OWNER_LINKAGE_HEX,
-  OWNER_LINKAGE_KEY,
-  OWNER_LINKAGE_REVELATION_PROTOCOL_ID,
-  OWNER_PROTOCOL_ID,
-} from './constants.js'
+import { OWNER_LINKAGE_HEX, OWNER_LINKAGE_REVELATION_PROTOCOL_ID, OWNER_PROTOCOL_ID } from './constants.js'
 import type { DppStateData, DppStateDataV2 } from './types.js'
 
 /**
- * The owner key, the possession convention and the owner-signed transfer
- * (`spec/custody.md` §2 to §4), in the four operations a BRC-100 wallet already
- * has. Everything here is one derivation from a root and exports nothing, which
- * is the constraint the standard imposes on itself (`spec/custody.md` §1): a rule
- * that needed a deeper hierarchy could only be satisfied by software holding raw
- * keys, and would make self-custody impossible while looking neutral.
+ * The owner key and the possession convention (`spec/custody.md` §2 and §3),
+ * and the control proof of record versions 2 and 3 with the linkage scalar it
+ * carries (`spec/record-model-v2.md` §6), in the four operations a BRC-100
+ * wallet already has. Everything here is one derivation from a root and
+ * exports nothing, which is the constraint the standard imposes on itself
+ * (`spec/custody.md` §1): a rule that needed a deeper hierarchy could only be
+ * satisfied by software holding raw keys, and would make self-custody
+ * impossible while looking neutral.
  *
  * **Why the linkage scalar is safe to publish, and when it is not.** BRC-42
  * derives a child as `parent + s·G`, where `s` is an HMAC keyed by a shared secret
  * only the root can form. Publishing `s` for one passport proves that the root
- * derived that owner key and nothing about any other passport. It also makes the
- * derived private key and the root private key differ by a public number: a
- * wallet that exported the derived key, the one that spends a tip under the
- * possession convention, would hand its root to anyone who had read the chain.
- * The no-export rule is therefore a security requirement of this design, and the
- * helpers below never touch a private key.
+ * derived that controller key and nothing about any other passport. It also
+ * makes the derived private key and the root private key differ by a public
+ * number: a wallet that exported the derived key, the one that spends a tip
+ * under the possession convention, would hand its root to anyone who had read
+ * the chain. The no-export rule is therefore a security requirement of this
+ * design, and the helpers below never touch a private key.
  *
- * **The predicate runs in a fixed order.** Equality, then the transfer
- * authorities, then linkage, so two readers cannot differ on one state; the
- * property is read only when the first two do not settle it, and when read it has
- * exactly one accepted spelling.
+ * **The control proof runs in a fixed order.** Equality, then the named
+ * control authorities, then linkage, so two readers cannot differ on one
+ * state; the scalar has exactly one accepted state under each branch.
  */
 
 /** The slice of a BRC-100 wallet that produces field 6. ProtoWallet and WalletClient both fit. */
@@ -118,8 +114,9 @@ export interface OwnerLinkageVerifierWallet {
 
 /**
  * The verifier's side of `revealOwnerLinkage`: the scalar as 64 lower-case hex,
- * ready to carry in event_data. The writing application does this once and then
- * publishes the scalar in the clear, because on chain the verifier is everyone.
+ * ready to carry in `control_linkage`. The writing application does this once
+ * and then publishes the scalar in the clear, because on chain the verifier is
+ * everyone.
  */
 export async function decryptOwnerLinkage(
   revelation: Pick<RevealSpecificKeyLinkageResult, 'prover' | 'keyID' | 'encryptedLinkage'>,
@@ -161,71 +158,23 @@ export function verifyOwnerLinkage(
   }
 }
 
-/** The three refusals of `spec/custody.md` §4, verbatim; fixtures pin these strings. */
-export const OWNER_CONSENT_REFUSALS = {
-  noLinkage: 'TRANSFER actor is not the previous owner and event_data carries no owner_linkage',
-  malformedLinkage: 'owner_linkage must be 64 lower-case hex characters',
-  notLinked: 'owner_linkage does not link actor_identity_key to the previous owner_identity_key',
-} as const
-
-/** Absent (undefined) when event_data is empty, not JSON, not an object, or lacks the property. */
-function readOwnerLinkage(eventData: string): unknown {
-  if (eventData === '') return undefined
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(eventData)
-  } catch {
-    return undefined
-  }
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined
-  if (!Object.hasOwn(parsed, OWNER_LINKAGE_KEY)) return undefined
-  return (parsed as Record<string, unknown>)[OWNER_LINKAGE_KEY]
-}
-
-type ConsentFields = Pick<DppStateData, 'op' | 'actorIdentityKey' | 'ownerIdentityKey' | 'eventData'>
-
 /**
- * The owner-signed transfer (`spec/custody.md` §4). Returns null when the state
- * passes or the predicate does not apply (not a TRANSFER), otherwise the reason
- * a conforming reader reports. `authorities` are the profile's transfer
- * authorities, already canonical (see `normaliseTransferAuthorities`).
- */
-export function checkOwnerConsent(
-  prev: Pick<ConsentFields, 'ownerIdentityKey'>,
-  next: ConsentFields,
-  authorities: readonly string[] = []
-): string | null {
-  if (next.op !== 'TRANSFER') return null
-  if (next.actorIdentityKey === prev.ownerIdentityKey) return null
-  if (authorities.includes(next.actorIdentityKey)) return null
-  const linkage = readOwnerLinkage(next.eventData)
-  if (linkage === undefined) return OWNER_CONSENT_REFUSALS.noLinkage
-  if (typeof linkage !== 'string' || !OWNER_LINKAGE_HEX.test(linkage)) {
-    return OWNER_CONSENT_REFUSALS.malformedLinkage
-  }
-  if (!verifyOwnerLinkage(next.actorIdentityKey, prev.ownerIdentityKey, linkage)) {
-    return OWNER_CONSENT_REFUSALS.notLinked
-  }
-  return null
-}
-
-/**
- * Transfer authorities as the predicate compares them: canonical compressed
+ * Control authorities as the control proof compares them: canonical compressed
  * lower-case hex, the spelling fields 6 and 7 carry. Upper-case input is
  * accepted and normalised; anything that is not a valid compressed key throws,
  * because a misconfigured authority must fail at boot, not silently never match.
  */
-export function normaliseTransferAuthorities(keys: readonly string[]): string[] {
+export function normaliseControlAuthorities(keys: readonly string[]): string[] {
   return keys.map((key) => {
     let parsed: PublicKey
     try {
       parsed = PublicKey.fromString(key)
     } catch {
-      throw new Error(`transfer authority is not a valid public key: ${key}`)
+      throw new Error(`control authority is not a valid public key: ${key}`)
     }
     const canonical = parsed.toString()
     if (canonical !== key.toLowerCase()) {
-      throw new Error(`transfer authority is not a canonical compressed public key: ${key}`)
+      throw new Error(`control authority is not a canonical compressed public key: ${key}`)
     }
     return canonical
   })

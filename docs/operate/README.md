@@ -36,7 +36,7 @@ cp deploy/operator.env.example deploy/operator.env
 | `WOC_API_KEY` | A WhatsOnChain API key for the header source's quota. |
 | `ANCHOR_SERVICE_KEYS` | Optional. The publisher key carries only that application's anchors; empty carries every treasury's. |
 | `ACCEPTANCE_COMMITMENT` | The preset selects `required`, so clients need the managed-custody acceptance commitment for version 2 transfers. |
-| `INSTRUCTION_COMMITMENT` | Unset. `required` demands the holder's instruction commitment for updates or retirements after a committed transfer, except by a control authority. Enable once every writer records instructions. |
+| `OWNER_CONSENT`, `TRANSFER_AUTHORITIES`, `INSTRUCTION_COMMITMENT` | Unset. No longer read: the node refuses to boot with any of them set. Name recovery keys in `CONTROL_AUTHORITIES`; where it was unset, the `TRANSFER_AUTHORITIES` keys were also the control authorities, so move them there. |
 
 3. For an empty local fixture rehearsal only, obtain the fixture publisher public key:
 

@@ -21,16 +21,16 @@ import {
   stateTx,
 } from './helpers.js'
 import { CHAIN_V1_FIXTURE as F } from './chain-v1-fixture.js'
+import { SUPERSEDED_OWNER_CONSENT_REFUSALS } from './chain-v1-vectors.js'
 
 /**
  * The chain fixture is the wire contract for the chain invariants, the way
  * `record-v1` is for one output, and since the fifth and sixth states also for
- * the possession convention and the owner-signed transfer of `spec/custody.md`.
- * These tests rebuild every pinned byte of the valid chain from `states[].data`
- * and the test keys, including the sixth state's unlocking script, which an
- * owner's wallet produces with one derivation, then prove each refusal vector
- * refuses for the pinned reason when read from raw hex alone, under the option
- * the vector names, and is accepted where the fixture says it is.
+ * the possession convention of `spec/custody.md` §3. These tests rebuild every
+ * pinned byte of the valid chain from `states[].data` and the test keys,
+ * including the sixth state's unlocking script, which an owner's wallet
+ * produces with one derivation, then prove each refusal vector refuses for the
+ * pinned reason when read from raw hex alone.
  */
 const wallets = {
   maker: new ProtoWallet(makerPriv),
@@ -57,11 +57,6 @@ async function rebuild(): Promise<Transaction[]> {
   }
   return txs
 }
-
-const consentOf = (r: (typeof F.refusals)[number]) =>
-  'ownerConsent' in r ? (r.ownerConsent as true | { authorities: string[] }) : undefined
-const acceptedUnderOf = (r: (typeof F.refusals)[number]) =>
-  'acceptedUnder' in r ? (r.acceptedUnder as { authorities: string[] }) : undefined
 
 describe('chain-v1 fixture: the writer reproduces every byte', () => {
   it('pins the five test keys, the derived owner keys and the linkage scalar', () => {
@@ -128,7 +123,6 @@ describe('chain-v1 fixture: the reader accepts the chain and verifies it', () =>
     expect(result.valid).toBe(true)
     expect(result.spv).toBe('pending')
     expect(result.states.every((s) => s.userSignatureValid && s.linkageValid)).toBe(true)
-    expect(result.states.every((s) => s.ownerConsentValid === null)).toBe(true)
   })
 
   it('verifies every server signature against the pinned service key', async () => {
@@ -136,42 +130,32 @@ describe('chain-v1 fixture: the reader accepts the chain and verifies it', () =>
     expect(result.valid).toBe(true)
     expect(result.states.every((s) => s.serverSignatureValid === true)).toBe(true)
   })
-
-  it('holds the owner-signed transfer on every TRANSFER when the option is selected', async () => {
-    const result = await verifyChain(fromHex(), { chainTracker: 'scripts only', ownerConsent: true })
-    expect(result.error).toBeUndefined()
-    expect(result.valid).toBe(true)
-    expect(result.states.map((s) => s.ownerConsentValid)).toEqual([null, null, true, null, true, true])
-  })
 })
 
 describe('chain-v1 fixture: the reader refuses every broken link', () => {
   it.each(F.refusals.map((r) => [r.name, r] as const))('refuses %s', async (_name, r) => {
     const prefix = F.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
     const chain = [...prefix, Transaction.fromHex(r.rawTx)]
-    const result = await verifyChain(chain, { chainTracker: 'scripts only', ownerConsent: consentOf(r) })
+    const result = await verifyChain(chain, { chainTracker: 'scripts only' })
     expect(result.valid).toBe(false)
     expect(result.error).toContain(r.error)
-    if (consentOf(r) != null) {
-      // The control: a consent refusal is a valid chain when the option is off.
-      const off = await verifyChain(chain, { chainTracker: 'scripts only' })
-      expect(off.error).toBeUndefined()
-      expect(off.valid).toBe(true)
-    }
-    const under = acceptedUnderOf(r)
-    if (under != null) {
-      const accepted = await verifyChain(chain, { chainTracker: 'scripts only', ownerConsent: under })
-      expect(accepted.error).toBeUndefined()
-      expect(accepted.valid).toBe(true)
-      expect(accepted.states.at(-1)?.ownerConsentValid).toBe(true)
-    }
   })
 
   it('control: every refusal is one rule, and no two vectors are the same bytes', () => {
     const raws = F.refusals.map((r) => r.rawTx)
     expect(new Set(raws).size).toBe(raws.length)
     for (const raw of raws) expect(F.states.map((s) => s.rawTx)).not.toContain(raw)
-    expect(F.refusals.filter((r) => consentOf(r) != null)).toHaveLength(7)
-    expect(F.refusals.filter((r) => acceptedUnderOf(r) != null).map((r) => r.name)).toEqual(['recoveryWithoutAuthority'])
+    expect(F.refusals).toHaveLength(9)
+  })
+})
+
+describe('chain-v1 vectors: the superseded owner-signed transfer refusals', () => {
+  // Their vectors stay in the file, skipped, saying the bytes are a valid
+  // chain under the record model alone; this holds the sentence true.
+  it.each(SUPERSEDED_OWNER_CONSENT_REFUSALS.map((r) => [r.name, r] as const))('%s is a valid chain under the record model alone', async (_name, r) => {
+    const prefix = F.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
+    const result = await verifyChain([...prefix, Transaction.fromHex(r.rawTx)], { chainTracker: 'scripts only' })
+    expect(result.error).toBeUndefined()
+    expect(result.valid).toBe(true)
   })
 })

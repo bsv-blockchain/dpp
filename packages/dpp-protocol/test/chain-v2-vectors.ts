@@ -4,7 +4,9 @@ import type { ChainV2FixtureFile } from './chain-v2-fixture.js'
  * The version 2 chain fixture in the BSV stack's cross-language conformance
  * vector format, as a pure mapping from the generated object.
  * `fixtures/vectors/dpp/chain/v2.json` is this function's output, verbatim.
- * Vector identifiers are permanent once published and the file is append-only.
+ * Vector identifiers are permanent once published and the file is append-only:
+ * a vector whose rule the standard cuts stays in the file, skipped, with its
+ * reason.
  */
 const PRIVATE_KEYS: Record<string, string> = {
   issuer: '11'.repeat(32),
@@ -22,6 +24,25 @@ const STATE_DESCRIPTIONS = [
   'UPDATE by the recipient acting under the controller key itself: the equality form of control, field 14 empty.',
   'RETIRE by the recipient account, control proved by linkage, event_data carrying the reason; the lineage is terminal from here.',
 ]
+
+/**
+ * The refusal of the managed-custody instruction rule, as published until the
+ * holder instruction record was parked on 12 November 2026. The bespoke
+ * fixture no longer carries it; its vector keeps its identifier, bytes and
+ * expectation, skipped, in its place among the refusals, and
+ * `chain-v2.test.ts` holds the chain valid under the acceptance rule, which is
+ * what the skip reason says.
+ */
+export const SUPERSEDED_INSTRUCTION_REFUSAL = {
+  name: 'updateAfterTransferWithoutInstruction',
+  description:
+    "The recipient's UPDATE after the committed TRANSFER, by linkage from the recipient's managed identity, with an empty authorisation_commitment: valid under the record model and the acceptance rule, refused when the profile's instruction rule is selected.",
+  appendAfter: 2,
+  rawTx:
+    '0100000001b7a84fd74d3183bd8bb5e5eba376736192ee07002d3d5e46399481b77dc89a080100000000ffffffff010100000000000000fd84022102466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27ac0364707001323168747470733a2f2f6470702e627376622e6e65742f30312f30393532313030303030303031382f32312f56322d303030310655504441544514323032362d31302d30315430383a33303a30305a21033712c6cba3efdeb5ebbd3bcfd11826eb1a358148d2a305ba97b5a353f49b181f21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b111726563697069656e74206163636f756e74357b226576656e7454797065223a225472616e73666f726d6174696f6e222c226e6f7465223a2263656c6c2062616c616e636564227d4c5a7b226e616d65223a2243656c6c207061636b203430222c226368656d6973747279223a224c4650222c226461746143617272696572223a2256322d5549442d30303031222c2272656379636c6564436f6e74656e74223a31327d20c0708a9a0bc30dd1c4218e90d3ec97303bcef25172c30aa5a8c37392e6e4727b24a39a87ffca417b00b37db34de4a221edbda928def1356c9db29dd78241749d270000000024089ac87db7819439465e3d2d0007ee92617376a3ebe5b58bbd83314dd74fa8b700000001203fcfde23c63c7f9f2b89aa80b333d973f0857ef07e55510ea80900dff9a9a3df00473045022100b2d4053e44b86b8ed65a3a965077aafb315f4d0ac2968d6422bae942b86cfbcc02200112d5a1f3ca9f0088ef7383191370cfc84ecabfbf2a650f81c9691e05b0bea9463044022066efd5e2e90b11e5b4f6e35df2f5e9659ae141a301291193b8ec398a2ef0b321022041d329d74298f02ea67baec7139556fde52da66ffc8253884c8158c65d423e396d6d6d6d6d6d6d6d7500000000',
+  error: 'UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under the managed-custody profile',
+  after: 'transferWithoutCommitment',
+}
 
 const kebab = (name: string): string => name.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())
 
@@ -99,18 +120,38 @@ export function chainV2Vectors(F: ChainV2FixtureFile) {
     input: {
       raw_tx_hex: [...F.states.slice(0, r.appendAfter + 1).map((s) => s.rawTx), r.rawTx],
       ...(r.managedAcceptance == null ? {} : { managed_acceptance: true }),
-      ...(r.managedInstruction == null ? {} : { managed_acceptance: true, managed_instruction: true }),
     },
     expected: {
       accepted: false,
       stage: 'chain',
       reason: r.error,
       ...(r.managedAcceptance == null ? {} : { accepted_without_managed_acceptance: true }),
-      ...(r.managedInstruction == null ? {} : { accepted_without_managed_instruction: true }),
       ...(r.acceptedUnder == null ? {} : { accepted_with_authorities: r.acceptedUnder.authorities }),
     },
     tags: ['error-case'],
   }))
+  const superseded = SUPERSEDED_INSTRUCTION_REFUSAL
+  const supersededVector = {
+    id: `refuse-${kebab(superseded.name)}`,
+    description: superseded.description,
+    input: {
+      raw_tx_hex: [...F.states.slice(0, superseded.appendAfter + 1).map((s) => s.rawTx), superseded.rawTx],
+      managed_acceptance: true,
+      managed_instruction: true,
+    },
+    expected: {
+      accepted: false,
+      stage: 'chain',
+      reason: superseded.error,
+      accepted_without_managed_instruction: true,
+    },
+    tags: ['error-case'],
+    skip: true,
+    skip_reason: 'Superseded: the instruction rule of managed-custody@2 was parked on 12 November 2026, so no reader selects it; under the acceptance rule these bytes are a valid chain.',
+  }
+  const at = refusalVectors.findIndex((v) => v.id === `refuse-${kebab(superseded.after)}`) + 1
+  if (at === 0) throw new Error(`no refusal ${superseded.after} to keep the superseded vector after`)
+  const refusalsInOrder = [...refusalVectors.slice(0, at), supersededVector, ...refusalVectors.slice(at)]
 
   const v1Prefix = 'the six raw transactions of fixtures/chain-v1.json'
   const upgradeVector = {
@@ -152,6 +193,6 @@ export function chainV2Vectors(F: ChainV2FixtureFile) {
     version: '1.0.0',
     reference_impl: 'dpp-core@0.3.0',
     parity_class: 'required',
-    vectors: [...stateVectors, ...controlVectors, verifyVector, boundaryControl, ...refusalVectors, upgradeVector, ...upgradeRefusals],
+    vectors: [...stateVectors, ...controlVectors, verifyVector, boundaryControl, ...refusalsInOrder, upgradeVector, ...upgradeRefusals],
   }
 }

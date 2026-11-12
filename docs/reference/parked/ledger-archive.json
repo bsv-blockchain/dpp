@@ -1,0 +1,168 @@
+{
+  "archiveVersion": "1",
+  "description": "Ledger rows and claims taken out of conformance/manifest.json because the requirement they assessed was removed from the standard or parked outside it. They are kept for the record and claim no status: nothing here is assessed, claimed or checked by conformance/check.mjs or conformance/qualify.mjs. Each entry gives the date, the reason, lastWorkingCommit, the last commit on main before the custody rulings of 12 November 2026, at which what the entry assessed worked and after which nothing changed it before its removal, and the row or claim as it last stood, without its status.",
+  "rows": [
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026: the owner-signed transfer for version 1 lineages (owner-consent@1, spec/custody.md section 4 as it stood) is no longer defined, and record version 2 proves control on every state after the genesis instead.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "CUST-4-owner-consent",
+        "sourceId": "spec-custody",
+        "sourceUri": "spec/custody.md",
+        "sourceVersion": "working draft",
+        "clause": "§4",
+        "summary": "The optional owner-signed transfer: equality, then transfer authorities, then owner_linkage with one accepted spelling.",
+        "layer": "profile",
+        "roles": [
+          "passport-reader",
+          "overlay"
+        ],
+        "applicability": "when a profile selects the owner-signed transfer",
+        "profileId": "owner-consent@1",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/owner.ts#checkOwnerConsent",
+          "packages/dpp-overlay/src/tmDpp.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/owner.test.ts",
+          "packages/dpp-protocol/test/chain-fixture.test.ts",
+          "packages/dpp-overlay/test/tmDpp.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/chain-v1.json#refusals (ownerConsent)",
+          "fixtures/evidence-v1.json#cases.consent-not-proven"
+        ],
+        "reviewedAt": "2026-09-05",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the holder instruction record (dpp-managed-instruction@1, spec/managed-custody.md section 6 as it stood); the parked text and fixtures are under docs/reference/parked/managed-instruction/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "sourceId": "spec-managed-custody",
+        "sourceUri": "spec/managed-custody.md",
+        "sourceVersion": "working draft",
+        "layer": "profile",
+        "profileId": "managed-custody@2",
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "id": "MC-6-instruction-record",
+        "clause": "§6",
+        "summary": "The dpp-managed-instruction@1 record: its exact properties and bounds, the nested canonical form, the custodian's signature under the derived key of §3, and the commitment an UPDATE or RETIRE carries in field 15; structure, signature and binding reported apart.",
+        "roles": [
+          "passport-writer",
+          "passport-reader"
+        ],
+        "applicability": "when managed-custody@2 is selected and a custodian writes for a holder after a committed TRANSFER",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/instruction.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/fixture-json.test.ts",
+          "conformance/independent/python/dpp_verify.py"
+        ],
+        "evidenceRefs": [
+          "fixtures/managed-instruction-v1.json",
+          "fixtures/vectors/dpp/managed-instruction/v1.json",
+          "fixtures/managed-instruction-v1.json#refusals.directlySigned"
+        ],
+        "notes": "Decided 2026-11-01: writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the seven refusals from the fixture."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the holder instruction record (dpp-managed-instruction@1, spec/managed-custody.md section 6 as it stood); the parked text and fixtures are under docs/reference/parked/managed-instruction/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "sourceId": "spec-managed-custody",
+        "sourceUri": "spec/managed-custody.md",
+        "sourceVersion": "working draft",
+        "layer": "profile",
+        "profileId": "managed-custody@2",
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "id": "MC-6-instruction-binding",
+        "clause": "§6",
+        "summary": "A record binds to a state on operation, passport, lineage, predecessor, holder, commitment and time order, from the record and the state alone; every mismatch is named state-mismatch with its reason.",
+        "roles": [
+          "passport-reader",
+          "registry"
+        ],
+        "applicability": "when an instruction record is presented with the state that commits to it",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/instruction.ts#bindInstructionToState"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/fixture-json.test.ts",
+          "conformance/independent/python/dpp_verify.py"
+        ],
+        "evidenceRefs": [
+          "fixtures/managed-instruction-v1.json#refusals",
+          "fixtures/evidence-v2.json#cases.v2-instruction-mismatch"
+        ]
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the holder instruction record (dpp-managed-instruction@1, spec/managed-custody.md section 6 as it stood); the parked text and fixtures are under docs/reference/parked/managed-instruction/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "sourceId": "spec-managed-custody",
+        "sourceUri": "spec/managed-custody.md",
+        "sourceVersion": "working draft",
+        "layer": "profile",
+        "profileId": "managed-custody@2",
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "id": "MC-6-instruction-rule",
+        "clause": "§6",
+        "summary": "Under the rule, every UPDATE and RETIRE after a committed TRANSFER carries an instruction commitment unless a control authority made it; a verifier or index that selects the rule refuses one without, as instruction-commitment-absent on linkage, and the same bytes pass with the rule off; the report's limits say the evidence is custody-dependent.",
+        "roles": [
+          "passport-reader",
+          "overlay"
+        ],
+        "applicability": "when a deployment declares instructionCommitment required",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/verifyChain.ts",
+          "packages/dpp-protocol/src/evidence.ts",
+          "packages/dpp-overlay/src/tmDpp.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/fixture-json.test.ts",
+          "packages/dpp-overlay/test/tmDppV2.test.ts",
+          "conformance/independent/python/dpp_verify.py",
+          "examples/lifecycle-v2.mjs"
+        ],
+        "evidenceRefs": [
+          "fixtures/chain-v2.json#refusals.updateAfterTransferWithoutInstruction",
+          "fixtures/evidence-v2.json#cases.v2-instruction-required-absent",
+          "fixtures/evidence-v2.json#cases.v2-valid-with-instruction",
+          "fixtures/evidence-v2.json#cases.v2-instruction-not-supplied"
+        ],
+        "notes": "The reference index selects the rule with INSTRUCTION_COMMITMENT=required and declares it as instructionCommitment in its custody profile entry; the hosted index and the reference application do not yet select it, and the application records no instructions, so the hosted declaration stays not-selected until they do."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026: managed-custody@2 is the one custody profile, and nothing writes managed-custody@1. Its records are still read under spec/managed-custody.md section 9, which the claim managed-custody-1 covers.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "claim": {
+        "id": "managed-custody-1-writer",
+        "role": "passport-writer",
+        "minimumStatus": "implemented",
+        "description": "A writer under the superseded managed-custody@1: offers idempotent by request, one acceptance per offer, no chain state on decline or expiry, one TRANSFER per acceptance; self-reported beside the reference example, which now writes version 2.",
+        "requires": [
+          "MC-4-offer-lifecycle",
+          "MC-4-transfer-binding",
+          "WR-2-verify-before-send",
+          "WR-4-one-writer"
+        ]
+      }
+    }
+  ]
+}

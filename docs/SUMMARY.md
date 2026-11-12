@@ -73,6 +73,7 @@
     * [Beta.11 publication receipt](reference/beta-11-publication.md "Latest publication")
     * [Beta.10 publication receipt](reference/beta-10-publication.md)
     * [Conformance and the ledger](reference/conformance.md)
+    * [Parked: holder instruction records](reference/parked/managed-instruction/README.md)
     * [Release history](reference/release-history.md)
     * [Beta.9 publication receipt](reference/beta-9-publication.md)
     * [Beta.8 publication receipt](reference/beta-8-publication.md)

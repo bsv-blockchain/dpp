@@ -155,7 +155,7 @@ out.push(['reader path: chain-v3 valid as a carried lineage under the custodian 
 out.push(['protocol constants: version 3 is 17 fields behind the token prefix', STANDARD_VERSION_V3 === '3' && FIELD_COUNT_V3 === 17])
 const tm = new DppTopicManager(chain.custodianKey, { managedAcceptance: true })
 out.push(['overlay: topic manager documentation names version 2', (await tm.getDocumentation()).includes('record-model-v2')])
-const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorServiceKeys: [], ownerConsent: false, managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: new Date() })
+const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorServiceKeys: [], managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: new Date() })
 out.push(['overlay: capabilities name the managed-custody profile', caps.profiles.some((p) => p.id === 'managed-custody')])
 out.push(['overlay: lookup service constructs over in-memory storage', new DppLookupService(new InMemoryDppStorage()) != null])
 out.push(['overlay: the complete export join is exported', typeof joinEvidenceExport === 'function'])

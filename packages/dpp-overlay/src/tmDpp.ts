@@ -2,15 +2,13 @@ import { Beef, LockingScript, Transaction, type TransactionInput } from '@bsv/sd
 import type { AdmittanceInstructions, Storage, TopicManager } from '@bsv/overlay'
 import {
   ACCEPTANCE_COMMITMENT_REFUSAL,
-  INSTRUCTION_COMMITMENT_REFUSAL,
   MANAGED_CUSTODY_PROFILE,
   checkCarrier,
   checkGenesisState,
-  checkOwnerConsent,
   checkTransition,
   findDppOutputs,
   linkageReasonCode,
-  normaliseTransferAuthorities,
+  normaliseControlAuthorities,
   tryParseDppOutput,
   verifyServerSignature,
   verifyUserSignature,
@@ -42,9 +40,7 @@ export const DPP_REFUSAL_CODES = [
   'version-transition-invalid',
   'carrier-prefix-invalid',
   'token-id-mismatch',
-  'consent-not-proven',
   'acceptance-commitment-absent',
-  'instruction-commitment-absent',
   'genesis-spends-passport-output',
   'predecessor-not-admitted',
   'predecessor-unavailable',
@@ -103,25 +99,15 @@ const MAX_LINEAGE_WALK = 10_000
  * Spent tips are retained (coinsToRetain) so the lifecycle history stays
  * resolvable (§1: the spend history is the passport's lifecycle).
  *
- * One rule is a profile's choice rather than the record model's, and this
- * manager enforces it only when told to: the owner-signed transfer of
- * `spec/custody.md` §4, under which a TRANSFER is admitted only when its actor
- * proves it is the previous owner, by equality or by owner_linkage, or is a
- * named transfer authority. It is admission policy of the same kind as the
- * service signature, and the topic documentation says whether this instance
- * enforces it, so a writer learns the rule from the index and not from a
- * refusal (`spec/services.md` §6).
+ * Two settings are a deployment's choice rather than the record model's: the
+ * control authorities, empty by default, and the managed-custody profile's
+ * acceptance commitment. Both are admission policy of the same kind as the
+ * service signature, and the topic documentation says what this instance
+ * runs, so a writer learns the rule from the index and not from a refusal
+ * (`spec/services.md` §6). A version 1 TRANSFER has no control rule: the
+ * record model admits any signed TRANSFER that spends the tip.
  */
 export interface DppAdmissionOptions {
-  /**
-   * The owner-signed transfer (`spec/custody.md` §4). `true` runs the predicate
-   * on every TRANSFER; an object also names the transfer authorities, identity
-   * keys whose TRANSFER is admitted without proof (recovery). Off by default:
-   * the record model's baseline admits any signed TRANSFER that spends the tip.
-   * A malformed authority throws at construction, so a misconfigured
-   * deployment fails to boot rather than silently never matching.
-   */
-  ownerConsent?: boolean | { authorities: string[] }
   /**
    * The publisher key policy chain (`spec/services.md` §1), already verified
    * by the caller with `verifyPolicyChain`. When present and in force for this
@@ -134,10 +120,10 @@ export interface DppAdmissionOptions {
   publisherPolicy?: PublisherPolicy[]
   /**
    * Authorities for version 2 and 3 control proofs (`spec/record-model-v2.md`
-   * §6): identity keys whose UPDATE, TRANSFER or RETIRE is admitted without a
-   * control proof. Defaults to the `ownerConsent` authorities, so one list
-   * serves every version unless a deployment names another. Malformed keys
-   * throw at construction.
+   * §6): identity keys whose UPDATE, TRANSFER or RETIRE is admitted without
+   * equality or linkage (recovery). Empty by default. A malformed key throws
+   * at construction, so a misconfigured deployment fails to boot rather than
+   * silently never matching.
    */
   controlAuthorities?: string[]
   /**
@@ -148,13 +134,6 @@ export interface DppAdmissionOptions {
    * this instance runs.
    */
   managedAcceptance?: boolean
-  /**
-   * The instruction rule of the same profile (`spec/managed-custody.md` §6):
-   * when selected, a version 2 or 3 UPDATE or RETIRE after a committed
-   * TRANSFER is admitted only when it carries an `authorisation_commitment`,
-   * unless its actor is a control authority. Off by default.
-   */
-  managedInstruction?: boolean
   /**
    * The engine's own storage, so the manager can read an admitted
    * predecessor's locking script when the BEEF it is handed does not carry
@@ -169,11 +148,8 @@ export interface DppAdmissionOptions {
 }
 
 export class DppTopicManager implements TopicManager, AdmissionRefusals {
-  private readonly consentSelected: boolean
-  private readonly authorities: string[]
   private readonly controlAuthorities: string[]
   private readonly managedAcceptance: boolean
-  private readonly managedInstruction: boolean
   private readonly policy?: PublisherPolicy[]
   private readonly admitted?: Pick<Storage, 'findOutput'> & Partial<Pick<Storage, 'findOutputsForTransaction'>>
   /** States inspected recently, by txid: the predecessor a synchronisation pass showed one call ago. */
@@ -185,14 +161,8 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     private readonly serverIdentityKey: string,
     options: DppAdmissionOptions = {}
   ) {
-    this.consentSelected = options.ownerConsent != null && options.ownerConsent !== false
-    this.authorities =
-      typeof options.ownerConsent === 'object'
-        ? normaliseTransferAuthorities(options.ownerConsent.authorities)
-        : []
-    this.controlAuthorities = options.controlAuthorities != null ? normaliseTransferAuthorities(options.controlAuthorities) : this.authorities
+    this.controlAuthorities = normaliseControlAuthorities(options.controlAuthorities ?? [])
     this.managedAcceptance = options.managedAcceptance === true
-    this.managedInstruction = options.managedInstruction === true
     this.policy = options.publisherPolicy != null && options.publisherPolicy.length > 0 ? options.publisherPolicy : undefined
     this.admitted = options.admittedOutputs
   }
@@ -303,34 +273,6 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
       outputIndex = earlier.outputIndex
     }
     return undefined
-  }
-
-  /**
-   * Whether a TRANSFER carrying an acceptance commitment precedes this state
-   * in its lineage (`spec/managed-custody.md` §6): the predecessor itself, or
-   * any earlier version 2 or 3 state, walked back through the same sources
-   * as `lineageGenesisFor`. A walk that cannot be completed answers false,
-   * because the rule refuses only what the index can see was a managed
-   * hand-on; the lineage rule has already refused what it cannot trace.
-   */
-  private async committedTransferPrecedes(
-    prev: DppState,
-    prevTxid: string,
-    prevOutputIndex: number,
-    parsedBeef: Beef | undefined,
-    historical: boolean
-  ): Promise<boolean> {
-    let state: DppState = prev
-    void prevTxid
-    void prevOutputIndex
-    for (let hops = 0; hops < MAX_LINEAGE_WALK; hops++) {
-      if (state.version !== '1' && state.op === 'TRANSFER' && state.authorisationCommitment !== '') return true
-      if (state.previousTxid === '' || state.version === '1') return false
-      const earlier = await this.stateAt(state.previousTxid, parsedBeef, historical)
-      if (earlier == null) return false
-      state = earlier.state
-    }
-    return false
   }
 
   /** The admitted DPP state a transaction carries, by txid, from the BEEF, the engine's storage or recent memory. */
@@ -536,30 +478,11 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
         if (state.version !== '1') console.warn(`${DPP_TOPIC} refused ${txid}: ${link}`)
         return refuse(linkageReasonCode(link))
       }
-      if (state.version === '1' && this.consentSelected) {
-        const reason = checkOwnerConsent(prev.state, state, this.authorities)
-        if (reason != null) {
-          // The other refusals are silent because the wire says everything a
-          // writer needs. This one is a policy the writer may not know this
-          // instance runs, so the operator's log names it.
-          console.warn(`${DPP_TOPIC} refused ${txid}: ${reason}`)
-          return refuse('consent-not-proven')
-        }
-      }
       if (state.version !== '1' && state.op === 'TRANSFER' && this.managedAcceptance && state.authorisationCommitment === '') {
+        // A policy the writer may not know this instance runs, so the
+        // operator's log names it.
         console.warn(`${DPP_TOPIC} refused ${txid}: ${ACCEPTANCE_COMMITMENT_REFUSAL}`)
         return refuse('acceptance-commitment-absent')
-      }
-      // The instruction rule (`spec/managed-custody.md` §6): after a committed
-      // TRANSFER the holder is a recipient the custodian acts for, so an
-      // UPDATE or RETIRE commits to the holder's instruction unless a control
-      // authority made it. Whether a committed TRANSFER precedes this state
-      // is read from the lineage this index traced for the predecessor.
-      if (state.version !== '1' && (state.op === 'UPDATE' || state.op === 'RETIRE') && this.managedInstruction && state.authorisationCommitment === '' && !this.controlAuthorities.includes(state.actorIdentityKey)) {
-        if (await this.committedTransferPrecedes(prev.state, prevTxid, input.sourceOutputIndex, parsedBeef, historical)) {
-          console.warn(`${DPP_TOPIC} refused ${txid}: ${INSTRUCTION_COMMITMENT_REFUSAL}`)
-          return refuse('instruction-commitment-absent')
-        }
       }
       return admit({ outputsToAdmit: [outputIndex], coinsToRetain: [inputIndex] })
     }
@@ -666,24 +589,12 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     )
     lines.push(
       '',
-      this.managedInstruction
-        ? "The profile's instruction rule is selected (spec/managed-custody.md section 6): after a TRANSFER that commits to an acceptance, a version 2 or 3 UPDATE or RETIRE is admitted only when its authorisation_commitment names the instruction record the custodian retained, unless a control authority made it."
-        : "The profile's instruction rule is not selected: a version 2 or 3 UPDATE or RETIRE after a committed TRANSFER is admitted with an empty authorisation_commitment. It is switched on with INSTRUCTION_COMMITMENT=required."
+      'After a committed TRANSFER, an UPDATE or RETIRE the custodian writes for a managed holder depends on custody: the chain shows that the custodian acted, not that the holder asked (spec/managed-custody.md section 6).'
     )
-    lines.push('', '## The owner-signed transfer (version 1)', '')
-    if (this.consentSelected) {
-      lines.push(
-        'This index is deployed for a profile that selects the owner-signed transfer (spec/custody.md section 4). A TRANSFER is admitted only when its actor is the previous owner, proven by equality (actor_identity_key equals the previous owner_identity_key) or by linkage (event_data carries owner_linkage, 64 lower-case hex characters, with the previous owner_identity_key equal to actor_identity_key plus owner_linkage times G), or when the actor is a transfer authority named below. The predicate is evaluated in that order: equality, authorities, linkage.',
-        '',
-        this.authorities.length === 0
-          ? 'Transfer authorities: none. Every TRANSFER must prove consent.'
-          : `Transfer authorities: ${this.authorities.join(', ')}. A TRANSFER by one of these keys is admitted without proof of consent; the profile expects it to be attested on the anchor rail.`
-      )
-    } else {
-      lines.push(
-        'Not enforced by this index, which admits any signed TRANSFER that spends the tip: the record model baseline. The owner-signed transfer (spec/custody.md section 4) is a profile choice, switched on when the topic manager is configured for it.'
-      )
-    }
+    lines.push('', '## Version 1', '')
+    lines.push(
+      'A version 1 TRANSFER has no control rule: this index admits any signed version 1 TRANSFER that spends the tip, the record model baseline (spec/custody.md section 4). Control is proven from the version 2 upgrade on.'
+    )
     return lines.join('\n')
   }
 

@@ -75,7 +75,7 @@ export interface PlatformWallet {
   network: Network
   identityKey: string
   publisher: PublisherWallet
-  /** Signs acceptance and instruction records with createSignature under the managed record protocol: the same wallet that publishes, one derivation from its root. */
+  /** Signs acceptance records with createSignature under the managed record protocol: the same wallet that publishes, one derivation from its root. */
   custodian: DataSigner
   adapter: WriterAdapter
   fundingAddress(): Promise<FundingAddress>

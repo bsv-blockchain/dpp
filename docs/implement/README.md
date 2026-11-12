@@ -86,7 +86,7 @@ Steps 2 to 5 make a passport reader. Start there whatever you build: every other
    No line starts with `FAIL`, and the Python reader ends with `Every sentence above holds.`
 2. **Decode one record.** Read `fixtures/record-v2.json`. Your inputs are `lockingScript` and `custodianKey`, the publisher's identity key. Your code must reproduce `state` (the fifteen data fields), `actorPreimage` and `publisherPreimage` byte for byte, derive `actorVerificationKey` and `publisherVerificationKey`, verify `actorSignature` and `publisherSignature` under them, and refuse all ten scripts in `refusals`. Then do the same for `fixtures/record-v1.json`, whose fourteen fields sign `userPreimage` and `serverPreimage`, and for `fixtures/record-v3.json`, whose two outputs sit behind a token prefix and whose thirteen refusals include the prefix's own.
 3. **Verify a history.** Read `fixtures/chain-v2.json` and `fixtures/chain-v1.json`: accept the valid states in order and refuse every broken link in each file. Then `fixtures/chain-v3.json`, a carried lineage: accept its five states with their token id, refuse its 12 broken links and read its burn.
-4. **Bind custody evidence.** Read `fixtures/managed-acceptance-v2.json`, the derived-key acceptance record a custodian keeps under `managed-custody@2`, and `fixtures/managed-instruction-v1.json`, the holder instruction a later update or retirement commits to. Reproduce their signatures, commitments, state bindings and refusals. Read `fixtures/managed-acceptance-v1.json` under the superseded direct-signature rule for historical records; the current writer produces only version 2 acceptance records.
+4. **Bind custody evidence.** Read `fixtures/managed-acceptance-v2.json`, the derived-key acceptance record a custodian keeps under `managed-custody@2`. Reproduce its signature, commitment, state binding and refusals. Read `fixtures/managed-acceptance-v1.json` under the superseded direct-signature rule for historical records; the current writer produces only version 2 acceptance records.
 5. **Produce the report.** Read every case in `fixtures/evidence-v2.json`, `fixtures/evidence-v1.json` and `fixtures/evidence-v3.json` and produce, for each, a report that matches on the parts [run the fixtures](fixture-runner.md#what-a-matching-report-is) lists.
 6. **Add the other roles you need**, from the table below.
 7. **Report what you did**, as [reporting](reporting.md) describes.
@@ -105,8 +105,8 @@ python3 conformance/independent/python/dpp_verify.py
 | Coverage or result | Detail |
 |---|---|
 | Building blocks | secp256k1 arithmetic, strict DER, ECDSA verification, BRC-42 derivation, PushDrop layout and refusals, both signature preimages, chain invariants, native claim and anchor |
-| Fixtures | Record, chain, anchor, acceptance and instruction |
-| Vectors | Record, chain, anchor, acceptance, instruction, publisher policy, registration and evidence package |
+| Fixtures | Record, chain, anchor and acceptance |
+| Vectors | Record, chain, anchor, acceptance, publisher policy, registration and evidence package; skipped vectors are not run |
 | Success | One sentence per check, successful checks starting `ok:`; ends `Every sentence above holds.` |
 | Check count | Changes as fixtures are added; retain output for your recorded revision |
 | Equivalent invocation | `npm run conformance:independent` |
@@ -120,7 +120,7 @@ The [baseline](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebc
 
 | Role | What it does | Fixtures and tests | Page |
 |---|---|---|---|
-| Passport reader | Rebuilds a passport's history from transaction bytes and reports what it establishes | `record-v1.json`, `chain-v1.json`, `evidence-v1.json`, `record-v2.json`, `chain-v2.json`, `managed-acceptance-v2.json`, historical `managed-acceptance-v1.json`, `managed-instruction-v1.json`, `evidence-v2.json`, `record-v3.json`, `chain-v3.json`, `evidence-v3.json` | [Passport reader](roles/passport-reader.md) |
+| Passport reader | Rebuilds a passport's history from transaction bytes and reports what it establishes | `record-v1.json`, `chain-v1.json`, `evidence-v1.json`, `record-v2.json`, `chain-v2.json`, `managed-acceptance-v2.json`, historical `managed-acceptance-v1.json`, `evidence-v2.json`, `record-v3.json`, `chain-v3.json`, `evidence-v3.json` | [Passport reader](roles/passport-reader.md) |
 | Attestation verifier | Checks a signed claim and its on-chain anchor | `attestation-anchor-v1.json`, the anchor cases of `evidence-v1.json`, and the historical `anchor-v3.json` | [Attestation verifier](roles/attestation-verifier.md) |
 | Attestation issuer | Signs a claim about a product, such as a repair | `attestation-anchor-v1.json` | [Attestation issuer](roles/attestation-issuer.md) |
 | Passport writer | Builds each new state, checks it, announces it, sends it, proves it and keeps it | The record and chain vectors, which publish their test keys so your writer reproduces the pinned bytes; then a self-report, one sentence per rule of [writing](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md) section 11 | [Passport writer](roles/passport-writer.md) |

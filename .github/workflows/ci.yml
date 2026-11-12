@@ -27,7 +27,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: node examples/verify-passport.mjs --fixture
-      - run: node examples/verify-passport.mjs --fixture --owner-consent
       - run: node examples/verify-passport.mjs --fixture --report
       - run: node examples/verify-passport.mjs --fixture --version=2
       - run: node examples/verify-passport.mjs --fixture --version=2 --report

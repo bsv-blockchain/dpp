@@ -42,7 +42,7 @@ Versions move independently. Installing a package never selects a record format 
 |---|---|---|
 | Fields | 14 | 17 |
 | Operations | Seven lifecycle names: `ACTIVATE`, `SOLD`, `RESOLD`, `REPAIRED`, `RECYCLED`, `EDIT`, `TRANSFER` | Four: `ISSUE`, `UPDATE`, `TRANSFER`, `RETIRE` |
-| Control | Proven on a `TRANSFER` only where a profile selects the owner-signed transfer | Proven on every state after the first, for every reader |
+| Control | Not proven: a `TRANSFER` that spends the tip is valid whoever signs it | Proven on every state after the first, for every reader |
 | Each state names | The transaction it spends | The output it spends and the lineage's first state |
 | Ending a passport | No terminal operation | `RETIRE`, after which nothing can follow |
 | Commitment to an authorisation record | None | Field 15, which the managed custody profile requires on every `TRANSFER` |

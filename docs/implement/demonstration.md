@@ -19,7 +19,7 @@ The trial definition is [`independent-implementation-2026-09`](https://github.co
 |---|---|
 | Release set | `dpp-release-2026-11` |
 | Baseline | `native-baseline@2` |
-| Custody profile | `managed-custody@1`, demonstrated in September. It moves to `managed-custody@2` with the second implementing party's written acceptance of the derived-key signature. |
+| Custody profile | `managed-custody@1`, demonstrated in September. Since 12 November 2026 `managed-custody@2` is the one custody profile, and nothing writes `@1`. |
 | Completion | Not completed. Programme-produced evidence is engineering evidence. Version 1.0's organisational independence is recorded only when another implementing party runs the same scenarios. |
 
 ## Take part
@@ -84,7 +84,7 @@ For each completed scenario, retain its evidence and the ledger rows listed unde
 
 | Claim or conclusion | What the trial records or still needs |
 |---|---|
-| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer`, `overlay-single-operator-1`, `registry-current-intake` | Trial evidence bears on these claims. |
+| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` (since [archived](../reference/parked/ledger-archive.json)), `overlay-single-operator-1`, `registry-current-intake` | Trial evidence bears on these claims. |
 | `overlay-federated-operators-1` | Cannot be made by the trial alone. Requires separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
 | `version-1-0-readiness` | Cannot be made by the trial alone. Requires another implementing party on record. |
 | Local synthetic exchange | Establishes neither separately administered operation nor mined inclusion. |

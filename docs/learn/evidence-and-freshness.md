@@ -55,7 +55,7 @@ The checks form four groups. The second column uses the short labels from `@bsv/
 | `recordEncoding` | Well-formed records: each state decodes as record version 1 or 2, with one passport output per transaction | `fail` `decode-failed`; the next four checks then read `unknown` `decode-failed` |
 | `actorSignatures` | Every entry was signed by whoever wrote it | `fail` `signature-invalid` |
 | `publisherSignatures` | Every entry was countersigned by its named publisher, whose key your policy names | `not-applicable` `publisher-not-selected` without selected keys; `fail` `signature-invalid`, or `publisher-not-authorised` outside a key's policy window; `unknown` `publisher-policy-invalid` |
-| `linkage` | Each state spends its predecessor without a missing middle step and follows chain rules, including control proof and, under managed custody, an acceptance commitment on every version 2 `TRANSFER` | `fail` with `link-broken`, `lineage-retired`, `control-not-proven`, `version-transition-invalid`, `consent-not-proven` or `acceptance-commitment-absent` |
+| `linkage` | Each state spends its predecessor without a missing middle step and follows chain rules, including control proof and, under managed custody, an acceptance commitment on every version 2 `TRANSFER` | `fail` with `link-broken`, `lineage-retired`, `control-not-proven`, `version-transition-invalid` or `acceptance-commitment-absent` |
 | `inclusion` | Each state's merkle path checks against block headers, establishing block inclusion | `unknown` `proof-absent` without proof; `unknown` `header-source-unavailable` without a header-source answer; `unknown` `not-selected` without a header source; `fail` `proof-refuted` |
 
 **Claims and their anchors**

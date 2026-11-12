@@ -1,36 +1,39 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ownerConsentPolicy } from '../src/index.js'
+import { afterEach, describe, expect, it } from 'vitest'
+import { refuseRemovedCustodySettings, versionTwoAdmission } from '../src/index.js'
 
-/** OWNER_CONSENT and TRANSFER_AUTHORITIES, as the README's configuration table states them. */
-describe('the owner-consent policy from the environment', () => {
+/** The custody settings read from the environment, as the README's configuration table states them. */
+describe('the custody settings from the environment', () => {
   afterEach(() => {
-    delete process.env.OWNER_CONSENT
-    delete process.env.TRANSFER_AUTHORITIES
-    vi.restoreAllMocks()
+    delete process.env.ACCEPTANCE_COMMITMENT
+    delete process.env.CONTROL_AUTHORITIES
   })
 
-  it('is off when unset, quietly', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(ownerConsentPolicy()).toBe(false)
-    expect(warn).not.toHaveBeenCalled()
+  it('name no control authorities and select no profile when unset', () => {
+    expect(versionTwoAdmission()).toEqual({ managedAcceptance: false })
   })
 
-  it('is on with "required", with no authorities unless named', () => {
-    process.env.OWNER_CONSENT = 'required'
-    expect(ownerConsentPolicy()).toBe(true)
-    process.env.TRANSFER_AUTHORITIES = ' 02aa, 03bb ,'
-    expect(ownerConsentPolicy()).toEqual({ authorities: ['02aa', '03bb'] })
+  it('select the managed-custody profile with "required" and name control authorities comma-separated', () => {
+    process.env.ACCEPTANCE_COMMITMENT = 'required'
+    process.env.CONTROL_AUTHORITIES = ' 02aa, 03bb ,'
+    expect(versionTwoAdmission()).toEqual({ managedAcceptance: true, controlAuthorities: ['02aa', '03bb'] })
   })
 
-  it('refuses any other value rather than guessing', () => {
-    process.env.OWNER_CONSENT = 'yes'
-    expect(() => ownerConsentPolicy()).toThrow('OWNER_CONSENT')
+  it('refuse any other value of ACCEPTANCE_COMMITMENT rather than guessing', () => {
+    process.env.ACCEPTANCE_COMMITMENT = 'yes'
+    expect(() => versionTwoAdmission()).toThrow('ACCEPTANCE_COMMITMENT')
+  })
+})
+
+/** OWNER_CONSENT, TRANSFER_AUTHORITIES and INSTRUCTION_COMMITMENT selected rules this release does not run. */
+describe('the removed custody settings', () => {
+  it('pass when none is set, or each is empty', () => {
+    expect(() => refuseRemovedCustodySettings({})).not.toThrow()
+    expect(() => refuseRemovedCustodySettings({ OWNER_CONSENT: '', TRANSFER_AUTHORITIES: ' ', INSTRUCTION_COMMITMENT: '' })).not.toThrow()
   })
 
-  it('warns when authorities are named with no policy for them to be exempt from', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    process.env.TRANSFER_AUTHORITIES = '02aa'
-    expect(ownerConsentPolicy()).toBe(false)
-    expect(warn).toHaveBeenCalledOnce()
+  it('fail the boot when one is set, saying why', () => {
+    expect(() => refuseRemovedCustodySettings({ OWNER_CONSENT: 'required' })).toThrow(/OWNER_CONSENT is no longer read.*CONTROL_AUTHORITIES/)
+    expect(() => refuseRemovedCustodySettings({ TRANSFER_AUTHORITIES: '02aa' })).toThrow(/TRANSFER_AUTHORITIES is no longer read.*were also the index's control authorities, so move them to CONTROL_AUTHORITIES/)
+    expect(() => refuseRemovedCustodySettings({ INSTRUCTION_COMMITMENT: 'required' })).toThrow('INSTRUCTION_COMMITMENT is no longer read: the instruction rule of the managed-custody profile is parked')
   })
 })

@@ -129,15 +129,6 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(byName(report, 'linkage')).toMatchObject({ status: 'unknown', reasonCode: 'decode-failed' })
   })
 
-  it('reports the owner-signed transfer under linkage when the policy selects it', async () => {
-    const stranger = F.refusals.find((r) => r.name === 'transferByStranger')!
-    const txs = [...chain.slice(0, stranger.appendAfter + 1), Transaction.fromHex(stranger.rawTx)]
-    const off = await verifyPassportEvidence({ tokenHistory: txs }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only' })
-    expect(byName(off, 'linkage').status).toBe('pass')
-    const on = await verifyPassportEvidence({ tokenHistory: txs }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only', ownerConsent: true })
-    expect(byName(on, 'linkage')).toMatchObject({ status: 'fail', reasonCode: 'consent-not-proven' })
-  })
-
   it('fails subject binding when validly signed evidence names another product', async () => {
     const report = await verifyPassportEvidence({ tokenHistory: chain }, { passportId: 'https://id.gs1.org/01/09506000134352/21/JERSEY-002', source: 'request-context' }, { checkedAt: CHECKED_AT, chainTracker: 'scripts only' })
     expect(byName(report, 'actorSignatures').status).toBe('pass')

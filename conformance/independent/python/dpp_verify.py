@@ -10,11 +10,11 @@ secp256k1 arithmetic, strict DER, ECDSA verification, the BRC-42 child
 derivation with counterparty anyone, the PushDrop layouts of record versions 1
 and 2 and their refusals (record-model.md sections 2 and 3, record-model-v2.md
 sections 2 and 3), the unframed version 1 and the framed, domain-tagged version
-2 signature preimages (section 5 of each), the chain invariants, the owner-signed
-transfer, the version 2 control proof, retirement and the upgrade (section 6 of
-each, custody.md section 4), the managed acceptance record (managed-custody.md
-section 3), the native claim and the generic anchor (rules.md sections 3 to 5),
-and it runs every positive and refusal vector in fixtures/ and fixtures/vectors/.
+2 signature preimages (section 5 of each), the chain invariants, the version 2
+control proof, retirement and the upgrade (section 6 of each), the managed
+acceptance record (managed-custody.md section 3), the native claim and the generic anchor (rules.md sections 3 to 5),
+and it runs every positive and refusal vector in fixtures/ and fixtures/vectors/
+except those a file marks skipped, whose rules the standard has superseded.
 It does not sign: writer-side vectors are read for what a reader can check in
 them.
 
@@ -512,29 +512,6 @@ def dpp_outputs(tx: dict) -> list[tuple[int, dict]]:
     return found
 
 
-def owner_consent(prev: dict, state: dict, authorities: list[str]) -> str | None:
-    if state["op"] != "TRANSFER":
-        return None
-    if state["actorIdentityKey"] == prev["ownerIdentityKey"]:
-        return None
-    if state["actorIdentityKey"] in authorities:
-        return None
-    try:
-        event = json.loads(state["eventData"]) if state["eventData"] else None
-    except ValueError:
-        event = None
-    if not isinstance(event, dict) or "owner_linkage" not in event:
-        return "TRANSFER actor is not the previous owner and event_data carries no owner_linkage"
-    linkage = event["owner_linkage"]
-    if not isinstance(linkage, str) or not re.fullmatch(r"[0-9a-f]{64}", linkage):
-        return "owner_linkage must be 64 lower-case hex characters"
-    actor = canonical_key_hex(state["actorIdentityKey"])
-    derived = point_add(actor, point_mul(int(linkage, 16), G))
-    if derived is None or encode_compressed(derived).hex() != prev["ownerIdentityKey"]:
-        return "owner_linkage does not link actor_identity_key to the previous owner_identity_key"
-    return None
-
-
 def control(prev: dict, state: dict, authorities: list[str]) -> str | None:
     """The version 2 control proof (record-model-v2.md section 6): equality, then a named authority, then linkage."""
     if state["op"] == "ISSUE":
@@ -552,11 +529,9 @@ def control(prev: dict, state: dict, authorities: list[str]) -> str | None:
     return None
 
 
-def verify_chain(raw_txs: list[str], server_key_hex: str | None = None, consent: bool | dict | None = None, managed_acceptance: bool = False, control_authorities: list[str] | None = None, managed_instruction: bool = False) -> str | None:
+def verify_chain(raw_txs: list[str], server_key_hex: str | None = None, managed_acceptance: bool = False, control_authorities: list[str] | None = None) -> str | None:
     """None when the supplied history is valid, otherwise the first refusal in this reader's words."""
-    authorities = list(consent["authorities"]) if isinstance(consent, dict) else []
-    control_keys = control_authorities if control_authorities is not None else authorities
-    committed_transfer_seen = False
+    control_keys = control_authorities if control_authorities is not None else []
     prev = None
     genesis: dict | None = None
     for index, raw in enumerate(raw_txs):
@@ -612,8 +587,6 @@ def verify_chain(raw_txs: list[str], server_key_hex: str | None = None, consent:
                 return f"state {index}: does not spend the previous tip output"
             if managed_acceptance and state["op"] == "TRANSFER" and state["authorisationCommitment"] == "":
                 return f"state {index}: TRANSFER carries no authorisation_commitment under the managed-custody profile"
-            if managed_instruction and state["op"] in ("UPDATE", "RETIRE") and state["authorisationCommitment"] == "" and committed_transfer_seen and state["actorIdentityKey"] not in control_keys:
-                return f"state {index}: UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under the managed-custody profile"
         else:
             p = prev["state"]
             if p["version"] == "2":
@@ -632,12 +605,6 @@ def verify_chain(raw_txs: list[str], server_key_hex: str | None = None, consent:
                 return f"state {index}: payload changes only on ACTIVATE, EDIT or TRANSFER"
             if (prev["txid"], prev["outputIndex"]) not in tx["inputs"]:
                 return f"state {index}: does not spend the previous tip output"
-            if consent:
-                reason = owner_consent(p, state, authorities)
-                if reason is not None:
-                    return f"state {index}: {reason}"
-        if state["version"] != "1" and state["op"] == "TRANSFER" and state["authorisationCommitment"] != "":
-            committed_transfer_seen = True
         prev = {"state": state, "txid": tx["txid"], "outputIndex": output_index}
     return None
 
@@ -838,8 +805,8 @@ MANAGED_RECORD_PROTOCOL = "dpp managed record v1"
 
 
 def managed_record_key(record: dict) -> Point:
-    """The key a version 2 acceptance record or an instruction record verifies under (managed-custody.md sections 3 and 6): the
-    BRC-42 child of the custodian's identity key for [1, 'dpp managed record v1'], the record's requestId and counterparty anyone."""
+    """The key a version 2 acceptance record verifies under (managed-custody.md section 3): the BRC-42 child of the
+    custodian's identity key for [1, 'dpp managed record v1'], the record's requestId and counterparty anyone."""
     return brc42_child(canonical_key_hex(record["custodian"]), invoice(1, MANAGED_RECORD_PROTOCOL, record["requestId"]))
 
 
@@ -848,12 +815,6 @@ def acceptance_signature_valid(record: dict) -> bool:
     unsigned = {k: v for k, v in record.items() if k != "signature"}
     key = canonical_key_hex(record["custodian"]) if record["acceptanceFormat"] == "dpp-managed-acceptance@1" else managed_record_key(record)
     return ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(record["signature"]), key)
-
-
-def instruction_signature_valid(record: dict) -> bool:
-    """Always the derived child: the instruction record has only ever been signed that way."""
-    unsigned = {k: v for k, v in record.items() if k != "signature"}
-    return ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(record["signature"]), managed_record_key(record))
 
 
 def acceptance_commitment(record: dict) -> str:
@@ -872,56 +833,6 @@ def acceptance_binds(record: dict, state: dict, state_timestamp: str) -> bool:
         and state["actorIdentityKey"] == record["offer"]["holderIdentityKey"]
         and state["authorisationCommitment"] == acceptance_commitment(record)
         and instant(record["acceptance"]["acceptedAt"]) <= instant(state_timestamp)
-    )
-
-
-# --------------------------------------------------------- managed instruction
-
-
-def instruction_structure(record: dict) -> str | None:
-    """The shape of a dpp-managed-instruction@1 record (managed-custody.md section 6)."""
-    allowed = {"instructionFormat", "requestId", "passportId", "lineageGenesis", "expectedPredecessor", "operation", "holderIdentityKey", "requestDigest", "requestedAt", "evidenceKind", "custodian", "signature"}
-    if not isinstance(record, dict) or set(record) - allowed:
-        return "unsupported property"
-    if record.get("instructionFormat") != "dpp-managed-instruction@1":
-        return "instructionFormat"
-    for key, bound in (("requestId", 128), ("passportId", 512)):
-        value = record.get(key)
-        if not isinstance(value, str) or not value or len(value.encode()) > bound or CONTROL.search(value):
-            return key
-    for key in ("lineageGenesis", "expectedPredecessor"):
-        o = record.get(key)
-        if not isinstance(o, dict) or not HEX64.match(str(o.get("txid", ""))) or not isinstance(o.get("outputIndex"), int) or o["outputIndex"] < 0:
-            return key
-    if record.get("operation") not in ("UPDATE", "RETIRE"):
-        return "operation"
-    if not KEY_HEX.match(str(record.get("holderIdentityKey", ""))):
-        return "holderIdentityKey"
-    if not HEX64.match(str(record.get("requestDigest", ""))):
-        return "requestDigest"
-    if not ISO_TZ.match(str(record.get("requestedAt", ""))):
-        return "requestedAt"
-    if record.get("evidenceKind") != "custodian-attested":
-        return "evidenceKind"
-    if not KEY_HEX.match(str(record.get("custodian", ""))):
-        return "custodian"
-    signature = record.get("signature")
-    if not isinstance(signature, str) or not re.fullmatch(r"(?:[0-9a-f]{2}){8,72}", signature) or parse_der_signature(bytes.fromhex(signature)) is None:
-        return "signature"
-    return None
-
-
-def instruction_binds(record: dict, state: dict, state_timestamp: str) -> bool:
-    """Whether the UPDATE or RETIRE executed exactly this instruction (managed-custody.md section 6)."""
-    return (
-        state["op"] == record["operation"]
-        and state["passportId"] == record["passportId"]
-        and state["lineageGenesis"] == record["lineageGenesis"]
-        and state["previousTxid"] == record["expectedPredecessor"]["txid"]
-        and state["previousOutputIndex"] == record["expectedPredecessor"]["outputIndex"]
-        and state["actorIdentityKey"] == record["holderIdentityKey"]
-        and state["authorisationCommitment"] == acceptance_commitment(record)
-        and instant(record["requestedAt"]) <= instant(state_timestamp)
     )
 
 
@@ -949,21 +860,18 @@ def check_version_two(root: Path) -> None:
         outs = dpp_outputs(tx)
         say(tx["txid"] == s["txid"] and len(outs) == 1 and outs[0][0] == s["outputIndex"], f"chain-v2: state {index + 1} rawTx hashes to the pinned txid and carries one state at the pinned index.")
     say(verify_chain(raws) is None, "chain-v2: the five-state lineage is valid on signatures, every invariant and the control proof.")
-    say(verify_chain(raws, chain["custodianKey"], None, True) is None, "chain-v2: every publisher signature verifies against the custodian key, and the TRANSFER carries its acceptance commitment under the managed-custody profile.")
+    say(verify_chain(raws, chain["custodianKey"], True) is None, "chain-v2: every publisher signature verifies against the custodian key, and the TRANSFER carries its acceptance commitment under the managed-custody profile.")
     say(verify_chain(raws[:2] + [chain["boundaryControl"]["rawTx"]]) is None, "chain-v2: the boundary control state is accepted.")
     for refusal in chain["refusals"]:
         prefix = raws[: refusal["appendAfter"] + 1]
         attempt = prefix + [refusal["rawTx"]]
         managed = refusal.get("managedAcceptance") is True
-        instructed = refusal.get("managedInstruction") is True
-        reason = verify_chain(attempt, None, None, managed or instructed, None, instructed)
-        say(reason is not None, f"chain-v2: {refusal['name']} is refused{' under the managed-custody profile' if managed or instructed else ''} ({reason or 'accepted'}); pinned reason: {refusal['error']}.")
+        reason = verify_chain(attempt, None, managed)
+        say(reason is not None, f"chain-v2: {refusal['name']} is refused{' under the managed-custody profile' if managed else ''} ({reason or 'accepted'}); pinned reason: {refusal['error']}.")
         if managed:
             say(verify_chain(attempt) is None, f"chain-v2: {refusal['name']} is accepted with the profile off, as the record model alone requires.")
-        if instructed:
-            say(verify_chain(attempt, None, None, True) is None, f"chain-v2: {refusal['name']} is accepted with the instruction rule off, as the acceptance rule alone requires.")
         if refusal.get("acceptedUnder") is not None:
-            say(verify_chain(attempt, None, None, False, refusal["acceptedUnder"]["authorities"]) is None, f"chain-v2: {refusal['name']} is accepted under the named control authorities.")
+            say(verify_chain(attempt, None, False, refusal["acceptedUnder"]["authorities"]) is None, f"chain-v2: {refusal['name']} is accepted under the named control authorities.")
     v1 = load(root, "fixtures/chain-v1.json")
     v1_raws = [s["rawTx"] for s in v1["states"]]
     upgrade = chain["upgrade"]
@@ -1011,35 +919,15 @@ def check_version_two(root: Path) -> None:
         binds = structure_ok and signature_ok and acceptance_binds(r, transfer2_state, transfer2_state["timestamp"])
         say(structure_ok == expected["structureValid"] and signature_ok == expected["signatureValid"] and not binds, f"managed-acceptance-v2: {refusal['name']} is refused as {expected['reason']} (structure {structure_ok}, signature {signature_ok}, binding {binds}).")
 
-    instruction = load(root, "fixtures/managed-instruction-v1.json")
-    irec = instruction["record"]
-    say(instruction_structure(irec) is None, "managed-instruction-v1: the pinned record is well formed.")
-    iunsigned = {k: v for k, v in irec.items() if k != "signature"}
-    say(nested_canonical(iunsigned).hex() == instruction["signingPreimageHex"], "managed-instruction-v1: the canonical JSON of the unsigned record is the pinned signing preimage.")
-    say(instruction_signature_valid(irec), "managed-instruction-v1: the custodian's signature verifies under the derived custodian child for the managed record protocol and the requestId.")
-    say(acceptance_commitment(irec) == instruction["commitment"] == instruction["update"]["authorisationCommitment"], "managed-instruction-v1: the SHA-256 of the canonical signed record is the commitment the UPDATE carries.")
-    update_tx = parse_tx(instruction["update"]["rawTx"])
-    update_index, update_state = dpp_outputs(update_tx)[0]
-    say(update_index == instruction["update"]["outputIndex"] and instruction_binds(irec, update_state, update_state["timestamp"]), "managed-instruction-v1: the record binds to the UPDATE: operation, passport, lineage, predecessor, holder, commitment and time order.")
-    v2_prefix = [s["rawTx"] for s in chain["states"][:3]]
-    say(verify_chain(v2_prefix + [instruction["update"]["rawTx"]], chain["custodianKey"]) is None, "managed-instruction-v1: the first three pinned states followed by the committed UPDATE verify as one lineage.")
-    for refusal in instruction["refusals"]:
-        r = refusal["record"]
-        expected = refusal["expected"]
-        structure_ok = instruction_structure(r) is None
-        signature_ok = instruction_signature_valid(r) if structure_ok else None
-        binds = structure_ok and signature_ok and instruction_binds(r, update_state, update_state["timestamp"])
-        say(structure_ok == expected["structureValid"] and signature_ok == expected["signatureValid"] and not binds, f"managed-instruction-v1: {refusal['name']} is refused as {expected['reason']} (structure {structure_ok}, signature {signature_ok}, binding {binds}).")
-
     for path, label in (("fixtures/vectors/dpp/record/v2.json", "record v2 vectors"), ("fixtures/vectors/dpp/chain/v2.json", "chain v2 vectors")):
         vectors = load(root, path)
-        for vector in vectors["vectors"]:
+        for vector in live(vectors):
             expected = vector["expected"]
             if expected.get("accepted") is False and "locking_script_hex" in vector["input"]:
                 result = read_record(vector["input"]["locking_script_hex"])
                 say(isinstance(result, str), f"{label}: {vector['id']} is refused ({result if isinstance(result, str) else 'accepted'}).")
             elif expected.get("accepted") is False and "raw_tx_hex" in vector["input"] and "version1_fixture" not in vector["input"]:
-                reason = verify_chain(vector["input"]["raw_tx_hex"], None, None, vector["input"].get("managed_acceptance") is True, None, vector["input"].get("managed_instruction") is True)
+                reason = verify_chain(vector["input"]["raw_tx_hex"], None, vector["input"].get("managed_acceptance") is True)
                 say(reason is not None, f"{label}: {vector['id']} is refused ({reason or 'accepted'}).")
             elif "locking_script_hex" in vector["input"] and "state" in expected:
                 result = read_record(vector["input"]["locking_script_hex"])
@@ -1050,7 +938,7 @@ def check_version_two(root: Path) -> None:
                 say(tx["txid"] == expected["txid_hex"] and len(outs) == 1 and outs[0][0] == expected["output_index"], f"{label}: {vector['id']} hashes to its txid and carries one DPP output at the pinned index.")
     for version in ("v1", "v2"):
         acceptance_vectors = load(root, f"fixtures/vectors/dpp/managed-acceptance/{version}.json")
-        for vector in acceptance_vectors["vectors"]:
+        for vector in live(acceptance_vectors):
             expected = vector["expected"]
             if "record" not in vector["input"]:
                 continue
@@ -1168,7 +1056,7 @@ def check_registration(root: Path) -> None:
         reasons = registration_reasons(refusal["request"], fixture["expectations"])
         say(reasons == refusal["expected"]["reasons"] and not refusal["expected"]["valid"], f"index-registration-v1: {refusal['name']} is refused as {', '.join(refusal['expected']['reasons'])} (this reader says {', '.join(reasons) or 'nothing'}).")
     vectors = load(root, "fixtures/vectors/dpp/index-registration/v1.json")
-    for vector in vectors["vectors"]:
+    for vector in live(vectors):
         if vector["id"] == "sign":
             say(vector["expected"]["signature_hex"] == request["signature"] and vector["expected"]["verification_key_hex"] == fixture["signing"]["verificationKey"], "index-registration vectors: the sign vector pins the fixture's signature and verification key.")
         else:
@@ -1178,7 +1066,7 @@ def check_registration(root: Path) -> None:
 
 def check_policy_vectors(root: Path) -> None:
     vectors = load(root, "fixtures/vectors/dpp/publisher-policy/v1.json")
-    for vector in vectors["vectors"]:
+    for vector in live(vectors):
         chain = vector["input"]["chain"]
         expected = vector["expected"]
         detail = expected["versions_detail"]
@@ -1234,7 +1122,7 @@ def path_problem(path: str) -> str | None:
 def check_package_vectors(root: Path) -> None:
     import base64
     vectors = load(root, "fixtures/vectors/dpp/evidence-package/v1.json")
-    for vector in vectors["vectors"]:
+    for vector in live(vectors):
         manifest = vector["input"]["manifest"]
         files = {path: base64.b64decode(text) for path, text in vector["input"]["files_base64"].items()}
         expected = vector["expected"]
@@ -1260,6 +1148,11 @@ def say(ok: bool, sentence: str) -> None:
     if not ok:
         failures += 1
     print(f"{'ok' if ok else 'FAIL'}: {sentence}")
+
+
+def live(vectors: dict) -> list:
+    """The vectors of a file a runner runs: a superseded vector stays in its file, marked skipped with a reason, and is not run."""
+    return [vector for vector in vectors["vectors"] if vector.get("skip") is not True]
 
 
 def load(root: Path, relative: str) -> dict:
@@ -1293,17 +1186,11 @@ def run(root: Path) -> None:
         say(parse_tx(s["rawTx"])["txid"] == s["txid"], f"chain-v1: state {index + 1} rawTx hashes to the pinned txid.")
     say(verify_chain(raws) is None, "chain-v1: the six-state chain is valid on signatures and every invariant.")
     say(verify_chain(raws, chain["serverKey"]) is None, "chain-v1: every server signature verifies against the pinned service key.")
-    say(verify_chain(raws, None, True) is None, "chain-v1: the chain holds under the owner-signed transfer, by equality on state 5 and by linkage on state 6.")
     for refusal in chain["refusals"]:
         prefix = raws[: refusal["appendAfter"] + 1]
         attempt = prefix + [refusal["rawTx"]]
-        consent = refusal.get("ownerConsent")
-        reason = verify_chain(attempt, None, consent)
-        say(reason is not None, f"chain-v1: {refusal['name']} is refused{' under owner consent' if consent else ''} ({reason or 'accepted'}); pinned reason: {refusal['error']}.")
-        if consent:
-            say(verify_chain(attempt) is None, f"chain-v1: {refusal['name']} is accepted with the option off, as the record model alone requires.")
-            if refusal.get("acceptedUnder") is not None:
-                say(verify_chain(attempt, None, refusal["acceptedUnder"]) is None, f"chain-v1: {refusal['name']} is accepted under the named transfer authorities.")
+        reason = verify_chain(attempt)
+        say(reason is not None, f"chain-v1: {refusal['name']} is refused ({reason or 'accepted'}); pinned reason: {refusal['error']}.")
 
     anchor = load(root, "fixtures/attestation-anchor-v1.json")
     say(canonical_json({k: v for k, v in anchor["claim"].items() if k != "signature"}).decode() == anchor["canonicalUnsignedClaim"], "attestation-anchor-v1: the restricted canonical JSON of the unsigned claim matches.")
@@ -1329,7 +1216,7 @@ def run(root: Path) -> None:
     say(isinstance(read_anchor(legacy["lockingScript"]), str), "attestation-anchor-v1: the historical anchor v3 script is not read as a current anchor.")
 
     vectors = load(root, "fixtures/vectors/dpp/attestation-anchor/v1.json")
-    for vector in vectors["vectors"]:
+    for vector in live(vectors):
         if vector["expected"].get("accepted") is False:
             result = read_anchor(vector["input"]["locking_script_hex"])
             say(isinstance(result, str), f"anchor vectors: {vector['id']} is refused ({result if isinstance(result, str) else 'accepted'}).")
@@ -1337,7 +1224,7 @@ def run(root: Path) -> None:
             result = read_anchor(vector["input"]["locking_script_hex"])
             say(result == vector["expected"]["anchor"], f"anchor vectors: {vector['id']} decodes to the expected metadata.")
     record_vectors = load(root, "fixtures/vectors/dpp/record/v1.json")
-    for vector in record_vectors["vectors"]:
+    for vector in live(record_vectors):
         if vector["expected"].get("accepted") is False:
             result = read_record(vector["input"]["locking_script_hex"])
             say(isinstance(result, str), f"record vectors: {vector['id']} is refused ({result if isinstance(result, str) else 'accepted'}).")
@@ -1345,7 +1232,7 @@ def run(root: Path) -> None:
             result = read_record(vector["input"]["locking_script_hex"])
             say(not isinstance(result, str) and user_signature_valid(result), f"record vectors: {vector['id']} decodes and its user signature verifies.")
     chain_vectors = load(root, "fixtures/vectors/dpp/chain/v1.json")
-    for vector in chain_vectors["vectors"]:
+    for vector in live(chain_vectors):
         expected = vector["expected"]
         if "raw_tx_hex" in expected and "txid_hex" in expected:
             tx = parse_tx(expected["raw_tx_hex"])

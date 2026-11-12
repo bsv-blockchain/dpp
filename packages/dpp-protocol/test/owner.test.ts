@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { CachedKeyDeriver, ProtoWallet } from '@bsv/sdk'
 import {
-  OWNER_CONSENT_REFUSALS,
   OWNER_LINKAGE_REVELATION_PROTOCOL_ID,
   OWNER_PROTOCOL_ID,
-  checkOwnerConsent,
   decryptOwnerLinkage,
-  normaliseTransferAuthorities,
+  normaliseControlAuthorities,
   ownerKeyFor,
   ownerKeyFromDeriver,
   ownerLinkageFromDeriver,
@@ -16,9 +14,7 @@ import {
 import {
   PASSPORT_ID,
   idKey,
-  makeData,
   makerPriv,
-  owner1Priv,
   owner2Priv,
   owner3Deriver,
   owner3Priv,
@@ -28,10 +24,10 @@ import {
 } from './helpers.js'
 
 /**
- * `spec/custody.md` §2 to §4 in code: the owner key is one derivation from a
- * BRC-100 root, the linkage scalar is what the wallet reveals, the verifier
- * mirrors the SDK's derivation exactly, and the predicate runs in its fixed
- * order with its three refusals.
+ * `spec/custody.md` §2 and `spec/record-model-v2.md` §6 in code: the owner key
+ * is one derivation from a BRC-100 root, the linkage scalar of the control
+ * proof is what the wallet reveals, and the verifier mirrors the SDK's
+ * derivation exactly.
  */
 const owner3Key = idKey(owner3Priv)
 const owner3OwnerKey = ownerKeyFromDeriver(PASSPORT_ID, owner3Deriver)
@@ -55,7 +51,7 @@ describe('the owner key (custody.md §2)', () => {
   })
 })
 
-describe('the linkage scalar (custody.md §4)', () => {
+describe('the linkage scalar (record-model-v2.md §6)', () => {
   it('links the root to the owner key: ownerKey = root + s·G', () => {
     expect(owner3Linkage).toMatch(/^[0-9a-f]{64}$/)
     expect(verifyOwnerLinkage(owner3Key, owner3OwnerKey, owner3Linkage)).toBe(true)
@@ -94,67 +90,15 @@ describe('the linkage scalar (custody.md §4)', () => {
   })
 })
 
-describe('the predicate (custody.md §4), in its fixed order', () => {
-  const prev = { ownerIdentityKey: owner3OwnerKey }
-  const transfer = (overrides: Partial<ReturnType<typeof makeData>> = {}) =>
-    makeData({
-      op: 'TRANSFER',
-      ownerIdentityKey: idKey(owner1Priv),
-      actorIdentityKey: owner3Key,
-      eventData: '',
-      ...overrides,
-    })
-
-  it('does not apply outside TRANSFER', () => {
-    expect(checkOwnerConsent(prev, transfer({ op: 'REPAIRED', actorIdentityKey: idKey(makerPriv) }))).toBeNull()
-  })
-
-  it('passes by equality without reading event_data', () => {
-    expect(checkOwnerConsent({ ownerIdentityKey: owner3Key }, transfer())).toBeNull()
-    expect(checkOwnerConsent({ ownerIdentityKey: owner3Key }, transfer({ eventData: '{"owner_linkage":"nonsense"}' }))).toBeNull()
-  })
-
-  it('passes for a transfer authority without reading event_data', () => {
-    const maker = transfer({ actorIdentityKey: idKey(makerPriv), eventData: '{"owner_linkage":"nonsense"}' })
-    expect(checkOwnerConsent(prev, maker, [idKey(makerPriv)])).toBeNull()
-    expect(checkOwnerConsent(prev, maker, [])).toBe(OWNER_CONSENT_REFUSALS.malformedLinkage)
-  })
-
-  it('passes by linkage', () => {
-    expect(checkOwnerConsent(prev, transfer({ eventData: JSON.stringify({ owner_linkage: owner3Linkage, note: 'sold on' }) }))).toBeNull()
-  })
-
-  it('refuses when nothing carries the linkage', () => {
-    for (const eventData of ['', '{}', '{"note":"x"}', '[]', '1', 'null', '"s"', '["' + owner3Linkage + '"]']) {
-      expect(checkOwnerConsent(prev, transfer({ eventData }))).toBe(OWNER_CONSENT_REFUSALS.noLinkage)
-    }
-  })
-
-  it('refuses a linkage of any other spelling', () => {
-    for (const value of [owner3Linkage.toUpperCase(), owner3Linkage.slice(1), owner3Linkage + '0', 7, null, [owner3Linkage]]) {
-      expect(checkOwnerConsent(prev, transfer({ eventData: JSON.stringify({ owner_linkage: value }) }))).toBe(
-        OWNER_CONSENT_REFUSALS.malformedLinkage
-      )
-    }
-  })
-
-  it('refuses a linkage that does not reach the previous owner key', () => {
-    const wrong = ownerLinkageFromDeriver(PASSPORT_ID, new CachedKeyDeriver(owner2Priv))
-    expect(checkOwnerConsent(prev, transfer({ eventData: JSON.stringify({ owner_linkage: wrong }) }))).toBe(
-      OWNER_CONSENT_REFUSALS.notLinked
-    )
-  })
-})
-
-describe('transfer authorities', () => {
+describe('control authorities', () => {
   it('are normalised to the canonical lower-case spelling fields carry', () => {
-    expect(normaliseTransferAuthorities([idKey(makerPriv).toUpperCase()])).toEqual([idKey(makerPriv)])
-    expect(normaliseTransferAuthorities([])).toEqual([])
+    expect(normaliseControlAuthorities([idKey(makerPriv).toUpperCase()])).toEqual([idKey(makerPriv)])
+    expect(normaliseControlAuthorities([])).toEqual([])
   })
 
   it('refuse anything that is not a canonical compressed key, loudly', () => {
-    expect(() => normaliseTransferAuthorities(['nope'])).toThrow('not a valid public key')
-    expect(() => normaliseTransferAuthorities([makerPriv.toPublicKey().toDER('hex') as string])).not.toThrow()
-    expect(() => normaliseTransferAuthorities([makerPriv.toPublicKey().toString().slice(2)])).toThrow()
+    expect(() => normaliseControlAuthorities(['nope'])).toThrow('not a valid public key')
+    expect(() => normaliseControlAuthorities([makerPriv.toPublicKey().toDER('hex') as string])).not.toThrow()
+    expect(() => normaliseControlAuthorities([makerPriv.toPublicKey().toString().slice(2)])).toThrow()
   })
 })

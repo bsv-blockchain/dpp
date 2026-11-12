@@ -1,6 +1,6 @@
 # An independent reader, in Python
 
-`dpp_verify.py` reads the conformance fixtures with an implementation that shares no code with the reference packages: secp256k1 arithmetic, strict DER, ECDSA verification, the BRC-42 child derivation, the PushDrop layout and its refusals, the two signature preimages, the chain invariants and the owner-signed transfer, the native claim and the generic anchor, all written from the specification text. It uses the Python standard library only.
+`dpp_verify.py` reads the conformance fixtures with an implementation that shares no code with the reference packages: secp256k1 arithmetic, strict DER, ECDSA verification, the BRC-42 child derivation, the PushDrop layout and its refusals, the two signature preimages, the chain invariants and the version 2 control proof, the native claim and the generic anchor, all written from the specification text. It uses the Python standard library only.
 
 ```
 python3 conformance/independent/python/dpp_verify.py

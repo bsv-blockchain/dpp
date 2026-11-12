@@ -96,13 +96,7 @@
       "id": "managed-custody-1",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "managed-custody@1 is a superseded optional custody profile this release does not claim."
-    },
-    {
-      "id": "managed-custody-1-writer",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "managed-custody@1 is a superseded optional custody profile this release does not claim."
+      "rationale": "managed-custody@1 is a superseded custody profile whose records are read and never written, and this release does not claim it."
     },
     {
       "id": "managed-custody-2",

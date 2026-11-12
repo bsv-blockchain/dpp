@@ -10,8 +10,10 @@
  * source's digest still matches its file, and a moved file invalidates every
  * row that cites it; every claim names rows that exist, and a claim is refused
  * while any required row is unassessed or below the claim's minimum status;
- * each baseline's role requirements exist, its fixtures' digests match, and its
- * wire values are the ones the reference implementation exports; each role
+ * each current baseline's role requirements exist, its fixtures' digests
+ * match, and its wire values are the ones the reference implementation
+ * exports; the frozen native-baseline@1 keeps the bytes it was frozen with, and
+ * every row it names is in the ledger or its archive; each role
  * has one claim scoped to native-baseline@2, naming exactly the baseline's
  * rows for the role, and those rows include the frozen native-baseline@1
  * rows for the role; every report
@@ -186,7 +188,27 @@ const checkBaseline = (path, record) => {
   }
 }
 const versionTwoDerivations = { actorSignatureV2: DPP_PROTOCOL_ID_V2, publisherSignatureV2: DPP_PROTOCOL_ID_V2, controllerKey: OWNER_PROTOCOL_ID, managedRecordSignature: MANAGED_RECORD_PROTOCOL_ID }
-checkBaseline('conformance/baseline-native-1.json', { version: STANDARD_VERSION, fieldCount: FIELD_COUNT })
+// native-baseline@1 is frozen as history (spec/conformance.md §3): its bytes
+// never change, so its wire values and fixture digests record the day it was
+// frozen and are not held to the tree, as a superseded release set's are not.
+// What is held is the bytes themselves, and that every row it names is still
+// in the ledger or was archived (docs/reference/parked/ledger-archive.json).
+const FROZEN_BASELINE = { path: 'conformance/baseline-native-1.json', sha256: 'a2c8beb61288351917b2e1173e5e7e99f2177d2e3c3a11b98b7690fa67ec4e2b' }
+{
+  const baseline = read(FROZEN_BASELINE.path)
+  validateWith('conformance/baseline.schema.json', baseline, FROZEN_BASELINE.path)
+  const actual = sha256(FROZEN_BASELINE.path)
+  if (actual === FROZEN_BASELINE.sha256) note(`${baseline.baselineId} is frozen and keeps its bytes; its wire values and fixture digests record the day it was frozen and are not held to the tree.`)
+  else defect(`${baseline.baselineId} is frozen, but ${FROZEN_BASELINE.path} has digest ${actual.slice(0, 12)}…, not the frozen ${FROZEN_BASELINE.sha256.slice(0, 12)}…; restore it.`)
+  const archived = new Set(read('docs/reference/parked/ledger-archive.json').rows.map((entry) => entry.row.id))
+  for (const [role, spec] of Object.entries(baseline.roles)) {
+    for (const id of [...spec.requires, ...(spec.optional ?? [])]) {
+      if (rows.has(id)) continue
+      if (archived.has(id)) note(`${baseline.baselineId} role ${role} names ${id}, which the ledger archive holds.`)
+      else defect(`${baseline.baselineId} role ${role} names requirement ${id}, which neither the ledger nor its archive carries.`)
+    }
+  }
+}
 checkBaseline('conformance/baseline-native-2.json', { version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2, alsoReads: { version: STANDARD_VERSION, fieldCount: FIELD_COUNT }, derivations: versionTwoDerivations })
 checkBaseline('conformance/baseline-native-3.json', {
   version: STANDARD_VERSION_V3,

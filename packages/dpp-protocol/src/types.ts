@@ -142,14 +142,6 @@ export interface StateCheck {
   userSignatureValid: boolean
   serverSignatureValid: boolean | null
   linkageValid: boolean
-  /**
-   * The optional owner-signed transfer (`spec/custody.md` §4). null when the
-   * invariant was not run: the option is off, or the state is not a version 1
-   * TRANSFER. A report says "not applicable" for null rather than a vacuous pass.
-   * Version 2 states prove control as part of linkage instead (`controlValid`
-   * on the inspection).
-   */
-  ownerConsentValid: boolean | null
   spv: SpvStatus | 'failed'
 }
 

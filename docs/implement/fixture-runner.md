@@ -46,8 +46,7 @@ Each chain refusal extends a prefix of the valid chain. Run all policy variants 
 | `-1` | Refusal stands alone as a genesis |
 | Default policy | No publisher key, custody profile or control authorities. Publisher signature verification is admission policy and may be skipped; the valid chain also passes with the file's publisher key. |
 | `managedAcceptance: true` | Version 2 `transferWithoutCommitment`: refused with managed custody selected, valid with it off |
-| `ownerConsent: true` | Seven version 1 cases: refused with owner-signed transfer selected, valid with it off |
-| `acceptedUnder` | `recoveryWithoutAuthority` in both files: valid when the named keys are control or transfer authorities; run both ways |
+| `acceptedUnder` | `recoveryWithoutAuthority` in `chain-v2.json`: valid when the named keys are control authorities; run both ways |
 
 | Evidence input | Meaning |
 |---|---|
@@ -57,7 +56,7 @@ Each chain refusal extends a prefix of the valid chain. Run all policy variants 
 | Optional `nativeClaims` | Claims as posted |
 | Optional `anchors` | Locking scripts as hex, with secured bytes when supplied |
 | Optional `acceptanceRecords` | Acceptance records beside the token history |
-| `policy` | Publisher keys, profile options `managedAcceptance` and `ownerConsent`, any `authority` lists, and `policyId` |
+| `policy` | Publisher keys, the profile option `managedAcceptance`, any `controlAuthorities` and `authority` lists, and `policyId` |
 | `chainTracker` | `scripts-only` means no header source; `header-source` uses `headerSource`, mapping each height to its merkle root or `unavailable` for an outage |
 | `observers` | Latest-state sources: use the answers exactly as written, `unspent`, `spent` with `spendingTxid`, `not-found` or `unavailable` |
 | `checkedAt` | Inject the file's observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json`; `2027-06-01T12:00:00Z` in `evidence-v2.json` and `evidence-v3.json`. The future date is deliberate synthetic input, not a delivery date. |
@@ -125,7 +124,7 @@ The same bytes are also published in the BSV stack's cross-language vector forma
 - Each vector has `id`, `description`, `input`, `expected` and `tags`. Positive vectors are tagged `happy-path` and refusals `error-case`; the publisher policy and evidence package files tag them `valid` and `refusal`.
 - Binary values are lower-case hex under keys ending `_hex`. The positive record and chain vectors publish the synthetic test private keys and `signature_nonce: "rfc6979"`, so a writer reproduces every pinned byte.
 - A record, chain or historical anchor refusal expects `{ "accepted": false, "stage": ..., "reason": ... }`; a current anchor refusal expects `{ "accepted": false }`.
-- Vector identifiers are permanent: a corrected expectation is a new vector, and the old one is marked skipped with a reason, as `refuse-unsupported-version` in `record/v2.json` is, its bytes now carrying the named refusal `refuse-version-three-without-prefix`.
+- Vector identifiers are permanent: a corrected expectation is a new vector, and the old one is marked skipped with a reason, as `refuse-unsupported-version` in `record/v2.json` is, its bytes now carrying the named refusal `refuse-version-three-without-prefix`. A vector whose rule the standard removed or parked stays skipped too: the seven owner-signed transfer refusals and `verify-chain` in `chain/v1.json`, which `verify-chain-record-model` replaces, and `refuse-update-after-transfer-without-instruction` in `chain/v2.json`. A runner runs no skipped vector.
 
 The two forms do not map one file to one file:
 

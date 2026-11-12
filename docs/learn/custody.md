@@ -55,7 +55,7 @@ The custody specification describes three arrangements; record version 2 adds `m
 
 A compromised operator can forge nothing about the owner under possession, move ownership visibly under split custody, and forge everything under operator custody ([section 5](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#5-three-arrangements)). Managed acceptance is the custodian's evidence: the recipient holds no key and signs nothing.
 
-Version 1 passports still verify. Where selected by a profile, they use the owner-signed transfer ([section 4](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#4-the-owner-signed-transfer)). One `UPDATE` continues them as version 2, retaining the controller key without acceptance ([migration](../migration.md#start-writing-version-2)).
+Version 1 passports still verify, but version 1 proves no control: a version 1 transfer that spends the tip is valid whoever signs it. One `UPDATE` continues them as version 2, retaining the controller key without acceptance ([migration](../migration.md#start-writing-version-2)).
 
 **Brand keys:** your platform chooses whether a brand or platform holds its identity key. The reference application holds each brand identity, so brands cannot yet update or move it. The standard does not require this; another application can allow brand-held keys ([open decisions](../start/status.md#open-decisions)).
 
@@ -97,7 +97,7 @@ For a recipient under `managed-custody@2`:
 1. **Receive an offer.** The platform sends a claim code outside the passport or addresses your identity.
 2. **Accept the terms.** You sign nothing. The custodian records, signs and retains your acceptance.
 3. **Become the holder.** The custodian keeps the keys under an identity held for you, unless you supplied your own.
-4. **Instruct later changes.** Ask the platform to update, transfer or retire. The custodian records, signs and retains your request, and commits to it in the new state ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) section 6). A reader applying the instruction rule refuses changes made for you without that record. Transferring again starts a new offer and the same three transfer steps.
+4. **Ask for later changes.** Ask the platform to update, transfer or retire. While the custodian keeps your keys, an update or retirement it writes for you depends on custody: the chain shows that the custodian acted, not that you asked, and a verification report says so. Transferring again starts a new offer and the same three transfer steps.
 
 The acceptance screen should answer:
 
@@ -118,7 +118,6 @@ The acceptance screen should answer:
 | Condition | Required arrangement |
 |---|---|
 | Admitted publisher countersignature | Run an index naming your wallet key, or find a service that countersigns. Contracts define no countersigning-request route. |
-| Instruction rule | A recipient leaving managed custody also needs a deployment that does not select the instruction rule, because that rule still requires commitments after a committed transfer and cannot tell who holds the recipient's key. |
 
 ## Rehearse recovery
 
@@ -140,11 +139,11 @@ A restored account may lack keys; restored keys may lack evidence. Evidence arch
 
 ## Not settled yet
 
-The November candidate specifies the locking key, derived-key signatures and committed holder instructions. The remaining deployment questions are how to obtain retained evidence and how an application offers key portability ([known limitations](../operate/limitations.md)).
+The November candidate specifies the locking key and derived-key signatures. The remaining deployment questions are how to obtain retained evidence and how an application offers key portability ([known limitations](../operate/limitations.md)).
 
 | Remaining question | What to do now |
 |---|---|
-| No dedicated index or registry route serves acceptance or instruction records | Retain the records and carry them in evidence packages. A reader without the referenced record still reports missing evidence |
+| No dedicated index or registry route serves acceptance records | Retain the records and carry them in evidence packages. A reader without the referenced record still reports missing evidence |
 | How a platform lets a holder take control through their own wallet | Implement the offer, destination-key and access workflow, and explain which index will accept subsequent writes. The standard defines the records, not those screens |
 | Whether records and signing access survive the custodian's loss | Rehearse evidence export, recovery and key portability separately; restoring public history does not recover private keys |
 

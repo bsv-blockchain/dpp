@@ -66,7 +66,7 @@ specifier anything needs:
 | `signatures.ts` | The canonical signature preimages: unframed for version 1 (§5), framed and domain-tagged for version 2 (`record-model-v2.md` §5), the same framing under the version 3 tags and `[1, 'dpp token v3']` for a carried state (`token-carrier.md` §4) |
 | `transition.ts` | Which operation may change what, state by state, for every version: the version 2 control proof, the terminal `RETIRE`, the single upgrade transition, and for version 3 a carried state behind a carried state only |
 | `carrier.ts` | The carrier invariants of `spec/token-carrier.md` §6 that need the transaction and the lineage: `checkCarrier` holds the prefix's role to the state's position and its token id to the lineage genesis, and `tokenIdOf` gives a lineage's token id in display form, `<deploy txid>_0` |
-| `owner.ts` | The owner and controller key, the linkage scalar, the owner-signed transfer of version 1 and the control proof of version 2 |
+| `owner.ts` | The owner and controller key, the linkage scalar and the control proof of versions 2 and 3 |
 | `acceptance.ts` | The managed acceptance record `dpp-managed-acceptance@2` (`spec/managed-custody.md` §3), signed with the custodian's derived key: inspect, sign, commit and bind to the `TRANSFER`; the superseded `@1` is read under §9 |
 | `verifyChain.ts` | Chain verification from genesis, including SPV inclusion; `inspectChain` is the same loop reported finding by finding |
 | `evidence.ts` | `verifyPassportEvidence`, the one verification contract of `spec/verification.md`: sixteen named checks, four answers each, an expected subject and a latest-state observation, across the token, attestation, anchor and credential rails |

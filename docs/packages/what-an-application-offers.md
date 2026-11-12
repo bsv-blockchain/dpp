@@ -46,7 +46,7 @@ Under `managed-custody@2` the recipient becomes the passport's holder, and the c
 - **How the holder leaves managed custody.** The custodian writes a `TRANSFER` to a `destinationKey`, a key the holder's own wallet derived, and from then on the holder proves control from their own wallet (section 7).
 - **Acceptance screen.** Explain how to request changes or another hand on, whether the holder can read the owner tier, and how to move to their own wallet.
 
-- **Authority after a hand on.** The holder's recorded instruction authorises the change. The custodian records, signs and retains the request; the `UPDATE` or `RETIRE` it writes commits to that record in field 15, as the `TRANSFER` commits to acceptance (section 6). An index or reader selecting the instruction rule refuses changes written for a holder without it, unless made by a named control authority. The team cannot quietly update or retire a passport it has handed on: it records the requester or visibly acts as a control authority.
+- **Authority after a hand on.** While the custodian keeps a holder's keys, an `UPDATE` or `RETIRE` it writes for them depends on custody: the chain shows that the custodian acted, not that the holder asked, and the verification report says so (section 6). Tell holders how they ask for a change and keep your own record of each request; a recovery by a named control authority is visible on the chain.
 
 ## Keys and secrets
 
@@ -57,7 +57,7 @@ Use this inventory to assign the platform's keys and secrets to their holders.
 | Writer's identity key | Writer's BRC-100 wallet | Signs each state as actor and, when countersigning its own states, publisher | Wallet; public half in the index's publisher policy |
 | Controller key | Derived in the same wallet | Controls the passport (field 6 of each version 2 state) | Derived per passport; never stored separately |
 | Publisher key, public half | The index | Admitting only states this publisher countersigned | `SERVICE_IDENTITY_KEY`, or a signed publisher policy in `PUBLISHER_POLICY_FILE` |
-| Custodian's identity key | Custodian's BRC-100 wallet | Signs managed acceptance and instruction records through a derived key; never exported | Wallet; public half in each record's `custodian` property |
+| Custodian's identity key | Custodian's BRC-100 wallet | Signs managed acceptance records through a derived key; never exported | Wallet; public half in each record's `custodian` property |
 | Submit token | The index operator and its writers | `POST /submit` and `POST /retract` on that index | `SUBMIT_TOKEN` on the index |
 | Callback token | The index operator and whoever pushes proofs | `POST /arc-ingest` on that index | `ARC_CALLBACK_TOKEN` on the index; one per index, never shared with another |
 | Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |

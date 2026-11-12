@@ -22,7 +22,7 @@ Encrypted owner-tier evidence remains off chain with its ciphertext digest in th
 
 ## Control and custody
 
-The native version-1 output uses one compressed key and OP_CHECKSIG. Wallet custody, DID document control, credential signing authority and application access are separate roles. A single-key script does not implement threshold custody or a second recovery path. The custody specification defines the optional owner-consent predicate; an application must describe its actual recovery authority and key custody accurately.
+The native version-1 output uses one compressed key and OP_CHECKSIG. Wallet custody, DID document control, credential signing authority and application access are separate roles. A single-key script does not implement threshold custody or a second recovery path. Record version 2 proves control on every state after the genesis, with control authorities as the named recovery path; an application must describe its actual recovery authority and key custody accurately.
 
 An account may administer multiple entities and keys, and several authorised accounts may administer one entity. These mappings belong to the application. Managed signing reduces onboarding requirements; independent signing and portable evidence support deployments that need greater operational independence. Neither arrangement changes the shared verification rules.
 

@@ -11,12 +11,10 @@ import {
   type PublicKey,
 } from '@bsv/sdk'
 import {
-  OWNER_CONSENT_REFUSALS,
   buildLockingScript,
   completeState,
   ownerBlobHash,
   ownerKeyFromDeriver,
-  ownerLinkageFromDeriver,
   type DppState,
   type DppStateData,
 } from '@bsv/dpp-protocol'
@@ -232,11 +230,6 @@ describe('tm_dpp admission', () => {
   })
 })
 
-/**
- * The owner-signed transfer (`spec/custody.md` §4) as admission policy. The
- * chain here is genesis (owner: owner 1's identity key), then a TRANSFER by
- * owner 1 to owner 3's per-passport owner key, then whatever each test appends.
- */
 describe('tm_dpp refusal codes, the reason /submit sends as X-Admission-Refusal', () => {
   const event = async (g: Transaction, overrides: Partial<DppStateData> = {}) =>
     stateTx(
@@ -300,19 +293,21 @@ describe('tm_dpp refusal codes, the reason /submit sends as X-Admission-Refusal'
   })
 })
 
-describe('tm_dpp admission, the owner-signed transfer (a profile option)', () => {
+/**
+ * Version 1 has no control rule (`spec/custody.md` §4). The chain here is
+ * genesis (owner: owner 1's identity key), then a TRANSFER by owner 1 to owner
+ * 3's per-passport owner key, then a TRANSFER by someone else.
+ */
+describe('tm_dpp admission, a version 1 TRANSFER', () => {
   const owner1Wallet = new ProtoWallet(ownerPriv)
-  const owner3Priv = PrivateKey.fromHex('55'.repeat(32))
-  const owner3Wallet = new ProtoWallet(owner3Priv)
-  const owner3Deriver = new CachedKeyDeriver(owner3Priv)
+  const owner3Deriver = new CachedKeyDeriver(PrivateKey.fromHex('55'.repeat(32)))
   const owner3OwnerKey = ownerKeyFromDeriver(PASSPORT_ID, owner3Deriver)
-  const owner3Linkage = ownerLinkageFromDeriver(PASSPORT_ID, owner3Deriver)
   const MAKER = makerPriv.toPublicKey().toString()
 
   afterEach(() => vi.restoreAllMocks())
 
-  /** genesis admitted, then owner 1 hands over to owner 3's derived key (equality form). */
-  async function ownedByOwner3(tm: DppTopicManager): Promise<Transaction> {
+  it("admits a TRANSFER by someone other than the previous owner, the record model baseline", async () => {
+    const tm = new DppTopicManager(SERVER_ID, { controlAuthorities: [] })
     const { tx: g } = await genesis()
     expect((await tm.identifyAdmissibleOutputs(g.toBEEF(true), [])).outputsToAdmit).toEqual([0])
     const handover = await completeState(
@@ -327,106 +322,34 @@ describe('tm_dpp admission, the owner-signed transfer (a profile option)', () =>
       owner1Wallet,
       serverWallet
     )
-    const tx = stateTx(handover, { tx: g, outputIndex: 0 })
-    expect(await tm.identifyAdmissibleOutputs(tx.toBEEF(true), [0])).toEqual({
-      outputsToAdmit: [0],
-      coinsToRetain: [0],
-    })
-    return tx
-  }
-
-  async function transferFrom(
-    tip: Transaction,
-    actor: ProtoWallet,
-    actorKey: string,
-    eventData: string
-  ): Promise<Transaction> {
-    const state = await completeState(
+    const tip = stateTx(handover, { tx: g, outputIndex: 0 })
+    expect((await tm.identifyAdmissibleOutputs(tip.toBEEF(true), [0])).outputsToAdmit).toEqual([0])
+    const stranger = await completeState(
       makeData({
         op: 'TRANSFER',
         timestamp: '2026-08-01T09:00:00Z',
         ownerIdentityKey: ownerPriv.toPublicKey().toString(),
-        actorIdentityKey: actorKey,
+        actorIdentityKey: MAKER,
         actorKeyId: 'next',
-        eventData,
         previousTxid: tip.id('hex'),
       }),
-      actor,
+      makerWallet,
       serverWallet
     )
-    return stateTx(state, { tx: tip, outputIndex: 0 })
-  }
-
-  it("control: without the option a stranger's TRANSFER is admitted, the record model baseline", async () => {
-    const tm = new DppTopicManager(SERVER_ID)
-    const tip = await ownedByOwner3(tm)
-    const stranger = await transferFrom(tip, makerWallet, MAKER, '')
-    expect((await tm.identifyAdmissibleOutputs(stranger.toBEEF(true), [0])).outputsToAdmit).toEqual([0])
+    const tx = stateTx(stranger, { tx: tip, outputIndex: 0 })
+    expect(await tm.identifyAdmissibleOutputs(tx.toBEEF(true), [0])).toEqual({ outputsToAdmit: [0], coinsToRetain: [0] })
   })
 
-  it("refuses a stranger's TRANSFER under the option, and says why in the log", async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const tm = new DppTopicManager(SERVER_ID, { ownerConsent: true })
-    const tip = await ownedByOwner3(tm)
-    const stranger = await transferFrom(tip, makerWallet, MAKER, '')
-    // Refused, and the offered coin retained: a refusal that spends the tip
-    // keeps the tip and its lineage (a refused spend of the tip, README).
-    expect(await tm.identifyAdmissibleOutputs(stranger.toBEEF(true), [0])).toEqual({
-      outputsToAdmit: [],
-      coinsToRetain: [0],
-    })
-    expect(warn).toHaveBeenCalledOnce()
-    expect(warn.mock.calls[0][0]).toContain(OWNER_CONSENT_REFUSALS.noLinkage)
-    expect(tm.refusalFor(stranger.id('hex'))).toBe('consent-not-proven')
+  it('refuses to be built with a malformed control authority', () => {
+    expect(() => new DppTopicManager(SERVER_ID, { controlAuthorities: ['nope'] })).toThrow('control authority')
   })
 
-  it('admits the owner acting under their root with owner_linkage in event_data', async () => {
-    const tm = new DppTopicManager(SERVER_ID, { ownerConsent: true })
-    const tip = await ownedByOwner3(tm)
-    const linked = await transferFrom(
-      tip,
-      owner3Wallet,
-      owner3Priv.toPublicKey().toString(),
-      JSON.stringify({ owner_linkage: owner3Linkage, note: 'sold on' })
-    )
-    expect(await tm.identifyAdmissibleOutputs(linked.toBEEF(true), [0])).toEqual({
-      outputsToAdmit: [0],
-      coinsToRetain: [0],
-    })
-  })
-
-  it('refuses the owner with a scalar that reaches a different key', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const tm = new DppTopicManager(SERVER_ID, { ownerConsent: true })
-    const tip = await ownedByOwner3(tm)
-    const wrong = ownerLinkageFromDeriver(PASSPORT_ID + '/other', owner3Deriver)
-    const tx = await transferFrom(tip, owner3Wallet, owner3Priv.toPublicKey().toString(), JSON.stringify({ owner_linkage: wrong }))
-    expect((await tm.identifyAdmissibleOutputs(tx.toBEEF(true), [0])).outputsToAdmit).toEqual([])
-  })
-
-  it('admits a recovery TRANSFER by a named transfer authority, upper-case configured or not', async () => {
-    const tm = new DppTopicManager(SERVER_ID, { ownerConsent: { authorities: [MAKER.toUpperCase()] } })
-    const tip = await ownedByOwner3(tm)
-    const recovery = await transferFrom(tip, makerWallet, MAKER, JSON.stringify({ reason: 'recovery' }))
-    expect((await tm.identifyAdmissibleOutputs(recovery.toBEEF(true), [0])).outputsToAdmit).toEqual([0])
-  })
-
-  it('refuses to be built with a malformed authority', () => {
-    expect(() => new DppTopicManager(SERVER_ID, { ownerConsent: { authorities: ['nope'] } })).toThrow(
-      'transfer authority'
-    )
-  })
-
-  it('documents the policy it runs, per instance', async () => {
-    const off = await new DppTopicManager(SERVER_ID).getDocumentation()
-    expect(off).toContain('Not enforced by this index')
-    const on = await new DppTopicManager(SERVER_ID, { ownerConsent: true }).getDocumentation()
-    expect(on).toContain('spec/custody.md section 4')
-    expect(on).toContain('Transfer authorities: none')
-    const withAuthority = await new DppTopicManager(SERVER_ID, {
-      ownerConsent: { authorities: [MAKER] },
-    }).getDocumentation()
-    expect(withAuthority).toContain(`Transfer authorities: ${MAKER}`)
+  it('documents that version 1 has no control rule, and the control authorities it names', async () => {
+    const none = await new DppTopicManager(SERVER_ID).getDocumentation()
+    expect(none).toContain('A version 1 TRANSFER has no control rule')
+    expect(none).toContain('Control authorities: none')
+    const named = await new DppTopicManager(SERVER_ID, { controlAuthorities: [MAKER.toUpperCase()] }).getDocumentation()
+    expect(named).toContain(`Control authorities: ${MAKER}`)
   })
 })
 

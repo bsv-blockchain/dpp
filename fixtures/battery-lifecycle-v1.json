@@ -448,7 +448,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -461,7 +460,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -474,7 +472,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -487,7 +484,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -500,7 +496,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -513,7 +508,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -540,7 +534,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -553,7 +546,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -566,7 +558,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -579,7 +570,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -592,7 +582,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -605,7 +594,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -632,7 +620,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -645,7 +632,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -658,7 +644,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -671,7 +656,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -684,7 +668,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -697,7 +680,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -724,7 +706,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -737,7 +718,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -750,7 +730,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -763,7 +742,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -776,7 +754,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -789,7 +766,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -817,7 +793,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -830,7 +805,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -843,7 +817,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -856,7 +829,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -869,7 +841,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -882,7 +853,6 @@
             "userSignatureValid": true,
             "serverSignatureValid": true,
             "linkageValid": true,
-            "ownerConsentValid": null,
             "controlValid": null,
             "spv": "pending",
             "spvReason": "no-proof"
@@ -1049,7 +1019,7 @@
     "limits": [
       "Supplied-history validity does not establish current ownership, an authorised genesis or the absence of later states.",
       "An anchor establishes its anchoring service's commitment to bytes, not the truth of the claim those bytes carry.",
-      "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 TRANSFER proves control only where the owner-signed transfer is selected.",
+      "Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.",
       "inclusion was not established: proof-absent.",
       "anchorSignature was not established: no-evidence.",
       "anchorKeyDerivation was not established: no-evidence.",

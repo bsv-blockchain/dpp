@@ -47,7 +47,6 @@
       "kind": "custody",
       "options": {
         "acceptanceCommitment": "not-selected",
-        "instructionCommitment": "not-selected",
         "controlAuthorities": []
       }
     }
@@ -103,9 +102,7 @@
     "publisherKeys": [
       "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
     ],
-    "anchoringServices": [],
-    "ownerConsent": "not-selected",
-    "transferAuthorities": []
+    "anchoringServices": []
   },
   "synchronisation": {
     "profile": "single-operator@1",

@@ -220,7 +220,6 @@ Both `unknown` checks are expected for this passport:
 | `nativeClaims` | Signed lifecycle claims, as objects | The registry: `GET /attestations?subject=<passportId>` lists them; each `GET /attestations/{attestationId}/proof` carries one as `attestation` |
 | `anchors` | `{ lockingScript, txid, outputIndex, securedBytes }` for each anchor output | The index's `ls_attestation` lookup with `{ subject: passportId }`; `securedBytes` comes from the proof of the claim the anchor's `txid` matches |
 | `acceptanceRecords` | Managed acceptance records committed by version 2 transfers | Custodian's evidence package under `authority`, read by `acceptanceRecordsInPackage(manifest, files)`. No standalone record route. |
-| `instructionRecords` | Managed instructions committed by version 2 updates and retirements after a hand on | Custodian's evidence package under `authority` as `dpp-managed-instruction@1` |
 | `externalCredentials` | `{ representation, mediaType, bytes }`, the exact bytes of a credential in another format | Its issuer |
 | `alternativeHistories` | Other lineages under the same identifier, such as a second genesis | The index, when it answers with more than one lineage |
 
@@ -260,8 +259,7 @@ Take `passportId` from the requested scan, label or request, never the evidence 
 | `authority` | `{ required: true, genesisIssuers, claimIssuers, anchoringServices, acceptanceCustodians }`: the genesis actor keys, claim issuer DIDs, anchor `anchoredBy` keys and acceptance custodians you accept; `verify` answers any role the lists leave open. `{ required: false, reason }` skips the check | `issuerAuthority`; `unknown` for any role a required policy does not list |
 | `observers` | Sources asked whether the tip is still the latest state; each answers `unspent`, `spent`, `not-found`, `unavailable` or `conflicting` | `report.observations.latestState`: `observed`, `superseded`, `conflicting`, or `unknown` with no observer |
 | `managedAcceptance` | `{ required: true }` demands an acceptance commitment on every version 2 `TRANSFER` | `linkage`; fails with `acceptance-commitment-absent` for a transfer without one |
-| `managedInstruction` | `{ required: true }` demands an instruction commitment on every version 2 `UPDATE` or `RETIRE` after a committed `TRANSFER`, unless a control authority made it | `linkage`; fails with `instruction-commitment-absent` for a state without one |
-| `ownerConsent`, `controlAuthorities` | The owner-signed transfer for version 1 states, and the identity keys whose version 2 `UPDATE`, `TRANSFER` or `RETIRE` passes without a control proof, such as a recovery authority | `linkage` |
+| `controlAuthorities` | The identity keys whose version 2 or 3 `UPDATE`, `TRANSFER` or `RETIRE` passes without equality or linkage, such as a recovery authority; none when absent | `linkage` |
 | `credentialVerifier` | Verifies an external credential's exact bytes and its status, such as `externalCredentialVerifierFor(policy)` from `@bsv/dpp-credentials/exchange` ([external credentials](../interoperability/external-credentials.md)) | `externalCredentialProof` and each credential's part of `schema`, `credentialTime`, `credentialStatus` and `issuerAuthority`, which read `unknown` with `verifier-not-supplied` without it |
 | `payloadValidator` | Checks a token state's `payload_public` against the profile it declares; `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` is one | `schema` for token states |
 | `profileValidator` | Checks a native claim against its declared profile | `schema` for native claims |
@@ -280,7 +278,7 @@ The [walkthrough](build-an-application.md) calls these functions in order.
 |---|---|---|
 | `findDppOutputs(tx)` | A `Transaction` | The passport outputs it carries, each with its output index and decoded state |
 | `chainFromBeef(beef, passportId?)` | A `Beef` holding a lineage, and the passport to follow | The lineage's transactions, genesis first |
-| `verifyChain(txs, options?)` | The lineage; `chainTracker`, `serverIdentityKey`, `managedAcceptance`, `managedInstruction`, `controlAuthorities`, `ownerConsent` | `{ valid, spv, states, error? }`: whether the lineage holds, whether inclusion is proved, and one finding per state |
+| `verifyChain(txs, options?)` | The lineage; `chainTracker`, `serverIdentityKey`, `managedAcceptance`, `controlAuthorities` | `{ valid, spv, states, error? }`: whether the lineage holds, whether inclusion is proved, and one finding per state |
 | `verifyPassportEvidence(evidence, expected, policy?)` | `evidence`, `expected` and `policy` as [above](#what-the-report-takes) | The verification report: sixteen named checks, each `pass`, `fail`, `unknown` or `not-applicable` with a reason |
 
 **Write**
@@ -302,10 +300,6 @@ Field 6's controller key names the passport controller and locks each state. Lat
 | `signManagedAcceptance(claim, signer)` | The offer and acceptance, and the custodian's signer | The signed acceptance record |
 | `inspectManagedAcceptance(record, { custodians })` | A record and the custodians you accept | Structure, signature and time-order findings, and the commitment |
 | `acceptanceCommitment(record)` | The record | The digest the `TRANSFER` carries in `authorisationCommitment` |
-| `signManagedInstruction(claim, signer)` | The holder's request as recorded, and the custodian's signer | The signed instruction record ([managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md) section 6) |
-| `inspectManagedInstruction(record, { custodians })` | A record, and the custodians the policy names | Its structure, signature, commitment and failures, named apart |
-| `bindInstructionToState(record, state)` | The record and the `UPDATE` or `RETIRE` | Every way the state differs from the request, or none |
-| `instructionCommitment(record)` | The record | The digest the `UPDATE` or `RETIRE` carries in `authorisationCommitment` |
 | `bindAcceptanceToState(record, state)` | The record and the `TRANSFER` state | The mismatches; empty when they agree |
 
 **Claims and anchors**

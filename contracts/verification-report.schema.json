@@ -165,6 +165,7 @@
       ]
     },
     "sharedReasonCode": {
+      "$comment": "consent-not-proven is no longer produced: the owner-signed transfer it reported was removed from the standard on 12 November 2026, and the code stays listed so that reports made before then, including those inside retained evidence packages, still validate.",
       "enum": [
         "no-evidence",
         "not-selected",
@@ -177,7 +178,6 @@
         "link-broken",
         "consent-not-proven",
         "acceptance-commitment-absent",
-        "instruction-commitment-absent",
         "version-transition-invalid",
         "control-not-proven",
         "lineage-retired",
