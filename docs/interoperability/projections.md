@@ -71,10 +71,10 @@ Keep the selected source revisions. Recomputing against the newest source answer
 
 | Input or output | Source |
 |---|---|
-| Source revisions | [Source schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/passport-source.schema.json) |
-| Projection identity and output | [Projection schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/passport-projection.schema.json) |
-| Commitment and precedence rules, as parked | [Projection specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/passport-projections.md) |
-| Reference implementation | [Projection helper](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/src/projections.ts) |
+| Source revisions | [Source schema](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/schemas/passport-source.schema.json) |
+| Projection identity and output | [Projection schema](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/schemas/passport-projection.schema.json) |
+| Commitment and precedence rules, as parked | [Projection specification](../reference/parked/passport-projections/passport-projections.md) |
+| Reference implementation | [Projection helper](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/src/projections.ts) |
 | Test cases | [Projection vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability) |
 
 Next: [industry profiles](../profiles/README.md), for the fields a profile defines and which tier each belongs to.

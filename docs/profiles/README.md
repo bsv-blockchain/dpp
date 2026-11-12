@@ -139,7 +139,7 @@ Both are gaps in the standard ([known limitations](../operate/limitations.md)).
 
 ## Where the definitions live
 
-The [profile specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) defines the framework. The frozen manifests in `@bsv/dpp-profiles` are the definitions, and the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records the digest of every versioned file. The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records what has been assessed. Who versions a profile, and where its canonical definition lives in the long run, is not decided yet.
+The [profile specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md) defines the framework. The frozen manifests in `@bsv/dpp-profiles` are the definitions, and the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records the digest of every versioned file. The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records what has been assessed. Who versions a profile, and where its canonical definition lives in the long run, is not decided yet.
 
 ## Next
 

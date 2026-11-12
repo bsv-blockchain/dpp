@@ -104,7 +104,7 @@ Public schemas accept five additional properties:
 | Property | What it carries |
 |---|---|
 | `profile`, `profile_version` | The profile the payload declares; required in every public payload |
-| `notice` | Only on a demonstration record, one describing no real product, such as under the GS1 demonstration prefix 952: one sentence saying so, as the payload's first property, which a reader shows before the product data ([profiles](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) section 5) |
+| `notice` | Only on a demonstration record, one describing no real product, such as under the GS1 demonstration prefix 952: one sentence saying so, as the payload's first property, which a reader shows before the product data ([profiles](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md) section 5) |
 | `object_did` | An optional physical-object DID; carrying it does not bind the record to the object |
 | `dataCarrier` | The data carrier's identifier, such as a chip UID; the index's lookup also finds the passport by it |
 
@@ -285,9 +285,9 @@ The package computes data-file paths in its own directory at call time; bundlers
 | `@bsv/dpp-profiles/generated/*` | Generated payload schemas and profile documents |
 | `@bsv/dpp-profiles/frozen.json` | Frozen file digests |
 
-Other languages can read data files directly. Applicability and lifecycle-event mappings are outside the schemas; their rules are defined in [profiles](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) and implemented in [`applicability.ts`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/src/applicability.ts).
+Other languages can read data files directly. Applicability and lifecycle-event mappings are outside the schemas; their rules are defined in [profiles](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md) and implemented in [`applicability.ts`](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/src/applicability.ts).
 
-Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json).
+Sources: [packages/dpp-profiles/package.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/package.json), [packages/dpp-profiles/README.md](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/README.md), [conformance/licences.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/licences.json).
 
 Until profile versioning and canonical locations are decided, this package's frozen manifests are the definitions.
 

@@ -97,8 +97,8 @@ A repairer's signature establishes the signing key. Your policy decides whether 
 |---|---|
 | How are subjects, keys and roles separated? | [Identity](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/identity.md) |
 | Which key signs a passport state? | [Record signatures](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), [version 2 signatures](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) |
-| How is a native claim attributed? | [Claim verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) |
-| Which publisher keys apply? | [Publisher keys](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md), the flat list a capability document names; the signed chain of their windows is the overlay package's [publisher key policy](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#the-publisher-key-policy) |
+| How is a native claim attributed? | [Claim verification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/rules.md) |
+| Which publisher keys apply? | [Publisher keys](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/services.md), the flat list a capability document names; the signed chain of their windows is the overlay package's [publisher key policy](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md#the-publisher-key-policy) |
 | Which authority evidence does the verifier need? | [Verification report](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) |
 
 ## Next

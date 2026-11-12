@@ -23,13 +23,13 @@ Index implementers can use this guide to build the standard's overlay role or ad
 To operate the reference index, start with [Run an index from source](../../operate/README.md). Its Compose preset builds the runtime. Continue here when customising an integration or implementing the role yourself.
 
 - **Reuse the runtime in your own integration.** `@bsv/dpp-overlay` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [runtime reference](../../packages/dpp-overlay.md) shows, and an HTTP host you can [run from source](../../operate/README.md). These are advanced alternatives to the Compose preset.
-- **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
+- **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
 
 Use the build order below for either route.
 
 ## What an index must serve
 
-The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
+The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
 
 | Level | What | Ledger rows |
 |---|---|---|
@@ -45,7 +45,7 @@ The contract has a core and extensions. The core, `x-dpp-core-version` 1, is wha
 | Extension, version 1 each | `discovery`, advertising through SHIP and SLAP, parked outside the standard; `admission-refusal`, the `X-Admission-Refusal` header, whose codes are informative; `health`, the fields on `GET /health`; `capabilities`, `GET /capabilities`; `publisher-policy`; `registration`, `POST /register`; `retraction`, `POST /retract`; `gs1-key-lookup`, the `gs1Key` query; `evidence-package`, `GET /evidence-package`; `sync`, synchronisation with peers through GASP, the Graph Aware Synchronisation Protocol (`POST /requestSyncResponse`, `POST /requestForeignGASPNode`) | |
 | Reference package only | `GET /history` and `GET /evidence-export`, outside the contract | |
 
-The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay role although the contract lists it as should, so an index claiming the role under the baseline serves it. It requires no extension, and an extension fixes a wire shape, not a requirement: the behaviour behind the publisher policy route, registration and synchronisation is the reference package's, documented in its [package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md). The standard keeps the flat publisher key list of the capability document and the signed registration request. The ledger rows `OVL-2-retraction` and `OVL-2-gs1-key-lookup` assess the reference index's retraction and GS1 key lookup, the reference-layer row `OVL-2-publisher-policy-route` its publisher policy route, and the evidence package needs the capabilities extension, whose document names the key its signer derives from.
+The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay role although the contract lists it as should, so an index claiming the role under the baseline serves it. It requires no extension, and an extension fixes a wire shape, not a requirement: the behaviour behind the publisher policy route, registration and synchronisation is the reference package's, documented in its [package guide](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md). The standard keeps the flat publisher key list of the capability document and the signed registration request. The ledger rows `OVL-2-retraction` and `OVL-2-gs1-key-lookup` assess the reference index's retraction and GS1 key lookup, the reference-layer row `OVL-2-publisher-policy-route` its publisher policy route, and the evidence package needs the capabilities extension, whose document names the key its signer derives from.
 
 ## Build order
 
@@ -53,7 +53,7 @@ The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay rol
 2. **Start offline with the fixtures.** Wrap each unmined raw transaction in a BEEF with its predecessors, then check topic admission ([version 2 lineage](../../packages/dpp-overlay.md)). The reference host's `CHAIN_TRACKER=scripts-only` setting omits a header source for local development only. Proof updates need the proof inputs listed above.
 3. **Lookup.** Serve `ls_dpp` and `ls_attestation` over what was admitted ([find passport records](../../reference/contracts.md#find-passport-records)).
 4. **One transaction end to end.** Exercise submission, lookup and proof ingestion with the same admitted transaction. A later proof must stay with the right record. Test duplicates and refused records, then restart the service and repeat the lookup.
-5. **Evidence package.** Add `GET /evidence-package`, the `dpp-evidence-package@1` for one passport, naming your exporter identity key and signed by its BRC-42 child for `[1, 'dpp evidence package v1']` and the passport identifier ([portable evidence](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/portable-evidence.md) section 2), and name that identity key as `exporterIdentityKey` in your capability document. History pages and a multi-part export are your own choice; the reference package's are outside the contract.
+5. **Evidence package.** Add `GET /evidence-package`, the `dpp-evidence-package@1` for one passport, naming your exporter identity key and signed by its BRC-42 child for `[1, 'dpp evidence package v1']` and the passport identifier ([portable evidence](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/portable-evidence.md) section 2), and name that identity key as `exporterIdentityKey` in your capability document. History pages and a multi-part export are your own choice; the reference package's are outside the contract.
 6. **Retraction.** Add `POST /retract`, which withdraws a state the network refused after it was announced, behind the `/submit` token.
 7. **Federation, optional.** Synchronisation is not part of the standard. To exchange records the way the reference package does, synchronise with a peer ([federation](../../operate/federation.md)), including a record a peer offers but local policy refuses. A peer having a record is never a reason to bypass local admission.
 
@@ -76,7 +76,7 @@ An index admits a state only when its publisher signature verifies under a key n
 | `SERVICE_IDENTITY_KEY` | One publisher key. |
 | Signed publisher policy chain, a reference package feature | Several keys, each with `activeFrom`, authorised by the operator's identity key. Inspect the signed chain for activity windows. |
 
-Use [sign a publisher policy](../../operate/federation.md#3-sign-a-publisher-policy), the [schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json) and `fixtures/vectors/dpp/publisher-policy/v1.json`. The capability document's `publisherPolicy` lists keys without their windows. It shows membership, not whether a key was active at a state's time.
+Use [sign a publisher policy](../../operate/federation.md#3-sign-a-publisher-policy), the [schema](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/publisher-policy.schema.json) and `fixtures/vectors/dpp/publisher-policy/v1.json`. The capability document's `publisherPolicy` lists keys without their windows. It shows membership, not whether a key was active at a state's time.
 
 ## Known gaps for a new operator
 
@@ -90,12 +90,12 @@ Each applies to any new index, whatever its code. [Known limitations](../../oper
 
 ## Exact implementation sources
 
-- [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml)
+- [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml)
 - [The upstream overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/)
-- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md)
+- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/services.md)
 - [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md)
 - [spec/exchange.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md)
 - [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) and the [reference index's capability document](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/conformance/examples/capabilities-reference-node.json)
-- [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json)
+- [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/publisher-policy.schema.json)
 
 Record results as [evidence reporting](../reporting.md) describes; the [source gaps](../fixture-runner.md#source-gaps) remain open. Next: [federation](../../operate/federation.md), to synchronise with a second index.
