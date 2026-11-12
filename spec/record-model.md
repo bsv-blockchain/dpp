@@ -10,6 +10,8 @@ Native signatures, supplied-history linkage and transaction inclusion can be ver
 
 Record version 2 is defined in [`record-model-v2.md`](record-model-v2.md): a seventeen-field layout with framed, domain-tagged preimages, explicit lineage and predecessor outpoints, a control proof on every operation, a terminal retirement and an authorisation commitment. A reader selects the version by the field count of the output, a version 1 lineage continues under version 2 through the single upgrade transition that document defines, and no version 1 state follows a version 2 state. Record version 3, defined in [`token-carrier.md`](token-carrier.md), carries the version 2 body behind a BRC-162 token prefix, begins at its own deploy, and is neither preceded nor followed by a version 1 state. Nothing in this document changes for a version 1 state, which is read under it for as long as the state exists.
 
+**A new lineage does not start at version 1.** A writer MUST NOT start a new lineage with a version 1 genesis (`ACTIVATE`), and SHOULD write the next state of a version 1 lineage as the version 2 upgrade transition of [`record-model-v2.md`](record-model-v2.md) §6, an `UPDATE` that keeps the owner key as its controller key. The rule binds writers, as [`writing.md`](writing.md) §1 states, and changes nothing a reader checks: a version 1 state, its genesis included, is read under the rules of this document whenever it was written.
+
 ## 2. The output script
 
 A passport state is a single output whose locking script is:

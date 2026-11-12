@@ -116,7 +116,7 @@ The same programme wrote it and the reference. It provides engineering evidence 
 
 ## Pick your role
 
-The [baseline](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/baseline-native-2.json), `native-baseline@2`, is the recommended selection of current formats. It lists required ledger rows under `roles.<role>.requires` and tests under `testTargets`, copied below. The ledger, [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json), lists every requirement with its source clause, the roles it binds and its status.
+The [baseline](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/baseline-native-2.json), `native-baseline@2`, is the recommended selection of current formats and the one baseline a claim names; `native-baseline@1` is historical. It lists required ledger rows under `roles.<role>.requires` and tests under `testTargets`, copied below. The ledger, [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json), lists every requirement with its source clause, the roles it binds and its status.
 
 | Role | What it does | Fixtures and tests | Page |
 |---|---|---|---|

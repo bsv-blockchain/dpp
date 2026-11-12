@@ -72,7 +72,8 @@ for (const page of pages) {
           // those URLs to paths that did not exist at the pinned commit.
           const movedPath = path.startsWith('packages/dpp-core/')
             ? path.replace(/^packages\/dpp-core\//, 'packages/dpp-protocol/')
-            : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md' : path
+            : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md'
+              : path.startsWith('conformance/demonstrations/') ? path.replace(/^conformance\/demonstrations\//, 'docs/reference/parked/') : path
           const local = resolve(root, existsSync(resolve(root, movedPath)) ? movedPath : path)
           if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
           const directory = statSync(local).isDirectory()

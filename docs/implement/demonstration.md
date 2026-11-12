@@ -2,6 +2,8 @@
 
 Implementers whose components pass the fixtures can use this guide to exchange fresh records with the reference implementation and retain reproducible per-check results. Run scenarios alone where permitted; arrange programme participation where the reference must act.
 
+**The trial plan is parked.** On 12 November 2026 its definition moved to [`docs/reference/parked/`](../reference/parked/independent-implementation-2026-09.json), to be rewritten against the slimmed standard when an independent implementer appears. The scenarios below are the parked plan's, and the claims it names are those of the day it was parked.
+
 ## Prerequisites and trial target
 
 | Input or scenario | Requirement and source |
@@ -85,7 +87,6 @@ For each completed scenario, retain its evidence and the ledger rows listed unde
 | `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer`, `overlay-single-operator-1`, `registry-current-intake` | Trial evidence bears on these claims. |
 | `overlay-federated-operators-1` | Cannot be made by the trial alone. Requires separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
 | `version-1-0-readiness` | Cannot be made by the trial alone. Requires another implementing party on record. |
-| European and battery claims | Need their own assessments. |
 | Local synthetic exchange | Establishes neither separately administered operation nor mined inclusion. |
 
 The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records remaining evidence gaps.

@@ -271,23 +271,23 @@ test('over the real ledger, the qualification and the checker give every claim t
     if (!v.canBeMade) assert.equal(verdictOf.get(id).problems, v.problems.join('; '))
   }
 
-  // The candidate set's selection is qualified; the European selection is refused on the same verdicts.
+  // The candidate set's selection is qualified; a superseded set's selection is retained as history.
   const release = run([qualify, 'conformance/selections/dpp-release-2026-11.json'])
   assert.equal(release.status, 0, release.out)
   const historical = run([qualify, 'conformance/selections/dpp-release-2026-09-4.json'])
   assert.equal(historical.status, 1, historical.out)
   assert.match(historical.out, /which is superseded/)
   assert.match(run([check]).out, /selection dpp-release-2026-09-4 is retained as history/)
-  const eu = run([qualify, 'conformance/selections/eu-dpp-system-2026-09.json'])
-  const euVerdict = verdicts.get('eu-dpp-system-conformance')
-  assert.equal(eu.status, euVerdict.canBeMade ? 0 : 1, eu.out)
-  if (!euVerdict.canBeMade) assert.match(eu.out, new RegExp(`refused: required claim eu-dpp-system-conformance \\(system, eu-dpp-system\\) cannot be made: ${euVerdict.problems.join('; ').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.`))
-  assert.match(eu.out, /withheld: eu-dpp-draft-security-integrity-compatibility \(draft-compatibility, eu-dpp-system-draft\)/)
-  assert.match(eu.out, /excluded: READY-2-eu-registry \(gap\) from eu-dpp-system-conformance, outside-claim-scope/)
+
+  // The candidate's required claims are the native-baseline@2 claims, one per role, and the two that guard live records.
+  const releaseSelection = JSON.parse(readFileSync(join(root, 'conformance', 'selections', 'dpp-release-2026-11.json'), 'utf8'))
+  const required = releaseSelection.claims.filter((c) => c.disposition === 'required').map((c) => c.id).sort()
+  const baselineClaims = ledger.claims.filter((c) => c.profileId === 'native-baseline@2').map((c) => c.id)
+  assert.equal(baselineClaims.length, 6)
+  assert.deepEqual(required, [...baselineClaims, 'gs1-identifier-discipline', 'profile-governance'].sort())
 
   // And assessSelection over the real material matches the command's exit code.
-  const euSelection = JSON.parse(readFileSync(join(root, 'conformance', 'selections', 'eu-dpp-system-2026-09.json'), 'utf8'))
-  const result = assessSelection(euSelection, { ledger, rows, sources, verdicts, root })
+  const result = assessSelection(releaseSelection, { ledger, rows, sources, verdicts, root })
   assert.deepEqual(result.invalid, [])
-  assert.equal(result.qualified, eu.status === 0)
+  assert.equal(result.qualified, release.status === 0)
 })

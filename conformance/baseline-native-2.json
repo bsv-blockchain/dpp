@@ -241,6 +241,7 @@
         "RM-3-fields",
         "RM-5-signatures",
         "RM-6-invariants",
+        "WR-1-no-version-1-genesis",
         "WR-2-verify-before-send",
         "WR-4-one-writer",
         "WR-5-broadcast",
@@ -266,7 +267,7 @@
         "MC-4-offer-lifecycle"
       ],
       "testTargets": [
-        "examples/write-passport.mjs --dry-run",
+        "examples/write-passport-v2.mjs --dry-run",
         "writer self-report, one sentence per rule (GOVERNANCE.md)",
         "examples/lifecycle-v2.mjs"
       ]

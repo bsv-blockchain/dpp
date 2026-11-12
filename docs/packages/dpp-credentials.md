@@ -120,7 +120,7 @@ The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are p
 | Verify credentials other parties issue | Use `@bsv/dpp-credentials/exchange`, which is not parked. |
 | Import EPCIS events | Use `@bsv/dpp-credentials/epcis-source`, and record each event's mapping outcome as `not-attempted`. |
 
-The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds the profile and both mappings, together with `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping, and requires the narrower `epcis-source-import-1` for the source helpers in its place; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. A credential's own claim that its issuer is trusted is never enough; the [package guide](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/packages/dpp-credentials/README.md) of an earlier commit shows the SEAL calls with each policy.
+The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds the profile and both mappings, together with `epcis-source-exchange-1`, whose rows include the `epcis-vsc@1` mapping, and from 12 November 2026 `epcis-source-import-1`, the claim on the source helpers, because it claims no optional profile; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. A credential's own claim that its issuer is trusted is never enough; the [package guide](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/packages/dpp-credentials/README.md) of an earlier commit shows the SEAL calls with each policy.
 
 ### Removed names
 

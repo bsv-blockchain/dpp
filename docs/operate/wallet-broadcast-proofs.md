@@ -13,7 +13,7 @@ Writers and operators can use this page to retain transaction evidence and deliv
 
 ## Follow one write
 
-1. Run `node examples/write-passport-v2.mjs --dry-run` before a funded operation ([dry run](../quick-start.md#write-a-passport-without-spending-anything), [write a passport](../packages/build-an-application.md#3-write-a-passport)). Stop and resolve any failed check before writing live. The live example writes a version 2 `ISSUE` and `UPDATE`; `examples/write-passport.mjs` does the same for a version 1 activation.
+1. Run `node examples/write-passport-v2.mjs --dry-run` before a funded operation ([dry run](../quick-start.md#write-a-passport-without-spending-anything), [write a passport](../packages/build-an-application.md#3-write-a-passport)). Stop and resolve any failed check before writing live. The live example writes a version 2 `ISSUE` and `UPDATE`. `examples/write-passport.mjs` is a historical version 1 dry run and refuses to write live; a new passport never starts at version 1.
 2. Follow the transaction through each component and retain its result:
 
 | Step | Component and result to retain |
@@ -83,7 +83,7 @@ An accepted request returns HTTP 200 with `status: retracted`; any predecessor b
 
 | Integration task | Source |
 |---|---|
-| Supply a wallet and invoke the writer | [Writer example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/examples/write-passport.mjs) |
+| Supply a wallet and invoke the writer | [Writer example](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) |
 | Implement the writer's operational duties | [Writing source](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md) |
 | Interpret admission, proof ingestion and retraction | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/contracts/overlay.yaml) |
 | Interpret inclusion or unavailable headers | [Verification report](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/verification.md) |

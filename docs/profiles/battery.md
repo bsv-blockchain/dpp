@@ -165,7 +165,7 @@ The fixture uses record version 1. New writers use version 2, with the same mapp
 
 ## Assessment status
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) marks the battery Annex XIII mapping `unassessed` and withholds the battery passport qualification claim. `battery@2` uses manifest format 1, so its fields carry no requirement status (enacted, anticipated, under review) of the kind the drafts add, and none of its fields is assigned to the groups it lists. The drafts do not close those assessments or establish legal adequacy.
+The standard makes no product-compliance claim: the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) carries no battery Annex XIII qualification row or battery passport qualification claim, and the Annex XIII citations in the profile data name legal bases without assessing them. `battery@2` uses manifest format 1, so its fields carry no requirement status (enacted, anticipated, under review) of the kind the drafts add, and none of its fields is assigned to the groups it lists. The drafts do not establish legal adequacy.
 
 ## Sources
 

@@ -50,7 +50,7 @@ node examples/write-passport.mjs --dry-run
 
 It prints `ok:` lines showing that the locking script and transaction equal state 1 of `fixtures/chain-v1.json` byte for byte, that the writer's own check accepts the state, and that the same check refuses a forbidden state before anything would be sent. It then prints what it would announce, send, prove and retain.
 
-The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) remains for compatibility. Removing `--dry-run` selects a live wallet/service workflow. The invocation below maps the version 2 inputs; each file's usage lists its arguments.
+The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) remains as a dry run only: a writer must not start a new lineage at version 1, so without `--dry-run` it refuses and names the version 2 writer. Removing `--dry-run` from the version 2 writer selects a live wallet/service workflow. The invocation below maps the version 2 inputs; each file's usage lists its arguments.
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
@@ -119,14 +119,15 @@ An operator running the Compose preset hands you a connection file from `dpp-ind
 
 ## Prove it: the writer's self-report
 
-Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these six sentences:
+Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
 
-1. Section 2: the reader's check runs before any send or announcement.
-2. Section 3: the order, announce before send, where you claim to follow it.
-3. Section 4: the tip rule (one writer per passport, a tip spent again only once the first spend's fate is known) and the not-yet-written rule (nothing reported as written before the network or the broadcaster has answered).
-4. Section 6: a failed announcement never fails a record, and is retried, never rebuilt.
-5. Section 7: the proof is obtained, attached and offered.
-6. Section 8: the transaction, its BEEF and its proof are retained.
+1. Section 1: no new lineage starts with a version 1 genesis, and a version 1 lineage continues through the version 2 upgrade.
+2. Section 2: the reader's check runs before any send or announcement.
+3. Section 3: the order, announce before send, where you claim to follow it.
+4. Section 4: the tip rule (one writer per passport, a tip spent again only once the first spend's fate is known) and the not-yet-written rule (nothing reported as written before the network or the broadcaster has answered).
+5. Section 6: a failed announcement never fails a record, and is retried, never rebuilt.
+6. Section 7: the proof is obtained, attached and offered.
+7. Section 8: the transaction, its BEEF and its proof are retained.
 
 Two sentences in that style, for a fictional writer:
 

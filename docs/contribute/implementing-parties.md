@@ -51,7 +51,7 @@ Only the programme can write to the hosted reference. These scenarios therefore 
 | `exchange-reference-writes` | Fresh version 2 records and claims written by the reference for you to read and verify. | Requests, exact artefacts and per-check reports. |
 | `exchange-independent-writes` | Admission of your records: the reference index operator names your publisher key, then gives you a submit token or pulls from your index. Each state's proof must reach the reference's `POST /arc-ingest`, which needs its callback token. | Requests, exact artefacts and per-check reports. |
 
-The other scenarios in the [trial definition](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json) can be rehearsed with your own services. Report successful local rehearsal as preparation.
+The other scenarios in the [trial definition](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/demonstrations/independent-implementation-2026-09.json), whose plan is parked until an independent implementer appears ([run the interoperability trial](../implement/demonstration.md)), can be rehearsed with your own services. Report successful local rehearsal as preparation.
 
 ## What you get back
 

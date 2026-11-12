@@ -22,7 +22,7 @@ Installers, implementers and reviewers can use this page to select a release set
 | Licence | Apache 2.0 |
 | npm tag | `latest`; install exact versions and retain the lockfile |
 | Receipt | None yet; the [beta.11 receipt](beta-11-publication.md) covers the last published set |
-| Selection | `conformance/selections/dpp-release-2026-11.json`, retaining the claims required and withheld by the preceding candidate, except that it withholds the parked VSC compatibility profile, the EPCIS claims whose rows include its mappings and `authenticated-status-service`, since registry contract `0.6.0` defines no status list publication, and requires the narrower `epcis-source-import-1` for the EPCIS source helpers ([conformance](conformance.md)) |
+| Selection | `conformance/selections/dpp-release-2026-11.json`. From 12 November 2026 it requires one claim per role under `native-baseline@2`, the one baseline a claim names, with `gs1-identifier-discipline` and `profile-governance`, and withholds every other claim with its reason ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-10`, this set carries the seven decisions of bsv-blockchain/dpp#177:
 

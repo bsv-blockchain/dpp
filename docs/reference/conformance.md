@@ -19,7 +19,7 @@ For optional execution:
 | Requirement | One rule from a specification, with its layer and the roles it binds. |
 | Ledger | [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json): every requirement with its source, the code and tests behind it, retained evidence and a status such as `tested`, `implemented`, `gap` or `unassessed`. Each source is pinned by its digest. |
 | Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json). |
-| Claim | A release's conformance statement, separate from a signed product claim, such as "a passport reader conforms to `native-baseline@1`", which is true only if every requirement row it needs is tested or better. |
+| Claim | A release's conformance statement, separate from a signed product claim, such as "a passport reader conforms to `native-baseline@2`", which is true only if every requirement row it needs is tested or better. |
 | Selection | The claims one release requires and the claims it withholds, for example `conformance/selections/dpp-release-2026-11.json` for the current release. |
 | Withheld | A claim the release deliberately does not make, with the reason. Withheld claims are part of the result, not a failure. |
 
@@ -39,7 +39,7 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-11.json
 | Check | Output and conclusion |
 |---|---|
 | Diagnostic, first command | About 170 lines, one finding each. Checks the ledger, baseline, reports and capability example against one another and their pinned sources. |
-| Qualification gate, second command | One line per required claim and twelve `withheld:` lines with reasons, including federated operation, European conformity, battery product qualification, version 1.0 readiness, the parked VSC compatibility profile and EPCIS mappings, the status service, which registry contract 0.6.0 no longer defines, and the proposed directly signed EPCIS events. Checks the named selection against the ledger. |
+| Qualification gate, second command | One line per required claim, eight in all: one per role under `native-baseline@2`, the one baseline a claim names, then `gs1-identifier-discipline` and `profile-governance`. Then twenty-four `withheld:` lines with reasons: the claims scoped to the historical `native-baseline@1` or the proposed `native-baseline@3`, the optional custody, discovery, exchange, projection, EPCIS and operator profiles, federated operation, the parked VSC compatibility profile and mappings, the status service and version 1.0 readiness. Checks the named selection against the ledger. The standard makes no European system conformance or product-compliance claim. |
 
 The diagnostic ends:
 
