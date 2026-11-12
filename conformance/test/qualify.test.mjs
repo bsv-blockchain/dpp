@@ -140,8 +140,9 @@ test('a selection naming a claim the ledger does not carry, naming one twice, or
     assert.match(twice.out, /DEFECT: selection twice names claim C-pass twice\./)
     const missing = s.ask(s.selection('missing-set', [s.required('C-pass')], [], { releaseSet: 'dpp-release-none' }))
     assert.equal(missing.status, 1)
-    assert.match(missing.out, /names release set dpp-release-none, which release\/dpp-release-none\.json does not define\./)
-    s.write('release/dpp-release-old.json', { releaseSet: 'dpp-release-old', status: 'superseded' })
+    assert.match(missing.out, /names release set dpp-release-none, which neither release\/ nor release\/archive\/ holds\./)
+    mkdirSync(join(s.dir, 'release', 'archive'), { recursive: true })
+    s.write('release/archive/dpp-release-old.json', { releaseSet: 'dpp-release-old', status: 'superseded' })
     const superseded = s.ask(s.selection('old-set', [s.required('C-pass')], [], { releaseSet: 'dpp-release-old' }))
     assert.equal(superseded.status, 1)
     assert.match(superseded.out, /which is superseded/)
@@ -271,10 +272,10 @@ test('over the real ledger, the qualification and the checker give every claim t
     if (!v.canBeMade) assert.equal(verdictOf.get(id).problems, v.problems.join('; '))
   }
 
-  // The candidate set's selection is qualified; a superseded set's selection is retained as history.
+  // The candidate set's selection is qualified; a superseded set's selection is retained as history in the archive.
   const release = run([qualify, 'conformance/selections/dpp-release-2026-11.json'])
   assert.equal(release.status, 0, release.out)
-  const historical = run([qualify, 'conformance/selections/dpp-release-2026-09-4.json'])
+  const historical = run([qualify, 'release/archive/selections/dpp-release-2026-09-4.json'])
   assert.equal(historical.status, 1, historical.out)
   assert.match(historical.out, /which is superseded/)
   assert.match(run([check]).out, /selection dpp-release-2026-09-4 is retained as history/)

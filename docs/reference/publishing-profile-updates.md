@@ -10,14 +10,13 @@ Maintainers can use this procedure to publish all packages in a selected release
 | Test network and MongoDB | `npm test` runs overlay tests against MongoDB downloaded and cached by `mongodb-memory-server`. Downloads work on macOS and x64 Linux. Debian 12 Linux arm64 containers have no matching build and fail with `Status Code is 403 (MongoDB's 404)`. Use `--platform linux/amd64`, or an existing server via `MONGOMS_DISTRO` or `MONGOMS_SYSTEM_BINARY`. |
 | Clean source and build | Any file written inside the checkout, including a log, causes `sourceState: working-tree` and changes the plan digest. Ignored generated files under `release/` do not count. Start with empty `dist` directories: stale files or executable bits change archive bytes despite clean `git status`. |
 | Publication authority | Steps 2 to 5 require repository and npm-package maintainer rights. Outside contributors complete step 1 and open a pull request through [profile authoring](../profiles/authoring.md). |
-| Trusted publisher | Configure each existing package's npm settings for organisation `bsv-blockchain`, repository `dpp`, workflow `publish.yaml`. The workflow has no named deployment environment and uses no `NPM_TOKEN`. |
-| First publication | npm requires a package to exist before its trusted publisher can be configured, so the new `@bsv/dpp-protocol` name needs an explicitly approved first publication by an authenticated scope maintainer. Review exact archive, tag, authentication and provenance choice before publishing, then configure trusted publishing for later runs. |
+| Trusted publisher | Configure each package's npm settings for organisation `bsv-blockchain`, repository `dpp`, workflow `publish.yaml`. The workflow has no named deployment environment and uses no `NPM_TOKEN`. It always publishes through OIDC with provenance, and this procedure has no hand-publication step; the app starter's own workflow, `publish-starter.yaml`, works the same way. npm configures a trusted publisher only on a package that already exists, so a set that introduces a new package name needs a maintainer decision on that name's first publication before its dry run. |
 
 See npm's [prerequisites](https://docs.npmjs.com/cli/v11/commands/npm-trust/#prerequisites) and [trusted publishing guide](https://docs.npmjs.com/trusted-publishers/). Keep credentials out of source and release notes.
 
 ## Rehearse step 1 without changing anything
 
-This historical rehearsal uses the published beta.4 set and its [receipt's source revision](beta-4-publication.md). The [latest published set](beta-11-publication.md) has separate verification steps. From a clean checkout root:
+This historical rehearsal uses the published beta.4 set and its [receipt's source revision](publication-history/beta-4-publication.md). The [latest published set](publication-history/beta-11-publication.md) has separate verification steps. From a clean checkout root:
 
 ```sh
 git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73
@@ -37,15 +36,15 @@ node scripts/publish-candidates.mjs
 | Every command | Exit 0 |
 | Final command | Plan, `Publication plan SHA-256: ecf6151b4f4dfaba47f9579426fcc3dcb58324b3517cbd36cc4be52c6dff3b51`, `already-published` for all four packages, then `Read-only preparation. No package or dist-tag was written.` |
 
-Return with `git checkout main`, then rerun `npm ci` and `npm run build`. On `main`, the packer refuses superseded `dpp-release-2026-10`; reproduce it only at the recorded beta.4 revision. New publications start from `main` with a new set.
+Return with `git checkout main`, then rerun `npm ci` and `npm run build`. On `main`, the superseded `dpp-release-2026-10` is kept under `release/archive/` and the packer refuses it; reproduce it only at the recorded beta.4 revision. New publications start from `main` with a new set.
 
 ## 1. Prepare a candidate
 
 Work on a branch from `main`. The [beta.4 preparation commit](https://github.com/bsv-blockchain/dpp/commit/90de42c6ed9509be465ddb418eccd233fb134e8f) demonstrates all these changes.
 
 1. In changed packages' `package.json`, raise `version` to an unpublished prerelease and update exact dependent pins. `@bsv/dpp-overlay` and tests in `@bsv/dpp-profiles` pin `@bsv/dpp-protocol`. Unchanged packages retain their versions. Match each `publishConfig.tag` to the set's `distTag`; mismatches are refused. Run `npm install` to update `package-lock.json`.
-2. Copy `release/dpp-release-2026-10.json` to `release/<set>.json`. Set new name, versions and selection, `"distTag": "latest"` before 1.0, and `status: candidate`; set the previous set's `status` to `superseded`. Follow [release-set.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/release/release-set.schema.json). Changed wire contracts or profiles always need new sets, never edits to frozen sets.
-3. Copy `conformance/selections/dpp-release-2026-10.json` to `conformance/selections/<set>.json`, naming the new set.
+2. Copy the current set under `release/` to `release/<set>.json`. Set new name, versions and selection, `"distTag": "latest"` before 1.0, and `status: candidate`. Set the previous set's `status` to `superseded` and move it to `release/archive/`, where it is not edited again. Follow [release-set.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/release/release-set.schema.json). Changed wire contracts or profiles always need new sets, never edits to frozen sets.
+3. Copy the current selection under `conformance/selections/` to `conformance/selections/<set>.json`, naming the new set, and move the previous selection, bytes unchanged, to `release/archive/selections/`. `conformance/check.mjs` refuses a superseded set or selection left beside the current one.
 4. Update version references in `conformance/licences.json`, `conformance/examples/capabilities-reference-node.json`, package READMEs and documentation. `node scripts/docs-check.mjs` identifies old-version pages; `npm run docs:render` regenerates the support table.
 5. Write changelog and consumer-impact notes. Never overwrite published npm versions or change earlier profile meanings.
 6. After review, use `node conformance/pin-sources.mjs` to re-record affected source and artefact digests.
@@ -85,9 +84,8 @@ In `bsv-blockchain/dpp`, open Actions, select **Publish npm candidates**, and ru
 | `releaseSet` | `<set>.json` |
 | `dryRun` | `true` |
 | `approval` | Empty |
-| `provenance` | `true` |
 
-The workflow repeats checks, builds and smokes the operator image locally, then uploads archives and the plan. It publishes no operator image. Review its actual source revision, package actions and **Publication plan SHA-256**. The digest binds package bytes, versions, registry, tag and provenance setting.
+The workflow repeats checks, builds and smokes the operator image locally, then uploads archives and the plan. It publishes no operator image. Review its actual source revision, package actions and **Publication plan SHA-256**. The digest binds the source revision, package bytes and versions, the set and selection digests, registry, tag and provenance. It does not bind the changelog, so release notes can still be corrected after approval without a new dry run.
 
 ## 4. Publish the approved plan
 
@@ -98,7 +96,6 @@ Obtain approval for the exact plan. Confirm the branch still resolves to the rev
 | `releaseSet` | `<set>.json`, unchanged |
 | `dryRun` | `false` |
 | `approval` | Reviewed SHA-256 |
-| `provenance` | `true`, unchanged |
 
 A changed revision or archive changes the digest and requires a new dry run and review.
 
@@ -125,7 +122,7 @@ npm view @bsv/dpp-profiles@<version> version dist.integrity
 npm view @bsv/dpp-profiles dist-tags --json
 ```
 
-1. Record source revision, successful publication run, plan digest, package integrities and registry verification in a receipt, following the [beta.4 receipt](beta-4-publication.md).
+1. Record source revision, successful publication run, plan digest, package integrities and registry verification in a receipt under `docs/reference/publication-history/`, beside the approved plan copied byte for byte, following the [beta.4 receipt](publication-history/beta-4-publication.md).
 2. Prepare release documentation distinguishing verified npm availability from application adoption. After the receipt reaches the default branch, prepare tag `v0.1.0-beta.N` on the source revision, with N matching the receipt number, and a GitHub pre-release under that tag naming the set, listing package versions and linking the receipt. Obtain approval for the exact external-write content, then tag and publish.
 3. Hand the reference application, whose source is private, the exact package selection, release notes and field-change report per proposed transition. Its separate change must preserve readers, implement and test new field shapes and explicitly select successor writes ([version 4 changes](../profiles/version-4-drafts.md), [consumer adoption](../profiles/updating-applications.md)).
 
@@ -136,26 +133,11 @@ The workflow does not mark the set released, tag the repository or notify owners
 After publication and registry verification, update documentation in one change:
 
 1. Update [Releases and compatibility](release-sets.md) with package combination, receipt and verification link. Package versions can differ within a set.
-2. Give the new receipt the `Latest publication` title in `docs/SUMMARY.md`. Preserve every existing receipt's hierarchy position and address.
+2. List the new receipt first under Release history in `docs/SUMMARY.md`, with the `Latest publication` title. Preserve every existing receipt's address.
 3. Add `hidden: true` front matter and an archive notice to the previous receipt; remove its `Latest publication` title. Preserve evidence and approved JSON plan.
-4. Add the superseded set to [Release history](release-history.md). Expose one current receipt and one history page in the sidebar, regardless of archive count.
+4. Add the superseded set to [Release history](release-history.md) with its date, what it published and its receipt. Release history is the one page that records publications; the release README and the changelog point to it.
 5. Run `node scripts/docs-check.mjs`. In GitBook preview, confirm the latest receipt is visible, archives are hidden from the sidebar and history links open them.
 
 ## Earlier publications
 
-Every publication so far followed this procedure:
-
-| Publication | Set | Date in 2026 | Tag, exception or receipt |
-|---|---|---|---|
-| beta.2 | `dpp-release-2026-09-4` | 18 September | `next`; `latest` stayed beta.1; [receipt](beta-2-publication.md) |
-| beta.3 | `dpp-release-2026-09-5` | 27 September | `next`; `latest` stayed beta.1; [receipt](beta-3-publication.md) |
-| beta.4 | `dpp-release-2026-10` | 1 October | `next`; `latest` stayed beta.1 |
-| beta.5 | `dpp-release-2026-10-2` | 2 October | `next`; `latest` stayed beta.1 |
-| beta.6 | `dpp-release-2026-10-3` | 2 October | First under `latest` |
-| beta.7 | `dpp-release-2026-10-4` | 2 October | Same day |
-| beta.8 overlay | `dpp-release-2026-10-5` | After beta.7 | Followed beta.7 |
-| beta.9 overlay | `dpp-release-2026-10-6` | 3 October | Overlay package |
-| beta.8 core/profiles, beta.10 overlay | `dpp-release-2026-10-7` | 9 October | Resumed twice after npm processing delay and image-registry rate limit ([beta.10 receipt](beta-10-publication.md)) |
-| Renamed packages | `dpp-release-2026-10-10` | 16 October | Three published by hand with approved bytes; overlay by workflow ([beta.11 receipt](beta-11-publication.md)) |
-
-Both earlier sets, beta.2 and beta.3, are superseded. Their receipts preserve approved plans; reproduce them using their recorded revisions and toolchains. The [changelog](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/CHANGELOG.md) records dependency changes. Package versions differ from industry profile versions: battery@2 and textile@2 remain current, versions 3 and 4 remain drafts, and historical definitions remain available.
+[Release history](release-history.md) lists every earlier set, its date, what it published and its receipt; each receipt records any exception to this procedure and how to reproduce its plan at its recorded revision. Package versions differ from industry profile versions: battery@2 and textile@2 remain current, versions 3 and 4 remain drafts, and historical definitions remain available.

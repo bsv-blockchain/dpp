@@ -158,7 +158,7 @@ Before considering promotion of `battery@4`, collect the evidence described in [
 
 ## History
 
-The version 4 drafts were first published in 0.3.0-beta.2; the [beta.2 publication receipt](../reference/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application. On 12 November 2026 `battery@3`, `textile@3` and `textile@4` were parked, with no byte of their manifests or generated files changed.
+The version 4 drafts were first published in 0.3.0-beta.2; the [beta.2 publication receipt](../reference/publication-history/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application. On 12 November 2026 `battery@3`, `textile@3` and `textile@4` were parked, with no byte of their manifests or generated files changed.
 
 ## Parked: textile@4 and the version 3 drafts
 

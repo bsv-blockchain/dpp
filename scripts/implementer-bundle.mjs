@@ -47,7 +47,7 @@ cpSync(join(root, 'docs'), join(out, 'docs'), {
   filter: (source) => {
     const path = relative(join(root, 'docs'), source)
     return path !== 'private' && !path.startsWith('private/') &&
-      (statSync(source).isDirectory() || source.endsWith('.md') || /^reference\/beta-\d+-publication-plan\.json$/.test(path) || /^reference\/parked\/.+\.json$/.test(path))
+      (statSync(source).isDirectory() || source.endsWith('.md') || /^reference\/publication-history\/beta-\d+-publication-plan\.json$/.test(path) || /^reference\/parked\/.+\.json$/.test(path))
   },
 })
 copy('GOVERNANCE.md')

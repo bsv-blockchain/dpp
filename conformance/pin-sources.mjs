@@ -43,11 +43,13 @@ for (const path of ['conformance/baseline-native-2.json']) {
   console.log(`${fixtures} fixture digest${fixtures === 1 ? '' : 's'} moved in ${path}.`)
 }
 
-// The release sets: the artefact digests each names, so a changed contract
-// or fixture moves the set's record and the checker says so.
+// The current release set under release/: the artefact digests it names, so a
+// changed contract or fixture moves the set's record and the checker says so.
+// A superseded set under release/archive/ keeps the digests it recorded when
+// it was current and is never read or rewritten here.
 for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f))) {
   const set = read(`release/${name}`)
-  // A superseded set keeps the digests it recorded when it was current.
+  // A superseded set not yet archived keeps its digests too; the checker asks for the move.
   if (set.status === 'superseded') { console.log(`release/${name} is superseded; its recorded digests are left as history.`); continue }
   let moved = 0
   for (const a of set.artefacts) {

@@ -17,11 +17,11 @@ Installers, implementers and reviewers can use this page to select a release set
 | | `dpp-release-2026-11` |
 |---|---|
 | Declaration | `release/dpp-release-2026-11.json`; its source revision is recorded when a publication plan binds it |
-| Status | Candidate. Nothing of it is published; the last published set is `dpp-release-2026-10-10`, under `latest` since 16 October 2026 ([beta.11 receipt](beta-11-publication.md)) |
+| Status | Candidate. Nothing of it is published; the last published set is `dpp-release-2026-10-10`, under `latest` since 16 October 2026 ([beta.11 receipt](publication-history/beta-11-publication.md)) |
 | Main packages | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/dpp-overlay@0.4.0-beta.13`, `@bsv/dpp-profiles@0.3.0-beta.10`, `@bsv/dpp-credentials@0.2.0-beta.6`, on `@bsv/sdk@2.8.10` and Node 22 |
 | Licence | Apache 2.0 |
 | npm tag | `latest`; install exact versions and retain the lockfile |
-| Receipt | None yet; the [beta.11 receipt](beta-11-publication.md) covers the last published set |
+| Receipt | None yet; the [beta.11 receipt](publication-history/beta-11-publication.md) covers the last published set |
 | Selection | `conformance/selections/dpp-release-2026-11.json`. From 12 November 2026 it requires one claim per role under `native-baseline@2`, the one baseline a claim names, with `gs1-identifier-discipline` and `profile-governance`, and withholds every other claim with its reason ([conformance](conformance.md)) |
 
 Compared with the superseded `dpp-release-2026-10-10`, this set carries the seven decisions of bsv-blockchain/dpp#177:
@@ -50,9 +50,9 @@ These are experimental prereleases: APIs may change during testing. Package vers
 
 ## Verify a published release
 
-The latest npm publication is the current set, `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5 under their new names, on `latest` since 16 October 2026. Its [beta.11 receipt](beta-11-publication.md) records the approved source revision `0e45ac32da351c1e877431d55e2e9c0c41f54c33`, original release-set input, archive digests and verification results.
+The last published set is `dpp-release-2026-10-10`: protocol and profiles beta.9, overlay beta.12 and credentials beta.5 under their new names, on `latest` since 16 October 2026. Its [beta.11 receipt](publication-history/beta-11-publication.md) records the approved source revision `0e45ac32da351c1e877431d55e2e9c0c41f54c33`, original release-set input, archive digests and verification results.
 
-Reproduce the published packages with the receipt's [verification steps](beta-11-publication.md#verification):
+Reproduce the published packages with the receipt's [verification steps](publication-history/beta-11-publication.md#verification):
 
 1. Use a clean checkout at `0e45ac32da351c1e877431d55e2e9c0c41f54c33` with the toolchain above.
 2. Run the receipt's commands from that checkout's root:
@@ -82,11 +82,11 @@ These steps check npm bytes against the approved plan and public source revision
 
    It printed `87 packages have verified registry signatures` and `17 packages have verified attestations`; the four DPP packages are among the attested ones, and nothing was reported invalid or missing.
 
-2. **Compare each archive with the approved plan.** Print the registry's integrity for each package and the [approved plan](beta-4-publication-plan.json)'s recorded integrity:
+2. **Compare each archive with the approved plan.** Print the registry's integrity for each package and the [approved plan](publication-history/beta-4-publication-plan.json)'s recorded integrity:
 
    ```sh
    for p in @bsv/dpp-core@0.3.0-beta.4 @bsv/dpp-overlay-topics@0.4.0-beta.4 @bsv/dpp-profiles@0.3.0-beta.4 @bsv/vsc@0.2.0-beta.3; do echo "$p $(npm view "$p" dist.integrity)"; done
-   node -e "for (const c of require('./docs/reference/beta-4-publication-plan.json').candidates) console.log(c.name + '@' + c.version, c.integrity)"
+   node -e "for (const c of require('./docs/reference/publication-history/beta-4-publication-plan.json').candidates) console.log(c.name + '@' + c.version, c.integrity)"
    ```
 
    The two lists must match line for line, starting `@bsv/dpp-core@0.3.0-beta.4 sha512-bSOxqRghWrxsrPY7…`.
@@ -111,10 +111,10 @@ The steps above use the values of the published beta.4 set, `dpp-release-2026-10
 
 ## Earlier sets
 
-[Release history](release-history.md) lists the superseded sets and links to their publication receipts, approved plans and recorded source revisions. Use those records when checking an older installation or reproducing an earlier publication.
+[Release history](release-history.md) is the one record of earlier sets: each with its date, what it published, its publication receipt and approved plan, and its recorded source revision. Superseded sets and their selections are kept, byte for byte, under `release/archive/`. Use those records when checking an older installation or reproducing an earlier publication.
 
 ## How a set is made
 
-The [release tooling](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
+The [release tooling](https://github.com/bsv-blockchain/dpp/blob/44cc49926042466f5a01074d5b0ef0eed7ebdf29/release/README.md) packs a set into candidate archives and writes a candidate record, `release/candidates.json`, with the source revision and each archive's digest; a set's name alone is not that revision. [Publish a package update](publishing-profile-updates.md) is the maintainer procedure from candidate to npm.
 
 Next: install the current set with [install the selected release](../packages/README.md), or check what it claims on [conformance](conformance.md).

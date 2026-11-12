@@ -52,7 +52,7 @@ Publication sets one tag, leaving `next` where it was. Before version 1.0 every 
 | `@bsv/dpp-overlay-topics` | Up to `0.4.0-beta.10` |
 | `@bsv/vsc` | `0.2.0-beta.5` |
 
-The [migration guide](../migration.md) maps the names. Verified against npm on 21 October 2026: former names carry rename notices; `@bsv/dpp-overlay@0.4.0-beta.11` directs consumers to beta.12; and the three renamed packages' `0.0.0-stage` versions carry placeholder notices. Neither overlay beta.11 nor the placeholders is named by a release set.
+The [migration guide](../../migration.md) maps the names. Verified against npm on 21 October 2026: former names carry rename notices; `@bsv/dpp-overlay@0.4.0-beta.11` directs consumers to beta.12; and the three renamed packages' `0.0.0-stage` versions carry placeholder notices. Neither overlay beta.11 nor the placeholders is named by a release set.
 
 ## Verification
 
@@ -101,4 +101,4 @@ This set changes package names only:
 
 Record versions, wire formats, custody rules, profiles, index contract `0.11.0-draft` and conformance claims remain those of the [beta.10 publication](beta-10-publication.md). Both starters pin this set; generated projects install these public versions. Publication does not upgrade the reference application or registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
-For future releases and delay recovery, follow the [publication guide](publishing-profile-updates.md). The [beta.10 receipt](beta-10-publication.md) records the preceding publication.
+For future releases and delay recovery, follow the [publication guide](../publishing-profile-updates.md). The [beta.10 receipt](beta-10-publication.md) records the preceding publication.
