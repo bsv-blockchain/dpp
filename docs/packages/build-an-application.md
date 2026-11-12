@@ -230,7 +230,6 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 | `WOC_API_KEY` | Your WhatsOnChain key | The header source for every state the index admits |
 | `NETWORK` | `main`, the default | The chain the index checks headers on. It must be your wallet's chain |
 | `ACCEPTANCE_COMMITMENT` | `required`, the default | Selects the managed custody profile, `managed-custody@2` in this candidate: a version 2 `TRANSFER` is admitted only with its acceptance commitment |
-| `INSTRUCTION_COMMITMENT` | `required`, or unset | Selects the profile's instruction rule: after a committed `TRANSFER`, an `UPDATE` or `RETIRE` is admitted only with its instruction commitment, unless a control authority made it. Needs `ACCEPTANCE_COMMITMENT=required` |
 | `CHAIN_TRACKER` | Empty | `scripts-only` is a fixture setting that admits unproven history and claims no inclusion |
 
 `SERVICE_IDENTITY_KEY` alone is an implicit policy with no activation windows: every state is checked against that key whatever its date. To admit several keys or retire one, give the index a signed publisher policy ([sign a publisher policy](../operate/federation.md#3-sign-a-publisher-policy)). [Run an index from source](../operate/README.md) explains the other settings.
@@ -258,7 +257,7 @@ You should see the key from 2.1 under `publisher keys`, and the custody profile 
 
 ## 3. Write a passport
 
-Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md)):
+Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md)):
 
 1. Build the state and its transaction unsent: signed by the wallet but not sent, so it spends nothing yet.
 2. Check it with the reader's own rules.
@@ -380,7 +379,6 @@ A refused state gets HTTP 200, `X-Admission: tm_dpp=none` and nothing admitted. 
 | `control-not-proven` | A version 2 `UPDATE`, `TRANSFER` or `RETIRE` does not prove control of the predecessor | Act as the controller, or carry `control_linkage` |
 | `lineage-retired` | The passport ended with a `RETIRE` | Nothing may follow it |
 | `version-transition-invalid` | The version changed other than by the one upgrade, a version 2 `UPDATE` that spends a version 1 tip | Keep the predecessor's version, or upgrade with that `UPDATE` |
-| `consent-not-proven` | The index runs the owner-signed transfer, and the `TRANSFER`'s actor does not prove it is the previous owner | Act as the previous owner, or carry `owner_linkage` |
 | `acceptance-commitment-absent` | The index runs managed custody, and the version 2 `TRANSFER` has no `authorisation_commitment` | Commit to the acceptance record the custodian keeps |
 | `genesis-spends-passport-output` | A genesis spends a passport state's DPP output | Fund the genesis from other outputs; change from another passport's transaction is fine |
 | `predecessor-not-admitted` | The state does not spend the tip the index holds | Announce the predecessor first, oldest state first, and compare your tip with the index's `ls_dpp` lookup |
@@ -404,9 +402,9 @@ To run a second index and exchange records with it, see [federation](../operate/
 
 | Question | Page |
 |---|---|
-| What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) |
-| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) |
-| Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md) |
-| What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) |
-| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
+| What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
+| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) |
+| Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md) |
+| What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) |
+| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
 | Which wallet to use | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |

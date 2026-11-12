@@ -25,7 +25,7 @@ In both cases, passing the fixture recipe leaves live wallet and service integra
 |---|---|
 | Required countersignature | Every state carries field 17, `publisher_signature`; an index admits it only when the publisher key is in its policy |
 | Signed bytes | Publishing service's signature over framed fields 1 to 16 |
-| Verification key | BRC-42 child of the publisher's identity key for key identifier `passport_id` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md), section 5) |
+| Verification key | BRC-42 child of the publisher's identity key for key identifier `passport_id` ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md), section 5) |
 
 ## Reproduce the bytes offline
 
@@ -54,35 +54,17 @@ The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88e
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
-### Reproduce carried states
-
-A carried passport is record version 3 (`spec/token-carrier.md`).
-
-| Part | Target or rule |
-|---|---|
-| Byte fixtures | `fixtures/record-v3.json` and `fixtures/chain-v3.json` |
-| Vector forms | `fixtures/vectors/dpp/record/v3.json` and `fixtures/vectors/dpp/chain/v3.json` |
-| Layout and signing | Version 2 body behind a BRC-162 token prefix, signed under `[1, 'dpp token v3']` and version 3 tags |
-| Genesis | Carrier at output 0; turn off wallet output randomisation for that one action |
-| Funding | Every carried output holds one satoshi |
-
-The output index and funding rules are additional duties beyond the lifecycle below. Run:
-
-```sh
-node examples/lifecycle-v3.mjs
-```
-
-This offline exercise uses fresh keys for issue, update, transfer and retirement, then tests carrier refusals and burn. It ends with `Every sentence above holds.`
+Record version 3, the token carrier, is parked outside the standard ([parked material](../../reference/parked/token-carrier/README.md)), and a writer writes no version 3 state.
 
 ## The write, step by step
 
-Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
+Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
 
 1. **Build the state and its transaction, unsent** (section 3). Validate the payload under its profile. Build against the tip you mean to spend, the passport's newest state, which the index's `ls_dpp` lookup returns.
 2. **Check it with the reader's rules** (section 2). Decode the locking script you built, check the chain invariants against the tip it spends, verify both signatures, and under the managed custody profile bind the acceptance record to the `TRANSFER`. A state that fails is never sent.
 3. **Announce it** (sections 3 and 6). `POST /submit` the BEEF, including the predecessor's transaction, with `X-Topics: ["tm_dpp"]`. Follow the announcement table below before sending.
 4. **Send it, and report only the network's answer** (sections 4 and 5): accepted, rejected, or competing with another spend of the same tip. Spend a tip a second time only after you know the fate of the first spend, and never report a queued broadcast as a written state.
-5. **Withdraw a state the network refused.** If an index admitted a state that the network then refused, `POST /retract` the JSON body `{"txid": "...", "outputIndex": 0, "reason": "..."}` behind the submit token, on every index you announced it to, before you build on the same tip again ([overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml)). A peer that pulled the state from your index keeps it until that peer's operator withdraws it ([federation](../../operate/federation.md#when-a-record-does-not-arrive)).
+5. **Withdraw a state the network refused.** If an index admitted a state that the network then refused, `POST /retract` the JSON body `{"txid": "...", "outputIndex": 0, "reason": "..."}` behind the submit token, on every index you announced it to, before you build on the same tip again ([overlay contract](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml)). A peer that pulled the state from your index keeps it until that peer's operator withdraws it ([federation](../../operate/federation.md#when-a-record-does-not-arrive)).
 6. **Prove it** (section 7). When the state is mined, get its merkle path, attach it to the BEEF you keep, and offer it to every index you announced to: `POST /arc-ingest` a JSON body of `txid`, `merklePath` (the path in BRC-74 form) and `blockHeight`, with that index's own callback token.
 7. **Keep it** (section 8): the raw transaction, the BEEF it was sent as and the proof, for the passport's life. [Wallet, broadcast and proofs](../../operate/wallet-broadcast-proofs.md) explains the service sequence, and [custody](../../learn/custody.md) explains signing access and managed acceptance.
 
@@ -119,7 +101,7 @@ An operator running the Compose preset hands you a connection file from `dpp-ind
 
 ## Prove it: the writer's self-report
 
-Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
+Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
 
 1. Section 1: no new lineage starts with a version 1 genesis, and a version 1 lineage continues through the version 2 upgrade.
 2. Section 2: the reader's check runs before any send or announcement.
@@ -147,11 +129,11 @@ These standard and deployment questions remain open. [Known limitations](../../o
 
 ## Exact implementation sources
 
-- [spec/writing.md](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md)
-- [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md)
-- [spec/custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md)
-- [spec/managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md)
-- [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml)
-- [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/README.md)
+- [spec/writing.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md)
+- [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md)
+- [spec/custody.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md)
+- [spec/managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md)
+- [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml)
+- [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md)
 
 The [source gaps](../fixture-runner.md#source-gaps) remain open. Next: the [attestation issuer](attestation-issuer.md) if you also sign claims, or [the trial](../demonstration.md) to have the reference verify what you write.

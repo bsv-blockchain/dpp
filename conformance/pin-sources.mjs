@@ -26,9 +26,12 @@ const sha256 = (relative) => createHash('sha256').update(readFileSync(join(root,
 // fixture digests must be final before the ledger records its digest.
 // A path that does not exist yet is left as recorded and named, so a baseline
 // or set can be pinned while another file is still being written; the checker
-// refuses the missing file until it exists.
+// refuses the missing file until it exists. native-baseline@1 is frozen as
+// history (spec/conformance.md §3) and is never re-pinned: its fixture digests
+// record the day it was frozen.
 const missing = (path) => { console.log(`${path} does not exist; its recorded digest is left as it is.`); return true }
-for (const path of ['conformance/baseline-native-1.json', 'conformance/baseline-native-2.json', 'conformance/baseline-native-3.json']) {
+console.log('conformance/baseline-native-1.json is frozen; its recorded digests are left as history.')
+for (const path of ['conformance/baseline-native-2.json']) {
   const baseline = read(path)
   let fixtures = 0
   for (const f of baseline.fixtures) {

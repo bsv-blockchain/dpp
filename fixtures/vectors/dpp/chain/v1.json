@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/bsv-blockchain/ts-stack/main/conformance/schema/vector.schema.json",
   "id": "dpp.chain.v1",
-  "name": "DPP record model v1: a passport chain, its links, and the owner-signed transfer",
+  "name": "DPP record model v1: a passport chain, its links, and the possession convention",
   "brc": [
     "BRC-42",
     "BRC-43",
@@ -91,7 +91,7 @@
     },
     {
       "id": "state-3-transfer",
-      "description": "TRANSFER to the second owner, signed by the first owner. Field 7 equals the previous field 6, which is the equality form of the owner-signed transfer (spec custody.md section 4) although nothing in the first four states depends on the option.",
+      "description": "TRANSFER to the second owner, signed by the first owner, whose identity key is the previous field 6.",
       "input": {
         "data": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -171,7 +171,7 @@
     },
     {
       "id": "state-5-transfer",
-      "description": "TRANSFER by the second owner to the third owner's per-passport owner key, derived from the third owner's root under [1, 'dpp owner v1'] with the passport identifier as key identifier and counterparty self (spec record-model.md section 3). The output is locked to that same key: the possession convention (spec custody.md section 3). Field 7 equals the previous field 6: the equality form of consent.",
+      "description": "TRANSFER by the second owner to the third owner's per-passport owner key, derived from the third owner's root under [1, 'dpp owner v1'] with the passport identifier as key identifier and counterparty self (spec record-model.md section 3). The output is locked to that same key: the possession convention (spec custody.md section 3).",
       "input": {
         "data": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -211,7 +211,7 @@
     },
     {
       "id": "state-6-transfer-linked",
-      "description": "TRANSFER by the third owner, acting under their root, to the first owner's per-passport owner key, again locked to it. event_data carries owner_linkage, the BRC-69 specific key linkage such that the previous field 6 equals field 7 plus owner_linkage times G: the linkage form of consent. The input is spent by the third owner's wallet through the PushDrop unlock under the owner protocol, one derivation and no key export; RFC 6979 nonces make the unlocking script reproducible.",
+      "description": "TRANSFER by the third owner, acting under their root, to the first owner's per-passport owner key, again locked to it. event_data carries the third owner's BRC-69 linkage scalar under owner_linkage, a property no reader interprets (spec record-model.md section 3, field 9). The input is spent by the third owner's wallet through the PushDrop unlock under the owner protocol, one derivation and no key export; RFC 6979 nonces make the unlocking script reproducible.",
       "input": {
         "data": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -257,7 +257,7 @@
     },
     {
       "id": "owner-key-owner3",
-      "description": "The third owner's per-passport owner key and its linkage scalar (spec record-model.md section 3, spec custody.md sections 2 and 4). The key is the root derived under the owner protocol with the passport identifier as key identifier and counterparty self; the scalar is the BRC-42 HMAC for that derivation, which only the root can compute, and owner_key = root_public_key + linkage times G, which anyone can check.",
+      "description": "The third owner's per-passport owner key and its linkage scalar (spec record-model.md section 3, spec custody.md section 2, spec record-model-v2.md section 6). The key is the root derived under the owner protocol with the passport identifier as key identifier and counterparty self; the scalar is the BRC-42 HMAC for that derivation, which only the root can compute, and owner_key = root_public_key + linkage times G, which anyone can check.",
       "input": {
         "root_private_key_hex": "5555555555555555555555555555555555555555555555555555555555555555",
         "passport_id": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -368,7 +368,9 @@
         "happy-path",
         "brc-42",
         "brc-43"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer was removed on 12 November 2026, so the owner_consent input and the owner_consent_valid expectations name nothing; see verify-chain-record-model."
     },
     {
       "id": "refuse-genesis-not-activate",
@@ -552,7 +554,9 @@
       "tags": [
         "error-case",
         "brc-42"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
     },
     {
       "id": "refuse-transfer-by-former-owner",
@@ -576,7 +580,9 @@
       "tags": [
         "error-case",
         "brc-42"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
     },
     {
       "id": "refuse-wrong-owner-linkage",
@@ -601,7 +607,9 @@
       "tags": [
         "error-case",
         "brc-42"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
     },
     {
       "id": "refuse-owner-linkage-upper-case",
@@ -626,7 +634,9 @@
       "tags": [
         "error-case",
         "brc-42"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
     },
     {
       "id": "refuse-owner-linkage-short",
@@ -651,7 +661,9 @@
       "tags": [
         "error-case",
         "brc-42"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
     },
     {
       "id": "refuse-owner-linkage-not-object",
@@ -676,7 +688,9 @@
       "tags": [
         "error-case",
         "brc-42"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
     },
     {
       "id": "refuse-recovery-without-authority",
@@ -705,6 +719,70 @@
       "tags": [
         "error-case",
         "brc-42"
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the owner-signed transfer (owner-consent@1) was removed on 12 November 2026, so no reader selects it; under the record model alone these bytes are a valid chain."
+    },
+    {
+      "id": "verify-chain-record-model",
+      "description": "Verify the six raw transactions as a chain, genesis to tip, under the record model alone with no header source: every user signature verifies, every link holds, every server signature verifies under the service key, and inclusion is pending. Scripts are not run by the verifier; the network ran them.",
+      "input": {
+        "raw_tx_hex": [
+          "0100000000010100000000000000fde40121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaac0364707001313268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d30303108414354495641544514323032362d30362d31315431323a30303a30305a21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0d6d616b65722062617463682031004c5e7b226e616d65223a22436c7562204a65727365792032303236222c22666962726573223a7b22706f6c796573746572223a38322c22636f74746f6e223a31387d2c226461746143617272696572223a224558542d5549442d30303031227d2074f81fe167d99b4cb41d6d0ccda82278caee9f3e2f25d5e5a3936ff3dcec60d000463044022072ae57a8066a1d87b5b4eebe32f66f35556ca2725da6bd5d953942b1dae61914022046411f95fd63a65f4e048c0f4e869b1754ed2b7fe1db50bd88f44f5cfa1830d4463044022062e916e4a385fa9c0ec89723bc99f7e0001443b3e85f8ba18f3d2fb7a55b7be502207415a3464f7d87e491bc03e3e3bd3b23b8af583294816cbafa14623019c7ffa66d6d6d6d6d6d6d00000000",
+          "01000000013163ba1e893576f92b938c907f644f8996e1b593572fe743b770ad66def166450000000000ffffffff02000000000000000002006a0100000000000000fd170221034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaac0364707001313268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d30303104534f4c4414323032362d30362d31325430393a33303a30305a21023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b121034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa0b6d616b657220706f732037187b226368616e6e656c223a22636c75622073746f7265227d4c5e7b226e616d65223a22436c7562204a65727365792032303236222c22666962726573223a7b22706f6c796573746572223a38322c22636f74746f6e223a31387d2c226461746143617272696572223a224558542d5549442d30303031227d2074f81fe167d99b4cb41d6d0ccda82278caee9f3e2f25d5e5a3936ff3dcec60d0204566f1de66ad70b743e72f5793b5e196894f647f908c932bf97635891eba63314730450221008ff6137f008d5c3a2daa608f178a750890c40414bf1f7b746e957e7d40afc50e022078f558e6048b993a26b5f9378592a5c717c2a4f9298df98ba46374fae3e1c5ef46304402206026a712c5facaaba900cb54889cce0299bd4532ebce7278535c3cb601efc3f802207b2138c7f242163d78831c909f4e26848d28cab864be9770f83e08cb1ee62e2d6d6d6d6d6d6d6d00000000",
+          "0100000001e83308abfe3b5281aedfaed9f2c6d550de923343a84312fdf9cf52e9972c5a3b0100000000ffffffff010100000000000000fd080221034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaac0364707001313268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031085452414e5346455214323032372d30312d30355431383a30303a30305a21032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e66868099121023c72addb4fdf09af94f0c94d7fe92a386a7e70cf8a1d85916386bb2535c7b1b1106f776e6572207472616e736665722031004c5e7b226e616d65223a22436c7562204a65727365792032303236222c22666962726573223a7b22706f6c796573746572223a38322c22636f74746f6e223a31387d2c226461746143617272696572223a224558542d5549442d30303031227d2063d987d1c6d69751c17297f410f5b3547a65d096a8993b35bcb4f9cad054f176203b5a2c97e952cff9fd1243a8433392de50d5c6f2d9aedfae81523bfeab0833e84730450221009d96d51221f3f483b676dbc06532c79fb7b285741708aa986fb76c26b77981fc0220701fa9e957beacafd2c182b5c5d4dbeef79a6352146137fc38095c936a19207d46304402205b05b727548eb26f2c9e578c74a34eb85501e249b50c19cf23294fde864d157402203fd809fb64dd7e867f460e1cace528905b04cf9a0ff79f4d4bb4dcf0c88ff1996d6d6d6d6d6d6d00000000",
+          "010000000157fa4f2fcd6b9483cf45fd1f9f0284334f0a3d3ade8e2769d4d204adfff7cfae0000000000ffffffff010100000000000000fd1f0221034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aaac0364707001313268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d30303108524550414952454414323032372d30332d32305431303a30303a30305a21032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e66868099121032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e6686809910e6f776e65722072657061697220311a7b226e6f7465223a227a6970706572207265706c61636564227d4c5e7b226e616d65223a22436c7562204a65727365792032303236222c22666962726573223a7b22706f6c796573746572223a38322c22636f74746f6e223a31387d2c226461746143617272696572223a224558542d5549442d30303031227d2063d987d1c6d69751c17297f410f5b3547a65d096a8993b35bcb4f9cad054f17620aecff7ffad04d2d469278ede3a3d0a4f3384029f1ffd45cf83946bcd2f4ffa57463044022071ac592664d4269333713bef6d0a9fd4905ecf8ae204c5226f738a9541a5b977022018e50a9838fec00fa1f061ac2ee80a9170f29dd808ee006d3def27b60040f82046304402200aedb1367032bbaac725c254953958d0b233fb0e712f14ba0e2614e21076e85a022013a5cc2e0a36c2dd37d042acdd4116774221d9e05d36bdbbe665890f836cda7e6d6d6d6d6d6d6d00000000",
+          "0100000001460bee716d3cb569d498e84ba5349173682206a9aeaf853832c9f54def901ba30000000000ffffffff010100000000000000fd0802210391452afa4749e8894cce17c78551346d6f95d2c78c32fd086faa7c1ce1e40e62ac0364707001313268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031085452414e5346455214323032372d30362d30315430393a30303a30305a210391452afa4749e8894cce17c78551346d6f95d2c78c32fd086faa7c1ce1e40e6221032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991106f776e6572207472616e736665722032004c5e7b226e616d65223a22436c7562204a65727365792032303236222c22666962726573223a7b22706f6c796573746572223a38322c22636f74746f6e223a31387d2c226461746143617272696572223a224558542d5549442d30303031227d2063d987d1c6d69751c17297f410f5b3547a65d096a8993b35bcb4f9cad054f17620a31b90ef4df5c9323885afaea9062268739134a54be898d469b53c6d71ee0b46473045022100ac6b72ff9a80a2e7a032001fe016c2b59b3a1762b4eb122f8e11c00e0c98c5dd0220569da10a49a581628fae866081d0ed3ae9a2060d5561776aa71ba07a651c980046304402206d66ccdf75f3c61fbaa851b9d1c56e75b5c72c87f17d11ef608eaafa9435538d02205c23678b3e5b034ef596d296d2b559febc7a5f0afa16b1ef8c796a20f43db4196d6d6d6d6d6d6d00000000",
+          "0100000001cca7ef4ee428b2940f5415ba8bf7aca8f7ecf3d583020fd8055d886adecd4fe200000000494830450221009bdc33e875ca91f14d3f4cc2af28bfb6e8e45f5ffa22738a7c5c9d043d2c994c022023f07a5b1ef2068a5157e1d8c3c7afb57eb104203116de19486820889bcd271741ffffffff010100000000000000fd5d022103f391b2c124cb417a201a2134907cfae2a77d425e463a9a74ca9939d9506f906eac0364707001313268747470733a2f2f69642e6773312e6f72672f30312f30393530363030303133343335322f32312f4a45525345592d303031085452414e5346455214323032372d30392d31355431343a33303a30305a2103f391b2c124cb417a201a2134907cfae2a77d425e463a9a74ca9939d9506f906e21029ac20335eb38768d2052be1dbbc3c8f6178407458e51e6b4ad22f1d91758895b106f776e6572207472616e7366657220334c547b226f776e65725f6c696e6b616765223a2262303533396131666435313931623734333835336466643065353331663163336566393434633634363432386437313035323939646263363864623763356338227d4c5e7b226e616d65223a22436c7562204a65727365792032303236222c22666962726573223a7b22706f6c796573746572223a38322c22636f74746f6e223a31387d2c226461746143617272696572223a224558542d5549442d30303031227d2063d987d1c6d69751c17297f410f5b3547a65d096a8993b35bcb4f9cad054f17620e24fcdde6a885d05d80f0283d5f3ecf7a8acf78bba15540f94b228e44eefa7cc463044022050d5b8342cc70644ba23fead8689971bf52cfee31cef084cfa0af75b891bcfe002203ee320d6febc8b54fd25b612563dc03d53b3e8f9a92bab8b725acd6bbcb89cf8473045022100da13b5347b3fce7d5646ebbc9d06b9c6c555bf16d9880d08c5f5bbb1f8eee79602201afe20f66d0973dc69e92ea9bbed53fda9b9308af7a178ba3388f1436a5b9cb66d6d6d6d6d6d6d00000000"
+        ],
+        "server_identity_key_hex": "02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27"
+      },
+      "expected": {
+        "valid": true,
+        "spv": "pending",
+        "states": [
+          {
+            "op": "ACTIVATE",
+            "user_signature_valid": true,
+            "server_signature_valid": true,
+            "linkage_valid": true
+          },
+          {
+            "op": "SOLD",
+            "user_signature_valid": true,
+            "server_signature_valid": true,
+            "linkage_valid": true
+          },
+          {
+            "op": "TRANSFER",
+            "user_signature_valid": true,
+            "server_signature_valid": true,
+            "linkage_valid": true
+          },
+          {
+            "op": "REPAIRED",
+            "user_signature_valid": true,
+            "server_signature_valid": true,
+            "linkage_valid": true
+          },
+          {
+            "op": "TRANSFER",
+            "user_signature_valid": true,
+            "server_signature_valid": true,
+            "linkage_valid": true
+          },
+          {
+            "op": "TRANSFER",
+            "user_signature_valid": true,
+            "server_signature_valid": true,
+            "linkage_valid": true
+          }
+        ]
+      },
+      "tags": [
+        "happy-path",
+        "brc-42",
+        "brc-43"
       ]
     }
   ]

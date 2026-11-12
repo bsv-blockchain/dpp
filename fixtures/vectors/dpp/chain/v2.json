@@ -823,7 +823,9 @@
       },
       "tags": [
         "error-case"
-      ]
+      ],
+      "skip": true,
+      "skip_reason": "Superseded: the instruction rule of managed-custody@2 was parked on 12 November 2026, so no reader selects it; under the acceptance rule these bytes are a valid chain."
     },
     {
       "id": "upgrade-from-version-1",

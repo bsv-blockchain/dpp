@@ -16,7 +16,7 @@
  *                  and, for a refused state, X-Admission-Refusal naming why
  *                  (topic=code, the codes in tmDpp.ts)
  *                  Authorization: Bearer <token>   when SUBMIT_TOKEN is set
- *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid"|"tokenId"|"gs1Key": "..."}}
+ *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid"|"gs1Key": "..."}}
  *                  {"service":"ls_uora_dpp","query":{"issuer":"did:key:z..."}}
  *                                                  -> {type:"output-list",
  *                                                      outputs:[{beef,outputIndex}]}
@@ -167,11 +167,9 @@ export interface NodeComponents {
   publisherPolicy?: PublisherPolicyConfig
   serviceIdentityKey?: string
   anchorServiceKeys?: string[]
-  ownerConsent?: boolean | { authorities: string[] }
-  /** CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT and INSTRUCTION_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
+  /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
-  managedInstruction?: boolean
   /**
    * SYNC_PEERS and SYNC_INTERVAL_MS, reported by the capability document; the
    * Engine holds the same peers as its syncConfiguration. With discovery,
@@ -808,10 +806,8 @@ async function handle(
         publisherPolicy: components?.publisherPolicy,
         serviceIdentityKey: components?.serviceIdentityKey,
         anchorServiceKeys: components?.anchorServiceKeys,
-        ownerConsent: components?.ownerConsent,
         controlAuthorities: components?.controlAuthorities,
         managedAcceptance: components?.managedAcceptance,
-        managedInstruction: components?.managedInstruction,
         registration: components?.registration?.mode,
         exportAvailable: options.exportSigner != null,
         completeExportBearer: options.exportToken != null,
@@ -898,8 +894,8 @@ async function handle(
           `POST /submit admitted nothing on ${refused.join(', ')} for ${txidOf(beef)}: ` +
             (reasons.length === 0 ? '' : `${reasons.map(([topic, code]) => `${topic} says ${code}`).join(', ')}; `) +
             'not a duplicate, so the submission was refused (wrong identity key, a ' +
-            'predecessor this instance never admitted, or, when OWNER_CONSENT is set, a ' +
-            'TRANSFER whose actor did not prove they are the previous owner). Re-announce after repair, ' +
+            'predecessor this instance never admitted, or a rule of the custody profile ' +
+            'this instance selects). Re-announce after repair, ' +
             'oldest state first: an index that never admitted a predecessor ' +
             'refuses every later state.' +
             (again.length === 0 ? '' : ` This transaction was announced and refused before on ${again.join(', ')} and was re-evaluated now, not skipped.`)
@@ -1179,10 +1175,8 @@ async function handle(
         publisherPolicy: options.components.publisherPolicy,
         operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
         serviceIdentityKey: options.components.serviceIdentityKey,
-        ownerConsent: options.components.ownerConsent,
         controlAuthorities: options.components.controlAuthorities,
         managedAcceptance: options.components.managedAcceptance,
-        managedInstruction: options.components.managedInstruction,
         chainTracker: options.chainTracker,
         now: options.now(),
         software: options.software,
@@ -1406,34 +1400,23 @@ export function anchorServiceKeys(): string[] {
 }
 
 /**
- * The owner-signed transfer (`spec/custody.md` §4) is a profile's choice, and
- * a deployment selects it with OWNER_CONSENT=required. TRANSFER_AUTHORITIES
- * then names, comma-separated, the identity keys that may move ownership
- * without proving consent (recovery); public keys only, as for
- * ANCHOR_SERVICE_KEYS, and validated when the topic manager is built. Any
- * other value of OWNER_CONSENT fails the boot rather than being read as a
- * guess, and authorities set without the policy are a misconfiguration worth a
- * warning, because they would silently do nothing.
+ * Settings an earlier release read and this one does not: OWNER_CONSENT and
+ * TRANSFER_AUTHORITIES selected the owner-signed transfer for version 1
+ * lineages, which the standard no longer defines, and INSTRUCTION_COMMITMENT
+ * selected the managed-custody instruction rule, which is parked outside it.
+ * An index deployed with one set expected a rule this release does not run, so
+ * the boot fails rather than admitting what the operator meant to refuse.
  */
-export function ownerConsentPolicy(): boolean | { authorities: string[] } {
-  const declared = (process.env.OWNER_CONSENT ?? '').trim()
-  const authorities = (process.env.TRANSFER_AUTHORITIES ?? '')
-    .split(',')
-    .map((key) => key.trim())
-    .filter((key) => key !== '')
-  if (declared === '') {
-    if (authorities.length > 0) {
-      console.warn(
-        'TRANSFER_AUTHORITIES is set but OWNER_CONSENT is not: the authorities are ignored, ' +
-          'because there is no consent rule for them to be exempt from'
-      )
-    }
-    return false
+const REMOVED_CUSTODY_SETTINGS: Array<{ name: string; why: string }> = [
+  { name: 'OWNER_CONSENT', why: 'the owner-signed transfer for version 1 lineages was removed from the standard; name recovery keys for version 2 states in CONTROL_AUTHORITIES' },
+  { name: 'TRANSFER_AUTHORITIES', why: 'the owner-signed transfer for version 1 lineages was removed from the standard; where CONTROL_AUTHORITIES was unset, these keys were also the index\'s control authorities, so move them to CONTROL_AUTHORITIES to keep admitting the same states' },
+  { name: 'INSTRUCTION_COMMITMENT', why: 'the instruction rule of the managed-custody profile is parked outside the standard' },
+]
+
+export function refuseRemovedCustodySettings(env: NodeJS.ProcessEnv = process.env): void {
+  for (const { name, why } of REMOVED_CUSTODY_SETTINGS) {
+    if ((env[name] ?? '').trim() !== '') throw new Error(`${name} is no longer read: ${why}. Unset it.`)
   }
-  if (declared !== 'required') {
-    throw new Error(`OWNER_CONSENT must be "required" or unset, got "${declared}"`)
-  }
-  return authorities.length === 0 ? true : { authorities }
 }
 
 /**
@@ -1441,32 +1424,21 @@ export function ownerConsentPolicy(): boolean | { authorities: string[] } {
  * `spec/managed-custody.md`). ACCEPTANCE_COMMITMENT=required selects the
  * managed-custody profile: a version 2 TRANSFER is admitted only with its
  * acceptance commitment. CONTROL_AUTHORITIES names, comma-separated, the
- * identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted without
- * a control proof; absent, the TRANSFER_AUTHORITIES serve both versions.
- * INSTRUCTION_COMMITMENT=required selects the profile's instruction rule
- * (`spec/managed-custody.md` §6): after a committed TRANSFER, an UPDATE or
- * RETIRE is admitted only with its instruction commitment; it needs the
- * acceptance commitment to be required too, because the rule is defined on
- * the profile and not on the baseline. Public keys only, validated when the
- * topic manager is built; any other value of either setting fails the boot.
+ * identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted
+ * without equality or linkage (recovery); unset, there are none. Public keys
+ * only, validated when the topic manager is built; any other value of
+ * ACCEPTANCE_COMMITMENT fails the boot.
  */
-export function versionTwoAdmission(): { managedAcceptance: boolean; managedInstruction: boolean; controlAuthorities?: string[] } {
+export function versionTwoAdmission(): { managedAcceptance: boolean; controlAuthorities?: string[] } {
   const declared = (process.env.ACCEPTANCE_COMMITMENT ?? '').trim()
   if (declared !== '' && declared !== 'required') {
     throw new Error(`ACCEPTANCE_COMMITMENT must be "required" or unset, got "${declared}"`)
-  }
-  const instruction = (process.env.INSTRUCTION_COMMITMENT ?? '').trim()
-  if (instruction !== '' && instruction !== 'required') {
-    throw new Error(`INSTRUCTION_COMMITMENT must be "required" or unset, got "${instruction}"`)
-  }
-  if (instruction === 'required' && declared !== 'required') {
-    throw new Error('INSTRUCTION_COMMITMENT=required needs ACCEPTANCE_COMMITMENT=required: the instruction rule belongs to the managed-custody profile')
   }
   const authorities = (process.env.CONTROL_AUTHORITIES ?? '')
     .split(',')
     .map((key) => key.trim())
     .filter((key) => key !== '')
-  return { managedAcceptance: declared === 'required', managedInstruction: instruction === 'required', ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }) }
+  return { managedAcceptance: declared === 'required', ...(authorities.length === 0 ? {} : { controlAuthorities: authorities }) }
 }
 
 /**
@@ -1626,7 +1598,7 @@ async function engineFromEnvironment(
     console.log(`${UORA_TOPIC} is historical and closed: ANCHOR_SERVICE_KEYS names no anchoring service, so it admits nothing new and serves what it already holds.`)
   }
 
-  const ownerConsent = ownerConsentPolicy()
+  refuseRemovedCustodySettings()
   const versionTwo = versionTwoAdmission()
   const registration = registrationSettingsFromEnvironment(process.env, publisherPolicy, registrationStore, declaredCustodyProfile(versionTwo.managedAcceptance))
   if (registration != null && publisherTokens == null) {
@@ -1644,21 +1616,8 @@ async function engineFromEnvironment(
       ? `${TOPIC} admits a version 2 TRANSFER only with its acceptance commitment (ACCEPTANCE_COMMITMENT=required, the managed-custody profile)`
       : `${TOPIC} admits a version 2 TRANSFER with or without an acceptance commitment (ACCEPTANCE_COMMITMENT is unset)`
   )
-  if (versionTwo.managedInstruction) {
-    console.log(`${TOPIC} admits a version 2 UPDATE or RETIRE after a committed TRANSFER only with its instruction commitment (INSTRUCTION_COMMITMENT=required)`)
-  }
   if (versionTwo.controlAuthorities != null) {
-    console.log(`${TOPIC} admits version 2 states by the control authorities ${versionTwo.controlAuthorities.join(', ')} without a control proof`)
-  }
-  if (ownerConsent === false) {
-    console.log(`${TOPIC} admits any signed TRANSFER that spends the tip (OWNER_CONSENT is unset)`)
-  } else {
-    console.log(
-      `${TOPIC} requires the owner-signed transfer on every TRANSFER` +
-        (typeof ownerConsent === 'object'
-          ? `, except by the transfer authorities ${ownerConsent.authorities.join(', ')}`
-          : ', with no transfer authorities')
-    )
+    console.log(`${TOPIC} admits version 2 states by the control authorities ${versionTwo.controlAuthorities.join(', ')} without equality or linkage`)
   }
 
   const sync = syncSettingsFromEnvironment()
@@ -1684,7 +1643,7 @@ async function engineFromEnvironment(
       // The engine's storage is handed to tm_dpp so a state whose BEEF omits
       // its admitted predecessor (a proven state announced alone, or one a
       // peer offers) is judged against the predecessor this index holds.
-      [TOPIC]: new DppTopicManager(identityKey ?? '', { ownerConsent, ...versionTwo, publisherPolicy: publisherPolicy?.chain, admittedOutputs: engineStorage }),
+      [TOPIC]: new DppTopicManager(identityKey ?? '', { ...versionTwo, publisherPolicy: publisherPolicy?.chain, admittedOutputs: engineStorage }),
       [ATTESTATION_TOPIC]: new AttestationTopicManager(acceptedAnchorServices, { publisherPolicy: publisherPolicy?.chain }),
       [UORA_TOPIC]: new UoraAnchorTopicManager(acceptedAnchorServices),
     },
@@ -1708,9 +1667,7 @@ async function engineFromEnvironment(
     publisherPolicy,
     serviceIdentityKey: identityKey,
     anchorServiceKeys: acceptedAnchorServices,
-    ownerConsent,
     managedAcceptance: versionTwo.managedAcceptance,
-    managedInstruction: versionTwo.managedInstruction,
     ...(versionTwo.controlAuthorities == null ? {} : { controlAuthorities: versionTwo.controlAuthorities }),
     sync: { peers: [...sync.peers], staticPeers: [...sync.peers], intervalMs: sync.intervalMs, legacy: sync.legacy, ...(discovery.enabled ? { discovery } : {}) },
     ...(publisherTokens == null ? {} : { publisherTokens }),
@@ -1792,10 +1749,8 @@ export async function runFromEnvironment(): Promise<void> {
           publisherPolicy: components.publisherPolicy,
           serviceIdentityKey: components.serviceIdentityKey,
           anchorServiceKeys: components.anchorServiceKeys,
-          ownerConsent: components.ownerConsent,
           controlAuthorities: components.controlAuthorities,
           managedAcceptance: components.managedAcceptance,
-          managedInstruction: components.managedInstruction,
           registration: components.registration?.mode,
           exportAvailable: signingKey != null,
           completeExportBearer: exportToken != null && exportToken !== '',

@@ -12,11 +12,13 @@ import {
   inspectChain,
   verifyChain,
   verifyOwnerLinkage,
+  verifyPassportEvidence,
   type DppState,
   type DppStateDataV2,
 } from '../src/index.js'
 import { authorityPriv, custodianPriv, idKey, issuerPriv, recipientPriv, stateTxV2, strangerPriv } from './helpers-v2.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
+import { SUPERSEDED_INSTRUCTION_REFUSAL } from './chain-v2-vectors.js'
 
 /**
  * The chain-v2 fixture is the wire contract for the version 2 chain
@@ -34,7 +36,7 @@ const prefixPlus = (r: { appendAfter: number; rawTx: string }) => [...raw.slice(
 const refusal = (name: string) => {
   const r = F.refusals.find((x: { name: string }) => x.name === name)
   if (r == null) throw new Error(`no refusal ${name}`)
-  return r as { name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; managedInstruction?: true; acceptedUnder?: { authorities: string[] } }
+  return r as { name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; acceptedUnder?: { authorities: string[] } }
 }
 
 describe('chain-v2 fixture: the writer reproduces every byte', () => {
@@ -87,7 +89,6 @@ describe('chain-v2 fixture: the reader accepts the lineage and verifies it', () 
     expect(inspection.complete).toBe(true)
     expect(inspection.states.map((s) => s.version)).toEqual(['2', '2', '2', '2', '2'])
     expect(inspection.states.map((s) => s.controlValid)).toEqual([null, true, true, true, true])
-    expect(inspection.states.every((s) => s.ownerConsentValid === null)).toBe(true)
   })
 
   it('verifies every publisher signature against the custodian key, under the managed-custody profile', async () => {
@@ -110,18 +111,13 @@ describe('chain-v2 fixture: the reader accepts the lineage and verifies it', () 
 describe('chain-v2 fixture: the reader refuses every broken link', () => {
   it.each(F.refusals.map((r: { name: string }) => [r.name, r] as const))('refuses %s', async (_name, r: ReturnType<typeof refusal>) => {
     const chain = fromHex(prefixPlus(r))
-    const result = await verifyChain(chain, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true || r.managedInstruction === true, managedInstruction: r.managedInstruction === true })
+    const result = await verifyChain(chain, { chainTracker: 'scripts only', managedAcceptance: r.managedAcceptance === true })
     expect(result.valid).toBe(false)
     expect(result.error).toContain(r.error)
     if (r.managedAcceptance) {
       const off = await verifyChain(chain, { chainTracker: 'scripts only' })
       expect(off.error).toBeUndefined()
       expect(off.valid).toBe(true)
-    }
-    if (r.managedInstruction) {
-      const acceptanceOnly = await verifyChain(chain, { chainTracker: 'scripts only', managedAcceptance: true })
-      expect(acceptanceOnly.error).toBeUndefined()
-      expect(acceptanceOnly.valid).toBe(true)
     }
     if (r.acceptedUnder != null) {
       const accepted = await verifyChain(chain, { chainTracker: 'scripts only', controlAuthorities: r.acceptedUnder.authorities })
@@ -139,7 +135,6 @@ describe('chain-v2 fixture: the reader refuses every broken link', () => {
     expect(F.refusals.filter((r: { acceptedUnder?: unknown }) => r.acceptedUnder != null).map((r: { name: string }) => r.name)).toEqual(['recoveryWithoutAuthority'])
     expect(refusal('controlNotProven').error).toBe(CONTROL_REFUSALS.notProven)
     expect(refusal('transferWithoutCommitment').error).toBe(ACCEPTANCE_COMMITMENT_REFUSAL)
-    expect(F.refusals.filter((r: { managedInstruction?: true }) => r.managedInstruction).map((r: { name: string }) => r.name)).toEqual(['updateAfterTransferWithoutInstruction'])
   })
 
   it('control: every refusal is one rule, and no two vectors are the same bytes', () => {
@@ -180,10 +175,10 @@ describe('chain-v2 fixture: the upgrade from version 1', () => {
     expect(result.error).toContain(r.error)
   })
 
-  it('the version 1 chain alone still verifies exactly as before, and the owner-signed transfer still applies to it', async () => {
-    const result = await verifyChain(fromHex(v1), { chainTracker: 'scripts only', ownerConsent: true })
-    expect(result.valid).toBe(true)
-    expect(result.states.map((s) => s.ownerConsentValid)).toEqual([null, null, true, null, true, true])
+  it('the version 1 chain alone still verifies exactly as before, with no control rule on its states', async () => {
+    const inspection = await inspectChain(fromHex(v1), { chainTracker: 'scripts only' })
+    expect(inspection.failure).toBeUndefined()
+    expect(inspection.states.map((s) => s.controlValid)).toEqual([null, null, null, null, null, null])
   })
 })
 
@@ -211,5 +206,57 @@ describe('version 2 transition rules, directly', () => {
     const v1Next: DppState = { ...CHAIN_V1_FIXTURE.states[1].data, passportId: F.states[0].data.passportId, previousTxid: F.states[1].txid, protocolMarker: 'dpp', version: '1', userSignature: [48, 1, 2], serverSignature: [48, 3, 4] }
     expect(checkTransition(s(1), v1Next, F.states[1].txid, { prevOutputIndex: 0 })).toContain('version 1 state cannot follow')
     expect(checkTransition(s(4), { ...s(3), previousTxid: F.states[4].txid } as DppState, F.states[4].txid, { prevOutputIndex: 0, lineageGenesis: genesis })).toContain('retired')
+  })
+})
+
+describe('after a committed TRANSFER, under managed-custody@2', () => {
+  const acceptance = JSON.parse(readFileSync(join(FIXTURES, 'managed-acceptance-v2.json'), 'utf8'))
+  const asked = { passportId: F.states[0].data.passportId, source: 'request-context' as const }
+  const policy = { chainTracker: 'scripts only' as const, publisherKeys: [F.custodianKey], managedAcceptance: { required: true }, checkedAt: '2027-06-01T12:00:00Z' }
+
+  it('says in the limits that a state written for the holder depends on custody, and needs no commitment on it', async () => {
+    const report = await verifyPassportEvidence({ tokenHistory: fromHex(raw), acceptanceRecords: [acceptance.record] }, asked, policy)
+    expect(report.checks.find((c) => c.name === 'linkage')?.status).toBe('pass')
+    expect(report.checks.find((c) => c.name === 'evidenceAvailability')?.status).toBe('pass')
+    expect(report.limits).toContain('After a committed TRANSFER, an UPDATE or RETIRE the custodian writes for a managed holder depends on custody: the chain shows that the custodian acted, not that the holder asked.')
+    const before = await verifyPassportEvidence({ tokenHistory: fromHex(raw.slice(0, 3)), acceptanceRecords: [acceptance.record] }, asked, policy)
+    expect(before.limits.some((l) => l.includes('not that the holder asked'))).toBe(false)
+  })
+
+  it('reports a commitment on an UPDATE as an artefact no profile defines, never as an invalid state', async () => {
+    const t = F.states[2]
+    const data = {
+      ...F.states[3].data,
+      timestamp: '2026-10-01T08:30:00Z',
+      previousTxid: t.txid,
+      previousOutputIndex: t.outputIndex,
+      authorisationCommitment: 'ab'.repeat(32),
+    } as DppStateDataV2
+    const state = await completeState(data, new ProtoWallet(recipientPriv), new ProtoWallet(custodianPriv))
+    const tx = stateTxV2(state, custodianPriv.toPublicKey(), { tx: Transaction.fromHex(t.rawTx), outputIndex: t.outputIndex })
+    const report = await verifyPassportEvidence({ tokenHistory: [...fromHex(raw.slice(0, 3)), tx], acceptanceRecords: [acceptance.record] }, asked, policy)
+    expect(report.checks.find((c) => c.name === 'linkage')?.status).toBe('pass')
+    const availability = report.checks.find((c) => c.name === 'evidenceAvailability')
+    expect(availability).toMatchObject({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable' })
+    expect(JSON.stringify(availability?.detail)).toContain('no profile this verifier implements defines the record the UPDATE')
+  })
+
+  it('reports a commitment on an ISSUE the same way, because the record model accepts one on any operation', async () => {
+    const data = { ...F.states[0].data, authorisationCommitment: 'ab'.repeat(32) } as DppStateDataV2
+    const state = await completeState(data, new ProtoWallet(issuerPriv), new ProtoWallet(custodianPriv))
+    const report = await verifyPassportEvidence({ tokenHistory: [stateTxV2(state, custodianPriv.toPublicKey())] }, asked, policy)
+    expect(report.checks.find((c) => c.name === 'linkage')?.status).toBe('pass')
+    const availability = report.checks.find((c) => c.name === 'evidenceAvailability')
+    expect(availability).toMatchObject({ status: 'unknown', reasonCode: 'referenced-artefact-unavailable' })
+    expect(JSON.stringify(availability?.detail)).toContain('no profile this verifier implements defines the record the ISSUE')
+    // The control: the pinned ISSUE, with field 15 empty, references nothing.
+    const plain = await verifyPassportEvidence({ tokenHistory: fromHex(raw.slice(0, 1)) }, asked, policy)
+    expect(plain.checks.find((c) => c.name === 'evidenceAvailability')?.status).toBe('pass')
+  })
+
+  it('holds the superseded instruction vector to be a valid chain under the acceptance rule, as its skip reason says', async () => {
+    const result = await verifyChain(fromHex(prefixPlus(SUPERSEDED_INSTRUCTION_REFUSAL)), { chainTracker: 'scripts only', managedAcceptance: true })
+    expect(result.error).toBeUndefined()
+    expect(result.valid).toBe(true)
   })
 })

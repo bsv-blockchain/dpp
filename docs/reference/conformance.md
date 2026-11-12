@@ -18,12 +18,13 @@ For optional execution:
 |---|---|
 | Requirement | One rule from a specification, with its layer and the roles it binds. |
 | Ledger | [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json): every requirement with its source, the code and tests behind it, retained evidence and a status such as `tested`, `implemented`, `gap` or `unassessed`. Each source is pinned by its digest. |
-| Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/conformance/baseline-native-2.json). |
+| Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json). |
 | Claim | A release's conformance statement, separate from a signed product claim, such as "a passport reader conforms to `native-baseline@2`", which is true only if every requirement row it needs is tested or better. |
 | Selection | The claims one release requires and the claims it withholds, for example `conformance/selections/dpp-release-2026-11.json` for the current release. |
 | Withheld | A claim the release deliberately does not make, with the reason. Withheld claims are part of the result, not a failure. |
+| Archive | [`docs/reference/parked/ledger-archive.json`](parked/ledger-archive.json): rows and claims taken out of the ledger when the requirement they assessed was removed from the standard or parked outside it, kept with the last commit that carried them working, without a status, and checked by nothing. |
 
-The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the fields and statuses; the [conformance specification](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) define how a claim is made and reported.
+The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the fields and statuses; the [conformance specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) define how a claim is made and reported.
 
 ## Run the checks
 
@@ -39,7 +40,7 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-11.json
 | Check | Output and conclusion |
 |---|---|
 | Diagnostic, first command | About 170 lines, one finding each. Checks the ledger, baseline, reports and capability example against one another and their pinned sources. |
-| Qualification gate, second command | One line per required claim, eight in all: one per role under `native-baseline@2`, the one baseline a claim names, then `gs1-identifier-discipline` and `profile-governance`. Then twenty-four `withheld:` lines with reasons: the claims scoped to the historical `native-baseline@1` or the proposed `native-baseline@3`, the optional custody, discovery, exchange, projection, EPCIS and operator profiles, federated operation, the parked VSC compatibility profile and mappings, the status service and version 1.0 readiness. Checks the named selection against the ledger. The standard makes no European system conformance or product-compliance claim. |
+| Qualification gate, second command | One line per required claim, eight in all: one per role under `native-baseline@2`, the one baseline a claim names, then `gs1-identifier-discipline` and `profile-governance`. Then twenty-two `withheld:` lines with reasons: the claims scoped to the historical `native-baseline@1`, the optional custody, discovery, exchange, projection, EPCIS and operator profiles, federated operation, the parked VSC compatibility profile and mappings, the status service and version 1.0 readiness. Checks the named selection against the ledger. The standard makes no European system conformance or product-compliance claim. |
 
 The diagnostic ends:
 

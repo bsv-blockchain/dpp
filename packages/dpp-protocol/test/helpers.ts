@@ -202,13 +202,15 @@ export async function spendAsOwner(
 }
 
 /**
- * The demo lifecycle plus the two states `spec/custody.md` §3 and §4 pin: a
- * TRANSFER by owner 2 (equality form) to owner 3's derived owner key, locked to
- * that key, then a TRANSFER by owner 3 carrying owner_linkage (linkage form) to
- * owner 1's derived owner key, spent by owner 3's wallet under the possession
- * convention. States 1 to 4 are exactly buildChainFixture's.
+ * The demo lifecycle plus the two states `spec/custody.md` §3 pins: a TRANSFER
+ * by owner 2 to owner 3's derived owner key, locked to that key, then a
+ * TRANSFER by owner 3 to owner 1's derived owner key, spent by owner 3's
+ * wallet under the possession convention. States 1 to 4 are exactly
+ * buildChainFixture's. The sixth state's event_data carries owner 3's linkage
+ * scalar under `owner_linkage`, as the published chain fixture's does: a
+ * property no reader interprets (`spec/record-model.md` §3, field 9).
  */
-export async function buildOwnerConsentFixture(): Promise<ChainFixture> {
+export async function buildPossessionFixture(): Promise<ChainFixture> {
   const { txs, states, outputIndexes } = await buildChainFixture()
   const tx3 = txs[3]
   const owner3OwnerKey = await ownerKeyFor(PASSPORT_ID, owner3Wallet)

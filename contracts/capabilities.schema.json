@@ -52,7 +52,7 @@
             "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
             "description": "SHA-256 per artefact path or identifier the profile publishes."
           },
-          "options": { "type": "object", "additionalProperties": true, "description": "The named options selected under the profile, for example ownerConsent or transferAuthorities." }
+          "options": { "type": "object", "additionalProperties": true, "description": "The named options selected under the profile, for example acceptanceCommitment or controlAuthorities." }
         }
       }
     },
@@ -92,8 +92,8 @@
         "policyVersion": { "type": "string" },
         "publisherKeys": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" } },
         "anchoringServices": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" } },
-        "ownerConsent": { "enum": ["not-selected", "required"] },
-        "transferAuthorities": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" } }
+        "ownerConsent": { "enum": ["not-selected", "required"], "description": "Declared only by an index on a release before 12 November 2026, when the owner-signed transfer it names was removed from the standard; a current index omits it." },
+        "transferAuthorities": { "type": "array", "items": { "type": "string", "pattern": "^0[23][0-9a-f]{64}$" }, "description": "Declared only beside ownerConsent, by an index on a release before 12 November 2026; a current index names its control authorities in its custody profile entry." }
       }
     },
     "synchronisation": {

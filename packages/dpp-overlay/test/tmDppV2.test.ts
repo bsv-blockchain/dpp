@@ -70,8 +70,8 @@ describe('tm_dpp admits the version 2 fixture lineage', () => {
 
   it('refuses every fixture refusal, keeping the offered coin, and names the version 2 reasons in its log', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-    for (const r of V2.refusals as Array<{ name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; managedInstruction?: true; acceptedUnder?: { authorities: string[] } }>) {
-      const tm = new DppTopicManager(CUSTODIAN, { managedAcceptance: r.managedAcceptance === true || r.managedInstruction === true, managedInstruction: r.managedInstruction === true })
+    for (const r of V2.refusals as Array<{ name: string; appendAfter: number; rawTx: string; error: string; managedAcceptance?: true; acceptedUnder?: { authorities: string[] } }>) {
+      const tm = new DppTopicManager(CUSTODIAN, { managedAcceptance: r.managedAcceptance === true })
       const prefix = v2Raw.slice(0, r.appendAfter + 1)
       const { beefs } = proven([...prefix, r.rawTx], 820_000)
       for (const [i, beef] of beefs.slice(0, -1).entries()) await tm.identifyAdmissibleOutputs(beef, i === 0 ? [] : [0])
@@ -89,24 +89,33 @@ describe('tm_dpp admits the version 2 fixture lineage', () => {
         for (const [i, beef] of beefs.slice(0, -1).entries()) await baseline.identifyAdmissibleOutputs(beef, i === 0 ? [] : [0])
         expect((await baseline.identifyAdmissibleOutputs(beefs[beefs.length - 1], previousCoins)).outputsToAdmit, `${r.name} without the profile`).toEqual([0])
       }
-      if (r.managedInstruction) {
-        const acceptanceOnly = new DppTopicManager(CUSTODIAN, { managedAcceptance: true })
-        for (const [i, beef] of beefs.slice(0, -1).entries()) await acceptanceOnly.identifyAdmissibleOutputs(beef, i === 0 ? [] : [0])
-        expect((await acceptanceOnly.identifyAdmissibleOutputs(beefs[beefs.length - 1], previousCoins)).outputsToAdmit, `${r.name} without the instruction rule`).toEqual([0])
-      }
     }
     expect(warn.mock.calls.some((c) => String(c[0]).includes(ACCEPTANCE_COMMITMENT_REFUSAL))).toBe(true)
-    expect(warn.mock.calls.some((c) => String(c[0]).includes('after a committed TRANSFER carries no authorisation_commitment'))).toBe(true)
     expect(warn.mock.calls.some((c) => String(c[0]).includes('retired'))).toBe(true)
   })
 
   it('names the version 2 rules and the profile in its documentation', async () => {
     const off = await new DppTopicManager(CUSTODIAN).getDocumentation()
-    expect(off).toContain('record versions 1, 2 and 3')
-    expect(off).toContain('Not enforced by this index, which admits a version 2 or 3 TRANSFER with an empty authorisation_commitment')
+    expect(off).toContain('record versions 1 and 2')
+    expect(off).toContain('Not enforced by this index, which admits a version 2 TRANSFER with an empty authorisation_commitment')
     const on = await new DppTopicManager(CUSTODIAN, { managedAcceptance: true, controlAuthorities: [V2.authorityKey] }).getDocumentation()
     expect(on).toContain('managed-custody profile')
     expect(on).toContain(V2.authorityKey)
+  })
+})
+
+describe('tm_dpp admits a managed-custody@1 lineage', () => {
+  // managed-custody@1 is read and never written (`spec/managed-custody.md` §9):
+  // a TRANSFER committed under it stays admissible under the profile.
+  it('admits the pinned ISSUE and UPDATE, then the frozen @1 TRANSFER, under ACCEPTANCE_COMMITMENT=required', async () => {
+    const A1 = JSON.parse(readFileSync(new URL('managed-acceptance-v1.json', FIXTURES), 'utf8'))
+    const tm = new DppTopicManager(CUSTODIAN, { managedAcceptance: true })
+    const { beefs } = proven([...v2Raw.slice(0, 2), A1.transfer.rawTx], 830_000)
+    const indexes = [v2Indexes[0], v2Indexes[1], A1.transfer.outputIndex]
+    for (const [i, beef] of beefs.entries()) {
+      const previousCoins = i === 0 ? [] : [0]
+      expect(await tm.identifyAdmissibleOutputs(beef, previousCoins), `state ${i + 1}`).toEqual({ outputsToAdmit: [indexes[i]], coinsToRetain: previousCoins })
+    }
   })
 })
 

@@ -32,7 +32,7 @@ const copy = (from, to = from) => { cpSync(join(root, from), join(out, to), { re
 copy('spec')
 copy('contracts')
 copy('fixtures')
-for (const f of ['baseline-native-1.json', 'baseline-native-2.json', 'baseline-native-3.json', 'baseline.schema.json', 'manifest.json', 'manifest.schema.json', 'selection.schema.json', 'licences.json']) copy(`conformance/${f}`)
+for (const f of ['baseline-native-1.json', 'baseline-native-2.json', 'baseline.schema.json', 'manifest.json', 'manifest.schema.json', 'selection.schema.json', 'licences.json']) copy(`conformance/${f}`)
 copy('conformance/selections')
 copy('conformance/examples')
 copy('packages/dpp-profiles/manifests', 'profiles/manifests')
@@ -41,13 +41,13 @@ copy('packages/dpp-profiles/generated', 'profiles/generated')
 copy('packages/dpp-profiles/frozen.json', 'profiles/frozen.json')
 copy('packages/dpp-credentials/artifacts', 'profiles/vsc-artifacts')
 // Carry the complete guide navigation, the archived publication plans and the
-// parked plans, excluding local review material.
+// parked plans and fixtures, excluding local review material.
 cpSync(join(root, 'docs'), join(out, 'docs'), {
   recursive: true,
   filter: (source) => {
     const path = relative(join(root, 'docs'), source)
     return path !== 'private' && !path.startsWith('private/') &&
-      (statSync(source).isDirectory() || source.endsWith('.md') || /^reference\/beta-\d+-publication-plan\.json$/.test(path) || /^reference\/parked\/[^/]+\.json$/.test(path))
+      (statSync(source).isDirectory() || source.endsWith('.md') || /^reference\/beta-\d+-publication-plan\.json$/.test(path) || /^reference\/parked\/.+\.json$/.test(path))
   },
 })
 copy('GOVERNANCE.md')
@@ -89,7 +89,7 @@ const manifest = {
   sourceState: dirty ? 'working-tree' : 'committed',
   assembledAt: new Date().toISOString(),
   licence: 'Apache License 2.0 (Apache-2.0; LICENSE); third-party artefacts carry their own notices beside them',
-  carries: 'specifications, contracts, fixtures in both forms, conformance baselines, ledger, schemas, selections, example capability document, licence record, frozen profile data and VSC artefacts, implementer documentation with the parked demonstration plan; no reference runtime code',
+  carries: 'specifications, contracts, fixtures in both forms, conformance baselines, ledger, schemas, selections, example capability document, licence record, frozen profile data and VSC artefacts, implementer documentation with the parked plans and fixtures; no reference runtime code',
   files: Object.fromEntries(files.map((f) => [f, { sha256: sha256(readFileSync(join(out, f))), bytes: statSync(join(out, f)).size }])),
 }
 writeFileSync(join(out, 'bundle-manifest.json'), JSON.stringify(manifest, null, 2) + '\n')

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/verification-report.schema.json",
-  "title": "DPP verification report, version 1",
+  "title": "DPP verification report, version 2",
   "description": "The report a verifier produces for one passport's evidence, as spec/verification.md defines. Sixteen named checks, four answers each, an independently expected subject, and an observation of the latest state that is never a proof.",
   "type": "object",
   "additionalProperties": false,
@@ -17,7 +17,8 @@
   ],
   "properties": {
     "reportVersion": {
-      "const": "1"
+      "$comment": "Version 2, from 12 November 2026, drops the shared reason codes nothing produces any more: those of the parked token carrier (carrier-prefix-invalid, token-id-mismatch) and the removed owner-signed transfer (consent-not-proven), and resource-limit, which no verifier in this repository produces. A version 1 report validates against verification-report-v1.schema.json beside this file.",
+      "const": "2"
     },
     "checkedAt": {
       "$ref": "#/$defs/dateTime"
@@ -175,9 +176,7 @@
         "signature-invalid",
         "key-derivation-mismatch",
         "link-broken",
-        "consent-not-proven",
         "acceptance-commitment-absent",
-        "instruction-commitment-absent",
         "version-transition-invalid",
         "control-not-proven",
         "lineage-retired",
@@ -220,10 +219,7 @@
         "referenced-artefact-unavailable",
         "referenced-artefact-mismatch",
         "verifier-not-supplied",
-        "not-inspected",
-        "resource-limit",
-        "carrier-prefix-invalid",
-        "token-id-mismatch"
+        "not-inspected"
       ]
     },
     "check": {

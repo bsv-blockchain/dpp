@@ -1,7 +1,7 @@
 {
   "selectionVersion": "1",
   "selectionId": "dpp-release-2026-11",
-  "purpose": "The claims required for the November 2026 candidate set from 12 November 2026: one component claim per role under native-baseline@2, the one baseline a claim names, whose rows are exactly the baseline's requires list for the role, and gs1-identifier-discipline and profile-governance, which guard live records. Every other claim the selection names is withheld, each with its reason: a claim scoped to the historical native-baseline@1, the proposed native-baseline@3, or an optional profile or governance condition this release does not claim.",
+  "purpose": "The claims required for the November 2026 candidate set from 12 November 2026: one component claim per role under native-baseline@2, the one baseline a claim names, whose rows are exactly the baseline's requires list for the role, and gs1-identifier-discipline and profile-governance, which guard live records. Every other claim the selection names is withheld, each with its reason: a claim scoped to the historical native-baseline@1, or an optional profile or governance condition this release does not claim.",
   "releaseSet": "dpp-release-2026-11",
   "claims": [
     {
@@ -14,12 +14,6 @@
       "id": "passport-reader-native-baseline-2",
       "kind": "component",
       "disposition": "required"
-    },
-    {
-      "id": "passport-reader-native-baseline-3",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "native-baseline@3 is a proposed baseline, and this release claims native-baseline@2 only."
     },
     {
       "id": "attestation-verifier-native-baseline-1",
@@ -96,13 +90,7 @@
       "id": "managed-custody-1",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "managed-custody@1 is a superseded optional custody profile this release does not claim."
-    },
-    {
-      "id": "managed-custody-1-writer",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "managed-custody@1 is a superseded optional custody profile this release does not claim."
+      "rationale": "managed-custody@1 is a superseded custody profile whose records are read and never written, and this release does not claim it."
     },
     {
       "id": "managed-custody-2",

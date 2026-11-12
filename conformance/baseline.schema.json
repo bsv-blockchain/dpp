@@ -20,11 +20,6 @@
           "type": "object", "additionalProperties": false, "required": ["protocolMarker", "version", "fieldCount", "specification"],
           "properties": {
             "protocolMarker": { "type": "string" }, "version": { "type": "string" }, "fieldCount": { "type": "integer" }, "specification": { "type": "string" },
-            "carrier": {
-              "type": "object", "additionalProperties": false, "required": ["prefixDeploy", "prefixValue", "tokenIdBytes", "amount", "deployOutputIndex", "specification"],
-              "description": "The token prefix a carried record version sits behind: the deploy and value prefix shapes, the token id length, the one-unit amount and the output index a genesis sits at.",
-              "properties": { "prefixDeploy": { "type": "string" }, "prefixValue": { "type": "string" }, "tokenIdBytes": { "type": "integer" }, "amount": { "type": "integer" }, "deployOutputIndex": { "type": "integer" }, "specification": { "type": "string" } }
-            },
             "alsoReads": {
               "description": "The record versions a component under this baseline reads beside the current one, because a lineage may hold more than one: one entry, or a list of them, each with its selection rule.",
               "anyOf": [

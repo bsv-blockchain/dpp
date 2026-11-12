@@ -30,11 +30,9 @@ Start with the native path: record, chain, acceptance record, report. Add histor
 | `fixtures/record-v1.json` | `lockingScript`; `serverKey`, the publisher's identity key | `state`, `userPreimage`, `serverPreimage`, both verification keys and signatures. Refuse `uncompressedKey`, the three `malformedTail` scripts, `rolledTimestamp`, `mangledUtf8`, `nulPassportId`, `emptyPushdata` and `overlongPassportId`. |
 | `fixtures/chain-v2.json` | `states[].rawTx`, oldest first; `custodianKey` as the publisher key | Accept the five states. Refuse the 22 `refusals`, accept `boundaryControl` (a valid alternative successor of the second state), accept `upgrade` after the six states of `chain-v1.json`, and refuse its three `refusals`. The policy rules are below the table. |
 | `fixtures/chain-v1.json` | `states[].rawTx`; `serverKey` as the publisher key | Accept the six states; refuse the 16 `refusals`. |
-| `fixtures/record-v3.json` | `genesis.lockingScript` and `value.lockingScript`; `custodianKey`, the publisher's identity key | For each output its `state`, `actorPreimage` and `publisherPreimage` byte for byte, both verification keys and both signatures, and the prefix read from the script: the genesis's empty id and the value output's `tokenId`, whose wire bytes are `tokenIdWire`. Accept the one script in `accepted`; refuse the twelve in `refusals`. |
-| `fixtures/chain-v3.json` | `states[].rawTx`, oldest first; `custodianKey` as the publisher key | Accept the five carried states, each with `tokenId`. Refuse the 12 `refusals`; read `burn` as a transaction holding no state, the lineage ended without a `RETIRE`. |
 | `fixtures/managed-acceptance-v1.json` | `record`; `transfer` | `canonicalUnsigned` and `signingPreimageHex`, the custodian's signature, `commitment`, and the record binding to `transfer`. Each of the six `refusals` has three separate verdicts in `expected`: structure, signature and binding. |
 | `fixtures/attestation-anchor-v1.json` | `unsignedClaim`, `issuerPrivateKey`, `anchoringPrivateKey` | `claim`, `canonicalUnsignedClaim`, `representationBytes`, `digest`, the nine `fields`, `signingPreimage`, `signature`, `lockingKey` and `lockingScript`. Its refusals are in the vector form: [attestation verifier](roles/attestation-verifier.md#the-cases-to-run) lists them. |
-| `fixtures/evidence-v2.json`, `fixtures/evidence-v1.json` and `fixtures/evidence-v3.json` | Each case's `evidence`, `expectedSubject`, `policy` and `observers`, and the file's `checkedAt` | Each case's `report`, on the parts [what a matching report is](#what-a-matching-report-is) lists |
+| `fixtures/evidence-v2.json` and `fixtures/evidence-v1.json` | Each case's `evidence`, `expectedSubject`, `policy` and `observers`, and the file's `checkedAt` | Each case's `report`, on the parts [what a matching report is](#what-a-matching-report-is) lists |
 
 ### Policy switches and observation inputs
 
@@ -46,8 +44,7 @@ Each chain refusal extends a prefix of the valid chain. Run all policy variants 
 | `-1` | Refusal stands alone as a genesis |
 | Default policy | No publisher key, custody profile or control authorities. Publisher signature verification is admission policy and may be skipped; the valid chain also passes with the file's publisher key. |
 | `managedAcceptance: true` | Version 2 `transferWithoutCommitment`: refused with managed custody selected, valid with it off |
-| `ownerConsent: true` | Seven version 1 cases: refused with owner-signed transfer selected, valid with it off |
-| `acceptedUnder` | `recoveryWithoutAuthority` in both files: valid when the named keys are control or transfer authorities; run both ways |
+| `acceptedUnder` | `recoveryWithoutAuthority` in `chain-v2.json`: valid when the named keys are control authorities; run both ways |
 
 | Evidence input | Meaning |
 |---|---|
@@ -57,10 +54,10 @@ Each chain refusal extends a prefix of the valid chain. Run all policy variants 
 | Optional `nativeClaims` | Claims as posted |
 | Optional `anchors` | Locking scripts as hex, with secured bytes when supplied |
 | Optional `acceptanceRecords` | Acceptance records beside the token history |
-| `policy` | Publisher keys, profile options `managedAcceptance` and `ownerConsent`, any `authority` lists, and `policyId` |
+| `policy` | Publisher keys, the profile option `managedAcceptance`, any `controlAuthorities` and `authority` lists, and `policyId` |
 | `chainTracker` | `scripts-only` means no header source; `header-source` uses `headerSource`, mapping each height to its merkle root or `unavailable` for an outage |
 | `observers` | Latest-state sources: use the answers exactly as written, `unspent`, `spent` with `spendingTxid`, `not-found` or `unavailable` |
-| `checkedAt` | Inject the file's observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json`; `2027-06-01T12:00:00Z` in `evidence-v2.json` and `evidence-v3.json`. The future date is deliberate synthetic input, not a delivery date. |
+| `checkedAt` | Inject the file's observation time: `2026-09-05T12:00:00Z` in `evidence-v1.json`; `2027-06-01T12:00:00Z` in `evidence-v2.json`. The future date is deliberate synthetic input, not a delivery date. |
 
 ## What a matching report is
 
@@ -75,7 +72,7 @@ Do not compare whole reports as JSON. Some fields are free text or implementatio
 
 | Part of the report | How to compare |
 |---|---|
-| `checks`: `name`, `status` and `reasonCode` | Must match. Sixteen entries, in the order of [verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) section 4. A pass may carry no `reasonCode`. |
+| `checks`: `name`, `status` and `reasonCode` | Must match. Sixteen entries, in the order of [verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) section 4. A pass may carry no `reasonCode`. |
 | `checks[].scope` | Must match where the fixture gives one, such as `{"stateIndex":2}` |
 | `reportVersion`, `checkedAt`, `expectedSubject`, `suppliedTip`, `policyId` | Must match |
 | `observations.latestState` and `observations.candidateOutpoints` | Must match |
@@ -83,7 +80,7 @@ Do not compare whole reports as JSON. Some fields are free text or implementatio
 | `limits` | Check that the sentences verification section 6 requires are present, in your own words; do not compare the text |
 | `checks[].detail`, `observations.queryScope`, `observations.sources[].id` | Not compared |
 
-This is the equivalence the [trial](demonstration.md) asks for in its `reader-equivalence` scenario: "the same check statuses and reason codes". Verification section 8 asks a conforming verifier for "equivalent reports for the pinned fixture cases"; the [fixture guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/README.md)'s "equal to `report`" is what the reference itself meets.
+This is the equivalence the [trial](demonstration.md) asks for in its `reader-equivalence` scenario: "the same check statuses and reason codes". Verification section 8 asks a conforming verifier for "equivalent reports for the pinned fixture cases"; the [fixture guide](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md)'s "equal to `report`" is what the reference itself meets.
 
 Inspect the required comparison fields for one case:
 
@@ -125,17 +122,17 @@ The same bytes are also published in the BSV stack's cross-language vector forma
 - Each vector has `id`, `description`, `input`, `expected` and `tags`. Positive vectors are tagged `happy-path` and refusals `error-case`; the publisher policy and evidence package files tag them `valid` and `refusal`.
 - Binary values are lower-case hex under keys ending `_hex`. The positive record and chain vectors publish the synthetic test private keys and `signature_nonce: "rfc6979"`, so a writer reproduces every pinned byte.
 - A record, chain or historical anchor refusal expects `{ "accepted": false, "stage": ..., "reason": ... }`; a current anchor refusal expects `{ "accepted": false }`.
-- Vector identifiers are permanent: a corrected expectation is a new vector, and the old one is marked skipped with a reason, as `refuse-unsupported-version` in `record/v2.json` is, its bytes now carrying the named refusal `refuse-version-three-without-prefix`.
+- Vector identifiers are permanent: a corrected expectation is a new vector, and the old one is marked skipped with a reason, as `refuse-version-three-without-prefix` in `record/v2.json` is: record version 3 is parked, and its bytes are pinned again by `refuse-unsupported-version`. A vector whose rule the standard removed or parked stays skipped too: the seven owner-signed transfer refusals and `verify-chain` in `chain/v1.json`, which `verify-chain-record-model` replaces, and `refuse-update-after-transfer-without-instruction` in `chain/v2.json`. A runner runs no skipped vector.
 
 The two forms do not map one file to one file:
 
 | Vector file | Top-level file |
 |---|---|
-| `record/v1.json`, `record/v2.json`, `record/v3.json`, `chain/v1.json`, `chain/v2.json`, `chain/v3.json`, `managed-acceptance/v1.json` | The record, chain and acceptance files of the same name |
+| `record/v1.json`, `record/v2.json`, `chain/v1.json`, `chain/v2.json`, `managed-acceptance/v1.json` | The record, chain and acceptance files of the same name |
 | `attestation-anchor/v1.json` | `attestation-anchor-v1.json`, plus six refusals only the vector file has |
 | `anchor/v3.json` | `anchor-v3.json`, plus four refusals only the vector file has |
 | `publisher-policy/v1.json`, `evidence-package/v1.json`, everything under `interoperability/` | None: vector form only |
-| None: top-level form only | `evidence-v1.json`, `evidence-v2.json`, `evidence-v3.json`, `battery-lifecycle-v1.json` |
+| None: top-level form only | `evidence-v1.json`, `evidence-v2.json`, `battery-lifecycle-v1.json` |
 
 Optionally check the vector structure with the stack runner:
 
@@ -144,7 +141,7 @@ Optionally check the vector structure with the stack runner:
 
 ## The worked example
 
-The [independent Python reader](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/independent/python/README.md) was written from the specification and runs most of these files.
+The [independent Python reader](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/independent/python/README.md) was written from the specification and runs most of these files.
 
 | Item | Coverage or result |
 |---|---|
@@ -158,14 +155,14 @@ The [independent Python reader](https://github.com/bsv-blockchain/dpp/blob/dab99
 
 | Need | Source |
 |---|---|
-| Fixture inventory and generation policy | [Fixture guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/README.md) |
-| Baseline role and test selection | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json) |
+| Fixture inventory and generation policy | [Fixture guide](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md) |
+| Baseline role and test selection | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json) |
 | Cross-language vector format | [Vector format](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/conformance/VECTOR-FORMAT.md) |
 | Interoperability vectors | [Interoperability fixture guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/README.md) |
-| Record bytes and signing | [Record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), [version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) |
+| Record bytes and signing | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
 | Native claims and anchors | [Attestation rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) |
-| Acceptance and portable evidence | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md), [portable evidence](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) |
-| The report | [Verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/verification-report.schema.json) |
+| Acceptance and portable evidence | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md), [portable evidence](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) |
+| The report | [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) |
 
 ## Source gaps
 
@@ -174,6 +171,6 @@ These are open questions in the standard's own texts, where two sources do not y
 | Gap | Sources requiring reconciliation | Meanwhile |
 |---|---|---|
 | Canonical key ordering differs between text and implementation | [Native text](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md#L66), [managed-custody text](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md#L39), [canonicaliser](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/src/canonicalJson.ts#L24-L36) | The texts say code-unit order; the reference sorts by Unicode code point. Every key in every fixture is ASCII, where the two orders agree, so the gap changes no fixture result today. |
-| Pre-1.0 precedence needs a consistent reading | [Governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md), [record-model status](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md#L3) | Where two sources disagree, record both readings and the input that shows the difference. |
+| Pre-1.0 precedence needs a consistent reading | [Governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md), [record-model status](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md#L3) | Where two sources disagree, record both readings and the input that shows the difference. |
 
 Next: the [passport reader](roles/passport-reader.md) guide, then [report your results](reporting.md).

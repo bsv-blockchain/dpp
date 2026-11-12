@@ -27,7 +27,7 @@
       "specification": "spec/rules.md#5-bsv-anchor-v1"
     },
     "verificationReport": {
-      "reportVersion": "1",
+      "reportVersion": "2",
       "schema": "contracts/verification-report.schema.json",
       "checkNames": [
         "recordEncoding",
@@ -188,7 +188,6 @@
         "VER-4-version-2-findings"
       ],
       "optional": [
-        "CUST-4-owner-consent",
         "MC-3-acceptance-record",
         "MC-3-custodian-signing",
         "MC-4-transfer-binding",
@@ -323,7 +322,6 @@
       "optional": [
         "SVC-1-discovery-sync",
         "CONF-4-overlay-capabilities",
-        "CUST-4-owner-consent",
         "MC-7-declaration"
       ],
       "testTargets": [
@@ -342,8 +340,8 @@
     },
     {
       "path": "fixtures/chain-v1.json",
-      "sha256": "45658e96ff8b7daafa13b3189ec71e725a15530a9a78e7b6601169d85af2198f",
-      "pins": "a six-state chain, the possession convention, the owner-signed transfer and sixteen refusals"
+      "sha256": "1ac2341687a22b6c9c59a64d7616d70b51854bc3414a7d443666306094bcae95",
+      "pins": "a six-state chain, the possession convention and nine refusals"
     },
     {
       "path": "fixtures/anchor-v3.json",
@@ -357,8 +355,8 @@
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "a9fd955d2113610d9c918c7b3caf620bf953d8b2804f29ffb00f81053f5f4e1a",
-      "pins": "the verification report for twenty-one evidence cases"
+      "sha256": "e6e822753668028abc6a7225347465bf379b711c957564e059f441bb358e9ca5",
+      "pins": "the verification report for twenty evidence cases"
     },
     {
       "path": "fixtures/vectors/dpp/record/v1.json",
@@ -367,7 +365,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/chain/v1.json",
-      "sha256": "4947736530889fe27fef8a152f131cc4ea9b87ad67f254192c072af33c3a02b9",
+      "sha256": "bb360b09f363d074ec9c0121348528e6927222b468c16f64bae0ecb1d8c5ee6f",
       "pins": "the chain fixture in the stack's vector format"
     },
     {
@@ -382,12 +380,12 @@
     },
     {
       "path": "fixtures/record-v2.json",
-      "sha256": "d1408b7692779140d1ac37d56d63118f5c6ac34d8670d61ea2be718929f00dd7",
-      "pins": "one record version 2 output with its framed preimages, signatures, keys and ten refusals, two of them the version 3 string on a bare body and an unknown version"
+      "sha256": "801aab6bfe14a329bfdac7c2d88ff1cafde7b514ecbfd9f0f3cf80d431bf1a47",
+      "pins": "one record version 2 output with its framed preimages, signatures, keys and ten refusals, two of them version strings this reader does not know"
     },
     {
       "path": "fixtures/chain-v2.json",
-      "sha256": "e4a44c898f86cef72e5e545e09fded3413da1297e2ec156553c7cd6d0a831222",
+      "sha256": "14e9562e4c8a6ec2cbd85e3eca772e854ccd1e6c5c9322178c4f1bfc1addf4b0",
       "pins": "a five-state version 2 lineage, the control proof in both forms, the acceptance commitment, retirement, twenty-two refusals and the upgrade over the version 1 chain"
     },
     {
@@ -402,17 +400,17 @@
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "0dc6e2206990b9aa57a460f675eeed5476b0318fc274beacd2ca081838dd4500",
+      "sha256": "ee22eea1126f3cfd861e5150f9a825a4d28e3ed9a15f945f5b4ae643c17fd2e0",
       "pins": "the verification report for thirteen version 2 evidence cases"
     },
     {
       "path": "fixtures/vectors/dpp/record/v2.json",
-      "sha256": "711bd85f611a6e6a482b06cb3657d1604de15648ab0357104a9f67159ceeba1a",
+      "sha256": "6aa70ebdae6e7ed8e2b9a9fef8f153c5def7496703bb4adf9d648ff1ff908685",
       "pins": "the version 2 record fixture in the stack's vector format"
     },
     {
       "path": "fixtures/vectors/dpp/chain/v2.json",
-      "sha256": "c79478ebc0342bc84059e034e4ebabb875dc66fabca130c45e0eb1958a1654e2",
+      "sha256": "56939c93a28e6703762008a451ea8592597ec0f6a2ef7a6ee87402423a7e3798",
       "pins": "the version 2 chain fixture in the stack's vector format"
     },
     {
@@ -424,16 +422,6 @@
       "path": "fixtures/vectors/dpp/managed-acceptance/v2.json",
       "sha256": "29cb9f8fa4a2260e8f0062479aba174d9fd3427d7753f27687619b5ef08d0905",
       "pins": "the version 2 managed acceptance fixture in the stack's vector format, with the derivation published"
-    },
-    {
-      "path": "fixtures/managed-instruction-v1.json",
-      "sha256": "20d38ee1ecd2d94a0a28b6f5468758f24f57a4789720a8b738f7b2a9e8e7af66",
-      "pins": "one dpp-managed-instruction@1 record with its canonical bytes, signature and commitment, the UPDATE that commits to it, and seven refusals"
-    },
-    {
-      "path": "fixtures/vectors/dpp/managed-instruction/v1.json",
-      "sha256": "a4913f07a1b5ff64e85e18d623b0aafcb38a1cc0eafc75710940f82a02c44e2f",
-      "pins": "the same record in the stack vector format"
     }
   ],
   "dependencies": [

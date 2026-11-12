@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest'
 import { CachedKeyDeriver, Hash, PublicKey, Signature, Transaction, Utils } from '@bsv/sdk'
 import {
   ACCEPTANCE_COMMITMENT_REFUSAL,
-  INSTRUCTION_COMMITMENT_REFUSAL,
   MANAGED_ACCEPTANCE_FORMAT,
   MANAGED_ACCEPTANCE_FORMAT_V1,
   MANAGED_RECORD_PROTOCOL_ID,
@@ -16,6 +15,7 @@ import {
   inspectManagedAcceptance,
   managedRecordVerificationKey,
   signManagedAcceptance,
+  verifyChain,
   verifyPassportEvidence,
   type ManagedAcceptanceClaim,
   type ManagedAcceptanceRecord,
@@ -97,9 +97,8 @@ describe('managed-acceptance-v1 fixture: the reader refuses what it must', () =>
     expect(MANAGED_ACCEPTANCE_FORMAT).toBe('dpp-managed-acceptance@2')
   })
 
-  it('names the profile without a version in the commitment refusals, which are the same under both versions', () => {
+  it('names the profile without a version in the commitment refusal, which is the same under both versions', () => {
     expect(ACCEPTANCE_COMMITMENT_REFUSAL).toBe('TRANSFER carries no authorisation_commitment under the managed-custody profile')
-    expect(INSTRUCTION_COMMITMENT_REFUSAL).toBe('UPDATE or RETIRE after a committed TRANSFER carries no authorisation_commitment under the managed-custody profile')
   })
 })
 
@@ -171,5 +170,27 @@ describe('acceptance evidence in the one verification report', () => {
     })
     expect(by(unauthorised, 'evidenceAvailability').status).toBe('pass')
     expect(by(unauthorised, 'issuerAuthority')).toMatchObject({ status: 'fail', reasonCode: 'authority-unconfirmed' })
+  })
+
+  it('reads a managed-custody@1 lineage end to end: the frozen @1 record and the TRANSFER that commits to it', async () => {
+    // managed-custody@1 is read and never written (`spec/managed-custody.md`
+    // §9), so the acceptance records written under it keep verifying: the
+    // pinned chain's first two states, then the @1 fixture's TRANSFER.
+    const lineage = [...chain.slice(0, 2), transferTx]
+    const verified = await verifyChain(lineage, { chainTracker: 'scripts only', managedAcceptance: true })
+    expect(verified.error).toBeUndefined()
+    expect(verified.valid).toBe(true)
+    for (const managedAcceptance of [{ required: true }, undefined]) {
+      const report = await verifyPassportEvidence({ tokenHistory: lineage, acceptanceRecords: [F.record] }, asked, {
+        chainTracker: 'scripts only',
+        checkedAt: '2027-06-01T12:00:00Z',
+        ...(managedAcceptance == null ? {} : { managedAcceptance }),
+        authority: { required: true, genesisIssuers: [CHAIN.issuerKey], acceptanceCustodians: [F.custodianKey] },
+      })
+      expect(by(report, 'linkage').status).toBe('pass')
+      expect(by(report, 'evidenceAvailability').status).toBe('pass')
+      expect(by(report, 'evidenceAvailability').evidenceRefs).toContain(`acceptance:sha256:${F.commitment}`)
+      expect(by(report, 'issuerAuthority').status).toBe('pass')
+    }
   })
 })

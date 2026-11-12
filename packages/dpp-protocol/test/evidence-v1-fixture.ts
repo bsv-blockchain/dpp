@@ -57,18 +57,14 @@ export interface EvidenceCase {
     anchors?: Array<{ lockingScript: string; txid?: string; outputIndex?: number; securedBytes?: string }>
     /** Managed acceptance records (`spec/managed-custody.md`), as posted; version 2 cases only. */
     acceptanceRecords?: unknown[]
-    /** Managed instruction records (`spec/managed-custody.md` §6), as posted; version 2 cases only. */
-    instructionRecords?: unknown[]
   }
   expectedSubject: ExpectedSubject
   policy: {
     policyId?: string
     publisherKeys?: string[]
-    ownerConsent?: boolean | { authorities: string[] }
     /** Version 2 control authorities and the managed-custody profile; absent on version 1 cases. */
     controlAuthorities?: string[]
     managedAcceptance?: { required: boolean }
-    managedInstruction?: { required: boolean }
     chainTracker: 'scripts-only' | 'header-source'
     headerSource?: Record<string, string> | 'unavailable'
     authority?: { required: false; reason: string } | { required: true; genesisIssuers?: string[]; claimIssuers?: string[]; anchoringServices?: string[]; acceptanceCustodians?: string[] }
@@ -100,7 +96,6 @@ export function materialise(c: Omit<EvidenceCase, 'report'>): { evidence: Passpo
     ...(c.evidence.nativeClaims == null ? {} : { nativeClaims: c.evidence.nativeClaims }),
     ...(c.evidence.anchors == null ? {} : { anchors: c.evidence.anchors.map((a) => ({ ...a, lockingScript: LockingScript.fromHex(a.lockingScript) })) }),
     ...(c.evidence.acceptanceRecords == null ? {} : { acceptanceRecords: c.evidence.acceptanceRecords }),
-    ...(c.evidence.instructionRecords == null ? {} : { instructionRecords: c.evidence.instructionRecords }),
   }
   const observers: LatestStateObserver[] = (c.observers ?? []).map((o) => ({
     id: o.id,
@@ -112,10 +107,8 @@ export function materialise(c: Omit<EvidenceCase, 'report'>): { evidence: Passpo
     chainTracker: tracker(c.policy),
     ...(c.policy.policyId == null ? {} : { policyId: c.policy.policyId }),
     ...(c.policy.publisherKeys == null ? {} : { publisherKeys: c.policy.publisherKeys }),
-    ...(c.policy.ownerConsent == null ? {} : { ownerConsent: c.policy.ownerConsent }),
     ...(c.policy.controlAuthorities == null ? {} : { controlAuthorities: c.policy.controlAuthorities }),
     ...(c.policy.managedAcceptance == null ? {} : { managedAcceptance: c.policy.managedAcceptance }),
-    ...(c.policy.managedInstruction == null ? {} : { managedInstruction: c.policy.managedInstruction }),
     ...(c.policy.authority == null ? {} : { authority: c.policy.authority }),
     ...(observers.length === 0 ? {} : { observers }),
   }
@@ -149,7 +142,6 @@ export async function evidenceV1Fixture(): Promise<{ fixtureVersion: 1; descript
     return raw.filter((_, i) => i !== skip)
   }
   const twoOutputs = CHAIN.refusals.find((r) => r.name === 'twoDppOutputs')!
-  const stranger = CHAIN.refusals.find((r) => r.name === 'transferByStranger')!
   const opaque = Utils.toArray('opaque bytes of a format this verifier does not know', 'utf8')
   // Its own identifier too: the fixture anchor's names the native claim's digest, not these bytes.
   const opaqueDigest = Utils.toHex(Hash.sha256(opaque))
@@ -212,13 +204,6 @@ export async function evidenceV1Fixture(): Promise<{ fixtureVersion: 1; descript
       evidence: { tokenHistory: raw },
       expectedSubject: asked,
       policy: { publisherKeys: [PrivateKey.fromHex('99'.repeat(32)).toPublicKey().toString()], chainTracker: 'scripts-only' },
-    },
-    {
-      id: 'consent-not-proven',
-      description: 'The transferByStranger refusal under a policy that selects the owner-signed transfer: linkage fails with the consent reason.',
-      evidence: { tokenHistory: [...raw.slice(0, stranger.appendAfter + 1), stranger.rawTx] },
-      expectedSubject: asked,
-      policy: { chainTracker: 'scripts-only', ownerConsent: true },
     },
     {
       id: 'subject-substitution',

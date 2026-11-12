@@ -3,7 +3,6 @@ import { verifyPassportEvidence, type ExpectedSubject } from '../src/index.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
 import { chainV2Fixture } from './chain-v2-fixture.js'
 import { managedAcceptanceV2Fixture } from './managed-acceptance-v2-fixture.js'
-import { managedInstructionV1Fixture } from './managed-instruction-v1-fixture.js'
 import { materialise, type EvidenceCase } from './evidence-v1-fixture.js'
 import { PASSPORT_ID_V2, custodianPriv, idKey, issuerPriv } from './helpers-v2.js'
 
@@ -11,8 +10,8 @@ import { PASSPORT_ID_V2, custodianPriv, idKey, issuerPriv } from './helpers-v2.j
  * The second verification-report case set (`spec/verification.md` §7): the
  * report a conforming verifier produces over version 2 lineages, the
  * managed-custody profile, retirement, a fork, the upgrade from version 1 and
- * a state under a version this reader does not know. The report version is
- * unchanged; what is new is the evidence. **Duplicated verbatim** as
+ * a state under a version this reader does not know, under report version 2
+ * as every other report set. **Duplicated verbatim** as
  * `fixtures/evidence-v2.json`, built from `chain-v2.json`,
  * `managed-acceptance-v2.json` and `chain-v1.json` and their published test
  * keys, so every case is reproducible with no wallet and no network.
@@ -22,7 +21,6 @@ export const EVIDENCE_V2_CHECKED_AT = '2027-06-01T12:00:00Z'
 export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; description: string; checkedAt: string; cases: EvidenceCase[] }> {
   const chain = await chainV2Fixture()
   const acceptance = await managedAcceptanceV2Fixture()
-  const instruction = await managedInstructionV1Fixture()
   const raw = chain.states.map((s) => s.rawTx)
   const asked: ExpectedSubject = { passportId: PASSPORT_ID_V2, source: 'request-context' }
   const custodian = idKey(custodianPriv)
@@ -34,10 +32,9 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
   }
   const prefixPlus = (r: { appendAfter: number; rawTx: string }): string[] => [...raw.slice(0, r.appendAfter + 1), r.rawTx]
 
-  // A bare seventeen-field body with the version string "3", signed by nobody
-  // in particular. Version 3 is carried behind a token prefix
-  // (`spec/token-carrier.md`), so a bare body carrying it is no DPP output at
-  // all to this reader, and it says so.
+  // A seventeen-field state under version "3", signed by nobody in
+  // particular. A reader that does not know version 3 finds no DPP output at
+  // all in the transaction, and says so.
   const unknownVersion = (() => {
     const tx = Transaction.fromHex(raw[1])
     const chunks = tx.outputs[0].lockingScript.chunks.map((c) => ({ ...c }))
@@ -124,34 +121,6 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
       policy: { publisherKeys: [custodian], managedAcceptance: { required: true }, chainTracker: 'scripts-only', authority: { required: true, genesisIssuers: [issuer], acceptanceCustodians: [PrivateKey.fromHex('99'.repeat(32)).toPublicKey().toString()] } },
     },
     {
-      id: 'v2-instruction-required-absent',
-      description: "The pinned lineage with the profile's instruction rule selected: the recipient's UPDATE after the committed TRANSFER carries no instruction commitment, so linkage fails with instruction-commitment-absent; the same bytes pass with the rule off.",
-      evidence: { tokenHistory: raw, acceptanceRecords: [acceptance.record] },
-      expectedSubject: asked,
-      policy: { publisherKeys: [custodian], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts-only' },
-    },
-    {
-      id: 'v2-valid-with-instruction',
-      description: "The first three states followed by the holder's UPDATE that commits to the pinned instruction record, with both records supplied under an authority policy naming the custodian: linkage passes under both rules, both references are available and bind, and the custodian is authorised for both.",
-      evidence: { tokenHistory: [...raw.slice(0, 3), instruction.update.rawTx], acceptanceRecords: [acceptance.record], instructionRecords: [instruction.record] },
-      expectedSubject: asked,
-      policy: { policyId: 'managed-custody@2/demonstration', publisherKeys: [custodian], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts-only', authority: { required: true, genesisIssuers: [issuer], acceptanceCustodians: [custodian] } },
-    },
-    {
-      id: 'v2-instruction-not-supplied',
-      description: "The same four states with the acceptance record supplied and the instruction record withheld: availability is unknown with referenced-artefact-unavailable, naming the UPDATE's commitment.",
-      evidence: { tokenHistory: [...raw.slice(0, 3), instruction.update.rawTx], acceptanceRecords: [acceptance.record] },
-      expectedSubject: asked,
-      policy: { publisherKeys: [custodian], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts-only' },
-    },
-    {
-      id: 'v2-instruction-mismatch',
-      description: 'A well-formed, custodian-signed instruction record asking for a RETIRE supplied beside the UPDATE: it does not bind, so availability fails with referenced-artefact-mismatch.',
-      evidence: { tokenHistory: [...raw.slice(0, 3), instruction.update.rawTx], acceptanceRecords: [acceptance.record], instructionRecords: [instruction.refusals.find((r) => r.name === 'operationMismatch')!.record] },
-      expectedSubject: asked,
-      policy: { publisherKeys: [custodian], managedAcceptance: { required: true }, managedInstruction: { required: true }, chainTracker: 'scripts-only' },
-    },
-    {
       id: 'v1-to-v2-upgrade',
       description: 'The six version 1 fixture states followed by the version 2 UPDATE that upgrades the lineage: every check passes under the version 1 publisher key, and the limits name the version 1 assurance boundary.',
       evidence: { tokenHistory: [...v1Raw, chain.upgrade.rawTx] },
@@ -167,7 +136,7 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
     },
     {
       id: 'unknown-version',
-      description: 'A bare seventeen-field output carrying version "3" after the genesis: version 3 is carried behind a token prefix, so this reader finds no DPP output in that transaction, encoding fails and nothing about the state is guessed.',
+      description: 'A seventeen-field output carrying version "3" after the genesis: this reader finds no DPP output in that transaction, so encoding fails and nothing about the state is guessed.',
       evidence: { tokenHistory: [raw[0], unknownVersion] },
       expectedSubject: asked,
       policy: { publisherKeys: [custodian], chainTracker: 'scripts-only' },
@@ -182,7 +151,7 @@ export async function evidenceV2Fixture(): Promise<{ fixtureVersion: 2; descript
   }
   return {
     fixtureVersion: 2,
-    description: 'The report a conforming verifier produces for version 2 lineages, the managed-custody profile with its acceptance and instruction rules, retirement, a fork, the upgrade from version 1 and a bare body carrying the version 3 string; report version 1 throughout. Rebuild each case from its hex and stand-ins with checkedAt injected and compare the report byte for byte.',
+    description: 'The report a conforming verifier produces for version 2 lineages, the managed-custody profile with its acceptance rule, retirement, a fork, the upgrade from version 1 and an unknown version; report version 2 throughout. Rebuild each case from its hex and stand-ins with checkedAt injected and compare the report byte for byte.',
     checkedAt: EVIDENCE_V2_CHECKED_AT,
     cases,
   }

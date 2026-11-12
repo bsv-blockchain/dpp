@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3 } from '@bsv/dpp-protocol'
+import { STANDARD_VERSION, STANDARD_VERSION_V2 } from '@bsv/dpp-protocol'
 import {
   buildCapabilities,
   IMPLICIT_POLICY_VERSION,
@@ -47,7 +47,6 @@ function reference(): CapabilityDocument {
   return buildCapabilities({
     serviceIdentityKey: SERVER_ID,
     anchorServiceKeys: [],
-    ownerConsent: false,
     exportAvailable: false,
     networkOracleConfigured: false,
     at: AT,
@@ -60,7 +59,7 @@ describe('the capability document', () => {
   it('validates against contracts/capabilities.schema.json', () => {
     expectValid(reference())
     expectValid(buildCapabilities({ publisherPolicy: policy, exportAvailable: true, networkOracleConfigured: true, at: AT }))
-    expectValid(buildCapabilities({ serviceIdentityKey: SERVER_ID, ownerConsent: { authorities: [SERVER_ID] }, exportAvailable: true, networkOracleConfigured: false, at: AT }))
+    expectValid(buildCapabilities({ serviceIdentityKey: SERVER_ID, controlAuthorities: [SERVER_ID], exportAvailable: true, networkOracleConfigured: false, at: AT }))
   })
 
   it('matches the published example wherever the example describes this node', () => {
@@ -79,7 +78,6 @@ describe('the capability document', () => {
     expect(document.services).toEqual(example.services)
     expect(Object.keys(document.publisherPolicy).sort()).toEqual(Object.keys(example.publisherPolicy).sort())
     expect(document.publisherPolicy.policyVersion).toBe(example.publisherPolicy.policyVersion)
-    expect(document.publisherPolicy.ownerConsent).toBe(example.publisherPolicy.ownerConsent)
     expect(document.synchronisation).toEqual(example.synchronisation)
     for (const [key, value] of Object.entries(example.limits)) expect(document.limits[key]).toBe(value)
     expect(ids(document.unsupported)).toEqual(expect.arrayContaining(ids(example.unsupported)))
@@ -89,8 +87,7 @@ describe('the capability document', () => {
     const document = reference()
     expect(document.protocols).toContainEqual({ id: 'dpp-record', version: STANDARD_VERSION })
     expect(document.protocols).toContainEqual({ id: 'dpp-record', version: STANDARD_VERSION_V2 })
-    expect(document.protocols).toContainEqual({ id: 'dpp-record', version: STANDARD_VERSION_V3 })
-    expect(document.protocols.filter((p) => p.id === 'dpp-record').map((p) => p.version)).toEqual([STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3])
+    expect(document.protocols.filter((p) => p.id === 'dpp-record').map((p) => p.version)).toEqual([STANDARD_VERSION, STANDARD_VERSION_V2])
     expect(document.protocols).toContainEqual({ id: 'bsv-attestation-anchor', version: '1' })
     expect(document.protocols).toContainEqual({ id: 'overlay-http', version: OVERLAY_HTTP_CONTRACT_VERSION })
     const yaml = readFileSync(new URL('contracts/overlay.yaml', root), 'utf8')
@@ -110,8 +107,6 @@ describe('the capability document', () => {
       policyVersion: IMPLICIT_POLICY_VERSION,
       publisherKeys: [SERVER_ID],
       anchoringServices: [],
-      ownerConsent: 'not-selected',
-      transferAuthorities: [],
     })
     expect(ids(document.unsupported)).toContain('publisher-key-rotation')
     expect(document.profiles[0]).toMatchObject({ id: 'single-operator', version: '1', kind: 'operator' })
@@ -127,10 +122,12 @@ describe('the capability document', () => {
     expect(after.synchronisation.profile).toBe('single-operator@1')
   })
 
-  it('states the owner-signed transfer and its authorities when selected', () => {
-    const document = buildCapabilities({ serviceIdentityKey: SERVER_ID, ownerConsent: { authorities: [SERVER_ID] }, exportAvailable: false, networkOracleConfigured: false, at: AT })
-    expect(document.publisherPolicy.ownerConsent).toBe('required')
-    expect(document.publisherPolicy.transferAuthorities).toEqual([SERVER_ID])
+  it('names the control authorities in the custody profile entry, none by default', () => {
+    const custody = (d: CapabilityDocument) => d.profiles.find((p) => p.kind === 'custody')
+    expect(custody(reference())?.options).toEqual({ acceptanceCommitment: 'not-selected', controlAuthorities: [] })
+    const document = buildCapabilities({ serviceIdentityKey: SERVER_ID, controlAuthorities: [SERVER_ID], managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: AT })
+    expect(custody(document)).toMatchObject({ id: 'managed-custody', version: '2', options: { acceptanceCommitment: 'required', controlAuthorities: [SERVER_ID] } })
+    expect(Object.keys(document.publisherPolicy).sort()).toEqual(['anchoringServices', 'policyVersion', 'publisherKeys'])
   })
 
   it('says whether the export and the retraction network check are available', () => {
@@ -234,7 +231,6 @@ describe('the published example', () => {
     const document = buildCapabilities({
       serviceIdentityKey: '02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27',
       anchorServiceKeys: [],
-      ownerConsent: false,
       exportAvailable: false,
       networkOracleConfigured: false,
       at: new Date('2026-09-05T12:00:00Z'),

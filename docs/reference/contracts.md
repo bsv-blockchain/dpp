@@ -29,7 +29,7 @@ curl --fail http://localhost:8080/capabilities
 | Response | What it provides |
 |---|---|
 | `/health` | Topics and lookup services the index runs |
-| `/capabilities` | Roles, protocol versions, profiles, publisher policy, synchronisation, limits and unsupported functions, in the shape of [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json) |
+| `/capabilities` | Roles, protocol versions, profiles, publisher policy, synchronisation, limits and unsupported functions, in the shape of [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/capabilities.schema.json) |
 
 | Missing or unsettled fact | Source and stop condition |
 |---|---|
@@ -82,7 +82,7 @@ Compare indexes by transaction identifiers and proofs. The contract leaves looku
 
 ## Index routes
 
-[`contracts/overlay.yaml`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) is a profile of the BSV ecosystem's overlay HTTP contract: BRC-22 submission and BRC-24 lookup as upstream defines them, plus the extensions below. The route table gives each token setting.
+[`contracts/overlay.yaml`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml) is a profile of the BSV ecosystem's overlay HTTP contract: BRC-22 submission and BRC-24 lookup as upstream defines them, plus the extensions below. The route table gives each token setting.
 
 | Route | Access | Request | Success | Errors |
 |---|---|---|---|---|
@@ -143,13 +143,13 @@ The answer names its contract and checks, with a shared `report` when the subjec
 | Condition | Interpretation |
 |---|---|
 | Validation only | Does not store or anchor the claim |
-| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml#L743-L786)) |
+| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/registry.yaml#L743-L786)) |
 | HTTP 400 | A malformed or ambiguous request, including unreadable token history; resolve it before interpreting verification |
 | Refused connection | No registry runs at the chosen URL |
 
 ## Registry routes
 
-[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/2bcff85c1ccbb24aa6c49274c0af0c6b5b190991/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
+[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
 
 | Route | Access | What it does |
 |---|---|---|
@@ -165,9 +165,10 @@ The registry contract also defines GS1 resolver routes; [GS1 discovery](../inter
 
 | Schema | Defines |
 |---|---|
-| [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json) | An index's or implementation's capability document |
+| [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/capabilities.schema.json) | An index's or implementation's capability document |
 | [publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json) | One version of a publisher policy, `dpp-publisher-policy@1` |
-| [verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/verification-report.schema.json) | The report a reader produces for one passport |
+| [verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) | The report a reader produces for one passport |
+| `contracts/verification-report-v1.schema.json` | Report version 1, for validating a stored version 1 report |
 | [paginated-history.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/paginated-history.schema.json) | One page of `GET /history` |
 | [evidence-package.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-package.schema.json) | The signed manifest of an evidence package, `dpp-evidence-package@1` |
 | [evidence-export.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json) | One part of the complete export, with its coverage record |
@@ -177,7 +178,7 @@ The registry contract also defines GS1 resolver routes; [GS1 discovery](../inter
 | [passport-projection.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/passport-projection.schema.json) | A passport projection, `passport-projection@1`: one passport's fields derived from pinned sources under a named policy |
 | [profile-evidence.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/profile-evidence.schema.json) | The shapes a profile field takes when its value is more than a scalar: a claim's evidence, a certification, a measurement |
 | [release-set.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/release/release-set.schema.json) | A [release set](release-sets.md) |
-| [manifest.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json), [baseline.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline.schema.json), [selection.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selection.schema.json) | The [conformance](conformance.md) ledger, a recommended baseline and a release's claim selection |
+| [manifest.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json), [baseline.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline.schema.json), [selection.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/selection.schema.json) | The [conformance](conformance.md) ledger, a recommended baseline and a release's claim selection |
 | [packages/dpp-profiles/schemas](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/schemas) | The industry profiles' payload schemas |
 
 For how to build each service, see the [registry](../implement/roles/registry.md) and [overlay](../implement/roles/overlay.md) role guides. Next: read the [specification index](specifications.md) for the rules these shapes carry.

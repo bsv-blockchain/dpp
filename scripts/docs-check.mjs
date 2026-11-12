@@ -53,6 +53,17 @@ const current = releaseSets.filter((s) => s.status !== 'superseded').sort((a, b)
 const superseded = releaseSets.filter((s) => s.status === 'superseded').map((s) => s.releaseSet)
 const overlayVersion = /^\s*version:\s*(\S+)/m.exec(readFileSync(join(root, 'contracts/overlay.yaml'), 'utf8'))[1]
 const registryVersion = /^\s*version:\s*(\S+)/m.exec(readFileSync(join(root, 'contracts/registry.yaml'), 'utf8'))[1]
+// Record version 3 was parked with its fixtures; pinned URLs keep their old paths.
+const PARKED_TOKEN_CARRIER = {
+  'spec/token-carrier.md': 'docs/reference/parked/token-carrier/token-carrier.md',
+  'fixtures/record-v3.json': 'docs/reference/parked/token-carrier/record-v3.json',
+  'fixtures/chain-v3.json': 'docs/reference/parked/token-carrier/chain-v3.json',
+  'fixtures/evidence-v3.json': 'docs/reference/parked/token-carrier/evidence-v3.json',
+  'fixtures/vectors/dpp/record/v3.json': 'docs/reference/parked/token-carrier/vectors-record-v3.json',
+  'fixtures/vectors/dpp/chain/v3.json': 'docs/reference/parked/token-carrier/vectors-chain-v3.json',
+  'conformance/baseline-native-3.json': 'docs/reference/parked/token-carrier/baseline-native-3.json',
+  'examples/lifecycle-v3.mjs': 'docs/reference/parked/token-carrier/lifecycle-v3.mjs',
+}
 let linkFailures = 0, links = 0, pinned = 0, commands = 0
 for (const page of pages) {
   const text = readFileSync(join(docs, page), 'utf8')
@@ -73,7 +84,8 @@ for (const page of pages) {
           const movedPath = path.startsWith('packages/dpp-core/')
             ? path.replace(/^packages\/dpp-core\//, 'packages/dpp-protocol/')
             : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md'
-              : path.startsWith('conformance/demonstrations/') ? path.replace(/^conformance\/demonstrations\//, 'docs/reference/parked/') : path
+              : path.startsWith('conformance/demonstrations/') ? path.replace(/^conformance\/demonstrations\//, 'docs/reference/parked/')
+                : PARKED_TOKEN_CARRIER[path] ?? path
           const local = resolve(root, existsSync(resolve(root, movedPath)) ? movedPath : path)
           if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
           const directory = statSync(local).isDirectory()

@@ -23,13 +23,13 @@ Index implementers can use this guide to build the standard's overlay role or ad
 To operate the reference index, start with [Run an index from source](../../operate/README.md). Its Compose preset builds the runtime. Continue here when customising an integration or implementing the role yourself.
 
 - **Reuse the runtime in your own integration.** `@bsv/dpp-overlay` provides `DppTopicManager` and `DppLookupService` for an `Engine` from `@bsv/overlay`, as the [runtime reference](../../packages/dpp-overlay.md) shows, and an HTTP host you can [run from source](../../operate/README.md). These are advanced alternatives to the Compose preset.
-- **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
+- **Write your own** against the [overlay contract](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml). It extends the ecosystem's [overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/), BRC-22 submission and BRC-24 lookup, which defines the `/submit` and `/lookup` shapes; the DPP contract adds only the topics, their admission rules, the lookup queries and the extensions below.
 
 Use the build order below for either route.
 
 ## What an index must serve
 
-The contract's `x-dpp-profile` sorts every route into must, should and may. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
+The contract's `x-dpp-profile` sorts every route into must, should and may. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
 
 | Level | What | Ledger rows |
 |---|---|---|
@@ -41,7 +41,7 @@ The contract's `x-dpp-profile` sorts every route into must, should and may. The 
 | Must | `tm_attestation` admits anchors on their exact script, framed signature and derived key; `ls_attestation` answers exact metadata selectors with an exact outpoint cursor | `SVC-2-anchor-admission`, `SVC-2-cursor-lookup` |
 | Should | `POST /arc-ingest`, accepting a merkle proof only after checking it contains the transaction and validating it against the index's header source | `SVC-2-proof-ingest` |
 | Should | HTTPS; advertising through SHIP and SLAP, the ecosystem's protocols for announcing which topics and lookup services an index hosts, when public; `GET /health/live` and `GET /health/ready` | |
-| May | The historical `tm_uora_dpp` and `ls_uora_dpp`, for anchors in the format before the current one, which the conformance baseline lists as historical rather than required; the binary aggregated lookup; synchronisation with peers through GASP, the Graph Aware Synchronisation Protocol (`POST /requestSyncResponse`, `POST /requestForeignGASPNode`); a bearer token on `/submit`; treating a missing `X-Topics` header as `tm_dpp`; the owner-signed transfer; the acceptance commitment under the managed custody profile | |
+| May | The historical `tm_uora_dpp` and `ls_uora_dpp`, for anchors in the format before the current one, which the conformance baseline lists as historical rather than required; the binary aggregated lookup; synchronisation with peers through GASP, the Graph Aware Synchronisation Protocol (`POST /requestSyncResponse`, `POST /requestForeignGASPNode`); a bearer token on `/submit`; treating a missing `X-Topics` header as `tm_dpp`; the acceptance commitment under the managed custody profile | |
 | Extension the reference serves | The `X-Admission` and `X-Admission-Refusal` headers on `/submit`; `GET /capabilities`; `GET /history`; `GET /evidence-package`; `GET /evidence-export`; `POST /retract` | |
 
 The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay role although the contract lists it as should, so an index claiming the role under the baseline serves it.
@@ -89,12 +89,12 @@ Each applies to any new index, whatever its code. [Known limitations](../../oper
 
 ## Exact implementation sources
 
-- [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml)
+- [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml)
 - [The upstream overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/)
-- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md)
-- [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md)
+- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md)
+- [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md)
 - [spec/exchange.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md)
-- [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json) and the [reference index's capability document](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/examples/capabilities-reference-node.json)
+- [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/capabilities.schema.json) and the [reference index's capability document](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/examples/capabilities-reference-node.json)
 - [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json)
 
 Record results as [evidence reporting](../reporting.md) describes; the [source gaps](../fixture-runner.md#source-gaps) remain open. Next: [federation](../../operate/federation.md), to synchronise with a second index.

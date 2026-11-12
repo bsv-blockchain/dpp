@@ -30,7 +30,7 @@ const statuses = (report: EvidenceReport): Record<string, string> =>
 describe('verifyPassportEvidence, the one verification contract (spec/verification.md)', () => {
   it('reports exactly the sixteen checks in order, versioned, at the injected time', async () => {
     const report = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, publisherKeys: [F.serverKey], chainTracker: 'scripts only' })
-    expect(report.reportVersion).toBe('1')
+    expect(report.reportVersion).toBe('2')
     expect(report.checkedAt).toBe(CHECKED_AT)
     expect(report.checks.map((c) => c.name)).toEqual([...EVIDENCE_CHECK_NAMES])
     expect(report.policyId).toBe('none')
@@ -127,15 +127,6 @@ describe('verifyPassportEvidence, the one verification contract (spec/verificati
     expect(byName(report, 'recordEncoding')).toMatchObject({ status: 'fail', reasonCode: 'decode-failed', scope: { stateIndex: twice.appendAfter + 1 } })
     expect(byName(report, 'actorSignatures')).toMatchObject({ status: 'unknown', reasonCode: 'decode-failed' })
     expect(byName(report, 'linkage')).toMatchObject({ status: 'unknown', reasonCode: 'decode-failed' })
-  })
-
-  it('reports the owner-signed transfer under linkage when the policy selects it', async () => {
-    const stranger = F.refusals.find((r) => r.name === 'transferByStranger')!
-    const txs = [...chain.slice(0, stranger.appendAfter + 1), Transaction.fromHex(stranger.rawTx)]
-    const off = await verifyPassportEvidence({ tokenHistory: txs }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only' })
-    expect(byName(off, 'linkage').status).toBe('pass')
-    const on = await verifyPassportEvidence({ tokenHistory: txs }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only', ownerConsent: true })
-    expect(byName(on, 'linkage')).toMatchObject({ status: 'fail', reasonCode: 'consent-not-proven' })
   })
 
   it('fails subject binding when validly signed evidence names another product', async () => {

@@ -18,7 +18,7 @@ Passport writers and readers can use this page to choose an industry profile and
 | Version kind | Meaning |
 |---|---|
 | Profile | `id@version`, such as `battery@2`; the number is the **profile version** |
-| Record | the **record version** is version 1, 2 or 3 of the passport format; it fixes what an on-chain [state](../README.md#words-you-will-meet) holds |
+| Record | the **record version** is version 1 or 2 of the passport format; it fixes what an on-chain [state](../README.md#words-you-will-meet) holds |
 | Manifest | The **manifest format**, `manifestVersion` (`1` or `2`), defines the manifest file's shape |
 
 | Access tier | Storage and disclosure |

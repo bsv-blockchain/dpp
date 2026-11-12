@@ -228,7 +228,6 @@
         "CAR-12-conformance"
       ],
       "optional": [
-        "CUST-4-owner-consent",
         "MC-3-acceptance-record",
         "MC-3-custodian-signing",
         "MC-4-transfer-binding",
@@ -380,7 +379,6 @@
       "optional": [
         "SVC-1-discovery-sync",
         "CONF-4-overlay-capabilities",
-        "CUST-4-owner-consent",
         "MC-7-declaration"
       ],
       "testTargets": [
@@ -400,8 +398,8 @@
     },
     {
       "path": "fixtures/chain-v1.json",
-      "sha256": "45658e96ff8b7daafa13b3189ec71e725a15530a9a78e7b6601169d85af2198f",
-      "pins": "a six-state chain, the possession convention, the owner-signed transfer and sixteen refusals"
+      "sha256": "1ac2341687a22b6c9c59a64d7616d70b51854bc3414a7d443666306094bcae95",
+      "pins": "a six-state chain, the possession convention and nine refusals"
     },
     {
       "path": "fixtures/anchor-v3.json",
@@ -415,8 +413,8 @@
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "a9fd955d2113610d9c918c7b3caf620bf953d8b2804f29ffb00f81053f5f4e1a",
-      "pins": "the verification report for twenty-one evidence cases"
+      "sha256": "017b42a256bbc55ce977b8733e9ffa707e9ae668dcb316455ebdc47aed7d060e",
+      "pins": "the verification report for twenty evidence cases"
     },
     {
       "path": "fixtures/vectors/dpp/record/v1.json",
@@ -425,7 +423,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/chain/v1.json",
-      "sha256": "4947736530889fe27fef8a152f131cc4ea9b87ad67f254192c072af33c3a02b9",
+      "sha256": "bb360b09f363d074ec9c0121348528e6927222b468c16f64bae0ecb1d8c5ee6f",
       "pins": "the chain fixture in the stack's vector format"
     },
     {
@@ -445,7 +443,7 @@
     },
     {
       "path": "fixtures/chain-v2.json",
-      "sha256": "e4a44c898f86cef72e5e545e09fded3413da1297e2ec156553c7cd6d0a831222",
+      "sha256": "14e9562e4c8a6ec2cbd85e3eca772e854ccd1e6c5c9322178c4f1bfc1addf4b0",
       "pins": "a five-state version 2 lineage, the control proof in both forms, the acceptance commitment, retirement, twenty-two refusals and the upgrade over the version 1 chain"
     },
     {
@@ -460,7 +458,7 @@
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "0dc6e2206990b9aa57a460f675eeed5476b0318fc274beacd2ca081838dd4500",
+      "sha256": "2ae75b742d3fedda3fb1f1ef3b9f65c557d31e9ae7451504c301dac8396d59bd",
       "pins": "the verification report for thirteen version 2 evidence cases"
     },
     {
@@ -470,7 +468,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/chain/v2.json",
-      "sha256": "c79478ebc0342bc84059e034e4ebabb875dc66fabca130c45e0eb1958a1654e2",
+      "sha256": "56939c93a28e6703762008a451ea8592597ec0f6a2ef7a6ee87402423a7e3798",
       "pins": "the version 2 chain fixture in the stack's vector format"
     },
     {
@@ -495,7 +493,7 @@
     },
     {
       "path": "fixtures/evidence-v3.json",
-      "sha256": "dbe4a7775191c40fb338b580452187dca5e4128307892f07b4759cefcf900225",
+      "sha256": "760ec19652320ab2a80d62f0e4f7e4dd26a745a0f631832ae57cc1bb8105c98c",
       "pins": "the verification report for nine carried evidence cases"
     },
     {

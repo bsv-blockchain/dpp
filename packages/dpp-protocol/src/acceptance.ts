@@ -2,7 +2,7 @@ import { CachedKeyDeriver, Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
 import { MANAGED_CUSTODY_PROFILE, MANAGED_CUSTODY_PROFILE_V1, MANAGED_RECORD_PROTOCOL_ID } from './constants.js'
 import type { DataSigner } from './signatures.js'
-import type { Outpoint, SeventeenFieldState } from './types.js'
+import type { DppStateV2, Outpoint } from './types.js'
 
 /**
  * The managed acceptance record (`spec/managed-custody.md` §3): the evidence a
@@ -84,7 +84,7 @@ const anyone = new CachedKeyDeriver('anyone')
 /**
  * The key a version 2 record's signature verifies under: the BRC-42 child of
  * the custodian's identity key for `MANAGED_RECORD_PROTOCOL_ID`, the record's
- * `requestId` and counterparty 'anyone'. Shared by the instruction record.
+ * `requestId` and counterparty 'anyone'.
  */
 export function managedRecordVerificationKey(custodian: string, requestId: string): PublicKey {
   return anyone.derivePublicKey(MANAGED_RECORD_PROTOCOL_ID, requestId, custodian)
@@ -230,7 +230,7 @@ export function inspectManagedAcceptance(value: unknown, options: { custodians?:
  * destination the recipient accepted, the holder who offered as the actor,
  * and the record's own commitment in field 15. Every mismatch is named.
  */
-export function bindAcceptanceToState(record: ManagedAcceptanceRecord, state: SeventeenFieldState): AcceptanceFailure[] {
+export function bindAcceptanceToState(record: ManagedAcceptanceRecord, state: DppStateV2): AcceptanceFailure[] {
   const failures: AcceptanceFailure[] = []
   const fail = (detail: string): void => { failures.push({ reason: 'state-mismatch', detail }) }
   if (state.op !== 'TRANSFER') fail(`the state is a ${state.op}, not a TRANSFER`)

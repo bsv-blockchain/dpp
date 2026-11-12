@@ -10,12 +10,14 @@
  * source's digest still matches its file, and a moved file invalidates every
  * row that cites it; every claim names rows that exist, and a claim is refused
  * while any required row is unassessed or below the claim's minimum status;
- * each baseline's role requirements exist, its fixtures' digests match, and its
- * wire values are the ones the reference implementation exports; each role
+ * each current baseline's role requirements exist, its fixtures' digests
+ * match, and its wire values are the ones the reference implementation
+ * exports; the frozen native-baseline@1 keeps the bytes it was frozen with, and
+ * every row it names is in the ledger or its archive; each role
  * has one claim scoped to native-baseline@2, naming exactly the baseline's
  * rows for the role, and those rows include the frozen native-baseline@1
  * rows for the role; every report
- * in fixtures/evidence-v1.json, fixtures/evidence-v2.json and fixtures/evidence-v3.json validates
+ * in fixtures/evidence-v1.json and fixtures/evidence-v2.json validates
  * against the report schema with its checks in the schema's order; the example capability document validates;
  * and the recorded dependency licences match what is installed.
  *
@@ -43,17 +45,12 @@ import {
   ATTESTATION_ANCHOR_FIELD_COUNT,
   ATTESTATION_ANCHOR_PREFIX,
   ATTESTATION_ANCHOR_PROTOCOL,
-  CARRIER_AMOUNT,
-  CARRIER_DEPLOY_OUTPUT_INDEX,
-  CARRIER_TOKEN_ID_BYTES,
   DPP_PROTOCOL_ID,
   DPP_PROTOCOL_ID_V2,
   MANAGED_RECORD_PROTOCOL_ID,
-  DPP_PROTOCOL_ID_V3,
   EVIDENCE_CHECK_NAMES,
   FIELD_COUNT,
   FIELD_COUNT_V2,
-  FIELD_COUNT_V3,
   LIFECYCLE_CLAIM_FORMAT,
   LIFECYCLE_CLAIM_PROTOCOL,
   OWNER_PROTOCOL_ID,
@@ -61,7 +58,6 @@ import {
   REPORT_VERSION,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
-  STANDARD_VERSION_V3,
 } from '@bsv/dpp-protocol'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -131,10 +127,10 @@ for (const name of existsSync(selectionsDir) ? readdirSync(selectionsDir).filter
 }
 
 // 3. The baselines: native-baseline@1 reads version 1, native-baseline@2 reads
-// versions 2 and 1, native-baseline@3 reads the carried version 3 and both
-// bare versions beside it. `record` names the current version, the versions
-// read beside it in the baseline's order, the derivations the baseline adds
-// to the version 1 ones, and the carrier prefix when the record is carried.
+// versions 2 and 1. `record` names the current version, the versions read
+// beside it in the baseline's order, and the derivations the baseline adds to
+// the version 1 ones. native-baseline@3, the carried record, is parked under
+// docs/reference/parked/token-carrier/ and is not checked.
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
 const checkBaseline = (path, record) => {
   const baseline = read(path)
@@ -153,13 +149,6 @@ const checkBaseline = (path, record) => {
   })
   for (const [name, protocolId] of Object.entries(record.derivations ?? {})) {
     expectWire(`derivations.${name}.protocolId`, baseline.derivations[name]?.protocolId, protocolId)
-  }
-  if (record.carrier != null) {
-    expectWire('record.carrier.tokenIdBytes', baseline.wire.record.carrier?.tokenIdBytes, CARRIER_TOKEN_ID_BYTES)
-    expectWire('record.carrier.amount', baseline.wire.record.carrier?.amount, CARRIER_AMOUNT)
-    expectWire('record.carrier.deployOutputIndex', baseline.wire.record.carrier?.deployOutputIndex, CARRIER_DEPLOY_OUTPUT_INDEX)
-  } else if (baseline.wire.record.carrier != null) {
-    defect(`${baseline.baselineId} declares a carrier prefix but record version ${record.version} is not carried.`)
   }
   expectWire('nativeClaim.claimFormat', baseline.wire.nativeClaim.claimFormat, LIFECYCLE_CLAIM_FORMAT)
   expectWire('anchor.prefix', baseline.wire.anchor.prefix, ATTESTATION_ANCHOR_PREFIX)
@@ -186,15 +175,28 @@ const checkBaseline = (path, record) => {
   }
 }
 const versionTwoDerivations = { actorSignatureV2: DPP_PROTOCOL_ID_V2, publisherSignatureV2: DPP_PROTOCOL_ID_V2, controllerKey: OWNER_PROTOCOL_ID, managedRecordSignature: MANAGED_RECORD_PROTOCOL_ID }
-checkBaseline('conformance/baseline-native-1.json', { version: STANDARD_VERSION, fieldCount: FIELD_COUNT })
+// native-baseline@1 is frozen as history (spec/conformance.md §3): its bytes
+// never change, so its wire values and fixture digests record the day it was
+// frozen and are not held to the tree, as a superseded release set's are not.
+// What is held is the bytes themselves, and that every row it names is still
+// in the ledger or was archived (docs/reference/parked/ledger-archive.json).
+const FROZEN_BASELINE = { path: 'conformance/baseline-native-1.json', sha256: 'a2c8beb61288351917b2e1173e5e7e99f2177d2e3c3a11b98b7690fa67ec4e2b' }
+{
+  const baseline = read(FROZEN_BASELINE.path)
+  validateWith('conformance/baseline.schema.json', baseline, FROZEN_BASELINE.path)
+  const actual = sha256(FROZEN_BASELINE.path)
+  if (actual === FROZEN_BASELINE.sha256) note(`${baseline.baselineId} is frozen and keeps its bytes; its wire values and fixture digests record the day it was frozen and are not held to the tree.`)
+  else defect(`${baseline.baselineId} is frozen, but ${FROZEN_BASELINE.path} has digest ${actual.slice(0, 12)}…, not the frozen ${FROZEN_BASELINE.sha256.slice(0, 12)}…; restore it.`)
+  const archived = new Set(read('docs/reference/parked/ledger-archive.json').rows.map((entry) => entry.row.id))
+  for (const [role, spec] of Object.entries(baseline.roles)) {
+    for (const id of [...spec.requires, ...(spec.optional ?? [])]) {
+      if (rows.has(id)) continue
+      if (archived.has(id)) note(`${baseline.baselineId} role ${role} names ${id}, which the ledger archive holds.`)
+      else defect(`${baseline.baselineId} role ${role} names requirement ${id}, which neither the ledger nor its archive carries.`)
+    }
+  }
+}
 checkBaseline('conformance/baseline-native-2.json', { version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2, alsoReads: { version: STANDARD_VERSION, fieldCount: FIELD_COUNT }, derivations: versionTwoDerivations })
-checkBaseline('conformance/baseline-native-3.json', {
-  version: STANDARD_VERSION_V3,
-  fieldCount: FIELD_COUNT_V3,
-  alsoReads: [{ version: STANDARD_VERSION_V2, fieldCount: FIELD_COUNT_V2 }, { version: STANDARD_VERSION, fieldCount: FIELD_COUNT }],
-  derivations: { ...versionTwoDerivations, actorSignatureV3: DPP_PROTOCOL_ID_V3, publisherSignatureV3: DPP_PROTOCOL_ID_V3 },
-  carrier: true,
-})
 
 // 3b. The claim target: native-baseline@2 is the one baseline a claim names
 // (spec/conformance.md section 3), so each role has exactly one claim scoped
@@ -221,7 +223,16 @@ const reportSchema = read('contracts/verification-report.schema.json')
 if (!same(reportSchema.$defs.checkName.enum, [...EVIDENCE_CHECK_NAMES])) defect('the report schema lists the check names in a different order from the reference implementation.')
 else note('the report schema names the sixteen checks in the reference order.')
 const validateReport = ajv.compile(reportSchema)
-for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json', 'fixtures/evidence-v3.json']) {
+// The version 1 schema stays beside it for stored version 1 reports
+// (spec/verification.md §2): it compiles, is version 1, names the same
+// checks, and keeps every reason code the current schema has.
+const reportSchemaV1 = read('contracts/verification-report-v1.schema.json')
+ajv.compile(reportSchemaV1)
+const v1Codes = new Set(reportSchemaV1.$defs.sharedReasonCode.enum)
+const lostCodes = reportSchema.$defs.sharedReasonCode.enum.filter((code) => !v1Codes.has(code))
+if (reportSchemaV1.properties.reportVersion.const === '1' && same(reportSchemaV1.$defs.checkName.enum, reportSchema.$defs.checkName.enum) && lostCodes.length === 0) note('contracts/verification-report-v1.schema.json is report version 1, with the same checks and every current reason code, for stored version 1 reports.')
+else defect(`contracts/verification-report-v1.schema.json is not report version 1 with the current checks and codes${lostCodes.length === 0 ? '' : `: it lacks ${lostCodes.join(', ')}`}.`)
+for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json']) {
   const evidence = read(file)
   let reportDefects = 0
   for (const c of evidence.cases) {
@@ -312,13 +323,12 @@ for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-releas
     else defect(`${set.releaseSet} runtime names ${dep.name}@${dep.version} but ${version} is installed.`)
   }
   const versions = set.wire.records.map((r) => r.version)
-  const exportedVersions = [STANDARD_VERSION, STANDARD_VERSION_V2, STANDARD_VERSION_V3]
-  if (same(versions, exportedVersions)) note(`${set.releaseSet} names record versions ${versions.join(', ')}, as the reference exports them.`)
-  else defect(`${set.releaseSet} names record versions ${versions.join(', ')}; the reference exports ${exportedVersions.join(', ')}.`)
+  const exportedVersions = [STANDARD_VERSION, STANDARD_VERSION_V2]
+  if (same(versions, exportedVersions)) note(`${set.releaseSet} names record versions ${versions.join(' and ')}, as the reference exports them.`)
+  else defect(`${set.releaseSet} names record versions ${versions.join(', ')}; the reference exports ${exportedVersions.join(' and ')}.`)
   const exportedRecords = {
     [STANDARD_VERSION]: { fieldCount: FIELD_COUNT, protocolId: DPP_PROTOCOL_ID },
     [STANDARD_VERSION_V2]: { fieldCount: FIELD_COUNT_V2, protocolId: DPP_PROTOCOL_ID_V2 },
-    [STANDARD_VERSION_V3]: { fieldCount: FIELD_COUNT_V3, protocolId: DPP_PROTOCOL_ID_V3 },
   }
   for (const r of set.wire.records) {
     const expected = exportedRecords[r.version]

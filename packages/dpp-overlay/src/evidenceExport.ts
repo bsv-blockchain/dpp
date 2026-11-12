@@ -73,12 +73,9 @@ export interface EvidenceExportRequest {
   /** The operator profile this index runs, as its capability document names it (`operatorProfileFor`); the policy's own profile when unset. */
   operatorProfile?: string
   serviceIdentityKey?: string
-  ownerConsent?: boolean | { authorities: string[] }
   /** The version 2 options the node admits under (CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
-  /** INSTRUCTION_COMMITMENT=required: the report inside the package applies the profile's instruction rule (`spec/managed-custody.md` §6). */
-  managedInstruction?: boolean
   chainTracker?: ChainTracker | 'scripts only'
   /** The export instant, injected so a test can pin it. */
   now: Date
@@ -206,7 +203,7 @@ export function inspectEvidenceExportPart(part: EvidenceExportPart, options: { e
   return { coverageAuthentic, manifestBound, package: packageInspection, failures }
 }
 
-export interface EvidencePartRequest extends Omit<EvidenceExportRequest, 'chainTracker' | 'ownerConsent' | 'controlAuthorities' | 'managedAcceptance' | 'managedInstruction'> {
+export interface EvidencePartRequest extends Omit<EvidenceExportRequest, 'chainTracker' | 'controlAuthorities' | 'managedAcceptance'> {
   /** The nextCursor of the previous part; absent or empty for the first. */
   cursor?: string | null
   /** The bounds of one part; the limits module's numbers unless a test narrows them. */
@@ -385,10 +382,8 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
       : request.serviceIdentityKey != null && request.serviceIdentityKey !== ''
         ? { publisherKeys: [request.serviceIdentityKey] }
         : {}),
-    ownerConsent: request.ownerConsent,
     ...(request.controlAuthorities == null ? {} : { controlAuthorities: request.controlAuthorities }),
     ...(request.managedAcceptance == null ? {} : { managedAcceptance: { required: request.managedAcceptance } }),
-    ...(request.managedInstruction == null ? {} : { managedInstruction: { required: request.managedInstruction } }),
     chainTracker: request.chainTracker,
     checkedAt: exportedAt,
     observers: [observer],
