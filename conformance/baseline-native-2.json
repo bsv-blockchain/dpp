@@ -2,7 +2,7 @@
   "baselineId": "native-baseline@2",
   "version": "2",
   "status": "proposed",
-  "description": "The recommended path through the current native formats with record version 2 as the current record and version 1 read beside it, because a lineage may hold both. The same selection as native-baseline@1 for the native claim, the anchor and the report; what is added is the seventeen-field record, its derivation, the managed acceptance record as a representation and the version 2 fixtures. A conformance and documentation selection: nothing here changes a byte, revives a refused format or requires every deployment to fill every role.",
+  "description": "The recommended path through the current native formats with record version 2 as the current record and version 1 read beside it, because a lineage may hold both. The same selection as native-baseline@1 for the native claim, the anchor and the report, less the parked VSC compatibility profile's representation and optional rows; what is added is the seventeen-field record, its derivation, the managed acceptance record as a representation and the version 2 fixtures. A conformance and documentation selection: nothing here changes a byte, revives a refused format or requires every deployment to fill every role.",
   "wire": {
     "record": {
       "protocolMarker": "dpp",
@@ -131,12 +131,6 @@
       "specification": "spec/rules.md#4-secured-representation-bytes"
     },
     {
-      "id": "vsc-seal-json-v1",
-      "mediaType": "application/vc+ld+json",
-      "bytesHashed": "exact UTF-8 bytes of the complete issued credential, including its Data Integrity proof",
-      "specification": "spec/vsc-profile.md"
-    },
-    {
       "id": "dpp-managed-acceptance-v1",
       "mediaType": "application/json",
       "bytesHashed": "canonical JSON (nested, code-unit sorted, no whitespace, strings and safe integers only) of the complete signed acceptance record, including signature; the custodian signs the same form without signature; superseded: signed with the custodian key directly, read under spec/managed-custody.md section 9 and never written",
@@ -219,13 +213,6 @@
         "VER-4-checks",
         "ID-2-did-key"
       ],
-      "optional": [
-        "VSC-2-structure",
-        "VSC-3-proofs",
-        "VSC-4-status",
-        "VSC-4-authority",
-        "VSC-5-custody"
-      ],
       "testTargets": [
         "fixtures/attestation-anchor-v1.json",
         "fixtures/anchor-v3.json",
@@ -278,10 +265,6 @@
         "RULES-4-representation-bytes",
         "ID-2-did-key"
       ],
-      "optional": [
-        "VSC-2-structure",
-        "VSC-3-proofs"
-      ],
       "testTargets": [
         "fixtures/attestation-anchor-v1.json"
       ]
@@ -296,11 +279,6 @@
         "STATUS-validate-algorithm",
         "REG-contract-routes",
         "VER-2-report"
-      ],
-      "optional": [
-        "VSC-4-status",
-        "VSC-4-authority",
-        "VSC-5-custody"
       ],
       "testTargets": [
         "contracts/registry.yaml",
@@ -352,29 +330,14 @@
       "pins": "the current signed native claim, its complete representation, digest and ten-field anchor"
     },
     {
+      "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
+      "sha256": "417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f",
+      "pins": "the current anchor in the stack's vector format, with the six refusals the top-level file does not carry"
+    },
+    {
       "path": "fixtures/evidence-v1.json",
       "sha256": "e6e822753668028abc6a7225347465bf379b711c957564e059f441bb358e9ca5",
       "pins": "the verification report for twenty evidence cases"
-    },
-    {
-      "path": "fixtures/vectors/dpp/record/v1.json",
-      "sha256": "e0c1f57e576fde6075d4d6268d37c49d5af463441f8d2b5c3b136320a34d4216",
-      "pins": "the record fixture in the stack's vector format"
-    },
-    {
-      "path": "fixtures/vectors/dpp/chain/v1.json",
-      "sha256": "bb360b09f363d074ec9c0121348528e6927222b468c16f64bae0ecb1d8c5ee6f",
-      "pins": "the chain fixture in the stack's vector format"
-    },
-    {
-      "path": "fixtures/vectors/dpp/anchor/v3.json",
-      "sha256": "940c53472e0853b4c896370674c998939c16db1cca5ddcac6ed0dff8f1053306",
-      "pins": "the historical anchor in the stack's vector format"
-    },
-    {
-      "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
-      "sha256": "417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f",
-      "pins": "the current anchor in the stack's vector format"
     },
     {
       "path": "fixtures/record-v2.json",
@@ -400,26 +363,6 @@
       "path": "fixtures/evidence-v2.json",
       "sha256": "ee22eea1126f3cfd861e5150f9a825a4d28e3ed9a15f945f5b4ae643c17fd2e0",
       "pins": "the verification report for thirteen version 2 evidence cases"
-    },
-    {
-      "path": "fixtures/vectors/dpp/record/v2.json",
-      "sha256": "6aa70ebdae6e7ed8e2b9a9fef8f153c5def7496703bb4adf9d648ff1ff908685",
-      "pins": "the version 2 record fixture in the stack's vector format"
-    },
-    {
-      "path": "fixtures/vectors/dpp/chain/v2.json",
-      "sha256": "56939c93a28e6703762008a451ea8592597ec0f6a2ef7a6ee87402423a7e3798",
-      "pins": "the version 2 chain fixture in the stack's vector format"
-    },
-    {
-      "path": "fixtures/vectors/dpp/managed-acceptance/v1.json",
-      "sha256": "f8b03a497f80a0e666b8928e4af9c60f938898eb54fe72c2caa34d6b45eb2d5a",
-      "pins": "the managed acceptance fixture in the stack's vector format"
-    },
-    {
-      "path": "fixtures/vectors/dpp/managed-acceptance/v2.json",
-      "sha256": "29cb9f8fa4a2260e8f0062479aba174d9fd3427d7753f27687619b5ef08d0905",
-      "pins": "the version 2 managed acceptance fixture in the stack's vector format, with the derivation published"
     }
   ],
   "dependencies": [

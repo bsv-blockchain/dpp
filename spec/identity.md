@@ -1,6 +1,6 @@
 # Identity, control and application boundaries
 
-**Status: working draft, pre-1.0.** This document separates product identity, credential identity, signing keys and control authority. Native BSV encodings remain explicit; VSC and physical-object capabilities select additional rules.
+**Status: working draft, pre-1.0.** This document separates product identity, credential identity, signing keys and control authority. Native BSV encodings remain explicit; credential and physical-object capabilities select additional rules.
 
 ## 1. Identified entities and roles
 
@@ -18,19 +18,19 @@ A native record's actor_identity_key is a BRC-42 parent. The user_signature key 
 
 Native lifecycle claims use the separate derivation in [rules.md](rules.md). When a resolvable issuer DID is paired with issuerKeyDid, verification of the native signature is insufficient to authenticate the issuer. Resolve the DID and verify the relevant key/authority binding or report it as unresolved.
 
-## 3. VSC actor identity and physical-object identity
+## 3. Actor identity and physical-object identity
 
-The pinned [VSC draft compatibility profile](vsc-profile.md) requires DID-based actor identity and did:web support. Additional methods, including did:bsv where implemented, are separate capabilities. The credential issuer and event actor must agree, and the proof verification method must be authorised for assertion under the issuer's DID document. A did:web document is an identity source, not evidence of accreditation by itself.
+An exchange profile may require DID-based actor identity and name the DID methods it supports, as [`external-credential-profile.md`](external-credential-profile.md) does with did:web. Additional methods, including did:bsv where implemented, are separate capabilities. The proof verification method must be authorised for assertion under the issuer's DID document, and where an exchange profile names an event actor, the credential issuer and that actor must agree. A did:web document is an identity source, not evidence of accreditation by itself.
 
-UORA's [physical-object addressing rules](https://w3c-cg.github.io/uora/#did-method-for-physical-objects) describe another role: a resolvable DID for the physical object, with verification material, discovery service and physical-binding metadata. That object DID is distinct from the issuer, credential identifier, controller and application account. VSC permits product identifier scheme/value pairs; it does not turn every product identifier into an issuer DID.
+UORA's [physical-object addressing rules](https://w3c-cg.github.io/uora/#did-method-for-physical-objects) describe another role: a resolvable DID for the physical object, with verification material, discovery service and physical-binding metadata. That object DID is distinct from the issuer, credential identifier, controller and application account. A credential may carry product identifier scheme/value pairs; that does not turn every product identifier into an issuer DID.
 
 An implementation selecting UORA physical-object compatibility MUST assess its object addressing, discovery and physical-binding requirements explicitly. A QR label or a DID document alone does not demonstrate possession or a tamper-evident physical binding. Such a capability MUST remain unclaimed until its selected requirements are implemented and tested. Object identifier aliases require authenticated binding; matching text or an account association is insufficient.
 
-A persistent product/passport identifier is independent of a VSC custody-chain identifier and a SEAL credential id. Starting a new custody chain after a terminal event must not silently replace the product identity. A mapping must identify the custody scope and serial identity it actually represents, retaining links to the enduring product.
+A persistent product/passport identifier is independent of a credential id and of any custody-chain identifier an exchange format carries. Where an exchange format carries a custody chain, starting a new chain after a terminal event must not silently replace the product identity, and a mapping into that format must identify the custody scope and serial identity it actually represents, retaining links to the enduring product.
 
 ## 4. Wallets and privacy
 
-A public reader needs neither an application account nor a signing wallet. An issuer needs the signing capability required by the selected representation. A native BSV writer needs a compatible transaction-signing capability and funding; these may be operated on its behalf under a declared custody arrangement. A VSC Data Integrity signer is not assumed to use the native BRC wallet or curve.
+A public reader needs neither an application account nor a signing wallet. An issuer needs the signing capability required by the selected representation. A native BSV writer needs a compatible transaction-signing capability and funding; these may be operated on its behalf under a declared custody arrangement. A credential's Data Integrity signer is not assumed to use the native BRC wallet or curve.
 
 The standard does not require every account holder to manage a wallet or DID. Managed signing is an implementation choice, as are independently controlled signing and supported recovery arrangements. Custody claims must describe who can actually sign, recover and change keys.
 

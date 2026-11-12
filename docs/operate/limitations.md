@@ -21,7 +21,7 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 | Hosted services use mainnet | Every hosted write, including a signed-in demonstration brand's write, costs satoshis. Sample brands write nothing to the chain. | Test with dry runs, a local index using `NETWORK=test`, and identifiers under GS1 demonstration prefix 952. |
 | Published acceptance records use older signing | `managed-custody@1` signs directly with the custodian identity key. The November candidate writes `managed-custody@2` acceptance records with derived keys through a BRC-100 wallet. | Preserve old records and verify each under its own rule. Follow [candidate migration](../migration.md#test-the-november-source-candidate) before changing signers. |
 | Candidate acceptance records have no dedicated retrieval route | With the chain alone, a stranger reads `evidenceAvailability` `unknown`, `referenced-artefact-unavailable` on a managed `TRANSFER`. Neither index nor registry serves individual records. | Export the custodian's evidence package: records travel under `authority`; read them with `acceptanceRecordsInPackage` from `@bsv/dpp-protocol`. |
-| Owner tier ciphertext has no fixed location | The state holds only its hash; holders and later recipients need another source. | Serve its UHRP content address, already given by that hash ([record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), section 7). |
+| Owner tier ciphertext has no fixed location | The state holds only its hash; holders and later recipients need another source. | Serve its UHRP content address, already given by that hash ([record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md), section 7). |
 
 ## Index host
 
@@ -31,8 +31,6 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 | Candidate registration has a 256-entry cap | Each policy version holds at most 256 publishers. At the cap, the index answers `503 registration-unavailable`; revocation frees no space. | Ask the operator to start a new scope before reaching the cap. |
 | Candidate command-line policy updates are not immediate | A version appended by the operator reaches the running index at its next registration request, `GET /publisher-policy` or restart. | Account for that delay when changing admission. |
 | Operator tokens are shared secrets | Everyone given `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN` or `EXPORT_TOKEN` shares its value; requests cannot be distinguished. Candidate per-publisher tokens (`dpp-index connection` or `dpp-index tokens issue`) distinguish `/submit`, `/retract` and `/arc-ingest` writers. Complete exports still use only shared `EXPORT_TOKEN`. | On the candidate, issue per-publisher tokens; reserve operator tokens for operator tools. Limit outside export access in time, then replace `EXPORT_TOKEN`. |
-| Discovery finds only advertised indexes | `SYNC_DISCOVERY=ship` pulls from SHIP-advertised indexes trackers return for its topics, alongside named peers. An advert proves only that a key signed it; admission is unchanged. New indexes need `ADVERTISE=1` to be found. Beta.9 neither discovers nor advertises. | Put relied-on peers in `SYNC_PEERS`; [discover others](federation.md#parked-find-peers-automatically) and [advertise your index](federation.md#parked-advertise-your-index). |
-| Nothing revokes adverts | After a move or shutdown, trackers still return old SHIP/SLAP adverts. Discovering indexes find nothing and back off. | Spend old tokens with the advertiser's wallet; the index never does ([advertising](federation.md#parked-advertise-your-index)). |
 | WhatsOnChain is the only header source | Inclusion trusts its headers. Anonymous access allows a few requests a second. Outages drop proven states during synchronisation; five failed rounds leave them behind until retry. | Set `WOC_API_KEY`; no alternative-header setting exists. [Move checkpoints back](federation.md#move-a-checkpoint-back) for missed states rather than waiting. |
 | No published operator image | Operators build from a checkout. | Use the Compose preset in [run a service](README.md). |
 | History/export snapshots expire after ten minutes | Longer pauses require restarting pagination; process restarts or another answering replica also lose the cursor. | Page promptly; restart when the cursor is lost. |
@@ -45,8 +43,7 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 
 | Limit | Effect | Action |
 |---|---|---|
-| Synchronisation only pulls | An index receives records only from named or discovered peers; that gives the peer nothing. | [Each side names the other](federation.md#which-way-records-flow), or advertises itself and discovers the other. |
-| Discovered peers have no page or time budget | The overlay SDK requests up to 10,000 outputs per page (reference indexes return at most 500), continuing while pages are full. It fetches every output's graph without a time limit. Rounds never overlap, so large or slow peers delay every round. | Lower `SYNC_MAX_DISCOVERED`, choose `SLAP_TRACKERS`, or disable discovery and name peers ([discovery](federation.md#parked-find-peers-automatically)). |
+| Synchronisation only pulls | An index receives records only from the peers it pulls from; that gives the peer nothing. | [Each side names the other](federation.md#which-way-records-flow). |
 | States funded from another passport's change wait for mining | Peers lacking that history leave the state behind. `@bsv/overlay` up to 2.6.2 does not tell the topic which output it reached. | Wait for the first round after mining. |
 | Later states of a passport already held wait for mining | Synchronisation cannot assemble unproven states over a held lineage. The previous tip remains until the source index receives the proof. A new passport arrives unproven. | [Push the proof](wallet-broadcast-proofs.md#follow-one-write) to the index you announced the state to; the next round carries state and proof. |
 | Missed outputs wait for back-off | After five rounds the checkpoint advances; the index asks for it again after about an hour of rounds, doubling to about a day. The in-memory schedule is lost on restart. Retry alone fixes nothing; beta.9 never retries. | Fix the cause and [move the checkpoint back](federation.md#move-a-checkpoint-back) rather than waiting ([read the log](federation.md#read-the-synchronising-indexs-log)). |
@@ -54,6 +51,16 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 | Only current outputs and their lineages synchronise | Separately retained evidence does not travel. | Use [exports](export-import-recovery.md). |
 | Admission settings determine which records peers hold | Each uses its own publisher policy and `ANCHOR_SERVICE_KEYS`; `tm_uora_dpp` requires `SYNC_LEGACY=1`. Narrower settings retain less. | Match settings, then [compare held records](federation.md#7-confirm-both-hold-the-same-records). |
 | Lookup BEEF depends on how a state arrived | Byte comparison can fail for identical states. | Compare transactions and merkle paths as `spec/services.md` section 1 defines, not BEEF bytes. |
+
+## Parked: discovery and advertising
+
+The overlay package keeps SHIP peer discovery and SHIP/SLAP advertising as options, parked outside the standard on 12 November 2026 ([federation](federation.md#parked-find-peers-automatically)). These limits apply when they are on.
+
+| Limit | Effect | Action |
+|---|---|---|
+| Discovery finds only advertised indexes | `SYNC_DISCOVERY=ship` pulls from SHIP-advertised indexes trackers return for its topics, alongside named peers. An advert proves only that a key signed it; admission is unchanged. New indexes need `ADVERTISE=1` to be found. Beta.9 neither discovers nor advertises. | Put relied-on peers in `SYNC_PEERS`; [discover others](federation.md#parked-find-peers-automatically) and [advertise your index](federation.md#parked-advertise-your-index). |
+| Nothing revokes adverts | After a move or shutdown, trackers still return old SHIP/SLAP adverts. Discovering indexes find nothing and back off. | Spend old tokens with the advertiser's wallet; the index never does ([advertising](federation.md#parked-advertise-your-index)). |
+| Discovered peers have no page or time budget | The overlay SDK requests up to 10,000 outputs per page (reference indexes return at most 500), continuing while pages are full. It fetches every output's graph without a time limit. Rounds never overlap, so large or slow peers delay every round. | Lower `SYNC_MAX_DISCOVERED`, choose `SLAP_TRACKERS`, or disable discovery and name peers ([discovery](federation.md#parked-find-peers-automatically)). |
 
 ## Proofs and retraction
 
@@ -109,10 +116,10 @@ These rules have source implementation support. They remain unavailable through 
 
 | Former open question | Candidate rule |
 |---|---|
-| Disclosure of the `legitimate` and `authority` tiers | One owner commitment covers the restricted object. Each disclosure is re-encrypted to an authorised reader's identity key and includes only their entitled tiers ([record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), section 7). |
+| Disclosure of the `legitimate` and `authority` tiers | One owner commitment covers the restricted object. Each disclosure is re-encrypted to an authorised reader's identity key and includes only their entitled tiers ([record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md), section 7). |
 | Writing for a holder after a hand on | A custodian's update or retirement for a managed holder depends on custody: the chain cannot show that the holder asked, and the verification report's limits say so. The instruction record that once recorded the request is parked outside the standard ([parked instruction records](../reference/parked/managed-instruction/README.md)). |
-| Managed transfer locking key | Each state's output locks to its field-6 controller key. The custodian wallet spends for managed identities; recipients supplying their own derived destination key can spend from their own wallet ([managed custody](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/managed-custody.md), section 2). |
-| Structured lifecycle-claim data | Native claims carry no evidence facets; a profile mapping reads its facets from other evidence, such as a state's `event_data`, and `recordId` identifies the state outpoint `<txid>:<outputIndex>` ([claim rules](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/rules.md), sections 3 and 4). |
+| Managed transfer locking key | Each state's output locks to its field-6 controller key. The custodian wallet spends for managed identities; recipients supplying their own derived destination key can spend from their own wallet ([managed custody](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md), section 2). |
+| Structured lifecycle-claim data | Native claims carry no evidence facets; a profile mapping reads its facets from other evidence, such as a state's `event_data`, and `recordId` identifies the state outpoint `<txid>:<outputIndex>` ([claim rules](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/rules.md), sections 3 and 4). |
 
 ## Open questions in the standard
 

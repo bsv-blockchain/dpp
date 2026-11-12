@@ -1,4 +1,20 @@
-# An independent reader, in Python
+# Parked: the Python reader
+
+**Out of the conformance machinery.** This folder keeps `dpp_verify.py`, a reader of the fixtures written in standard-library Python from the specification text and sharing no code with the reference packages. It was parked on 12 November 2026. CI no longer runs it, the `conformance:independent` script is gone, and no ledger row cites it: each row that cited it beside a TypeScript test keeps its status on that test. The same programme wrote it and the reference, so it was engineering evidence that the specification suffices to reproduce the bytes, never the organisationally independent implementation `GOVERNANCE.md` asks for before version 1.0. The ledger row `GOV-independent-implementation`, which cited only this reader, is a gap until such an implementation appears.
+
+## What is here
+
+| File | What it is |
+|---|---|
+| `dpp_verify.py` | The reader as it last stood, once `conformance/independent/python/dpp_verify.py`, byte for byte. It reads the fixtures by their paths at the revision below, among them the vector files removed from `fixtures/vectors/dpp/` the same day, so it runs only against that revision. |
+
+## The last working revision
+
+Commit [`c678cf9`](https://github.com/bsv-blockchain/dpp/tree/c678cf9281168179d16d599e5fdb3846ddbbaf61/conformance/independent/python), the last commit on `main` before the reader was parked, carries it passing, and CI ran it on every change until then. From a checkout of that commit, `python3 conformance/independent/python/dpp_verify.py` prints 282 sentences starting `ok:` and ends `Every sentence above holds.` A second reader that comes back starts from that revision, and from the fixtures as they then stand.
+
+## The reader as it stood
+
+This is the reader's own description, once `conformance/independent/python/README.md`, unchanged but for its heading.
 
 `dpp_verify.py` reads the conformance fixtures with an implementation that shares no code with the reference packages: secp256k1 arithmetic, strict DER, ECDSA verification, the BRC-42 child derivation, the PushDrop layout and its refusals, the two signature preimages, the chain invariants and the version 2 control proof, the native claim and the generic anchor, all written from the specification text. It uses the Python standard library only.
 

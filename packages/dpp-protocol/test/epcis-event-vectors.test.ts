@@ -7,7 +7,7 @@ const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
 /**
  * The two published vector files of `epcis-event-vc@1` are their generating
- * module, verbatim (fixtures/README.md, "Two forms, one set of bytes").
+ * module, verbatim (fixtures/README.md, "Two forms, one per format").
  * REGENERATE_FIXTURES=1 rewrites them from the generator before comparing, so
  * the one way to move a published vector is to change the generator and review
  * the diff.

@@ -47,15 +47,11 @@ const ALLOWED = new Map([
   ['fixtures/record-v1.json', { reason: frozen }],
   ['fixtures/chain-v1.json', { reason: frozen }],
   ['fixtures/evidence-v1.json', { reason: frozen }],
-  ['fixtures/vectors/dpp/record/v1.json', { reason: frozen }],
-  ['fixtures/vectors/dpp/chain/v1.json', { reason: frozen }],
   ['fixtures/chain-v2.json', { reason: 'the upgrade case, which continues the frozen version 1 chain under its identifier' }],
-  ['fixtures/vectors/dpp/chain/v2.json', { reason: 'the upgrade case, which continues the frozen version 1 chain under its identifier' }],
   ['fixtures/evidence-v2.json', { reason: 'the upgrade cases, which continue the frozen version 1 chain under its identifier' }],
   ['fixtures/attestation-anchor-v1.json', { reason: 'a claim about the frozen version 1 chain, under its identifier' }],
   ['fixtures/vectors/dpp/attestation-anchor/v1.json', { reason: 'a claim about the frozen version 1 chain, under its identifier' }],
   ['fixtures/anchor-v3.json', { reason: 'the frozen historical anchor fixture' }],
-  ['fixtures/vectors/dpp/anchor/v3.json', { reason: 'the frozen historical anchor fixture' }],
   ['fixtures/README.md', { reason: 'the fixture policy, which explains why the frozen fixtures keep the number' }],
   ['packages/dpp-protocol/test/helpers.ts', { reason: frozenTest, only: FROZEN_IDENTIFIERS }],
   ['packages/dpp-protocol/test/record-v1-fixture.ts', { reason: frozenTest, only: FROZEN_IDENTIFIERS }],
@@ -70,7 +66,6 @@ const ALLOWED = new Map([
   ['packages/dpp-overlay/test/uoraRail.test.ts', { reason: historical }],
   ['packages/create-dpp-app/template/apps/api/test/lifecycle.test.ts', { reason: 'a refusal test: the starter refuses a legacy identifier as outside its prefix and host' }],
   ['docs/deployment.md', { reason: 'the labelled note on the hosted index\'s legacy passports', section: 'Legacy identifiers' }],
-  ['CHANGELOG.md', { reason: 'the repository history' }],
   ['conformance/test/legacy-gtin.test.mjs', { reason: 'this check' }],
 ])
 

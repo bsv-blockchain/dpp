@@ -29,7 +29,7 @@ Use the build order below for either route.
 
 ## What an index must serve
 
-The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
+The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
 
 | Level | What | Ledger rows |
 |---|---|---|
@@ -86,15 +86,15 @@ Each applies to any new index, whatever its code. [Known limitations](../../oper
 - No one is named to deliver a later proof to a peer that synchronised a state; its readers see `inclusion` pending until someone does.
 - An output your node left behind while synchronising is visible only in its log, and it is not asked for again until you move that peer's checkpoint back; no setting re-synchronises from a chosen point.
 - A state funded from another passport's transaction does not reach a peer that lacks that other passport's history until the new state is mined.
-- From the beta.10 overlay package an index can [find advertised peers and advertise itself](../../operate/federation.md#parked-find-peers-automatically) when configured; the hosted reference index pulls from a static peer and does not yet advertise itself through SHIP and SLAP. To have the hosted reference pull and admit your records, its operator must agree your node and publisher keys; ask through the [BSV Association contact form](https://bsvassociation.org/contact/) with your index URL and publisher keys ([overlays running now](../../deployment.md#overlays-running-now)).
+- From the beta.10 overlay package an index can [find advertised peers and advertise itself](../../operate/federation.md#parked-find-peers-automatically) when configured, options parked outside the standard; the hosted reference index pulls from a static peer and does not yet advertise itself through SHIP and SLAP. To have the hosted reference pull and admit your records, its operator must agree your node and publisher keys; ask through the [BSV Association contact form](https://bsvassociation.org/contact/) with your index URL and publisher keys ([overlays running now](../../deployment.md#overlays-running-now)).
 
 ## Exact implementation sources
 
 - [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml)
 - [The upstream overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/)
-- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/services.md)
+- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/services.md)
 - [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md)
-- [spec/exchange.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md)
+- [spec/exchange.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/exchange.md)
 - [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) and the [reference index's capability document](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/conformance/examples/capabilities-reference-node.json)
 - [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/publisher-policy.schema.json)
 

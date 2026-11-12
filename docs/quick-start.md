@@ -104,7 +104,7 @@ This passport is record version 2, whose operations are `ISSUE`, `UPDATE`, `TRAN
 
 ## Sign a claim
 
-A native lifecycle claim is a signed statement about a product, such as a repair. Run this to sign and check the test claim with its published test key. The core helpers need no VSC package:
+A native lifecycle claim is a signed statement about a product, such as a repair. Run this to sign and check the test claim with its published test key. The core helpers need no credentials package:
 
 ```sh
 node --input-type=module <<'JS'

@@ -22,8 +22,8 @@ const read = (relative) => JSON.parse(readFileSync(join(root, relative), 'utf8')
 const write = (relative, value) => writeFileSync(join(root, relative), JSON.stringify(value, null, 2) + '\n')
 const sha256 = (relative) => createHash('sha256').update(readFileSync(join(root, relative))).digest('hex')
 
-// The baseline first, because the ledger pins the baseline file itself: its
-// fixture digests must be final before the ledger records its digest.
+// The baseline first, because the current release set pins the baseline file
+// itself: its fixture digests must be final before the set records its digest.
 // A path that does not exist yet is left as recorded and named, so a baseline
 // or set can be pinned while another file is still being written; the checker
 // refuses the missing file until it exists. native-baseline@1 is frozen as

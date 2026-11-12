@@ -117,7 +117,7 @@ The specifications, contracts, fixtures and governance define the standard. This
 | [`spec/`](spec/) | Record formats, identity, custody, writing, verification and profile rules |
 | [`contracts/`](contracts/) | Service API contracts and JSON schemas |
 | [`fixtures/`](fixtures/README.md) | Shared test inputs and expected results, including invalid cases |
-| [`conformance/`](conformance/) | Requirements, baselines, claim evidence and an independent Python reader |
+| [`conformance/`](conformance/) | Requirements, baselines and claim evidence |
 | [`release/`](release/README.md) | Compatible release sets and packaging tools |
 | [`examples/`](examples/) | Runnable verification, writing and interoperability examples |
 
@@ -132,7 +132,7 @@ npm run typecheck
 npm test
 ```
 
-The test command runs the workspace suites, conformance checks and documentation checks. CI also exercises the offline examples, Python reader, package installation in a clean external project and the index container.
+The test command runs the workspace suites, conformance checks and documentation checks. CI also exercises the offline examples, package installation in a clean external project and the index container.
 
 Contributions should identify the rule, interface or behaviour being changed and include reproducible evidence. Format changes need updated fixtures, including invalid cases. Passing fixtures alone does not demonstrate operational independence or portability between providers.
 

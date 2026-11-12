@@ -5,20 +5,14 @@ import { Hash, Utils } from '@bsv/sdk'
 import { canonicalBytes, canonicalString, inspectManagedAcceptance } from '../src/index.js'
 import { RECORD_V1_FIXTURE } from './record-v1-fixture.js'
 import { CHAIN_V1_FIXTURE } from './chain-v1-fixture.js'
-import { recordV1Vectors } from './record-v1-vectors.js'
-import { chainV1Vectors } from './chain-v1-vectors.js'
 import { evidenceV1Fixture } from './evidence-v1-fixture.js'
 import { publisherPolicyVectors } from './publisher-policy-vectors.js'
 import { evidencePackageVectors } from './evidence-package-vectors.js'
 import { recordV2Fixture } from './record-v2-fixture.js'
-import { recordV2Vectors } from './record-v2-vectors.js'
 import { chainV2Fixture } from './chain-v2-fixture.js'
-import { chainV2Vectors } from './chain-v2-vectors.js'
 import { managedAcceptanceV2Fixture } from './managed-acceptance-v2-fixture.js'
-import { managedAcceptanceV2Vectors } from './managed-acceptance-v2-vectors.js'
 import { evidenceV2Fixture } from './evidence-v2-fixture.js'
 import { indexRegistrationV1Fixture } from './index-registration-v1-fixture.js'
-import { indexRegistrationV1Vectors } from './index-registration-v1-vectors.js'
 
 const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
 
@@ -30,7 +24,7 @@ const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
  *
  * REGENERATE_FIXTURES=1 rewrites the published file from its generator before
  * comparing, so the one way to change a published fixture is to change the
- * module and review the diff (fixtures/README.md, "Two forms, one set of bytes").
+ * module and review the diff (fixtures/README.md, "Two forms, one per format").
  */
 function expectPublished(relative: string, generated: unknown): void {
   const path = join(FIXTURES, ...relative.split('/'))
@@ -85,18 +79,6 @@ describe('the published fixture files', () => {
     expectPublished('chain-v1.json', CHAIN_V1_FIXTURE)
   })
 
-  it('vectors/dpp/record/v1.json is recordV1Vectors(), verbatim, and shaped as the stack expects', () => {
-    const generated = recordV1Vectors()
-    expectPublished('vectors/dpp/record/v1.json', generated)
-    expectStackShape(generated)
-  })
-
-  it('vectors/dpp/chain/v1.json is chainV1Vectors(), verbatim, and shaped as the stack expects', () => {
-    const generated = chainV1Vectors()
-    expectPublished('vectors/dpp/chain/v1.json', generated)
-    expectStackShape(generated)
-  })
-
   it('evidence-v1.json is evidenceV1Fixture(), verbatim: the report every surface produces for each case', async () => {
     const generated = await evidenceV1Fixture()
     expect(generated.cases.map((c) => c.id)).toEqual([...new Set(generated.cases.map((c) => c.id))])
@@ -116,39 +98,24 @@ describe('the published fixture files', () => {
     expectStackShape(generated as never)
   })
 
-  it('record-v2.json is recordV2Fixture(), verbatim, and vectors/dpp/record/v2.json its vector form', async () => {
-    const generated = await recordV2Fixture()
-    expectPublished('record-v2.json', generated)
-    const vectors = recordV2Vectors(generated)
-    expectPublished('vectors/dpp/record/v2.json', vectors)
-    expectStackShape(vectors)
+  it('record-v2.json is recordV2Fixture(), verbatim', async () => {
+    expectPublished('record-v2.json', await recordV2Fixture())
   })
 
-  it('chain-v2.json is chainV2Fixture(), verbatim, and vectors/dpp/chain/v2.json its vector form', async () => {
-    const generated = await chainV2Fixture()
-    expectPublished('chain-v2.json', generated)
-    const vectors = chainV2Vectors(generated)
-    expectPublished('vectors/dpp/chain/v2.json', vectors)
-    expectStackShape(vectors as never)
+  it('chain-v2.json is chainV2Fixture(), verbatim', async () => {
+    expectPublished('chain-v2.json', await chainV2Fixture())
   })
 
-  it('managed-acceptance-v1.json and vectors/dpp/managed-acceptance/v1.json are frozen: the superseded format, read under its own rule and never regenerated', () => {
+  it('managed-acceptance-v1.json is frozen: the superseded format, read under its own rule and never regenerated', () => {
     // No generator: nothing writes dpp-managed-acceptance@1 any more, and the
     // published bytes are the pin of what a reader must still verify (§9).
     const published = JSON.parse(readFileSync(join(FIXTURES, 'managed-acceptance-v1.json'), 'utf8'))
     expect(published.record.acceptanceFormat).toBe('dpp-managed-acceptance@1')
     expect(inspectManagedAcceptance(published.record)).toMatchObject({ structureValid: true, signatureValid: true, commitment: published.commitment, failures: [] })
-    const vectors = JSON.parse(readFileSync(join(FIXTURES, 'vectors', 'dpp', 'managed-acceptance', 'v1.json'), 'utf8'))
-    expect(vectors.id).toBe('dpp.managedacceptance.v1')
-    expectStackShape(vectors as never)
   })
 
-  it('managed-acceptance-v2.json is managedAcceptanceV2Fixture(), verbatim, and vectors/dpp/managed-acceptance/v2.json its vector form', async () => {
-    const generated = await managedAcceptanceV2Fixture()
-    expectPublished('managed-acceptance-v2.json', generated)
-    const vectors = managedAcceptanceV2Vectors(generated)
-    expectPublished('vectors/dpp/managed-acceptance/v2.json', vectors)
-    expectStackShape(vectors as never)
+  it('managed-acceptance-v2.json is managedAcceptanceV2Fixture(), verbatim', async () => {
+    expectPublished('managed-acceptance-v2.json', await managedAcceptanceV2Fixture())
   })
 
   it('evidence-v2.json is evidenceV2Fixture(), verbatim: the report every surface produces for each version 2 case', async () => {
@@ -164,11 +131,7 @@ describe('the published fixture files', () => {
     expect(Utils.toHex(Hash.sha256(canonicalBytes(F.attestation)))).toBe(F.digest)
   })
 
-  it('index-registration-v1.json is indexRegistrationV1Fixture(), verbatim, and vectors/dpp/index-registration/v1.json its vector form', async () => {
-    const generated = await indexRegistrationV1Fixture()
-    expectPublished('index-registration-v1.json', generated)
-    const vectors = indexRegistrationV1Vectors(generated)
-    expectPublished('vectors/dpp/index-registration/v1.json', vectors)
-    expectStackShape(vectors)
+  it('index-registration-v1.json is indexRegistrationV1Fixture(), verbatim', async () => {
+    expectPublished('index-registration-v1.json', await indexRegistrationV1Fixture())
   })
 })

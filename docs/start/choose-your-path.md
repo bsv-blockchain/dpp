@@ -182,4 +182,4 @@ node examples/sample-payload.mjs --check <profile@version> <file>
 
 ## Contact the programme
 
-Use the [BSV Association contact form](https://bsvassociation.org/contact/) for hosted write tokens, peer registration, trial participation or introductions. State your request; for index requests, include its URL and publisher key.
+Use the [BSV Association contact form](https://bsvassociation.org/contact/) for hosted write tokens, peer registration, an exchange with the hosted reference or introductions. State your request; for index requests, include its URL and publisher key.

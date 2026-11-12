@@ -10,11 +10,11 @@ A native token signature proves who signed an operation. A credential proof prov
 
 ## Versioned commitments and credential formats
 
-The current generic anchor commits to the complete secured representation, including its signature or proof. It names the representation and media type so a reader selects the correct verifier. Native lifecycle claims use the small restricted canonical JSON format; VSC credentials use their actual Data Integrity suites and preserve exact issued bytes for commitment. Historical UORA-named anchors retain their original byte contract.
+The current generic anchor commits to the complete secured representation, including its signature or proof. It names the representation and media type so a reader selects the correct verifier. Native lifecycle claims use the small restricted canonical JSON format; external credentials use their own proof suites and preserve exact issued bytes for commitment. Historical UORA-named anchors retain their original byte contract.
 
 A supply-chain event is signed by the party that observed it, not translated into a custody vocabulary first. The signed EPCIS event representation keys the credential on the event's CBV 2.0 Event Hash ID, so two parties signing one event produce two attestations of one identifier, and carries the event as a W3C credential so a verifier outside this stack checks the signature with a JOSE library and no knowledge of BSV key derivation. Where the hash algorithm's ratified text and its reference implementations part, the profile refuses the input by name rather than choosing silently, because a hash two implementations compute differently identifies nothing.
 
-VSC compatibility is a separately versioned capability. The source drafts, local resolutions, contexts, tests and unsupported requirements are explicit. Product and regulatory extensions sit above those common exchange rules. A recommended configuration can reduce implementation decisions without redefining application accounts, forcing every actor to manage a wallet, or implying that all deployments share one authority policy.
+Compatibility with an external credential format is a separately versioned exchange profile, whose sources, local resolutions, contexts, tests and unsupported requirements are explicit. Product and regulatory extensions sit above those common exchange rules. A recommended configuration can reduce implementation decisions without redefining application accounts, forcing every actor to manage a wallet, or implying that all deployments share one authority policy.
 
 ## Public metadata and restricted evidence
 

@@ -142,6 +142,33 @@ describe('managed-acceptance@2: the custodian signs with a derived key (managed-
   })
 })
 
+describe('managed-acceptance-v2 fixture: the reader refuses what it must', () => {
+  // The version 2 refusals, each with its three verdicts, read from the
+  // published file the way an external reader does.
+  const transferV2 = findDppOutputs(Transaction.fromHex(F2.transfer.rawTx))[0].state
+  if (transferV2.version !== '2') throw new Error('fixture transfer is not version 2')
+
+  it('binds the pinned record to the TRANSFER that commits to it', () => {
+    expect(inspectManagedAcceptance(F2.record, { custodians: [F2.custodianKey] })).toMatchObject({ structureValid: true, signatureValid: true, commitment: F2.commitment, failures: [] })
+    expect(bindAcceptanceToState(F2.record as ManagedAcceptanceRecord, transferV2)).toEqual([])
+  })
+
+  it.each((F2.refusals as Array<{ name: string; record: unknown; expected: { structureValid: boolean; signatureValid: boolean | null; reason: string; bindingFails?: boolean } }>).map((r) => [r.name, r] as const))('refuses %s', (_name, r) => {
+    const inspection = inspectManagedAcceptance(r.record)
+    expect(inspection.structureValid).toBe(r.expected.structureValid)
+    expect(inspection.signatureValid).toBe(r.expected.signatureValid)
+    const reasons = inspection.failures.map((f) => f.reason)
+    if (r.expected.bindingFails) {
+      expect(reasons).toEqual([])
+      const binding = bindAcceptanceToState(r.record as ManagedAcceptanceRecord, transferV2)
+      expect(binding.length).toBeGreaterThan(0)
+      expect(binding.every((f) => f.reason === 'state-mismatch')).toBe(true)
+    } else {
+      expect(reasons).toContain(r.expected.reason)
+    }
+  })
+})
+
 describe('acceptance evidence in the one verification report', () => {
   // The pinned chain's TRANSFER commits to the version 2 record.
   const record = F2.record as ManagedAcceptanceRecord

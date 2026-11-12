@@ -14,7 +14,6 @@ Implementers can use this starting kit to write the DPP rules in any language wi
 |---|---|
 | git and reviewed checkout | [Reviewed example revision](../quick-start.md#get-the-code); includes specifications, contracts and fixtures |
 | Node 22 and npm | Your environment, for reference examples beside your results; your implementation needs neither |
-| Python 3 | Your environment, for the worked reader, which uses only the standard library |
 | BSV building blocks | An SDK for your language or your own code, listed below |
 | Reader | Nothing else: no account, wallet, funds or network |
 | Later live writer | A funded BRC-100 wallet and an index of your own |
@@ -34,7 +33,7 @@ npm run build
 
 ## What you may reuse
 
-The rule is in [conformance](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/conformance.md) section 6: an implementation counts as independently tested when it is written by another implementing party and "imports none of this repository's code for the property" it claims.
+The rule is in [conformance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/conformance.md) section 6: an implementation counts as independently tested when it is written by another implementing party and "imports none of this repository's code for the property" it claims.
 
 | You may use | You may not use for a property you claim |
 |---|---|
@@ -43,7 +42,7 @@ The rule is in [conformance](https://github.com/bsv-blockchain/dpp/blob/7e0e9386
 | The fixtures and vectors, copied unchanged as test data | A fixture edited to make a case pass |
 | The specifications, contracts and schemas | |
 
-Write from the specification text, as the Python reader below was written.
+Write from the specification text.
 
 ## What you will implement
 
@@ -51,18 +50,18 @@ A second implementation needs these building blocks. The SDKs above carry BRC-42
 
 | Building block | Standard | Where the rule is | From a BSV SDK? |
 |---|---|---|---|
-| secp256k1 keys, SHA-256, ECDSA with DER signatures. Deterministic (RFC 6979) nonces let your signatures reproduce the fixture bytes. | | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md) section 5 | Yes |
-| Key derivation. Every verification key is a child of a published key for an invoice number such as `1-dpp token v2-<passport_id>`, with counterparty `anyone`, so anyone can recompute it. | [BRC-42](https://bsv.brc.dev/key-derivation/0042), [BRC-43](https://bsv.brc.dev/key-derivation/0043) | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md) section 5, [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 5, [rules](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/rules.md) sections 3 and 5 | Yes |
-| The control proof: a 32-byte scalar showing that one key derives from another (`child = parent + scalar × G`) | [BRC-69](https://bsv.brc.dev/key-derivation/0069) | [Version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 6, [custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md) section 4 | The point arithmetic, yes; the rule, no |
-| The output layout: a locking key, `OP_CHECKSIG`, the fields as pushes, then a drop tail (`OP_2DROP` per pair of fields, plus `OP_DROP` for an odd count) | [BRC-48](https://bsv.brc.dev/scripts/0048) (PushDrop) | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md) sections 2 and 3, [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) sections 2 and 3, [rules](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/rules.md) section 5 for the anchor | To build an output, yes. To read one, no: a general PushDrop decoder accepts outputs a conforming reader must refuse, so the strict reading rules are your own code |
+| secp256k1 keys, SHA-256, ECDSA with DER signatures. Deterministic (RFC 6979) nonces let your signatures reproduce the fixture bytes. | | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md) section 5 | Yes |
+| Key derivation. Every verification key is a child of a published key for an invoice number such as `1-dpp token v2-<passport_id>`, with counterparty `anyone`, so anyone can recompute it. | [BRC-42](https://bsv.brc.dev/key-derivation/0042), [BRC-43](https://bsv.brc.dev/key-derivation/0043) | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md) section 5, [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 5, [rules](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/rules.md) sections 3 and 5 | Yes |
+| The control proof: a 32-byte scalar showing that one key derives from another (`child = parent + scalar × G`) | [BRC-69](https://bsv.brc.dev/key-derivation/0069) | [Version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 6, [custody](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/custody.md) section 4 | The point arithmetic, yes; the rule, no |
+| The output layout: a locking key, `OP_CHECKSIG`, the fields as pushes, then a drop tail (`OP_2DROP` per pair of fields, plus `OP_DROP` for an odd count) | [BRC-48](https://bsv.brc.dev/scripts/0048) (PushDrop) | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md) sections 2 and 3, [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) sections 2 and 3, [rules](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/rules.md) section 5 for the anchor | To build an output, yes. To read one, no: a general PushDrop decoder accepts outputs a conforming reader must refuse, so the strict reading rules are your own code |
 | Signature preimages: plain concatenation for version 1; for version 2 and the anchor, a domain tag and then every item prefixed with its length as a Bitcoin VarInt | | The same sections | No |
-| Restricted canonical JSON for the native claim: property names sorted, no whitespace, only string and safe-integer values, duplicate keys refused | | [Rules](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/rules.md) section 4; the nested form for the acceptance record is in [managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md) section 3 | No |
-| Transactions and BEEF (Background Evaluation Extended Format), the binary form in which an index or a wallet hands you transactions with their ancestors and proofs | [BRC-62](https://bsv.brc.dev/transactions/0062) | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md) section 8 | Yes |
-| Merkle paths in BUMP (BSV Unified Merkle Path) form, checked against block headers by a header source that answers "valid", "not valid" or "no answer" | [BRC-74](https://bsv.brc.dev/transactions/0074) | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md) section 8 | Paths, yes. Headers come from a header service or your own node |
-| Chain invariants: the genesis rules, spends of the tip (the newest state), the predecessor and genesis outpoints a version 2 state names, which operation may change which field, nothing after a retirement | | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md) section 6, [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 6 | No |
-| The verification report: sixteen checks in a fixed order, four statuses, shared reason codes | | [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) | No |
+| Restricted canonical JSON for the native claim: property names sorted, no whitespace, only string and safe-integer values, duplicate keys refused | | [Rules](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/rules.md) section 4; the nested form for the acceptance record is in [managed custody](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md) section 3 | No |
+| Transactions and BEEF (Background Evaluation Extended Format), the binary form in which an index or a wallet hands you transactions with their ancestors and proofs | [BRC-62](https://bsv.brc.dev/transactions/0062) | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md) section 8 | Yes |
+| Merkle paths in BUMP (BSV Unified Merkle Path) form, checked against block headers by a header source that answers "valid", "not valid" or "no answer" | [BRC-74](https://bsv.brc.dev/transactions/0074) | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md) section 8 | Paths, yes. Headers come from a header service or your own node |
+| Chain invariants: the genesis rules, spends of the tip (the newest state), the predecessor and genesis outpoints a version 2 state names, which operation may change which field, nothing after a retirement | | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md) section 6, [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 6 | No |
+| The verification report: sixteen checks in a fixed order, four statuses, shared reason codes | | [Verification](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) | No |
 | Index requests, to submit a transaction and look records up: only for reading live passports, writing, or the index role | [BRC-22](https://bsv.brc.dev/overlays/0022), [BRC-24](https://bsv.brc.dev/overlays/0024) | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml) | Clients, yes |
-| Wallet calls to sign, fund and send: only for a writer | [BRC-100](https://bsv.brc.dev/wallet/0100) | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) | Use any BRC-100 wallet; [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |
+| Wallet calls to sign, fund and send: only for a writer | [BRC-100](https://bsv.brc.dev/wallet/0100) | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/writing.md) | Use any BRC-100 wallet; [choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |
 
 A reader handles both versions, reading each state under its own version, and a history can mix them. Record version 3, the token carrier, is parked outside the standard ([parked material](../reference/parked/token-carrier/README.md)).
 
@@ -75,54 +74,37 @@ A reader handles both versions, reading each state under its own version, and a 
 
 Steps 2 to 5 make a passport reader. Start there whatever you build: every other role checks what it makes or receives with the reader's rules.
 
-1. **See what passing looks like.** At the root of the checkout, run the reference reader and the Python reader:
+1. **See what passing looks like.** At the root of the checkout, run the reference reader:
 
    ```sh
    node examples/verify-passport.mjs --fixture --version=2 --report
-   python3 conformance/independent/python/dpp_verify.py
    ```
 
-   No line starts with `FAIL`, and the Python reader ends with `Every sentence above holds.`
+   No line starts with `FAIL`.
 2. **Decode one record.** Read `fixtures/record-v2.json`. Your inputs are `lockingScript` and `custodianKey`, the publisher's identity key. Your code must reproduce `state` (the fifteen data fields), `actorPreimage` and `publisherPreimage` byte for byte, derive `actorVerificationKey` and `publisherVerificationKey`, verify `actorSignature` and `publisherSignature` under them, and refuse all ten scripts in `refusals`. Then do the same for `fixtures/record-v1.json`, whose fourteen fields sign `userPreimage` and `serverPreimage`.
 3. **Verify a history.** Read `fixtures/chain-v2.json` and `fixtures/chain-v1.json`: accept the valid states in order and refuse every broken link in each file.
 4. **Bind custody evidence.** Read `fixtures/managed-acceptance-v2.json`, the derived-key acceptance record a custodian keeps under `managed-custody@2`. Reproduce its signature, commitment, state binding and refusals. Read `fixtures/managed-acceptance-v1.json` under the superseded direct-signature rule for historical records; the current writer produces only version 2 acceptance records.
 5. **Produce the report.** Read every case in `fixtures/evidence-v2.json` and `fixtures/evidence-v1.json` and produce, for each, a report that matches on the parts [run the fixtures](fixture-runner.md#what-a-matching-report-is) lists.
 6. **Add the other roles you need**, from the table below.
 7. **Report what you did**, as [reporting](reporting.md) describes.
-8. **Exchange fresh records** with the reference in [the trial](demonstration.md).
+8. **Exchange fresh records** with the reference, as [implementing parties](../contribute/implementing-parties.md) describes. The interoperability trial that would record such an exchange is parked until an independent implementer appears ([parked material](../reference/parked/interoperability-trial/README.md)).
 
 Keep the harness in your own language. Record every case, its expected result and your result; stop on a mismatch and retain both values. [Run the fixtures](fixture-runner.md) says what each file gives as input, what must match, and the four rules whose texts do not yet agree ([source gaps](fixture-runner.md#source-gaps)).
 
-## A worked example: the Python reader
+## Parked: the Python reader
 
-[`conformance/independent/python/dpp_verify.py`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/independent/python/dpp_verify.py) implements the specification text using only the Python standard library. Read it to see rules become code; run it from the checkout root:
-
-```sh
-python3 conformance/independent/python/dpp_verify.py
-```
-
-| Coverage or result | Detail |
-|---|---|
-| Building blocks | secp256k1 arithmetic, strict DER, ECDSA verification, BRC-42 derivation, PushDrop layout and refusals, both signature preimages, chain invariants, native claim and anchor |
-| Fixtures | Record, chain, anchor and acceptance |
-| Vectors | Record, chain, anchor, acceptance, publisher policy, registration and evidence package; skipped vectors are not run |
-| Success | One sentence per check, successful checks starting `ok:`; ends `Every sentence above holds.` |
-| Check count | Changes as fixtures are added; retain output for your recorded revision |
-| Equivalent invocation | `npm run conformance:independent` |
-| Exclusions | No reports for `evidence-v1.json` or `evidence-v2.json`; signs nothing. It is no report or writer example. |
-
-The same programme wrote it and the reference. It provides engineering evidence that the specification is complete enough; version 1.0 still needs an organisationally independent implementation. [Its README](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/independent/python/README.md) says exactly what it covers.
+The programme wrote a reader in standard-library Python from the specification text, to show rules becoming code. It was parked on 12 November 2026 with its last passing revision: [parked material](../reference/parked/python-reader/README.md). The same programme wrote it and the reference, so it was engineering evidence that the specification is complete enough, never the organisationally independent implementation version 1.0 needs.
 
 ## Pick your role
 
-The [baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json), `native-baseline@2`, is the recommended selection of current formats and the one baseline a claim names; `native-baseline@1` is historical. It lists required ledger rows under `roles.<role>.requires` and tests under `testTargets`, copied below. The ledger, [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json), lists every requirement with its source clause, the roles it binds and its status.
+The [baseline](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/conformance/baseline-native-2.json), `native-baseline@2`, is the recommended selection of current formats and the one baseline a claim names; `native-baseline@1` is historical. It lists required ledger rows under `roles.<role>.requires` and tests under `testTargets`, copied below. The ledger, [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json), lists every requirement with its source clause, the roles it binds and its status.
 
 | Role | What it does | Fixtures and tests | Page |
 |---|---|---|---|
 | Passport reader | Rebuilds a passport's history from transaction bytes and reports what it establishes | `record-v1.json`, `chain-v1.json`, `evidence-v1.json`, `record-v2.json`, `chain-v2.json`, `managed-acceptance-v2.json`, historical `managed-acceptance-v1.json`, `evidence-v2.json` | [Passport reader](roles/passport-reader.md) |
 | Attestation verifier | Checks a signed claim and its on-chain anchor | `attestation-anchor-v1.json`, the anchor cases of `evidence-v1.json`, and the historical `anchor-v3.json` | [Attestation verifier](roles/attestation-verifier.md) |
 | Attestation issuer | Signs a claim about a product, such as a repair | `attestation-anchor-v1.json` | [Attestation issuer](roles/attestation-issuer.md) |
-| Passport writer | Builds each new state, checks it, announces it, sends it, proves it and keeps it | The record and chain vectors, which publish their test keys so your writer reproduces the pinned bytes; then a self-report, one sentence per rule of [writing](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) section 11 | [Passport writer](roles/passport-writer.md) |
+| Passport writer | Builds each new state, checks it, announces it, sends it, proves it and keeps it | The record and chain files, with the test keys published beside them so your writer reproduces the pinned bytes ([run the fixtures](fixture-runner.md#the-vector-form)); then a self-report, one sentence per rule of [writing](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/writing.md) section 11 | [Passport writer](roles/passport-writer.md) |
 | Registry | Validates, stores and serves signed claims | `contracts/registry.yaml`, `attestation-anchor-v1.json` | [Registry](roles/registry.md) |
 | Index (the overlay role) | Admits passport and anchor transactions and answers lookups | `contracts/overlay.yaml`, `attestation-anchor-v1.json`, `chain-v2.json`, the files under `fixtures/vectors/` | [Overlay](roles/overlay.md) |
 
@@ -136,15 +118,15 @@ For each role you claim:
 2. A writer also has one sentence per rule of writing section 11 ([passport writer](roles/passport-writer.md#prove-it-the-writers-self-report)).
 3. Publish a capability document describing support and exclusions ([declare what you support](reporting.md#declare-what-you-support)). Include `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `representations`, `proofSuites`, `anchorFormats` and `unsupported`. For services, fill `topics`, `services`, `publisherPolicy`, `synchronisation` and `limits` where applicable. It is a support claim, not proof of conformance.
 4. Retain the fixture file and case, expected result and your result. Give one sentence per check, with no score, and submit the report as [send it](reporting.md#send-it) describes.
-5. Optionally, [the trial](demonstration.md) exchanges fresh records with the reference.
+5. Optionally, exchange fresh records with the reference ([implementing parties](../contribute/implementing-parties.md)).
 
 ## Where the material is
 
 | Material | Source |
 |---|---|
-| Rules and participation | [Specification index](../reference/specifications.md), [governance](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/GOVERNANCE.md) |
+| Rules and participation | [Specification index](../reference/specifications.md), [governance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/GOVERNANCE.md) |
 | Interfaces | [Contracts](../reference/contracts.md) |
-| Bytes and test cases | [Fixture guide](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md) |
+| Bytes and test cases | [Fixture guide](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/fixtures/README.md) |
 | Requirements and their status | [Ledger](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/conformance/manifest.json) |
 | Industry profile data | [Frozen profiles](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-profiles/frozen.json) |
 
@@ -163,8 +145,8 @@ node scripts/implementer-bundle.mjs
 |---|---|
 | Output | `release/implementer-bundle/`, with the archive beside it |
 | Entry point | No root README. Start with `bundle-manifest.json`: source revision, working-tree state, release selection and every file's digest. Then open `docs/implement/README.md`, this page. |
-| Rules and tests | Specifications, contracts, fixtures in both forms, baselines, ledger, schemas and selections |
+| Rules and tests | Specifications, contracts, fixtures in every published form, baselines, ledger, schemas and selections |
 | Supporting material | Example capability document, frozen profile data, these docs and licence |
-| Excluded | Runtime code, examples and Python reader; keep the checkout to run them |
+| Excluded | Runtime code and examples, and the parked Python reader; keep the checkout to run the examples |
 
 Next: [run the fixtures](fixture-runner.md).

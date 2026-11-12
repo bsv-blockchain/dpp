@@ -2,11 +2,11 @@
 /**
  * Assemble the implementer bundle: what an independent implementer receives
  * to implement the standard without the reference runtime code. The
- * specifications, the contracts, the fixtures in both forms, the conformance
- * baselines, ledger, schemas, selections, example capability document and
- * licence record, the frozen profile data, the implementer documentation and
- * the licence, with a manifest naming the release set and its digest, the
- * source revision and the SHA-256 of every file. Written to
+ * specifications, the contracts, the fixtures in every published form, the
+ * conformance baselines, ledger, schemas, selections, example capability
+ * document and licence record, the frozen profile data, the implementer
+ * documentation and the licence, with a manifest naming the release set and
+ * its digest, the source revision and the SHA-256 of every file. Written to
  * release/implementer-bundle/ (ignored by git) and packed as one archive
  * beside it, and recorded in release/candidates.json when that exists.
  *
@@ -89,7 +89,7 @@ const manifest = {
   sourceState: dirty ? 'working-tree' : 'committed',
   assembledAt: new Date().toISOString(),
   licence: 'Apache License 2.0 (Apache-2.0; LICENSE); third-party artefacts carry their own notices beside them',
-  carries: 'specifications, contracts, fixtures in both forms, conformance baselines, ledger, schemas, selections, example capability document, licence record, frozen profile data and VSC artefacts, implementer documentation with the parked plans and fixtures; no reference runtime code',
+  carries: 'specifications, contracts, fixtures in every published form, conformance baselines, ledger, schemas, selections, example capability document, licence record, frozen profile data and VSC artefacts, implementer documentation with the parked plans and fixtures; no reference runtime code',
   files: Object.fromEntries(files.map((f) => [f, { sha256: sha256(readFileSync(join(out, f))), bytes: statSync(join(out, f)).size }])),
 }
 writeFileSync(join(out, 'bundle-manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
