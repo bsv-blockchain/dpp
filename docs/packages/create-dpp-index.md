@@ -17,7 +17,7 @@ Most of what the starter set up has a place in the preset. The rows marked as di
 | Difference: a dedicated, authenticated MongoDB user | The bundled MongoDB has no credentials and publishes no port; for authentication, set `MONGO_URL` to a managed database |
 | Difference: HTTP published on loopback only | The preset publishes on every interface; set `OVERLAY_PORT=127.0.0.1:8080` behind a TLS proxy on the same host |
 | Difference: `ANCHOR_SERVICE_KEYS` defaulted to the publisher key | Empty carries every treasury's anchors; set it to the publisher key to carry only that application's |
-| Difference: generated `EXPORT_TOKEN` and `EXPORT_SIGNING_KEY` | Empty, so both export routes answer 503 until you [enable exports](../operate/export-import-recovery.md#enable-exports-on-your-index) |
+| Difference: generated `EXPORT_TOKEN` and `EXPORT_SIGNING_KEY` | `EXPORT_TOKEN` and `EXPORTER_PRIVATE_KEY` are empty, so both export routes answer 503 until you [enable exports](../operate/export-import-recovery.md#enable-exports-on-your-index); the index refuses to boot with the starter's `EXPORT_SIGNING_KEY`, which it no longer reads; move its value to `EXPORTER_PRIVATE_KEY` |
 | Difference: startup refused `CHAIN_TRACKER=scripts-only` | Nothing refuses it; leave `CHAIN_TRACKER` empty on any reachable index |
 
 ## The published starter

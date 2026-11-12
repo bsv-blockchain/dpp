@@ -108,6 +108,11 @@
         "peers": { "type": "array", "items": { "type": "string", "format": "uri" } }
       }
     },
+    "exporterIdentityKey": {
+      "type": "string",
+      "pattern": "^0[23][0-9a-f]{64}$",
+      "description": "The identity key every dpp-evidence-package@1 this implementation signs names as exporter.id. Each manifest is signed by its BRC-42 child for protocol [1, 'dpp evidence package v1'], the passport identifier as key identifier and counterparty anyone, which a reader derives from this key alone (spec/portable-evidence.md section 2). Absent when the implementation signs no package."
+    },
     "limits": {
       "type": "object",
       "additionalProperties": { "type": ["integer", "string"] },

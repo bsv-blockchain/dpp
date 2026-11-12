@@ -6,175 +6,24 @@ info:
   description: |
     Current intake uses explicit signed native claims, the external vc-di-ecdsa-rdfc-2019@1 credential representation or the proposed epcis-event-vc@1 directly signed EPCIS event representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
 
-    The VSC SEAL representation (vsc-seal-json-v1) is parked with its vsc-draft-compat/0.1.0 profile: new submissions are refused as representation-unsupported, and records stored before remain readable without content verification. The contract defines no status list publication: a registry checks the status lists credential issuers publish. Historical UORA representations remain readable and legacy intake is disabled unless LEGACY_INTAKE=1.
+    The VSC SEAL representation (vsc-seal-json-v1) is parked with its vsc-draft-compat/0.1.0 profile: new submissions are refused as representation-unsupported, and records stored before remain readable without content verification. The contract defines no status list publication: a registry checks the status lists credential issuers publish. The contract has no legacy intake: a historical UORA body names no current representation and is refused as any such body is, while records stored under the historical representation, `legacy-uora-json`, remain readable. Such a record retains no secured bytes, so the record list names it, the proof and chain routes serve its canonical bytes, and the evidence package names it under what the registry could not produce.
+
+    This contract is the minimum every registry serves: its capability document, validation, intake, the paged list of the records it holds, one record's anchor proof, a passport's chain and a passport's evidence package. A registry may offer more; the reference registry documents its own further routes.
 servers:
   - url: https://dpp-resolver.bsvb.net
-    description: The hosted demonstration deployment (the API origin)
+    description: The hosted demonstration deployment
   - url: http://localhost:4000
     description: Local development (npm run dev)
-  - url: https://id.example.org
-    description: |
-      The GS1 resolver origin, `RESOLVER_ORIGIN`: the same process answers a
-      second origin with the GS1-Conformant Resolver contract of the standard's
-      `spec/gs1-discovery.md` (profile `gs1-digital-link@1`). Path items
-      marked `x-dpp-origin: resolver` are served on this origin only; every
-      other path item is served on the API origin only. The two never share a
-      handler, so `/01/{gtin}/21/{serial}` is the legacy evidence JSON on the
-      API origin and the resolver's negotiated answer here.
-    x-dpp-origin: resolver
 
 tags:
   - name: resolution
     description: Reading passport state and history.
-  - name: gs1-resolver
-    description: |
-      The hosted GS1-Conformant Resolver on `RESOLVER_ORIGIN` (the standard's
-      `spec/gs1-discovery.md`): primary key 01 with its qualifiers, the
-      special compressed EPC-binary form, linksets, negotiated redirects and
-      the description file. Public audience only; restricted links are never
-      returned here. Records are administered on the API origin under
-      `/resolver/records`.
   - name: attestation
     description: Receiving lifecycle attestations from a publisher.
   - name: validation
-    description: The seven-phase validation pipeline.
-  - name: governance
-    description: |
-      The certification registry phase 7's cascade ranks claimants by. An
-      extension beyond the specification's six endpoints: the specification
-      mandates no central trust registry and leaves discovery of an issuer's
-      CertificationCredential to the Trust Framework, so while the framework
-      here is self-issued (G3, G6) this resolver doubles as its publication
-      point.
-  - name: spec
-    description: Domain Profile definitions and spec pages.
-  - name: operations
-    description: Liveness and counters.
-  - name: showcase
-    description: |
-      An internal anchor-proof demonstration (R17), not part of the query
-      API contract a consumer builds against. Every route here 404s unless
-      the deployment sets `SHOWCASE=1`. `GET /showcase` additionally serves
-      a self-contained HTML page (text/html) that reads the two JSON routes
-      below; it also deploys as a static file to a separate host.
-
-# Routes the router serves that this document deliberately does not describe.
-# The reference registry's contract test checks its router against this
-# document in both directions and accepts only the omissions listed here, each
-# with its reason. Another registry need not serve them.
-x-intentional-omissions:
-  - method: GET
-    path: /treasury/balance
-    reason: >-
-      An operator's internal balance monitor for the reference registry's
-      anchoring wallet. It answers 404 unless the operator enables it and is no
-      part of the registry interface.
-  - method: GET
-    path: /showcase
-    reason: >-
-      The showcase's HTML page (text/html), an internal demonstration surface
-      gated by SHOWCASE=1 and deployed as a static file elsewhere. The two
-      JSON routes it reads are documented under the showcase tag; the page
-      itself is not an API operation.
-  - method: GET
-    path: /01/*
-    origin: resolver
-    reason: >-
-      The resolver origin's catch-all under primary key 01: every path shape
-      the grammar admits is documented above as its own path item, and this
-      route answers any other shape (a qualifier out of order, an unsupported
-      qualifier, a trailing segment) with 400 and the grammar's reason, as the
-      resolver standard requires, instead of the router's 404. Not an
-      operation a client addresses on purpose.
+    description: Verifying a submission without storing or anchoring it.
 
 paths:
-  /health:
-    get:
-      tags: [operations]
-      operationId: getHealth
-      summary: Liveness and dependency reachability.
-      description: |
-        Probes the two dependencies this service has rather than asserting
-        them. Suitable as a platform healthcheck path: a container that boots
-        but cannot reach its database answers 503 here, which is the difference
-        between a healthcheck and a ping.
-      responses:
-        '200':
-          description: The service is up and its store answered.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Health' }
-        '503':
-          description: |
-            The store did not answer, so the service cannot serve reads.
-            `ok` is false and `storeDetail` says why. An unconfigured treasury
-            does **not** produce a 503: unanchored is a first-class state.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Health' }
-
-  /stats:
-    get:
-      tags: [operations]
-      operationId: getStats
-      summary: Counters, for the conformance and demo narrative.
-      responses:
-        '200':
-          description: Counts held by this resolver.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Stats' }
-
-  /history:
-    get:
-      tags: [resolution]
-      operationId: getHistory
-      summary: The lifecycle history of one passport, unbounded or in pages of a snapshot.
-      description: |
-        Keyed by `passportId`, by `objectDid` or by the data carrier `uid`.
-        Exactly one must be supplied. Treating them as alternative keys
-        presumes no derivation between them: a physical-object DID is never
-        derived from a passport identifier.
-
-        Without `limit` or `cursor` the answer is the historical unbounded
-        one: every event this store holds, with `chainIntegrity` where a check
-        backs it. That answer is a lookup, not an export; it says nothing about
-        completeness beyond what this store holds and carries no snapshot.
-        With `limit` or `cursor` the answer is a page of a snapshot
-        (`HistoryPage`): ordered by the store's insertion sequence then
-        identifier, fixed at the first page so concurrent inserts shift
-        nothing, `completeForSnapshot` only on the last page. Pages carry no
-        `chainIntegrity`, which is a statement about the whole history.
-
-        Open: whether a repurposed battery returns one history or a chain of
-        successive passports.
-      parameters:
-        - { name: passportId, in: query, schema: { type: string } }
-        - { name: objectDid, in: query, schema: { type: string } }
-        - { name: uid, in: query, schema: { type: string } }
-        - name: profile
-          in: query
-          description: Filter to one Domain Profile, for instance `battery@2`.
-          schema: { type: string }
-        - { $ref: '#/components/parameters/limit' }
-        - { $ref: '#/components/parameters/cursor' }
-      responses:
-        '200':
-          description: The history, oldest event first; a page of it when paging was asked for.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/History'
-                  - $ref: '#/components/schemas/HistoryPage'
-        '400':
-          description: A malformed request, a `limit` outside 1 to 500 (`limit-invalid`), or a cursor this service did not issue or issued for another query (`cursor-invalid`).
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Problem' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '410': { $ref: '#/components/responses/SnapshotExpired' }
-
   /chain:
     get:
       tags: [resolution]
@@ -229,7 +78,7 @@ paths:
       operationId: getEvidencePackage
       summary: The dpp-evidence-package@1 for one passport, as this build's JSON envelope.
       description: |
-        Everything this registry holds about a passport as content-addressed files under a signed manifest (the standard's portable evidence, section 2): native claims as their canonical stored bytes under `native-claims/`, original secured credentials byte for byte with their representation and media type under `external-credentials/`, retained anchor scripts and any raw anchor transaction the registry still holds under `transactions/`, the newest authenticated status observation of each referenced list under `status/`, registered certifications of the records' issuers and the verification policy in force under `authority/`, and the verification report of each record at export under `reports/`. Disclosure scope is `public` and the package is not a recovery backup. `completeness` names the store snapshot the export was read at, what the registry holds and withholds (the operator's verification bundle and the intake results superseded by the reports), and what a record references that the registry could not produce (token history, unretained anchor scripts or transactions, unobserved status lists, unregistered certifications, historical records without secured bytes).
+        Everything this registry holds about a passport as content-addressed files under a signed manifest (the standard's portable evidence, section 2): native claims as their canonical stored bytes under `native-claims/`, original secured credentials byte for byte with their representation and media type under `external-credentials/`, retained anchor scripts and any raw anchor transaction the registry still holds under `transactions/`, the newest authenticated status observation of each referenced list under `status/`, the verification policy in force under `authority/`, and the verification report of each record at export under `reports/`. Disclosure scope is `public` and the package is not a recovery backup. `completeness` names the store snapshot the export was read at, what the registry holds and withholds (the operator's verification bundle and the intake results superseded by the reports), and what a record references that the registry could not produce (token history, unretained anchor scripts or transactions, unobserved status lists, historical records without secured bytes).
 
         The manifest is signed by the registry's anchoring wallet, the
         identity every anchor names as `anchoredBy`: `exporter.id` is that
@@ -257,294 +106,18 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/EvidencePackageArchive' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '503': { description: No signing identity is configured, so no package is signed or served. }
-
-  /01/{gtin}/21/{serial}:
-    x-dpp-origin: api
-    x-dpp-also-on-resolver: '#/components/pathItems/gs1ResolverEntity'
-    get:
-      tags: [resolution]
-      operationId: getByDigitalLink
-      summary: Resolve the GS1 Digital Link path printed on the item.
-      description: |
-        Every passport this registry serves is identified by a GS1 Digital
-        Link URI, and the path printed on the item is answered here as an
-        address, so a label can be followed without an application in between.
-
-        Returns the material for an independent check, never a verdict. Per
-        event: the digest, the outpoint committing it, and a public explorer URL
-        where the same digest can be read off the chain. Digests are recomputed
-        from the stored documents on each request, so comparing them against an
-        explorer compares two sources rather than reading this one twice.
-        Validity is not asserted here; that is `/validate`, which still
-        abstains.
-
-        **Deliberately narrow, and not a general GS1 Digital Link resolver.**
-        Only AI 01 with AI 21, the one form minted here. Batch and lot (AI 10),
-        the compressed forms and the query-string forms are unimplemented and
-        404 rather than resolve to something plausible.
-
-        A request whose `Accept` includes `text/html` is sent on with 303 to the
-        proof page when `PROOF_PAGE_URL` names one, because a person who
-        followed a printed code wants the surface that runs the check. Unset,
-        the JSON is the answer rather than a redirect to a host that may not
-        exist.
-      parameters:
-        - name: gtin
-          in: path
-          required: true
-          description: |
-            AI 01, 8 to 14 digits. Left-padded to GTIN-14 for lookup, so the
-            13-digit and 14-digit spellings of one GTIN both resolve.
-          schema: { type: string, pattern: '^[0-9]{8,14}$' }
-        - name: serial
-          in: path
-          required: true
-          description: AI 21, the serial identifying this one unit.
-          schema: { type: string, minLength: 1 }
-      responses:
-        '200':
-          description: The identifier resolves and this resolver holds events for it.
-          headers:
-            Link:
-              description: RFC 8288 relations mirroring `links`. Not a GS1 linkset; no `linkType` is claimed.
-              schema: { type: string }
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/DigitalLinkResolution' }
-        '303':
-          description: |
-            A browser, redirected to the proof page for this unit. Only when
-            `PROOF_PAGE_URL` is configured.
-          headers:
-            Location:
-              schema: { type: string, format: uri }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '404':
-          description: |
-            Well formed, and nothing is held under it. Carries `found: false`
-            rather than an empty success, because "no such passport" and "a
-            passport with no events" are different facts. No `stub`: nothing
-            about this answer is a placeholder.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [error, detail, gtin, serial, found]
-                properties:
-                  error: { type: string, enum: [no such passport] }
-                  detail: { type: string }
-                  gtin: { type: string }
-                  serial: { type: string }
-                  passportId: { type: string, description: The first identifier looked up, the path under the first minting root the registry tries. }
-                  found: { type: boolean, enum: [false] }
-
-  /resolve/gs1/01/{gtin}/21/{serial}:
-    get:
-      tags: [resolution]
-      operationId: getByDigitalLinkAlias
-      summary: The explicit alias of the legacy evidence JSON.
-      description: |
-        Answers exactly as `GET /01/{gtin}/21/{serial}` does on this origin,
-        from the same handler. The alias exists because the same path on the
-        configured resolver origin is the GS1 resolver's answer, and a client
-        that wants the evidence JSON by a name that cannot be confused with a
-        resolver request asks here (`spec/gs1-discovery.md` §4).
-      parameters:
-        - name: gtin
-          in: path
-          required: true
-          schema: { type: string, pattern: '^[0-9]{8,14}$' }
-        - name: serial
-          in: path
-          required: true
-          schema: { type: string, minLength: 1 }
-      responses:
-        '200':
-          description: "As GET /01/{gtin}/21/{serial}."
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/DigitalLinkResolution' }
-        '303': { description: "As GET /01/{gtin}/21/{serial}." }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '404': { description: "As GET /01/{gtin}/21/{serial}." }
-
-  /resolver/records:
-    get:
-      tags: [gs1-resolver]
-      operationId: listResolutionRecords
-      summary: The resolution records registered under one GTIN, at every granularity.
-      parameters:
-        - name: gtin
-          in: query
-          required: true
-          schema: { type: string, pattern: '^[0-9]{8,14}$' }
-      responses:
-        '200':
-          description: The records, summarised and in full.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [gtin, records, full]
-                properties:
-                  gtin: { type: string }
-                  records: { type: array, items: { $ref: '#/components/schemas/ResolutionRecordSummary' } }
-                  full: { type: array, items: { $ref: '#/components/schemas/ResolutionRecord' } }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '403': { $ref: '#/components/responses/OutsideNamespace' }
-        '503': { $ref: '#/components/responses/NamespacesUnconfigured' }
-      security:
-        - {}
-        - writeToken: []
-    post:
-      tags: [gs1-resolver]
-      operationId: putResolutionRecord
-      summary: Register or replace the resolution record of one entity.
-      description: |
-        Validated at write with the package's `resolutionRecordProblems`
-        (the resolver standard's registration rules: check digit, qualifier
-        order, a serial never beside a variant or lot, one default link, https
-        targets, titles, carriable relations, declared disclosure), so a
-        request never meets a record the standard refuses. Requires the write
-        token and a GTIN inside `RESOLVER_NAMESPACES`; nothing infers that
-        authority from a check digit, a DID, a host or an account. A record
-        for a tuple already held replaces it and moves its configuration
-        revision.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/ResolutionRecordInput' }
-      responses:
-        '201':
-          description: A new record.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ResolutionRecordWritten' }
-        '200':
-          description: A replaced record.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ResolutionRecordWritten' }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '403': { $ref: '#/components/responses/OutsideNamespace' }
-        '422':
-          description: The record fails the registration rules; every problem is named and nothing is stored.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [error, problems]
-                properties:
-                  error: { const: record-refused }
-                  problems: { type: array, items: { type: string } }
-        '503': { $ref: '#/components/responses/NamespacesUnconfigured' }
-      security:
-        - {}
-        - writeToken: []
-
-  /resolver/records/{key}:
-    delete:
-      tags: [gs1-resolver]
-      operationId: deleteResolutionRecord
-      summary: Remove one resolution record by its key tuple.
-      parameters:
-        - name: key
-          in: path
-          required: true
-          description: The canonical key tuple, `01:{gtin14}` followed by `|ai:value` qualifiers, percent-encoded.
-          schema: { type: string }
-      responses:
-        '200':
-          description: Removed.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [removed, keyTuple]
-                properties:
-                  removed: { const: true }
-                  keyTuple: { type: string }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-        '403': { $ref: '#/components/responses/OutsideNamespace' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '503': { $ref: '#/components/responses/NamespacesUnconfigured' }
-      security:
-        - {}
-        - writeToken: []
-
-  /.well-known/gs1resolver:
-    x-dpp-origin: resolver
-    get:
-      tags: [gs1-resolver]
-      operationId: getResolverDescription
-      summary: The resolver description file (GS1-Conformant Resolver 1.2.1 §3).
-      description: |
-        Published only by the origin that provides the resolver contract:
-        primary key 01 as the one supported key, the GS1 vocabulary and the
-        standard's own link namespace as link type namespaces, `linkset` never
-        the default, and the pinned GS1 context for JSON linksets. Validates
-        against the pinned description-file schema the profiles package carries.
-      responses:
-        '200':
-          description: The description file.
-          content:
-            application/json:
-              schema: { type: object }
-        '404': { description: No resolver origin is configured. }
-
-  /01/{gtin}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-  /01/{gtin}/22/{cpv}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-  /01/{gtin}/10/{lot}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-  /01/{gtin}/22/{cpv}/10/{lot}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-  /01/{gtin}/22/{cpv}/21/{serial}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-  /01/{gtin}/10/{lot}/21/{serial}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-  /01/{gtin}/22/{cpv}/10/{lot}/21/{serial}: { $ref: '#/components/pathItems/gs1ResolverEntity' }
-
-  /{compressed}:
-    x-dpp-origin: resolver
-    get:
-      tags: [gs1-resolver]
-      operationId: resolveCompressed
-      summary: Resolve the special compressed form carrying an EPC binary string.
-      description: |
-        One path segment beginning `eh` (hexadecimal) or `ex` (URI-safe base
-        64), decoded under the GS1 Digital Link URI Compression standard for
-        EPC binary strings and the Tag Data Standard for SGTIN-96 and
-        SGTIN-198, then resolved exactly as the uncompressed request would be
-        under this origin, with the query string carried across. A segment that
-        is neither prefix, an EPC scheme the profile does not implement, or a
-        string that does not decode answers 400 with the reason and never
-        resolves to something plausible.
-      parameters:
-        - name: compressed
-          in: path
-          required: true
-          schema: { type: string, pattern: '^(eh|ex)[A-Za-z0-9_-]+$' }
-      responses:
-        '200': { description: As the uncompressed request. }
-        '300': { description: As the uncompressed request. }
-        '307': { description: As the uncompressed request. }
-        '400':
-          description: The compression string does not decode, or the segment is not a compression string.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ResolverRefusal' }
-        '404': { description: As the uncompressed request. }
+        '503': { description: 'No signing identity is configured, so no package is signed or served.' }
 
   /capabilities:
     get:
       summary: Current representations, discovery and overlay contracts, and what is explicitly not supported; no certification claim.
       responses:
         '200':
-          description: Supported representations and proof suites, the interoperability profiles in force, the two readiness statements under `unsupported`, tm_attestation, ls_attestation and legacy intake configuration.
+          description: Supported representations and proof suites, the interoperability profiles in force, tm_attestation, ls_attestation, and under `unsupported` the two readiness statements, the parked `vsc-seal-json-v1` and, on a registry holding historical records, `legacy-uora-json`.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Capabilities' }
+
   /attestations:
     get:
       tags: [attestation]
@@ -608,7 +181,7 @@ paths:
       operationId: postAttestation
       summary: Verify and store an explicit secured representation, then report its independent anchor.
       description: |
-        Native signature verification precedes storage and anchoring. An external credential requires its proof, status and authority evidence under the operator's policy. Current representations never fall through into the historical placeholder path. The parked `vsc-seal-json-v1` representation, in its envelope or as a SEAL posted as the body, is refused with 422, outcome `unsupported` and an issue naming `representation-unsupported`; nothing is verified, stored or anchored. The request schema does not admit a SEAL: a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400.
+        Native signature verification precedes storage and anchoring. An external credential requires its proof, status and authority evidence under the operator's policy. The parked `vsc-seal-json-v1` representation, in its envelope or as a SEAL posted as the body, is refused with 422, outcome `unsupported` and an issue naming `representation-unsupported`; nothing is verified, stored or anchored. The request schema does not admit a SEAL: a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400. A JSON object naming no current representation, a historical UORA placeholder or SD-JWT submission among them, is refused with 422, outcome `invalid` and the issue `unsupported representation; an explicit claimFormat or representation is required`, not with 400; nothing is stored or anchored. There is no legacy intake for any body to fall through to.
       requestBody:
         required: true
         content:
@@ -640,7 +213,7 @@ paths:
                   anchor: { type: object }
                   note: { type: string }
                   unannounced: { type: string }
-        '400': { description: Malformed or duplicate-key JSON, or disabled legacy intake. }
+        '400': { description: 'Malformed or duplicate-key JSON, or a body that is not a JSON object.' }
         '401': { $ref: '#/components/responses/Unauthorised' }
         '409':
           description: |
@@ -652,7 +225,7 @@ paths:
             issuer: another issuer's credential for the same hash ID is a
             second attestation and is accepted; the same issuer's different
             bytes are `credential_id_collision`.
-        '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement, and any submission of the parked vsc-seal-json-v1 representation, answer here with outcome unsupported." }
+        '422': { description: "Invalid, unsupported or indeterminate verification; nothing stored or anchored. An external credential using a curve, suite or structure the profile does not implement, and any submission of the parked vsc-seal-json-v1 representation, answer here with outcome unsupported. A body naming no current representation, a historical UORA body included, answers here with outcome invalid and the unsupported representation named." }
       security:
         - {}
         - writeToken: []
@@ -691,62 +264,13 @@ paths:
               schema: { $ref: '#/components/schemas/AnchorProof' }
         '404': { $ref: '#/components/responses/NotFound' }
 
-  /attestations/{id}/report:
-    get:
-      tags: [attestation]
-      operationId: getAttestationReport
-      summary: The verification report for a stored current record.
-      description: |
-        The shared verification contract (the standard's `spec/verification.md`)
-        applied to what this registry retains for one record: its exact secured
-        bytes, its metadata and, for records anchored since the script was
-        retained, the anchor's locking script. Sixteen named checks, each
-        `pass`, `fail`, `unknown` or `not-applicable` with a reason code; no
-        aggregate verdict. Token history is not held here, so the token checks
-        report `unknown` with `no-evidence`; supply a BEEF to `POST /validate`
-        to have them evaluated. A record whose anchor script was not retained
-        reports the anchor checks as `unknown` rather than guessing from the
-        digest alone; `anchorRetained` says which case applies.
-
-        The expected subject comes from the `subject` query parameter when the
-        caller names one (`source: request-context`). Without it the record's
-        own passport identifier is used with `source: none`, and the contract's
-        rule then makes `subjectBinding` unknown, because evidence cannot vouch
-        for its own subject.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The attestationId, URL-encoded.
-          schema: { type: string }
-        - name: subject
-          in: query
-          required: false
-          description: The passport identifier the caller independently expects the record to concern.
-          schema: { type: string, minLength: 1, maxLength: 512 }
-      responses:
-        '200':
-          description: The report, with the contract it follows named.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/AttestationReport' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: |
-            The record predates the current contract and retains no secured
-            bytes, so no report is produced for it. Its historical material
-            is served by `GET /attestations/{id}/proof`.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/LegacyRepresentation' }
-
   /validate:
     post:
       tags: [validation]
       operationId: postValidate
       summary: Verify an explicit current representation without storing or anchoring it.
       description: |
-        One response shape, discriminated by `contract`. A current representation (a signed native claim, an external credential envelope or a directly signed EPCIS event envelope) answers under `attestation-registry/1` with the registry's named outcome and checks and, whenever the evidence names one subject or the caller names one, the shared verification `report`. A SEAL, in the parked `vsc-seal-json-v1` envelope or as the body, answers under `attestation-registry/1` with outcome `unsupported`, an issue naming `representation-unsupported` and `reportOmitted`; the request schema does not admit a SEAL, and a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400. Historical inputs answer under `legacy-uora` with the seven-phase pipeline's verdict and phases, with their historical assurance and conformance limitations.
+        One response shape, which names its contract, `attestation-registry/1`. A current representation (a signed native claim, an external credential envelope or a directly signed EPCIS event envelope) answers with the registry's named outcome and checks and, whenever the evidence names one subject or the caller names one, the shared verification `report`. A SEAL, in the parked `vsc-seal-json-v1` envelope or as the body, answers with outcome `unsupported`, an issue naming `representation-unsupported` and `reportOmitted`; the request schema does not admit a SEAL, and a registry recognises one by its `representation` or by `VSC-SEAL` among its types and answers it this way, not with 400. A JSON object naming no current representation, a historical UORA input among them, answers with outcome `invalid`, the issue `unsupported representation; an explicit claimFormat or representation is required` and `reportOmitted`; the request schema does not admit it either, and a registry answers it this way, not with 400.
 
         `tokenHistory` is a request property of this operation: a BEEF as hex
         carrying the passport's token states, so the report's token checks can
@@ -768,154 +292,13 @@ paths:
                 - $ref: '#/components/schemas/ValidateNativeRequest'
                 - $ref: '#/components/schemas/ValidateExternalRequest'
                 - $ref: '#/components/schemas/ValidateEpcisEventRequest'
-                - $ref: '#/components/schemas/ValidateRequest'
       responses:
         '200':
           description: The named verification outcome and checks, with the report where one could be built. No storage, anchor or certification claim.
           content:
             application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/SecuredValidateResult'
-                  - $ref: '#/components/schemas/ValidateResult'
-                discriminator:
-                  propertyName: contract
-                  mapping:
-                    attestation-registry/1: '#/components/schemas/SecuredValidateResult'
-                    legacy-uora: '#/components/schemas/ValidateResult'
-        '400': { description: Malformed or ambiguous request, or a tokenHistory that does not read as a BEEF. }
-
-  /certifications:
-    post:
-      tags: [governance]
-      operationId: postCertification
-      summary: Register an issuer's CertificationCredential.
-      description: |
-        Verified before anything is stored: signature, credential type and
-        the mandatory claims. A deposit that does not verify is refused with
-        the reasons, because a registry of unverified precedence claims would
-        rank conflicts by rumour. Keyed by the certified issuer's DID; a
-        newer deposit for the same issuer supersedes the older, which is how
-        renewal works.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/CertificationDeposit' }
-      responses:
-        '201':
-          description: Registered. Registration is not a non-revocation claim.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/CertificationAccepted' }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorised' }
-      security:
-        - {}
-        - writeToken: []
-
-  /certifications/{issuer}:
-    get:
-      tags: [governance]
-      operationId: getCertification
-      summary: The registered certification of one issuer.
-      parameters:
-        - name: issuer
-          in: path
-          required: true
-          description: The certified issuer's DID, URL-encoded.
-          schema: { type: string }
-      responses:
-        '200':
-          description: |
-            The ranking fields extracted at deposit, and the deposit
-            verbatim so a caller can re-verify rather than trust this
-            registry's word.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/CertificationRecord' }
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /spec/profiles:
-    get:
-      tags: [spec]
-      operationId: listProfiles
-      summary: The Domain Profiles this registry serves, from the standard's profiles package.
-      description: |
-        Served from `@bsv/dpp-profiles`, the standard's canonical profiles:
-        the consumer documents generated from its frozen manifests, byte for
-        byte. This repository keeps no copy of a profile document, so there is
-        one source and nothing to drift; the served documents are held to the
-        package's frozen digests by test (PROF-6). Current and superseded
-        profiles are both listed, in alphabetical order.
-      responses:
-        '200':
-          description: One entry per profile version.
-          content:
-            application/json:
-              schema:
-                type: array
-                items: { $ref: '#/components/schemas/ProfileSummary' }
-
-  /spec/profiles/{profile}:
-    get:
-      tags: [spec]
-      operationId: getProfile
-      summary: One Domain Profile definition, the package's generated consumer document.
-      parameters:
-        - name: profile
-          in: path
-          required: true
-          description: '`{id}@{version}`, for instance `battery@2`.'
-          schema: { type: string, pattern: '^[a-z]+@[0-9]+$' }
-      responses:
-        '200':
-          description: The profile document.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ProfileDocument' }
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /showcase/attestations:
-    get:
-      tags: [showcase]
-      operationId: showcaseAttestations
-      summary: Recent records for the anchor-proof page.
-      description: >-
-        The most recent stored attestations, newest first, each with its
-        digest and (where present) its anchor outpoint. Gated by
-        `SHOWCASE=1`; 404 otherwise. Not part of the query API contract.
-      responses:
-        '200':
-          description: Recent records, capped.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ShowcaseList' }
-        '404': { $ref: '#/components/responses/NotFound' }
-
-  /showcase/verify/{id}:
-    get:
-      tags: [showcase]
-      operationId: showcaseVerify
-      summary: Re-run the independent anchor check for one record.
-      description: >-
-        Recomputes the record's digest and compares it to what a public
-        block explorer carries at the anchor outpoint, so the match is not
-        this resolver's word. An unanchored record answers `anchored: false`
-        without a network call. Gated by `SHOWCASE=1`.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: The attestationId, URL-encoded. For a native claim it is `urn:sha256:` followed by the digest of the claim's complete representation (spec/rules.md section 6).
-          schema: { type: string }
-      responses:
-        '200':
-          description: The comparison, whether or not it matched.
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ShowcaseVerify' }
-        '404': { $ref: '#/components/responses/NotFound' }
+              schema: { $ref: '#/components/schemas/SecuredValidateResult' }
+        '400': { description: 'Malformed request, a body that is not a JSON object, or a tokenHistory that does not read as a BEEF.' }
 
 components:
   securitySchemes:
@@ -923,13 +306,13 @@ components:
       type: http
       scheme: bearer
       description: |
-        A deployment choice, exactly as persistence is: when the deployment sets `WRITE_TOKEN`, the write operations (`POST /attestations` and `POST /certifications`) require it as a bearer, because writes store state and, with a treasury configured, spend real satoshis anchoring it. Unset, writes stay open and local development is unchanged, which is why each write operation also lists an empty security requirement. Reads never require it.
+        A deployment choice, exactly as persistence is: when the deployment sets `WRITE_TOKEN`, the write operation, `POST /attestations`, requires it as a bearer, because writes store state and, with a treasury configured, spend real satoshis anchoring it. Unset, writes stay open and local development is unchanged, which is why the write operation also lists an empty security requirement. Reads never require it.
 
   parameters:
     limit:
       name: limit
       in: query
-      description: Page size, 1 to 500; 100 when omitted. Asking for pages on `/history` or `/chain` switches them from the unbounded lookup to pages of a snapshot.
+      description: Page size, 1 to 500; 100 when omitted. Asking for pages on `/chain` switches it from the unbounded lookup to pages of a snapshot.
       schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
     cursor:
       name: cursor
@@ -949,11 +332,6 @@ components:
               error: { const: snapshot-expired }
               detail: { type: string }
               hint: { type: string }
-    BadRequest:
-      description: The request is malformed.
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Problem' }
     Unauthorised:
       description: >-
         This deployment requires a write token and the request did not
@@ -966,99 +344,6 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Problem' }
-    NotImplemented:
-      description: The contract exists, the implementation does not.
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Problem' }
-    OutsideNamespace:
-      description: The GTIN is outside the namespaces this deployment administers (`RESOLVER_NAMESPACES`); a check digit, a DID, a host or an account grants no authority over it.
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Problem' }
-    NamespacesUnconfigured:
-      description: No namespace is configured, so no record can be written; the answer says which variable names one.
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Problem' }
-
-  pathItems:
-    gs1ResolverEntity:
-      x-dpp-origin: resolver
-      summary: Resolve a GS1 Digital Link URI for primary key 01 at any granularity.
-      description: |
-        One path item for the eight combinations the URI syntax admits under
-        primary key 01: the GTIN alone, and with the consumer product variant
-        (22), the lot (10) and the serial (21) in that order. The handler
-        reads the whole request URI under the package's grammar; the router
-        registers each combination because it matches by segment count.
-        Data attributes travel as query parameters keyed by AI; `linkType`
-        names a link type as a `gs1:` term, a full IRI, or `linkset` (`all`).
-
-        Answers, exactly as the resolver standard's flow chart: the linkset
-        for `linkType=linkset` or an `Accept` of `application/linkset+json`;
-        307 to the default link, or to the requested link type's best match by
-        media type, language and context, with the request's query string
-        forwarded (except `linkType`) unless the link declines it; 300 with the
-        candidates as a linkset when the best match is not unique; 404 with
-        the available links when the requested type is not registered; 404
-        with nothing beside it for an identifier nobody registered; 400 for a
-        URI the grammar refuses. An error is never a 200. Every linkset anchor
-        is the uncompressed URI of the record the link was registered at, so
-        a link found at the GTIN level under a serialised request is model
-        information and is not evidence that an item passport exists. A
-        `text/html` request with no `linkType` is sent to the default link,
-        which a deployment points at its existing passport page.
-
-        Responses vary on `Accept` and `Accept-Language`, public answers are
-        cacheable for 300 seconds, and a public audience is never returned a
-        restricted link.
-      parameters:
-        - name: gtin
-          in: path
-          required: true
-          description: AI 01, 8 to 14 digits; left-padded to GTIN-14. The check digit is reported, not enforced on reading.
-          schema: { type: string, pattern: '^[0-9]{8,14}$' }
-        - name: linkType
-          in: query
-          required: false
-          schema: { type: string }
-      get:
-        tags: [gs1-resolver]
-        operationId: resolveGs1DigitalLink
-        summary: Resolve the identifier to a link or a linkset.
-        responses:
-          '200':
-            description: The linkset.
-            headers:
-              Link:
-                description: The pinned JSON-LD context of the linkset, under the relation `http://www.w3.org/ns/json-ld#context`.
-                schema: { type: string }
-              Vary: { schema: { type: string } }
-              Cache-Control: { schema: { type: string } }
-            content:
-              application/linkset+json:
-                schema: { $ref: '#/components/schemas/Linkset' }
-          '300':
-            description: The best match for the requested type is not unique; the candidates as a linkset.
-            content:
-              application/linkset+json:
-                schema: { $ref: '#/components/schemas/Linkset' }
-          '307':
-            description: The default link, or the requested type's best match, with the query string forwarded.
-            headers:
-              Location: { schema: { type: string, format: uri } }
-          '400':
-            description: The URI is refused by the grammar, with the standard's reason.
-            content:
-              application/json:
-                schema: { $ref: '#/components/schemas/ResolverRefusal' }
-          '404':
-            description: No record is registered for the identifier, or the requested link type is not registered (then `available` carries the links that are).
-            content:
-              application/json:
-                schema: { type: object }
-
   schemas:
     NativeLifecycleClaim:
       type: object
@@ -1075,23 +360,6 @@ components:
         issuerKeyDid: { type: string, description: Requires configured authenticated issuer-to-key binding for non-key issuer identifiers. }
         profile: { type: string, minLength: 1 }
         profile_version: { type: integer, minimum: 1 }
-        evidence:
-          type: object
-          description: The evidence facets of spec/rules.md section 2 the claim carries, each a reference to a record; present only with at least one facet.
-          minProperties: 1
-          additionalProperties: false
-          properties:
-            facility: { type: string, minLength: 1 }
-            time: { type: string, minLength: 1 }
-            responsibleParty: { type: string, minLength: 1 }
-            source: { type: string, minLength: 1 }
-            destination: { type: string, minLength: 1 }
-            custodyRecord: { type: string, minLength: 1 }
-            workDone: { type: string, minLength: 1 }
-            performedBy: { type: string, minLength: 1 }
-            performedAt: { type: string, minLength: 1 }
-            dispositionKind: { enum: [disposal, process-with-outputs] }
-            outputs: { type: array, minItems: 1, items: { type: string, minLength: 1 } }
         signature: { type: string, pattern: '^[0-9a-f]+$' }
     NativeLifecycleSubmission:
       allOf:
@@ -1111,7 +379,7 @@ components:
         The external ecdsa-rdfc-2019 credential representation of the standard's `spec/external-credential-profile.md`: a W3C Verifiable Credentials 2.0 credential secured with a `DataIntegrityProof` under `ecdsa-rdfc-2019` over a P-256 Multikey whose `did:web` issuer lists the key for assertion. Verified through the `exchange` entry point of `@bsv/dpp-credentials` under the `external` section of the operator's verification bundle. The exact issued bytes are what is retained and anchored; a reformatted copy has a different digest even where its RDF proof still verifies.
       properties:
         representation: { const: 'vc-di-ecdsa-rdfc-2019@1' }
-        credential: { type: string, description: Exact UTF-8 JSON string of the complete issued credential including its proof, at most 256 KiB. }
+        credential: { type: string, description: 'Exact UTF-8 JSON string of the complete issued credential including its proof, at most 256 KiB.' }
         subject:
           type: string
           description: >-
@@ -1135,7 +403,7 @@ components:
         is what is retained and anchored; uniqueness is per hash ID and issuer.
       properties:
         representation: { const: 'epcis-event-vc@1' }
-        credential: { type: string, description: The exact compact JWS as issued, at most 2 MiB. }
+        credential: { type: string, description: 'The exact compact JWS as issued, at most 2 MiB.' }
         subject:
           type: string
           description: >-
@@ -1164,7 +432,7 @@ components:
       unevaluatedProperties: false
     Capabilities:
       type: object
-      required: [protocol, topic, lookupService, representations, proofSuites, interoperability, unsupported, legacyIntake]
+      required: [protocol, topic, lookupService, representations, proofSuites, interoperability, unsupported]
       properties:
         protocol: { const: attestation-registry/1 }
         topic: { const: tm_attestation }
@@ -1184,105 +452,23 @@ components:
             externalCredentialPolicy: { enum: [configured, not-configured] }
         unsupported:
           type: array
-          description: What is explicitly not implemented, each with its reason.
+          description: 'What is explicitly not implemented, each with its reason, such as the parked `vsc-seal-json-v1` and, on a registry holding records stored under it, the historical `legacy-uora-json`: records of both stay readable, and neither is accepted as a new submission.'
           items:
             type: object
             required: [id, reason]
             properties:
               id: { type: string }
               reason: { type: string }
-        legacyIntake: { type: boolean }
         anchoredBy:
           type: string
           pattern: '^0[23][0-9a-f]{64}$'
           description: >-
             The compressed identity key that every anchor this registry writes
             names as anchoredBy, so a verifier can tell this registry's anchors
-            from anyone else's without asking. Optional. Naming the key does not
+            from anyone else's without asking, and that its evidence packages
+            name as exporter.id, so a reader derives each package's signer. Optional. Naming the key does not
             make the registry trusted: which anchoring services to accept stays
             the verifier's policy.
-    ResolverRefusal:
-      type: object
-      required: [error, reason, detail]
-      properties:
-        error: { enum: [invalid-digital-link, invalid-compressed-digital-link, link-type-unrecognised] }
-        reason: { type: string, description: The grammar's or the decoder's reason, as the profiles package names it. }
-        detail: { type: string }
-        epcHeader: { type: string, description: The EPC header as two hex digits, when a compression string carried a scheme the profile does not implement. }
-    Linkset:
-      type: object
-      description: RFC 9264 as the GS1 linkset schema shapes it; validated against the pinned schema `packages/dpp-profiles/schemas/gs1/resolver-linkset-schema-1.2.1.json`.
-      required: [linkset]
-      properties:
-        linkset:
-          type: array
-          items:
-            type: object
-            required: [anchor]
-            properties:
-              anchor: { type: string, format: uri, description: The uncompressed URI of the record the links were registered at, never the request's. }
-            additionalProperties: true
-    ResolutionLink:
-      type: object
-      required: [rel, href, title, disclosure]
-      properties:
-        rel: { type: string, description: The descriptive link relation type as a full IRI. }
-        href: { type: string, format: uri }
-        title: { type: string }
-        type: { type: string }
-        hreflang: { type: array, items: { type: string } }
-        context: { type: array, items: { type: string } }
-        default: { enum: [single, multi] }
-        disclosure: { enum: [public, restricted] }
-        forwardQuery: { type: boolean }
-    ResolutionRecordInput:
-      type: object
-      required: [key, qualifiers, links]
-      properties:
-        key:
-          type: object
-          required: [ai, value]
-          properties:
-            ai: { const: '01' }
-            value: { type: string, pattern: '^[0-9]{8,14}$' }
-        qualifiers:
-          type: array
-          items:
-            type: object
-            required: [ai, value]
-            properties:
-              ai: { enum: ['22', '10', '21'] }
-              value: { type: string, minLength: 1, maxLength: 20 }
-        passportId: { type: string, description: The exact signed passport identifier bound to this entity, where the binding is established; never inferred from the key. }
-        bindingRef: { type: string }
-        links: { type: array, items: { $ref: '#/components/schemas/ResolutionLink' } }
-        description: { type: string }
-    ResolutionRecord:
-      allOf:
-        - $ref: '#/components/schemas/ResolutionRecordInput'
-        - type: object
-          required: [keyTuple, configurationRevision, updatedAt]
-          properties:
-            keyTuple: { type: string }
-            configurationRevision: { type: string }
-            updatedAt: { type: string, format: date-time }
-    ResolutionRecordSummary:
-      type: object
-      required: [keyTuple, key, qualifiers, links, configurationRevision, updatedAt]
-      properties:
-        keyTuple: { type: string }
-        key: { type: object }
-        qualifiers: { type: array }
-        links: { type: integer, description: How many links the record carries. }
-        configurationRevision: { type: string }
-        updatedAt: { type: string, format: date-time }
-        passportId: { type: string }
-    ResolutionRecordWritten:
-      type: object
-      required: [outcome, record]
-      properties:
-        outcome: { enum: [inserted, replaced] }
-        record: { $ref: '#/components/schemas/ResolutionRecord' }
     TokenHistory:
       type: string
       pattern: '^([0-9a-fA-F]{2})+$'
@@ -1292,14 +478,6 @@ components:
         `publisherSignatures`, `linkage`, `inclusion`) can run. Absent, they
         report `unknown` with `no-evidence`; this registry holds no token
         history of its own.
-    ValidateContract:
-      type: string
-      enum: [attestation-registry/1, legacy-uora]
-      description: |
-        Which contract a `POST /validate` answer follows, named in every
-        response so a reader never infers the shape from a property's
-        presence. `attestation-registry/1` is the current registry contract;
-        `legacy-uora` is the historical seven-phase pipeline.
     EvidenceCheckName:
       type: string
       description: The sixteen checks of the standard's verification report, in report order.
@@ -1349,7 +527,9 @@ components:
     SecuredValidateResult:
       type: object
       description: |
-        `POST /validate` for a current representation. `outcome`, `issues`
+        Every 200 answer of `POST /validate`: a current representation
+        verified, a parked SEAL refused as `unsupported` or a body naming no
+        current representation refused as `invalid`. `outcome`, `issues`
         and `checks` are the registry's own verification of the bytes;
         `report` is the shared contract's per-check account of the same
         bytes, present whenever the evidence names one subject or the caller
@@ -1361,7 +541,7 @@ components:
         contract: { const: attestation-registry/1 }
         outcome:
           enum: [verified, invalid, indeterminate, unsupported]
-          description: '`unsupported` names a representation, or a feature of one, this registry does not implement: an external credential on another curve, suite or structure, or the parked `vsc-seal-json-v1`, whose issue names `representation-unsupported`.'
+          description: '`unsupported` names a representation, or a feature of one, this registry does not implement: an external credential on another curve, suite or structure, or the parked `vsc-seal-json-v1`, whose issue names `representation-unsupported`. A body naming no current representation, a historical UORA input included, is `invalid` with the issue `unsupported representation; an explicit claimFormat or representation is required`.'
         issues: { type: array, items: {} }
         checks: { description: "The registry's named checks with their evidence scope." }
         tokenRecordId: { type: string, pattern: '^[0-9a-f]{64}$' }
@@ -1370,28 +550,10 @@ components:
         lifecycleMapping:
           $ref: '#/components/schemas/LifecycleMapping'
           description: Native claims only, when a report was built; with `tokenHistory` supplied the native operation is read from the cited token state.
-    AttestationReport:
-      type: object
-      required: [contract, attestationId, representation, anchorRetained, report, claimRelations]
-      properties:
-        contract: { const: attestation-registry/1 }
-        attestationId: { type: string }
-        representation:
-          enum: [dpp-lifecycle-json-v1, vsc-seal-json-v1, 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1']
-          description: >-
-            A stored `vsc-seal-json-v1` record, from before that representation was parked, is reported without content verification. No credential verifier is attached, so `anchorDigestAndMetadataBinding` answers `unknown` with `representation-unsupported` and the credential checks answer `unknown`.
-        anchorRetained:
-          type: boolean
-          description: Whether the anchor's locking script was retained at anchoring time. False on records older than the retention; their anchor checks are then unknown.
-        report: { $ref: '#/components/schemas/EvidenceReport' }
-        claimRelations: { $ref: '#/components/schemas/ClaimRelations' }
-        lifecycleMapping:
-          $ref: '#/components/schemas/LifecycleMapping'
-          description: Native claims only.
     ClaimRelation:
       type: object
       description: |
-        What one claim says about another, recorded independently of token spending and never implied by a passport changing hands. `from` is the relating artefact (an attestation identifier, or a status list position `<list>#<index>`), `to` the attestation the relation is about. A claim can be historically authentic and currently superseded; both records stay. `expires` is derived from a signed `validUntil` at evaluation time and never stored. `disputes` has no producing path yet: no current representation carries a field naming a disputed claim, and none is inferred. The sources `vsc-correction`, `vsc-parent` and `status-publication` are no longer produced, since the SEAL representation is parked and the contract defines no status list publication; relations recorded under them stay readable.
+        What one claim says about another, recorded independently of token spending and never implied by a passport changing hands. `from` is the relating artefact (an attestation identifier, or a status list position `<list>#<index>`), `to` the attestation the relation is about. A claim can be historically authentic and currently superseded; both records stay. `expires` is derived from a signed `validUntil` at evaluation time and never stored. `supersedes` and `disputes` have no producing path: no current representation carries a field naming a superseded or disputed claim, and none is inferred. The sources `conflict-cascade`, `vsc-correction`, `vsc-parent` and `status-publication` are no longer produced, since the historical intake and its conflict cascade left the contract, the SEAL representation is parked and the contract defines no status list publication; relations recorded under them stay readable.
       required: [kind, from, to, source, reason, recordedAt]
       properties:
         kind: { enum: [supersedes, revokes, suspends, expires, disputes] }
@@ -1400,7 +562,7 @@ components:
         source: { enum: [conflict-cascade, vsc-correction, vsc-parent, status-publication, status-observation, validity-window] }
         reason: { type: string }
         recordedAt: { type: string, format: date-time }
-        clearedAt: { type: string, format: date-time, description: Suspensions only, when the suspension was cleared. The record stays. }
+        clearedAt: { type: string, format: date-time, description: 'Suspensions only, when the suspension was cleared. The record stays.' }
     ClaimConflict:
       type: object
       description: |
@@ -1457,14 +619,14 @@ components:
         when the evidence the profile requires is present. The native operation
         is read from the token state the claim names when the caller supplied
         the token history, and otherwise derived from the claim's event type
-        and said to be. Evidence facets are read from the claim payload under
-        the exact names `facility`, `time`, `responsibleParty`, `source`,
-        `destination`, `custodyRecord`, `workDone`, `performedBy`,
+        and said to be. `evidenceFacets` names the facets of spec/rules.md §2
+        the mapping was given, `facility`, `time`, `responsibleParty`,
+        `source`, `destination`, `custodyRecord`, `workDone`, `performedBy`,
         `performedAt`, `dispositionKind` and `outputs`, each a reference to a
-        record, never a flag. No outcome other than `lossless` comes without
-        its list of what was lost or is missing: a TRANSFER without a
-        `custodyRecord` is `insufficient-data`, and a token transfer is never
-        read as a shipment.
+        record, never a flag; a native claim carries none (§3). No outcome
+        other than `lossless` comes without its list of what was lost or is
+        missing: a TRANSFER without a `custodyRecord` is `insufficient-data`,
+        and a token transfer is never read as a shipment.
       required: [profile, nativeOperation, nativeOperationSource, evidenceFacets, outcome, missingEvidence, losses, mappedFields, unmappedFields]
       properties:
         profile: { type: string, description: '`{id}@{version}` the mapping was computed under.' }
@@ -1485,14 +647,6 @@ components:
               key: { type: string }
               semanticUri: { type: string }
         unmappedFields: { type: array, items: { type: string } }
-    LegacyRepresentation:
-      type: object
-      required: [error, detail, attestationId, representation]
-      properties:
-        error: { const: legacy_representation }
-        detail: { type: string }
-        attestationId: { type: string }
-        representation: { type: string }
     Problem:
       type: object
       required: [error]
@@ -1502,76 +656,9 @@ components:
         stub:
           type: boolean
           description: |
-            Present only on a response that has not been fully earned. Today
-            that is `POST /validate` when its pipeline abstained anywhere; no
-            other operation sets it.
-
-    Health:
-      type: object
-      required: [ok, version]
-      properties:
-        ok: { type: boolean }
-        version: { type: string }
-        network:
-          type: [string, 'null']
-          enum: [main, test, null]
-          description: |
-            The chain this deployment is configured for. Mainnet from day one,
-            and mainnet when `NETWORK` is unset. Reported rather than assumed:
-            this field was a hardcoded `main` until 2026-07-28, which would
-            have been a false statement on a testnet deployment. `null` means
-            `NETWORK` was set to something that is neither `main` nor `test`,
-            in which case `networkError` says so and the service refuses to
-            pick a chain on the operator's behalf.
-        networkError:
-          type: string
-          description: Present only when `network` is null. Names the unrecognised value.
-        dependencies:
-          type: object
-          description: |
-            The dependencies this service actually has, each probed rather than
-            asserted.
-
-            `store` is probed with the cheapest query the store seam offers, so
-            a database that has gone away reports `down` here rather than
-            surfacing as a 500 on the first read. `treasury` reports
-            `unconfigured` when no anchoring wallet resolved, which is a
-            first-class state and not a fault.
-          properties:
-            store: { type: string, enum: [up, down] }
-            treasury: { type: string, enum: [up, unconfigured] }
-        storeBackend:
-          type: string
-          enum: [mongodb, file, memory]
-          description: Which persistence the deployment asked for (R12).
-        storeDetail:
-          type: string
-          description: Why the store probe failed. Present only when `store` is down.
-        treasuryDetail:
-          type: string
-          description: |
-            Why no anchoring wallet resolved. Present only when `treasury` is
-            unconfigured, and it is the same reason an attestation would carry
-            in `anchored: false`.
-
-    Stats:
-      type: object
-      properties:
-        passports: { type: integer }
-        attestations: { type: integer }
-        certifications: { type: integer }
-        profiles: { type: integer }
-        stub: { type: boolean }
-
-    UoraType:
-      type: string
-      description: |
-        Historical response property name retained for compatibility. Native
-        values identify lifecycle events; VSC-SEAL identifies the credential representation.
-        An external credential's value is its own type, the first entry of its `type` after VerifiableCredential (VerifiableCredential when it names no other), so any non-empty string is admitted beside the named values.
-      anyOf:
-        - enum: [Origin, Transfer, Transformation, Disposition, VSC-SEAL]
-        - { type: string, minLength: 1 }
+            Present only on a response that has not been fully earned. No
+            successful answer of this contract sets it; a registry may set it
+            on an error answer.
 
     ChainIntegrity:
       type: string
@@ -1587,52 +674,6 @@ components:
         assessable, so histories of them carry no field at all. A caller
         must treat absence as "not checked here" and verify independently.
       enum: [intact, broken, invalid]
-
-    HistoryEvent:
-      type: object
-      required: [uoraType, at]
-      properties:
-        uoraType: { $ref: '#/components/schemas/UoraType' }
-        at: { type: string, format: date-time }
-        status:
-          type: string
-          description: |
-            The status the registry established at ingestion (`valid` or
-            `superseded`). Absent on placeholder records, which were never
-            validated and carry no claim. A superseded event is retained
-            history and must not be used for state computation.
-        actor: { type: string, description: "A label or a DID, never a key." }
-        profile: { type: string, examples: ['battery@2'] }
-        anchor: { $ref: '#/components/schemas/AnchorRef' }
-        data:
-          type: object
-          description: |
-            Public payload for this event. Restricted and authority-tier
-            content is never returned here: disclosure is cryptographic, not
-            filtered at the API.
-          additionalProperties: true
-        lifecycleMapping:
-          $ref: '#/components/schemas/LifecycleMapping'
-          description: Native claims only. The native operation is derived from the event type here; the history holds no token states.
-
-    History:
-      type: object
-      required: [passportId, events]
-      properties:
-        passportId: { type: string }
-        objectDid: { type: string }
-        profile: { type: string }
-        events:
-          type: array
-          items: { $ref: '#/components/schemas/HistoryEvent' }
-        chainIntegrity: { $ref: '#/components/schemas/ChainIntegrity' }
-        successor:
-          type: string
-          description: |
-            Set when this passport was closed and a new one issued for the
-            same physical object. Null in every other case.
-        predecessor: { type: string }
-        stub: { type: boolean }
 
     AnchorRef:
       type: object
@@ -1761,17 +802,6 @@ components:
             items:
               type: array
               items: { $ref: '#/components/schemas/AttestationSummary' }
-    HistoryPage:
-      allOf:
-        - $ref: '#/components/schemas/PageEnvelope'
-        - type: object
-          required: [passportId]
-          properties:
-            passportId: { type: string }
-            profile: { type: string }
-            items:
-              type: array
-              items: { $ref: '#/components/schemas/HistoryEvent' }
     ChainPage:
       allOf:
         - $ref: '#/components/schemas/PageEnvelope'
@@ -1857,79 +887,6 @@ components:
             The procedure in one sentence, carried in the response so a
             verifier who has only this JSON still knows what to do with it.
 
-    DigitalLinkResolution:
-      type: object
-      description: |
-        What the path printed on the item resolves to. Every event carries the
-        two things an independent check needs, a digest and the outpoint holding
-        it, plus the explorer URL to read the second one from a source that is
-        not this service.
-      required: [passportId, gtin, serial, found, events, links, verify]
-      properties:
-        passportId:
-          type: string
-          description: The stored identifier, under the host it was minted with.
-        gtin:
-          type: string
-          description: GTIN-14, left-padded if the path carried fewer digits.
-        serial: { type: string }
-        found: { type: boolean, enum: [true] }
-        network:
-          type: string
-          enum: [main, test]
-          description: The chain the explorer URLs point at. Absent when `NETWORK` is unrecognised.
-        networkError:
-          type: string
-          description: |
-            Present instead of `network` when `NETWORK` is neither `main` nor
-            `test`. Explorer URLs are then omitted rather than guessed, because
-            guessing means mainnet.
-        events:
-          type: array
-          items:
-            type: object
-            required: [uoraType, at, attestationId, digest, anchored, proof]
-            properties:
-              uoraType: { $ref: '#/components/schemas/UoraType' }
-              at: { type: string, format: date-time }
-              attestationId: { type: string }
-              digest:
-                type: string
-                pattern: '^[0-9a-f]{64}$'
-                description: Recomputed from the stored document on each request, not read from a cache.
-              status: { type: string }
-              anchored: { type: boolean }
-              anchor:
-                type: object
-                required: [recordId, outputIndex]
-                properties:
-                  recordId: { type: string }
-                  outputIndex: { type: integer }
-                  explorer:
-                    type: string
-                    format: uri
-                    description: A public explorer showing the transaction. Omitted when the network is unknown.
-              proof:
-                type: string
-                format: uri
-                description: Absolute URL of this event's full proof document.
-        links:
-          type: array
-          description: RFC 8288 relations, mirroring the `Link` header.
-          items:
-            type: object
-            required: [rel, type, href]
-            properties:
-              rel: { type: string }
-              type: { type: string }
-              href: { type: string, format: uri }
-        verify:
-          type: string
-          description: |
-            How to run the check without trusting this service, and what it
-            cannot show. It cannot show who anchored a record
-            (`docs/ANCHOR_FORMAT.md`).
-
     Chain:
       type: object
       description: The unbounded custody timeline; a lookup, not an export.
@@ -1941,342 +898,3 @@ components:
           items: { $ref: '#/components/schemas/ChainRecord' }
         chainIntegrity: { $ref: '#/components/schemas/ChainIntegrity' }
         stub: { type: boolean }
-
-    AttestationRequest:
-      type: object
-      description: The app's current placeholder (PROTOCOL_COMPATIBILITY.md §5).
-      required: [passportId, recordId, uora_type, timestamp]
-      properties:
-        passportId: { type: string }
-        recordId: { type: string }
-        uora_type:
-          description: The placeholder's lifecycle type. Closed, unlike UoraType in responses, which also carries an external credential's own type.
-          enum: [Origin, Transfer, Transformation, Disposition, VSC-SEAL]
-        timestamp: { type: string, format: date-time }
-
-    AttestationAccepted:
-      type: object
-      required: [accepted]
-      properties:
-        accepted: { type: boolean }
-        attestationId: { type: string }
-        note: { type: string }
-        verdict:
-          type: string
-          description: Full-shape submissions only, the verdict earned at intake.
-          enum: [valid, superseded]
-        status:
-          type: string
-          description: Full-shape submissions only, the stored status.
-        supersededBy:
-          type: string
-          description: Present when the stored status is superseded, the prevailing id.
-        supersedes:
-          type: array
-          items: { type: string }
-          description: Stored competitors this acceptance outranked, now retained as superseded.
-        stub: { type: boolean }
-
-    AttestationSubmission:
-      type: object
-      description: |
-        The full-shape submission, this layer's proposal for the real intake
-        contract (G10): the attestation as an SD-JWT carriage, validated by
-        all seven phases before anything is stored.
-      required: [passportId, sdJwt]
-      properties:
-        passportId: { type: string }
-        recordId:
-          type: string
-          description: Defaults to the carriage's UORA id.
-        sdJwt: { type: string }
-        certification:
-          type: string
-          description: |
-            The issuer's CertificationCredential. Without it phase 5
-            abstains and the submission is refused; with it, a verified
-            deposit lands in the certification registry as if posted to
-            `POST /certifications`.
-
-    AttestationRefused:
-      type: object
-      description: A refused full-shape submission. Nothing was stored.
-      required: [accepted, verdict, detail]
-      properties:
-        accepted: { type: boolean }
-        verdict:
-          type: string
-          enum: [invalid, unimplemented]
-        rejection:
-          type: object
-          description: Present when the pipeline rejected.
-          required: [phase, status, message]
-          properties:
-            phase: { type: integer, minimum: 1, maximum: 7 }
-            status: { type: string }
-            message: { type: string }
-        detail: { type: string }
-
-    ValidateRequest:
-      type: object
-      description: |
-        Supply the attestation document to validate (as an object, or as a
-        JSON string in `envelope`), or a passportId alone, which gives the
-        implemented phases nothing to check and they say so.
-      properties:
-        passportId: { type: string }
-        attestation:
-          type: object
-          description: The attestation document, shaped as the specification's example.
-        envelope: { type: string, description: The same document as a JSON string. }
-        sdJwt:
-          type: string
-          description: |
-            The attestation as this build's SD-JWT VC carriage; phase 4
-            verifies it ES256K against the issuer's did:key. Mutually
-            exclusive with attestation and envelope.
-        certification:
-          type: string
-          description: The issuer's CertificationCredential (SD-JWT), for phase 5.
-        keyBinding:
-          type: object
-          description: |
-            The verifier's challenge for a holder-bound presentation: phase 4
-            checks the KB-JWT riding the `sdJwt` carriage against it, proving
-            possession of the `cnf.jwk` key rather than mere custody of the
-            token. `required` makes a carriage with no KB-JWT fail rather
-            than pass without possession proof. Refused without `sdJwt`,
-            because a challenge silently ignored reads as checked.
-          properties:
-            audience: { type: string }
-            nonce: { type: string }
-            required: { type: boolean }
-        profile: { type: string }
-      anyOf:
-        - required: [passportId]
-        - required: [attestation]
-        - required: [envelope]
-        - required: [sdJwt]
-
-    PhaseResult:
-      type: object
-      required: [phase, outcome]
-      properties:
-        phase: { type: integer, minimum: 1, maximum: 7 }
-        name: { type: string, description: Absent where the workstream has not named the phase. }
-        outcome: { type: string, enum: [pass, fail, skipped, unimplemented, superseded] }
-        status:
-          type: string
-          description: The specification's status, present when the outcome is fail or superseded.
-        detail: { type: string }
-
-    ValidateResult:
-      type: object
-      description: The historical seven-phase pipeline's answer, named `legacy-uora` by its `contract`.
-      required: [contract, verdict, phases]
-      properties:
-        contract: { const: legacy-uora }
-        verdict:
-          type: string
-          enum: [valid, invalid, indeterminate, unimplemented, superseded]
-          description: |
-            Anything other than `valid` means "not verified here". A caller
-            must then verify for itself rather than degrade to trusting this
-            service. `superseded` is the one definitive non-valid answer
-            besides `invalid`: the document is otherwise sound, but a
-            competing attestation prevails in the conflict cascade, and a
-            superseded attestation must not be used for state computation.
-        rejection:
-          type: object
-          description: Present when the verdict is invalid.
-          required: [phase, status, message]
-          properties:
-            phase: { type: integer, minimum: 1, maximum: 7 }
-            status: { type: string }
-            message: { type: string }
-        supersededBy:
-          type: string
-          description: Present when the verdict is superseded, naming the prevailing attestation.
-        supersedes:
-          type: array
-          items: { type: string }
-          description: |
-            Present when the verdict is valid and the cascade outranked
-            named competitors: their UORA ids, which a registry retains as
-            superseded.
-        conformance:
-          type: string
-          description: 'The conformance target with its exceptions stated. See src/conformance.'
-        phases:
-          type: array
-          items: { $ref: '#/components/schemas/PhaseResult' }
-        stub: { type: boolean }
-
-    CertificationDeposit:
-      type: object
-      required: [certification]
-      properties:
-        certification:
-          type: string
-          description: The CertificationCredential as a compact SD-JWT.
-
-    CertificationAccepted:
-      type: object
-      required: [accepted, issuer, trustFramework, authorityPrecedence]
-      properties:
-        accepted: { type: boolean }
-        issuer: { type: string, description: The certified issuer's DID, the registry key. }
-        trustFramework: { type: string }
-        authorityPrecedence:
-          type: integer
-          description: Higher integers denote higher authority.
-
-    CertificationRecord:
-      type: object
-      required: [issuer, anchor, trustFramework, authorityPrecedence, receivedAt, certification]
-      properties:
-        issuer: { type: string }
-        anchor:
-          type: string
-          description: |
-            The Trust Anchor that signed the certification. Precedence is
-            only comparable between certifications under the same anchor.
-        trustFramework: { type: string }
-        authorityPrecedence: { type: integer }
-        expiresAt: { type: string, format: date-time }
-        receivedAt: { type: string, format: date-time }
-        certification:
-          type: string
-          description: The deposit verbatim, for independent re-verification.
-
-    ProfileSummary:
-      type: object
-      required: [id, version, profile]
-      properties:
-        id: { type: string }
-        version: { type: integer }
-        profile: { type: string }
-        status: { type: string }
-
-    ProfileDocument:
-      type: object
-      required: [id, version, profile, fields]
-      properties:
-        id: { type: string }
-        version: { type: integer }
-        profile: { type: string }
-        status: { type: string }
-        regulatoryLine:
-          type: string
-          description: CR-9, one line read by every surface. "Aligned with", never "compliant".
-        sources:
-          type: array
-          items: { type: string }
-          description: Provenance, human-readable.
-        vocabularies:
-          type: array
-          description: >-
-            Vocabularies the field keys map into, so a mapping resolves without
-            a side table. The machine half of `sources`.
-          items:
-            type: object
-            required: [prefix, name]
-            properties:
-              prefix: { type: string, examples: ['bpdm'] }
-              name: { type: string }
-              repository: { type: string }
-              licence: { type: string }
-              retrieved: { type: string }
-              urnPattern: { type: string }
-              use: { type: string }
-        fields:
-          type: array
-          items:
-            type: object
-            required: [key, label, obligation, access]
-            properties:
-              key: { type: string }
-              label: { type: string }
-              obligation: { type: string, enum: [must, should, nice] }
-              access: { type: string, enum: [public, owner, legitimate, authority, restricted] }
-              level: { type: string, enum: [model, batch, item] }
-              type: { type: string }
-              unit: { type: string }
-              options:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    value: { type: string }
-                    label: { type: string }
-              categories:
-                type: array
-                items: { type: string, enum: [lmt, ev, industrial, stationary] }
-              needsBms: { type: boolean }
-              dynamic: { type: boolean }
-              onLabel: { type: boolean }
-              source: { type: string }
-              clause: { type: string, description: DIN DKE SPEC 99100 clause. Cited, never reproduced. }
-              specName: { type: string }
-              legalRef: { type: string }
-              bpdm: { type: string, description: Battery Pass Data Model 1.2.0 property, CC-BY-4.0. }
-              bpdmUrn:
-                type: string
-                description: The same mapping as a resolvable SAMM aspect model URN.
-                examples: ['urn:samm:io.BatteryPass.GeneralProductInformation:1.2.0#batteryMass']
-              supersedes: { type: string, description: The earlier profile version's key. }
-              note: { type: string }
-
-    ShowcaseList:
-      type: object
-      required: [count, attestations]
-      properties:
-        count: { type: integer }
-        attestations:
-          type: array
-          items:
-            type: object
-            required: [attestationId, passportId, uoraType, receivedAt, digest, anchored]
-            properties:
-              attestationId: { type: string }
-              passportId: { type: string }
-              uoraType: { $ref: '#/components/schemas/UoraType' }
-              receivedAt: { type: string, format: date-time }
-              digest: { type: string, description: JCS then SHA-256, hex. }
-              status: { type: string, description: The earned status, when the record carries one. }
-              anchored: { type: boolean }
-              anchor:
-                type: object
-                description: Present only when anchored.
-                properties:
-                  recordId: { type: string }
-                  outputIndex: { type: integer }
-
-    ShowcaseVerify:
-      type: object
-      required: [attestationId, anchored, verified]
-      properties:
-        attestationId: { type: string }
-        anchored: { type: boolean }
-        verified: { type: boolean, description: True only when the recomputed digest is the one on chain. }
-        computed: { type: string, description: Digest recomputed from the stored attestation. }
-        onChain: { type: [string, "null"], description: What the explorer carries at the outpoint. }
-        outpoint:
-          type: object
-          properties:
-            recordId: { type: string }
-            outputIndex: { type: integer }
-        network: { type: string, enum: [main, test] }
-        source: { type: string, description: Where the raw transaction was fetched; any source gives the same result. }
-        signature:
-          type: string
-          enum: [valid, invalid, absent]
-          description: |
-            Whether the anchor's fields were sealed by the key locking the
-            output. `valid` is tamper-evidence over the anchor's structure; it
-            does **not** identify who anchored, and no locking key is returned
-            here precisely so the response cannot be read that way
-            (`src/anchoring/verify.ts`). Reported separately from `verified`,
-            because a bad signature does not remove the digest from the chain.
-        signatureReason: { type: string, description: Why the signature did not check out. }
-        reason: { type: string, description: Why it did not verify, or why it could not be checked. }

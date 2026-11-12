@@ -82,9 +82,9 @@ Retain the exact source bytes and their findings with anything derived from them
 
 | Interface fact | Value |
 |---|---|
-| Import/pull routes | Reference application routes under `/api/interoperability/epcis`, described by [contracts/interoperability.yaml](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/contracts/interoperability.yaml). |
+| Import/pull routes | Reference application routes under `/api/interoperability/epcis`, documented by the reference application. The standard fixes no import routes ([specification](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/epcis-interoperability.md), section 4). |
 | Availability and obligation | [Application service](../packages/application-service.md) source is private. These routes are not required by any conformance role. |
-| Own application | Use the contract as a model if offering EPCIS import over HTTP. |
+| Own application | Design your own routes if offering EPCIS import over HTTP, and document them; what an import does is the specification's sections 1 to 3 and 7. |
 
 ## Parked: map events to SEALs
 
@@ -126,7 +126,6 @@ Status checking, DID document resolution and the EPCIS schema check are the call
 |---|---|
 | Select parsing and digest behaviour, and read the parked mapping | [EPCIS interoperability](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/epcis-interoperability.md) |
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/contracts/epcis-import.schema.json) |
-| Model an HTTP import service | [Interoperability HTTP contract](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/contracts/interoperability.yaml) |
 | Use reference parsing | [Credentials package](../packages/dpp-credentials.md) |
 | Run every selected case; the parked mapping outcomes stay pinned beside them | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |
 | Sign and verify an event directly | `spec/epcis-event-profile.md`; `@bsv/dpp-protocol` (`epcisEvent.ts`); `fixtures/vectors/dpp/interoperability/epcis/hash-v1.json` and `fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json` |

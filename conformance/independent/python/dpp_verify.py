@@ -648,7 +648,7 @@ def did_key_to_hex(did: str) -> str | None:
 
 
 RECORD_ID = re.compile(r"^[0-9a-f]{64}:(0|[1-9][0-9]*)$")
-EVIDENCE_FACETS = {"facility", "time", "responsibleParty", "source", "destination", "custodyRecord", "workDone", "performedBy", "performedAt", "dispositionKind", "outputs"}
+CLAIM_FIELDS = {"claimFormat", "passportId", "recordId", "eventType", "timestamp", "issuer", "issuerKeyId", "issuerKeyDid", "profile", "profile_version", "signature"}
 
 
 def verify_claim(claim: dict) -> str | None:
@@ -656,9 +656,8 @@ def verify_claim(claim: dict) -> str | None:
         return "claimFormat is not dpp-lifecycle-v1"
     if not RECORD_ID.match(str(claim.get("recordId", ""))):
         return "recordId is not the outpoint of a state, <txid>:<outputIndex>"
-    evidence = claim.get("evidence")
-    if evidence is not None and (not isinstance(evidence, dict) or not evidence or set(evidence) - EVIDENCE_FACETS):
-        return "evidence is not a non-empty object of the facets rules.md section 2 names"
+    if set(claim) - CLAIM_FIELDS:
+        return "the claim carries a property rules.md section 3 does not name"
     signature_hex = claim.get("signature")
     if not isinstance(signature_hex, str) or not re.fullmatch(r"(?:[0-9a-f]{2}){8,72}", signature_hex):
         return "signature is not lowercase DER hex"
@@ -667,8 +666,7 @@ def verify_claim(claim: dict) -> str | None:
         return "no secp256k1 did:key names the signing root"
     unsigned = {k: v for k, v in claim.items() if k != "signature"}
     child = brc42_child(canonical_key_hex(issuer_key), invoice(1, "dpp attestation v1", claim["passportId"]))
-    # The claim's canonical form is the nested rule (rules.md section 4): for a claim without evidence the bytes are the flat form.
-    if not ecdsa_verify(nested_canonical(unsigned), bytes.fromhex(signature_hex), child):
+    if not ecdsa_verify(canonical_json(unsigned), bytes.fromhex(signature_hex), child):
         return "native claim signature does not verify"
     return None
 
@@ -1198,13 +1196,8 @@ def run(root: Path) -> None:
     say(hashlib.sha256(canonical_json(anchor["claim"])).hexdigest() == anchor["digest"], "attestation-anchor-v1: the digest includes the signature.")
     say(did_key_to_hex(anchor["claim"]["issuer"]) == anchor["issuerKey"], "attestation-anchor-v1: the issuer did:key decodes to the pinned issuer key.")
     say(verify_claim(anchor["claim"]) is None, "attestation-anchor-v1: the native claim signature verifies under [1, 'dpp attestation v1'] with the passport identifier.")
-    with_evidence = anchor["claimWithEvidence"]
-    say(nested_canonical(with_evidence["claim"]).hex() == with_evidence["representationHex"], "attestation-anchor-v1: the complete signed representation of the claim with evidence is the nested canonical form, sorted at every level.")
-    say(canonical_json(anchor["claim"]) == nested_canonical(anchor["claim"]), "attestation-anchor-v1: for a claim without evidence the nested canonical form is the flat form, byte for byte.")
-    say(hashlib.sha256(nested_canonical(with_evidence["claim"])).hexdigest() == with_evidence["digest"], "attestation-anchor-v1: the digest of the claim with evidence includes the signature.")
-    say(verify_claim(with_evidence["claim"]) is None, "attestation-anchor-v1: the claim with evidence verifies under the issuer's derived key.")
     say(verify_claim({**anchor["claim"], "recordId": "state-1"}) is not None, "attestation-anchor-v1: a claim whose recordId is not an outpoint is refused.")
-    say(verify_claim({**with_evidence["claim"], "evidence": {"proof": "x"}}) is not None, "attestation-anchor-v1: a claim with an evidence facet rules.md section 2 does not name is refused.")
+    say(verify_claim({**anchor["claim"], "evidence": {"workDone": "sha256:" + "ab" * 32}}) is not None, "attestation-anchor-v1: a claim carrying an evidence property, which rules.md section 3 does not name, is refused.")
     decoded = read_anchor(anchor["lockingScript"])
     say(not isinstance(decoded, str), f"attestation-anchor-v1: the ten-field anchor decodes with its service signature and derivation ({decoded if isinstance(decoded, str) else 'accepted'}).")
     if not isinstance(decoded, str):

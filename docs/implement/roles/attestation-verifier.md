@@ -89,11 +89,11 @@ No fixture case alters the native claim's own signature; add one to your own tes
 
 ## What not to copy from the fixtures
 
-- The fixture claim is about the genesis of `fixtures/chain-v1.json`, named by its outpoint, under `general@2`; `claimWithEvidence` is a second claim carrying the repair facets, whose canonical form nests one object ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
+- The fixture claim is about the genesis of `fixtures/chain-v1.json`, named by its outpoint, under `general@2` ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
 
 ## Run an anchor proof page
 
-A proof page checks claims without trusting their registry. The registry supplies stored bytes and names each anchor transaction; everything else comes from the chain. The [hosted reference](../../deployment.md#the-hosted-reference) reads `GET /showcase/attestations` and `GET /showcase/verify/{id}`, under the `showcase` tag of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml).
+A proof page checks claims without trusting their registry. The registry supplies stored bytes and names each anchor transaction; everything else comes from the chain. The [hosted reference](../../deployment.md#the-hosted-reference) reads `GET /showcase/attestations` and `GET /showcase/verify/{id}`, two routes the reference registry serves and documents beyond the minimum of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml).
 
 1. Enable both showcase routes in the registry deployment; they are off until enabled.
 2. Set the proof page's RESOLVER field to your registry URL. It defaults to the hosted registry.

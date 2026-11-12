@@ -73,7 +73,7 @@ Edit `deploy/operator-b.env`:
 | `ACCEPTANCE_COMMITMENT` | The first index's value, `required` in the example file. A stricter one refuses version 2 transfers the first admitted. |
 | `ANCHOR_SERVICE_KEYS` | The first index's value, so the second admits the anchors the first admitted. Empty admits a well-formed anchor from any anchoring service, as the hosted reference does. |
 | `SYNC_LEGACY` | `1` to pull the historical `tm_uora_dpp` topic as well, which the hosted reference holds. Empty pulls only `tm_dpp` and `tm_attestation`. |
-| `EXPORT_SIGNING_KEY`, `EXPORT_TOKEN` | Optional. If set, use the second index's own values, never the first's ([export, import and recovery](export-import-recovery.md)). |
+| `EXPORTER_PRIVATE_KEY`, `EXPORT_TOKEN` | Optional. If set, use the second index's own values, never the first's ([export, import and recovery](export-import-recovery.md)). |
 
 `SYNC_PEERS` is the complete list of peers, never the index's own address. It is read at start, so a change applies after the next `up -d`.
 
@@ -165,13 +165,16 @@ Save as `restore-package.mjs`. Its source URL, passport and expected export sign
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.
-import { inspectEvidencePackage } from '@bsv/dpp-protocol'
+import { evidencePackageSigner, inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
 const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
-// The key the source index signs its packages with. This default is the hosted reference's.
-const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
+// The key this passport's package is signed by: the child of the exporter identity key the source operator gives you
+// (EXPORTER_IDENTITY_KEY), or for an index on an earlier release its raw export key (EXPORT_SIGNER), by default the hosted reference's.
+const expectedSigner = process.env.EXPORTER_IDENTITY_KEY
+  ? evidencePackageSigner(process.env.EXPORTER_IDENTITY_KEY, passportId)
+  : process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
 const response = await fetch(`${source}/evidence-package?${new URLSearchParams({ passportId })}`)
 if (!response.ok) throw new Error(`GET /evidence-package answered ${response.status}: ${await response.text()}`)

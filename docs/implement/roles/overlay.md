@@ -29,7 +29,7 @@ Use the build order below for either route.
 
 ## What an index must serve
 
-The contract's `x-dpp-profile` sorts every route into must, should and may. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
+The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
 
 | Level | What | Ledger rows |
 |---|---|---|
@@ -40,11 +40,12 @@ The contract's `x-dpp-profile` sorts every route into must, should and may. The 
 | Must | `tm_dpp` admits version 1 and version 2 states under the record rules, the publisher policy and the selected custody profile, and keeps each state after a later state spends it; `ls_dpp` answers by passport identifier | `SVC-2-passport-admission`, `SVC-2-version-2-admission` |
 | Must | `tm_attestation` admits anchors on their exact script, framed signature and derived key; `ls_attestation` answers exact metadata selectors with an exact outpoint cursor | `SVC-2-anchor-admission`, `SVC-2-cursor-lookup` |
 | Should | `POST /arc-ingest`, accepting a merkle proof only after checking it contains the transaction and validating it against the index's header source | `SVC-2-proof-ingest` |
-| Should | HTTPS; advertising through SHIP and SLAP, the ecosystem's protocols for announcing which topics and lookup services an index hosts, when public; `GET /health/live` and `GET /health/ready` | |
-| May | The historical `tm_uora_dpp` and `ls_uora_dpp`, for anchors in the format before the current one, which the conformance baseline lists as historical rather than required; the binary aggregated lookup; synchronisation with peers through GASP, the Graph Aware Synchronisation Protocol (`POST /requestSyncResponse`, `POST /requestForeignGASPNode`); a bearer token on `/submit`; treating a missing `X-Topics` header as `tm_dpp`; the acceptance commitment under the managed custody profile | |
-| Extension the reference serves | The `X-Admission` and `X-Admission-Refusal` headers on `/submit`; `GET /capabilities`; `GET /history`; `GET /evidence-package`; `GET /evidence-export`; `POST /retract` | |
+| Should | HTTPS; the `X-Admission` header on `/submit`, one outcome per topic; `GET /health/live` and `GET /health/ready` | |
+| May | The historical `tm_uora_dpp` and `ls_uora_dpp`, for anchors in the format before the current one, which the conformance baseline lists as historical rather than required; the binary aggregated lookup; a bearer token on `/submit`; treating a missing `X-Topics` header as `tm_dpp`; the acceptance commitment under the managed custody profile | |
+| Extension, version 1 each | `discovery`, advertising through SHIP and SLAP when public; `admission-refusal`, the `X-Admission-Refusal` header, whose codes are informative; `health`, the fields on `GET /health`; `capabilities`, `GET /capabilities`; `publisher-policy`; `registration`, `POST /register`; `retraction`, `POST /retract`; `gs1-key-lookup`, the `gs1Key` query; `evidence-package`, `GET /evidence-package`; `sync`, synchronisation with peers through GASP, the Graph Aware Synchronisation Protocol (`POST /requestSyncResponse`, `POST /requestForeignGASPNode`) | |
+| Reference package only | `GET /history` and `GET /evidence-export`, outside the contract | |
 
-The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay role although the contract lists it as should, so an index claiming the role under the baseline serves it.
+The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay role although the contract lists it as should, so an index claiming the role under the baseline serves it. It requires no extension: the ledger rows `OVL-2-retraction`, `OVL-2-gs1-key-lookup` and `OVL-2-publisher-policy-route` assess the reference index's retraction, GS1 key lookup and publisher policy route, and the evidence package needs the capabilities extension, whose document names the key its signer derives from.
 
 ## Build order
 
@@ -52,7 +53,7 @@ The baseline requires proof ingestion (`SVC-2-proof-ingest`) for the overlay rol
 2. **Start offline with the fixtures.** Wrap each unmined raw transaction in a BEEF with its predecessors, then check topic admission ([version 2 lineage](../../packages/dpp-overlay.md)). The reference host's `CHAIN_TRACKER=scripts-only` setting omits a header source for local development only. Proof updates need the proof inputs listed above.
 3. **Lookup.** Serve `ls_dpp` and `ls_attestation` over what was admitted ([find passport records](../../reference/contracts.md#find-passport-records)).
 4. **One transaction end to end.** Exercise submission, lookup and proof ingestion with the same admitted transaction. A later proof must stay with the right record. Test duplicates and refused records, then restart the service and repeat the lookup.
-5. **History and export.** Add `GET /history`, pages of a passport's complete history over a stable snapshot ([paginated history schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/paginated-history.schema.json)), then `GET /evidence-package` and `GET /evidence-export`. Check pagination, a resumed request and an expired cursor.
+5. **Evidence package.** Add `GET /evidence-package`, the `dpp-evidence-package@1` for one passport, naming your exporter identity key and signed by its BRC-42 child for `[1, 'dpp evidence package v1']` and the passport identifier ([portable evidence](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) section 2), and name that identity key as `exporterIdentityKey` in your capability document. History pages and a multi-part export are your own choice; the reference package's are outside the contract.
 6. **Retraction.** Add `POST /retract`, which withdraws a state the network refused after it was announced, behind the `/submit` token.
 7. **Federation.** Synchronise with a peer ([federation](../../operate/federation.md)), including a record a peer offers but local policy refuses. A peer having a record is never a reason to bypass local admission.
 

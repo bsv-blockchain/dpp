@@ -87,7 +87,8 @@ docker compose -f deploy/compose.yml --env-file deploy/operator.env logs --tail=
 |---|---|
 | Host stops | A missing identity key or invalid policy can prevent startup. |
 | Connection refused | Host may be starting, failed or exposed on another `OVERLAY_PORT`. |
-| Export answers 503 | Export unavailable, commonly without `EXPORT_SIGNING_KEY`. It does not mean the passport has no history. |
+| Export answers 503 | Export unavailable, commonly without `EXPORTER_PRIVATE_KEY`. It does not mean the passport has no history. |
+| Host refuses to start naming `EXPORT_SIGNING_KEY` | An earlier release signed packages with that raw key; move its value to `EXPORTER_PRIVATE_KEY` and unset it ([enable exports](export-import-recovery.md#enable-exports-on-your-index)). |
 
 3. Make [your first lookup](../reference/contracts.md#find-passport-records), then follow the writer and proof flow. To stop while retaining the named volume:
 
@@ -137,7 +138,7 @@ Run the command again to rotate: it issues a new pair and revokes the pair the s
 | Writer's wallet | Hold signing access. |
 | Separate attestation registry | Store claims when needed. |
 | Header source | Supply block-header evidence for inclusion checks. |
-| Optional export key | Sign this operator's archive, never passport states. |
+| Optional operator signing key | Its per-passport child signs this operator's evidence packages, never passport states. |
 
 Keep these roles separate in deployment configuration.
 

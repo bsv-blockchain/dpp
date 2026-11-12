@@ -1,5 +1,5 @@
 # A second, independently administered operator: its own MongoDB, its own
-# identity, its own tokens and its own export key, synchronising from the
+# identity, its own tokens and its own exporter key, synchronising from the
 # first through GASP and admitting every offered output through the same
 # topic managers as its own /submit. Run beside deploy/compose.yml with a
 # second env file, or on another host entirely, which is what independence
@@ -50,10 +50,12 @@ services:
       OWNER_CONSENT: ${OWNER_CONSENT:-}
       TRANSFER_AUTHORITIES: ${TRANSFER_AUTHORITIES:-}
       INSTRUCTION_COMMITMENT: ${INSTRUCTION_COMMITMENT:-}
+      EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
       PUBLISHER_POLICY_FILE: ${PUBLISHER_POLICY_FILE:-}
       PUBLISHER_POLICY_JSON: ${PUBLISHER_POLICY_JSON:-}
       OPERATOR_IDENTITY_KEYS: ${OPERATOR_IDENTITY_KEYS:-}
-      EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
+      # The exporter's identity key: its child for each passport signs that passport's evidence packages.
+      EXPORTER_PRIVATE_KEY: ${EXPORTER_PRIVATE_KEY:-}
       EXPORT_TOKEN: ${EXPORT_TOKEN:-}
       # The first operator's base URL as this container reaches it; on one
       # host with the default compose network names, http://host.docker.internal:8080.

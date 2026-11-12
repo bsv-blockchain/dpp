@@ -41,7 +41,7 @@ The index names peers statically. beta.12 supports opt-in discovery, advertising
 
 | Verification input | Value and use |
 |---|---|
-| Evidence-package and export-part signer | `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`; pass as `expectedSigner`. |
+| Evidence-package and export-part signer | `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`, the raw key of the release the index runs; pass as `expectedSigner`. From the November candidate an index signs each passport's packages with the child of its exporter identity key, named as `exporterIdentityKey` in its capability document; packages signed with this key still inspect with it. |
 | Operator identity key | Establish independently to check a signed publisher policy, then check its key windows before announcing. |
 | Publisher keys | The index admits public keys; it supplies no private countersigning capability. |
 

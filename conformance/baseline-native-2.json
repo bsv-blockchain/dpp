@@ -300,8 +300,7 @@
       "optional": [
         "VSC-4-status",
         "VSC-4-authority",
-        "VSC-5-custody",
-        "SVC-3-legacy-intake"
+        "VSC-5-custody"
       ],
       "testTargets": [
         "contracts/registry.yaml",
@@ -350,7 +349,7 @@
     },
     {
       "path": "fixtures/attestation-anchor-v1.json",
-      "sha256": "10cd3047b0ee5b07a1a09bf35093919d87a29e21d339156184f522cf075ac933",
+      "sha256": "5a08fab4ee1739262b1f5f3c4521b92c3e84c9553e9077f1b78b8c786f6befd1",
       "pins": "the current signed native claim, its complete representation, digest and ten-field anchor"
     },
     {
@@ -375,7 +374,7 @@
     },
     {
       "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
-      "sha256": "ae14a48bc904effb0dade71d0eae5593f69d6aff2ec3215fa98dd89c8c264ce2",
+      "sha256": "417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f",
       "pins": "the current anchor in the stack's vector format"
     },
     {

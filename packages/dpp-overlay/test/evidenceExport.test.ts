@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { Beef, PrivateKey, ProtoWallet, Transaction, Utils } from '@bsv/sdk'
-import { chainFromBeef, inspectEvidencePackage, type EvidencePackageManifest, type EvidenceReport } from '@bsv/dpp-protocol'
+import { chainFromBeef, evidencePackageSigner, inspectEvidencePackage, type EvidencePackageManifest, type EvidenceReport } from '@bsv/dpp-protocol'
 import { envelopeFiles, type EvidencePackageEnvelope } from '../src/evidenceExport.js'
 import { startOverlayService, type RunningService } from '../src/index.js'
 import { bodyOf, eventTx, fixtureChain, genesisTx, lookupPassport, makeData, newNode, submitBeef, type TestNode } from './helpers.js'
@@ -25,9 +25,11 @@ const validateManifest = ajv.compile(schema)
 
 const HOST = '127.0.0.1'
 const EXPORT_KEY = PrivateKey.fromHex('77'.repeat(32))
-const EXPORTER = EXPORT_KEY.toPublicKey().toString()
+const IDENTITY = EXPORT_KEY.toPublicKey().toString()
 const NOW = new Date('2026-09-05T12:00:00Z')
 const F = fixtureChain()
+// The one signing model (spec/portable-evidence.md section 2): the manifest names the operator's identity key and is signed by its child for the passport.
+const EXPORTER = evidencePackageSigner(IDENTITY, F.passportId)
 
 let running: RunningService[] = []
 afterEach(async () => {
@@ -41,7 +43,7 @@ async function serve(node: TestNode, extra: Record<string, unknown> = {}): Promi
     port: 0,
     host: HOST,
     components: node.components,
-    exportSigningKey: EXPORT_KEY.toHex(),
+    exportIdentityKey: EXPORT_KEY.toHex(),
     now: () => NOW,
     ...extra,
   })
@@ -99,6 +101,8 @@ describe('GET /evidence-package', () => {
       ...F.txs.map((tx) => `transactions/${tx.id('hex')}.tx`),
     ].sort())
     expect(manifest.inventory.map((e) => e.path).sort()).toEqual(paths)
+    expect(manifest.signature.signer).toBe(EXPORTER)
+    expect(manifest.signature.signer).not.toBe(IDENTITY)
     expect(manifest).toMatchObject({
       format: 'dpp-evidence-package',
       version: '1',
@@ -106,7 +110,7 @@ describe('GET /evidence-package', () => {
       genesis: { txid: F.txs[0].id('hex'), outputIndex: F.outputIndexes[0] },
       selectedTip: { txid: F.txs[5].id('hex'), outputIndex: F.outputIndexes[5] },
       exportedAt: NOW.toISOString(),
-      exporter: { id: EXPORTER, role: 'overlay', software: expect.stringContaining('@bsv/dpp-overlay@') },
+      exporter: { id: IDENTITY, role: 'overlay', software: expect.stringContaining('@bsv/dpp-overlay@') },
       profiles: ['single-operator@1'],
       policyId: 'reference-node-environment',
       disclosure: { scope: 'public', recoveryBackup: false },

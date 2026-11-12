@@ -148,7 +148,7 @@
     },
     {
       "id": "evidence-package-export",
-      "reason": "EXPORT_SIGNING_KEY is unset, so GET /evidence-package and GET /evidence-export answer 503 export-unavailable; the bounded lookup and GET /history remain."
+      "reason": "EXPORTER_PRIVATE_KEY is unset, so GET /evidence-package and GET /evidence-export answer 503 export-unavailable; the bounded lookup and GET /history remain."
     },
     {
       "id": "retraction-network-check",

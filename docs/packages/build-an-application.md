@@ -341,7 +341,7 @@ To build the same writer into your own application, follow [how the writer examp
 
 A lifecycle claim is a signed statement about a passport, such as a repair or a recycling. It travels on its own track and never spends the passport:
 
-1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`, the state it is about by its outpoint in `recordId`, and under `evidence` the references a mapping needs, such as what a repair did and who did it ([add a claim](add-a-claim.md)). A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
+1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`, and the state it is about by its outpoint in `recordId` ([add a claim](add-a-claim.md)). The claim carries no evidence facets; a mapping that needs them reads them from other evidence. A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
 2. A registry validates it (`POST /validate` is open on the hosted registry) and, if you run one or hold its write token, stores it.
 3. An anchoring service builds `buildAttestationAnchor` over `lifecycleClaimDigest(claim)` with `attestationId` `urn:sha256:<digest>`, and announces and sends it like a passport state on `tm_attestation`, the index's topic for anchors. The anchor transaction comes from the service's own wallet, and `anchoredBy` names its key.
 

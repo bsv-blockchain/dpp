@@ -40,15 +40,18 @@
  *                  and configuration, never typed by hand
  *   GET  /history?passportId=|uid=&limit=&cursor=  -> one page of a stable
  *                  snapshot (contracts/paginated-history.schema.json), the
- *                  export beside the bounded lookup
+ *                  export beside the bounded lookup; a reference feature of
+ *                  this package, not part of the overlay contract
  *   GET  /evidence-package?passportId=             -> dpp-evidence-package@1
  *                  as {manifest, files} (contracts/evidence-package.schema.json),
- *                  signed with EXPORT_SIGNING_KEY; 503 when it is unset;
- *                  bounded to the newest 500 states, the rest declared absent
+ *                  signed by the BRC-42 child of EXPORTER_PRIVATE_KEY for the
+ *                  passport; 503 when it is unset; bounded to the newest 500
+ *                  states, the rest declared absent
  *   GET  /evidence-export?passportId=&cursor=      -> one part of the complete
- *                  export (contracts/evidence-export.schema.json): a package
- *                  over a contiguous sequence range of one snapshot, oldest
- *                  first, bounded by states and bytes, resumed by cursor;
+ *                  export (schemas/evidence-export.schema.json), a reference
+ *                  feature of this package: a package over a contiguous
+ *                  sequence range of one snapshot, oldest first, bounded by
+ *                  states and bytes, resumed by cursor;
  *                  Authorization: Bearer <token> when EXPORT_TOKEN is set
  *   POST /retract  {"txid","outputIndex","reason"} -> removes a state the
  *                  network refused, behind the /submit bearer; 409 when the
@@ -248,12 +251,16 @@ export interface OverlayHttpOptions {
   /** What the extension routes work on; see `NodeComponents`. */
   components?: NodeComponents
   /**
-   * EXPORT_SIGNING_KEY: the private key, hex, that signs evidence-package
-   * manifests. Unset, GET /evidence-package answers 503 export-unavailable and
-   * the capability document lists the export as unsupported. Malformed, the
+   * EXPORTER_PRIVATE_KEY: the exporter's identity key, hex, a key of its own.
+   * Every evidence-package manifest names its public key as exporter.id and
+   * is signed by its BRC-42 child for [1, 'dpp evidence package v1'], the
+   * passport identifier and counterparty anyone (spec/portable-evidence.md
+   * section 2), and the capability document names it as exporterIdentityKey.
+   * Unset, GET /evidence-package answers 503 export-unavailable and the
+   * capability document lists the export as unsupported. Malformed, the
    * handler refuses to be built, which is the boot.
    */
-  exportSigningKey?: string
+  exportIdentityKey?: string
   /**
    * EXPORT_TOKEN: shared secret required as `Authorization: Bearer` on GET
    * /evidence-export, the complete export, whose parts are each bounded but
@@ -695,9 +702,9 @@ export function createRequestHandler(
   // The paginator holds this process's cursor secret, so it lives as long as
   // the handler: one per node, drawn at boot.
   const paginator = components == null ? undefined : new HistoryPaginator(components.records, { now })
-  const exportSigner =
-    options.exportSigningKey != null && options.exportSigningKey !== ''
-      ? PrivateKey.fromHex(options.exportSigningKey)
+  const exportIdentity =
+    options.exportIdentityKey != null && options.exportIdentityKey !== ''
+      ? PrivateKey.fromHex(options.exportIdentityKey)
       : undefined
   const exportToken =
     options.exportToken != null && options.exportToken !== '' ? options.exportToken : undefined
@@ -712,7 +719,7 @@ export function createRequestHandler(
     now,
     components,
     paginator,
-    exportSigner,
+    exportIdentity,
     exportToken,
     knownOnChain: options.knownOnChain,
     ...(registrationLimiter == null ? {} : { registrationLimiter }),
@@ -732,7 +739,8 @@ interface HandlerOptions {
   now: () => Date
   components?: NodeComponents
   paginator?: HistoryPaginator
-  exportSigner?: PrivateKey
+  /** The exporter's identity key, whose BRC-42 child per passport signs every package. */
+  exportIdentity?: PrivateKey
   exportToken?: string
   knownOnChain?: (txid: string) => Promise<boolean>
   software: string
@@ -809,7 +817,8 @@ async function handle(
         controlAuthorities: components?.controlAuthorities,
         managedAcceptance: components?.managedAcceptance,
         registration: components?.registration?.mode,
-        exportAvailable: options.exportSigner != null,
+        exportAvailable: options.exportIdentity != null,
+        ...(options.exportIdentity == null ? {} : { exporterIdentityKey: options.exportIdentity.toPublicKey().toString() }),
         completeExportBearer: options.exportToken != null,
         networkOracleConfigured: options.knownOnChain != null,
         at: options.now(),
@@ -1157,8 +1166,8 @@ async function handle(
       // spec/portable-evidence.md section 2. The signer is the switch: without
       // one there is no manifest anyone could hold this node to, so the route
       // says so rather than serving an unsigned bundle.
-      if (options.exportSigner == null) {
-        throw new NamedError(503, 'export-unavailable', 'EXPORT_SIGNING_KEY is unset, so this node signs no evidence package; GET /history and POST /lookup remain')
+      if (options.exportIdentity == null) {
+        throw new NamedError(503, 'export-unavailable', 'EXPORTER_PRIVATE_KEY is unset, so this node signs no evidence package; GET /history and POST /lookup remain')
       }
       if (options.components == null || options.paginator == null) {
         throw new NamedError(503, 'export-unavailable', 'this node was started without its stores; GET /evidence-package is not served')
@@ -1171,7 +1180,7 @@ async function handle(
         passportId,
         paginator: options.paginator,
         engineStorage: options.components.engineStorage,
-        signingKey: options.exportSigner,
+        signingKey: options.exportIdentity,
         publisherPolicy: options.components.publisherPolicy,
         operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
         serviceIdentityKey: options.components.serviceIdentityKey,
@@ -1189,15 +1198,15 @@ async function handle(
     }
 
     if (route === 'GET /evidence-export') {
-      // The complete export (spec/portable-evidence.md section 2): parts over
+      // The complete export, a reference feature of this package: parts over
       // one snapshot, oldest first, each bounded, resumed by cursor. The same
       // signer switch as the bounded package, plus the bearer when the
       // deployment sets one, checked before any store is read.
       if (options.exportToken != null && !bearerAccepted(request, options.exportToken)) {
         throw new NamedError(401, 'export-unauthorised', 'GET /evidence-export requires the EXPORT_TOKEN bearer; the bounded GET /evidence-package and GET /history remain open')
       }
-      if (options.exportSigner == null) {
-        throw new NamedError(503, 'export-unavailable', 'EXPORT_SIGNING_KEY is unset, so this node signs no evidence package; GET /history and POST /lookup remain')
+      if (options.exportIdentity == null) {
+        throw new NamedError(503, 'export-unavailable', 'EXPORTER_PRIVATE_KEY is unset, so this node signs no evidence package; GET /history and POST /lookup remain')
       }
       if (options.components == null || options.paginator == null) {
         throw new NamedError(503, 'export-unavailable', 'this node was started without its stores; GET /evidence-export is not served')
@@ -1211,7 +1220,7 @@ async function handle(
         cursor: url.searchParams.get('cursor'),
         paginator: options.paginator,
         engineStorage: options.components.engineStorage,
-        signingKey: options.exportSigner,
+        signingKey: options.exportIdentity,
         publisherPolicy: options.components.publisherPolicy,
         operatorProfile: operatorProfileFor(options.components.publisherPolicy, synchronisingIn(options.components)),
         serviceIdentityKey: options.components.serviceIdentityKey,
@@ -1442,21 +1451,39 @@ export function versionTwoAdmission(): { managedAcceptance: boolean; controlAuth
 }
 
 /**
- * EXPORT_SIGNING_KEY: the private key that signs evidence-package manifests
- * (`spec/portable-evidence.md` section 2). Optional, because a node that
- * exports nothing needs no key; malformed, it fails the boot, because a key
- * that cannot sign is a promise the capability document would break.
+ * EXPORTER_PRIVATE_KEY, the exporter's identity key, a key of its own: each
+ * evidence-package manifest names its public key and is signed by its BRC-42
+ * child for the passport (`spec/portable-evidence.md` section 2). It is never
+ * the publisher key, and it is read apart from OPERATOR_SIGNING_KEY, so
+ * exporting does not need the key that signs publisher-policy versions on
+ * the node and registration does not switch exports on. Optional, because
+ * a node that exports nothing needs no key; malformed, it fails the boot,
+ * because a key that cannot sign is a promise the capability document would
+ * break.
+ *
+ * EXPORT_SIGNING_KEY, which an earlier release signed manifests with
+ * directly, is refused: a node booted with it expected packages signed by
+ * that key, and they are no longer. Moving its value to EXPORTER_PRIVATE_KEY
+ * keeps the exporter identity readers hold, and a package the old key signed
+ * still inspects under its own signer.
  */
-export function exportSigningKey(): string | undefined {
-  const declared = (process.env.EXPORT_SIGNING_KEY ?? '').trim()
+export function exportIdentityKey(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  if ((env.EXPORT_SIGNING_KEY ?? '').trim() !== '') {
+    throw new Error(
+      'EXPORT_SIGNING_KEY is no longer read: evidence packages are signed by the BRC-42 child of EXPORTER_PRIVATE_KEY, ' +
+        'which the capability document names as exporterIdentityKey (spec/portable-evidence.md section 2). ' +
+        'Move the key to EXPORTER_PRIVATE_KEY, or set a new one there, and unset EXPORT_SIGNING_KEY; packages the old key signed still verify under its public half.'
+    )
+  }
+  const declared = (env.EXPORTER_PRIVATE_KEY ?? '').trim()
   if (declared === '') {
-    console.warn('EXPORT_SIGNING_KEY is unset: GET /evidence-package answers 503 export-unavailable')
+    console.warn('EXPORTER_PRIVATE_KEY is unset: GET /evidence-package answers 503 export-unavailable')
     return undefined
   }
   try {
     PrivateKey.fromHex(declared)
   } catch {
-    throw new Error('EXPORT_SIGNING_KEY is not a private key in hex')
+    throw new Error('EXPORTER_PRIVATE_KEY is not a private key in hex')
   }
   return declared
 }
@@ -1694,7 +1721,7 @@ export async function runFromEnvironment(): Promise<void> {
   if (knownOnChain == null) {
     console.warn('CHAIN_TRACKER=scripts-only: POST /retract cannot ask the network about a transaction; its answers say so')
   }
-  const signingKey = exportSigningKey()
+  const signingKey = exportIdentityKey()
   const exportToken = process.env.EXPORT_TOKEN
   if (signingKey != null && (exportToken == null || exportToken === '')) {
     console.warn(
@@ -1715,7 +1742,7 @@ export async function runFromEnvironment(): Promise<void> {
     chainTracker: tracker,
     network,
     components,
-    exportSigningKey: signingKey,
+    exportIdentityKey: signingKey,
     exportToken,
     knownOnChain,
   }).catch(async (error: unknown) => {
@@ -1753,6 +1780,7 @@ export async function runFromEnvironment(): Promise<void> {
           managedAcceptance: components.managedAcceptance,
           registration: components.registration?.mode,
           exportAvailable: signingKey != null,
+          ...(signingKey == null ? {} : { exporterIdentityKey: PrivateKey.fromHex(signingKey).toPublicKey().toString() }),
           completeExportBearer: exportToken != null && exportToken !== '',
           networkOracleConfigured: knownOnChain != null,
           at: new Date(),

@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-11",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint and may carry evidence facets; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the proposed epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard, and the holder instruction record and record version 3, the token carrier, are parked outside it, so the set names record versions 1 and 2 and verification report version 2. From the same day the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, discovery, exchange and EPCIS profiles. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the proposed epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. From 12 November 2026 the native claim carries no evidence facets; the index contract separates a core, version 1, from versioned extensions, and its refusal codes are informative; the registry contract is the minimum every registry serves and has no legacy intake, so a historical UORA body is refused while stored historical records stay readable; the one export format is dpp-evidence-package@1 per passport, signed by the BRC-42 child of the exporter's identity key named in its capability document, and the multi-part export and the index's history pages are reference features of @bsv/dpp-overlay; and the application interoperability API contract is the reference application's own. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard, and the holder instruction record and record version 3, the token carrier, are parked outside it, so the set names record versions 1 and 2 and verification report version 2. From the same day the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, discovery, exchange and EPCIS profiles. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-11.json",
   "runtime": {
@@ -77,7 +77,8 @@
         "./server"
       ],
       "carries": [
-        "dist"
+        "dist",
+        "schemas"
       ],
       "nodeBuiltins": [
         "node:crypto",
@@ -327,13 +328,13 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "bbacd1386af7d26ff4d4ce0a188721ff299a11853da30cebddf968b85aee8b86",
+      "sha256": "1bcbed1b31d68e9969e20f7955106bad2d914e76e8b29016cdcc5c12b6ac7979",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "1670ff738a8305353e4aea2da5e9e2db70b78fade9bf28715281ba6a75a7c2ca",
-      "pins": "the index's HTTP contract"
+      "sha256": "4d178c006a22c7a4a69ab830eb5bacacaa7a24b08178903eebeb7cf56e24c044",
+      "pins": "the index's HTTP contract: the core, version 1, and its versioned extensions"
     },
     {
       "path": "contracts/verification-report.schema.json",
@@ -347,18 +348,13 @@
     },
     {
       "path": "contracts/capabilities.schema.json",
-      "sha256": "d1255ea886896dc6ffa7e0351b73067cd8a5a1ca8c007e313cb9b3451a1df7f1",
-      "pins": "the capability document"
+      "sha256": "5402113be46ff1d4be26d91f00f24078edb1ce9308ca93976bc03b50fdae3601",
+      "pins": "the capability document, naming the identity key whose derived child signs each evidence package"
     },
     {
       "path": "packages/dpp-profiles/frozen.json",
       "sha256": "1a6a4116cd6aeed5bc996b5d111f33d3116a70ccd127ff7c5e647c8ae7ed252d",
       "pins": "the frozen profile manifests"
-    },
-    {
-      "path": "contracts/interoperability.yaml",
-      "sha256": "27508c428551453de9c743a658fe643e770e31fc5eef5c776f0ec8dc2b0b9814",
-      "pins": "the application interoperability API contract"
     },
     {
       "path": "contracts/epcis-import.schema.json",
@@ -391,11 +387,6 @@
       "pins": "the successor industry manifest contract"
     },
     {
-      "path": "contracts/evidence-export.schema.json",
-      "sha256": "f2d5d78bb6e73cccc72a61bb6f1cb3326bbfb7f99070ed6491ba91caf945edb8",
-      "pins": "the complete export part, dpp-evidence-export@1"
-    },
-    {
       "path": "fixtures/managed-acceptance-v2.json",
       "sha256": "93bd39f22d8d05a8a3e2b4f3e3082fd9b02726d101d86b4ce80e85e0b573b55f",
       "pins": "the acceptance record a managed custodian signs with its derived key, with its binding and seven refusals"
@@ -417,18 +408,18 @@
     },
     {
       "path": "fixtures/attestation-anchor-v1.json",
-      "sha256": "10cd3047b0ee5b07a1a09bf35093919d87a29e21d339156184f522cf075ac933",
-      "pins": "the native claim with its outpoint recordId, the claim with evidence facets, and the anchor over its bytes"
+      "sha256": "5a08fab4ee1739262b1f5f3c4521b92c3e84c9553e9077f1b78b8c786f6befd1",
+      "pins": "the native claim with its outpoint recordId and the anchor over its bytes"
     },
     {
       "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
-      "sha256": "ae14a48bc904effb0dade71d0eae5593f69d6aff2ec3215fa98dd89c8c264ce2",
-      "pins": "the same claims and anchor in the stack vector format"
+      "sha256": "417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f",
+      "pins": "the same claim and anchor in the stack vector format"
     },
     {
       "path": "contracts/registry.yaml",
-      "sha256": "124af299bc30932cd5eec176d232a744751667399ed167427d95b13dd4eb6735",
-      "pins": "the registry contract, with the claim schema that refuses any recordId but an outpoint and carries the evidence facets, the envelope of the proposed epcis-event-vc@1, the refusal of the parked vsc-seal-json-v1, no status list routes and a UoraType that admits an external credential's own type"
+      "sha256": "554d0c347d78f76fcc003fd26d817339c52c5b6e44293b376096a88751ca7dcb",
+      "pins": "the registry contract, the minimum every registry serves, with the claim schema that refuses any recordId but an outpoint, the envelope of the proposed epcis-event-vc@1, the refusal of the parked vsc-seal-json-v1, no legacy intake and no status list routes"
     }
   ],
   "consumers": [

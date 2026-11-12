@@ -48,9 +48,8 @@ Expect `The signed claim matches the fixture.` Stop if either assertion fails.
 | `issuer`, `issuerKeyId` | Issuer identity and signing-key identifier | `unsignedClaim` |
 | `profile`, `profile_version` | The passport's declared product profile | `unsignedClaim` |
 | `issuerKeyDid` | Include only when the issuer is not a `did:key` | Rules section 3 |
-| `evidence` | Include when carrying the facets of rules section 2 | `claimWithEvidence.unsignedClaim` |
 
-1. Build the claim with exactly the properties of rules section 3 except `signature`, using the table. Compare with `unsignedClaim`, and with `claimWithEvidence.unsignedClaim` for the facets.
+1. Build the claim with exactly the properties of rules section 3 except `signature`, using the table. Compare with `unsignedClaim`.
 2. Serialise it as restricted canonical JSON: property names sorted, no whitespace, only string and safe-integer values. Compare with `canonicalUnsignedClaim`.
 3. Sign the SHA-256 of those bytes with the BRC-42 child of your identity key for protocol `[1, 'dpp attestation v1']`, key identifier the claim's `passportId`, counterparty `anyone` (invoice number `1-dpp attestation v1-<passportId>`), using a deterministic RFC 6979 nonce. Encode the DER signature as lower-case hex and compare with `claim.signature`; the test private key is `issuerPrivateKey`. A BRC-100 wallet does this as `createSignature` with the canonical bytes as `data`.
 4. Add `signature` and serialise the complete claim the same way. Those bytes are the secured representation `dpp-lifecycle-json-v1`: compare with `representationBytes`. Their SHA-256 is `digest`, the value an anchor commits to.
@@ -91,7 +90,7 @@ The fixture's values are test values. Replace them for a live claim:
 | `recordId` | State outpoint, `<txid>:<outputIndex>` (rules section 3). Any other spelling is refused. | Genesis of `fixtures/chain-v1.json` |
 | `profile`, `profile_version` | Product profile and version, such as `battery` and `2` for `battery@2` | `general@2` |
 | Registry identifier | `urn:sha256:` followed by your claim's own `digest` (rules section 6) | The anchor's `attestationId` identifies the fixture claim. |
-| `evidence` | References describing what was done, by whom and when, under rules section 2's facet names. Without them, a claim gives only event type and time; mappings needing facets report insufficient data. | `claimWithEvidence` shows repair facets and their nested canonical bytes. |
+| No `evidence` | A claim carries the event type and time, not what was done: rules section 3 names no evidence property, and `signLifecycleClaim` refuses one. A mapping needing the facets of rules section 2 reads them from other evidence, such as a state's `event_data`. | The fixture claim carries none. |
 
 These are open questions in the standard; [known limitations](../../operate/limitations.md) lists the reference service's limits. An issuer's identity and its authority to make the claim remain separate evidence questions for the verifier.
 

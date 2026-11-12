@@ -185,7 +185,7 @@ The report ends with `latest state unknown | no source asked` and thirteen `limi
 - That an index's answer covers every index. A service's answer is evidence from that service.
 - That a credential's status is fresher than the source it was read from.
 
-A complete export covers the history one index held at one snapshot ([export and recovery](../operate/export-import-recovery.md)); it does not supply evidence that index never had.
+The reference index's complete export covers the history that index held at one snapshot ([export and recovery](../operate/export-import-recovery.md)); it does not supply evidence that index never had.
 
 ## Source definitions
 

@@ -60,9 +60,9 @@ Use this inventory to assign the platform's keys and secrets to their holders.
 | Custodian's identity key | Custodian's BRC-100 wallet | Signs managed acceptance records through a derived key; never exported | Wallet; public half in each record's `custodian` property |
 | Submit token | The index operator and its writers | `POST /submit` and `POST /retract` on that index | `SUBMIT_TOKEN` on the index |
 | Callback token | The index operator and whoever pushes proofs | `POST /arc-ingest` on that index | `ARC_CALLBACK_TOKEN` on the index; one per index, never shared with another |
-| Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |
+| Exporter key and export token | The index operator | Its per-passport child signs evidence packages and exports; reading the complete export | `EXPORTER_PRIVATE_KEY` and `EXPORT_TOKEN` on the index |
 | Anchoring service key | The anchoring service's wallet | Signs claim anchors (`anchoredBy`) | The service's wallet; indexes may list it in `ANCHOR_SERVICE_KEYS` |
-| Registry write token | The registry operator | Storing claims and registering certifications | The registry's own configuration |
+| Registry write token | The registry operator | Storing claims | The registry's own configuration |
 | WhatsOnChain key | Readers and indexes using the reference header source | Header lookups without the anonymous rate limit | `WOC_API_KEY` |
 
 ## Duties that run on their own

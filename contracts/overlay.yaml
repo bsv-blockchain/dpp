@@ -8,12 +8,21 @@ info:
     ecosystem's, BRC-22 submission and BRC-24 lookup with STEAK answers and
     BEEF throughout, and it is not restated here: a conforming index implements
     the upstream contract named under externalDocs, and this document pins only
-    what the standard adds or fixes on top of it. That includes the current and historical topics,
-    their admission rules, lookup services and query contracts,
-    the extensions the reference deployment serves, and which upstream options
-    an index must, should or may implement (x-dpp-profile). Findability is a
-    service concern, not a truth concern: nothing returned here is trusted
-    until it verifies as the specification documents describe.
+    what the standard adds or fixes on top of it. It has a core and
+    extensions. The core (x-dpp-profile, versioned by x-dpp-core-version) is
+    what the contract asks of every conforming index: the current and
+    historical topics, their admission rules, lookup services and core query
+    shapes, and which upstream options an index must, should or may
+    implement. The core version
+    changes only when the record versions the topics admit change or a must
+    changes, never for a should, a may or an extension. Each extension
+    (x-dpp-extensions) is optional, carries its own version, which changes only
+    with that extension, and marks the operations, headers and properties it
+    adds with x-dpp-extension. An index may serve more than this document
+    names: the reference package documents its own further routes.
+    Findability is a service concern, not a truth concern: nothing returned
+    here is trusted until it verifies as the specification documents
+    describe.
   license:
     name: Apache License 2.0
     identifier: Apache-2.0
@@ -23,6 +32,7 @@ externalDocs:
     specs/overlay/overlay-http.yaml, served by @bsv/overlay-express and
     consumed by the @bsv/sdk overlay tools.
   url: https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/
+x-dpp-core-version: '1'
 x-dpp-profile:
   upstream: https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/
   topics:
@@ -77,9 +87,9 @@ x-dpp-profile:
   should:
     - Be reachable over HTTPS; the SDK's mainnet lookup resolver refuses plain HTTP.
     - >-
-      Advertise its topics through SHIP and its lookup services through SLAP
-      when it is public, so a reader who knows only a service name finds it
-      (spec/services.md section 1).
+      Send the X-Admission header on /submit, one outcome per topic, so a
+      writer tells an admitted, a duplicate and a refused state apart without
+      reading the STEAK.
     - Serve GET /health/live and GET /health/ready for probes.
     - >-
       Accept merkle proofs through POST /arc-ingest, checked to contain the
@@ -93,12 +103,8 @@ x-dpp-profile:
       the SDK resolver requests it by default and falls back on the JSON form
       by content type.
     - >-
-      Synchronise from peers through GASP. The reference serves both upstream
-      routes (POST /requestSyncResponse, POST /requestForeignGASPNode) and
-      pulls from the static peers SYNC_PEERS names, judging every offered
-      output by the same topic managers as /submit.
-    - >-
-      Require a write token on /submit, /retract and /arc-ingest: a per-publisher
+      Require a write token on /submit, /arc-ingest and, with the retraction
+      extension, /retract: a per-publisher
       token bound to one publisher or anchoring key and one use, accepted only
       for what that key signed (403 token-publisher-mismatch otherwise), or the
       operator-wide token; /lookup and /health stay open.
@@ -108,36 +114,65 @@ x-dpp-profile:
       for managed-custody@2 (spec/managed-custody.md section 4), and name the
       control authorities of spec/record-model-v2.md section 6 in the topic
       documentation and the capability document.
-  extensions:
-    - X-Admission and X-Admission-Refusal response headers on /submit.
-    - Extra fields on /health (topic, service, topics, services, network, startedAt).
-    - GET /capabilities, the capability document (contracts/capabilities.schema.json).
-    - >-
-      GET /publisher-policy, the signed dpp-publisher-policy@1 chain the index
-      admits under (contracts/publisher-policy.schema.json), so a reader
-      verifies the publisher keys and their windows itself.
-    - >-
-      GET /history, pages of a passport's complete history over a stable
-      snapshot (contracts/paginated-history.schema.json), beside the bounded
-      lookup and never in place of it.
-    - >-
-      GET /evidence-package, the dpp-evidence-package@1 for one passport
-      (contracts/evidence-package.schema.json), signed by the deployment's
-      export key and served as a JSON envelope, bounded to the newest 500
-      states with the rest declared absent.
-    - >-
-      GET /evidence-export, the complete export of one passport as parts over
-      one snapshot (contracts/evidence-export.schema.json): each part a
-      dpp-evidence-package@1 over a contiguous sequence range, oldest first,
-      bounded by states and bytes, resumed by cursor, behind a bearer when
-      the deployment sets one.
-    - >-
-      POST /retract, the withdrawal of a state the network refused after it
-      was announced, behind the /submit bearer.
   intentionalOmissions:
     - >-
       Lookup outputs carry no context and no txid hint; everything a verifier
       needs is inside the BEEF and the client re-derives the txid.
+x-dpp-extensions:
+  discovery:
+    version: '1'
+    summary: >-
+      Advertise the topics through SHIP and the lookup services through SLAP
+      when the index is public, so a reader who knows only a service name
+      finds it (spec/services.md section 1).
+  admission-refusal:
+    version: '1'
+    summary: >-
+      The X-Admission-Refusal response header on POST /submit, naming the
+      check a refused topic failed. Its codes are informative: x-refusal-codes
+      lists the words the reference index sends, which a writer may show and
+      branch on, and a client reads any code, listed or not, as a refusal.
+  health:
+    version: '1'
+    summary: GET /health with the topics, services, network and start time the deployment serves.
+  capabilities:
+    version: '1'
+    summary: GET /capabilities, the capability document (contracts/capabilities.schema.json).
+  publisher-policy:
+    version: '1'
+    summary: >-
+      GET /publisher-policy, the signed dpp-publisher-policy@1 chain the index
+      admits under (contracts/publisher-policy.schema.json), so a reader
+      verifies the publisher keys and their windows itself.
+  registration:
+    version: '1'
+    summary: POST /register, self-service registration of a publisher key (spec/services.md section 2).
+  retraction:
+    version: '1'
+    summary: >-
+      POST /retract, the withdrawal of a state the network refused after it
+      was announced, behind the /submit bearer (spec/services.md section 2).
+  gs1-key-lookup:
+    version: '1'
+    summary: The gs1Key query of ls_dpp, which finds passports by a GS1 key without a host.
+  evidence-package:
+    version: '1'
+    summary: >-
+      GET /evidence-package, the dpp-evidence-package@1 for one passport
+      (contracts/evidence-package.schema.json, spec/portable-evidence.md
+      section 2), signed by the BRC-42 child, for the passport, of the
+      exporter identity key the capability document names as
+      exporterIdentityKey, and served as a JSON envelope bounded to the newest
+      500 states with the rest declared absent. It requires the capabilities
+      extension, because the capability document is where a reader finds the
+      key it derives each package's signer from.
+  sync:
+    version: '1'
+    summary: >-
+      Synchronisation from peers through GASP: the two upstream routes,
+      POST /requestSyncResponse and POST /requestForeignGASPNode. The reference
+      pulls from the static peers SYNC_PEERS names, judging every offered
+      output by the same topic managers as /submit.
 paths:
   /submit:
     post:
@@ -202,6 +237,7 @@ paths:
                 refusal by whether the topic ran its mutation phase, which the
                 STEAK shows as the presence of coinsRemoved.
             X-Admission-Refusal:
+              x-dpp-extension: admission-refusal
               schema:
                 type: string
               description: >-
@@ -210,11 +246,11 @@ paths:
                 topic=code, for example tm_dpp=predecessor-not-admitted. A
                 refused topic left out recorded no reason, and an admitted or
                 duplicate topic is never named. Codes are lower-case words
-                joined by hyphens. Where a verification report names the same
-                failure (spec/verification.md section 4), the code is the
-                report's own word. x-refusal-codes lists the tm_dpp codes and
-                what each asks of the writer. An index MAY send further codes
-                under the prefix x-, and a client reads a code it does not know
+                joined by hyphens. The codes are informative: x-refusal-codes
+                lists the tm_dpp codes the reference index sends and what each
+                asks of the writer, where a verification report names the same
+                failure (spec/verification.md section 4) the code is the
+                report's own word, and a client reads a code it does not know
                 as a refusal without a stated reason.
               x-refusal-codes:
                 tm_dpp:
@@ -386,6 +422,7 @@ paths:
                 type: string
   /health:
     get:
+      x-dpp-extension: health
       summary: As upstream, plus what this deployment serves
       responses:
         '200':
@@ -428,6 +465,7 @@ paths:
                     format: date-time
   /capabilities:
     get:
+      x-dpp-extension: capabilities
       summary: The capability document of this deployment (an extension; spec/conformance.md section 4)
       description: >-
         What this node declares it supports, in the shape
@@ -442,7 +480,9 @@ paths:
         conformance ledger; never proof of authority or of conformance. Without
         a publisher policy file the document reports the single configured
         identity key as an implicit single-operator policy with no rotation
-        history, and says so under unsupported.
+        history, and says so under unsupported. With the evidence-package
+        extension it names, as exporterIdentityKey, the identity key whose
+        BRC-42 child signs each package.
       responses:
         '200':
           description: The capability document, as of the moment of the request.
@@ -452,6 +492,7 @@ paths:
                 $ref: './capabilities.schema.json'
   /publisher-policy:
     get:
+      x-dpp-extension: publisher-policy
       summary: The signed publisher policy chain this index admits under (an extension; spec/services.md section 1)
       description: >-
         The dpp-publisher-policy@1 chain, oldest first, as the index verified
@@ -475,72 +516,9 @@ paths:
                   $ref: './publisher-policy.schema.json'
         '404':
           $ref: '#/components/responses/error'
-  /history:
-    get:
-      summary: One page of a passport's complete history over a stable snapshot (an extension; spec/portable-evidence.md section 1)
-      description: >-
-        The export beside the bounded lookup, which stays exactly what it is.
-        The first page pins a snapshot, the highest record sequence the index
-        had assigned at that moment; every later page of the export reads only
-        records at or below it, in the index's own insertion order, so a state
-        admitted while a reader walks the pages appears in none of them and
-        shifts no page boundary, and two readers of one snapshot receive the
-        same pages. Each item carries the record's txid, outputIndex, op,
-        timestamp, previousTxid, spent flag, spendingTxid and sequence; the
-        bytes themselves come from POST /lookup or GET /evidence-package.
-        scope.sequenceRange is the span of sequences the page covers, so
-        consecutive pages tile the snapshot with no gap and no overlap and a
-        reader detects a repeated or a missing page from the ranges alone.
-        completeForSnapshot is true only on the last page, and only about the
-        snapshot's scope. The cursor is opaque, bound to the query and the
-        snapshot and signed under a secret this process drew at startup: a
-        cursor edited in transit, issued by another process or issued for
-        another query answers 400 cursor-invalid, and a snapshot older than ten
-        minutes answers 410 snapshot-expired with the instruction to restart
-        without a cursor, never a silent continuation from the middle.
-      parameters:
-        - name: passportId
-          in: query
-          required: false
-          schema:
-            type: string
-          description: The passport identifier. Exactly one of passportId and uid is required, non-empty; neither or both answers 400 query-invalid.
-        - name: uid
-          in: query
-          required: false
-          schema:
-            type: string
-          description: The data-carrier identifier carried in the record's public payload.
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 500
-            default: 100
-          description: Items per page. Anything that is not an integer from 1 to 500 answers 400 limit-invalid.
-        - name: cursor
-          in: query
-          required: false
-          schema:
-            type: string
-          description: The nextCursor of the previous page; absent on the first page.
-      responses:
-        '200':
-          description: One page of the snapshot.
-          content:
-            application/json:
-              schema:
-                $ref: './paginated-history.schema.json'
-        '400':
-          $ref: '#/components/responses/namedError'
-        '410':
-          $ref: '#/components/responses/namedError'
-        '503':
-          $ref: '#/components/responses/namedError'
   /evidence-package:
     get:
+      x-dpp-extension: evidence-package
       summary: The evidence package for one passport (an extension; spec/portable-evidence.md section 2)
       description: >-
         Everything this index holds about the passport, as a
@@ -550,8 +528,13 @@ paths:
         the publisher policy chain under authority/ when one is configured,
         this index's spend observations under status/, and a verification
         report in the shape of spec/verification.md under reports/, inventoried
-        by path, media type, length and SHA-256 in a manifest the deployment
-        signs with its export key. The standard leaves the archive form to the
+        by path, media type, length and SHA-256 in a manifest that names the
+        exporter identity key the capability document gives as
+        exporterIdentityKey and is signed by that key's BRC-42 child for
+        [1, "dpp evidence package v1"], the passport identifier as key
+        identifier and counterparty anyone, which a reader derives from the
+        identity key (spec/portable-evidence.md section 2). The standard
+        leaves the archive form to the
         build; this build's is a JSON envelope, the manifest beside a map of
         every inventoried file to its base64 bytes, so a browser or a script
         reads it without an archive library and the map is exactly what a
@@ -559,8 +542,8 @@ paths:
         package is never a recovery backup: the restricted tiers are not held
         here and are withheld by name, and any state whose transaction or proof
         could not be produced is declared absent, never implied present. The
-        completeness declaration names the snapshot the export read, the same
-        kind GET /history pages. The signature says this index assembled these
+        completeness declaration names the snapshot the export read. The
+        signature says this index assembled these
         bytes and nothing more; a reader verifies every transaction, proof and
         signature independently.
       parameters:
@@ -581,87 +564,14 @@ paths:
         '404':
           $ref: '#/components/responses/namedError'
         '503':
-          description: The deployment configures no export signing key (error export-unavailable), so no package is signed; the bounded lookup and GET /history remain.
+          description: The deployment configures no exporter identity key to sign with (error export-unavailable), so no package is signed; the bounded lookup remains.
           content:
             application/json:
               schema:
                 $ref: '#/components/responses/namedError/content/application~1json/schema'
-  /evidence-export:
-    get:
-      summary: One part of a passport's complete export over a stable snapshot (an extension; spec/portable-evidence.md section 2)
-      description: >-
-        The complete export beside the bounded package, which stays exactly
-        what it is. The first request pins a snapshot, the highest record
-        sequence the index had assigned at that moment, and answers the first
-        part: a dpp-evidence-package@1 over the oldest states of the passport
-        within the snapshot, in the index's own sequence order, holding at
-        most maxEvidenceExportPartStates states and closing earlier once their
-        raw transactions and BEEFs exceed maxEvidenceExportPartBytes, always
-        with at least one state. Every later part reads only records at or
-        below the snapshot's sequence, so a state admitted while a reader
-        walks the parts appears in none of them and shifts no boundary. Each
-        part's package carries the transactions and proofs of its states, the
-        publisher policy chain when one is configured, and that part's spend
-        observations under status/; a part carries no verification report,
-        because the report is the reader's to produce over the joined
-        history. The part carries a coverage record naming the passport, the
-        snapshot, the part's index, the sequence range it covers, its number
-        of states, whether it is final and the SHA-256 of its package
-        manifest as signed, signed by the export key under the manifest's own
-        preimage rule; the cursor is outside the record. Consecutive parts
-        tile the snapshot from 1 to its sequence with no gap and no overlap,
-        the final part ends at the snapshot's sequence and carries a null
-        cursor, and a reader establishes coverage only from records whose
-        signature verifies and whose digest binds the package it received
-        (joinEvidenceExport in the reference package), so a genuine part
-        cannot be dressed as a whole export by editing unsigned fields. A
-        part's manifest is complete for its own range and never for the
-        snapshot, unless it is the only part, and its scope declaration
-        matches the record. The cursor is opaque, bound to the
-        passport and the snapshot, carries its kind, and is signed under a
-        secret this process drew at startup: a cursor edited in transit,
-        issued by another process, issued for another passport, or issued for
-        GET /history answers 400 cursor-invalid, and a snapshot older than ten
-        minutes answers 410 snapshot-expired with the instruction to restart
-        without a cursor. When the deployment sets an export token the route
-        requires it as a bearer and answers 401 export-unauthorised without
-        it; the bounded GET /evidence-package and GET /history stay open. The
-        capability document states the bounds and whether the route is open,
-        behind a bearer, or unavailable.
-      parameters:
-        - name: passportId
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: cursor
-          in: query
-          required: false
-          schema:
-            type: string
-          description: The nextCursor of the previous part; absent on the first.
-      security:
-        - {}
-        - bearer: []
-      responses:
-        '200':
-          description: One part of the export.
-          content:
-            application/json:
-              schema:
-                $ref: './evidence-export.schema.json'
-        '400':
-          $ref: '#/components/responses/namedError'
-        '401':
-          $ref: '#/components/responses/namedError'
-        '404':
-          $ref: '#/components/responses/namedError'
-        '410':
-          $ref: '#/components/responses/namedError'
-        '503':
-          $ref: '#/components/responses/namedError'
   /retract:
     post:
+      x-dpp-extension: retraction
       summary: Withdraw a state the network refused after it was announced (an extension)
       description: >-
         A writer may announce a state before sending it (spec/writing.md), so
@@ -715,6 +625,7 @@ paths:
           $ref: '#/components/responses/namedError'
   /register:
     post:
+      x-dpp-extension: registration
       summary: Register a publisher key with this index, from the application's own wallet (an extension; spec/services.md section 2)
       description: >-
         Self-service registration, where the operator enables it with
@@ -802,6 +713,7 @@ paths:
           $ref: '#/components/responses/namedError'
   /requestSyncResponse:
     post:
+      x-dpp-extension: sync
       summary: The outputs this index holds for a topic since a checkpoint, for a synchronising peer (as upstream)
       description: >-
         The first half of GASP, exactly as the upstream overlay protocol
@@ -874,6 +786,7 @@ paths:
           $ref: '#/components/responses/error'
   /requestForeignGASPNode:
     post:
+      x-dpp-extension: sync
       summary: One transaction of a graph a synchronising peer is assembling, with its proof when held (as upstream)
       description: >-
         The second half of GASP, exactly as upstream: graphID is the outpoint
@@ -933,15 +846,14 @@ components:
       type: http
       scheme: bearer
       description: >-
-        Required on /submit, /retract, /arc-ingest and /evidence-export when the
+        Required on /submit, /retract and /arc-ingest when the
         deployment configures tokens. A write token belongs to one publisher
         or anchoring key and one use, submit (for /submit and /retract) or
         callback (for /arc-ingest): the index accepts it only for a state that
         key countersigned or an anchor naming that key as its anchoring
         service, and answers 403 token-publisher-mismatch otherwise, 401 for an
         unknown, revoked or wrong-use token. A deployment may keep one
-        operator-wide token per route beside them. The export token is a
-        separate secret.
+        operator-wide token per route beside them.
     callbackToken:
       type: apiKey
       in: header
@@ -974,8 +886,7 @@ components:
                 type: string
                 description: >-
                   The refusal as one lower-case hyphenated word: query-invalid,
-                  limit-invalid, cursor-invalid, snapshot-expired,
-                  history-unavailable, export-unavailable, export-unauthorised,
+                  export-unavailable,
                   passport-unknown, output-unknown, retraction-refused,
                   chain-tracker-unavailable, retraction-unavailable,
                   token-publisher-mismatch, or on POST /register
@@ -989,15 +900,16 @@ components:
                 type: string
               hint:
                 type: string
-                description: What to do instead, when there is something to do; on snapshot-expired, restart without a cursor.
+                description: What to do instead, when there is something to do.
   schemas:
     passportLookup:
       type: object
       required: [service, query]
       description: >-
         The passport rail. Resolves a record's chain by its passport identifier,
-        by its data-carrier identifier or by its GS1 key. At least one of the
-        three must be provided; the service refuses an empty query. The answer holds the tip
+        by its data-carrier identifier or, with the gs1-key-lookup extension,
+        by its GS1 key. At least one must be provided; the service refuses an
+        empty query. The answer holds the tip
         and every retained earlier state, bounded to 500 outputs with the
         newest kept, so a truncated history fails verification rather than
         presenting a stale tip.
@@ -1013,6 +925,7 @@ components:
               type: string
               description: The data-carrier identifier carried in the record's public payload.
             gs1Key:
+              x-dpp-extension: gs1-key-lookup
               type: string
               description: >-
                 A GS1 key without a host, for a caller holding a GTIN and serial

@@ -158,7 +158,7 @@ Before relying on an embedded index, persist records across restarts, ingest lat
 
 The repository's Compose preset runs this host with persistent storage from one environment file. [Run an index from source](../operate/README.md) covers its startup, checks and an application's connection file; it is the route for a new index.
 
-The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /arc-ingest` for block proofs, `GET /capabilities`, `GET /history`, the evidence exports, `POST /retract` and the synchronisation routes. Its configuration is all environment.
+The host speaks the overlay contract's core, `POST /submit` and `POST /lookup` and `POST /arc-ingest` for block proofs, and its extensions, among them `GET /capabilities`, `GET /evidence-package`, `POST /retract` and the synchronisation routes. `GET /history` and the complete export are its own routes, outside the contract. Its configuration is all environment.
 
 ### Other routes from source
 

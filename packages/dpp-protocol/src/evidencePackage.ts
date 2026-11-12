@@ -6,14 +6,49 @@
  * manifest's structure, the inventory against the files, and the signature,
  * and never folds them into one Boolean. A reader verifies every transaction,
  * proof and claim inside independently of who signed the package.
+ *
+ * One signing model for every exporter, an index or a registry: the manifest
+ * names the exporter's identity key as `exporter.id` and is signed by that
+ * key's BRC-42 child for `EVIDENCE_PACKAGE_PROTOCOL`, the passport identifier
+ * as key identifier and counterparty 'anyone', so a reader derives the signer
+ * from the identity key the exporter's capability document names
+ * (`evidencePackageSigner`). A package an index on an earlier release signed
+ * directly with its raw export key names that key as both `exporter.id` and
+ * `signature.signer`, and still inspects with it as `expectedSigner`.
  */
-import { Hash, PublicKey, Signature, Utils } from '@bsv/sdk'
+import { CachedKeyDeriver, Hash, PublicKey, Signature, Utils, type PrivateKey, type WalletProtocol } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
 import { MANAGED_ACCEPTANCE_FORMAT, MANAGED_ACCEPTANCE_FORMAT_V1, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
 
 export const EVIDENCE_PACKAGE_FORMAT = 'dpp-evidence-package'
 export const EVIDENCE_PACKAGE_VERSION = '1'
 export const EVIDENCE_PACKAGE_MANIFEST_PATH = 'manifest.json'
+
+/** The protocol under which an exporter's identity key derives the key that signs a manifest (`spec/portable-evidence.md` §2). */
+export const EVIDENCE_PACKAGE_PROTOCOL: WalletProtocol = [1, 'dpp evidence package v1']
+
+/** Deriver for counterparty-'anyone' verification keys: the verifier's own key is 1, so anyone computes the child. */
+const anyone = new CachedKeyDeriver('anyone')
+
+/**
+ * The key a package's manifest is signed by: the BRC-42 child of the
+ * exporter's identity key for `EVIDENCE_PACKAGE_PROTOCOL`, key identifier the
+ * passport identifier, counterparty 'anyone'. A reader computes it from the
+ * identity key alone and passes it to `inspectEvidencePackage` as
+ * `expectedSigner`.
+ */
+export function evidencePackageSigner(exporterIdentityKey: string, passportId: string): string {
+  return anyone.derivePublicKey(EVIDENCE_PACKAGE_PROTOCOL, passportId, exporterIdentityKey).toString()
+}
+
+/**
+ * The private half of `evidencePackageSigner`, for an exporter that holds its
+ * identity key itself; a BRC-100 wallet signs the same preimage as
+ * `createSignature` under the same protocol, key identifier and counterparty.
+ */
+export function evidencePackageSigningKey(identityKey: PrivateKey, passportId: string): PrivateKey {
+  return new CachedKeyDeriver(identityKey).derivePrivateKey(EVIDENCE_PACKAGE_PROTOCOL, passportId, 'anyone')
+}
 
 export type InventoryCategory = 'transactions' | 'proofs' | 'native-claims' | 'external-credentials' | 'evidence' | 'schemas' | 'authority' | 'status' | 'reports'
 export const INVENTORY_CATEGORIES: readonly InventoryCategory[] = ['transactions', 'proofs', 'native-claims', 'external-credentials', 'evidence', 'schemas', 'authority', 'status', 'reports']

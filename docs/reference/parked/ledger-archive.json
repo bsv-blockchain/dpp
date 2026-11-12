@@ -521,6 +521,101 @@
         "reviewedAt": "2026-10-09",
         "reviewOwner": "dpp maintainers"
       }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026: the complete multi-part export, dpp-evidence-export@1 (spec/portable-evidence.md section 2 as it stood, contracts/evidence-export.schema.json), is a reference feature of @bsv/dpp-overlay, GET /evidence-export, whose part schema moved to packages/dpp-overlay/schemas/evidence-export.schema.json. The standard's one export format is the dpp-evidence-package@1 per passport.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "EXPORT-4-complete-export",
+        "sourceId": "spec-portable-evidence",
+        "sourceUri": "spec/portable-evidence.md",
+        "sourceVersion": "working draft",
+        "clause": "§2, the complete export",
+        "summary": "A bounded package declares what it does not carry; a lineage longer than the bound is exported completely as dpp-evidence-export@1 parts over one snapshot, each a package over a contiguous sequence range bounded by states and bytes with at least one state, oldest first, resumed by cursor under the page rules, each carrying a coverage record (passport, snapshot, index, range, states, final, manifest digest) signed by the exporter and bound to the package manifest; a reader establishes coverage only from records that verify, tiles the snapshot from them, and refuses by name a repeated, missing, foreign, tampered, substituted, re-signed or falsely final part; a part is never complete for the snapshot unless it is the only part and carries no report.",
+        "layer": "role",
+        "roles": [
+          "overlay",
+          "registry",
+          "passport-reader"
+        ],
+        "applicability": "when a service offers the complete export of a lineage longer than its bounded package",
+        "profileId": "core",
+        "implementationRefs": [
+          "contracts/evidence-export.schema.json",
+          "packages/dpp-overlay/src/evidenceExport.ts",
+          "packages/dpp-overlay/src/history.ts",
+          "packages/dpp-overlay/src/index.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-overlay/test/evidenceExportParts.test.ts"
+        ],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers",
+        "notes": "The overlay serves GET /evidence-export (contracts/overlay.yaml 0.7.0-draft) with parts of at most 500 states and 16 MiB of transaction and proof bytes, an export-kind cursor under the history paginator's secret and TTL, and an optional EXPORT_TOKEN bearer forwarded by both Compose presets; inspectEvidenceExportPart and joinEvidenceExport are the reader's side. Tested with 505 connected states admitted through the wire: two parts, joined complete, restored into a second operator that serves the same history and exports again; parts closed on either bound; a state admitted mid-export kept out of the snapshot; tampered, foreign, crossed and expired cursors refused by name; a genuine first part with unsigned final, cursor and range edited to look whole refused by the coverage signature, as is every altered coverage fact, a substituted package and a record signed by another key. The registry does not yet serve a complete export; its bounded package is unchanged and this row binds it only when it offers one. Local synthetic evidence; no operator exercise; the signature attributes the coverage assertion and does not prove the exporter held everything that exists elsewhere."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026: the registry contract has no legacy intake (the LEGACY_INTAKE switch, the historical placeholder and SD-JWT submissions, the seven-phase pipeline that answered them under legacy-uora and the certification registry behind it), and spec/services.md section 3 says historical UORA representations are read and never accepted anew. A historical body is refused as any body naming no current representation is; records stored under legacy-uora-json stay readable without secured bytes, the proof and chain routes serving their canonical bytes and the evidence package naming them under what the registry could not produce.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "SVC-3-legacy-intake",
+        "sourceId": "spec-services",
+        "sourceUri": "spec/services.md",
+        "sourceVersion": "working draft",
+        "clause": "§3",
+        "summary": "Legacy intake is off by default and, when enabled, carries only its historical assurance.",
+        "layer": "profile",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "when an operator enables historical intake",
+        "profileId": "legacy-intake (historical)",
+        "implementationRefs": [
+          "the reference registry (not published)"
+        ],
+        "testRefs": [
+          "the reference registry (not published)"
+        ],
+        "evidenceRefs": [
+          "contracts/registry.yaml#info.description"
+        ],
+        "reviewedAt": "2026-09-05",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with the registry's legacy intake: the authority-first cascade that ranked historical UORA-shaped claims at intake ran in the seven-phase pipeline against the certification registry, and both are gone. The relations it recorded under conflict-cascade stay readable.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "UORA-conflict-order",
+        "sourceId": "uora-published",
+        "sourceUri": "https://w3c-cg.github.io/uora/",
+        "sourceVersion": "1.0 Community Group Draft as published on the group site",
+        "clause": "conflict resolution cascade (authority-first)",
+        "summary": "Historical UORA-shaped claims are ranked authority-first, then validFrom within tolerance, then identifier; the earlier VSC-hosted copy's ordering is recorded and not adopted; VSC custody and corrections have their own rules.",
+        "layer": "profile",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "for historical UORA-shaped attestations only",
+        "profileId": "historical",
+        "implementationRefs": [
+          "the reference registry (not published)"
+        ],
+        "testRefs": [
+          "the reference registry (not published)"
+        ],
+        "evidenceRefs": [
+          "spec/vsc-profile.md#1"
+        ],
+        "reviewedAt": "2026-09-05",
+        "reviewOwner": "dpp maintainers",
+        "notes": "A fixture producing different winners under the two orderings is a proposed addition."
+      }
     }
   ],
   "claims": [

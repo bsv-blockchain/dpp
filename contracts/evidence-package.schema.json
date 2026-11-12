@@ -49,7 +49,7 @@
         "id": {
           "type": "string",
           "minLength": 1,
-          "description": "A DID or a compressed identity key of the party that assembled and signed the package."
+          "description": "The compressed identity key of the party that assembled the package, which its capability document names; signature.signer is the key's BRC-42 child for protocol [1, 'dpp evidence package v1'], the passport identifier as key identifier and counterparty anyone (spec/portable-evidence.md section 2). A package an index on an earlier release signed directly with its raw export key names that key here and as signature.signer, and verifies under it."
         },
         "role": {
           "enum": [
