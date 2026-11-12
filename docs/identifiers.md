@@ -138,4 +138,4 @@ The host is written into every state. Existing passports keep their original ide
 
 The [GS1-952-demonstration ledger row](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/conformance/manifest.json#L3037-L3045) is implemented. It records the demonstration fixture change; it does not establish that the live demonstration moved. Frozen historical fixtures remain available.
 
-Host rewriting during discovery does not establish a signed subject binding. Use the [discovery source](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/spec/gs1-discovery.md) and the [reader exercise](implement/roles/passport-reader.md) for those separate checks.
+Host rewriting during discovery does not establish a signed subject binding. The [discovery source](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/gs1-discovery.md) keeps the DPP identifier rules and cites the GS1 resolver standard for resolution; use the [reader exercise](implement/roles/passport-reader.md) for the binding check.

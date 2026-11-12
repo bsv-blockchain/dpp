@@ -93,7 +93,7 @@ const MAX_LINEAGE_WALK = 10_000
  */
 export interface DppAdmissionOptions {
   /**
-   * The publisher key policy chain (`spec/services.md` §1), already verified
+   * The publisher key policy chain (this package's README), already verified
    * by the caller with `verifyPolicyChain`. When present and in force for this
    * topic, a state's countersignature is accepted only from a state-publisher
    * key active at the state's own timestamp, and the positional identity key
@@ -514,7 +514,7 @@ export class DppTopicManager implements TopicManager, AdmissionRefusals {
     if (this.policy != null) {
       const newest = this.policy[this.policy.length - 1]
       lines.push(
-        `This index admits under a publisher key policy (spec/services.md section 1, dpp-publisher-policy@1), currently version ${newest.policyVersion} for the ${newest.scope.operatorProfile} scope. A state's server_signature must come from a state-publisher key that was active at the state's own timestamp: a retired key still admits the states it signed while active, and a key admits nothing timestamped before its activation. GET /capabilities lists the keys active now.`
+        `This index admits under a publisher key policy (dpp-publisher-policy@1, a feature of @bsv/dpp-overlay), currently version ${newest.policyVersion} for the ${newest.scope.operatorProfile} scope. A state's server_signature must come from a state-publisher key that was active at the state's own timestamp: a retired key still admits the states it signed while active, and a key admits nothing timestamped before its activation. GET /capabilities lists the keys active now.`
       )
     } else {
       lines.push(

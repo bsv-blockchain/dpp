@@ -12,7 +12,7 @@ import { bodyOf, eventTx, genesisTx, lockKey, makeData, makerWallet, newNode, SE
 import { A1, K1, K2, OPERATOR, OPERATORS, operatorPriv, policyChain, pub, signPolicy, STRANGER, T0, T1, tamperedChain } from './policy-fixture.js'
 
 /**
- * The publisher key policy at the topic managers (spec/services.md section 1):
+ * The publisher key policy at the topic managers (this package's README):
  * a state is held against the state-publisher keys active at its own
  * timestamp, an anchor against the anchor-publisher keys active at admission
  * time, and a chain that does not verify never boots the node.

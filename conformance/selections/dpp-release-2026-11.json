@@ -43,12 +43,6 @@
       "disposition": "required"
     },
     {
-      "id": "overlay-single-operator-1",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "single-operator@1 is an optional operator profile this release does not claim; overlay-native-baseline-2 is the overlay's claim."
-    },
-    {
       "id": "overlay-native-baseline-2",
       "kind": "component",
       "disposition": "required"
@@ -105,34 +99,16 @@
       "rationale": "managed-custody@2 is an optional custody profile this release does not claim."
     },
     {
-      "id": "gs1-discovery-1",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "gs1-digital-link@1 is an optional discovery profile this release does not claim."
-    },
-    {
       "id": "external-credential-ecdsa-1",
       "kind": "component",
       "disposition": "withheld",
       "rationale": "vc-di-ecdsa-rdfc-2019@1 is an optional exchange profile this release does not claim."
     },
     {
-      "id": "passport-projection-1",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "passport-projection@1 is an optional profile this release does not claim."
-    },
-    {
       "id": "epcis-source-import-1",
       "kind": "component",
       "disposition": "withheld",
       "rationale": "epcis-json@1 is an optional interoperability profile this release does not claim."
-    },
-    {
-      "id": "overlay-federated-operators-1",
-      "kind": "operation",
-      "disposition": "withheld",
-      "rationale": "federated-operators@1 is an optional operator profile this release does not claim, and EXPORT-3-durable-publication stays a gap until separately administered operators exercise replication and recovery."
     },
     {
       "id": "vsc-draft-compat-0.1.0-implemented-subset",

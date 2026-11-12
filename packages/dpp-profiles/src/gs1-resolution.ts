@@ -1,6 +1,7 @@
 /**
- * GS1 resolution and discovery, pure (`spec/gs1-discovery.md`): the
- * uncompressed Digital Link grammar for primary key 01, decompression of the
+ * GS1 resolution and discovery, pure: reference code for the GS1 standards
+ * `spec/gs1-discovery.md` cites, which keeps only the DPP identifier rules.
+ * It covers the uncompressed Digital Link grammar for primary key 01, decompression of the
  * EPC binary form, key-tuple equivalence, resolution records and the linksets
  * a GS1-Conformant Resolver 1.2.1 builds from them, the selection a
  * discovery client makes over a linkset, and the resolver description file.
@@ -38,7 +39,7 @@ export const GS1_LINK_TYPES = {
   defaultLink: `${GS1_VOCABULARY}defaultLink`,
   defaultLinkMulti: `${GS1_VOCABULARY}defaultLinkMulti`,
   pip: `${GS1_VOCABULARY}pip`,
-  /** The digital product passport page, the item's single default at an identifier host that resolves (`spec/gs1-discovery.md` §4). */
+  /** The digital product passport page, the item's single default at an identifier host that resolves (`spec/gs1-discovery.md` §1). */
   dpp: `${GS1_VOCABULARY}dpp`,
   masterData: `${GS1_VOCABULARY}masterData`,
   sustainabilityInfo: `${GS1_VOCABULARY}sustainabilityInfo`,
@@ -50,10 +51,10 @@ export const GS1_LINK_TYPES = {
    * written under it can still be read by asking for it. The two are not
    * aliases: the vocabulary replaces one with the other without declaring them
    * equivalent, so nothing here answers a request or a selection for one with
-   * a link registered under the other (`spec/gs1-discovery.md` §4).
+   * a link registered under the other.
    */
   epcis: `${GS1_VOCABULARY}epcis`,
-  /** An EPCIS repository of visibility event data: an actual EPCIS service or standard query resource (`spec/gs1-discovery.md` §4). */
+  /** An EPCIS repository of visibility event data: an actual EPCIS service or standard query resource. */
   epcisRepository: `${GS1_VOCABULARY}epcisRepository`,
   traceability: `${GS1_VOCABULARY}traceability`,
   recallStatus: `${GS1_VOCABULARY}recallStatus`,
@@ -369,8 +370,7 @@ export function gs1KeyOf(source: ParsedUncompressedUri | { gtin: string; qualifi
  * Link URIs under different hosts with the same tuple name the same entity;
  * the same serial under a different GTIN does not. Equivalence is a statement
  * about identifiers only: it is not authority to bind a signed credential to
- * a passport, which needs the binding evidence `spec/gs1-discovery.md` §2
- * names.
+ * a passport, which needs separate binding evidence.
  */
 export function gs1KeyTuple(key: Gs1Key | ParsedUncompressedUri): string {
   const resolved = 'kind' in key ? gs1KeyOf(key) : key
@@ -452,7 +452,7 @@ export interface ResolutionRecord {
  * target, a title, a relation the linkset schema can carry, and declared
  * disclosure. A link under the deprecated `gs1:epcis` is admitted, so a
  * resolver can keep a record written before the deprecation; a writer
- * registers `gs1:epcisRepository` (`spec/gs1-discovery.md` §4). An empty list
+ * registers `gs1:epcisRepository`. An empty list
  * means the record is admissible.
  */
 export function resolutionRecordProblems(record: ResolutionRecord): string[] {

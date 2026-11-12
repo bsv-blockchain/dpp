@@ -4,7 +4,7 @@
   "version": 1,
   "profile": "federated-operators@1",
   "kind": "operator",
-  "status": "proposed",
+  "status": "parked",
   "title": "Independently administered operators serving the same evidence",
   "description": "Two or more operators with separate administrations, credentials, databases and processes, synchronising both rails under one published admission policy. Two URLs over one database do not qualify, and two processes under one administration prove only the mechanism.",
   "roles": ["overlay"],

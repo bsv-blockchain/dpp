@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bsv-blockchain.github.io/dpp/contracts/passport-projection.schema.json",
+  "$id": "https://bsv-blockchain.github.io/dpp/packages/dpp-profiles/schemas/passport-projection.schema.json",
   "title": "DPP passport projection, version 1",
-  "description": "passport-projection@1 (spec/passport-projections.md section 4): the deterministic derivation of one passport's fields from pinned source revisions, accepted relationships and a named policy, at a stated cutoff and for a stated audience. A data projection envelope with its own identity and digest; not a token format, not a credential, and never carrying a proof copied from a source. The same pinned inputs produce the same projectionDigest whatever the arrival order.",
+  "description": "passport-projection@1, a reference feature of @bsv/dpp-profiles and not part of the standard (its specification is parked under docs/reference/parked/passport-projections/): the deterministic derivation of one passport's fields from pinned source revisions, accepted relationships and a named policy, at a stated cutoff and for a stated audience. A data projection envelope with its own identity and digest; not a token format, not a credential, and never carrying a proof copied from a source. The same pinned inputs produce the same projectionDigest whatever the arrival order.",
   "type": "object",
   "additionalProperties": false,
   "required": ["projectionId", "projectionVersion", "projectionDigest", "passportId", "subjectId", "granularity", "profileRef", "sourceRefs", "relationshipRefs", "policyRef", "asOf", "disclosureScope", "values", "fieldResults", "evidenceRefs", "validationRefs"],

@@ -4,6 +4,8 @@ Application teams whose product data lives in model, batch and item records in a
 
 A projection is an off-chain data document with its own identity and digest. It is not a credential and supplies no missing signature, evidence or custody record.
 
+Projections are a reference feature of `@bsv/dpp-profiles`, not part of the standard: no conformance claim covers them. Their specification, with the publication policy beside it, was parked on 12 November 2026 ([parked material](../reference/parked/passport-projections/README.md)). The helpers, their schemas and their vectors stay in the package because the reference application uses them.
+
 ## Prerequisites
 
 | To run the example | Source |
@@ -69,10 +71,10 @@ Keep the selected source revisions. Recomputing against the newest source answer
 
 | Input or output | Source |
 |---|---|
-| Source revisions | [Source schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/passport-source.schema.json) |
-| Projection identity and output | [Projection schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/passport-projection.schema.json) |
-| Commitment and precedence rules | [Projection source](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/passport-projections.md) |
-| Reference implementation | [Projection helper](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/src/projections.ts) |
+| Source revisions | [Source schema](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/schemas/passport-source.schema.json) |
+| Projection identity and output | [Projection schema](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/schemas/passport-projection.schema.json) |
+| Commitment and precedence rules, as parked | [Projection specification](../reference/parked/passport-projections/passport-projections.md) |
+| Reference implementation | [Projection helper](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/src/projections.ts) |
 | Test cases | [Projection vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability) |
 
 Next: [industry profiles](../profiles/README.md), for the fields a profile defines and which tier each belongs to.

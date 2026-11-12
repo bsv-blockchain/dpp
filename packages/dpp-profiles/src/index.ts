@@ -145,7 +145,7 @@ export function readConsumerDocument(profile: ProfileId): Record<string, unknown
 export const EXCHANGE_PROFILE_IDS = ['untp-0.7.0-jose@1', 'vsc-draft-compat@0.1.0', 'vc-di-ecdsa-rdfc-2019@1', 'epcis-event-vc@1'] as const
 export type ExchangeProfileId = (typeof EXCHANGE_PROFILE_IDS)[number]
 
-/** Operator profiles this package catalogues (spec/services.md, spec/conformance.md section 4). */
+/** Operator profiles this package catalogues: the reference index's labels, documented in `packages/dpp-overlay/README.md` and outside the standard. */
 export const OPERATOR_PROFILE_IDS = ['single-operator@1', 'single-operator@2', 'federated-operators@1'] as const
 export type OperatorProfileId = (typeof OPERATOR_PROFILE_IDS)[number]
 

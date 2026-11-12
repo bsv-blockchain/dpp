@@ -46,7 +46,7 @@ const handover = sign({
   authorisation: { kind: 'handover', signer: '', suite: 'bsv-ecdsa-der', value: '' },
 }, K2, B)
 
-describe('the publisher key policy chain (services.md §1)', () => {
+describe('the publisher key policy chain (the overlay package README)', () => {
   it('accepts a genesis signed by an operator identity, a rotation by an active key and a countersigned handover', () => {
     expect(verifyPolicyChain([genesis], identity)).toEqual({ ok: true, versions: [1] })
     expect(verifyPolicyChain([genesis, rotation], identity)).toEqual({ ok: true, versions: [1, 2] })
@@ -165,7 +165,7 @@ describe('the publisher key policy chain (services.md §1)', () => {
   })
 })
 
-describe('appending a version for a registered or retired publisher (services.md §2)', () => {
+describe('appending a version for a registered or retired publisher (the overlay package README)', () => {
   const NOW = new Date('2026-03-01T12:00:00.250Z')
   const singleOperator = { 'did:example:a': pub(A) }
 

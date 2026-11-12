@@ -75,7 +75,7 @@ Keep the requests and responses, the exact artefacts (transactions, BEEFs, proof
 These are open questions in the standard and the reference deployment, not faults in your implementation; [known limitations](../operate/limitations.md) lists the reference service's limits.
 
 - **Proofs for your states.** A state you write and the reference admits reads `pending` there until its merkle path reaches the reference's `POST /arc-ingest`, which needs the reference's callback token. No one is named yet to deliver a proof to an operator that learned a state by synchronisation ([federation](../operate/federation.md#when-a-record-does-not-arrive)).
-- **The same evidence, not the same bytes.** `two-operators` passes when both operators serve the same transactions and merkle paths for the lineage, as `spec/services.md` section 1 defines. The [overlay contract](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml) does not fix the form of a lookup's BEEF: one operator can wrap an unproven state as Atomic BEEF (a BEEF framed around one subject transaction) and another not, and a proven state can arrive with or without its ancestors. Keep both answers and compare the transactions and merkle paths inside them; a difference in the BEEF bytes alone is not a failure.
+- **The same evidence, not the same bytes.** `two-operators` passes when both operators serve the same transactions and merkle paths for the lineage, as `spec/services.md` section 1 defines. The [overlay contract](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml) does not fix the form of a lookup's BEEF: one operator can wrap an unproven state as Atomic BEEF (a BEEF framed around one subject transaction) and another not, and a proven state can arrive with or without its ancestors. Keep both answers and compare the transactions and merkle paths inside them; a difference in the BEEF bytes alone is not a failure.
 - **The hosted page check.** The reference application's check at `https://dpp.bsvb.net/verify` finds only what the hosted index holds ([hosted reference](../deployment.md#the-hosted-reference)). Verify your passports with a reader of your own until the hosted index pulls from yours.
 
 ## What completion records
@@ -84,8 +84,8 @@ For each completed scenario, retain its evidence and the ledger rows listed unde
 
 | Claim or conclusion | What the trial records or still needs |
 |---|---|
-| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` (since [archived](../reference/parked/ledger-archive.json)), `overlay-single-operator-1`, `registry-current-intake` | Trial evidence bears on these claims. |
-| `overlay-federated-operators-1` | Cannot be made by the trial alone. Requires separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
+| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` and `overlay-single-operator-1` (both since [archived](../reference/parked/ledger-archive.json)), `registry-current-intake` | Trial evidence bears on these claims. |
+| `overlay-federated-operators-1` | [Archived](../reference/parked/ledger-archive.json) on 12 November 2026 with the parked `federated-operators@1`, so no longer a claim. It required separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
 | `version-1-0-readiness` | Cannot be made by the trial alone. Requires another implementing party on record. |
 | Local synthetic exchange | Establishes neither separately administered operation nor mined inclusion. |
 

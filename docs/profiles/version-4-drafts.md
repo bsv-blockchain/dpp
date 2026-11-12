@@ -1,17 +1,17 @@
-# Evaluate the version 4 drafts
+# Evaluate the battery@4 draft
 
-Application owners, readers and reviewers can use this page to generate a change report, evaluate a draft payload or label a stored payload correctly. `battery@4` and `textile@4` succeed the current `battery@2` and `textile@2` as drafts carried in `@bsv/dpp-profiles` 0.3.0-beta.10.
+Application owners, readers and reviewers can use this page to generate a change report, evaluate a draft payload or label a stored payload correctly. `battery@4` succeeds the current `battery@2` as the one draft carried in `@bsv/dpp-profiles` 0.3.0-beta.10. The drafts `battery@3`, `textile@3` and `textile@4` are parked: no successor is proposed under them and no claim names them, and their manifests stay published and frozen because records may declare them ([parked drafts](#parked-textile4-and-the-version-3-drafts)).
 
-The number after `@` is the profile version, separate from the record version and manifest format ([version names](README.md)). Drafts are published but never selected by default: name one explicitly. They cannot support conformance claims. Publishing them changed no current version: those bytes stay frozen. Evaluate version 4; its predecessors `battery@3` and `textile@3` remain published and frozen.
+The number after `@` is the profile version, separate from the record version and manifest format ([version names](README.md)). Drafts are published but never selected by default: name one explicitly. They cannot support conformance claims. Publishing them changed no current version: those bytes stay frozen.
 
-Write new records under `battery@2` or `textile@2`. Draft evaluation prepares an application for cutover: the later reviewed step that makes a successor current.
+Write new records under `battery@2` or `textile@2`. Draft evaluation prepares an application for cutover: the later reviewed step that makes a successor current. `textile@2` has no successor draft in progress.
 
 ## Before you start
 
 | Task | Input and source |
 |---|---|
 | Generate reports and samples | Node.js 22 or later and a [checkout](../quick-start.md) at the reviewed example revision; prepare with `npm ci` and `npm run build`, then run commands at its root |
-| Compare in your own application | The profile version it uses today and the version 4 draft |
+| Compare in your own application | The profile version it uses today and the `battery@4` draft |
 | Read a live declared profile | The prepared checkout, or a project with `@bsv/sdk@2.8.10`, `@bsv/dpp-protocol@0.3.0-beta.10` and `@bsv/dpp-profiles@0.3.0-beta.10` installed; network access to the hosted reference index |
 | Evaluate your product | Public and restricted fields together, category, jurisdiction and evaluation date |
 
@@ -25,17 +25,13 @@ Compare the version your application uses today with the draft. Replace the firs
 
 ```sh
 npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
-npm run changes -w @bsv/dpp-profiles -- textile@2 textile@4
 ```
 
-Each command prints JSON containing manifest statuses and SHA-256 digests, top-level changes such as identity rules, and added, changed or removed fields with their changed properties.
+The command prints JSON containing manifest statuses and SHA-256 digests, top-level changes such as identity rules, and added, changed or removed fields with their changed properties.
 
 | Comparison | Field changes | Interpretation |
 |---|---|---|
 | `battery@2` to `battery@4` | 21 added, 105 changed | Current battery profile to draft |
-| `textile@2` to `textile@4` | 11 added, 49 changed | Current textile profile to draft |
-| `battery@3 battery@4` | 9 added, 9 changed | Corrections since the earlier battery draft |
-| `textile@3 textile@4` | 17 changed | Corrections since the earlier textile draft |
 
 Every current-profile field counts as changed because manifest format 2 adds `requirement`. Read each entry's `properties` to understand the change. In your own project, `compareProfiles(from, to)` returns the same report ([example](updating-applications.md#2-see-what-changed)). Attach it to the upgrade proposal; delivery to consumer owners is a separate workflow.
 
@@ -84,7 +80,7 @@ The sample contains only public fields, leaving 11 of 18 missing fields in the r
 | Jurisdiction | Where the evaluation applies |
 | `asOf` | Evaluation date; `2027-02-18` is when battery passport obligations apply. Dated rules, including the due-diligence report's from 18 August 2027, use the evaluation date |
 
-`reviewProfileData` checks manufacture-date consistency, individual measurement context and component declarations. It accepts only `battery@4` and `textile@4`. An empty findings list does not certify readiness.
+`reviewProfileData` checks manufacture-date consistency, individual measurement context and component declarations. It accepts only `battery@4` and the parked `textile@4`, which a stored record may still declare. An empty findings list does not certify readiness.
 
 ### 3. Update the application before enabling draft writes
 
@@ -92,7 +88,7 @@ Update its capture forms, adapters, backend checks and exports. [Update profiles
 
 ## Read a record that declares a draft
 
-This reader checks that the package publishes a record's declared profile, then calls `readManifestAny` for the manifest and its current or draft status. The function types both manifest formats; the procedure works for any declared profile, including drafts written by other applications.
+This reader checks that the package publishes a record's declared profile, then calls `readManifestAny` for the manifest and its current or draft status. The function types both manifest formats; the procedure works for any declared profile, including drafts written by other applications and the parked drafts, which stay published for that reason.
 
 1. Save the following as `read-declared.mjs` in the prepared project or checkout. Run `node read-declared.mjs` to read a live passport from the hosted reference index.
 
@@ -134,7 +130,7 @@ notice: SAMPLE RECORD: demonstration data, not a real product. dpp.bsvb.net
 | Timeout | Retry; the hosted index is a single service |
 | `holds no states` | This index does not hold the passport |
 
-## What the drafts change
+## What the draft changes
 
 Review these reasons beside the complete field change report from step 1.
 
@@ -151,7 +147,30 @@ Review these reasons beside the complete field change report from step 1.
 
 The paired power measurements use the reference conditions in DIN DKE SPEC 99100:2025-02 clause 6.7.3.2. Their JSON representation is a profile choice. The measurement additions separate Annex XIII 4(a) individual performance from Article 14 state-of-health data. Neither addition proves that an operator has supplied all legally applicable lifecycle evidence.
 
-### Textile
+## Assessment work still open
+
+Before considering promotion of `battery@4`, collect the evidence described in [the readiness review](reviewing-readiness.md). These items remain open:
+
+| Missing evidence or work | Status |
+|---|---|
+| Complete external-format export adapter; hosted readiness-test result; full current-law reconciliation; licensed-standard assessment; deployed actor and access evidence | Not included in the drafts |
+| Additional identity context; category classification; evidence qualification; measurement semantics | Still need review |
+
+## History
+
+The version 4 drafts were first published in 0.3.0-beta.2; the [beta.2 publication receipt](../reference/publication-history/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application. On 12 November 2026 `battery@3`, `textile@3` and `textile@4` were parked, with no byte of their manifests or generated files changed.
+
+## Parked: textile@4 and the version 3 drafts
+
+`battery@3`, `textile@3` and `textile@4` were parked on 12 November 2026. They stay published in `@bsv/dpp-profiles` byte for byte at their frozen digests, so a record that declares one is still read under it, and `reviewProfileData` still accepts `textile@4`. No successor is proposed under them, no conformance claim names them, and a new application evaluates `battery@4` alone. The hosted reference holds a live passport that declares `textile@4` ([hosted reference](../deployment.md)).
+
+| Comparison | Field changes | Interpretation |
+|---|---|---|
+| `textile@2` to `textile@4` | 11 added, 49 changed | Current textile profile to the parked draft |
+| `battery@3 battery@4` | 9 added, 9 changed | Corrections since the parked battery draft |
+| `textile@3 textile@4` | 17 changed | Corrections between the two parked textile drafts |
+
+### What textile@4 changed
 
 | Change | Application work and limits |
 |---|---|
@@ -161,19 +180,6 @@ The paired power measurements use the reference conditions in DIN DKE SPEC 99100
 | Sustainability-label metadata | Records certification-scheme and public-authority alternatives, consumer-directive provisions and their application date. It does not require every textile to obtain certification |
 | Guarantee information | Remains conditional on the actual offer and applicable national measures |
 | Model identity references `modelIdentifier` | A display name is not an identifier |
-
-## Assessment work still open
-
-Before considering promotion, collect the evidence described in [the readiness review](reviewing-readiness.md). These items remain open:
-
-| Missing evidence or work | Status |
-|---|---|
-| Complete external-format export adapter; hosted readiness-test result; full current-law reconciliation; licensed-standard assessment; deployed actor and access evidence | Not included in the drafts |
-| Additional identity context; category classification; evidence qualification; measurement semantics | Still need review |
-
-## History
-
-The version 4 drafts were first published in 0.3.0-beta.2; the [beta.2 publication receipt](../reference/publication-history/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
 
 ## Next
 

@@ -85,7 +85,7 @@ For each provider or operated service, record:
 
 1. Role, base URL, network and supported contracts/profiles.
 2. Read, submit, proof-delivery and export permissions, with the correct credentials.
-3. Independently trusted operator identity and publisher or anchoring keys. For an index, verify its signed publisher policy and validity windows.
+3. Independently trusted operator identity and publisher or anchoring keys. For an index, verify its signed publisher policy and validity windows where it serves one.
 4. Owners retaining product data, claim bytes, restricted evidence, keys and complete history.
 5. Owners delivering later proofs, handling failed writes, supporting incidents and restoring service.
 

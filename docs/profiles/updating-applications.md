@@ -148,7 +148,7 @@ Follow [publish a profile package update](../reference/publishing-profile-update
 
 Record package release date, profile status, regulatory dates and application deployment date separately. A published draft permits explicit evaluation; installation does not make it suitable for a conformance claim. A future legal date cannot switch application selection.
 
-The [profile specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) defines freezing and succession. Preserve frozen historical definitions. Meaning changes require a reviewed successor with a migration outcome for each predecessor field. Succession metadata describes changes; it does not execute migration.
+The [profile specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md) defines freezing and succession. Preserve frozen historical definitions. Meaning changes require a reviewed successor with a migration outcome for each predecessor field. Succession metadata describes changes; it does not execute migration.
 
 ### How the reference application adopts a release
 
@@ -158,4 +158,4 @@ Its service selects `battery@2` and `textile@2`. Its adapter has explicit limits
 
 ## Next
 
-[Evaluate the version 4 drafts](version-4-drafts.md), follow [migration](../migration.md) for a whole release, or [publish a profile package update](../reference/publishing-profile-updates.md) as a profile owner.
+[Evaluate the battery@4 draft](version-4-drafts.md), follow [migration](../migration.md) for a whole release, or [publish a profile package update](../reference/publishing-profile-updates.md) as a profile owner.

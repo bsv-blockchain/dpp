@@ -1,6 +1,8 @@
 /**
- * Deterministic passport projections (`spec/passport-projections.md` §4,
- * `contracts/passport-projection.schema.json`): from pinned source revisions,
+ * Deterministic passport projections, a reference feature of this package and
+ * not part of the standard (`schemas/passport-projection.schema.json`; the
+ * specification as it stood is parked under
+ * `docs/reference/parked/passport-projections/`): from pinned source revisions,
  * accepted relationships, a named policy, a cutoff and an audience, derive
  * the value of every field the profile declares, with the source each value
  * came from and a separate result for its availability, its applicability and
@@ -9,8 +11,8 @@
  * the RFC 8785 canonical JSON of the commitment body; the identity is derived
  * from that digest and is never a secured-source digest.
  *
- * The precedence rules this file implements, numbered as the specification
- * numbers them: (1) only field locations and granularities the profile
+ * The precedence rules this file implements, numbered as the parked
+ * specification numbers them: (1) only field locations and granularities the profile
  * declares are read, so a model specification never stands in for an item
  * measurement; (2) the pinned revisions are read, never whichever revision is
  * newest; (3) a batch or item value overrides the model's only where the
@@ -198,7 +200,7 @@ function hasValue(payload: Record<string, unknown>, key: string): boolean {
   return v !== undefined && v !== null && v !== ''
 }
 
-/** The commitment body: every committed property, none of the derived or diagnostic ones (`spec/passport-projections.md` §4). */
+/** The commitment body: every committed property, none of the derived or diagnostic ones (section 4 of the parked specification). */
 export function projectionCommitmentBody(projection: PassportProjection): Record<string, unknown> {
   return {
     projectionVersion: projection.projectionVersion,

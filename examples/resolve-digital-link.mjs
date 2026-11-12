@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Resolve a GS1 Digital Link the way spec/gs1-discovery.md says a resolver
- * and a discovery client do, from the packaged helpers alone: read the URI,
+ * Resolve a GS1 Digital Link the way GS1-Conformant Resolver 1.2.1 says a
+ * resolver and a discovery client do, from the packaged reference helpers alone: read the URI,
  * decompress it when it carries an EPC binary string, resolve it against a
  * few demonstration records, build the linkset a GS1-Conformant Resolver
  * would return, and select one link from that linkset as a client would.

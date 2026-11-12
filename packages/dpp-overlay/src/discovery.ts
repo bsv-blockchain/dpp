@@ -1,5 +1,6 @@
 /**
- * Finding peers from SHIP adverts (`spec/services.md` section 1): with
+ * Finding peers from SHIP adverts, a feature of this package whose discovery
+ * extension is parked outside the standard: with
  * `SYNC_DISCOVERY=ship`, an index asks the SLAP trackers which hosts
  * advertise each topic it synchronises, and pulls from them beside the peers
  * `SYNC_PEERS` names, which stay a floor. Nothing here starts a round; the

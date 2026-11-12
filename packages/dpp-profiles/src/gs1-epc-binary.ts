@@ -1,6 +1,6 @@
 /**
  * EPC binary strings, decoded for the one scope the discovery profile
- * declares (`spec/gs1-discovery.md` §3): a serialised trade item under the
+ * declares in its manifest: a serialised trade item under the
  * GS1 EPC Tag Data Standard's SGTIN-96 and SGTIN-198 schemes. A compressed GS1
  * Digital Link URI whose compression string begins `eh` or `ex` carries such a
  * string (GS1 Digital Link URI: Compression Technical Standard for EPC binary

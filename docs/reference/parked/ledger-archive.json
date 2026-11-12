@@ -616,6 +616,598 @@
         "reviewOwner": "dpp maintainers",
         "notes": "A fixture producing different winners under the two orderings is a proposed addition."
       }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-1-source-revisions",
+        "sourceId": "contract-passport-source",
+        "sourceUri": "contracts/passport-source.schema.json",
+        "sourceVersion": "1",
+        "clause": "sourceRevision",
+        "summary": "A source revision carries record and revision identifiers, subject and granularity, profile, times, payload digest, authorisation provenance, disclosure and an optional predecessor; revisions are append-only and the current pointer moves by compare-and-swap.",
+        "layer": "profile",
+        "roles": [
+          "passport-writer"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "contracts/passport-source.schema.json",
+          "packages/dpp-profiles/src/projections.ts",
+          "the reference application (not published)"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/projections.test.ts",
+          "the reference application (not published)"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/projection/v1.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Append-only sequential revisions with a compare-and-swap pointer in memory and in MongoDB (filtered update), a typed conflict carrying the current revision, and the legacy wrap under migration-unknown-ancestry."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-2-commitment-digest",
+        "sourceId": "spec-passport-projections",
+        "sourceUri": "spec/passport-projections.md",
+        "sourceVersion": "passport-projection@1",
+        "clause": "§3",
+        "summary": "The projection digest is SHA-256 over the RFC 8785 form of the commitment body, which excludes the projection identity, retrieval time and template and orders unordered references by stable identifier; same pinned inputs give one digest and changed inputs another.",
+        "layer": "profile",
+        "roles": [
+          "passport-reader",
+          "passport-writer"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/projections.ts#projectPassport",
+          "contracts/passport-projection.schema.json"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/projections.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/projection/v1.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-3-precedence",
+        "sourceId": "spec-passport-projections",
+        "sourceUri": "spec/passport-projections.md",
+        "sourceVersion": "passport-projection@1",
+        "clause": "§4",
+        "summary": "Fields are read only at the granularity the profile declares, a model fallback is model information and never an item value, overrides apply only where declared and authorised, else a conflict with both sources; measurements need exact scope and an authorised source, are selected by observation time with stable ties, and replay in any arrival order to one result.",
+        "layer": "profile",
+        "roles": [
+          "passport-reader",
+          "passport-writer"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/projections.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/projections.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/projection/v1.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-4-availability-applicability",
+        "sourceId": "spec-passport-projections",
+        "sourceUri": "spec/passport-projections.md",
+        "sourceVersion": "passport-projection@1",
+        "clause": "§4",
+        "summary": "Zero and false are preserved; availability (present, missing, unknown, withheld), applicability (applies, not-applicable, unresolved) and unsupported or conflict findings are separate axes; an absent field is never automatically not-applicable.",
+        "layer": "profile",
+        "roles": [
+          "passport-reader"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/projections.ts",
+          "packages/dpp-profiles/src/applicability.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/projections.test.ts",
+          "packages/dpp-profiles/test/applicability.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/projection/v1.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-5-bounds-disclosure",
+        "sourceId": "spec-passport-projections",
+        "sourceUri": "spec/passport-projections.md",
+        "sourceVersion": "passport-projection@1",
+        "clause": "§4, §6",
+        "summary": "Traversal is bounded (depth 8, 100 references) with cycles, missing sources and limits as explicit findings; fields above the audience's disclosure scope are withheld, never leaked, in every representation and cache.",
+        "layer": "profile",
+        "roles": [
+          "passport-reader"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/projections.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/projections.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/projection/v1.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/. The shared shapes it assessed moved into spec/profiles.md section 3 with contracts/profile-evidence.schema.json, which stays a contract, and PROF-3-shared-shapes assesses them.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-6-shapes-language-dates",
+        "sourceId": "contract-profile-evidence",
+        "sourceUri": "contracts/profile-evidence.schema.json",
+        "sourceVersion": "1",
+        "clause": "$defs",
+        "summary": "Claim evidence, certification, measurement, related document and language shapes; month and year precision kept without fabricating a day; a warranty expiry derived only from a specified rule and evidenced start; only explicit compatible conversions; language selected exact, then base, then default with the returned language recorded.",
+        "layer": "profile",
+        "roles": [
+          "passport-reader",
+          "passport-writer"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "contracts/profile-evidence.schema.json",
+          "packages/dpp-profiles/src/evidence-shapes.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/evidence-shapes.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/projection/v1.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/. The publication policy was implemented and tested by the reference application alone.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-7-publication-policy",
+        "sourceId": "spec-passport-projections",
+        "sourceUri": "spec/passport-projections.md",
+        "sourceVersion": "passport-projection@1",
+        "clause": "§5",
+        "summary": "The publication policy names the current representation, a linked successor, responsibility assertions and any cessation, apart from token state; a successor never rewrites or revives the original lineage and a retired token stays terminal.",
+        "layer": "role",
+        "roles": [
+          "passport-writer"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "the reference application (not published)"
+        ],
+        "testRefs": [
+          "the reference application (not published)"
+        ],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers",
+        "notes": "A successor link and a cessation are revisions of the logical passport; the test holds the token chain byte-identical before and after both."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 with passport-projection@1 and publication-policy@1, now a reference feature of @bsv/dpp-profiles: the specification as it stood, spec/passport-projections.md, is parked at docs/reference/parked/passport-projections/, and its source and projection schemas moved from contracts/ to packages/dpp-profiles/schemas/. The rendering presets were implemented and tested by the reference application alone.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "PROJ-8-viewer-presets",
+        "sourceId": "spec-passport-projections",
+        "sourceUri": "spec/passport-projections.md",
+        "sourceVersion": "passport-projection@1",
+        "clause": "§7",
+        "summary": "One recommended profile-driven view rendered from the pinned profile groups; a second rendering preset changes presentation only and never subject, profile, evidence findings or disclosure; an unsupported profile shows permitted data without claiming validation.",
+        "layer": "reference",
+        "roles": [
+          "passport-reader"
+        ],
+        "applicability": "when the projection profile is selected",
+        "profileId": "passport-projection@1",
+        "implementationRefs": [
+          "the reference application (not published)"
+        ],
+        "testRefs": [
+          "the reference application (not published)"
+        ],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Both presets render one projection with the same subject, profile, evidence findings and disclosure; the preset lives in template, outside the commitment, and the digest is equal across presets."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-1-grammar",
+        "sourceId": "spec-gs1-discovery",
+        "sourceUri": "spec/gs1-discovery.md",
+        "sourceVersion": "gs1-digital-link@1",
+        "clause": "§3",
+        "summary": "parseGs1DigitalLinkUri reads primary key 01 with the qualifiers 22, 10 and 21 in order and data attributes in the query, answers uncompressed, compressed or invalid with a named reason, and never throws.",
+        "layer": "profile",
+        "roles": [
+          "registry",
+          "passport-reader"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-resolution.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-resolution.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
+        ],
+        "reviewedAt": "2026-11-08",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-3-decompression",
+        "sourceId": "gs1-epc-compression",
+        "sourceUri": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/",
+        "sourceVersion": "1.0.0 (July 2025)",
+        "clause": "§4.1, §4.2",
+        "summary": "A compressed string with prefix eh (hex) or ex (URI-safe base 64) carries an EPC binary string decoded under the Tag Data Standard for SGTIN-96 and SGTIN-198 to the uncompressed URI under the input stem; every other scheme is refused with its header named.",
+        "layer": "profile",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-epc-binary.ts",
+          "packages/dpp-profiles/src/gs1-resolution.ts#decompressGs1DigitalLink"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-epc-binary.test.ts",
+          "packages/dpp-profiles/test/gs1-resolution.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/gs1/epc-binary.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers",
+        "notes": "The standard's two worked examples decode exactly; further vectors were cross-checked against GS1's prototype toolkit outside the repository."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-4-hierarchy-anchors",
+        "sourceId": "gs1-resolver",
+        "sourceUri": "https://ref.gs1.org/standards/resolver/",
+        "sourceVersion": "current standard at review",
+        "clause": "§2.5.9, §2.5.10",
+        "summary": "Records are matched by the union rule, most specific first, and every matched record keeps its own anchor and granularity, so a serial request answered from a GTIN record is model information and never evidence of an item passport.",
+        "layer": "profile",
+        "roles": [
+          "registry",
+          "passport-reader"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-resolution.ts#matchRecords"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-resolution.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/gs1/resolution.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-5-resolution-flow",
+        "sourceId": "gs1-resolver",
+        "sourceUri": "https://ref.gs1.org/standards/resolver/",
+        "sourceVersion": "current standard at review",
+        "clause": "§2.5.8, §2.6, §2.9, §2.12",
+        "summary": "Default and refined default links, a requested link type ranked by media type, language and context, 300 on a tie, 404 with the available links, linkset never redirected, query forwarded on redirect, restricted links never served to a public audience.",
+        "layer": "profile",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-resolution.ts#resolveLinks"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-resolution.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/gs1/resolution.json"
+        ],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-6-linkset-schema",
+        "sourceId": "gs1-resolver",
+        "sourceUri": "https://ref.gs1.org/standards/resolver/",
+        "sourceVersion": "current standard at review",
+        "clause": "§2.10, §3",
+        "summary": "Every linkset and description file produced validates against the pinned GS1 schemas carried under packages/dpp-profiles/schemas/gs1/, whose digests a test holds.",
+        "layer": "profile",
+        "roles": [
+          "registry",
+          "passport-reader"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-resolution.ts#linksetDocument",
+          "packages/dpp-profiles/schemas/gs1/NOTICE.md"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-resolution.test.ts",
+          "packages/dpp-profiles/test/gs1-artefacts.test.ts"
+        ],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-09-06",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-9-record-set",
+        "sourceId": "spec-gs1-discovery",
+        "sourceUri": "spec/gs1-discovery.md",
+        "sourceVersion": "gs1-digital-link@1",
+        "clause": "§4, the record set",
+        "summary": "resolutionSetProblems admits a record set only when every GTIN it holds a record for has exactly one public single default at the GTIN level, so every request under the GTIN walks up to a default (resolver standard §2.5.9), and no identified entity has more than one single default across its records.",
+        "layer": "profile",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-resolution.ts#resolutionSetProblems"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-resolution.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/gs1/resolution.json"
+        ],
+        "reviewedAt": "2026-11-08",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Tested in the package: the demonstration set is admitted; an item record alone, qualified records without a GTIN-level record, a GTIN-level record without a default or with refined defaults only, a restricted GTIN-level default and two single defaults for one entity are each refused, and each GTIN's problems are its records' alone, so a write is judged by the GTINs it would leave inadmissible and an older set is repaired a record at a time. The vectors pin the walk-up an admitted set gives, the 404 the refused item-only set gives, and every refusal reason. The reference registry does not yet apply it (GS1D-7)."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors. Its reading rule, a check digit reported and never enforced, is GS1-check-digit-read, and the key tuple the overlay contract's gs1Key lookup reads is defined in that contract.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-2-key-tuple",
+        "sourceId": "spec-gs1-discovery",
+        "sourceUri": "spec/gs1-discovery.md",
+        "sourceVersion": "gs1-digital-link@1",
+        "clause": "§2",
+        "summary": "Two URIs under different hosts that reduce to one key tuple name one entity; the same serial under another GTIN is a different tuple; tuple equivalence is never authority to bind a signed credential.",
+        "layer": "profile",
+        "roles": [
+          "registry",
+          "passport-reader"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "packages/dpp-profiles/src/gs1-resolution.ts#gs1KeyTuple"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/gs1-resolution.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
+        ],
+        "reviewedAt": "2026-11-08",
+        "reviewOwner": "dpp maintainers"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors. The reference registry's resolver origin is that registry's own, documented by it.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-7-hosted-route",
+        "sourceId": "spec-gs1-discovery",
+        "sourceUri": "spec/gs1-discovery.md",
+        "sourceVersion": "gs1-digital-link@1",
+        "clause": "§4",
+        "summary": "The registry serves the resolver on a configured origin distinct from its API origin, whose /01/ paths keep the legacy evidence contract: the description file, the qualifier routes, the compressed route, linksets, redirects with the query forwarded, negotiation and cache headers; the legacy evidence route is kept and aliased.",
+        "layer": "role",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "the reference registry (not published)"
+        ],
+        "testRefs": [
+          "the reference registry (not published)"
+        ],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "notes": "The registry serves eleven routes on the configured resolver origin and keeps every API-origin route, with the alias; the description file and every linkset validate against the pinned GS1 schemas in its suite (18 resolver tests). The 2026-11-08 review did not re-test it against the header rule §4 added that day: its resolver handlers set Vary, but its answers to OPTIONS, to a path that is not valid percent-encoding and to an internal error carry CORS without Vary, as the section itself records. Its status is left for a later review. The same review found that the registry checks each resolution record with resolutionRecordProblems at write and does not yet check the record set §4 now requires (resolutionSetProblems), so it can hold item records under a GTIN with no GTIN-level default; GS1D-9 covers the rule in the package. From 2026-11-12 the registry contract no longer describes the resolver origin, its routes or the printed-label route and its alias: they are the reference registry's own, documented by it, and this row rests on its tests alone."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets: the row tested GS1 text the specification restated, or the reference helpers' reading of it, which stay in @bsv/dpp-profiles as reference code with their vectors. The discovery client is the reference application's own.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "GS1D-8-discovery-client",
+        "sourceId": "spec-gs1-discovery",
+        "sourceUri": "spec/gs1-discovery.md",
+        "sourceVersion": "gs1-digital-link@1",
+        "clause": "§5",
+        "summary": "A discovery client retrieves and validates the description file and linkset, selects a relation and media type, reports the anchor scope, and treats a discovered endpoint as neither issuer authority nor a latest state.",
+        "layer": "role",
+        "roles": [
+          "passport-reader"
+        ],
+        "applicability": "when the discovery profile is selected",
+        "profileId": "gs1-digital-link@1",
+        "implementationRefs": [
+          "the reference application (not published)"
+        ],
+        "testRefs": [
+          "the reference application (not published)"
+        ],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-08",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Description file and linkset validated against the pinned GS1 schemas, selection through the profiles helper, a broader anchor labelled with its granularity, an external resolver through the same client, cross-origin redirects refused and no credential ever returned. Not exercised against an identifier host that redirects every /01/ path to a resolver on another origin (§1): the client refuses that redirect, as §5 now says, and reaches such a resolver only when configured with its origin."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026: peer synchronisation is a feature of @bsv/dpp-overlay, documented in its README, and SHIP/SLAP discovery and federated-operators@1 are parked (spec/services.md section 1 as it stood).",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "SVC-1-discovery-sync",
+        "sourceId": "spec-services",
+        "sourceUri": "spec/services.md",
+        "sourceVersion": "working draft",
+        "clause": "§1",
+        "summary": "Public overlays should advertise through SHIP/SLAP; discovery, synchronisation and retention are declared and tested before a deployment is called independently replicated; the reference node does not enable peer synchronisation.",
+        "layer": "profile",
+        "roles": [
+          "overlay"
+        ],
+        "applicability": "when an operator claims federated-operators@1",
+        "profileId": "federated-operators@1 (proposed)",
+        "implementationRefs": [
+          "packages/dpp-overlay/src/sync.ts",
+          "packages/dpp-overlay/src/index.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-overlay/test/federation.test.ts",
+          "packages/dpp-overlay/test/gaspRoutes.test.ts"
+        ],
+        "evidenceRefs": [
+          "packages/dpp-overlay/src/index.ts (Engine built without trackers, advertiser or GASP)"
+        ],
+        "reviewedAt": "2026-09-05",
+        "reviewOwner": "dpp maintainers",
+        "notes": "The reference node serves the upstream GASP routes and, with SYNC_PEERS, synchronises tm_dpp and tm_attestation from declared peers on a schedule under the same topic managers as /submit; the two-operator exercise (two in-memory nodes, one federated policy) shows byte-identical answers on both rails, no duplicates on a second round, catch-up after a late start, service after the first operator stops, a stranger's state refused, and a rotated policy honoured by both. Limits: the SDK carries no proof repair (each operator ingests proofs itself) and does not finalise an unproven state on a lineage the peer already holds until it is proven; SHIP and SLAP advertisement is not configured; two processes under one administration prove the mechanism, never independence."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed from the standard on 12 November 2026: per-publisher write tokens are a feature of @bsv/dpp-overlay, documented in its README (spec/services.md section 6 as it stood); the standard says only that an index may require write credentials.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "row": {
+        "id": "SVC-6-write-credentials",
+        "sourceId": "spec-services",
+        "sourceUri": "spec/services.md",
+        "sourceVersion": "working draft",
+        "clause": "§6",
+        "summary": "An index may issue write credentials each bound to one publisher or anchoring key and one use; a state is accepted under one only when that key countersigned it, an anchor only when it names that key as anchoring service, with a named 403 otherwise; credentials are stored hashed, revocable, never listed, and an operator-wide token may stand beside them.",
+        "layer": "role",
+        "roles": [
+          "overlay"
+        ],
+        "applicability": "when a deployment issues per-publisher tokens",
+        "profileId": "core",
+        "implementationRefs": [
+          "packages/dpp-overlay/src/publisherTokens.ts",
+          "packages/dpp-overlay/src/index.ts (resolveWriter, signerMismatch)",
+          "packages/dpp-overlay/src/tokensCommand.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-overlay/test/publisherTokensHttp.test.ts",
+          "packages/dpp-overlay/test/publisherTokens.test.ts"
+        ],
+        "evidenceRefs": [
+          "contracts/overlay.yaml#components.securitySchemes.bearer"
+        ],
+        "reviewedAt": "2026-11-02",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Decided 2026-11-02: the first step of the default index chain; self-service registration (SVC-2-registration) issues through the same store."
+      }
     }
   ],
   "claims": [
@@ -678,6 +1270,127 @@
           "CAR-10-verification",
           "CAR-12-conformance"
         ]
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026 with passport-projection@1, now a reference feature of @bsv/dpp-profiles (docs/reference/parked/passport-projections/). The profile rows it also required, PROF-2-manifest-version-2, PROF-3-applicability-evaluator and PROF-4-frozen-unchanged, are required by profile-governance, with PROF-3-shared-shapes in place of PROJ-6-shapes-language-dates.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "claim": {
+        "id": "passport-projection-1",
+        "description": "passport-projection@1 with its source revisions, commitment digest, precedence, availability and applicability axes, bounds and disclosure, shapes, the publication policy and the viewer presets.",
+        "profileId": "passport-projection@1",
+        "requires": [
+          "PROJ-1-source-revisions",
+          "PROJ-2-commitment-digest",
+          "PROJ-3-precedence",
+          "PROJ-4-availability-applicability",
+          "PROJ-5-bounds-disclosure",
+          "PROJ-6-shapes-language-dates",
+          "PROJ-7-publication-policy",
+          "PROJ-8-viewer-presets",
+          "PROF-2-manifest-version-2",
+          "PROF-3-applicability-evaluator",
+          "PROF-4-frozen-unchanged"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules: every row it required tested GS1 text the specification restated. The gs1-digital-link@1 manifest and the resolver helpers stay in @bsv/dpp-profiles as reference code; gs1-identifier-discipline remains the GS1 claim.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "claim": {
+        "id": "gs1-discovery-1",
+        "description": "The gs1-digital-link@1 discovery profile: grammar, key tuples, EPC-binary decompression, hierarchy with anchors over a record set that always walks up to a default, the resolution flow and schema-valid linksets, with the hosted route and the discovery client.",
+        "profileId": "gs1-digital-link@1",
+        "requires": [
+          "GS1D-1-grammar",
+          "GS1D-2-key-tuple",
+          "GS1D-3-decompression",
+          "GS1D-4-hierarchy-anchors",
+          "GS1D-5-resolution-flow",
+          "GS1D-6-linkset-schema",
+          "GS1D-7-hosted-route",
+          "GS1D-8-discovery-client",
+          "GS1D-9-record-set"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026: the named operator profiles are labels of @bsv/dpp-overlay, documented in its README, not profiles of the standard, and overlay-native-baseline-2 is the overlay's claim.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "claim": {
+        "id": "overlay-single-operator-1",
+        "description": "The reference overlay node as a single operator: admission of both rails, cursor lookup, retraction, refused-spend eviction, the publisher policy, proof ingestion and idempotent replay under the overlay contract.",
+        "role": "overlay",
+        "profileId": "single-operator@1",
+        "requires": [
+          "OVL-1-refused-spend-eviction",
+          "OVL-2-retraction",
+          "OVL-contract-must",
+          "PUB-1-publisher-policy",
+          "RM-6-invariants",
+          "RULES-5-anchor",
+          "SVC-2-anchor-admission",
+          "SVC-2-cursor-lookup",
+          "SVC-2-passport-admission",
+          "SVC-2-retraction",
+          "SVC-2-proof-ingest",
+          "SVC-6-idempotent-admission"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026: the named operator profiles are labels of @bsv/dpp-overlay, documented in its README, not profiles of the standard, and overlay-native-baseline-2 is the overlay's claim.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "claim": {
+        "id": "overlay-single-operator-2",
+        "description": "The reference overlay node as one administration that pulls both rails from peers it names or discovers: everything single-operator@1 requires, plus synchronisation, the capability document that declares it, and refusal of what a peer offers outside this index's own policy.",
+        "role": "overlay",
+        "profileId": "single-operator@2",
+        "requires": [
+          "CONF-4-overlay-capabilities",
+          "OVL-1-refused-spend-eviction",
+          "OVL-2-retraction",
+          "OVL-contract-must",
+          "PUB-1-publisher-policy",
+          "RM-6-invariants",
+          "RULES-5-anchor",
+          "SVC-1-discovery-sync",
+          "SVC-2-anchor-admission",
+          "SVC-2-cursor-lookup",
+          "SVC-2-passport-admission",
+          "SVC-2-retraction",
+          "SVC-2-proof-ingest",
+          "SVC-6-idempotent-admission"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026: the named operator profiles are labels of @bsv/dpp-overlay, documented in its README, not profiles of the standard, and overlay-native-baseline-2 is the overlay's claim. federated-operators@1 is parked with SHIP/SLAP discovery, and EXPORT-3-durable-publication stays a gap.",
+      "lastWorkingCommit": "d8b912e5a311137163bdf958673bff3f4e10558b",
+      "claim": {
+        "id": "overlay-federated-operators-1",
+        "description": "Two independently administered operators serving the same evidence with declared discovery and synchronisation.",
+        "role": "overlay",
+        "profileId": "federated-operators@1",
+        "requires": [
+          "CONF-4-overlay-capabilities",
+          "EXPORT-3-durable-publication",
+          "OVL-1-refused-spend-eviction",
+          "OVL-2-retraction",
+          "PUB-1-publisher-policy",
+          "SVC-1-discovery-sync",
+          "SVC-6-idempotent-admission"
+        ],
+        "minimumStatus": "tested"
       }
     }
   ]

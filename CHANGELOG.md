@@ -12,6 +12,14 @@ Mark all four initial npm packages as `beta.1` prereleases under the `next` tag,
 
 ## Repository history
 
+### 2026-11-12, projections and operator features out of the specification, GS1 discovery cut to the identifier rules, drafts parked, one canonical JSON
+
+- Passport projections and `publication-policy@1` are reference features of `@bsv/dpp-profiles`: `spec/passport-projections.md` is parked at `docs/reference/parked/passport-projections/`, its two schemas move from `contracts/` to `packages/dpp-profiles/schemas/`, and its rows and claim go to the ledger archive. The manifest format 2 rules, the evaluator and the shared shapes move into `spec/profiles.md`, and `profile-governance` now requires their rows.
+- `spec/gs1-discovery.md` keeps only the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0; the resolver helpers stay as reference code, the `GS1D-*` rows and `gs1-discovery-1` are archived, and `GS1-check-digit-read` and `GS1-identifier-host` are new rows.
+- The publisher policy chain, write tokens, registration operations, synchronisation and the operator profiles move from `spec/services.md` to the `@bsv/dpp-overlay` README; the standard keeps the flat publisher key list and the signed registration request. SHIP/SLAP discovery and `federated-operators@1` are parked, its manifest with the status `parked`, and the three operator profile claims are archived.
+- The drafts `battery@3`, `textile@3` and `textile@4` are parked with their bytes unchanged; `battery@4` is the one draft.
+- `spec/rules.md` §4 is the one definition of the canonical JSON the native documents use, which the other specifications cite, and names RFC 8785 for the EPCIS body digest as the exception; `canonicalBytes` serialises through `canonicalJson`, and no fixture byte changed.
+
 ### 2026-11-12, one current release set, one history page and publication only through OIDC
 
 - Superseded release sets move, bytes unchanged, to `release/archive/`, their selections to `release/archive/selections/`, and the publication receipts and approved plans to `docs/reference/publication-history/`, with GitBook redirects. `docs/reference/release-history.md` is the one history page, and `conformance/check.mjs` refuses a superseded set or selection left outside the archive.

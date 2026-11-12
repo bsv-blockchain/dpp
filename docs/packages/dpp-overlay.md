@@ -163,7 +163,7 @@ The host speaks the overlay contract's core, `POST /submit` and `POST /lookup` a
 ### Other routes from source
 
 - **With the repository's Compose preset.** Follow [run an index from source](../operate/README.md): it explains the publisher key, the tokens, storage, the first health and capability checks and the application's connection. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
-- **From a checkout.** Run `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` at the built checkout root: port 8080, in-memory storage, `GET /health` returns `"status":"ok"`. Startup warns for every disabled protection. Before exposing it to strangers, set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md) lists every variable.
+- **From a checkout.** Run `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` at the built checkout root: port 8080, in-memory storage, `GET /health` returns `"status":"ok"`. Startup warns for every disabled protection. Before exposing it to strangers, set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md) lists every variable.
 
 ### Check access and registration outcomes
 
@@ -180,6 +180,8 @@ Tokens are required when configured, as on the hosted reference. Writers obtain 
 |---|---|
 | `403 token-publisher-mismatch` | State or anchor names another key. |
 | `401` | Token is unknown, revoked or for the wrong use. |
+
+Per-publisher tokens, registration operations, the publisher policy chain and synchronisation are features of this package, not of the standard, which fixes only the flat publisher key list of the capability document and the signed registration request; the [package guide](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md#operator-features) states their rules.
 
 For self-service registration:
 
@@ -207,10 +209,10 @@ For self-service registration:
 | Integration | Source |
 |---|---|
 | Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/lib.ts) |
-| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/src/index.ts) |
-| Read a historical UORA anchor | `tryParseUoraAnchor` and `expectedLockingKey`, as [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) shows for `uora-anchor-v3`; it refuses `uora-anchor-v2` and does not read `uora-anchor-v1` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)) |
-| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml) |
-| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md) |
+| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/src/index.ts) |
+| Read a historical UORA anchor | `tryParseUoraAnchor` and `expectedLockingKey`, as [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) shows for `uora-anchor-v3`; it refuses `uora-anchor-v2` and does not read `uora-anchor-v1` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/legacy-uora-anchor-v3.md)) |
+| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml) |
+| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md) |
 
 ## Next
 

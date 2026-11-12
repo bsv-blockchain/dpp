@@ -4,7 +4,7 @@ import { SYNTHETIC_MANIFEST } from './projection-fixture.js'
 
 const rule = (r: ApplicabilityRuleV2): ApplicabilityRuleV2 => r
 
-describe('evaluateApplicability (spec/passport-projections.md section 6)', () => {
+describe('evaluateApplicability (spec/profiles.md section 3)', () => {
   it('answers always, category-in and needs-review as the version 1 reader does', () => {
     expect(evaluateApplicability({ rule: 'always' }).outcome).toBe('applies')
     expect(evaluateApplicability({ rule: 'category-in', categories: ['ev'] }, { category: 'ev' }).outcome).toBe('applies')

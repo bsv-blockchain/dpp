@@ -990,9 +990,10 @@ def instant(text: str) -> float:
 def keys_active_at(chain: list[dict], at: str, role: str | None) -> list[str]:
     t = instant(at)
     # The latest version issued at or before t governs; before any version was
-    # issued, the first version does, through its key windows (services.md
-    # section 1): a genesis written after publishing began describes history,
-    # and only the first version reaches back.
+    # issued, the first version does, through its key windows (the publisher
+    # key policy of packages/dpp-overlay/README.md): a genesis written after
+    # publishing began describes history, and only the first version reaches
+    # back.
     in_force = None
     first = None
     for policy in chain:

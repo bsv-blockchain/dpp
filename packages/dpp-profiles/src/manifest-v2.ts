@@ -1,6 +1,6 @@
 /**
  * Manifest version 2 (`schemas/profile-manifest-v2.schema.json`,
- * `spec/passport-projections.md` §6): everything version 1 declares, plus a
+ * `spec/profiles.md` §2): everything version 1 declares, plus a
  * requirement status per field, a composable applicability rule that can say
  * `unresolved`, date precision, subject scope, override declarations, the
  * shared evidence value types and a succession record. A version 1 manifest

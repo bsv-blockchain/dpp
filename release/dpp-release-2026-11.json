@@ -2,7 +2,7 @@
   "releaseSet": "dpp-release-2026-11",
   "status": "candidate",
   "distTag": "latest",
-  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the proposed epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. From 12 November 2026 the native claim carries no evidence facets; the index contract separates a core, version 1, from versioned extensions, and its refusal codes are informative; the registry contract is the minimum every registry serves and has no legacy intake, so a historical UORA body is refused while stored historical records stay readable; the one export format is dpp-evidence-package@1 per passport, signed by the BRC-42 child of the exporter's identity key named in its capability document, and the multi-part export and the index's history pages are reference features of @bsv/dpp-overlay; and the application interoperability API contract is the reference application's own. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard, and the holder instruction record and record version 3, the token carrier, are parked outside it, so the set names record versions 1 and 2 and verification report version 2. From the same day the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, discovery, exchange and EPCIS profiles. Package publication does not establish deployment readiness or product qualification.",
+  "description": "Experimental prerelease candidate that carries the seven stack B decisions of bsv-blockchain/dpp#177: @bsv/dpp-protocol and @bsv/dpp-profiles move to 0.3.0-beta.10 and @bsv/dpp-overlay to 0.4.0-beta.13, and @bsv/dpp-credentials to 0.2.0-beta.6, which keeps external credential verification and the EPCIS source helpers and no longer contains the parked VSC compatibility profile, its Ed25519Signature2020 and bbs-2023 proof suites or the EPCIS-to-SEAL mappings. The verification report checks token payloads against their declared profile through a caller-supplied validator; restricted tiers are disclosed per reader; acceptance records travel in the evidence package; the native claim names its state by outpoint; the index contract is 0.14.0-draft, with per-publisher write tokens bound to one key and one use and self-service registration through POST /register, a wallet-signed dpp-index-registration@1 request that appends an operator-signed policy version and returns those tokens, and the registry contract 0.6.0, which adds the envelope of the proposed epcis-event-vc@1, refuses a submission of the parked vsc-seal-json-v1 as unsupported and defines no status list publication. From 12 November 2026 the native claim carries no evidence facets; the index contract separates a core, version 1, from versioned extensions, and its refusal codes are informative; the registry contract is the minimum every registry serves and has no legacy intake, so a historical UORA body is refused while stored historical records stay readable; the one export format is dpp-evidence-package@1 per passport, signed by the BRC-42 child of the exporter's identity key named in its capability document, and the multi-part export and the index's history pages are reference features of @bsv/dpp-overlay; and the application interoperability API contract is the reference application's own. The custody profile is managed-custody@2, the one custody profile: the custodian signs its acceptance records with a derived key through the wallet's createSignature, and dpp-managed-acceptance@1 records are read and never written. From 12 November 2026 the owner-signed transfer for version 1 lineages is removed from the standard, and the holder instruction record and record version 3, the token carrier, are parked outside it, so the set names record versions 1 and 2 and verification report version 2. From the same day the selection requires one claim per role under native-baseline@2, the one baseline a claim names, with gs1-identifier-discipline and profile-governance, and withholds every other claim, among them those of the optional custody, exchange and EPCIS profiles. From the same day passport projections and the publication policy are reference features of @bsv/dpp-profiles, whose source and projection schemas moved from contracts/ into that package; the GS1 discovery specification keeps only the DPP identifier rules; the publisher policy chain, write tokens, registration operations and synchronisation are reference features of @bsv/dpp-overlay, with SHIP/SLAP discovery and federated-operators@1 parked; the drafts battery@3, textile@3 and textile@4 are parked with their bytes unchanged; and spec/rules.md section 4 is the one definition of the canonical JSON the native documents use. Package publication does not establish deployment readiness or product qualification.",
   "baseline": "native-baseline@2",
   "selection": "conformance/selections/dpp-release-2026-11.json",
   "runtime": {
@@ -328,12 +328,12 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "1bcbed1b31d68e9969e20f7955106bad2d914e76e8b29016cdcc5c12b6ac7979",
+      "sha256": "319d6dfb3791effe9f4cb2c9e90b3c9e76819aeedc586b3456484d9dd84b7979",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
       "path": "contracts/overlay.yaml",
-      "sha256": "4d178c006a22c7a4a69ab830eb5bacacaa7a24b08178903eebeb7cf56e24c044",
+      "sha256": "1fece76017562506f047b6cfd349557982682c54491939437a8289e8dd03d73e",
       "pins": "the index's HTTP contract: the core, version 1, and its versioned extensions"
     },
     {
@@ -362,19 +362,9 @@
       "pins": "the durable EPCIS import record"
     },
     {
-      "path": "contracts/passport-source.schema.json",
-      "sha256": "bfd9b06926b093f0cf8cd51dbcb9a5431d8a3656f058236166c9ef72003e2a78",
-      "pins": "source revisions and relationships"
-    },
-    {
-      "path": "contracts/passport-projection.schema.json",
-      "sha256": "c489252c83fc3708f984dcbbff4b914cf20ada6ca47818b7ab89a2dbebd52ed9",
-      "pins": "passport-projection@1"
-    },
-    {
       "path": "contracts/profile-evidence.schema.json",
-      "sha256": "08d6521c4ae69860c940cfd4ee1e2c8f9f4a16a9f5dd951352037b32add91261",
-      "pins": "the shared evidence, measurement, certification, document and language shapes"
+      "sha256": "adc9327eb19767c974b851ddd11a99f26b8de52f5cf9fa1e7f92e96e15bc9bc8",
+      "pins": "the shared evidence, measurement, certification, document and language shapes of spec/profiles.md section 3"
     },
     {
       "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
@@ -383,7 +373,7 @@
     },
     {
       "path": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
-      "sha256": "983284a926c7d3cfa814ca0b5179f42db85951230eb44afb7b79595c013a3a44",
+      "sha256": "dbb99ff6ea5c939d9aef34c2cbb45acc2e44bc702a8bcb1a9870e998680c0a6d",
       "pins": "the successor industry manifest contract"
     },
     {

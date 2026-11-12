@@ -1,6 +1,6 @@
 /**
- * Peer synchronisation (`spec/services.md` section 1, operator profile
- * `federated-operators@1`): pulling the states and anchors another operator
+ * Peer synchronisation, a feature of this package and not part of the
+ * standard (this package's README, synchronisation): pulling the states and anchors another operator
  * holds, through the overlay SDK's GASP, from a declared list of peers.
  *
  * The SDK does the protocol: `Engine.startGASPSync` walks every topic the

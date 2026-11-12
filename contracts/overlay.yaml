@@ -18,8 +18,12 @@ info:
     changes, never for a should, a may or an extension. Each extension
     (x-dpp-extensions) is optional, carries its own version, which changes only
     with that extension, and marks the operations, headers and properties it
-    adds with x-dpp-extension. An index may serve more than this document
-    names: the reference package documents its own further routes.
+    adds with x-dpp-extension. An extension fixes a wire shape and is no
+    requirement of the standard: the behaviour behind the publisher-policy,
+    registration and sync extensions, and the write tokens an index may
+    issue, are the reference index package's, documented with it, and the
+    discovery extension is parked. An index may serve more than this
+    document names: the reference package documents its own further routes.
     Findability is a service concern, not a truth concern: nothing returned
     here is trusted until it verifies as the specification documents
     describe.
@@ -104,10 +108,10 @@ x-dpp-profile:
       by content type.
     - >-
       Require a write token on /submit, /arc-ingest and, with the retraction
-      extension, /retract: a per-publisher
-      token bound to one publisher or anchoring key and one use, accepted only
-      for what that key signed (403 token-publisher-mismatch otherwise), or the
-      operator-wide token; /lookup and /health stay open.
+      extension, /retract; /lookup and /health stay open. How an index issues
+      and binds its tokens is its own: the reference package documents
+      per-publisher tokens, each bound to one key and one use (403
+      token-publisher-mismatch otherwise).
     - Default an absent X-Topics header to tm_dpp; a portable client always sends it.
     - >-
       Require the acceptance commitment on a version 2 TRANSFER when deployed
@@ -122,9 +126,10 @@ x-dpp-extensions:
   discovery:
     version: '1'
     summary: >-
-      Advertise the topics through SHIP and the lookup services through SLAP
-      when the index is public, so a reader who knows only a service name
-      finds it (spec/services.md section 1).
+      Parked outside the standard on 12 November 2026: advertising the topics
+      through SHIP and the lookup services through SLAP, so a reader who knows
+      only a service name finds the index. The reference package keeps its
+      implementation as an option it documents.
   admission-refusal:
     version: '1'
     summary: >-
@@ -143,10 +148,17 @@ x-dpp-extensions:
     summary: >-
       GET /publisher-policy, the signed dpp-publisher-policy@1 chain the index
       admits under (contracts/publisher-policy.schema.json), so a reader
-      verifies the publisher keys and their windows itself.
+      verifies the publisher keys and their windows itself. The chain's rules
+      are the reference index package's, documented with it, not the
+      standard's; the standard's publisher keys are the flat list of the
+      capability document.
   registration:
     version: '1'
-    summary: POST /register, self-service registration of a publisher key (spec/services.md section 2).
+    summary: >-
+      POST /register, self-service registration of a publisher key on a signed
+      dpp-index-registration@1 request (spec/services.md section 2). What an
+      accepted request does, its modes, limits and the tokens it returns, is
+      the index's own; the reference package documents its behaviour.
   retraction:
     version: '1'
     summary: >-
@@ -172,7 +184,8 @@ x-dpp-extensions:
       Synchronisation from peers through GASP: the two upstream routes,
       POST /requestSyncResponse and POST /requestForeignGASPNode. The reference
       pulls from the static peers SYNC_PEERS names, judging every offered
-      output by the same topic managers as /submit.
+      output by the same topic managers as /submit. How indexes synchronise is
+      not part of the standard: the reference package documents its own.
 paths:
   /submit:
     post:
@@ -493,7 +506,7 @@ paths:
   /publisher-policy:
     get:
       x-dpp-extension: publisher-policy
-      summary: The signed publisher policy chain this index admits under (an extension; spec/services.md section 1)
+      summary: The signed publisher policy chain this index admits under (an extension the reference package documents)
       description: >-
         The dpp-publisher-policy@1 chain, oldest first, as the index verified
         it at boot and, where it registers publishers, with every version
@@ -593,8 +606,7 @@ paths:
         document lists retraction-network-check as unsupported. A retraction
         is local to this index: synchronisation carries admissions only, so a
         peer that pulled the output keeps it until that peer's operator
-        withdraws it through its own retraction route (spec/services.md
-        section 2).
+        withdraws it through its own retraction route.
       security:
         - {}
         - bearer: []
@@ -639,9 +651,10 @@ paths:
         network and the custody profile its capability document declares, and
         that requestedAt is within ten minutes of its clock. In open mode the
         operator's identity key then signs a new policy version naming the key
-        as a state publisher, a rotation under spec/services.md section 1 that
-        GET /publisher-policy serves at once and the topic managers admit under
-        at once, and the answer carries the key's two write tokens, shown once.
+        as a state publisher, a rotation of the reference package's publisher
+        policy chain that GET /publisher-policy serves and the topic managers
+        admit under at once, and the answer carries the key's two write
+        tokens, shown once.
         Under approval the request is held as pending (202) until the operator
         approves it on the command line; the application then re-sends a
         freshly signed request and collects its tokens (201), once. A key
@@ -929,15 +942,17 @@ components:
               type: string
               description: >-
                 A GS1 key without a host, for a caller holding a GTIN and serial
-                but not the host a passport was issued under: the key tuple of
-                spec/gs1-discovery.md section 1 (01:09529990001039|21:SERIAL),
-                a Digital Link path (01/09529990001039/21/SERIAL) or a whole
-                Digital Link URI under any host. The answer holds the states of
-                every passport whose identifier names that key, each under its
-                own exact identifier, which the caller verifies as it would any
-                lookup's answer. A shared key is not evidence that a passport
-                concerns the caller's product (spec/gs1-discovery.md section 1).
-                A value that names no GS1 key is refused.
+                but not the host a passport was issued under: the key tuple,
+                01:{gtin14} followed by each key qualifier present as
+                {ai}:{value} in the order the Digital Link syntax gives them,
+                joined by | (01:09529990001039|21:SERIAL), a Digital Link path
+                (01/09529990001039/21/SERIAL) or a whole Digital Link URI under
+                any host. The answer holds the states of every passport whose
+                identifier names that key, each under its own exact identifier,
+                which the caller verifies as it would any lookup's answer. A
+                shared key is not evidence that a passport concerns the
+                caller's product. A value
+                that names no GS1 key is refused.
     legacyAnchorLookup:
       type: object
       required: [service, query]

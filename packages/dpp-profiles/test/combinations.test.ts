@@ -58,6 +58,7 @@ describe('profile combinations (conformance.md §4)', () => {
     expect(codes({ baseline: 'native-baseline@1', operator: 'federated-operators@1', deployment: { operators: 1, discovery: 'ship-slap' }, purpose: 'write' })).toEqual(['operator-federation-needs-two'])
     expect(codes({ baseline: 'native-baseline@1', operator: 'federated-operators@1', deployment: { operators: 2 }, purpose: 'write' })).toEqual(['operator-federation-without-discovery'])
     expect(codes({ baseline: 'native-baseline@1', operator: 'federated-operators@1', deployment: { operators: 2, discovery: 'ship-slap' }, purpose: 'claim' })).toEqual(['operator-proposed'])
+    expect(checkSelection({ baseline: 'native-baseline@1', operator: 'federated-operators@1', deployment: { operators: 2, discovery: 'ship-slap' }, purpose: 'write' }).notes).toEqual(['federated-operators@1 is parked: required by no release and not under development'])
   })
 
   it('takes one administration with named or discovered peers as single-operator@2, and nothing else', () => {

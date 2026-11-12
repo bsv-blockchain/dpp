@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/index-registration.schema.json",
   "title": "dpp-index-registration@1",
-  "description": "The request an application's wallet signs to register its publisher key with an index (spec/services.md section 2). Canonical form: object keys sorted by code point, no whitespace, string values only. The signature is DER ECDSA over SHA-256 of the canonical JSON of the request without the signature property, by the BRC-42 child of publisherKey for protocol [1, 'dpp index registration v1'], key identifier indexUrl and counterparty 'anyone' (the BRC-100 createSignature operation), so the verification key derives from the request alone and a request signed for one index is useless at another.",
+  "description": "The request an application's wallet signs to register its publisher key with an index (spec/services.md section 2). Canonical form: the canonical JSON of spec/rules.md section 4; every value is a string. The signature is DER ECDSA over SHA-256 of the canonical JSON of the request without the signature property, by the BRC-42 child of publisherKey for protocol [1, 'dpp index registration v1'], key identifier indexUrl and counterparty 'anyone' (the BRC-100 createSignature operation), so the verification key derives from the request alone and a request signed for one index is useless at another.",
   "type": "object",
   "additionalProperties": false,
   "required": ["registrationFormat", "indexUrl", "publisherKey", "network", "custodyProfile", "label", "requestedAt", "signature"],

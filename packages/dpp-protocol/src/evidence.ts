@@ -244,7 +244,8 @@ export interface EvidencePolicy {
   publisherKeys?: string[]
   /**
    * A publisher key policy chain with the operator identity keys it is
-   * verified against (`spec/services.md` §1). The chain is verified first; if
+   * verified against (the publisher key policy documented with
+   * `@bsv/dpp-overlay`). The chain is verified first; if
    * it does not hold, `publisherSignatures` is unknown with
    * `publisher-policy-invalid` and no key from it is trusted. When it holds,
    * each state is checked against the keys active at its own timestamp, and a

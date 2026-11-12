@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bsv-blockchain.github.io/dpp/contracts/passport-source.schema.json",
+  "$id": "https://bsv-blockchain.github.io/dpp/packages/dpp-profiles/schemas/passport-source.schema.json",
   "title": "DPP passport source revision and relationship, version 1",
-  "description": "The two records a passport's facts are derived from (spec/passport-projections.md sections 2 and 3): an immutable source revision of a model, batch, item or component record, and a typed relationship between subjects. Revisions are append-only; a current pointer moves by compare-and-swap and never rewrites a revision. A relationship is an accepted assertion under a named policy, kept apart from any source event's own edges.",
+  "description": "The two records a passport's facts are derived from, a reference feature of @bsv/dpp-profiles and not part of the standard (its specification is parked under docs/reference/parked/passport-projections/): an immutable source revision of a model, batch, item or component record, and a typed relationship between subjects. Revisions are append-only; a current pointer moves by compare-and-swap and never rewrites a revision. A relationship is an accepted assertion under a named policy, kept apart from any source event's own edges.",
   "oneOf": [
     {
       "$ref": "#/$defs/sourceRevision"

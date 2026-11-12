@@ -12,7 +12,7 @@ Use the process when a profile changes, a source is revised or an application ad
 | Application baseline | Application revision and evaluation date from the deployment being assessed. |
 | External sources | Each source's edition, retrieval date and role: legislation, standard, guidance, proposal or test-tool implementation. Obtain the actual compared files and hosted-run schema selection as well as documentation. |
 | Product scope | Product classification, use case and market that determine applicability. |
-| Changed-profile review | Checkout containing both versions and its change report; see [evaluate the version 4 drafts](version-4-drafts.md#try-a-draft-in-your-application). |
+| Changed-profile review | Checkout containing both versions and its change report; see [evaluate the battery@4 draft](version-4-drafts.md#try-a-draft-in-your-application). |
 
 ## Establish the comparison baseline
 
