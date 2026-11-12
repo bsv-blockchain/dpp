@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-09",
+  "updatedAt": "2026-11-12",
   "sources": [
     {
       "id": "spec-record-model",
@@ -109,10 +109,10 @@
     {
       "id": "contract-overlay",
       "uri": "contracts/overlay.yaml",
-      "version": "0.10.0-draft",
+      "version": "0.14.0-draft",
       "kind": "local",
       "path": "contracts/overlay.yaml",
-      "digest": "5dc02c19a98a35b210c18c129cef3d01cb61b9ba2ebbfbe174651921267af175"
+      "digest": "417a0d402fe287e0b2c3b7b960bfa2d92cd606a4455e6885e17d87d27bc2b85f"
     },
     {
       "id": "contract-registry",
@@ -120,7 +120,7 @@
       "version": "0.6.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "328c8922f648c55ea1ee499a5186f454ff755787b1e8b3a5922a14f2faac0fd9"
+      "digest": "95d13273a9e9fb066a31c9ee4ad85cda575a24b21945aefb8a20a2f5a3866bf1"
     },
     {
       "id": "contract-report-schema",
@@ -246,7 +246,7 @@
       "attribution": "UN/CEFACT",
       "notes": "The 0.7.0 release, tagged v0.7.0 on 4 May 2026 at the GitLab home; the GitHub repository uncefact/spec-untp is archived at 0.6.1 and points here; main was last active on 4 September 2026 (df03d8f87e74f676ccfece87ba77cd8f804fe111); no 1.0 release exists. The documentation site refuses non-browser clients. The DigitalProductPassport, DigitalTraceabilityEvent and ConformityCredential schemas and the single UNTP context are pinned by SHA-256 in packages/dpp-profiles/manifests/exchange/untp-0.7.0-jose@1.json.",
       "retrievedAt": "2026-09-06",
-      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0. Standing decision (bsv-blockchain/dpp-issues#27, 8 November 2026): the artefacts are pinned by digest and never copied into this repository or its packages; a consumer that validates against them obtains the bytes itself and checks them against the pinned digests."
+      "licence": "GPL-3.0-only, the licence of the spec-untp repository at tag v0.7.0. Standing decision (8 November 2026): the artefacts are pinned by digest and never copied into this repository or its packages; a consumer that validates against them obtains the bytes itself and checks them against the pinned digests."
     },
     {
       "id": "gs1-digital-link",
@@ -951,7 +951,7 @@
       "status": "unassessed",
       "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#86): one owner blob, re-encrypted per reader. The writer example shows the owner tier's encryption; the disclosure call is shown on the writer page and not yet exercised by a test."
+      "notes": "Decided 2026-11-01: one owner blob, re-encrypted per reader. The writer example shows the owner tier's encryption; the disclosure call is shown on the writer page and not yet exercised by a test."
     },
     {
       "id": "RM-8-verifier",
@@ -1674,7 +1674,7 @@
       "status": "independently-tested",
       "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#78): the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. The Python verifier reproduces the preimage, the derived verification key, the signature, the commitment, the binding and the seven refusals from the fixture."
+      "notes": "Decided 2026-11-01: the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. The Python verifier reproduces the preimage, the derived verification key, the signature, the commitment, the binding and the seven refusals from the fixture."
     },
     {
       "id": "MC-3-custodian-signing",
@@ -1712,7 +1712,7 @@
       "status": "independently-tested",
       "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#78). The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim."
+      "notes": "Decided 2026-11-01: the custodian signs with a derived key so that a BRC-100 wallet can be its wallet. The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1738,7 +1738,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#79): the lock follows custody.md §3. The lifecycle example locks each state to its controller key; the pinned chain-v2 fixture still locks to the custodian's identity key, a build's choice the record model does not see, and says so."
+      "notes": "Decided 2026-11-01: the lock follows custody.md §3. The lifecycle example locks each state to its controller key; the pinned chain-v2 fixture still locks to the custodian's identity key, a build's choice the record model does not see, and says so."
     },
     {
       "id": "MC-4-transfer-binding",
@@ -1856,7 +1856,7 @@
       "status": "implemented",
       "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#85): the package is the route. The core reads the records out of a package; the reference custodian's export (bsv-blockchain-demos/dpp-app) does not yet include them, and the overlay's export cannot, because an index holds no records."
+      "notes": "Decided 2026-11-01: the package is the route. The core reads the records out of a package; the reference custodian's export, in the reference application, does not yet include them, and the overlay's export cannot, because an index holds no records."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1887,7 +1887,7 @@
         "fixtures/managed-instruction-v1.json#refusals.directlySigned"
       ],
       "status": "independently-tested",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#92): writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the seven refusals from the fixture."
+      "notes": "Decided 2026-11-01: writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the seven refusals from the fixture."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1952,7 +1952,7 @@
         "fixtures/evidence-v2.json#cases.v2-instruction-not-supplied"
       ],
       "status": "independently-tested",
-      "notes": "The reference index selects the rule with INSTRUCTION_COMMITMENT=required and declares it as instructionCommitment in its custody profile entry; the hosted index and the reference application do not yet select it (bsv-blockchain-demos/dpp-app records no instructions), so the hosted declaration stays not-selected until they do."
+      "notes": "The reference index selects the rule with INSTRUCTION_COMMITMENT=required and declares it as instructionCommitment in its custody profile entry; the hosted index and the reference application do not yet select it, and the application records no instructions, so the hosted declaration stays not-selected until they do."
     },
     {
       "id": "MC-7-declaration",
@@ -2044,7 +2044,7 @@
       "status": "independently-tested",
       "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#87, #88): recordId is <txid>:<outputIndex>, and the facets of §2 live under evidence. Both are shapes both implementing parties produce; the fixture moved with them, and the Python verifier reproduces the bytes, the digest of the claim with evidence and the two refusals. Written acceptance by the second implementing party is pending under GOVERNANCE.md."
+      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, and the facets of §2 live under evidence. Both are shapes both implementing parties produce; the fixture moved with them, and the Python verifier reproduces the bytes, the digest of the claim with evidence and the two refusals. Written acceptance by the second implementing party is pending under GOVERNANCE.md."
     },
     {
       "id": "RULES-2-version-2-vocabulary",
@@ -2415,7 +2415,7 @@
       "status": "implemented",
       "reviewedAt": "2026-11-05",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-05 (bsv-blockchain/dpp-issues#82): the withdrawal is a duty of the §3 order and joins the §11 self-report list. Self-reported beside the reference example, as every writer rule is."
+      "notes": "Decided 2026-11-05: the withdrawal is a duty of the §3 order and joins the §11 self-report list. Self-reported beside the reference example, as every writer rule is."
     },
     {
       "id": "WR-4-one-writer",
@@ -2744,7 +2744,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-02 (bsv-blockchain/dpp-issues#119): the default index registers a newcomer from the quick start; the Python verifier reproduces the derived key and every refusal."
+      "notes": "Decided 2026-11-02: the default index registers a newcomer from the quick start; the Python verifier reproduces the derived key and every refusal."
     },
     {
       "id": "SVC-2-retraction",
@@ -2773,7 +2773,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-05",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-05 (bsv-blockchain/dpp-issues#82): peers are not told of a retraction; the federation test shows the withdrawn state no longer offered and the peer keeping it until its own retraction route is used."
+      "notes": "Decided 2026-11-05: peers are not told of a retraction; the federation test shows the withdrawn state no longer offered and the peer keeping it until its own retraction route is used."
     },
     {
       "id": "SVC-3-registry-bytes",
@@ -2885,7 +2885,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-02",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-02 (bsv-blockchain/dpp-issues#118): the first step of the default index chain; self-service registration (#119) issues through the same store."
+      "notes": "Decided 2026-11-02: the first step of the default index chain; self-service registration (SVC-2-registration) issues through the same store."
     },
     {
       "id": "VER-2-report",
@@ -3011,7 +3011,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-01",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01 (bsv-blockchain/dpp-issues#90): validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states pass under the profiles package's validator."
+      "notes": "Decided 2026-11-01: validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states pass under the profiles package's validator."
     },
     {
       "id": "VER-5-observations",
@@ -3997,7 +3997,7 @@
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.10.0-draft",
+      "sourceVersion": "0.14.0-draft",
       "clause": "x-dpp-profile.must",
       "summary": "Serve /submit and /lookup as upstream defines them, the four listing and documentation routes, JSON output-list answers, and idempotent admission of a held output.",
       "layer": "role",
@@ -4015,8 +4015,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-12",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-12 against contract 0.14.0-draft: the must list is unchanged since 0.10.0-draft, and http.test.ts exercises POST /submit and POST /lookup, the four listing and documentation routes with Markdown answers, the JSON output list and the second announcement as a no-op."
     },
     {
       "id": "REG-contract-routes",
@@ -4039,9 +4040,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance, GET /showcase and the resolver origin's GET /01/* catch-all. contracts/registry.yaml describes the same operations and omissions, with additions the registry's copy does not yet carry: the recordId pattern and evidence facets of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). Re-read 2026-11-09 for contract 0.6.0: the six /status routes are gone from the router and from both documents, and neither the refusal of the parked vsc-seal-json-v1 nor the epcis-event-vc@1 envelopes change a path; the operation set of the two documents is identical. The registry's tests check response shapes by their keys, not against the schemas' enums. A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation: contracts/registry.yaml now lists it, with epcis-event-vc@1, in the collection filter and the three response enums, while the registry's copy lists it only in the intake response, the capability document and the report, and in both documents GET /history reports a stored credential's own type outside UoraType. The registry's copy is to take those enums, and both documents UoraType, in a later change."
+      "notes": "The test parses openapi.yaml and asserts documented routes are served, served routes are documented or listed under x-intentional-omissions with a reason, and the omissions are exactly GET /treasury/balance, GET /showcase and the resolver origin's GET /01/* catch-all. contracts/registry.yaml describes the same operations and omissions, with additions the registry's copy does not yet carry: the recordId pattern and evidence facets of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). Re-read 2026-11-09 for contract 0.6.0: the six /status routes are gone from the router and from both documents, and neither the refusal of the parked vsc-seal-json-v1 nor the epcis-event-vc@1 envelopes change a path; the operation set of the two documents is identical. A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation, which both documents now list in the collection filter and the three response enums, contracts/registry.yaml with epcis-event-vc@1 beside it. Re-read 2026-11-12: in both documents UoraType admits an external credential's own type beside the named values, which GET /history reports for a stored credential, and the placeholder request keeps the closed list; no path changes and the operation set is still identical. The registry's tests check a stored external credential's representation and type against those enums on the list, proof, chain and history routes, and other response shapes by their keys."
     },
     {
       "id": "STACK-vector-format",
@@ -4757,9 +4758,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged."
+      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type in responses; the placeholder request keeps the closed list and the insert-first order is unchanged."
     },
     {
       "id": "BATT-1-demonstration-lifecycle",
@@ -4905,7 +4906,7 @@
       "id": "OVL-2-retraction",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.10.0-draft",
+      "sourceVersion": "0.14.0-draft",
       "clause": "POST /retract",
       "summary": "A writer may retract an admitted output whose transaction the network refused: the route needs the submit bearer, refuses when the node holds a merkle path or the network knows the transaction (or cannot be asked), and otherwise removes the output as an eviction would so later states admit again.",
       "layer": "role",
@@ -4923,15 +4924,15 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so."
+      "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so. Re-read 2026-11-12 against contract 0.14.0-draft, which adds a 403 for a per-publisher token of another key and says a retraction is local to the index; SVC-6-write-credentials and SVC-2-retraction cite the tests of those. The summary holds, and retract.test.ts also refuses a spent output."
     },
     {
       "id": "OVL-2-refusal-reason",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.10.0-draft",
+      "sourceVersion": "0.14.0-draft",
       "clause": "POST /submit X-Admission-Refusal",
       "summary": "A refused announcement names the check that failed: X-Admission-Refusal carries topic=code for each refused topic whose manager recorded a reason, from the tm_dpp codes the contract lists and in the verification report's word where it names the same failure, and the STEAK body is unchanged.",
       "layer": "role",
@@ -4948,18 +4949,20 @@
       "testRefs": [
         "packages/dpp-overlay/test/tmDpp.test.ts",
         "packages/dpp-overlay/test/http.test.ts",
-        "packages/dpp-overlay/test/refusedSpend.test.ts"
+        "packages/dpp-overlay/test/refusedSpend.test.ts",
+        "packages/dpp-overlay/test/tmDppV3.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-12",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-12 against contract 0.14.0-draft, which adds carrier-prefix-invalid, token-id-mismatch and instruction-commitment-absent to the tm_dpp codes: tmDpp.test.ts holds DPP_REFUSAL_CODES equal to the contract's list, and tmDppV3.test.ts asserts the two carrier codes as recorded reasons. version-transition-invalid, genesis-spends-passport-output, lineage-untraceable, acceptance-commitment-absent and instruction-commitment-absent are tested as refusals in tmDppV2.test.ts (the last three with their log lines), not as recorded codes."
     },
     {
       "id": "OVL-2-gs1-key-lookup",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.10.0-draft",
+      "sourceVersion": "0.14.0-draft",
       "clause": "components.schemas.passportLookup gs1Key",
       "summary": "ls_dpp answers a GS1 key without a host, as a key tuple, a Digital Link path or a Digital Link URI under any host, with the states of every passport whose identifier names that key, each under its exact identifier; a value naming no GS1 key is refused.",
       "layer": "role",
@@ -4981,16 +4984,17 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-12",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-12 against contract 0.14.0-draft: the gs1Key description is unchanged, and the query now also takes tokenId, which this row does not cover."
     },
     {
       "id": "OVL-2-publisher-policy-route",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
-      "sourceVersion": "0.10.0-draft",
-      "clause": "GET /publisher-policy",
-      "summary": "An index under a publisher policy serves its signed dpp-publisher-policy@1 chain, oldest first, as it verified it at boot, and never the operator keys that authorise it; a reader verifies the chain against operator keys it obtained from the operator. An index under one identity key answers 404 no-publisher-policy.",
+      "sourceVersion": "0.14.0-draft",
+      "clause": "GET /publisher-policy, with POST /register",
+      "summary": "An index under a publisher policy serves its signed dpp-publisher-policy@1 chain, oldest first: the chain it verified at boot and, where it registers publishers, every version appended since by registration or the operator's command line, verified as an extension of that chain before it is served; never the operator keys that authorise it. A reader verifies the chain against operator keys it obtained from the operator. An index under one identity key answers 404 no-publisher-policy.",
       "layer": "role",
       "roles": [
         "overlay",
@@ -4999,15 +5003,18 @@
       "applicability": "when a reader takes an index's publisher keys and their windows",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-overlay/src/index.ts (GET /publisher-policy)"
+        "packages/dpp-overlay/src/index.ts (GET /publisher-policy)",
+        "packages/dpp-overlay/src/registration.ts (refreshPolicyChain)"
       ],
       "testRefs": [
-        "packages/dpp-overlay/test/publisherPolicyRoute.test.ts"
+        "packages/dpp-overlay/test/publisherPolicyRoute.test.ts",
+        "packages/dpp-overlay/test/registrationHttp.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-12",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-12 against contract 0.14.0-draft. The summary said the chain is served as verified at boot, which stopped holding when registration arrived: POST /register says a registered version is served at once, and an index that registers publishers takes up the versions appended to its store, verified as an extension of the chain. The GET /publisher-policy description now says the same."
     },
     {
       "id": "GS1D-1-grammar",
@@ -5676,10 +5683,10 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "328c8922f648c55ea1ee499a5186f454ff755787b1e8b3a5922a14f2faac0fd9",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged."
+      "sourceDigest": "95d13273a9e9fb066a31c9ee4ad85cda575a24b21945aefb8a20a2f5a3866bf1",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type on the read routes; the external intake shapes are unchanged."
     },
     {
       "id": "PROJ-1-source-revisions",

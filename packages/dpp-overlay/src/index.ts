@@ -31,8 +31,10 @@
  *
  *   GET  /publisher-policy                         -> the signed
  *                  dpp-publisher-policy@1 chain this index admits under, oldest
- *                  first, as it verified it at boot; 404 without a policy. A
- *                  reader verifies it against operator keys it got elsewhere
+ *                  first, as it verified it at boot and, where it registers
+ *                  publishers, with every version appended since, verified as
+ *                  an extension of the chain; 404 without a policy. A reader
+ *                  verifies it against operator keys it got elsewhere
  *   GET  /capabilities                             -> the capability document
  *                  (contracts/capabilities.schema.json), built from constants
  *                  and configuration, never typed by hand
