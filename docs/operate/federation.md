@@ -22,8 +22,8 @@ Peer exchange is optional for readers and writers. Every release supports the na
 | Static-peer rehearsal | First index from the Compose preset at `http://localhost:8080` ([run a service](README.md)), started with `--build` at least once. The second preset has no build step and uses the first's `dpp-overlay:local` image. Obtain the first index's admission settings and publisher keys from its operator. |
 | Header checks | Your WhatsOnChain API key. Synchronisation asks the header source once per admitted state; without a key it paces itself to about three requests a second. |
 | Another operator | Its reachable base URL, publisher keys and their oldest state times; independently obtain its identity key to check a signed policy. |
-| Optional discovery | A release supporting discovery, your `PUBLIC_URL`, and optionally chosen tracker URLs and a host limit. |
-| Optional advertising | Public HTTPS URL, separate advertiser private key and HTTPS wallet-storage address. Fund that key's wallet at that storage server before the first start: at most six one-satoshi tokens plus the transaction fee. A small balance is enough; a start with all adverts present spends nothing. |
+| Optional discovery, parked | A release supporting discovery, your `PUBLIC_URL`, and optionally chosen tracker URLs and a host limit. |
+| Optional advertising, parked | Public HTTPS URL, separate advertiser private key and HTTPS wallet-storage address. Fund that key's wallet at that storage server before the first start: at most six one-satoshi tokens plus the transaction fee. A small balance is enough; a start with all adverts present spends nothing. |
 
 ## Which way records flow
 

@@ -60,7 +60,7 @@ Read relevant [limitations](../operate/limitations.md) before promising an outco
 | Bare `01/<gtin>/21/<serial>` | Not a passport identifier. `node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>` lists every passport held for that GS1 key by exact identifier. Never add a host ([identifiers](../identifiers.md#use-the-identifier-throughout-the-request)). |
 | Runtime | Use the [support table](../packages/support-table.md). Node/ESM support does not establish browser module support. Declare the SDK if directly imported; follow profile asset-packaging instructions. |
 | Product data | Check its declared profile separately; a valid transaction report does not establish profile validity. Start with `node examples/sample-payload.mjs` and [profile validation](../packages/dpp-profiles.md#check-a-payload-against-its-profile), not an unchecked hosted sample. |
-| Services | Native lifecycle claims use core helpers without a mandatory VSC dependency. Readers need no funded wallet; HTTP index clients need no overlay hosting package. |
+| Services | Native lifecycle claims use core helpers without the credentials package. Readers need no funded wallet; HTTP index clients need no overlay hosting package. |
 | Index | Run it from the repository's Compose preset, `deploy/compose.yml` with `deploy/operator.env`; its image builds `@bsv/dpp-overlay`, so do not install the runtime separately. `@bsv/create-dpp-index` is retired. Custom alternative: direct runtime integration. |
 
 For a GS1 key lookup, use the selected index URL:
@@ -112,7 +112,7 @@ Name the missing input, authority or decision and the blocked step; continue ind
 
 Verify an index's signed publisher policy against independently trusted operator identity keys before relying on admission windows. Public reads grant no write access. A discovered peer is not authorised to receive another service's credentials.
 
-Keep published, source and deployed capabilities separate. The published beta.10 overlay offers opt-in peer discovery, advertising and retry; the [hosted reference](../deployment.md) reports its own version and features and leaves those options off. Follow the [disagreement process](../contribute/disagreements.md) for conflicting sources. Do not settle open standard questions or describe validation alone as the complete registry role.
+Keep published, source and deployed capabilities separate. The published beta.10 overlay offers opt-in retry, and peer discovery and advertising, which are now parked outside the standard; the [hosted reference](../deployment.md) reports its own version and features and leaves those options off. Follow the [disagreement process](../contribute/disagreements.md) for conflicting sources. Do not settle open standard questions or describe validation alone as the complete registry role.
 
 ## Never
 

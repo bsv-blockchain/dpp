@@ -8,7 +8,6 @@ Application teams can use this page to select and verify supported World Wide We
 |---|---|
 | Runtime | Node 22 or later; the package runs server side only. |
 | Run exercises | Use the [checkout](../quick-start.md#get-the-code) root after `npm ci` and `npm run build`. Tests supply local identity documents and status evidence; no wallet or funds. |
-| Issue a SEAL (parked profile) | Your event and product subject, issuer DID document, status entry and a signing key that document authorises for assertion. The suites need their own keys; a wallet's BSV key is not interchangeable. |
 | Verify a credential | The received credential, contexts and issuer documents through a document loader, observation time, status policy and authority policy. For an external credential, retain its exact received bytes. |
 | Bind the subject | Take the expected product identifier from your own request, never from the credential. |
 
@@ -22,18 +21,14 @@ Native lifecycle claims and W3C credentials are different formats. Signing a nat
 
 ## What the packages support
 
-`@bsv/dpp-credentials` verifies one representation, the external passport credential, the one to use with partners. A second, the VSC SEAL, is parked and no longer in the package; each has its own data model, proof suite and identity rules.
+`@bsv/dpp-credentials` verifies one representation, the external passport credential, the one to use with partners. The VSC SEAL is parked and no longer in the package ([parked](#parked-the-vsc-seal)).
 
 | Representation | What you can do | Entry point and functions | Ledger status |
 |---|---|---|---|
 | External passport credential, profile `vc-di-ecdsa-rdfc-2019@1` | Verify only, with `ecdsa-rdfc-2019` proofs; this profile has no issuance API | `@bsv/dpp-credentials/exchange`: `verifyExternalCredential`, and `externalCredentialVerifierFor` to feed the passport report | `tested`: rows `EXTC-1-representation`, `EXTC-5-registry-intake` |
-| Verifiable Supply Chain (VSC) SEAL, profile `vsc-draft-compat/0.1.0`, parked | Issue and verify, with `Ed25519Signature2020` or `bbs-2023` proofs, in the published 0.2.0-beta.5 only | None from 0.2.0-beta.6: the code is in the repository history ([parked profile](../packages/dpp-credentials.md#parked-the-vsc-compatibility-profile)) | `gap`: rows `VSC-2-structure`, `VSC-3-proofs`. Parked: an optional compatibility profile that no release requires and the programme does not currently develop. |
 
-The terms in that table:
+The proof suite in that table:
 
-- A **SEAL** is the credential the VSC profile uses to carry a signed supply chain event, its subjects and supporting references.
-- **`Ed25519Signature2020`** is an Ed25519 signature over the credential's canonical form.
-- **`bbs-2023`** is a BBS signature that lets a holder later present only some of the claims, through a derived proof bound to one presentation request. Proving that the presenter is the holder, and an HTTPS transport for presentations, are not implemented.
 - **`ecdsa-rdfc-2019`** is an ECDSA signature with a P-256 key over the credential's canonical form. The external profile uses it with VC Data Model 2.0 and `did:web` issuers.
 
 `verifyExternalCredential` comes from `@bsv/dpp-credentials/exchange`, not from the root entry point: importing it from `@bsv/dpp-credentials` gives `undefined`.
@@ -75,8 +70,6 @@ node examples/verify-external-credential.mjs
 2. **Verify an external credential:** pass the retained bytes to `verifyExternalCredential` from `@bsv/dpp-credentials/exchange`. [External credential verification](../interoperability/external-credentials.md) supplies the complete call, policy and vector mapping.
 3. **Include it in a passport report:** pass exact bytes as `externalCredentials` evidence to `verifyPassportEvidence`. Supply a policy `credentialVerifier` made with `externalCredentialVerifierFor` from `@bsv/dpp-credentials/exchange`.
 
-The parked VSC profile is not in the candidate package, and the current candidate, `dpp-release-2026-11`, does not claim it. An existing caller of `issueSealEd25519`, `issueSealBbs` or `verifySeal` stays on the published `0.2.0-beta.5`; the [package guide](https://github.com/bsv-blockchain/dpp/blob/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials/README.md) at commit `8c82c5e`, which carries the profile, shows the calls with their document loader and policies.
-
 Read proof, issuer authority, subject binding, time and status separately. Stop short of claiming verification for a finding left `unknown` by missing status or authority evidence, even if the proof passes ([evidence and its limits](evidence-and-freshness.md)). Anchor only the original secured bytes: a derived presentation or reformatted copy has different bytes and a different commitment.
 
 ## Not in the packages
@@ -87,12 +80,27 @@ The reference application, whose source is not public, issues and verifies compa
 
 | Capability | Ledger status and remaining work |
 |---|---|
-| The exact upstream VSC context and its test suite, for the parked profile | `unassessed` (rows `VSC-context-upstream`, `VSC-conformance-suite`): the reviewed upstream context and an executable suite are unavailable, so the parked profile declared its own context |
 | United Nations Transparency Protocol (UNTP) 0.7.0 passport | `gap` (row `UNTP-0.7.0-dpp`): a function-level application pilot exists whose credential names the pinned UNTP context and validates against the pinned schema only when the caller supplies the artefact bytes; no route exposes it, and none of it is public evidence |
 | UNTP traceability event | `gap` (row `UNTP-0.7.0-dte`): no event export exists, and the mapping needs actual event evidence |
 | An optional ES256 application signer | Not implemented; the tested ES256K signer does not provide it (row `EXCH-4-signer`) |
 
-The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/external-credential-profile.md) and the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/vsc-profile.md) define the two representations. The BSV DID method does not replace the DID method, proof purpose or curve a profile selects.
+The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/external-credential-profile.md) defines the external representation. The BSV DID method does not replace the DID method, proof purpose or curve a profile selects.
+
+## Parked: the VSC SEAL
+
+The Verifiable Supply Chain (VSC) SEAL, profile `vsc-draft-compat/0.1.0`, is an optional compatibility profile that no release requires and the programme does not currently develop. Its code left `@bsv/dpp-credentials` in 0.2.0-beta.6 and stays in the repository history ([parked profile](../packages/dpp-credentials.md#parked-the-vsc-compatibility-profile)), the current candidate, `dpp-release-2026-11`, does not claim it, and the parked [VSC profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/vsc-profile.md) defines it.
+
+| Representation | What you could do | Entry point | Ledger |
+|---|---|---|---|
+| VSC SEAL, profile `vsc-draft-compat/0.1.0` | Issue and verify, with `Ed25519Signature2020` or `bbs-2023` proofs, in the published 0.2.0-beta.5 only | None from 0.2.0-beta.6 | Rows `VSC-2-structure` and `VSC-3-proofs`, in the ledger archive from 12 November 2026 |
+
+- A **SEAL** is the credential the VSC profile uses to carry a signed supply chain event, its subjects and supporting references.
+- **`Ed25519Signature2020`** is an Ed25519 signature over the credential's canonical form.
+- **`bbs-2023`** is a BBS signature that lets a holder later present only some of the claims, through a derived proof bound to one presentation request. Proving that the presenter is the holder, and an HTTPS transport for presentations, are not implemented.
+
+Issuing a SEAL takes the event and product subject, the issuer's DID document, a status entry and a signing key that document authorises for assertion. The suites need their own keys; a wallet's BSV key is not interchangeable. An existing caller of `issueSealEd25519`, `issueSealBbs` or `verifySeal` stays on the published `0.2.0-beta.5`; the [package guide](https://github.com/bsv-blockchain/dpp/blob/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials/README.md) at commit `8c82c5e`, which carries the profile, shows the calls with their document loader and policies.
+
+The exact upstream VSC context and its test suite were never available, so the parked profile declared its own context; rows `VSC-context-upstream` and `VSC-conformance-suite`, never assessable, are in the ledger archive with the profile.
 
 ## Next
 

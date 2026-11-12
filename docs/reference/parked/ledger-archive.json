@@ -1,6 +1,6 @@
 {
   "archiveVersion": "1",
-  "description": "Ledger rows and claims taken out of conformance/manifest.json because the requirement they assessed was removed from the standard or parked outside it. They are kept for the record and claim no status: nothing here is assessed, claimed or checked by conformance/check.mjs or conformance/qualify.mjs. Each entry gives the date, the reason, lastWorkingCommit, the last commit on main before the rulings of 12 November 2026, at which what the entry assessed worked and after which nothing changed it before its removal, and the row or claim as it last stood, without its status.",
+  "description": "Ledger rows and claims taken out of conformance/manifest.json because the requirement they assessed was removed from the standard or parked outside it. They are kept for the record and claim no status: nothing here is assessed, claimed or checked by conformance/check.mjs or conformance/qualify.mjs. Each entry gives the date, the reason, lastWorkingCommit, the last commit on main at which what the entry assessed worked and after which nothing changed it before its removal, and the row or claim as it last stood, without its status or source digest.",
   "rows": [
     {
       "archivedAt": "2026-11-12",
@@ -1208,6 +1208,398 @@
         "reviewOwner": "dpp maintainers",
         "notes": "Decided 2026-11-02: the first step of the default index chain; self-service registration (SVC-2-registration) issues through the same store."
       }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-2-structure",
+        "sourceId": "vsc-core",
+        "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "SEAL structure and event vector, as selected in spec/vsc-profile.md §2",
+        "summary": "Contexts, types, stable id, issuer DID equal to actor DID, sealVersion 1.0, eventVector what/when/where/who/how, extensions, chainOfCustody, correctionOf, credentialStatus, proof; strict parsing of exact bytes.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "attestation-issuer",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then the owned SEAL schema and validateSealStructure checked the structure, and parseSealBytes read the exact bytes strictly. The owned schemas, the owned context and the profile record, artifacts/profile-0.1.0.json, stay in the package at the digests the parked manifests pin. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-3-proofs",
+        "sourceId": "vsc-core",
+        "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "proof requirements, as selected in spec/vsc-profile.md §3",
+        "summary": "Genuine Ed25519Signature2020 and bbs-2023 Data Integrity proofs with suite canonicalisation; assertion-purpose check against the issuer's DID document; request-bound BBS derived disclosure with required disclosure fields.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "attestation-issuer",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then the package issued and verified Ed25519Signature2020 and bbs-2023 proofs with their maintained suites and derived request-bound BBS disclosures; holder authentication and the HTTPS presentation transport were never implemented. The package no longer depends on either suite. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too. Checking the status lists other issuers publish stays in the ledger under STATUS-validate-algorithm and STATUS-purpose-suspension.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-4-status",
+        "sourceId": "w3c-bitstring-status-list",
+        "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+        "sourceVersion": "current TR at review",
+        "clause": "validate algorithm, as selected in spec/vsc-profile.md §4",
+        "summary": "Verify the list credential's proof, its issuer or an explicitly delegated issuer, identity, purpose, canonical index, temporal validity and freshness before reading the bit; bounded decompression; at least 131072 bits.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifyCredentialStatus applied the validate algorithm to the lists a SEAL names. Checking the lists other issuers publish stays under STATUS-validate-algorithm, through verifyBitstringStatus. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-4-authority",
+        "sourceId": "vsc-requirements",
+        "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "trust and authority, as selected in spec/vsc-profile.md §4",
+        "summary": "Signed scoped VscEventAuthorisation grants from configured trust anchors, with proof, validity and status verified; an explicit not-required policy is a recorded warning, not a pass.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifyIssuerAuthority checked signed scoped VscEventAuthorisation grants from configured trust anchors, with their proof, validity and status. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-5-custody",
+        "sourceId": "vsc-core",
+        "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "custody chain, forks, merges, corrections, as selected in spec/vsc-profile.md §5",
+        "summary": "Backward parent traversal with path-local cycle detection and a completed-node cache so diamonds pass; branch-height sequences; preallocated fork children; corrections with exactly their target as parent, a new chain at sequence 1, scoped delegation and conflict on competing termini.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifySeal evaluated custody graphs and corrections under the decisions DAG-01 and CORR-01 that artifacts/profile-0.1.0.json records and still carries. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-6-epcis",
+        "sourceId": "vsc-core",
+        "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "EPCIS mapping, as selected in spec/vsc-profile.md §6",
+        "summary": "The five EPCIS event types mapped with the source event retained in a signed round-trip extension; missing time, place, step, disposition or action is an error, never fabricated.",
+        "layer": "profile",
+        "roles": [
+          "attestation-issuer"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then mapEpcisEvent mapped the five event types with the source event in the signed round-trip extension. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too. The row was never assessable: the upstream context is unavailable at the pinned revision.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-context-upstream",
+        "sourceId": "vsc-context-and-suite",
+        "sourceUri": "https://w3c-cg.github.io/vsc/",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "the referenced JSON-LD context",
+        "summary": "A credential's context resolves to the context the upstream draft publishes; this profile serves an owned urn:bsv:vsc:context:0.1.0 instead and claims no exact upstream-context interoperability.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "attestation-issuer",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [
+          "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-CONTEXT"
+        ],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Cannot be assessed while the upstream artefact is unavailable; blocks any full-conformance claim by design. The owned context the profile serves instead stays in the package as artifacts/context-0.1.0.jsonld; the code that served it left @bsv/dpp-credentials in 0.2.0-beta.6 with the rest of the parked profile."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too. The row was never assessable: no executable upstream suite exists at the pinned revision.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "VSC-conformance-suite",
+        "sourceId": "vsc-context-and-suite",
+        "sourceUri": "https://w3c-cg.github.io/vsc/",
+        "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
+        "clause": "conformance test matrix",
+        "summary": "Upstream executable conformance tests pass.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [
+          "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-TESTS"
+        ],
+        "reviewedAt": "2026-09-05",
+        "reviewOwner": "dpp maintainers",
+        "notes": "No executable suite exists at the pinned revision; a project test pass is not labelled an upstream pass."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too. The bounded did:web resolution it used stays in the package for the external credential profile.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "ID-3-vsc-actor",
+        "sourceId": "spec-identity",
+        "sourceUri": "spec/identity.md",
+        "sourceVersion": "working draft",
+        "clause": "§3",
+        "summary": "Under the VSC profile the actor DID equals the issuer and the proof's verification method is authorised for assertion in the issuer's DID document; a did:web document is identity, not accreditation.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "registry"
+        ],
+        "applicability": "when vsc-draft-compat/0.1.0 is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then validateSealStructure bound the actor DID to the issuer and the SEAL proof verifier required the verification method to be authorised for assertion in the issuer's DID document. createDidWebResolver, the bounded did:web resolution it used, stays in the package. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the VSC draft compatibility profile, vsc-draft-compat/0.1.0, which spec/vsc-profile.md marks parked and no release selection requires. Its code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and the published 0.2.0-beta.5 carries it too. The row assessed the structure of a SEAL; the external credential verifier applies the version 2 data model under its own rows, EXTC-1 to EXTC-4.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "W3C-VC-DM-2-core",
+        "sourceId": "w3c-vc-data-model-2",
+        "sourceUri": "https://www.w3.org/TR/vc-data-model-2.0/",
+        "sourceVersion": "2.0",
+        "clause": "credential structure: @context, type, issuer, validFrom, validUntil, credentialSubject, credentialStatus, proof",
+        "summary": "VSC credentials carry the version 2 core context first, a DID issuer, validFrom and optional validUntil enforced at evaluation, and a status entry.",
+        "layer": "profile",
+        "roles": [
+          "attestation-verifier",
+          "attestation-issuer",
+          "registry"
+        ],
+        "applicability": "when a W3C credential representation is selected",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then validateSealStructure and verifyTemporal enforced these rules for a SEAL. verifyTemporal stays in the package, in src/temporal.ts, and the external credential verifier applies it under its own rows. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026 with status list publication: a status list belongs to the issuer role and a registry checks the lists issuers publish (spec/services.md section 3), registry contract 0.6.0 defines no status list routes, and the reference registry publishes none. lastWorkingCommit is the last commit on main whose registry contract defined the routes, which the reference registry implemented. Checking the lists issuers publish stays in the ledger under STATUS-validate-algorithm, STATUS-purpose-suspension and STATUS-fetch-bounds.",
+      "lastWorkingCommit": "88df2a6038302826e6f854cbd8954a6751068ec3",
+      "row": {
+        "id": "STATUS-secured-publication",
+        "sourceId": "w3c-bitstring-status-list",
+        "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
+        "sourceVersion": "current TR at review",
+        "clause": "BitstringStatusListCredential issuance",
+        "summary": "Status lists are issued as secured credentials by an authorised key with transactional index allocation, monotonic revocation, explicit suspension clearing and atomic publication.",
+        "layer": "role",
+        "roles": [
+          "registry"
+        ],
+        "applicability": "when a registry operates a status service",
+        "profileId": "core",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the reference registry no longer publishes status lists, and registry contract 0.6.0 defines no status list routes. Until then it issued lists as signed Ed25519 credentials by the configured issuer key, with atomic index allocation that never recycled, monotonic revocation, explicit suspension clearing, a forward-only publication pointer and cache invalidation, tested on the memory, JSONL and Mongo stores; that service and its tests are removed. Checking the lists credential issuers publish stays under STATUS-validate-algorithm and STATUS-purpose-suspension; STATUS-fetch-bounds, which bound fetching them, is a gap from 12 November 2026. The rule still applies, as stated, to a registry that operates a status service."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the epcis-vsc@1 and epcis-vsc@2 mapping profiles, which map into the parked VSC profile and which spec/epcis-interoperability.md section 5 marks parked. Their code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and their vectors stay as published under fixtures/vectors/dpp/interoperability/epcis/.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "EPCIS-5-source-reference",
+        "sourceId": "spec-epcis-interoperability",
+        "sourceUri": "spec/epcis-interoperability.md",
+        "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
+        "clause": "§5",
+        "summary": "A mapped SEAL carries the signed source reference urn:bsv:dpp:epcis-source:1 (source digest, media type, event pointer, event identifier, context digests, mapping profile) beside the round-trip extension; the reference names the mapping profile the report was made under, and the source reporter is never the signing issuer.",
+        "layer": "profile",
+        "roles": [
+          "attestation-issuer"
+        ],
+        "applicability": "when the mapping profile is selected",
+        "profileId": "epcis-vsc@1 and epcis-vsc@2",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The rule binds a mapped SEAL, which nothing in the packages now produces; epcisSourceReference, which builds the reference, stays in ./epcis-source with its own test. The published v1 and v2 vectors stay as they are. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the epcis-vsc@1 and epcis-vsc@2 mapping profiles, which map into the parked VSC profile and which spec/epcis-interoperability.md section 5 marks parked. Their code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and their vectors stay as published under fixtures/vectors/dpp/interoperability/epcis/. An import without a mapping profile records its mapping outcome as not-attempted, which EPCIS-7-import-record covers.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "EPCIS-6-mapping-outcomes",
+        "sourceId": "spec-epcis-interoperability",
+        "sourceUri": "spec/epcis-interoperability.md",
+        "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
+        "clause": "§5",
+        "summary": "mapEpcisEventWithReport answers lossless, transformed, unsupported or insufficient-data under the mapping profile it is asked for, with every missing requirement and unmapped semantic named; under epcis-vsc@1 an inspection, repair or sensor reading observed by an OBSERVE event or a TransformationEvent and reporting active is unsupported as maintenance-observation; nothing physical is fabricated and the VSC custody rules are not changed to admit an event.",
+        "layer": "profile",
+        "roles": [
+          "attestation-issuer"
+        ],
+        "applicability": "when the mapping profile is selected",
+        "profileId": "epcis-vsc@1 and epcis-vsc@2",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then mapEpcisEventWithReport answered the four outcomes under either profile; on 8 November 2026 it was corrected to refuse an inspection, repair or sensor reading reporting active under epcis-vsc@1 as maintenance-observation, which the published 0.2.0-beta.5 does not carry. The published v1 and v2 vectors stay as they are. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the epcis-vsc@1 and epcis-vsc@2 mapping profiles, which map into the parked VSC profile and which spec/epcis-interoperability.md section 5 marks parked. Their code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and their vectors stay as published under fixtures/vectors/dpp/interoperability/epcis/.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "EPCIS-10-disposition-crosswalk",
+        "sourceId": "spec-epcis-interoperability",
+        "sourceUri": "spec/epcis-interoperability.md",
+        "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
+        "clause": "§5",
+        "summary": "Under epcis-vsc@2 an event carrying an error declaration is unsupported as error-declaration, and the disposition is decided through the published crosswalk before a SEAL is built: active on an ObjectEvent that commissions its objects, in_transit and returned on no ObjectEvent that commissions or decommissions them, and dispensed and destroyed on no ObjectEvent that commissions them are carried verbatim; every other event is unsupported, its reason opening with custody-neutral (custody-destination-unnamed in its place at a receiving or accepting step), lifecycle-conflict, custody-transition-unnamed or non-cbv-disposition; an OBSERVE event without a disposition is custody-neutral; no VSC-only term is written for a CBV event and no custody rule is changed to give a custody-neutral event a SEAL.",
+        "layer": "profile",
+        "roles": [
+          "attestation-issuer"
+        ],
+        "applicability": "when the mapping profile epcis-vsc@2 is selected",
+        "profileId": "epcis-vsc@2",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. epcis-vsc@2 and CBV_DISPOSITION_CROSSWALK left before any publication, with the test that held the code to the crosswalk its manifest records. The manifest and v2.json stay as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the epcis-vsc@1 and epcis-vsc@2 mapping profiles, which map into the parked VSC profile and which spec/epcis-interoperability.md section 5 marks parked. Their code left @bsv/dpp-credentials in 0.2.0-beta.6; lastWorkingCommit is the last commit on main that carries it, and their vectors stay as published under fixtures/vectors/dpp/interoperability/epcis/.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "row": {
+        "id": "EPCIS-11-cbv-dispositions",
+        "sourceId": "cbv-2.0",
+        "sourceUri": "https://ref.gs1.org/standards/cbv/",
+        "sourceVersion": "2.0 (ratified June 2022)",
+        "clause": "§7.2.3 and §7.2.3.1",
+        "summary": "The epcis-vsc@2 crosswalk names every CBV 2.0 disposition and every deprecated value exactly as the standard spells it, reads the bare, URN and Web URI spellings as one value, treats a deprecated value as the value that replaces it, and refuses any other value, a different case included.",
+        "layer": "profile",
+        "roles": [
+          "attestation-issuer"
+        ],
+        "applicability": "when the mapping profile epcis-vsc@2 is selected",
+        "profileId": "epcis-vsc@2",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The crosswalk was checked against the section 7.2.3 table of the ratified CBV 2.0 text: 33 values, no_pedigree_match among them as deprecated in 2.0, and the five values section 7.2.3.1 replaces; the epcis-vsc@2 manifest keeps it as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
+      }
     }
   ],
   "claims": [
@@ -1389,6 +1781,108 @@
           "PUB-1-publisher-policy",
           "SVC-1-discovery-sync",
           "SVC-6-idempotent-admission"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with vsc-draft-compat/0.1.0 (spec/vsc-profile.md); every row it required is in this archive, and no release selection required it.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "claim": {
+        "id": "vsc-draft-compat-0.1.0-full",
+        "description": "Complete conformance to the pinned VSC draft, including its published context and executable suite.",
+        "role": "attestation-verifier",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "requires": [
+          "VSC-2-structure",
+          "VSC-3-proofs",
+          "VSC-4-status",
+          "VSC-4-authority",
+          "VSC-5-custody",
+          "VSC-6-epcis",
+          "ID-3-vsc-actor",
+          "W3C-VC-DM-2-core",
+          "VSC-context-upstream",
+          "VSC-conformance-suite"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with vsc-draft-compat/0.1.0 (spec/vsc-profile.md); every row it required is in this archive, and no release selection required it.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "claim": {
+        "id": "vsc-draft-compat-0.1.0-implemented-subset",
+        "description": "The locally implemented VSC subset with its owned context, as spec/vsc-profile.md declares it.",
+        "role": "attestation-verifier",
+        "profileId": "vsc-draft-compat/0.1.0",
+        "requires": [
+          "VSC-2-structure",
+          "VSC-3-proofs",
+          "VSC-4-status",
+          "VSC-4-authority",
+          "VSC-5-custody",
+          "VSC-6-epcis",
+          "ID-3-vsc-actor",
+          "W3C-VC-DM-2-core"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026 with status list publication, which STATUS-secured-publication assessed. The registry checks the status lists issuers publish under registry-native-baseline-2, which requires STATUS-validate-algorithm, and STATUS-purpose-suspension and STATUS-fetch-bounds stay in the ledger.",
+      "lastWorkingCommit": "88df2a6038302826e6f854cbd8954a6751068ec3",
+      "claim": {
+        "id": "authenticated-status-service",
+        "description": "A purpose-aware, authenticated, bounded status service with secured publication.",
+        "role": "registry",
+        "requires": [
+          "STATUS-validate-algorithm",
+          "STATUS-purpose-suspension",
+          "STATUS-secured-publication",
+          "STATUS-fetch-bounds"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Parked on 12 November 2026 with the epcis-vsc@2 mapping profile (spec/epcis-interoperability.md section 5); every row it required but EPCIS-5 and EPCIS-6, which this archive also holds, was its own.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "claim": {
+        "id": "epcis-vsc-mapping-2",
+        "description": "The epcis-vsc@2 mapping profile: the four mapping outcomes, the CBV 2.0 disposition crosswalk with every refusal named, a custody-neutral event and an error declaration left without a SEAL, and the signed source reference naming the profile.",
+        "profileId": "epcis-vsc@2",
+        "requires": [
+          "EPCIS-5-source-reference",
+          "EPCIS-6-mapping-outcomes",
+          "EPCIS-10-disposition-crosswalk",
+          "EPCIS-11-cbv-dispositions"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-12",
+      "reason": "Removed on 12 November 2026: it required the parked epcis-vsc@1 mapping rows EPCIS-5-source-reference and EPCIS-6-mapping-outcomes beside the source exchange. epcis-source-import-1 is the claim for epcis-json@1, and EPCIS-7-import-record, EPCIS-8-no-token-operation and EPCIS-9-pull-outcomes stay in the ledger with that profile.",
+      "lastWorkingCommit": "8c82c5e6ca31cd991e701d1051047153c7395eae",
+      "claim": {
+        "id": "epcis-source-exchange-1",
+        "description": "The epcis-json@1 and epcis-vsc@1 profiles: exact-byte retention under limits, pinned-schema validation, stable digests, arrival classification, signed source references, explicit mapping outcomes, the import record, no token operation from an import and the bounded pull client.",
+        "profileId": "epcis-json@1",
+        "requires": [
+          "EPCIS-1-strict-parse",
+          "EPCIS-2-schema-validation",
+          "EPCIS-3-body-digest",
+          "EPCIS-4-arrival-classification",
+          "EPCIS-5-source-reference",
+          "EPCIS-6-mapping-outcomes",
+          "EPCIS-7-import-record",
+          "EPCIS-8-no-token-operation",
+          "EPCIS-9-pull-outcomes"
         ],
         "minimumStatus": "tested"
       }

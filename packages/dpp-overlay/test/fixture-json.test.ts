@@ -1,10 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { LockingScript, PushDrop } from '@bsv/sdk'
-import { tryParseUoraAnchor } from '../src/uoraAnchor.js'
+import { LockingScript } from '@bsv/sdk'
 import { ANCHOR_V3_FIXTURE } from './anchor-v3-fixture.js'
-import { anchorV3Vectors } from './anchor-v3-vectors.js'
 import { attestationV1Fixture, attestationV1Vectors } from './attestation-v1-fixture.js'
 import { decodeAttestationAnchor } from '../src/attestationAnchor.js'
 
@@ -18,9 +16,12 @@ const FIXTURES = join(import.meta.dirname, '..', '..', '..', 'fixtures')
  *
  * REGENERATE_FIXTURES=1 rewrites the published file from its generator before
  * comparing, so the one way to change a published fixture is to change the
- * module and review the diff (fixtures/README.md, "Two forms, one set of bytes").
+ * module and review the diff (fixtures/README.md, "Two forms, one per format").
  * The same two helpers live in the core's fixture-json.test.ts; the packages
- * share fixtures, never test code, on purpose (see uoraAnchor.ts).
+ * share fixtures, never test code, on purpose (see uoraAnchor.ts). The
+ * current anchor's six refusals are pinned in its vector file, which is why
+ * that file stays; the historical anchor's four length-bound refusals are
+ * built in anchor-v3-bounds.test.ts.
  */
 function expectPublished(relative: string, generated: unknown): void {
   const path = join(FIXTURES, ...relative.split('/'))
@@ -67,7 +68,7 @@ function expectStackShape(file: VectorFile): void {
 }
 
 describe('the published fixture files', () => {
-  it('reproduces the portable complete-representation fixture and stack vectors', async () => {
+  it('reproduces the portable complete-representation fixture and the stack vectors that carry its refusals', async () => {
     const fixture = await attestationV1Fixture()
     expectPublished('attestation-anchor-v1.json', fixture)
     const generated = attestationV1Vectors(fixture)
@@ -82,39 +83,5 @@ describe('the published fixture files', () => {
 
   it('anchor-v3.json is anchor-v3-fixture.ts, verbatim', () => {
     expectPublished('anchor-v3.json', ANCHOR_V3_FIXTURE)
-  })
-
-  it('vectors/dpp/anchor/v3.json is anchorV3Vectors(), verbatim, and shaped as the stack expects', () => {
-    const generated = anchorV3Vectors()
-    expectPublished('vectors/dpp/anchor/v3.json', generated)
-    expectStackShape(generated)
-  })
-
-  /*
-   * The vector form carries three refusals the bespoke fixture does not, built
-   * by the generator from the pinned output. This holds them to what they claim
-   * to be: the genuine script with exactly one field one character over its
-   * bound, the signature untouched, and refused by this reader all the same.
-   */
-  it('builds the three overlong refusals from the pinned output, and this reader refuses each', () => {
-    const genuine = PushDrop.decode(LockingScript.fromHex(ANCHOR_V3_FIXTURE.lockingScript))
-    const overlong: Array<[string, number, number]> = [
-      ['refuse-overlong-attestation-id', 2, 257],
-      ['refuse-overlong-subject', 4, 513],
-      ['refuse-overlong-type', 5, 65],
-    ]
-    const byId = new Map(anchorV3Vectors().vectors.map((v) => [v.id, v]))
-    for (const [id, index, length] of overlong) {
-      const hex = (byId.get(id)?.input as { locking_script_hex: string }).locking_script_hex
-      const script = LockingScript.fromHex(hex)
-      const decoded = PushDrop.decode(script)
-      expect(decoded.lockingPublicKey.toString()).toBe(ANCHOR_V3_FIXTURE.lockingKey)
-      expect(decoded.fields.length).toBe(genuine.fields.length)
-      decoded.fields.forEach((field, i) => {
-        if (i === index) expect(field.length).toBe(length)
-        else expect(field).toEqual(genuine.fields[i])
-      })
-      expect(tryParseUoraAnchor(script)).toBeNull()
-    }
   })
 })

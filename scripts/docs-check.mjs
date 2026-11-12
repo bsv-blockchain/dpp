@@ -78,6 +78,17 @@ const MOVED_TO_PACKAGES = {
 const PARKED_PROJECTIONS = {
   'spec/passport-projections.md': 'docs/reference/parked/passport-projections/passport-projections.md',
 }
+// The Python reader was parked on 12 November 2026, its README folded into
+// the parked page beside it.
+const PARKED_PYTHON_READER = {
+  'conformance/independent/python': 'docs/reference/parked/python-reader',
+  'conformance/independent/python/dpp_verify.py': 'docs/reference/parked/python-reader/dpp_verify.py',
+  'conformance/independent/python/README.md': 'docs/reference/parked/python-reader/README.md',
+}
+// The interoperability trial's guide was parked on 12 November 2026 with its plan.
+const PARKED_TRIAL = {
+  'docs/implement/demonstration.md': 'docs/reference/parked/interoperability-trial/README.md',
+}
 // The superseded release sets and their selections moved to release/archive/,
 // and the publication receipts and approved plans to
 // docs/reference/publication-history/, on 12 November 2026.
@@ -108,7 +119,7 @@ for (const page of pages) {
             ? path.replace(/^packages\/dpp-core\//, 'packages/dpp-protocol/')
             : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md'
               : path.startsWith('conformance/demonstrations/') ? path.replace(/^conformance\/demonstrations\//, 'docs/reference/parked/')
-                : PARKED_TOKEN_CARRIER[path] ?? PARKED_PROJECTIONS[path] ?? MOVED_TO_PACKAGES[path] ?? archivedPath(path) ?? path
+                : PARKED_TOKEN_CARRIER[path] ?? PARKED_PROJECTIONS[path] ?? PARKED_PYTHON_READER[path] ?? PARKED_TRIAL[path] ?? MOVED_TO_PACKAGES[path] ?? archivedPath(path) ?? path
           const local = resolve(root, existsSync(resolve(root, movedPath)) ? movedPath : path)
           if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
           const directory = statSync(local).isDirectory()

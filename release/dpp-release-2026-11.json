@@ -328,7 +328,7 @@
   "artefacts": [
     {
       "path": "conformance/baseline-native-2.json",
-      "sha256": "319d6dfb3791effe9f4cb2c9e90b3c9e76819aeedc586b3456484d9dd84b7979",
+      "sha256": "5db960bf669d821c02f86336d54d14c8298378213bba669b51d67f7180659afb",
       "pins": "the baseline this set claims, with every fixture digest"
     },
     {
@@ -382,19 +382,9 @@
       "pins": "the acceptance record a managed custodian signs with its derived key, with its binding and seven refusals"
     },
     {
-      "path": "fixtures/vectors/dpp/managed-acceptance/v2.json",
-      "sha256": "29cb9f8fa4a2260e8f0062479aba174d9fd3427d7753f27687619b5ef08d0905",
-      "pins": "the same record in the stack vector format"
-    },
-    {
       "path": "fixtures/index-registration-v1.json",
       "sha256": "6a5b102186a3ca0b691d45354f909d7265f828663ea47362ac5ba1df90573a4c",
       "pins": "the registration request an application's wallet signs with its derived key, the index's expectations and seven refusals"
-    },
-    {
-      "path": "fixtures/vectors/dpp/index-registration/v1.json",
-      "sha256": "fce5dc5bbccb7a5c068cda2e7b1887b1a0b524150f7092a3c0509d66f841e23a",
-      "pins": "the same request in the stack vector format"
     },
     {
       "path": "fixtures/attestation-anchor-v1.json",
@@ -404,7 +394,7 @@
     {
       "path": "fixtures/vectors/dpp/attestation-anchor/v1.json",
       "sha256": "417dda3c9353283302041a9fac03bde31fe2627c12e4a02260e8c3027fcaa34f",
-      "pins": "the same claim and anchor in the stack vector format"
+      "pins": "the same claim and anchor in the stack vector format, with the six refusals only this form carries"
     },
     {
       "path": "contracts/registry.yaml",

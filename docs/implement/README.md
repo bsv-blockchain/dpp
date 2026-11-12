@@ -14,7 +14,6 @@ Implementers can use this starting kit to write the DPP rules in any language wi
 |---|---|
 | git and reviewed checkout | [Reviewed example revision](../quick-start.md#get-the-code); includes specifications, contracts and fixtures |
 | Node 22 and npm | Your environment, for reference examples beside your results; your implementation needs neither |
-| Python 3 | Your environment, for the worked reader, which uses only the standard library |
 | BSV building blocks | An SDK for your language or your own code, listed below |
 | Reader | Nothing else: no account, wallet, funds or network |
 | Later live writer | A funded BRC-100 wallet and an index of your own |
@@ -43,7 +42,7 @@ The rule is in [conformance](https://github.com/bsv-blockchain/dpp/blob/7e0e9386
 | The fixtures and vectors, copied unchanged as test data | A fixture edited to make a case pass |
 | The specifications, contracts and schemas | |
 
-Write from the specification text, as the Python reader below was written.
+Write from the specification text.
 
 ## What you will implement
 
@@ -75,43 +74,26 @@ A reader handles both versions, reading each state under its own version, and a 
 
 Steps 2 to 5 make a passport reader. Start there whatever you build: every other role checks what it makes or receives with the reader's rules.
 
-1. **See what passing looks like.** At the root of the checkout, run the reference reader and the Python reader:
+1. **See what passing looks like.** At the root of the checkout, run the reference reader:
 
    ```sh
    node examples/verify-passport.mjs --fixture --version=2 --report
-   python3 conformance/independent/python/dpp_verify.py
    ```
 
-   No line starts with `FAIL`, and the Python reader ends with `Every sentence above holds.`
+   No line starts with `FAIL`.
 2. **Decode one record.** Read `fixtures/record-v2.json`. Your inputs are `lockingScript` and `custodianKey`, the publisher's identity key. Your code must reproduce `state` (the fifteen data fields), `actorPreimage` and `publisherPreimage` byte for byte, derive `actorVerificationKey` and `publisherVerificationKey`, verify `actorSignature` and `publisherSignature` under them, and refuse all ten scripts in `refusals`. Then do the same for `fixtures/record-v1.json`, whose fourteen fields sign `userPreimage` and `serverPreimage`.
 3. **Verify a history.** Read `fixtures/chain-v2.json` and `fixtures/chain-v1.json`: accept the valid states in order and refuse every broken link in each file.
 4. **Bind custody evidence.** Read `fixtures/managed-acceptance-v2.json`, the derived-key acceptance record a custodian keeps under `managed-custody@2`. Reproduce its signature, commitment, state binding and refusals. Read `fixtures/managed-acceptance-v1.json` under the superseded direct-signature rule for historical records; the current writer produces only version 2 acceptance records.
 5. **Produce the report.** Read every case in `fixtures/evidence-v2.json` and `fixtures/evidence-v1.json` and produce, for each, a report that matches on the parts [run the fixtures](fixture-runner.md#what-a-matching-report-is) lists.
 6. **Add the other roles you need**, from the table below.
 7. **Report what you did**, as [reporting](reporting.md) describes.
-8. **Exchange fresh records** with the reference in [the trial](demonstration.md).
+8. **Exchange fresh records** with the reference, as [implementing parties](../contribute/implementing-parties.md) describes. The interoperability trial that would record such an exchange is parked until an independent implementer appears ([parked material](../reference/parked/interoperability-trial/README.md)).
 
 Keep the harness in your own language. Record every case, its expected result and your result; stop on a mismatch and retain both values. [Run the fixtures](fixture-runner.md) says what each file gives as input, what must match, and the four rules whose texts do not yet agree ([source gaps](fixture-runner.md#source-gaps)).
 
-## A worked example: the Python reader
+## Parked: the Python reader
 
-[`conformance/independent/python/dpp_verify.py`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/independent/python/dpp_verify.py) implements the specification text using only the Python standard library. Read it to see rules become code; run it from the checkout root:
-
-```sh
-python3 conformance/independent/python/dpp_verify.py
-```
-
-| Coverage or result | Detail |
-|---|---|
-| Building blocks | secp256k1 arithmetic, strict DER, ECDSA verification, BRC-42 derivation, PushDrop layout and refusals, both signature preimages, chain invariants, native claim and anchor |
-| Fixtures | Record, chain, anchor and acceptance |
-| Vectors | Record, chain, anchor, acceptance, publisher policy, registration and evidence package; skipped vectors are not run |
-| Success | One sentence per check, successful checks starting `ok:`; ends `Every sentence above holds.` |
-| Check count | Changes as fixtures are added; retain output for your recorded revision |
-| Equivalent invocation | `npm run conformance:independent` |
-| Exclusions | No reports for `evidence-v1.json` or `evidence-v2.json`; signs nothing. It is no report or writer example. |
-
-The same programme wrote it and the reference. It provides engineering evidence that the specification is complete enough; version 1.0 still needs an organisationally independent implementation. [Its README](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/independent/python/README.md) says exactly what it covers.
+The programme wrote a reader in standard-library Python from the specification text, to show rules becoming code. It was parked on 12 November 2026 with its last passing revision: [parked material](../reference/parked/python-reader/README.md). The same programme wrote it and the reference, so it was engineering evidence that the specification is complete enough, never the organisationally independent implementation version 1.0 needs.
 
 ## Pick your role
 
@@ -122,7 +104,7 @@ The [baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c
 | Passport reader | Rebuilds a passport's history from transaction bytes and reports what it establishes | `record-v1.json`, `chain-v1.json`, `evidence-v1.json`, `record-v2.json`, `chain-v2.json`, `managed-acceptance-v2.json`, historical `managed-acceptance-v1.json`, `evidence-v2.json` | [Passport reader](roles/passport-reader.md) |
 | Attestation verifier | Checks a signed claim and its on-chain anchor | `attestation-anchor-v1.json`, the anchor cases of `evidence-v1.json`, and the historical `anchor-v3.json` | [Attestation verifier](roles/attestation-verifier.md) |
 | Attestation issuer | Signs a claim about a product, such as a repair | `attestation-anchor-v1.json` | [Attestation issuer](roles/attestation-issuer.md) |
-| Passport writer | Builds each new state, checks it, announces it, sends it, proves it and keeps it | The record and chain vectors, which publish their test keys so your writer reproduces the pinned bytes; then a self-report, one sentence per rule of [writing](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) section 11 | [Passport writer](roles/passport-writer.md) |
+| Passport writer | Builds each new state, checks it, announces it, sends it, proves it and keeps it | The record and chain files, with the test keys published beside them so your writer reproduces the pinned bytes ([run the fixtures](fixture-runner.md#the-vector-form)); then a self-report, one sentence per rule of [writing](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) section 11 | [Passport writer](roles/passport-writer.md) |
 | Registry | Validates, stores and serves signed claims | `contracts/registry.yaml`, `attestation-anchor-v1.json` | [Registry](roles/registry.md) |
 | Index (the overlay role) | Admits passport and anchor transactions and answers lookups | `contracts/overlay.yaml`, `attestation-anchor-v1.json`, `chain-v2.json`, the files under `fixtures/vectors/` | [Overlay](roles/overlay.md) |
 
@@ -136,7 +118,7 @@ For each role you claim:
 2. A writer also has one sentence per rule of writing section 11 ([passport writer](roles/passport-writer.md#prove-it-the-writers-self-report)).
 3. Publish a capability document describing support and exclusions ([declare what you support](reporting.md#declare-what-you-support)). Include `capabilitiesVersion`, `implementation`, `roles`, `protocols`, `profiles`, `representations`, `proofSuites`, `anchorFormats` and `unsupported`. For services, fill `topics`, `services`, `publisherPolicy`, `synchronisation` and `limits` where applicable. It is a support claim, not proof of conformance.
 4. Retain the fixture file and case, expected result and your result. Give one sentence per check, with no score, and submit the report as [send it](reporting.md#send-it) describes.
-5. Optionally, [the trial](demonstration.md) exchanges fresh records with the reference.
+5. Optionally, exchange fresh records with the reference ([implementing parties](../contribute/implementing-parties.md)).
 
 ## Where the material is
 
@@ -163,8 +145,8 @@ node scripts/implementer-bundle.mjs
 |---|---|
 | Output | `release/implementer-bundle/`, with the archive beside it |
 | Entry point | No root README. Start with `bundle-manifest.json`: source revision, working-tree state, release selection and every file's digest. Then open `docs/implement/README.md`, this page. |
-| Rules and tests | Specifications, contracts, fixtures in both forms, baselines, ledger, schemas and selections |
+| Rules and tests | Specifications, contracts, fixtures in every published form, baselines, ledger, schemas and selections |
 | Supporting material | Example capability document, frozen profile data, these docs and licence |
-| Excluded | Runtime code, examples and Python reader; keep the checkout to run them |
+| Excluded | Runtime code and examples, and the parked Python reader; keep the checkout to run the examples |
 
 Next: [run the fixtures](fixture-runner.md).

@@ -1,15 +1,23 @@
-# Run the interoperability trial
+# Parked: the interoperability trial
+
+**Out of the main documentation.** This page keeps the guide to the interoperability trial, `independent-implementation-2026-09`, an exchange of fresh records between the reference implementation and an independent one. Its plan was parked on 12 November 2026, to be rewritten against the slimmed standard when an independent implementer appears, and stays beside this folder as [`independent-implementation-2026-09.json`](../independent-implementation-2026-09.json). No trial has completed, no claim rests on one, and the claims the plan names are those of the day it was parked. An exchange with the hosted reference outside the trial is arranged as [implementing parties](../../../contribute/implementing-parties.md) describes.
+
+## The last working revision
+
+Commit [`c678cf9`](https://github.com/bsv-blockchain/dpp/blob/c678cf9281168179d16d599e5fdb3846ddbbaf61/docs/implement/demonstration.md), the last commit on `main` before the guide was parked, carries it at `docs/implement/demonstration.md`. A trial that comes back starts from the plan and from the guide below, rewritten against the standard as it then stands.
+
+## The guide as it stood
+
+This is the guide as it last stood, its headings one level down and its links adjusted to this folder.
 
 Implementers whose components pass the fixtures can use this guide to exchange fresh records with the reference implementation and retain reproducible per-check results. Run scenarios alone where permitted; arrange programme participation where the reference must act.
 
-**The trial plan is parked.** On 12 November 2026 its definition moved to [`docs/reference/parked/`](../reference/parked/independent-implementation-2026-09.json), to be rewritten against the slimmed standard when an independent implementer appears. The scenarios below are the parked plan's, and the claims it names are those of the day it was parked.
-
-## Prerequisites and trial target
+### Prerequisites and trial target
 
 | Input or scenario | Requirement and source |
 |---|---|
-| All scenarios | Passing fixture results, authorship and dependency records kept as [reporting](reporting.md) describes. |
-| Writer | Your funded BRC-100 wallet and index. [Run an index from source](../operate/README.md) runs the reference runtime; use your own implementation to claim the independent overlay role. |
+| All scenarios | Passing fixture results, authorship and dependency records kept as [reporting](../../../implement/reporting.md) describes. |
+| Writer | Your funded BRC-100 wallet and index. [Run an index from source](../../../operate/README.md) runs the reference runtime; use your own implementation to claim the independent overlay role. |
 | Mined inclusion | Explicitly authorised, funded mainnet run, with transaction identifiers retained. Synthetic transactions under a scripts-only header setting prove admission and structure, never mining. |
 | Reference participation | Agree scenarios, endpoints and publisher keys with the programme below. |
 
@@ -22,20 +30,20 @@ The trial definition is [`independent-implementation-2026-09`](https://github.co
 | Custody profile | `managed-custody@1`, demonstrated in September. Since 12 November 2026 `managed-custody@2` is the one custody profile, and nothing writes `@1`. |
 | Completion | Not completed. Programme-produced evidence is engineering evidence. Version 1.0's organisational independence is recorded only when another implementing party runs the same scenarios. |
 
-## Take part
+### Take part
 
 1. Select scenarios from the table below.
 2. For participation or reference actions, use the [BSV Association contact form](https://bsvassociation.org/contact/). Include your scenarios, implemented roles and record versions, index and registry URLs, and publisher keys countersigning your states.
 3. Agree the exchange below before running a scenario that needs the reference.
 
-## The scenarios
+### The scenarios
 
 The trial exchanges records between the programme-operated reference implementation and a second implementation written from the bundle. Each writes fresh records for the other to verify; each scenario records passes and required refusals. "Alone" means your components and the published material suffice. Reference writing, admission or peering needs the programme.
 
 | Scenario | Roles | What it shows | Who you need |
 |---|---|---|---|
 | `vectors` | Reader, verifier, writer, issuer | Every fixture and vector reproduced or refused by your own code | Alone |
-| `exchange-reference-writes` | Reader, verifier | Your reader and verifier give the reference reader's findings for fresh version 2 records and claims the reference writes | The programme, to write fresh records and claims for you. Meanwhile you can read what the [hosted reference](../deployment.md#the-hosted-reference) already holds through its open lookups. |
+| `exchange-reference-writes` | Reader, verifier | Your reader and verifier give the reference reader's findings for fresh version 2 records and claims the reference writes | The programme, to write fresh records and claims for you. Meanwhile you can read what the [hosted reference](../../../deployment.md#the-hosted-reference) already holds through its open lookups. |
 | `exchange-independent-writes` | Writer, issuer | The reference index admits your states, the reference reader verifies them, and the reference registry accepts your claims | The programme: the reference index admits only the publisher keys its policy names, its `POST /submit` and `POST /arc-ingest` need its tokens, and its registry stores only with its write token |
 | `reader-equivalence` | Reader, verifier | Both readers give the same check statuses and reason codes for the same evidence | Alone: run the reference reader (`examples/verify-passport.mjs`) on the same evidence, policy, time and header source |
 | `lifecycle-and-custody` | Writer, reader | Issue, update, offer, accept, transfer and retire under the managed custody profile, with the named invalid operations refused | Alone, with your own index |
@@ -50,7 +58,7 @@ The trial exchanges records between the programme-operated reference implementat
 | `profiles` | Reader, writer | Profile results reported apart from core results, with an unknown profile version and a missing field refused | Alone |
 | `stale-restricted-unavailable` | Reader, verifier | Missing claims, status, authority evidence and headers reported as `unknown`, pending or refused, never as a pass | Alone |
 
-## Prepare an exchange
+### Prepare an exchange
 
 1. Agree roles, record and profile versions, endpoint addresses and publisher policies with the other participant.
 2. Run each implementation's fixture checks first. Keep results, authorship and dependency records.
@@ -59,36 +67,36 @@ The trial exchanges records between the programme-operated reference implementat
 
 A driver calling a service supplies inputs. It does not replace your implementation's verification.
 
-## Retain
+### Retain
 
 Keep the requests and responses, the exact artefacts (transactions, BEEFs, proofs, claims and exports as received) and the per-check reports, so a disagreement can be reproduced. A successful local rehearsal is useful preparation and is reported as that.
 
 | Preparation | Guide |
 |---|---|
-| Peer operation and its limits | [Federation](../operate/federation.md) |
-| Export, replacement provider and key availability | [Recovery](../operate/export-import-recovery.md) |
-| Wallet and proof handling | [Broadcast and proofs](../operate/wallet-broadcast-proofs.md) |
-| Current delivery evidence | [Status](../start/status.md) |
+| Peer operation and its limits | [Federation](../../../operate/federation.md) |
+| Export, replacement provider and key availability | [Recovery](../../../operate/export-import-recovery.md) |
+| Wallet and proof handling | [Broadcast and proofs](../../../operate/wallet-broadcast-proofs.md) |
+| Current delivery evidence | [Status](../../../start/status.md) |
 
-## Known blockers
+### Known blockers
 
-These are open questions in the standard and the reference deployment, not faults in your implementation; [known limitations](../operate/limitations.md) lists the reference service's limits.
+These are open questions in the standard and the reference deployment, not faults in your implementation; [known limitations](../../../operate/limitations.md) lists the reference service's limits.
 
-- **Proofs for your states.** A state you write and the reference admits reads `pending` there until its merkle path reaches the reference's `POST /arc-ingest`, which needs the reference's callback token. No one is named yet to deliver a proof to an operator that learned a state by synchronisation ([federation](../operate/federation.md#when-a-record-does-not-arrive)).
+- **Proofs for your states.** A state you write and the reference admits reads `pending` there until its merkle path reaches the reference's `POST /arc-ingest`, which needs the reference's callback token. No one is named yet to deliver a proof to an operator that learned a state by synchronisation ([federation](../../../operate/federation.md#when-a-record-does-not-arrive)).
 - **The same evidence, not the same bytes.** `two-operators` passes when both operators serve the same transactions and merkle paths for the lineage, as `spec/services.md` section 1 defines. The [overlay contract](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml) does not fix the form of a lookup's BEEF: one operator can wrap an unproven state as Atomic BEEF (a BEEF framed around one subject transaction) and another not, and a proven state can arrive with or without its ancestors. Keep both answers and compare the transactions and merkle paths inside them; a difference in the BEEF bytes alone is not a failure.
-- **The hosted page check.** The reference application's check at `https://dpp.bsvb.net/verify` finds only what the hosted index holds ([hosted reference](../deployment.md#the-hosted-reference)). Verify your passports with a reader of your own until the hosted index pulls from yours.
+- **The hosted page check.** The reference application's check at `https://dpp.bsvb.net/verify` finds only what the hosted index holds ([hosted reference](../../../deployment.md#the-hosted-reference)). Verify your passports with a reader of your own until the hosted index pulls from yours.
 
-## What completion records
+### What completion records
 
 For each completed scenario, retain its evidence and the ledger rows listed under `rows` in the definition.
 
 | Claim or conclusion | What the trial records or still needs |
 |---|---|
-| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` and `overlay-single-operator-1` (both since [archived](../reference/parked/ledger-archive.json)), `registry-current-intake` | Trial evidence bears on these claims. |
-| `overlay-federated-operators-1` | [Archived](../reference/parked/ledger-archive.json) on 12 November 2026 with the parked `federated-operators@1`, so no longer a claim. It required separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
+| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` and `overlay-single-operator-1` (both since [archived](../ledger-archive.json)), `registry-current-intake` | Trial evidence bears on these claims. |
+| `overlay-federated-operators-1` | [Archived](../ledger-archive.json) on 12 November 2026 with the parked `federated-operators@1`, so no longer a claim. It required separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
 | `version-1-0-readiness` | Cannot be made by the trial alone. Requires another implementing party on record. |
 | Local synthetic exchange | Establishes neither separately administered operation nor mined inclusion. |
 
 The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records remaining evidence gaps.
 
-Next: [report the results](reporting.md#send-it).
+Next: [report the results](../../../implement/reporting.md#send-it).

@@ -59,12 +59,6 @@
       "disposition": "required"
     },
     {
-      "id": "authenticated-status-service",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "An optional status service this release does not claim, and registry contract 0.6.0 defines no status list publication."
-    },
-    {
       "id": "profile-governance",
       "kind": "component",
       "disposition": "required"
@@ -109,30 +103,6 @@
       "kind": "component",
       "disposition": "withheld",
       "rationale": "epcis-json@1 is an optional interoperability profile this release does not claim."
-    },
-    {
-      "id": "vsc-draft-compat-0.1.0-implemented-subset",
-      "kind": "draft-compatibility",
-      "disposition": "withheld",
-      "rationale": "vsc-draft-compat/0.1.0 is a parked optional compatibility profile this release does not claim, and its rows are gaps."
-    },
-    {
-      "id": "vsc-draft-compat-0.1.0-full",
-      "kind": "draft-compatibility",
-      "disposition": "withheld",
-      "rationale": "vsc-draft-compat/0.1.0 is a parked optional compatibility profile this release does not claim, and its upstream context and suite are unavailable at the pinned revision."
-    },
-    {
-      "id": "epcis-source-exchange-1",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "Its rows include the parked epcis-vsc@1 mapping, part of optional profiles this release does not claim."
-    },
-    {
-      "id": "epcis-vsc-mapping-2",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "epcis-vsc@2 is a parked optional mapping profile this release does not claim."
     },
     {
       "id": "untp-0.7.0-pilot",

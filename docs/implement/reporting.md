@@ -106,11 +106,11 @@ Publish the report and commands where reviewers can rerun them, then select the 
 | Report or request | Destination |
 |---|---|
 | Non-sensitive technical report | [Repository issue tracker](https://github.com/bsv-blockchain/dpp/issues); requires only a GitHub account. |
-| Trial or hosted-reference exchange | [BSV Association contact form](https://bsvassociation.org/contact/) ([implementing parties](../contribute/implementing-parties.md)). |
+| Hosted-reference exchange | [BSV Association contact form](https://bsvassociation.org/contact/) ([implementing parties](../contribute/implementing-parties.md)). |
 | Security problem | Private route in the [security policy](https://github.com/bsv-blockchain/dpp/security/policy), never an issue. |
 
 ## Disagreements
 
 Keep refusals and unresolved cases visible in the report. For a disagreement with the fixtures or the reference, retain the input, both outcomes and their source references, then use [the reporting route](../contribute/disagreements.md). An unresolved ambiguity stays open even when one implementation currently accepts the input.
 
-[Conformance review](../reference/conformance.md) explains the diagnostic and the selection gate. Next: [the trial](demonstration.md), for evidence from a fresh-record exchange.
+[Conformance review](../reference/conformance.md) explains the diagnostic and the selection gate. Next: [implementing parties](../contribute/implementing-parties.md), for evidence from a fresh-record exchange with the hosted reference.

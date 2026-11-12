@@ -91,7 +91,7 @@ redirects:
   implement-independently/registry: implement/roles/registry.md
   implement-independently/overlay: implement/roles/overlay.md
   implement-independently/reporting: implement/reporting.md
-  implement-independently/demonstration: implement/demonstration.md
+  implement-independently/demonstration: reference/parked/interoperability-trial/README.md
   learn-the-model/passport-and-attestations: learn/passport-and-attestations.md
   learn-the-model/identity-and-authority: learn/identity-and-authority.md
   learn-the-model/custody: learn/custody.md
@@ -150,3 +150,7 @@ redirects:
   reference/release-sets/beta-4-publication: reference/publication-history/beta-4-publication.md
   reference/release-sets/beta-3-publication: reference/publication-history/beta-3-publication.md
   reference/release-sets/beta-2-publication: reference/publication-history/beta-2-publication.md
+
+  # The interoperability trial's guide was parked on 12 November 2026 with its
+  # plan; this is its address under Implement the standard.
+  reference/implement/demonstration: reference/parked/interoperability-trial/README.md

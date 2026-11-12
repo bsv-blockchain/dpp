@@ -52,7 +52,7 @@ It prints `ok:` lines showing that the locking script and transaction equal stat
 
 The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/examples/write-passport.mjs) remains as a dry run only: a writer must not start a new lineage at version 1, so without `--dry-run` it refuses and names the version 2 writer. Removing `--dry-run` from the version 2 writer selects a live wallet/service workflow. The invocation below maps the version 2 inputs; each file's usage lists its arguments.
 
-The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
+The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their synthetic test private keys are published with the fixtures, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
 Record version 3, the token carrier, is parked outside the standard ([parked material](../../reference/parked/token-carrier/README.md)), and a writer writes no version 3 state.
 
@@ -136,4 +136,4 @@ These standard and deployment questions remain open. [Known limitations](../../o
 - [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml)
 - [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md)
 
-The [source gaps](../fixture-runner.md#source-gaps) remain open. Next: the [attestation issuer](attestation-issuer.md) if you also sign claims, or [the trial](../demonstration.md) to have the reference verify what you write.
+The [source gaps](../fixture-runner.md#source-gaps) remain open. Next: the [attestation issuer](attestation-issuer.md) if you also sign claims, or [implementing parties](../../contribute/implementing-parties.md) to have the reference verify what you write.

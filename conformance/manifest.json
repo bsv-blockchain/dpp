@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "3c5c08a4c2bf31c51160c88f81bd1e37441f7a51fb4c1734598fd29a1f58d26a"
+      "digest": "f5c259c8c876610d7eccaa537c0d0f95cc86ab759b32caf9e0c5452d8f0229dd"
     },
     {
       "id": "spec-record-model-v2",
@@ -24,7 +24,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/rules.md",
-      "digest": "6b2cbbb13553b27d2b414265937408ea22394b47157709fb7698bf8a1938f00e"
+      "digest": "0ad717e9c84b082fd31cd86b9b06026ee8282ebc84d9203633dd120a313cba51"
     },
     {
       "id": "spec-identity",
@@ -32,7 +32,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/identity.md",
-      "digest": "5f47d804dd7da19388e504e7a7f3780882e38e8255664572dfbbd5027700332b"
+      "digest": "6bd1ce568bc177ac80ad09d68281720dd1f09cb036d2e580620e2800d97a01cc"
     },
     {
       "id": "spec-custody",
@@ -40,7 +40,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/custody.md",
-      "digest": "7d9df1748bce97ff263d50a1d11ff156a45196d21afce4ccd781177c027db170"
+      "digest": "e3f73b9a998009cba44009554c06fdc345d7ad44ea7095f80863f3b0a009581a"
     },
     {
       "id": "spec-managed-custody",
@@ -48,7 +48,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/managed-custody.md",
-      "digest": "5d0e406a49a2ed39a4b00fb5417191f8449054e431c442050e3fb80f56829045"
+      "digest": "612cbfd75937e842c0771c0391b28886f238e0a83f125e6f1c96b1c4e1777323"
     },
     {
       "id": "spec-writing",
@@ -56,7 +56,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/writing.md",
-      "digest": "2f2a8973c59aac1a813b119c382d3387a999bf2b0921ecd410cd87abe97f090e"
+      "digest": "1cec13551db76d8aa679bf00fca245f130d4c7e0632526457cf75f61690df238"
     },
     {
       "id": "spec-services",
@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "23e9f71d53f18989534cbbe32322e92012f9ba060d81e75a208153a5a86a53a3"
+      "digest": "d266d7cb6c1cf7cda12183fb0ecccd4abd58bd4c866fb89c38385a6ab9934787"
     },
     {
       "id": "spec-verification",
@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "d4004ad0646545540c00fbb3a6e536952b7b3f68a2fe58640a41b2242a30e861"
+      "digest": "8ab48e0859c862c2396f30809ede6b526d9287e1116796fd330b827304436c13"
     },
     {
       "id": "spec-conformance",
@@ -80,15 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "dbc9a4d21020738252e5e3e9c037ce10b05c9b443ea0fbe34e7cbf7839331442"
-    },
-    {
-      "id": "spec-vsc-profile",
-      "uri": "spec/vsc-profile.md",
-      "version": "vsc-draft-compat/0.1.0",
-      "kind": "local",
-      "path": "spec/vsc-profile.md",
-      "digest": "b091de66dc84d8d5dcf396308c94df5e5e1ebdb2d9ceafc6c3c57fe7ac176a73"
+      "digest": "b204d1931ebf03d512dd6af581d95b65b101504d38da59a1715d2c0666a11547"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -115,53 +107,12 @@
       "digest": "554d0c347d78f76fcc003fd26d817339c52c5b6e44293b376096a88751ca7dcb"
     },
     {
-      "id": "contract-report-schema",
-      "uri": "contracts/verification-report.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "contracts/verification-report.schema.json",
-      "digest": "1f3d33ea7d23b3e445e197f4e3f7c152f42a3acd643b7f7d3d6de1598ff5b1f0"
-    },
-    {
-      "id": "contract-capabilities-schema",
-      "uri": "contracts/capabilities.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "contracts/capabilities.schema.json",
-      "digest": "5402113be46ff1d4be26d91f00f24078edb1ce9308ca93976bc03b50fdae3601"
-    },
-    {
-      "id": "baseline-native-1",
-      "uri": "conformance/baseline-native-1.json",
-      "version": "native-baseline@1",
-      "kind": "local",
-      "path": "conformance/baseline-native-1.json",
-      "digest": "a2c8beb61288351917b2e1173e5e7e99f2177d2e3c3a11b98b7690fa67ec4e2b",
-      "notes": "Frozen from 12 November 2026: earlier selections' role claims are scoped to it and the general@2, battery@2 and textile@2 profile manifests name it as their baseline, so its bytes, the proposed status and quick starts it records included, do not change, and it is no longer a claim target."
-    },
-    {
-      "id": "baseline-native-2",
-      "uri": "conformance/baseline-native-2.json",
-      "version": "native-baseline@2",
-      "kind": "local",
-      "path": "conformance/baseline-native-2.json",
-      "digest": "319d6dfb3791effe9f4cb2c9e90b3c9e76819aeedc586b3456484d9dd84b7979"
-    },
-    {
       "id": "spec-profiles",
       "uri": "spec/profiles.md",
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "0855abb54a5b7d1d21b4bebf38edb60a418379115041dee1de29cbb33aa01c85"
-    },
-    {
-      "id": "profiles-manifest-schema",
-      "uri": "packages/dpp-profiles/schemas/profile-manifest.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "packages/dpp-profiles/schemas/profile-manifest.schema.json",
-      "digest": "8ff391733bd0ee49be19b8de6070ccbe796b060afc0cd72f4d369b76c22e5ead"
+      "digest": "60f1b33035529be2161ad761f885ce5cae65eff15200f382b6b452e3de4be307"
     },
     {
       "id": "profiles-frozen",
@@ -173,28 +124,12 @@
       "notes": "Frozen manifest and generated-file digests, including version 3 drafts and additive version 4 drafts. Every earlier manifest and generated artefact remains unchanged; the aggregate index gains the new profiles."
     },
     {
-      "id": "brc-standards",
-      "uri": "https://github.com/bitcoin-sv/BRCs",
-      "version": "BRC-42, BRC-43, BRC-48, BRC-62, BRC-74, BRC-100 as published at review",
-      "kind": "public",
-      "attribution": "BSV Association BRC repository",
-      "notes": "The derivations, push-drop shape, BEEF and BUMP encodings the native formats build on."
-    },
-    {
       "id": "bsv-ts-stack",
       "uri": "https://github.com/bsv-blockchain/ts-stack",
       "version": "98734b07cf0845bff239e38b2f3a26177ee1ea12",
       "kind": "public",
       "attribution": "BSV Association",
-      "notes": "The overlay HTTP contract this profile extends and the cross-language vector format the fixtures also take."
-    },
-    {
-      "id": "w3c-vc-data-model-2",
-      "uri": "https://www.w3.org/TR/vc-data-model-2.0/",
-      "version": "2.0",
-      "kind": "public",
-      "attribution": "W3C",
-      "notes": "Pin the dated Recommendation URL on first normative use; recorded here as the current TR at review."
+      "notes": "The overlay HTTP contract this profile extends and the cross-language vector format of the files under fixtures/vectors/."
     },
     {
       "id": "w3c-vc-jose-cose",
@@ -207,27 +142,6 @@
       "id": "w3c-bitstring-status-list",
       "uri": "https://www.w3.org/TR/vc-bitstring-status-list/",
       "version": "current TR at review",
-      "kind": "public",
-      "attribution": "W3C"
-    },
-    {
-      "id": "w3c-vc-data-integrity",
-      "uri": "https://www.w3.org/TR/vc-data-integrity/",
-      "version": "current TR at review",
-      "kind": "public",
-      "attribution": "W3C"
-    },
-    {
-      "id": "w3c-di-eddsa",
-      "uri": "https://www.w3.org/TR/vc-di-eddsa/",
-      "version": "current TR at review; Ed25519Signature2020 as the maintained legacy suite",
-      "kind": "public",
-      "attribution": "W3C"
-    },
-    {
-      "id": "w3c-di-bbs",
-      "uri": "https://www.w3.org/TR/vc-di-bbs/",
-      "version": "current draft at review; bbs-2023",
       "kind": "public",
       "attribution": "W3C"
     },
@@ -257,13 +171,6 @@
       "notes": "GTIN structure, check digit and the demonstration prefix 952."
     },
     {
-      "id": "gs1-resolver",
-      "uri": "https://ref.gs1.org/standards/resolver/",
-      "version": "current standard at review",
-      "kind": "public",
-      "attribution": "GS1"
-    },
-    {
       "id": "uora-published",
       "uri": "https://w3c-cg.github.io/uora/",
       "version": "1.0 Community Group Draft as published on the group site",
@@ -272,42 +179,12 @@
       "notes": "The later authority-first conflict cascade and the physical-object DID method live here."
     },
     {
-      "id": "uora-vsc-copy",
-      "uri": "https://github.com/w3c-cg/vsc/tree/c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "version": "the UORA copy inside the VSC repository at c279de3d, labelled 1.0",
-      "kind": "public",
-      "attribution": "Verifiable Supply Chain Community Group",
-      "notes": "Predates the published authority-first revision despite the shared label; not authority to switch orderings."
-    },
-    {
-      "id": "vsc-core",
-      "uri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
-      "version": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "kind": "public",
-      "attribution": "Verifiable Supply Chain Community Group (W3C Community Group draft, not a W3C Recommendation)"
-    },
-    {
-      "id": "vsc-requirements",
-      "uri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html",
-      "version": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "kind": "public",
-      "attribution": "Verifiable Supply Chain Community Group"
-    },
-    {
-      "id": "vsc-context-and-suite",
-      "uri": "https://w3c-cg.github.io/vsc/",
-      "version": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "kind": "unavailable",
-      "attribution": "Verifiable Supply Chain Community Group",
-      "notes": "The referenced JSON-LD context returns 404 and the conformance material is a prose matrix, not an executable suite, at the pinned revision."
-    },
-    {
       "id": "spec-exchange",
       "uri": "spec/exchange.md",
       "version": "working draft",
       "kind": "local",
       "path": "spec/exchange.md",
-      "digest": "d7ef480cadaaa1fceb961209e0f46242af8152f2522909ffd2505b85e6222579"
+      "digest": "bc57005be9ef8406beaa5db68acedd7adcce2ef01338ee91b2ccbc4faebb4daf"
     },
     {
       "id": "contract-native-evidence-extension",
@@ -316,14 +193,6 @@
       "kind": "local",
       "path": "contracts/native-evidence-extension.schema.json",
       "digest": "da3324b0abe3d138dc1bced0d6d32afad82f41e7c30d5557e55acc021a222ff6"
-    },
-    {
-      "id": "profiles-exchange-schema",
-      "uri": "packages/dpp-profiles/schemas/exchange-profile.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "packages/dpp-profiles/schemas/exchange-profile.schema.json",
-      "digest": "ef08a16c2956b23519e5e393338c739d2bf35bfdc6654fc85388fc5b60cb54ed"
     },
     {
       "id": "profiles-operator-schema",
@@ -340,22 +209,6 @@
       "kind": "local",
       "path": "spec/portable-evidence.md",
       "digest": "42a1383924af72f61b30e377538802f3c6cb3285bea5d2728facd4db7ba76856"
-    },
-    {
-      "id": "contract-evidence-package",
-      "uri": "contracts/evidence-package.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "contracts/evidence-package.schema.json",
-      "digest": "b55ed739493936aa647ef3606c1875686224f1163801eddb41e009a99317f5bb"
-    },
-    {
-      "id": "contract-paginated-history",
-      "uri": "contracts/paginated-history.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "contracts/paginated-history.schema.json",
-      "digest": "a857fa7e00f4b781b3398c07ed98a906cdf5cc96acc84f46d89d200b5b4e2ca0"
     },
     {
       "id": "profiles-mapping-inventories",
@@ -379,7 +232,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "docs/quick-start.md",
-      "digest": "4fba5d948a2124e9a11a721c3981829d7e7537f74f176b33f20f3bcd9c9cf44a"
+      "digest": "0266d85e9ecdb7a747acd4b461cb0a7209a2875b91509f77d3bc9f99ed5a3e8e"
     },
     {
       "id": "fixture-battery-lifecycle",
@@ -435,7 +288,7 @@
       "version": "vc-di-ecdsa-rdfc-2019@1",
       "kind": "local",
       "path": "spec/external-credential-profile.md",
-      "digest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
+      "digest": "cea3986769a49df53176e69415736927784e92550e34662500ef2893b135a3f1"
     },
     {
       "id": "contract-epcis-import",
@@ -446,22 +299,6 @@
       "digest": "7406e539087a08b5b6673d6e8c86f9e8f6797a2ef3af9b0b27091e5d1ce9482b"
     },
     {
-      "id": "contract-profile-evidence",
-      "uri": "contracts/profile-evidence.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "contracts/profile-evidence.schema.json",
-      "digest": "adc9327eb19767c974b851ddd11a99f26b8de52f5cf9fa1e7f92e96e15bc9bc8"
-    },
-    {
-      "id": "profiles-interoperability-schema",
-      "uri": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
-      "version": "1",
-      "kind": "local",
-      "path": "packages/dpp-profiles/schemas/interoperability-profile.schema.json",
-      "digest": "1a12993154bc8396080d3808de8b6cca1095a8bbeb74fe9af48e033e40525c9e"
-    },
-    {
       "id": "profiles-manifest-v2-schema",
       "uri": "packages/dpp-profiles/schemas/profile-manifest-v2.schema.json",
       "version": "2",
@@ -470,44 +307,12 @@
       "digest": "dbb99ff6ea5c939d9aef34c2cbb45acc2e44bc702a8bcb1a9870e998680c0a6d"
     },
     {
-      "id": "gs1-uri-syntax",
-      "uri": "https://ref.gs1.org/standards/digital-link/uri-syntax/1.7.0/",
-      "version": "1.7.0",
-      "kind": "public",
-      "attribution": "GS1",
-      "notes": "The grammar of primary key 01 with its qualifiers and data attributes that gs1-digital-link@1 reads."
-    },
-    {
-      "id": "gs1-epc-compression",
-      "uri": "https://ref.gs1.org/standards/digital-link/compression/1.0.0/",
-      "version": "1.0.0 (July 2025)",
-      "kind": "public",
-      "attribution": "GS1",
-      "notes": "The EPC binary form of a compressed Digital Link URI (prefixes eh and ex) a conformant resolver decompresses; its two worked examples are vectors."
-    },
-    {
-      "id": "gs1-tds",
-      "uri": "https://ref.gs1.org/standards/tds/",
-      "version": "current standard at review",
-      "kind": "public",
-      "attribution": "GS1",
-      "notes": "The SGTIN-96 and SGTIN-198 binary encodings the decompression decodes; other schemes are refused by name."
-    },
-    {
       "id": "epcis-2.0.1",
       "uri": "https://ref.gs1.org/standards/epcis/2.0.1/",
       "version": "2.0.1",
       "kind": "public",
       "attribution": "GS1",
       "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) carried under packages/dpp-credentials/artifacts/epcis/ and the REST binding pinned by digest 3d33792c... in the epcis-json@1 manifest."
-    },
-    {
-      "id": "cbv-2.0",
-      "uri": "https://ref.gs1.org/standards/cbv/",
-      "version": "2.0 (ratified June 2022)",
-      "kind": "public",
-      "attribution": "GS1",
-      "notes": "Section 7.2.3, the disposition values and definitions, and section 7.2.3.1, the deprecated values, which the epcis-vsc@2 crosswalk classifies."
     },
     {
       "id": "w3c-vc-di-ecdsa",
@@ -524,14 +329,6 @@
       "kind": "public",
       "attribution": "IETF",
       "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/dpp-credentials/src/jcs.ts)."
-    },
-    {
-      "id": "eu-battery-guidance-2026-08",
-      "uri": "https://single-market-economy.ec.europa.eu/document/download/cd1e5e6c-4a4a-4b99-995a-49eb6916187e_en",
-      "version": "Version 2.0, 15 August 2026 (CC BY 4.0), sha256 e045a7668015520f4c353e72fb57a89bdd62baaf0a98e6f4aefc7f5f42819eb7",
-      "kind": "public",
-      "attribution": "European Commission (not its official position, by its own disclaimer)",
-      "notes": "The data points by category the battery@3 draft applies as requirement statuses and applicability rules; guidance, not a legal instrument."
     },
     {
       "id": "spec-epcis-event-profile",
@@ -850,8 +647,7 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/record-v2.test.ts",
-        "packages/dpp-protocol/test/fixture-json.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v2.json#refusals.v1LayoutWithVersion2",
@@ -864,7 +660,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12, when record version 3 was parked: a seventeen-field output carrying the version string 3 is an unsupported version again, pinned as the refusal unsupportedVersion, and the vector that named version 3 on a bare body is kept skipped."
+      "notes": "Re-read 2026-11-12, when record version 3 was parked: a seventeen-field output carrying the version string 3 is an unsupported version again, pinned as the refusal unsupportedVersion. The skipped vector that named version 3 on a bare body left with the vector-form copy of the record fixture on 12 November 2026 (last at c678cf9281168179d16d599e5fdb3846ddbbaf61)."
     },
     {
       "id": "RM2-3-fields",
@@ -886,8 +682,7 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/record-v2.test.ts",
-        "packages/dpp-protocol/test/chain-v2.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-protocol/test/chain-v2.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v2.json",
@@ -897,7 +692,7 @@
         "fixtures/record-v2.json#refusals.eventDataOverBound"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -950,8 +745,7 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/signatures-v2.test.ts",
-        "packages/dpp-protocol/test/record-v2.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-protocol/test/record-v2.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/record-v2.json#actorPreimage",
@@ -961,7 +755,7 @@
         "fixtures/chain-v2.json#refusals.boundarySubstitution"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -986,16 +780,14 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/chain-v2.test.ts",
-        "packages/dpp-overlay/test/tmDppV2.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-overlay/test/tmDppV2.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/chain-v2.json#refusals",
-        "fixtures/chain-v2.json#upgrade",
-        "fixtures/vectors/dpp/chain/v2.json"
+        "fixtures/chain-v2.json#upgrade"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1022,7 +814,6 @@
       "testRefs": [
         "packages/dpp-protocol/test/chain-v2.test.ts",
         "packages/dpp-overlay/test/tmDppV2.test.ts",
-        "conformance/independent/python/dpp_verify.py",
         "packages/dpp-protocol/test/owner.test.ts"
       ],
       "evidenceRefs": [
@@ -1150,17 +941,15 @@
         "packages/dpp-protocol/src/acceptance.ts#signManagedAcceptance"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/acceptance.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-protocol/test/acceptance.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/managed-acceptance-v2.json",
-        "fixtures/vectors/dpp/managed-acceptance/v2.json"
+        "fixtures/managed-acceptance-v2.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. The Python verifier reproduces the preimage, the derived verification key, the signature, the commitment, the binding and the seven refusals from the fixture. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. Re-read 2026-11-12 after §3 cited the canonical JSON of rules.md §4 instead of restating it with code unit order: the implementation sorts by code point, every property name is ASCII, where the orders agree, and no fixture byte changed."
+      "notes": "Decided 2026-11-01: the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. acceptance.test.ts reads every refusal of both fixtures with its three verdicts. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status was the Python reader, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. The reader was parked the same day (docs/reference/parked/python-reader/), and the status rests on the TypeScript tests named here. Re-read 2026-11-12 after §3 cited the canonical JSON of rules.md §4 instead of restating it with code unit order: the implementation sorts by code point, every property name is ASCII, where the orders agree, and no fixture byte changed."
     },
     {
       "id": "MC-3-custodian-signing",
@@ -1184,18 +973,16 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/acceptance.test.ts",
-        "conformance/independent/python/dpp_verify.py",
         "examples/lifecycle-v2.mjs"
       ],
       "evidenceRefs": [
         "fixtures/managed-acceptance-v2.json#refusals.directlySigned",
-        "fixtures/managed-acceptance-v2.json#refusals.strangerSigned",
-        "fixtures/vectors/dpp/managed-acceptance/v2.json"
+        "fixtures/managed-acceptance-v2.json#refusals.strangerSigned"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: the custodian signs with a derived key so that a BRC-100 wallet can be its wallet. The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. Re-read 2026-11-12 after §3 cited rules.md §4 for the record's canonical form; the signing rule this row assesses is unchanged."
+      "notes": "Decided 2026-11-01: the custodian signs with a derived key so that a BRC-100 wallet can be its wallet. The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status was the Python reader, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. The reader was parked the same day (docs/reference/parked/python-reader/), and the status rests on the TypeScript tests named here. Re-read 2026-11-12 after §3 cited rules.md §4 for the record's canonical form; the signing rule this row assesses is unchanged."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1246,15 +1033,14 @@
       "testRefs": [
         "packages/dpp-protocol/test/acceptance.test.ts",
         "packages/dpp-protocol/test/chain-v2.test.ts",
-        "packages/dpp-overlay/test/tmDppV2.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-overlay/test/tmDppV2.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/managed-acceptance-v1.json#refusals",
         "fixtures/chain-v2.json#refusals.transferWithoutCommitment"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-02",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1390,17 +1176,15 @@
       "testRefs": [
         "packages/dpp-protocol/test/acceptance.test.ts",
         "packages/dpp-protocol/test/fixture-json.test.ts",
-        "packages/dpp-overlay/test/tmDppV2.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-overlay/test/tmDppV2.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/managed-acceptance-v1.json",
-        "fixtures/vectors/dpp/managed-acceptance/v1.json"
+        "fixtures/managed-acceptance-v1.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "The version 1 fixture is frozen and never regenerated: it is the pin of what a reader must still verify. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
+      "notes": "The version 1 fixture is frozen and never regenerated: it is the pin of what a reader must still verify. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status was the Python reader, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. The reader was parked the same day (docs/reference/parked/python-reader/), and the status rests on the TypeScript tests named here."
     },
     {
       "id": "RULES-3-native-claim",
@@ -1422,8 +1206,7 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/attestation.test.ts",
-        "packages/dpp-overlay/test/fixture-json.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-overlay/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/attestation-anchor-v1.json#claim",
@@ -1432,7 +1215,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, a shape both implementing parties produce; the fixture moved with it, and the Python verifier reproduces the bytes, the digest and the refusal of a recordId that is not an outpoint. From 2026-11-12 the claim carries no evidence object, so the facets of §2 never travel in it: signLifecycleClaim refuses the property as an unsupported field, and the fixture's claimWithEvidence and its vector are gone; the claim without facets keeps its exact bytes and digest. Written acceptance by the second implementing party is pending under GOVERNANCE.md. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
+      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, a shape both implementing parties produce; the fixture moved with it, and attestation.test.ts refuses a recordId that is not an outpoint. From 2026-11-12 the claim carries no evidence object, so the facets of §2 never travel in it: signLifecycleClaim refuses the property as an unsupported field, and the fixture's claimWithEvidence and its vector are gone; the claim without facets keeps its exact bytes and digest. Written acceptance by the second implementing party is pending under GOVERNANCE.md. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status was the Python reader, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing. The reader was parked the same day (docs/reference/parked/python-reader/), and the status rests on the TypeScript tests named here."
     },
     {
       "id": "RULES-2-version-2-vocabulary",
@@ -1525,7 +1308,7 @@
         "fixtures/vectors/dpp/attestation-anchor/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1586,11 +1369,10 @@
         "packages/dpp-protocol/test/evidence.test.ts"
       ],
       "evidenceRefs": [
-        "fixtures/anchor-v3.json",
-        "fixtures/vectors/dpp/anchor/v3.json"
+        "fixtures/anchor-v3.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -1615,7 +1397,8 @@
       "testRefs": [
         "packages/dpp-overlay/test/uoraAnchor.test.ts",
         "packages/dpp-overlay/test/fixture-json.test.ts",
-        ".github/workflows/ci.yml (check-registry.mjs --fixture)"
+        ".github/workflows/ci.yml (check-registry.mjs --fixture)",
+        "packages/dpp-overlay/test/anchor-v3-bounds.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/anchor-v3.json"
@@ -1682,28 +1465,6 @@
       "status": "tested",
       "reviewedAt": "2026-09-05",
       "reviewOwner": "dpp maintainers"
-    },
-    {
-      "id": "ID-3-vsc-actor",
-      "sourceId": "spec-identity",
-      "sourceUri": "spec/identity.md",
-      "sourceVersion": "working draft",
-      "clause": "§3",
-      "summary": "Under the VSC profile the actor DID equals the issuer and the proof's verification method is authorised for assertion in the issuer's DID document; a did:web document is identity, not accreditation.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then validateSealStructure bound the actor DID to the issuer and the SEAL proof verifier required the verification method to be authorised for assertion in the issuer's DID document. createDidWebResolver, the bounded did:web resolution it used, stays in the package. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "ID-3-physical-object",
@@ -2110,20 +1871,18 @@
       ],
       "testRefs": [
         "packages/dpp-protocol/test/registration.test.ts",
-        "packages/dpp-overlay/test/registrationHttp.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-overlay/test/registrationHttp.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/index-registration-v1.json",
-        "fixtures/vectors/dpp/index-registration/v1.json",
         "contracts/index-registration.schema.json",
         "contracts/overlay.yaml#paths./register"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-02: the default index registers a newcomer from the quick start; the Python verifier reproduces the derived key and every refusal. Narrowed on 12 November 2026 to the signed request: open and approval modes, rate limits, token issuance, revocation and the policy version an accepted request appends are the reference package's registration, documented in the @bsv/dpp-overlay README.",
-      "sourceDigest": "23e9f71d53f18989534cbbe32322e92012f9ba060d81e75a208153a5a86a53a3"
+      "notes": "Decided 2026-11-02: the default index registers a newcomer from the quick start; registration.test.ts exercises the derived key and every refusal the fixture pins. Narrowed on 12 November 2026 to the signed request: open and approval modes, rate limits, token issuance, revocation and the policy version an accepted request appends are the reference package's registration, documented in the @bsv/dpp-overlay README.",
+      "sourceDigest": "d266d7cb6c1cf7cda12183fb0ecccd4abd58bd4c866fb89c38385a6ab9934787"
     },
     {
       "id": "SVC-1-publisher-keys",
@@ -2156,7 +1915,7 @@
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "Kept on 12 November 2026 when the signed publisher policy chain moved to the reference layer (PUB-1-publisher-policy). The capability document lists the keys active now, and the report checks each state against the keys its policy supplies.",
-      "sourceDigest": "23e9f71d53f18989534cbbe32322e92012f9ba060d81e75a208153a5a86a53a3"
+      "sourceDigest": "d266d7cb6c1cf7cda12183fb0ecccd4abd58bd4c866fb89c38385a6ab9934787"
     },
     {
       "id": "SVC-2-retraction",
@@ -2652,188 +2411,6 @@
       "notes": "The diagnostic checker keeps exit code 0 with a blocked future claim and reports every selection's blocked required claims by sentence; qualify.mjs exits 1 for the same selection. Both read assess.mjs, so they cannot disagree. Neither is a conformity certificate."
     },
     {
-      "id": "VSC-2-structure",
-      "sourceId": "vsc-core",
-      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "SEAL structure and event vector, as selected in spec/vsc-profile.md §2",
-      "summary": "Contexts, types, stable id, issuer DID equal to actor DID, sealVersion 1.0, eventVector what/when/where/who/how, extensions, chainOfCustody, correctionOf, credentialStatus, proof; strict parsing of exact bytes.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "attestation-issuer",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then the owned SEAL schema and validateSealStructure checked the structure, and parseSealBytes read the exact bytes strictly. The owned schemas, the owned context and the profile record, artifacts/profile-0.1.0.json, stay in the package at the digests the parked manifests pin. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
-    },
-    {
-      "id": "VSC-3-proofs",
-      "sourceId": "vsc-core",
-      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "proof requirements, as selected in spec/vsc-profile.md §3",
-      "summary": "Genuine Ed25519Signature2020 and bbs-2023 Data Integrity proofs with suite canonicalisation; assertion-purpose check against the issuer's DID document; request-bound BBS derived disclosure with required disclosure fields.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "attestation-issuer",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then the package issued and verified Ed25519Signature2020 and bbs-2023 proofs with their maintained suites and derived request-bound BBS disclosures; holder authentication and the HTTPS presentation transport were never implemented. The package no longer depends on either suite. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
-    },
-    {
-      "id": "VSC-4-status",
-      "sourceId": "w3c-bitstring-status-list",
-      "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
-      "sourceVersion": "current TR at review",
-      "clause": "validate algorithm, as selected in spec/vsc-profile.md §4",
-      "summary": "Verify the list credential's proof, its issuer or an explicitly delegated issuer, identity, purpose, canonical index, temporal validity and freshness before reading the bit; bounded decompression; at least 131072 bits.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifyCredentialStatus applied the validate algorithm to the lists a SEAL names. Checking the lists other issuers publish stays under STATUS-validate-algorithm, through verifyBitstringStatus. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
-    },
-    {
-      "id": "VSC-4-authority",
-      "sourceId": "vsc-requirements",
-      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-requirements.html",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "trust and authority, as selected in spec/vsc-profile.md §4",
-      "summary": "Signed scoped VscEventAuthorisation grants from configured trust anchors, with proof, validity and status verified; an explicit not-required policy is a recorded warning, not a pass.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifyIssuerAuthority checked signed scoped VscEventAuthorisation grants from configured trust anchors, with their proof, validity and status. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
-    },
-    {
-      "id": "VSC-5-custody",
-      "sourceId": "vsc-core",
-      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "custody chain, forks, merges, corrections, as selected in spec/vsc-profile.md §5",
-      "summary": "Backward parent traversal with path-local cycle detection and a completed-node cache so diamonds pass; branch-height sequences; preallocated fork children; corrections with exactly their target as parent, a new chain at sequence 1, scoped delegation and conflict on competing termini.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then verifySeal evaluated custody graphs and corrections under the decisions DAG-01 and CORR-01 that artifacts/profile-0.1.0.json records and still carries. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
-    },
-    {
-      "id": "VSC-6-epcis",
-      "sourceId": "vsc-core",
-      "sourceUri": "https://w3c-cg.github.io/vsc/specs/vsc-core.html",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "EPCIS mapping, as selected in spec/vsc-profile.md §6",
-      "summary": "The five EPCIS event types mapped with the source event retained in a signed round-trip extension; missing time, place, step, disposition or action is an error, never fabricated.",
-      "layer": "profile",
-      "roles": [
-        "attestation-issuer"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then mapEpcisEvent mapped the five event types with the source event in the signed round-trip extension. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
-    },
-    {
-      "id": "VSC-context-upstream",
-      "sourceId": "vsc-context-and-suite",
-      "sourceUri": "https://w3c-cg.github.io/vsc/",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "the referenced JSON-LD context",
-      "summary": "A credential's context resolves to the context the upstream draft publishes; this profile serves an owned urn:bsv:vsc:context:0.1.0 instead and claims no exact upstream-context interoperability.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "attestation-issuer",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [
-        "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-CONTEXT"
-      ],
-      "status": "unassessed",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Cannot be assessed while the upstream artefact is unavailable; blocks any full-conformance claim by design. The owned context the profile serves instead stays in the package as artifacts/context-0.1.0.jsonld; the code that served it left @bsv/dpp-credentials in 0.2.0-beta.6 with the rest of the parked profile."
-    },
-    {
-      "id": "VSC-conformance-suite",
-      "sourceId": "vsc-context-and-suite",
-      "sourceUri": "https://w3c-cg.github.io/vsc/",
-      "sourceVersion": "c279de3debcd6eab94a77034584d1750f5d65e6a",
-      "clause": "conformance test matrix",
-      "summary": "Upstream executable conformance tests pass.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "registry"
-      ],
-      "applicability": "when vsc-draft-compat/0.1.0 is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [
-        "packages/dpp-credentials/artifacts/profile-0.1.0.json#upstreamGates.UPSTREAM-TESTS"
-      ],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers",
-      "notes": "No executable suite exists at the pinned revision; a project test pass is not labelled an upstream pass."
-    },
-    {
       "id": "STATUS-validate-algorithm",
       "sourceId": "w3c-bitstring-status-list",
       "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
@@ -2891,27 +2468,6 @@
       "notes": "Re-pointed 2026-11-12, when the reference registry removed checkStatus with its legacy intake; until then checkStatus answered purpose revocation or suspension with value set, unset or unknown and the evidence fields, and the legacy checkRevocation wrapper refused suspension as unsupported-status-profile. verifyBitstringStatus, which the external credential verifier uses, reads the purpose from the credential's status entry, admits revocation and suspension only, refuses a list whose own purpose differs as status_payload, and answers a set bit as revoked or suspended by that purpose; exchange.test.ts refuses an authenticated suspension list for a revocation entry. The reference registry's test/external-credentials.test.ts drives both purposes through the report: a set bit on the issuer's authenticated revocation list answers status-revoked and records revokes, a set bit on its authenticated suspension list answers status-suspended and records suspends, an authenticated list with the bit unset marks a suspension cleared and never clears a revocation, and a forged or stale list records nothing."
     },
     {
-      "id": "STATUS-secured-publication",
-      "sourceId": "w3c-bitstring-status-list",
-      "sourceUri": "https://www.w3.org/TR/vc-bitstring-status-list/",
-      "sourceVersion": "current TR at review",
-      "clause": "BitstringStatusListCredential issuance",
-      "summary": "Status lists are issued as secured credentials by an authorised key with transactional index allocation, monotonic revocation, explicit suspension clearing and atomic publication.",
-      "layer": "role",
-      "roles": [
-        "registry"
-      ],
-      "applicability": "when a registry operates a status service",
-      "profileId": "core",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the reference registry no longer publishes status lists, and registry contract 0.6.0 defines no status list routes. Until then it issued lists as signed Ed25519 credentials by the configured issuer key, with atomic index allocation that never recycled, monotonic revocation, explicit suspension clearing, a forward-only publication pointer and cache invalidation, tested on the memory, JSONL and Mongo stores; that service and its tests are removed. Checking the lists credential issuers publish stays under STATUS-validate-algorithm and STATUS-purpose-suspension; STATUS-fetch-bounds, which bound fetching them, is a gap from 12 November 2026. The rule still applies, as stated, to a registry that operates a status service."
-    },
-    {
       "id": "STATUS-fetch-bounds",
       "sourceId": "spec-services",
       "sourceUri": "spec/services.md",
@@ -2936,29 +2492,6 @@
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "Deliberately unclaimed from 12 November 2026, when the reference registry removed fetchStatusCredential with its legacy intake. Until then it fetched status lists with a 5000 ms budget, 1 MiB declared and streamed caps, 1 MiB decompressed, no redirects except one explicitly permitted destination re-checked against the host policy, and the host policy applied before any connection. No kept implementation fetches a status list: verifyBitstringStatus reads one through the status policy's resolve, which the reference registry answers from the documents its external policy pins and never from the network. What remains covers identity documents only and is not the whole row: createDidWebResolver, which the exchange entry uses when an operator permits did:web origins, fetches a DID document only from a permitted origin, with a 5000 ms timeout and a 256 KiB declared and streamed cap by default and redirects refused, and checks no address; did-web.test.ts exercises the origin rule and the cap, not the timeout or the redirect refusal. verifyBitstringStatus bounds a list's compressed and decompressed size at 1 MiB. The rule still applies, as stated, to a verifier that fetches status or identity documents."
-    },
-    {
-      "id": "W3C-VC-DM-2-core",
-      "sourceId": "w3c-vc-data-model-2",
-      "sourceUri": "https://www.w3.org/TR/vc-data-model-2.0/",
-      "sourceVersion": "2.0",
-      "clause": "credential structure: @context, type, issuer, validFrom, validUntil, credentialSubject, credentialStatus, proof",
-      "summary": "VSC credentials carry the version 2 core context first, a DID issuer, validFrom and optional validUntil enforced at evaluation, and a status entry.",
-      "layer": "profile",
-      "roles": [
-        "attestation-verifier",
-        "attestation-issuer",
-        "registry"
-      ],
-      "applicability": "when a W3C credential representation is selected",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the code of the parked vsc-draft-compat/0.1.0 profile left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then validateSealStructure and verifyTemporal enforced these rules for a SEAL. verifyTemporal stays in the package, in src/temporal.ts, and the external credential verifier applies it under its own rows. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae, and the published 0.2.0-beta.5 carries them."
     },
     {
       "id": "W3C-VC-JOSE-ES256K",
@@ -3227,7 +2760,7 @@
       "sourceUri": "https://github.com/bsv-blockchain/ts-stack",
       "sourceVersion": "98734b07cf0845bff239e38b2f3a26177ee1ea12",
       "clause": "conformance/VECTOR-FORMAT.md and conformance/schema/vector.schema.json",
-      "summary": "The fixtures are also published in the stack's cross-language vector format and validate under its structural runner.",
+      "summary": "The files under fixtures/vectors/, the formats with no bespoke fixture and the current anchor's refusals, are published in the stack's cross-language vector format and validate under its structural runner.",
       "layer": "reference",
       "roles": [
         "all"
@@ -3235,21 +2768,24 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "packages/dpp-protocol/test/record-v1-vectors.ts",
-        "packages/dpp-protocol/test/chain-v1-vectors.ts",
-        "packages/dpp-overlay/test/anchor-v3-vectors.ts",
+        "packages/dpp-protocol/test/publisher-policy-vectors.ts",
+        "packages/dpp-protocol/test/evidence-package-vectors.ts",
+        "packages/dpp-protocol/test/epcis-event-vectors.ts",
         "packages/dpp-overlay/test/attestation-v1-fixture.ts"
       ],
       "testRefs": [
         "packages/dpp-protocol/test/fixture-json.test.ts (expectStackShape)",
-        "packages/dpp-overlay/test/fixture-json.test.ts"
+        "packages/dpp-overlay/test/fixture-json.test.ts (expectStackShape)",
+        "packages/dpp-protocol/test/epcis-event-vectors.test.ts",
+        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-12",
+      "reviewOwner": "dpp maintainers",
+      "notes": "From 12 November 2026 the record, chain, historical anchor, acceptance and registration fixtures are published in their bespoke form only: their copies in the vector form restated those files and were removed, and their last copies are at c678cf9281168179d16d599e5fdb3846ddbbaf61. The current anchor's vector file stays, because its six refusals are in no other published file."
     },
     {
       "id": "PROF-2-manifest",
@@ -3463,20 +2999,15 @@
       ],
       "applicability": "before version 1.0 and before any independently-tested row",
       "profileId": "core",
-      "implementationRefs": [
-        "conformance/independent/python/dpp_verify.py (standard-library Python reader: secp256k1, DER, ECDSA, BRC-42, PushDrop, chain invariants, control proof, native claim, anchor v1)"
-      ],
-      "testRefs": [
-        ".github/workflows/ci.yml (python3 conformance/independent/python/dpp_verify.py)",
-        "npm run conformance:independent"
-      ],
+      "implementationRefs": [],
+      "testRefs": [],
       "evidenceRefs": [
         "GOVERNANCE.md (Declaring version 1.0, condition 2)"
       ],
-      "status": "implemented",
+      "status": "gap",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "The Python reader reproduces every pinned preimage, derived key, digest and script and refuses every refusal vector across record-v1, chain-v1, attestation-anchor-v1 and the vector files, without importing reference code. It was written by the same programme, so the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate; rows stay at tested."
+      "notes": "Lowered from implemented to gap on 12 November 2026, when the programme's Python reader, the only second reader the row cited, was parked (docs/reference/parked/python-reader/; it last passed at c678cf9281168179d16d599e5fdb3846ddbbaf61). It was written by the same programme, so it never met this row, and no implementation by another implementing party has passed every fixture: the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate."
     },
     {
       "id": "EXCH-1-representations",
@@ -3958,8 +3489,7 @@
         "packages/dpp-protocol/test/publisher-policy-vectors.ts"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/fixture-json.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/publisher-policy/v1.json"
@@ -3967,7 +3497,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Reproduced by the standard-library Python reader (preimages, digests, signatures, key windows, and the six refusal conditions it re-implements; the five policy-rule refusals are named, not re-derived). Written within the programme, so engineering evidence rather than independent testing. Moved to the reference layer on 12 November 2026 with the publisher policy chain, a feature of @bsv/dpp-overlay documented in its README, and no longer required by version-1-0-readiness, since a condition for declaring the standard 1.0 does not rest on a feature outside it."
+      "notes": "The generator computes every verdict with the reference verifier, and fixture-json.test.ts holds the file to it. Until 12 November 2026 the programme's Python reader, parked that day (docs/reference/parked/python-reader/), also reproduced the preimages, digests, signatures and key windows and six of the refusal conditions, as engineering evidence rather than independent testing. Moved to the reference layer on 12 November 2026 with the publisher policy chain, a feature of @bsv/dpp-overlay documented in its README, and no longer required by version-1-0-readiness, since a condition for declaring the standard 1.0 does not rest on a feature outside it."
     },
     {
       "id": "VEC-2-evidence-package-vectors",
@@ -3988,8 +3518,7 @@
         "packages/dpp-protocol/test/evidence-package-vectors.ts"
       ],
       "testRefs": [
-        "packages/dpp-protocol/test/fixture-json.test.ts",
-        "conformance/independent/python/dpp_verify.py"
+        "packages/dpp-protocol/test/fixture-json.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/evidence-package/v1.json"
@@ -3997,7 +3526,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Reproduced by the Python reader: preimage, signature verdict and inventory verdict (digests, lengths, unlisted files, path rules) for every vector; the structure verdict is the reference's. Engineering evidence, not independent testing. Regenerated 2026-11-12 under the one signing model: the valid package names the exporter's identity key and is signed by its child for [1, 'dpp evidence package v1'] and the passport identifier, and the unexpected signer is another identity's child; every verdict is unchanged."
+      "notes": "The generator computes every verdict with the reference inspector, and fixture-json.test.ts holds the file to it. Until 12 November 2026 the programme's Python reader, parked that day (docs/reference/parked/python-reader/), also reproduced the preimage, the signature verdict and the inventory verdict of every vector, as engineering evidence rather than independent testing. Regenerated 2026-11-12 under the one signing model: the valid package names the exporter's identity key and is signed by its child for [1, 'dpp evidence package v1'] and the passport identifier, and the unexpected signer is another identity's child; every verdict is unchanged."
     },
     {
       "id": "PROF-7-combinations",
@@ -4278,50 +3807,6 @@
       "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f"
     },
     {
-      "id": "EPCIS-5-source-reference",
-      "sourceId": "spec-epcis-interoperability",
-      "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§5",
-      "summary": "A mapped SEAL carries the signed source reference urn:bsv:dpp:epcis-source:1 (source digest, media type, event pointer, event identifier, context digests, mapping profile) beside the round-trip extension; the reference names the mapping profile the report was made under, and the source reporter is never the signing issuer.",
-      "layer": "profile",
-      "roles": [
-        "attestation-issuer"
-      ],
-      "applicability": "when the mapping profile is selected",
-      "profileId": "epcis-vsc@1 and epcis-vsc@2",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f",
-      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The rule binds a mapped SEAL, which nothing in the packages now produces; epcisSourceReference, which builds the reference, stays in ./epcis-source with its own test. The published v1 and v2 vectors stay as they are. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
-    },
-    {
-      "id": "EPCIS-6-mapping-outcomes",
-      "sourceId": "spec-epcis-interoperability",
-      "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§5",
-      "summary": "mapEpcisEventWithReport answers lossless, transformed, unsupported or insufficient-data under the mapping profile it is asked for, with every missing requirement and unmapped semantic named; under epcis-vsc@1 an inspection, repair or sensor reading observed by an OBSERVE event or a TransformationEvent and reporting active is unsupported as maintenance-observation; nothing physical is fabricated and the VSC custody rules are not changed to admit an event.",
-      "layer": "profile",
-      "roles": [
-        "attestation-issuer"
-      ],
-      "applicability": "when the mapping profile is selected",
-      "profileId": "epcis-vsc@1 and epcis-vsc@2",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f",
-      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. Until then mapEpcisEventWithReport answered the four outcomes under either profile; on 8 November 2026 it was corrected to refuse an inspection, repair or sensor reading reporting active under epcis-vsc@1 as maintenance-observation, which the published 0.2.0-beta.5 does not carry. The published v1 and v2 vectors stay as they are. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
-    },
-    {
       "id": "EPCIS-7-import-record",
       "sourceId": "contract-epcis-import",
       "sourceUri": "contracts/epcis-import.schema.json",
@@ -4356,7 +3841,7 @@
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§7",
-      "summary": "Import, pull and rendering never invoke Issue, Update, Transfer or Retire; publication of a mapped event is a separately authorised action under a named policy, and an EPCIS error declaration is not a VSC correction or an authority grant.",
+      "summary": "Import, pull and rendering never invoke Issue, Update, Transfer or Retire.",
       "layer": "role",
       "roles": [
         "passport-writer",
@@ -4375,7 +3860,7 @@
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f",
-      "notes": "Import and pull retain and evaluate only; publication is a separately authorised action under a configured policy, refused for unsupported and insufficient-data mappings, issued once and resumed by query after an uncertain submission; the passport store is untouched by every import."
+      "notes": "Import and pull retain and evaluate only; the passport store is untouched by every import. Re-read 2026-11-12: the publication of a mapped event and the treatment of an EPCIS error declaration, which the summary also stated, are parked with the epcis-vsc mappings (spec/epcis-interoperability.md sections 5 to 7), so the row keeps only the rule that stays with epcis-json@1."
     },
     {
       "id": "EPCIS-9-pull-outcomes",
@@ -4404,49 +3889,6 @@
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
-      "id": "EPCIS-10-disposition-crosswalk",
-      "sourceId": "spec-epcis-interoperability",
-      "sourceUri": "spec/epcis-interoperability.md",
-      "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
-      "clause": "§5",
-      "summary": "Under epcis-vsc@2 an event carrying an error declaration is unsupported as error-declaration, and the disposition is decided through the published crosswalk before a SEAL is built: active on an ObjectEvent that commissions its objects, in_transit and returned on no ObjectEvent that commissions or decommissions them, and dispensed and destroyed on no ObjectEvent that commissions them are carried verbatim; every other event is unsupported, its reason opening with custody-neutral (custody-destination-unnamed in its place at a receiving or accepting step), lifecycle-conflict, custody-transition-unnamed or non-cbv-disposition; an OBSERVE event without a disposition is custody-neutral; no VSC-only term is written for a CBV event and no custody rule is changed to give a custody-neutral event a SEAL.",
-      "layer": "profile",
-      "roles": [
-        "attestation-issuer"
-      ],
-      "applicability": "when the mapping profile epcis-vsc@2 is selected",
-      "profileId": "epcis-vsc@2",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f",
-      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. epcis-vsc@2 and CBV_DISPOSITION_CROSSWALK left before any publication, with the test that held the code to the crosswalk its manifest records. The manifest and v2.json stay as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
-    },
-    {
-      "id": "EPCIS-11-cbv-dispositions",
-      "sourceId": "cbv-2.0",
-      "sourceUri": "https://ref.gs1.org/standards/cbv/",
-      "sourceVersion": "2.0 (ratified June 2022)",
-      "clause": "§7.2.3 and §7.2.3.1",
-      "summary": "The epcis-vsc@2 crosswalk names every CBV 2.0 disposition and every deprecated value exactly as the standard spells it, reads the bare, URN and Web URI spellings as one value, treats a deprecated value as the value that replaces it, and refuses any other value, a different case included.",
-      "layer": "profile",
-      "roles": [
-        "attestation-issuer"
-      ],
-      "applicability": "when the mapping profile epcis-vsc@2 is selected",
-      "profileId": "epcis-vsc@2",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-11-09",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The crosswalk was checked against the section 7.2.3 table of the ratified CBV 2.0 text: 33 values, no_pedigree_match among them as deprecated in 2.0, and the five values section 7.2.3.1 replaces; the epcis-vsc@2 manifest keeps it as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
-    },
-    {
       "id": "EXTC-1-representation",
       "sourceId": "spec-external-credential-profile",
       "sourceUri": "spec/external-credential-profile.md",
@@ -4472,9 +3914,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
+      "sourceDigest": "cea3986769a49df53176e69415736927784e92550e34662500ef2893b135a3f1"
     },
     {
       "id": "EXTC-2-proof-and-binding",
@@ -4527,9 +3969,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
+      "sourceDigest": "cea3986769a49df53176e69415736927784e92550e34662500ef2893b135a3f1"
     },
     {
       "id": "EXTC-4-reformat-vs-bytes",
@@ -4556,9 +3998,9 @@
         "fixtures/vectors/dpp/interoperability/external-credential/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "75e90136e10728d1ecea26c14403e9ce2062fcb75379ef326b3b4c7d898e79e2"
+      "sourceDigest": "cea3986769a49df53176e69415736927784e92550e34662500ef2893b135a3f1"
     },
     {
       "id": "EXTC-5-registry-intake",
@@ -4639,7 +4081,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "0855abb54a5b7d1d21b4bebf38edb60a418379115041dee1de29cbb33aa01c85",
+      "sourceDigest": "60f1b33035529be2161ad761f885ce5cae65eff15200f382b6b452e3de4be307",
       "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it."
     },
     {
@@ -4669,7 +4111,7 @@
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms.",
-      "sourceDigest": "0855abb54a5b7d1d21b4bebf38edb60a418379115041dee1de29cbb33aa01c85"
+      "sourceDigest": "60f1b33035529be2161ad761f885ce5cae65eff15200f382b6b452e3de4be307"
     },
     {
       "id": "PROF-4-frozen-unchanged",
@@ -4887,54 +4329,6 @@
         "RULES-6-verification",
         "STATUS-validate-algorithm",
         "SVC-3-registry-bytes"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
-      "id": "authenticated-status-service",
-      "description": "A purpose-aware, authenticated, bounded status service with secured publication.",
-      "role": "registry",
-      "requires": [
-        "STATUS-validate-algorithm",
-        "STATUS-purpose-suspension",
-        "STATUS-secured-publication",
-        "STATUS-fetch-bounds"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
-      "id": "vsc-draft-compat-0.1.0-full",
-      "description": "Complete conformance to the pinned VSC draft, including its published context and executable suite.",
-      "role": "attestation-verifier",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "requires": [
-        "VSC-2-structure",
-        "VSC-3-proofs",
-        "VSC-4-status",
-        "VSC-4-authority",
-        "VSC-5-custody",
-        "VSC-6-epcis",
-        "ID-3-vsc-actor",
-        "W3C-VC-DM-2-core",
-        "VSC-context-upstream",
-        "VSC-conformance-suite"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
-      "id": "vsc-draft-compat-0.1.0-implemented-subset",
-      "description": "The locally implemented VSC subset with its owned context, as spec/vsc-profile.md declares it.",
-      "role": "attestation-verifier",
-      "profileId": "vsc-draft-compat/0.1.0",
-      "requires": [
-        "VSC-2-structure",
-        "VSC-3-proofs",
-        "VSC-4-status",
-        "VSC-4-authority",
-        "VSC-5-custody",
-        "VSC-6-epcis",
-        "ID-3-vsc-actor",
-        "W3C-VC-DM-2-core"
       ],
       "minimumStatus": "tested"
     },
@@ -5165,23 +4559,6 @@
       ]
     },
     {
-      "id": "epcis-source-exchange-1",
-      "description": "The epcis-json@1 and epcis-vsc@1 profiles: exact-byte retention under limits, pinned-schema validation, stable digests, arrival classification, signed source references, explicit mapping outcomes, the import record, no token operation from an import and the bounded pull client.",
-      "profileId": "epcis-json@1",
-      "requires": [
-        "EPCIS-1-strict-parse",
-        "EPCIS-2-schema-validation",
-        "EPCIS-3-body-digest",
-        "EPCIS-4-arrival-classification",
-        "EPCIS-5-source-reference",
-        "EPCIS-6-mapping-outcomes",
-        "EPCIS-7-import-record",
-        "EPCIS-8-no-token-operation",
-        "EPCIS-9-pull-outcomes"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
       "id": "epcis-source-import-1",
       "description": "The epcis-json@1 source helpers without the parked epcis-vsc mappings: exact-byte reading under the disclosed limits with unsafe sources refused before retention, validation against the pinned schema without repair, stable event-body digests and arrival classification. The durable import record, the separation from token operations and the bounded pull client (EPCIS-7, EPCIS-8 and EPCIS-9) are exercised only in the reference application, which is not published, so this claim does not require them.",
       "profileId": "epcis-json@1",
@@ -5190,18 +4567,6 @@
         "EPCIS-2-schema-validation",
         "EPCIS-3-body-digest",
         "EPCIS-4-arrival-classification"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
-      "id": "epcis-vsc-mapping-2",
-      "description": "The epcis-vsc@2 mapping profile: the four mapping outcomes, the CBV 2.0 disposition crosswalk with every refusal named, a custody-neutral event and an error declaration left without a SEAL, and the signed source reference naming the profile.",
-      "profileId": "epcis-vsc@2",
-      "requires": [
-        "EPCIS-5-source-reference",
-        "EPCIS-6-mapping-outcomes",
-        "EPCIS-10-disposition-crosswalk",
-        "EPCIS-11-cbv-dispositions"
       ],
       "minimumStatus": "tested"
     },

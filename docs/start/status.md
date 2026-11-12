@@ -4,7 +4,7 @@ Application teams and operators can use this page to choose a release and identi
 
 | Status fact | Value |
 |---|---|
-| Updated | **3 November 2026** |
+| Updated | **12 November 2026** |
 | Evidence checked on that date | [Merged source](https://github.com/bsv-blockchain/dpp/tree/08bdfa0a056d970c64b1749064b92bd1e6ae9d67), npm versions and hosted capability documents. |
 | Standard and packages | Working draft before version 1.0; experimental packages under the Apache 2.0 licence. |
 | Available work | Build passport applications, readers, writers and indexes; implement a registry against the published contract. |
@@ -38,7 +38,7 @@ Both starters were published on 20 October and pin generated projects to the pub
 - **Create an application:** the published [application starter](../packages/create-dpp-app.md). It has an offline lifecycle exercise; live writes need a funded wallet and index access.
 - **Read and verify** record versions 1 and 2. Reports cover encoding, signatures, linkage, inclusion, subject binding, claims, anchors and evidence, explicitly showing missing evidence ([quick start](../quick-start.md#read-a-live-passport)).
 - **Write** record version 2 with a BRC-100 wallet, and continue a version 1 passport through the version 2 upgrade; a new passport never starts at version 1. Announce to an index before sending and push proofs ([build an application](../packages/build-an-application.md)). Record version 3, the token carrier, is [parked](../reference/parked/token-carrier/README.md).
-- **Run an index** with Docker from the [Compose preset](../operate/README.md): lookups, history, evidence packages, complete exports, proof ingestion and configured-peer synchronisation. Operators can select SHIP peer discovery, SHIP/SLAP advertising and retries for outputs left behind ([federation](../operate/federation.md)).
+- **Run an index** with Docker from the [Compose preset](../operate/README.md): lookups, history, evidence packages, complete exports, proof ingestion and configured-peer synchronisation. Operators can select retries for outputs left behind, and the package keeps SHIP peer discovery and SHIP/SLAP advertising as options parked outside the standard ([federation](../operate/federation.md)).
 - **Sign, anchor and validate claims** about a passport, kept apart from the passport itself ([passport states and attestations](../learn/passport-and-attestations.md)).
 - **Carry product data** under the current `general@2`, `battery@2` and `textile@2` profiles, with the `battery@4` draft to evaluate and the parked drafts `battery@3`, `textile@3` and `textile@4` still readable ([profiles](../profiles/README.md)).
 - **Connect other standards**: GS1 Digital Link identifiers and discovery, EPCIS 2.0.1 event import and selected W3C credential formats, with passport projections as a reference feature of the profiles package ([interoperability](../interoperability/README.md)).
@@ -74,11 +74,11 @@ The [reviewed ledger](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970
 
 | Evidence | Ledger status | What remains |
 |---|---|---|
-| `GOV-independent-implementation` | implemented | Organisational independence remains an open gate; the Python reader was written by the same programme. |
+| `GOV-independent-implementation` | gap | No implementation by another implementing party has passed every fixture. The programme's own Python reader was never independent and was parked on 12 November 2026. |
 | `EXPORT-4-complete-export` | archived | The complete export left the standard on 12 November 2026 and is a reference feature of the index package, with its local tests; the row is in the ledger archive. |
 | `EXPORT-3-durable-publication` | gap | An independently administered replica and deployment recovery objectives have not been demonstrated. |
 
-The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/demonstrations/independent-implementation-2026-09.json) has no recorded full completion, and its plan was parked on 12 November 2026, to be rewritten against the slimmed standard when an independent implementer appears. From the same day the selection requires one claim per role under `native-baseline@2`, the one baseline a claim names, with `gs1-identifier-discipline` and `profile-governance`, and withholds every other claim with its reason: the claims scoped to `native-baseline@1`, now historical, the optional custody, exchange and EPCIS profiles, the parked VSC compatibility profile and mappings, the status service and version 1.0 readiness. The standard makes no European system conformance or product-compliance claim. Inspect evidence through [conformance review](../reference/conformance.md). Passing tests or publishing packages does not establish these outcomes.
+The [independent implementation trial](https://github.com/bsv-blockchain/dpp/blob/08bdfa0a056d970c64b1749064b92bd1e6ae9d67/conformance/demonstrations/independent-implementation-2026-09.json) has no recorded full completion, and its plan was parked on 12 November 2026, to be rewritten against the slimmed standard when an independent implementer appears. From the same day the selection requires one claim per role under `native-baseline@2`, the one baseline a claim names, with `gs1-identifier-discipline` and `profile-governance`, and withholds every other claim with its reason: the claims scoped to `native-baseline@1`, now historical, the optional custody, exchange and EPCIS profiles and version 1.0 readiness. The claims of the parked VSC compatibility profile and mappings and of the status service moved to the ledger archive the same day. The standard makes no European system conformance or product-compliance claim. Inspect evidence through [conformance review](../reference/conformance.md). Passing tests or publishing packages does not establish these outcomes.
 
 ## Open decisions
 
