@@ -4,7 +4,7 @@ hidden: true
 
 # Beta.3 publication receipt
 
-> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](../release-sets.md). For other past releases, see [Release history](../release-history.md).
 
 Release reviewers and consumers can check this beta.3 publication against its approved source and archive bytes here. Three packages in `dpp-release-2026-09-5` were published to public npm on **27 September 2026**, using GitHub OIDC trusted publishing with provenance; the fourth was reused, as recorded below. Every downloaded archive matched the approved bytes, and the final public-registry consumer check passed. The set was superseded by `dpp-release-2026-10`; this receipt preserves the publication record.
 
@@ -80,4 +80,4 @@ The release-set JSON retains `status: candidate`: its exact input digest was app
 
 The packages carry the index synchronisation and publisher policy changes of 27 September 2026 and move to `@bsv/sdk` 2.8.10. Publication does not upgrade the reference application or registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
-The [publication guide](publishing-profile-updates.md) covers future releases and recovery from delays. The [beta.2 receipt](beta-2-publication.md) records the preceding publication.
+The [publication guide](../publishing-profile-updates.md) covers future releases and recovery from delays. The [beta.2 receipt](beta-2-publication.md) records the preceding publication.

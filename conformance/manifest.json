@@ -2689,7 +2689,7 @@
         "conformance/test/qualify.test.mjs"
       ],
       "evidenceRefs": [
-        "conformance/selections/dpp-release-2026-09-3.json",
+        "release/archive/selections/dpp-release-2026-09-3.json",
         "conformance/selections/dpp-release-2026-11.json"
       ],
       "status": "tested",

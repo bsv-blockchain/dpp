@@ -4,7 +4,7 @@ hidden: true
 
 # Beta.5 publication receipt
 
-> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](../release-sets.md). For other past releases, see [Release history](../release-history.md).
 
 Release reviewers and consumers can check this beta.5 publication against its approved source and archive bytes here. All four packages in `dpp-release-2026-10-2` were published to public npm on **2 October 2026**, using GitHub OIDC trusted publishing with provenance. Every downloaded archive matched the approved bytes. This was the first set under Apache 2.0; no code changed since beta.4.
 
@@ -83,4 +83,4 @@ The release-set JSON retains `status: candidate`: its exact input digest was app
 
 The packages carry the Apache 2.0 licence and their current package documentation; the code is that of beta.4. Earlier published versions keep the licence their archives contain. Publication does not upgrade the reference application or registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
-The [publication guide](publishing-profile-updates.md) covers future releases and recovery from delays. The [beta.4 receipt](beta-4-publication.md) records the preceding publication.
+The [publication guide](../publishing-profile-updates.md) covers future releases and recovery from delays. The [beta.4 receipt](beta-4-publication.md) records the preceding publication.

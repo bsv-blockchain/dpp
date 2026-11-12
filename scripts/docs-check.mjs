@@ -48,7 +48,8 @@ say(duplicates.length === 0, `no page is listed twice${duplicates.length ? `: ${
 // 2. Links, fragments, pinned repository links, example commands, private paths.
 const headings = (text) => [...text.matchAll(/^#{1,6}\s+(.+)$/gm)].map((m) => m[1].trim().toLowerCase().replace(/[`*_]/g, '').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-'))
 const exampleFiles = readdirSync(join(root, 'examples'))
-const releaseSets = readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f)).map((f) => JSON.parse(readFileSync(join(root, 'release', f), 'utf8')))
+// The current set under release/ and every superseded set under release/archive/.
+const releaseSets = ['release', 'release/archive'].flatMap((dir) => readdirSync(join(root, dir)).filter((f) => /^dpp-release-.*\.json$/.test(f)).map((f) => JSON.parse(readFileSync(join(root, dir, f), 'utf8'))))
 const current = releaseSets.filter((s) => s.status !== 'superseded').sort((a, b) => a.releaseSet.localeCompare(b.releaseSet)).at(-1)
 const superseded = releaseSets.filter((s) => s.status === 'superseded').map((s) => s.releaseSet)
 const overlayVersion = /^\s*version:\s*(\S+)/m.exec(readFileSync(join(root, 'contracts/overlay.yaml'), 'utf8'))[1]
@@ -69,6 +70,15 @@ const PARKED_TOKEN_CARRIER = {
 const MOVED_TO_PACKAGES = {
   'contracts/evidence-export.schema.json': 'packages/dpp-overlay/schemas/evidence-export.schema.json',
 }
+// The superseded release sets and their selections moved to release/archive/,
+// and the publication receipts and approved plans to
+// docs/reference/publication-history/, on 12 November 2026.
+const ARCHIVED = [
+  [/^release\/(dpp-release-[^/]+\.json)$/, 'release/archive/$1'],
+  [/^conformance\/selections\/(dpp-release-[^/]+\.json)$/, 'release/archive/selections/$1'],
+  [/^docs\/reference\/(beta-\d+-publication(?:\.md|-plan\.json))$/, 'docs/reference/publication-history/$1'],
+]
+const archivedPath = (path) => { const hit = ARCHIVED.find(([from]) => from.test(path)); return hit && path.replace(hit[0], hit[1]) }
 let linkFailures = 0, links = 0, pinned = 0, commands = 0
 for (const page of pages) {
   const text = readFileSync(join(docs, page), 'utf8')
@@ -90,7 +100,7 @@ for (const page of pages) {
             ? path.replace(/^packages\/dpp-core\//, 'packages/dpp-protocol/')
             : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md'
               : path.startsWith('conformance/demonstrations/') ? path.replace(/^conformance\/demonstrations\//, 'docs/reference/parked/')
-                : PARKED_TOKEN_CARRIER[path] ?? MOVED_TO_PACKAGES[path] ?? path
+                : PARKED_TOKEN_CARRIER[path] ?? MOVED_TO_PACKAGES[path] ?? archivedPath(path) ?? path
           const local = resolve(root, existsSync(resolve(root, movedPath)) ? movedPath : path)
           if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
           const directory = statSync(local).isDirectory()
@@ -122,7 +132,7 @@ for (const page of pages) {
   // A publication receipt records its archived plan's set. Keep that evidence
   // intact when a later candidate supersedes the set in the working tree.
   const receiptPlanPath = join(docs, page.replace(/\.md$/, '-plan.json'))
-  const receiptPlan = /^reference\/beta-\d+-publication\.md$/.test(page) && existsSync(receiptPlanPath)
+  const receiptPlan = /^reference\/publication-history\/beta-\d+-publication\.md$/.test(page) && existsSync(receiptPlanPath)
     ? JSON.parse(readFileSync(receiptPlanPath, 'utf8')) : null
   for (const s of superseded) {
     const mentions = [...text.matchAll(new RegExp(`${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!-)`, 'g'))].length

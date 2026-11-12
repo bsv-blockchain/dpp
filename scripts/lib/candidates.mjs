@@ -11,8 +11,52 @@ export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex'
 export const integrityOf = (bytes) => `sha512-${createHash('sha512').update(bytes).digest('base64')}`
 
 /**
+ * Where superseded release material is kept, byte for byte: each superseded
+ * set under release/archive/ and the selection that qualified it under
+ * release/archive/selections/. Approved plans pin the selections' digests and
+ * each set records what it once named, so nothing reads them as current and
+ * nothing rewrites them.
+ */
+export const RELEASE_ARCHIVE = 'release/archive'
+export const SELECTION_ARCHIVE = 'release/archive/selections'
+
+/** Where release set `id` is kept: release/ while current, RELEASE_ARCHIVE once superseded; null when neither holds it. */
+export function releaseSetPath(root, id) {
+  return [`release/${id}.json`, `${RELEASE_ARCHIVE}/${id}.json`].find((path) => id != null && existsSync(join(root, path))) ?? null
+}
+
+/**
+ * Whether a release set file is where its status puts it: a superseded set
+ * under RELEASE_ARCHIVE, any other beside the current one under release/.
+ * Returns the sentence that says how to move a misplaced file, or null.
+ */
+export function setMisplacement(path, set) {
+  const archived = path.startsWith(`${RELEASE_ARCHIVE}/`)
+  if (archived === (set.status === 'superseded')) return null
+  return archived
+    ? `${path} is archived, but its status is ${set.status}; only a superseded set is archived.`
+    : `${path} is superseded; move it, bytes unchanged, to ${RELEASE_ARCHIVE}/.`
+}
+
+/**
+ * Whether a selection file is where the set it names puts it: the selection
+ * of a superseded set under SELECTION_ARCHIVE, wherever that set is kept, and
+ * any other under conformance/selections/. `namedSetStatus` is the named
+ * set's status, or null when no set is named or none is kept. Returns the
+ * sentence that says how to move a misplaced file, or null.
+ */
+export function selectionMisplacement(path, selection, namedSetStatus) {
+  const archived = path.startsWith(`${SELECTION_ARCHIVE}/`)
+  if (archived === (namedSetStatus === 'superseded')) return null
+  return archived
+    ? `${path} is archived, but ${selection.releaseSet == null ? 'it names no release set' : `${selection.releaseSet} is ${namedSetStatus ?? 'kept neither under release/ nor under the archive'}`}; only the selection of a superseded set is archived.`
+    : `${path} qualifies the superseded set ${selection.releaseSet}; move it, bytes unchanged, to ${SELECTION_ARCHIVE}/.`
+}
+
+/**
  * The current release set under release/: the newest whose status is not
- * superseded. A superseded set records versions the tree has moved past.
+ * superseded. A superseded set records versions the tree has moved past and
+ * moves to RELEASE_ARCHIVE, which this never reads.
  */
 export function currentReleaseSet(root) {
   const sets = readdirSync(join(root, 'release'))

@@ -38,6 +38,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { dependencyManifest } from '../scripts/lib/dependency-manifest.mjs'
+import { RELEASE_ARCHIVE, SELECTION_ARCHIVE, releaseSetPath, selectionMisplacement, setMisplacement } from '../scripts/lib/candidates.mjs'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { assessClaims, assessSelection, readRows, readSources } from './assess.mjs'
@@ -63,6 +64,8 @@ import {
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const read = (relative) => JSON.parse(readFileSync(join(root, relative), 'utf8'))
 const sha256 = (relative) => createHash('sha256').update(readFileSync(join(root, relative))).digest('hex')
+
+const jsonFiles = (dir) => (existsSync(join(root, dir)) ? readdirSync(join(root, dir)).filter((f) => f.endsWith('.json')).sort().map((f) => `${dir}/${f}`) : [])
 
 let defects = 0
 const defect = (sentence) => { defects += 1; console.log(`DEFECT: ${sentence}`) }
@@ -108,14 +111,17 @@ for (const verdict of verdicts.values()) {
 
 // 2b. The selections: each validates against its schema and reads against
 // the same verdicts. A defective selection is a defect here; a blocked
-// required claim is a finding here and a refusal in qualify.mjs.
-const selectionsDir = join(root, 'conformance', 'selections')
-for (const name of existsSync(selectionsDir) ? readdirSync(selectionsDir).filter((f) => f.endsWith('.json')).sort() : []) {
-  const path = `conformance/selections/${name}`
+// required claim is a finding here and a refusal in qualify.mjs. The
+// selection of a superseded set is kept, bytes unchanged, under
+// release/archive/selections/ as history and is not qualified against the
+// current ledger.
+const setStatus = (id) => { const path = releaseSetPath(root, id); return path == null ? null : read(path).status }
+for (const path of [...jsonFiles('conformance/selections'), ...jsonFiles(SELECTION_ARCHIVE)]) {
   const selection = read(path)
   if (!validateWith('conformance/selection.schema.json', selection, path)) continue
-  const historicalSet = selection.releaseSet && `release/${selection.releaseSet}.json`
-  if (historicalSet && existsSync(join(root, historicalSet)) && read(historicalSet).status === 'superseded') {
+  const misplaced = selectionMisplacement(path, selection, setStatus(selection.releaseSet))
+  if (misplaced) { defect(misplaced); continue }
+  if (path.startsWith(`${SELECTION_ARCHIVE}/`)) {
     note(`selection ${selection.selectionId} is retained as history for a superseded release set; it is not qualified against the current ledger.`)
     continue
   }
@@ -249,13 +255,17 @@ for (const file of ['fixtures/evidence-v1.json', 'fixtures/evidence-v2.json']) {
 // 4b. The release sets: a compatible set names the packages at the versions
 // their manifests carry, the wire versions the reference exports, the runtime
 // the root requires, a baseline that exists, and artefacts whose digests hold.
-for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-release-.*\.json$/.test(f))) {
-  const set = read(`release/${name}`)
-  if (!validateWith('release/release-set.schema.json', set, `release/${name}`)) continue
-  // A superseded set is the record of what a set once named. Its package
-  // versions and artefact digests describe that moment and are not held to
-  // the tree, which has moved on; the successor set is what the tree answers to.
-  if (set.status === 'superseded') { note(`${set.releaseSet} is superseded and is kept as history; its versions and digests are not checked against the tree.`); continue }
+// release/ holds the current set. A superseded set is the record of what a set
+// once named and is kept, bytes unchanged, under release/archive/: its package
+// versions and artefact digests describe that moment and are not held to the
+// tree, which has moved on; the current set is what the tree answers to.
+const setFiles = (dir) => jsonFiles(dir).filter((path) => /\/dpp-release-[^/]*\.json$/.test(path))
+for (const path of [...setFiles('release'), ...setFiles(RELEASE_ARCHIVE)]) {
+  const set = read(path)
+  if (!validateWith('release/release-set.schema.json', set, path)) continue
+  const misplaced = setMisplacement(path, set)
+  if (misplaced) { defect(misplaced); continue }
+  if (path.startsWith(`${RELEASE_ARCHIVE}/`)) { note(`${set.releaseSet} is superseded and is kept as history in ${RELEASE_ARCHIVE}/; its versions and digests are not checked against the tree.`); continue }
   for (const pkg of set.packages) {
     const manifest = read(`${pkg.directory}/package.json`)
     if (manifest.name === pkg.name && manifest.version === pkg.version) note(`${set.releaseSet} names ${pkg.name}@${pkg.version}, which ${pkg.directory}/package.json carries.`)

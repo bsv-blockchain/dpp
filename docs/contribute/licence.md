@@ -27,7 +27,7 @@ When redistributing:
 | Scope | Recorded rule or publication |
 |---|---|
 | Source change | The licence change applies to the current source tree, from commit [`dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d`](https://github.com/bsv-blockchain/dpp/commit/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d) on 1 October 2026. |
-| First Apache publication | The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` (the overlay and credentials packages under the names they were published with at the time), is the first under Apache 2.0 ([receipt](../reference/beta-5-publication.md)). |
+| First Apache publication | The beta.5 set published on 2 October 2026, `@bsv/dpp-core@0.3.0-beta.5`, `@bsv/dpp-overlay-topics@0.4.0-beta.5`, `@bsv/dpp-profiles@0.3.0-beta.5` and `@bsv/vsc@0.2.0-beta.4` (the overlay and credentials packages under the names they were published with at the time), is the first under Apache 2.0 ([receipt](../reference/publication-history/beta-5-publication.md)). |
 | Earlier publications | Every earlier version, up to `@bsv/dpp-core@0.3.0-beta.4`, `@bsv/dpp-overlay-topics@0.4.0-beta.4`, `@bsv/dpp-profiles@0.3.0-beta.4` and `@bsv/vsc@0.2.0-beta.3`, was published before the change. |
 | Earlier archives | Published archives cannot change. Each earlier version keeps the Open BSV License Version 6 it contains, which among other conditions limits use to the BSV blockchains it defines. |
 | Installed version | Read the `LICENSE` file inside the version you install. |

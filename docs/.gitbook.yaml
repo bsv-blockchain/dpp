@@ -26,9 +26,9 @@ redirects:
   operate-services/migration: migration.md
   operate-services/operate: operate/README.md
   operate-services/wallet-broadcast-proofs: operate/wallet-broadcast-proofs.md
-  reference/beta-2-publication: reference/beta-2-publication.md
-  reference/beta-3-publication: reference/beta-3-publication.md
-  reference/beta-4-publication: reference/beta-4-publication.md
+  reference/beta-2-publication: reference/publication-history/beta-2-publication.md
+  reference/beta-3-publication: reference/publication-history/beta-3-publication.md
+  reference/beta-4-publication: reference/publication-history/beta-4-publication.md
   reference/conformance: reference/conformance.md
   reference/contracts: reference/contracts.md
   reference/publishing-profile-updates: reference/publishing-profile-updates.md
@@ -107,15 +107,15 @@ redirects:
   package-reference/application-service: packages/application-service.md
   package-reference/stack: stack.md
   releases-and-conformance/release-sets: reference/release-sets.md
-  releases-and-conformance/beta-10-publication: reference/beta-10-publication.md
-  releases-and-conformance/beta-9-publication: reference/beta-9-publication.md
-  releases-and-conformance/beta-8-publication: reference/beta-8-publication.md
-  releases-and-conformance/beta-7-publication: reference/beta-7-publication.md
-  releases-and-conformance/beta-6-publication: reference/beta-6-publication.md
-  releases-and-conformance/beta-5-publication: reference/beta-5-publication.md
-  releases-and-conformance/beta-4-publication: reference/beta-4-publication.md
-  releases-and-conformance/beta-3-publication: reference/beta-3-publication.md
-  releases-and-conformance/beta-2-publication: reference/beta-2-publication.md
+  releases-and-conformance/beta-10-publication: reference/publication-history/beta-10-publication.md
+  releases-and-conformance/beta-9-publication: reference/publication-history/beta-9-publication.md
+  releases-and-conformance/beta-8-publication: reference/publication-history/beta-8-publication.md
+  releases-and-conformance/beta-7-publication: reference/publication-history/beta-7-publication.md
+  releases-and-conformance/beta-6-publication: reference/publication-history/beta-6-publication.md
+  releases-and-conformance/beta-5-publication: reference/publication-history/beta-5-publication.md
+  releases-and-conformance/beta-4-publication: reference/publication-history/beta-4-publication.md
+  releases-and-conformance/beta-3-publication: reference/publication-history/beta-3-publication.md
+  releases-and-conformance/beta-2-publication: reference/publication-history/beta-2-publication.md
   releases-and-conformance/migration: migration.md
   releases-and-conformance/conformance: reference/conformance.md
   releases-and-conformance/specifications: reference/specifications.md
@@ -136,3 +136,17 @@ redirects:
   # The operator guide returned to Deploy and operate when the index starter
   # was retired; this is its address under the index runtime page.
   reference/packages/dpp-overlay/operate: operate/README.md
+
+  # The publication receipts moved to reference/publication-history/ and under
+  # Release history on 12 November 2026; these are their addresses under
+  # Releases and compatibility.
+  reference/release-sets/beta-11-publication: reference/publication-history/beta-11-publication.md
+  reference/release-sets/beta-10-publication: reference/publication-history/beta-10-publication.md
+  reference/release-sets/beta-9-publication: reference/publication-history/beta-9-publication.md
+  reference/release-sets/beta-8-publication: reference/publication-history/beta-8-publication.md
+  reference/release-sets/beta-7-publication: reference/publication-history/beta-7-publication.md
+  reference/release-sets/beta-6-publication: reference/publication-history/beta-6-publication.md
+  reference/release-sets/beta-5-publication: reference/publication-history/beta-5-publication.md
+  reference/release-sets/beta-4-publication: reference/publication-history/beta-4-publication.md
+  reference/release-sets/beta-3-publication: reference/publication-history/beta-3-publication.md
+  reference/release-sets/beta-2-publication: reference/publication-history/beta-2-publication.md

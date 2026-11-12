@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { assertApproval, oidcPublishEnv, publicationActions, publicationOrder, registryVersion, waitForRegistryVersion } from '../../scripts/lib/publication.mjs'
 import { integrityOf, sha256, verifyCandidates } from '../../scripts/lib/candidates.mjs'
 import { dependencyManifest } from '../../scripts/lib/dependency-manifest.mjs'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -147,11 +147,31 @@ test('the publication workflow uses GitHub OIDC without an npm token', () => {
   assert.doesNotMatch(workflow, /NODE_AUTH_TOKEN|NPM_TOKEN/)
 })
 
-test('approval binds the source, package bytes, tag, provenance and release notes', () => {
-  const plan = { sourceRevision: 'a'.repeat(40), sourceState: 'committed', candidates: [candidate], tag: 'next', provenance: true, changelogSha256: 'b'.repeat(64) }
+test('two workflows publish, both through OIDC with provenance, and the publisher always asks for it', () => {
+  const dir = new URL('../../.github/workflows/', import.meta.url)
+  const publishing = readdirSync(dir).filter((name) => /npm publish|publish-candidates\.mjs --execute/.test(readFileSync(new URL(name, dir), 'utf8'))).sort()
+  assert.deepEqual(publishing, ['publish-starter.yaml', 'publish.yaml'])
+  for (const name of publishing) {
+    const workflow = readFileSync(new URL(name, dir), 'utf8')
+    assert.match(workflow, /id-token: write/)
+    assert.doesNotMatch(workflow, /NODE_AUTH_TOKEN|NPM_TOKEN/)
+  }
+  assert.match(readFileSync(new URL('publish-starter.yaml', dir), 'utf8'), /npm publish -w @bsv\/create-dpp-app --provenance/)
+  const publisher = readFileSync(new URL('../../scripts/publish-candidates.mjs', import.meta.url), 'utf8')
+  assert.match(publisher, /'--provenance'\]/)
+  assert.doesNotMatch(publisher, /provenance=false|values\.provenance/)
+})
+
+test('the plan binds no changelog digest, so editing the changelog leaves an approval standing', () => {
+  const publisher = readFileSync(new URL('../../scripts/publish-candidates.mjs', import.meta.url), 'utf8')
+  assert.doesNotMatch(publisher, /CHANGELOG|changelogSha256/)
+})
+
+test('approval binds the source, package bytes, tag and provenance', () => {
+  const plan = { sourceRevision: 'a'.repeat(40), sourceState: 'committed', candidates: [candidate], tag: 'next', provenance: true }
   const digest = sha256(Buffer.from(JSON.stringify(plan, null, 2) + '\n'))
   assert.doesNotThrow(() => assertApproval(plan, digest, plan.sourceRevision, false))
-  for (const patch of [{ tag: 'latest' }, { provenance: false }, { candidates: [] }, { changelogSha256: 'c'.repeat(64) }]) assert.throws(() => assertApproval({ ...plan, ...patch }, digest, plan.sourceRevision, false), /approval/)
+  for (const patch of [{ tag: 'latest' }, { provenance: false }, { candidates: [] }]) assert.throws(() => assertApproval({ ...plan, ...patch }, digest, plan.sourceRevision, false), /approval/)
   assert.throws(() => assertApproval(plan, digest, 'd'.repeat(40), false), /committed revision/)
   assert.throws(() => assertApproval(plan, digest, plan.sourceRevision, true), /clean working tree/)
   assert.throws(() => assertApproval(plan, undefined, plan.sourceRevision, false), /approval/)

@@ -173,7 +173,7 @@ Before considering promotion, collect the evidence described in [the readiness r
 
 ## History
 
-The version 4 drafts were first published in 0.3.0-beta.2; the [beta.2 publication receipt](../reference/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
+The version 4 drafts were first published in 0.3.0-beta.2; the [beta.2 publication receipt](../reference/publication-history/beta-2-publication.md) records the source and package bytes that first carried them. Installing `0.3.0-beta.1` does not obtain them. Version 2 remains current, and every version 3 manifest and generated artefact remains unchanged. Package publication does not activate the drafts in an application.
 
 ## Next
 
