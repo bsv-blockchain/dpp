@@ -257,7 +257,7 @@ You should see the key from 2.1 under `publisher keys`, and the custody profile 
 
 ## 3. Write a passport
 
-Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md)):
+Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md)):
 
 1. Build the state and its transaction unsent: signed by the wallet but not sent, so it spends nothing yet.
 2. Check it with the reader's own rules.
@@ -402,9 +402,9 @@ To run a second index and exchange records with it, see [federation](../operate/
 
 | Question | Page |
 |---|---|
-| What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) |
-| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) |
-| Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md) |
-| What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) |
-| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
+| What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
+| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) |
+| Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md) |
+| What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) |
+| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
 | Which wallet to use | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |

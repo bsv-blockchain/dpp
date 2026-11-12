@@ -21,7 +21,7 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 | Hosted services use mainnet | Every hosted write, including a signed-in demonstration brand's write, costs satoshis. Sample brands write nothing to the chain. | Test with dry runs, a local index using `NETWORK=test`, and identifiers under GS1 demonstration prefix 952. |
 | Published acceptance records use older signing | `managed-custody@1` signs directly with the custodian identity key. The November candidate writes `managed-custody@2` acceptance records with derived keys through a BRC-100 wallet. | Preserve old records and verify each under its own rule. Follow [candidate migration](../migration.md#test-the-november-source-candidate) before changing signers. |
 | Candidate acceptance records have no dedicated retrieval route | With the chain alone, a stranger reads `evidenceAvailability` `unknown`, `referenced-artefact-unavailable` on a managed `TRANSFER`. Neither index nor registry serves individual records. | Export the custodian's evidence package: records travel under `authority`; read them with `acceptanceRecordsInPackage` from `@bsv/dpp-protocol`. |
-| Owner tier ciphertext has no fixed location | The state holds only its hash; holders and later recipients need another source. | Serve its UHRP content address, already given by that hash ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md), section 7). |
+| Owner tier ciphertext has no fixed location | The state holds only its hash; holders and later recipients need another source. | Serve its UHRP content address, already given by that hash ([record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), section 7). |
 
 ## Index host
 
@@ -109,9 +109,9 @@ These rules have source implementation support. They remain unavailable through 
 
 | Former open question | Candidate rule |
 |---|---|
-| Disclosure of the `legitimate` and `authority` tiers | One owner commitment covers the restricted object. Each disclosure is re-encrypted to an authorised reader's identity key and includes only their entitled tiers ([record model](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/record-model.md), section 7). |
+| Disclosure of the `legitimate` and `authority` tiers | One owner commitment covers the restricted object. Each disclosure is re-encrypted to an authorised reader's identity key and includes only their entitled tiers ([record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), section 7). |
 | Writing for a holder after a hand on | A custodian's update or retirement for a managed holder depends on custody: the chain cannot show that the holder asked, and the verification report's limits say so. The instruction record that once recorded the request is parked outside the standard ([parked instruction records](../reference/parked/managed-instruction/README.md)). |
-| Managed transfer locking key | Each state's output locks to its field-6 controller key. The custodian wallet spends for managed identities; recipients supplying their own derived destination key can spend from their own wallet ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md), section 2). |
+| Managed transfer locking key | Each state's output locks to its field-6 controller key. The custodian wallet spends for managed identities; recipients supplying their own derived destination key can spend from their own wallet ([managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md), section 2). |
 | Structured lifecycle-claim data | Native claims may carry defined `evidence` facets; `recordId` identifies the state outpoint `<txid>:<outputIndex>` ([claim rules](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/rules.md), sections 3 and 4). |
 
 ## Open questions in the standard

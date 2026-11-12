@@ -248,7 +248,7 @@ Take `passportId` from the requested scan, label or request, never the evidence 
 | `established-binding` | A binding you verified before reading this evidence, such as an earlier verified genesis |
 | `none` | You took it from the evidence itself; `subjectBinding` reads `unknown` with `subject-not-independent`, because evidence that names its own subject proves nothing about it |
 
-`expected` also accepts `productIdentifier`, `expectedIssuer`, `expectedGenesisOutpoint` and `expectedStateOutpoint`. Every artefact is checked against each supplied value ([verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) section 3).
+`expected` also accepts `productIdentifier`, `expectedIssuer`, `expectedGenesisOutpoint` and `expectedStateOutpoint`. Every artefact is checked against each supplied value ([verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) section 3).
 
 ### Select the verification policy
 
@@ -266,7 +266,7 @@ Take `passportId` from the requested scan, label or request, never the evidence 
 | `policyId` | A name for this policy | `report.policyId` |
 | `checkedAt` | The report's time, for a reproducible report; defaults to now | The observation time, and the instant credential validity is judged at |
 
-`EVIDENCE_CHECK_NAMES` lists the sixteen checks in report order. `EVIDENCE_CHECK_LABELS` gives each a short sentence to show beside it, such as "Every entry is in a block" for `inclusion`. [Verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/verification.md) defines each check and the difference between missing evidence (`unknown`) and a check that does not apply (`not-applicable`).
+`EVIDENCE_CHECK_NAMES` lists the sixteen checks in report order. `EVIDENCE_CHECK_LABELS` gives each a short sentence to show beside it, such as "Every entry is in a block" for `inclusion`. [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) defines each check and the difference between missing evidence (`unknown`) and a check that does not apply (`not-applicable`).
 
 ## Function reference
 
@@ -283,7 +283,7 @@ The [walkthrough](build-an-application.md) calls these functions in order.
 
 **Write**
 
-Field 6's controller key names the passport controller and locks each state. Later states carry control linkage, the scalar proving derivation from your identity key ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md) section 6).
+Field 6's controller key names the passport controller and locks each state. Later states carry control linkage, the scalar proving derivation from your identity key ([record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) section 6).
 
 | Function | Takes | Returns |
 |---|---|---|

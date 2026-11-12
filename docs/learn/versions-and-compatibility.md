@@ -97,7 +97,7 @@ For a registry, read `protocol` to check its contract. Its `GET /capabilities` d
 | Package entry points and runtimes | [Support table](../packages/support-table.md) |
 | A complete release selection | [Release sets](../reference/release-sets.md) |
 
-The [conformance source](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) defines the selection and compatibility requirements.
+The [conformance source](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/conformance.md) defines the selection and compatibility requirements.
 
 ## Next
 

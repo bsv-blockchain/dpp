@@ -23,7 +23,7 @@ Record version 2 checks control on every state after the first. Both custody ver
 
 ## The four keys
 
-Each state involves four keys with separate roles ([custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#1-four-keys-four-roles) section 1):
+Each state involves four keys with separate roles ([custody specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md#1-four-keys-four-roles) section 1):
 
 | Key | Location | Role |
 |---|---|---|
@@ -53,7 +53,7 @@ The custody specification describes three arrangements; record version 2 adds `m
 | Outsider can check transfer | Network-enforced owner spend | Owner linkage proof where profile requires | Operator's word only | Custodian signed and retained recipient acceptance; transfer commits to it |
 | Lost owner wallet | Passport freezes at tip permanently | Owner authority and owner tier lost; operator moves ownership as named authority | Account recovery | Custodian holds keys; named control authority moves control if managed identity root is lost |
 
-A compromised operator can forge nothing about the owner under possession, move ownership visibly under split custody, and forge everything under operator custody ([section 5](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#5-three-arrangements)). Managed acceptance is the custodian's evidence: the recipient holds no key and signs nothing.
+A compromised operator can forge nothing about the owner under possession, move ownership visibly under split custody, and forge everything under operator custody ([section 5](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md#5-three-arrangements)). Managed acceptance is the custodian's evidence: the recipient holds no key and signs nothing.
 
 Version 1 passports still verify, but version 1 proves no control: a version 1 transfer that spends the tip is valid whoever signs it. One `UPDATE` continues them as version 2, retaining the controller key without acceptance ([migration](../migration.md#start-writing-version-2)).
 
@@ -61,7 +61,7 @@ Version 1 passports still verify, but version 1 proves no control: a version 1 t
 
 ## How a managed transfer works
 
-A transfer, also called a hand on, has three steps under `managed-custody@2`. Only step 3 touches the chain ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md#4-the-transfer) section 4).
+A transfer, also called a hand on, has three steps under `managed-custody@2`. Only step 3 touches the chain ([managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md#4-the-transfer) section 4).
 
 1. **Offer.** The holder requests an offer to a named recipient identity key or through a claim code. The custodian fixes the current tip, expiry and digest of the exact terms shown to the recipient.
 2. **Acceptance.** The recipient reads and accepts the terms by redeeming the code or answering as the named identity. The custodian derives or receives the destination controller key, records acceptance and time, signs through its wallet and retains the record.
@@ -112,7 +112,7 @@ The acceptance screen should answer:
 
 1. Derive your controller key with `ownerKeyFor(passportId, wallet)` in your BRC-100 wallet. Give it and your identity key to the custodian.
 2. Have the custodian offer the passport to you as a named recipient, with that destination key, and write `TRANSFER`.
-3. Require the transfer lock to use the same key so your wallet can spend the next state ([custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#3-where-the-lock-sits) section 3). You then prove control from your own root: possession ([managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md#7-what-a-deployment-declares-and-where-a-passport-can-go) section 7).
+3. Require the transfer lock to use the same key so your wallet can spend the next state ([custody specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md#3-where-the-lock-sits) section 3). You then prove control from your own root: possession ([managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md#7-what-a-deployment-declares-and-where-a-passport-can-go) section 7).
 4. Arrange the conditions for later writes before relying on the exit:
 
 | Condition | Required arrangement |
@@ -135,7 +135,7 @@ A restored account may lack keys; restored keys may lack evidence. Evidence arch
 | Loss | Consequence |
 |---|---|
 | Lock key | Passport freezes at its tip: the output script has one key and one path |
-| Controller key with lock held elsewhere | Party loses authority and owner tier; a named authority can move control with one more state ([custody specification](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md#6-recovery) section 6) |
+| Controller key with lock held elsewhere | Party loses authority and owner tier; a named authority can move control with one more state ([custody specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md#6-recovery) section 6) |
 
 ## Not settled yet
 
@@ -151,9 +151,9 @@ The November candidate specifies the locking key and derived-key signatures. The
 
 | Design question | Source |
 |---|---|
-| Who may hold each key, and the three arrangements | [Custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/custody.md) |
-| How managed acceptance works and what it proves | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/managed-custody.md) |
-| Which control proof a state needs | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/record-model-v2.md#6-chain-invariants) section 6 |
+| Who may hold each key, and the three arrangements | [Custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md) |
+| How managed acceptance works and what it proves | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md) |
+| Which control proof a state needs | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md#6-chain-invariants) section 6 |
 | What a replacement provider can restore | [Export, import and recovery](../operate/export-import-recovery.md) |
 
 ## Next
