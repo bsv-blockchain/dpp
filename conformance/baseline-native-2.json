@@ -319,7 +319,6 @@
         "SVC-2-version-2-admission"
       ],
       "optional": [
-        "SVC-1-discovery-sync",
         "CONF-4-overlay-capabilities",
         "MC-7-declaration"
       ],

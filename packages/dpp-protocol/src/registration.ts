@@ -5,9 +5,9 @@ import type { DataSigner } from './signatures.js'
 /**
  * The index registration request (`spec/services.md` section 2): what an
  * application's wallet signs to ask an index to admit states its publisher
- * key countersigns. The index that accepts it appends a policy version naming
- * the key (`publisherPolicy.ts`, `appendPublisherVersion`) and hands back the
- * application's write credentials.
+ * key countersigns. What an accepted request does is the index's own; the
+ * reference index appends a policy version naming the key (`publisherPolicy.ts`,
+ * `appendPublisherVersion`) and hands back the application's write credentials.
  *
  * The request verifies from itself. Its signature is by the BRC-42 child of
  * `publisherKey` for `INDEX_REGISTRATION_PROTOCOL_ID`, key identifier the
@@ -19,10 +19,8 @@ import type { DataSigner } from './signatures.js'
  * chooses, and the index's own record of which keys registered stops a second
  * collection of credentials.
  *
- * The object is flat and every value is a string, so its canonical form under
- * `canonicalJson` (keys sorted by code point, no whitespace) is the same bytes
- * the flat form of `spec/rules.md` section 4 would give; it is cited as the
- * nested form because the acceptance record it mirrors is.
+ * Its canonical form is the canonical JSON of `spec/rules.md` section 4,
+ * through `canonicalJson`: the object is flat and every value is a string.
  */
 
 export const INDEX_REGISTRATION_FORMAT = 'dpp-index-registration@1' as const

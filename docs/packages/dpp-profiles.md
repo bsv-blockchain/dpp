@@ -42,7 +42,7 @@ A manifest defines a profile's fields, labels, tiers, obligations and applicabil
 
 | Version | Where you see it | What it means |
 |---|---|---|
-| Profile version | The number after `@` in `battery@2`, and a payload's `profile_version` | The edition of a profile's field list. Current: `battery@2`, `textile@2`, `general@2`. Drafts: `battery@3`, `battery@4`, `textile@3`, `textile@4`. Superseded: `textile@1`, `general@1` |
+| Profile version | The number after `@` in `battery@2`, and a payload's `profile_version` | The edition of a profile's field list. Current: `battery@2`, `textile@2`, `general@2`. Draft: `battery@4`. Parked drafts, still readable: `battery@3`, `textile@3`, `textile@4`. Superseded: `textile@1`, `general@1` |
 | Manifest format | A manifest's `manifestVersion`, `"1"` or `"2"` | The manifest file's layout. Current profiles use format 1; drafts use format 2, which adds value types and rules |
 | Record version | A passport state's `version`, 1 or 2 | The passport record model, unrelated to profiles: a version 2 state can carry a `battery@2` payload |
 
@@ -79,7 +79,7 @@ an empty payload lacks 63 required fields, starting with serial, modelName, manu
 | `missingRequired` | Checks presence of fields captured at registration only. It is neither schema validation nor product assessment. |
 | `needsReview` | Show each field and its condition beside schema results. Never present it as satisfied. |
 
-Format 2 drafts use `readManifestAny`, `fieldsForV2` and `missingRequiredV2` with richer applicability context. `compareProfiles(from, to)` reports version changes; `reviewProfileData` adds cross-field findings ([evaluate version 4 drafts](../profiles/version-4-drafts.md)). [Authoring](../profiles/authoring.md) covers generation and freezing.
+Format 2 drafts use `readManifestAny`, `fieldsForV2` and `missingRequiredV2` with richer applicability context. `compareProfiles(from, to)` reports version changes; `reviewProfileData` adds cross-field findings ([evaluate the battery@4 draft](../profiles/version-4-drafts.md)). [Authoring](../profiles/authoring.md) covers generation and freezing.
 
 ## Check a payload against its profile
 
@@ -298,4 +298,4 @@ Until profile versioning and canonical locations are decided, this package's fro
 | Choose the profile for your product | [Industry profiles](../profiles/README.md) |
 | Put the payload into a passport state | [Build an application](build-an-application.md), step 3 |
 | Adopt a new profile version | [Update profiles and consuming applications](../profiles/updating-applications.md) |
-| Evaluate a draft before it becomes current | [Evaluate the version 4 drafts](../profiles/version-4-drafts.md) |
+| Evaluate a draft before it becomes current | [Evaluate the battery@4 draft](../profiles/version-4-drafts.md) |

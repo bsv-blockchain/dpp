@@ -1,6 +1,7 @@
 /**
  * The publisher key policy as this node is configured with it
- * (`spec/services.md` section 1, `contracts/publisher-policy.schema.json`).
+ * (the publisher key policy of this package's README,
+ * `contracts/publisher-policy.schema.json`).
  *
  * `PUBLISHER_POLICY_FILE` names a JSON file holding the chain of
  * `dpp-publisher-policy@1` versions, oldest first, or `PUBLISHER_POLICY_JSON`

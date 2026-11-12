@@ -38,7 +38,7 @@ An acceptance record is a JSON object with exactly the following properties, `of
 | `custodian` | The custodian's identity key, compressed, lower-case hexadecimal. |
 | `signature` | The custodian's signature: canonical DER, lower-case hexadecimal, between 8 and 72 bytes. |
 
-**Canonical form.** The record's canonical bytes are the restricted canonical JSON of [`rules.md`](rules.md) §4 extended to nested objects: property names sorted by code unit at every level, no whitespace, string values and safe integers only, and nothing else. An omitted optional property is absent from the bytes, not present as null.
+**Canonical form.** The record's canonical bytes are its canonical JSON under [`rules.md`](rules.md) §4.
 
 **The signature.** The custodian signs SHA-256 of the canonical bytes of the record without its `signature` property with the BRC-42 child of its identity key for the protocol identifier `[1, 'dpp managed record v1']`, key identifier `requestId` and counterparty `anyone`: the invoice number is `1-dpp managed record v1-<requestId>`, and a BRC-100 wallet makes the signature with `createSignature` under that protocol, key identifier and counterparty, one derivation from its root and no key exported. The verification key is the child of the `custodian` property for the same invoice number, which any third party computes from the record alone, because the counterparty `anyone` is the well-known key every verifier holds. The record carries no derivation because this rule fixes it.
 

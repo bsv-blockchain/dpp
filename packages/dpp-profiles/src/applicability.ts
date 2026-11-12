@@ -1,6 +1,5 @@
 /**
- * The declarative applicability evaluator (`spec/profiles.md` §3,
- * `spec/passport-projections.md` §6). A rule is data, never an expression:
+ * The declarative applicability evaluator (`spec/profiles.md` §3). A rule is data, never an expression:
  * category membership, jurisdiction, an effective interval, a numeric
  * threshold on a payload value, `all` and `any` over those, `needs-review`
  * for what only a person can decide, and `unresolved` for what the primary

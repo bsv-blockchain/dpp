@@ -72,8 +72,8 @@ export const FEDERATED_OPERATORS_PROFILE = 'federated-operators@1'
  * The operator profile an index runs, which its capability document and its
  * evidence packages both name. A publisher policy's own `scope.operatorProfile`
  * names the administration the policy governs and does not change when the
- * index adds peers; this is what the index does with it (`spec/services.md`
- * section 6).
+ * index adds peers; this is what the index does with it (this package's
+ * README, operator profiles).
  */
 /** The custody profile this index admits version 2 states under, as the document declares it and as a registration request must name it. */
 export function declaredCustodyProfile(managedAcceptance: boolean): string {

@@ -65,9 +65,17 @@ const PARKED_TOKEN_CARRIER = {
   'examples/lifecycle-v3.mjs': 'docs/reference/parked/token-carrier/lifecycle-v3.mjs',
 }
 // The complete export's part schema left contracts/ for the overlay package on
-// 12 November 2026, when the export became a reference feature of that package.
+// 12 November 2026, when the export became a reference feature of that package,
+// and the projection schemas left for the profiles package the same day, when
+// passport projections did.
 const MOVED_TO_PACKAGES = {
   'contracts/evidence-export.schema.json': 'packages/dpp-overlay/schemas/evidence-export.schema.json',
+  'contracts/passport-source.schema.json': 'packages/dpp-profiles/schemas/passport-source.schema.json',
+  'contracts/passport-projection.schema.json': 'packages/dpp-profiles/schemas/passport-projection.schema.json',
+}
+// The passport projection specification was parked on 12 November 2026.
+const PARKED_PROJECTIONS = {
+  'spec/passport-projections.md': 'docs/reference/parked/passport-projections/passport-projections.md',
 }
 let linkFailures = 0, links = 0, pinned = 0, commands = 0
 for (const page of pages) {
@@ -90,7 +98,7 @@ for (const page of pages) {
             ? path.replace(/^packages\/dpp-core\//, 'packages/dpp-protocol/')
             : path === 'docs/packages/dpp-core.md' ? 'docs/packages/dpp-protocol.md'
               : path.startsWith('conformance/demonstrations/') ? path.replace(/^conformance\/demonstrations\//, 'docs/reference/parked/')
-                : PARKED_TOKEN_CARRIER[path] ?? MOVED_TO_PACKAGES[path] ?? path
+                : PARKED_TOKEN_CARRIER[path] ?? PARKED_PROJECTIONS[path] ?? MOVED_TO_PACKAGES[path] ?? path
           const local = resolve(root, existsSync(resolve(root, movedPath)) ? movedPath : path)
           if (!local.startsWith(resolve(root) + '/') || !existsSync(local)) { linkFailures += 1; say(false, `${page} pins ${path}, which does not exist inside the repository.`); continue }
           const directory = statSync(local).isDirectory()

@@ -71,7 +71,7 @@ export interface InspectChainOptions extends VerifyChainOptions {
    */
   publisherKeys?: string[]
   /**
-   * A publisher key policy chain (`spec/services.md` §1), already verified by
+   * A publisher key policy chain (documented with `@bsv/dpp-overlay`), already verified by
    * the caller with `verifyPolicyChain`. A state is then checked against the
    * state-publisher keys active at its own timestamp, so a retired key still
    * authenticates what it signed while active and a new key authenticates

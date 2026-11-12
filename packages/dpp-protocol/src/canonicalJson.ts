@@ -1,12 +1,17 @@
 /**
- * Canonical JSON for nested documents: the publisher policy and the evidence
- * package manifest. Native claims keep the flat restricted form of
- * canonical.ts; this one exists because those documents nest objects and
- * arrays. Object keys are sorted recursively by code point, there is no
- * whitespace, arrays keep their order, `undefined` members are omitted, and
- * only strings, booleans and safe integers are values. Anything else has no
- * canonical form and is refused by name, so two implementations that both
- * accept a document hash the same bytes.
+ * The canonical JSON of `spec/rules.md` §4, the one serialiser for the native
+ * documents that section names: the native claim (through canonical.ts, which
+ * holds it to the flat form), the managed acceptance record, the evidence
+ * package manifest and the index registration request, and for the reference
+ * index's publisher policy. It is not the rule for everything: the EPCIS event
+ * body digest is RFC 8785 (`spec/epcis-interoperability.md` §2, implemented in
+ * @bsv/dpp-credentials), and a Data Integrity proof uses its suite's own
+ * canonicalisation.
+ * Object keys are sorted recursively by code point, there is no whitespace,
+ * arrays keep their order, `undefined` members are omitted, and only strings,
+ * booleans and safe integers are values. Anything else has no canonical form
+ * and is refused by name, so two implementations that both accept a document
+ * hash the same bytes.
  */
 export class CanonicalJsonError extends Error {
   constructor(path: string, detail: string) {

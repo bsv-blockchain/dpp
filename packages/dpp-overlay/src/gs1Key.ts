@@ -2,7 +2,7 @@ import { gs1KeyTuple, parseGs1DigitalLinkUri } from '@bsv/dpp-profiles'
 
 /**
  * The GS1 key a passport is found by when the caller holds no host: the key
- * tuple of `spec/gs1-discovery.md` section 1, `01:{gtin14}` and each key
+ * tuple of the overlay contract's `gs1Key` lookup, `01:{gtin14}` and each key
  * qualifier as `ai:value`, joined by `|`. Two Digital Link URIs under
  * different hosts or GTIN spellings that reduce to one tuple name one product,
  * so a lookup by tuple answers every passport issued for it, each under its

@@ -8,9 +8,9 @@ import { BATCH, BATCH_ID, ITEM_1, ITEM_2, ITEM_2_SOURCE, MEASUREMENTS, MODEL_ID,
 const VECTORS_PATH = new URL('../../../fixtures/vectors/dpp/interoperability/projection/v1.json', import.meta.url)
 const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true })
 addFormats(ajv)
-const validateProjection = ajv.compile(JSON.parse(readFileSync(new URL('../../../contracts/passport-projection.schema.json', import.meta.url), 'utf8')))
+const validateProjection = ajv.compile(JSON.parse(readFileSync(new URL('../schemas/passport-projection.schema.json', import.meta.url), 'utf8')))
 
-describe('projectPassport (spec/passport-projections.md section 4)', () => {
+describe('projectPassport (the parked projection specification, section 4)', () => {
   const { projection, validation } = projectPassport(baseInput())
 
   it('validates against passport-projection@1 and commits to its own body', () => {

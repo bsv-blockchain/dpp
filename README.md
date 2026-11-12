@@ -92,7 +92,7 @@ Applications can reuse these packages or implement the standard from the specifi
 
 Industry profiles define sector-specific fields, terminology and evidence requirements while sharing the core record and verification rules. Profiles are versioned separately from the core standard.
 
-Optional interoperability profiles cover GS1 Digital Link discovery, EPCIS event import, external credentials and deterministic passport projections. See the [industry profile guide](docs/profiles/README.md) and [interoperability guide](docs/interoperability/README.md) for supported versions and limitations.
+Optional interoperability profiles cover GS1 Digital Link discovery, EPCIS event import and external credentials, and `@bsv/dpp-profiles` keeps deterministic passport projections as a reference feature outside the standard. See the [industry profile guide](docs/profiles/README.md) and [interoperability guide](docs/interoperability/README.md) for supported versions and limitations.
 
 ## Run an index
 

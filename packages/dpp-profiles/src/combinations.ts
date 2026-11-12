@@ -121,6 +121,9 @@ export function checkSelection(selection: ProfileSelection): SelectionResult {
     } else {
       const profile = readOperatorProfile(selection.operator as OperatorProfileId) as { status: string; synchronisation: { mode: string }; discovery: { mode: string } }
       const d = selection.deployment ?? {}
+      // A parked operator profile is still checked for what it declares, and
+      // never read as current: the note says so for every purpose.
+      if (profile.status === 'parked') notes.push(`${selection.operator} is parked: required by no release and not under development`)
       if (selection.operator === 'single-operator@1') {
         if ((d.operators ?? 1) > 1 || d.gasp === true || (d.discovery != null && d.discovery !== 'none')) {
           conflict('operator-single-with-federation-options', 'single-operator@1 declares one administration with discovery and synchronisation off; one administration that exchanges records with peers is single-operator@2, and independently administered operators are federated-operators@1')

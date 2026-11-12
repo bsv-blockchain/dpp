@@ -1,6 +1,6 @@
 /**
- * Per-publisher write tokens (`spec/services.md` section 1, deployment
- * policy): a bearer that belongs to one publisher or anchoring key and one
+ * Per-publisher write tokens (this package's README, write tokens; deployment
+ * policy, not part of the standard): a bearer that belongs to one publisher or anchoring key and one
  * use, so that an index with several writers hands each its own credential
  * and a leaked token can write only what its key signs.
  *

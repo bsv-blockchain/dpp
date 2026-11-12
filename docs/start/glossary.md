@@ -37,7 +37,7 @@ Readers, application teams and operators can use this glossary to interpret DPP 
 | Owner tier | The passport's restricted data, every field not marked `public`. It is encrypted off chain; only its hash goes into the state. |
 | Profile | Product fields a passport carries for an industry, such as `battery@2` or `general@2`, with a JSON Schema for public and restricted parts. |
 | Publisher key | The service key countersigning each state. An index admits only states countersigned by keys in its publisher policy. |
-| Publisher policy | An operator's signed list of the publisher keys it accepts and when each is active. |
+| Publisher policy | An operator's signed list of the publisher keys it accepts and when each is active: a feature of the overlay package, outside the standard, which asks only for the flat key list in the capability document. |
 | PushDrop | BSV script template used by every state: fields are pushed and dropped; the output locks to a key (BRC-48). Spending the tip unlocks its PushDrop output. |
 | Record version | The shape of a state: version 1 (fourteen fields, seven operations) or version 2 (seventeen fields, `ISSUE`, `UPDATE`, `TRANSFER`, `RETIRE`). New passports use version 2; version 1 passports still verify. |
 | Registry | Validates and stores signed claims and their exact bytes for readers to fetch and check. |

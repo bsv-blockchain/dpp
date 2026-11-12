@@ -76,6 +76,8 @@
     * [Parked: holder instruction records](reference/parked/managed-instruction/README.md)
     * [Parked: record version 3, the token carrier](reference/parked/token-carrier/README.md)
       * [The token carrier specification, as parked](reference/parked/token-carrier/token-carrier.md)
+    * [Parked: passport projections](reference/parked/passport-projections/README.md)
+      * [The passport projection specification, as parked](reference/parked/passport-projections/passport-projections.md)
     * [Release history](reference/release-history.md)
     * [Beta.9 publication receipt](reference/beta-9-publication.md)
     * [Beta.8 publication receipt](reference/beta-8-publication.md)

@@ -1,5 +1,7 @@
 /**
- * The publisher key policy (`spec/services.md` §1, `contracts/publisher-policy.schema.json`).
+ * The publisher key policy (`contracts/publisher-policy.schema.json`), a feature
+ * of the reference index and not part of the standard: `packages/dpp-overlay/README.md`
+ * documents its rules, which the standard's flat publisher key list leaves out.
  *
  * The keys that countersign admitted states and anchors are a bounded,
  * versioned set. Each version is a complete statement; a later version names
@@ -12,8 +14,8 @@
  * time question from the verified chain. Neither trusts a list because a node
  * served it: the chain's own signatures and digests are what is checked.
  *
- * A policy nests objects and arrays, so it uses the canonical JSON of
- * canonicalJson.ts rather than the flat restricted form of native claims.
+ * A policy nests objects and arrays; its canonical form is the canonical JSON
+ * of `spec/rules.md` §4, through canonicalJson.ts.
  */
 import { Hash, PrivateKey, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { canonicalJson, CanonicalJsonError } from './canonicalJson.js'
@@ -233,7 +235,7 @@ const MAX_PUBLISHERS = 256
 
 /**
  * The next version of a single-operator chain after one publisher is added
- * or retired (`spec/services.md` section 2): `policyVersion + 1`, issued at
+ * or retired (registration, in `packages/dpp-overlay/README.md`): `policyVersion + 1`, issued at
  * `now`, superseding the newest version by digest, a rotation that keeps the
  * scope and every existing entry, signed by the operator's identity key
  * directly as the chain rules require. The extended chain is verified before

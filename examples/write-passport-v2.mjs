@@ -554,7 +554,7 @@ async function startLocalIndex(publisherKey) {
     throw new Error(`the in-process index could not be loaded (${cause.message}); run npm ci and npm run build in the repository first`)
   }
 
-  // The policy chain of spec/services.md section 1: one operator signs a genesis that names the writer's key as a state publisher.
+  // The publisher key policy of packages/dpp-overlay/README.md: one operator signs a genesis that names the writer's key as a state publisher.
   const operatorKey = PrivateKey.fromHex('44'.repeat(32))
   const operator = 'Example operator'
   const genesis = {

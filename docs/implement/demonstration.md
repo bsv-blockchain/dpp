@@ -84,8 +84,8 @@ For each completed scenario, retain its evidence and the ledger rows listed unde
 
 | Claim or conclusion | What the trial records or still needs |
 |---|---|
-| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` (since [archived](../reference/parked/ledger-archive.json)), `overlay-single-operator-1`, `registry-current-intake` | Trial evidence bears on these claims. |
-| `overlay-federated-operators-1` | Cannot be made by the trial alone. Requires separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
+| `passport-reader-native-baseline-2`, `attestation-verifier-native-baseline-1`, `passport-writer-reference-example`, `managed-custody-1`, `managed-custody-1-writer` and `overlay-single-operator-1` (both since [archived](../reference/parked/ledger-archive.json)), `registry-current-intake` | Trial evidence bears on these claims. |
+| `overlay-federated-operators-1` | [Archived](../reference/parked/ledger-archive.json) on 12 November 2026 with the parked `federated-operators@1`, so no longer a claim. It required separately administered operators; `two-operators` provides them only when the parties are separate organisations. |
 | `version-1-0-readiness` | Cannot be made by the trial alone. Requires another implementing party on record. |
 | Local synthetic exchange | Establishes neither separately administered operation nor mined inclusion. |
 

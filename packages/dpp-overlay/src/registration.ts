@@ -1,6 +1,7 @@
 /**
- * Self-service registration, the persistent half (`spec/services.md`
- * section 2): the policy versions an index appends when it admits a
+ * Self-service registration, the persistent half (the request is
+ * `spec/services.md` section 2's; what an accepted one does is this package's,
+ * in its README): the policy versions an index appends when it admits a
  * registered publisher, and the record of each registration by publisher
  * key. The route and the operator commands (`index.ts`, `registrationsCommand.ts`)
  * drive one state machine over these records; this module keeps them.

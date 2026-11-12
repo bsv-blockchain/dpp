@@ -158,4 +158,4 @@ Its service selects `battery@2` and `textile@2`. Its adapter has explicit limits
 
 ## Next
 
-[Evaluate the version 4 drafts](version-4-drafts.md), follow [migration](../migration.md) for a whole release, or [publish a profile package update](../reference/publishing-profile-updates.md) as a profile owner.
+[Evaluate the battery@4 draft](version-4-drafts.md), follow [migration](../migration.md) for a whole release, or [publish a profile package update](../reference/publishing-profile-updates.md) as a profile owner.

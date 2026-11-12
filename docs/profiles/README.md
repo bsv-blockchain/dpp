@@ -31,11 +31,11 @@ Passport writers and readers can use this page to choose an industry profile and
 
 | Your product | Profile page | Current version | Other versions | `category` values |
 |---|---|---|---|---|
-| A battery | [Battery](battery.md) | `battery@2` | Drafts `battery@3` and `battery@4` | `lmt` (light transport), `ev` (vehicle), `industrial`, `stationary` (stationary storage); a closed list |
-| Clothing, footwear, home textiles and textile accessories | [Textile](textile.md) | `textile@2` | Drafts `textile@3` and `textile@4`; superseded `textile@1` | `apparel`, `footwear`, `home`, `accessory`; an open list |
+| A battery | [Battery](battery.md) | `battery@2` | Draft `battery@4`; parked draft `battery@3` | `lmt` (light transport), `ev` (vehicle), `industrial`, `stationary` (stationary storage); a closed list |
+| Clothing, footwear, home textiles and textile accessories | [Textile](textile.md) | `textile@2` | Parked drafts `textile@3` and `textile@4`; superseded `textile@1` | `apparel`, `footwear`, `home`, `accessory`; an open list |
 | Anything else, such as a bicycle, watch, musical instrument, piece of furniture, luggage, jewellery, appliance, tool, sports equipment or artwork | [General](general.md) | `general@2` | Superseded `general@1` | `bicycle`, `watch`, `instrument`, `furniture`, `luggage`, `jewellery`, `appliance`, `sportsEquipment`, `artwork`; an open list |
 
-1. **Write under the current version.** Select a draft by name only for evaluation; no conformance claim can rest on it ([version 4 drafts](version-4-drafts.md)). Superseded versions remain readable, but `checkSelection` refuses new writes under them.
+1. **Write under the current version.** Select a draft by name only for evaluation; no conformance claim can rest on it ([the battery@4 draft](version-4-drafts.md)). The parked drafts `battery@3`, `textile@3` and `textile@4` are for reading records that declare them. Superseded versions remain readable, but `checkSelection` refuses new writes under them.
 2. **Set `category`.** Closed lists accept only listed values. Open lists accept any non-empty text, but other readers can label only listed values. Battery categories also determine applicable fields.
 3. **Read the mapping's assessment status.** A mapping is not an assessment; each profile page states what remains unassessed.
 
@@ -130,7 +130,7 @@ Both are gaps in the standard ([known limitations](../operate/limitations.md)).
 
 | Task | Page |
 |---|---|
-| Try a draft before it becomes current | [Evaluate the version 4 drafts](version-4-drafts.md) |
+| Try a draft before it becomes current | [Evaluate the battery@4 draft](version-4-drafts.md) |
 | Adopt a new profile version in an application | [Update profiles and consuming applications](updating-applications.md) |
 | Compare a profile and an application with regulations, standards or an external validator | [Review profile and application readiness](reviewing-readiness.md) |
 | Add or revise a profile | [Author and propose a profile](authoring.md) |

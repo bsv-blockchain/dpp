@@ -181,6 +181,8 @@ Tokens are required when configured, as on the hosted reference. Writers obtain 
 | `403 token-publisher-mismatch` | State or anchor names another key. |
 | `401` | Token is unknown, revoked or for the wrong use. |
 
+Per-publisher tokens, registration operations, the publisher policy chain and synchronisation are features of this package, not of the standard, which fixes only the flat publisher key list of the capability document and the signed registration request; the [package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#operator-features) states their rules.
+
 For self-service registration:
 
 1. The operator sets `REGISTRATION=open` or `REGISTRATION=approval`, and supplies `OPERATOR_SIGNING_KEY` to sign appended policy versions.

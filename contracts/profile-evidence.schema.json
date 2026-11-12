@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/profile-evidence.schema.json",
   "title": "DPP profile evidence shapes, version 1",
-  "description": "The shared shapes an industry profile field or a passport projection carries when a value is more than a scalar (spec/passport-projections.md section 5): a claim's evidence, a certification, a measurement or assessment, a related document, a language-tagged text, a date with its precision, and warranty terms with a derived expiry. Reused by profile manifests of version 2 through their value types and by passport-projection@1. None of these is a credential format and none makes a value true: a scheme homepage or an issuer signature alone never proves a certification valid, a document URL is not a content commitment, and a date is never made more precise than its source.",
+  "description": "The shared shapes an industry profile field carries when a value is more than a scalar (spec/profiles.md section 3): a claim's evidence, a certification, a measurement or assessment, a related document, a language-tagged text, a date with its precision, and warranty terms with a derived expiry. Reused by profile manifests of version 2 through their value types, and by the passport projections of @bsv/dpp-profiles, a reference feature outside the standard. None of these is a credential format and none makes a value true: a scheme homepage or an issuer signature alone never proves a certification valid, a document URL is not a content commitment, and a date is never made more precise than its source.",
   "type": "object",
   "$defs": {
     "datePrecision": {

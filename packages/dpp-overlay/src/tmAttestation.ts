@@ -8,7 +8,7 @@ export const ATTESTATION_TOPIC = 'tm_attestation'
 
 export interface AttestationAdmissionOptions {
   /**
-   * The publisher key policy chain (`spec/services.md` section 1), verified by
+   * The publisher key policy chain (this package's README), verified by
    * the caller. When present and in force for this topic, an anchor is
    * admitted only when its anchoring service is an anchor-publisher key active
    * at admission time, and the static list is not consulted. Admission time,
@@ -61,7 +61,7 @@ export class AttestationTopicManager implements TopicManager {
   async getDocumentation(): Promise<string> {
     const policy = this.policy == null
       ? ''
-      : ' This index admits anchors only from anchor-publisher keys active at admission time under its publisher key policy (spec/services.md section 1); an anchor carries no timestamp, so admission time is the instant held against the key window. GET /capabilities lists the keys active now.'
+      : ' This index admits anchors only from anchor-publisher keys active at admission time under its publisher key policy (dpp-publisher-policy@1, a feature of @bsv/dpp-overlay); an anchor carries no timestamp, so admission time is the instant held against the key window. GET /capabilities lists the keys active now.'
     return `${ATTESTATION_TOPIC} admits ${ATTESTATION_ANCHOR_PREFIX} outputs with ten fields and an exact five-OP_2DROP tail. The anchoring service signs nine length-prefixed fields. The digest commits to the complete secured representation. Carried issuer/subject/type/representation/media metadata must be checked against that document. Admission proves anchoring-service attribution, not credential validity, issuer authority, status, availability or VSC conformance. Legacy UORA layouts belong to their separately named historical topic.${policy}`
   }
   async getMetaData(): Promise<{ name: string; shortDescription: string; version: string }> {

@@ -23,8 +23,8 @@ import { shuffled } from './projection-fixture.js'
 const VECTORS_PATH = new URL('../../../fixtures/vectors/dpp/interoperability/projection/packaging-v1.json', import.meta.url)
 const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true })
 addFormats(ajv)
-const validateProjection = ajv.compile(JSON.parse(readFileSync(new URL('../../../contracts/passport-projection.schema.json', import.meta.url), 'utf8')))
-const validateSource = ajv.compile(JSON.parse(readFileSync(new URL('../../../contracts/passport-source.schema.json', import.meta.url), 'utf8')))
+const validateProjection = ajv.compile(JSON.parse(readFileSync(new URL('../schemas/passport-projection.schema.json', import.meta.url), 'utf8')))
+const validateSource = ajv.compile(JSON.parse(readFileSync(new URL('../schemas/passport-source.schema.json', import.meta.url), 'utf8')))
 
 const GENERAL = readManifest('general@2')
 const BOTTLE_MODEL = 'https://id.example.org/01/09520000000042'

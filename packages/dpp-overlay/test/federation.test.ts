@@ -15,7 +15,7 @@ import { ANYONE, bodyOf, changeFundedEventTx, crossFundedGenesisTx, eventTx, fun
 import { A1, FEDERATION_OPERATORS, federatedChain, K1, K2, pub, STRANGER } from './policy-fixture.js'
 
 /**
- * The federation exercise of spec/services.md section 1 under the operator
+ * The federation exercise of this package's README under the parked operator
  * profile federated-operators@1: two operators, A and B, each with its own
  * engine, storage and submit token, sharing one publisher policy file that
  * names both operators, B synchronising from A through the SDK's GASP over

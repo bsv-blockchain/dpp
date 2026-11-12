@@ -55,7 +55,7 @@ Two live passports to look up with the [passport lookup](reference/contracts.md#
 
 | Passport | What it shows |
 |---|---|
-| `https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180` | A version 2 lineage: issue, a repair and a managed transfer, with three anchored claims. Its payload declares the draft `textile@4` |
+| `https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180` | A version 2 lineage: issue, a repair and a managed transfer, with three anchored claims. Its payload declares the draft `textile@4`, parked since 12 November 2026 and still read |
 | `https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8` | A version 2 lineage: issue and two updates recording installation and a firmware repair, with three anchored claims. Its payload declares the draft `battery@4` |
 
 Use these to test reading and verifying, not as payload examples. Both carry the demonstration `notice`. The second's states do not satisfy the public schema of the profile they declare: they lack required fields, such as `labelMeaning` and `separateCollectionSymbol`. The first's states do, but their `waterUse` of 1.9 fails the schema's `multipleOf: 0.1` check in a validator that evaluates it in binary floating point, as Ajv does by default. A report made with the profiles package's payload validator and Ajv set up as that page shows reads `schema` as `fail` with `schema-invalid` for each of them, and one made without a validator reads `unknown`; every other check is unaffected ([the profiles package](packages/dpp-profiles.md#check-a-payload-against-its-profile)). Start your own payload from `node examples/sample-payload.mjs`.

@@ -20,11 +20,11 @@ The number after `@` is the profile version declared by `profile_version`, separ
 | Version | Status | Use it to |
 |---|---|---|
 | `textile@2` | `current` | Write new records |
-| `textile@4` | `draft` | Evaluate the next version before it becomes current. It corrects source-status mappings and component composition ([evaluate the version 4 drafts](version-4-drafts.md)). An application uses it only by naming it |
-| `textile@3` | `draft` | Skip it: `textile@4` succeeds it. It stays published and frozen as the step between the two |
+| `textile@4` | `draft`, parked | Read records that declare it. Parked on 12 November 2026: no successor to `textile@2` is proposed, and it stays published and frozen ([parked drafts](version-4-drafts.md#parked-textile4-and-the-version-3-drafts)) |
+| `textile@3` | `draft`, parked | Read records that declare it. Parked with `textile@4`, which succeeded it |
 | `textile@1` | `superseded` | Read records that declare it. Its 13 fields carry names, labels, obligations and tiers only, with no types, units or constraints |
 
-Use the manifest's `status` in code: `readManifestAny('textile@4').status` is `draft`. Select a draft explicitly for evaluation; never apply it silently to existing records.
+Use the manifest's `status` in code: `readManifestAny('textile@4').status` is `draft`. Never apply a draft silently to existing records.
 
 ## Categories
 
@@ -149,11 +149,11 @@ Replace `'apparel'` with your category. Display `label` to the reader; `accessTi
 | Material | Source |
 |---|---|
 | Current profile | [textile@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/textile@2.json) |
-| Drafts | [textile@3](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/textile@3.json), [textile@4](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/textile@4.json) |
+| Parked drafts, still readable | [textile@3](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/textile@3.json), [textile@4](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/textile@4.json) |
 | Superseded profile, still readable | [textile@1](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/textile@1.json) |
 | Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/textile@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated) |
 
-The [profile specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) defines version selection and applicability, and the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records assessment evidence. The drafts do not establish product qualification.
+The [profile specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/profiles.md) defines version selection and applicability, and the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records assessment evidence. The parked drafts do not establish product qualification.
 
 ## Next
 

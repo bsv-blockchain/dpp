@@ -1,7 +1,6 @@
 /**
  * The shared evidence, measurement, document, language and date shapes
- * (`contracts/profile-evidence.schema.json`, `spec/passport-projections.md`
- * §5), with the few pure helpers a projection and a profile validator need:
+ * (`contracts/profile-evidence.schema.json`, `spec/profiles.md` §3), with the few pure helpers a projection and a profile validator need:
  * which precision a date carries, which language of a text to return, when a
  * warranty expiry can be derived from evidence and when it cannot, and which
  * unit conversions are explicit enough to make. None of these guesses. A

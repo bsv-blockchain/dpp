@@ -20,8 +20,8 @@ The number after `@` is the profile version declared by `profile_version`, separ
 | Version | Status | Use it to |
 |---|---|---|
 | `battery@2` | `current` | Write new records |
-| `battery@4` | `draft` | Evaluate the next version before it becomes current ([evaluate the version 4 drafts](version-4-drafts.md)). An application uses it only by naming it |
-| `battery@3` | `draft` | Skip it: `battery@4` succeeds it. It stays published and frozen as the step between the two |
+| `battery@4` | `draft` | Evaluate the next version before it becomes current ([evaluate the battery@4 draft](version-4-drafts.md)). An application uses it only by naming it |
+| `battery@3` | `draft`, parked | Skip it: `battery@4` succeeds it. Parked on 12 November 2026, it stays published and frozen so a record that declares it is still read ([parked drafts](version-4-drafts.md#parked-textile4-and-the-version-3-drafts)) |
 
 Use the manifest's `status` in code: `readManifestAny('battery@4').status` is `draft`.
 
@@ -172,10 +172,10 @@ The standard makes no product-compliance claim: the [ledger](https://github.com/
 | Material | Source |
 |---|---|
 | Current profile | [battery@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/battery@2.json) |
-| Drafts | [battery@3](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/battery@3.json), [battery@4](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/battery@4.json) |
+| Draft, and the parked earlier draft | [battery@3](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/battery@3.json), [battery@4](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/manifests/battery@4.json) |
 | Mapping and generated schemas | [Mapping inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/battery@2.md), [generated files](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated) |
 | Synthetic lifecycle | [Battery fixture](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/battery-lifecycle-v1.json). Its product data is invented; no such battery exists |
 
 ## Next
 
-Put the payload in a passport with [build an application](../packages/build-an-application.md), and check the restricted fields against `readRestrictedPayloadSchema('battery@2')` before you encrypt them. To prepare for the next version, [evaluate the version 4 drafts](version-4-drafts.md). To propose a change, see [author and propose a profile](authoring.md).
+Put the payload in a passport with [build an application](../packages/build-an-application.md), and check the restricted fields against `readRestrictedPayloadSchema('battery@2')` before you encrypt them. To prepare for the next version, [evaluate the battery@4 draft](version-4-drafts.md). To propose a change, see [author and propose a profile](authoring.md).

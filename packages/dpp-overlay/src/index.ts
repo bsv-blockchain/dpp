@@ -789,7 +789,7 @@ async function handle(
     if (route === 'GET /publisher-policy') {
       // The chain, and never the operator keys that authorise it: a reader
       // takes those from the operator, because a chain checked against keys
-      // the same index supplied proves nothing (spec/services.md section 1).
+      // the same index supplied proves nothing (the README's publisher key policy).
       const policy = options.components?.publisherPolicy
       const chain = policy?.chain
       if (policy == null || chain == null) {
@@ -923,8 +923,8 @@ async function handle(
     }
 
     if (route === 'POST /register') {
-      // A publisher key registers itself (spec/services.md section 2,
-      // registration.ts): the request is checked from itself before the
+      // A publisher key registers itself (the request of spec/services.md
+      // section 2; registration.ts and the README for the rest): the request is checked from itself before the
       // index's own expectations, each refusal is named, and a limiter per
       // source address bounds what a stranger can make the operator key sign.
       const registration = options.components?.registration

@@ -1,6 +1,6 @@
 /**
- * Advertising this index (`spec/services.md` section 1: public overlays
- * SHOULD advertise through SHIP and SLAP): with `ADVERTISE=1`, the index
+ * Advertising this index through SHIP and SLAP, a feature of this package
+ * whose discovery extension is parked outside the standard: with `ADVERTISE=1`, the index
  * finds the SHIP and SLAP adverts its advertiser key already has for
  * `PUBLIC_URL`, and creates the missing ones, one 1-satoshi token per topic
  * and lookup service, in one transaction its own wallet funds. Other indexes

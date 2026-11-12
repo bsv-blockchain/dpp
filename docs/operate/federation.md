@@ -1,6 +1,6 @@
 # Federation with static peers
 
-Index operators can use this page to replicate and compare records with a second index, another operator or the hosted reference. Start with a named peer, then optionally [find peers automatically](#find-peers-automatically) or [advertise your index](#advertise-your-index). Diagnose missing records under [when a record does not arrive](#when-a-record-does-not-arrive).
+Index operators can use this page to replicate and compare records with a second index, another operator or the hosted reference. Start with a named peer. Synchronisation is a feature of the overlay package, not of the standard, and its [package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#operator-features) states its rules. Finding peers through SHIP and SLAP and advertising an index there are parked outside the standard: the package keeps them as options, described under [parked: find peers automatically](#parked-find-peers-automatically) and [parked: advertise your index](#parked-advertise-your-index). Diagnose missing records under [when a record does not arrive](#when-a-record-does-not-arrive).
 
 Peer exchange is optional for readers and writers. Every release supports the named-peer setup below. Overlay `0.4.0-beta.10` adds discovery, advertising and retry of outputs left behind, which beta.9 lacks. Check the package version in `GET /capabilities` before relying on those features.
 
@@ -39,7 +39,7 @@ Both indexes must admit the same records to agree:
 
 An index admitting fewer anchoring services refuses the others' anchors and keeps differing. Check `publisherPolicy.anchoringServices` in the peer's `GET /capabilities`: an empty list admits any, as `anchoring-service-restriction` under `unsupported` confirms.
 
-The [services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) section 1 asks public indexes to advertise through SHIP and SLAP, the BSV overlay protocols identifying topic hosts and lookup services. `SYNC_DISCOVERY=ship` adds advertised peers; `ADVERTISE=1` advertises this index. Both default off and neither changes admission.
+SHIP and SLAP are the BSV overlay protocols identifying topic hosts and lookup services. Discovery through them is parked outside the standard: `SYNC_DISCOVERY=ship` adds advertised peers and `ADVERTISE=1` advertises this index, both default off and neither changes admission.
 
 ### Discovery in the reviewed source
 
@@ -104,7 +104,7 @@ Set `activeFrom` no later than the oldest wanted state; earlier states are refus
 Three more rules:
 
 - Keep `topics` at `["tm_dpp"]` unless the policy also names `anchor-publisher` keys: a scope covering `tm_attestation` admits anchors only from those keys.
-- The first version also governs the time before its own `issuedAt`, so a policy written late still admits earlier states inside each key's window ([services](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) section 1).
+- The first version also governs the time before its own `issuedAt`, so a policy written late still admits earlier states inside each key's window ([the publisher key policy](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#the-publisher-key-policy)).
 - A later version names the previous one's digest in `supersedes` (`policyDigest` in `@bsv/dpp-protocol` computes it) and is authorised by a key the chain already trusts. The script below writes only a first version.
 
 Sign the policy into `deploy/config/`, which the Compose presets mount read-only at `/config` inside the container:
@@ -439,19 +439,21 @@ Run `node check-policy-chain.mjs <chain file> <operator name as the chain's scop
 
 ### What two indexes demonstrate
 
-Capability documents and evidence packages declare one of three operator profiles:
+Capability documents and evidence packages declare one of three operator profiles, labels of the overlay package and not of the standard:
 
 | Profile | Declaration and evidence boundary |
 |---|---|
 | `single-operator@1` | Neither pulls from peers nor discovers them. |
 | `single-operator@2` | One administration; pulls from named or discovered peers. However many peers it has, it claims no independent replication: `unsupported` includes `independent-replication`. |
-| `federated-operators@1` | Declared only when synchronising and the newest publisher policy names at least two operators. Claims support, not independent operation. |
+| `federated-operators@1` | Parked outside the standard. Declared only when synchronising and the newest publisher policy names at least two operators. Claims support, not independent operation. |
 
 Two indexes under one administration, including the local presets, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/README.md#a-second-operator)).
 
-A publisher policy's own `scope.operatorProfile` names the administration the policy governs, `single-operator@1` or `federated-operators@1`, and does not change when the index adds peers or turns discovery on. The step 3 policy stays as written while the index it governs declares `single-operator@2` ([services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) section 6).
+A publisher policy's own `scope.operatorProfile` names the administration the policy governs, `single-operator@1` or `federated-operators@1`, and does not change when the index adds peers or turns discovery on. The step 3 policy stays as written while the index it governs declares `single-operator@2` ([package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md)).
 
-## Find peers automatically
+## Parked: find peers automatically
+
+Parked outside the standard on 12 November 2026, with the SHIP/SLAP discovery extension of the overlay contract. The overlay package keeps it as an option.
 
 `SYNC_DISCOVERY=ship` adds hosts advertising the index's topics to its named peers; `SYNC_PEERS` may be empty. Match admission settings first ([which way records flow](#which-way-records-flow)): discovered records pass the same topic managers and publisher policy.
 
@@ -513,7 +515,9 @@ A discovered address is only a lead. Its token proves the named key signed the a
 
 The index adds no page or time budget to the overlay SDK's synchronisation: it fetches every requested graph without a time limit. Rounds cannot overlap, so a large or slow peer lengthens every round ([known limitations](limitations.md#synchronisation)). Lower `SYNC_MAX_DISCOVERED` or choose `SLAP_TRACKERS` to narrow the hosts asked. The [discovery source](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/discovery.ts) defines these rules.
 
-## Advertise your index
+## Parked: advertise your index
+
+Parked outside the standard on 12 November 2026, with discovery. The overlay package keeps it as an option.
 
 With `ADVERTISE=1`, an index creates the SHIP and SLAP adverts that let an index with discovery on find it: one advert per topic and lookup service, each a 1-satoshi token the SDK's `OverlayAdminTokenTemplate` builds, signed by an advertiser key of its own and naming `PUBLIC_URL`. An advert says where your index is. It makes nobody admit your records: an index that finds you still admits only the publisher keys its own policy names, so ask its operator to name yours, as [peer with the hosted reference or another operator](#peer-with-the-hosted-reference-or-another-operator) describes.
 
@@ -617,7 +621,7 @@ Expect `{ acknowledged: true, deletedCount: 1 }` or more, one per topic the peer
 
 - [Second-operator preset](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/compose.second-operator.yml) and the [preset README](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/README.md), including backup of a node's volume.
 - [Peer configuration, reconciliation and the left-behind retry](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/sync.ts), [peer discovery](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/discovery.ts), [advertising](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/advertise.ts) and every setting in the overlay package's [configuration table](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#configuration).
-- The [services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) for admission, publisher policy and synchronisation requirements, and the [publisher policy schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json).
+- The [services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) for admission and the flat publisher key list, the [overlay package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#operator-features) for the publisher policy chain and synchronisation, and the [publisher policy schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json).
 - The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records what local tests do not establish about independent operation.
 
 Next: keep evidence you can restore elsewhere with [export, import and recovery](export-import-recovery.md), and read [known limitations](limitations.md) before relying on a peer.

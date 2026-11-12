@@ -1,5 +1,5 @@
 /**
- * Portable vectors for the publisher key policy (`spec/services.md` §1,
+ * Portable vectors for the publisher key policy (`packages/dpp-overlay/README.md`,
  * `contracts/publisher-policy.schema.json`), in the stack's vector format. A
  * second implementation reproduces the signing preimage and the digest of
  * every version, verifies every authorisation, and reaches the same verdict on

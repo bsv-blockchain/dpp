@@ -2,7 +2,8 @@
 /**
  * Sign the first version of a publisher policy chain with an operator's
  * identity key, and check it the way an index does when it boots
- * (spec/services.md section 1, contracts/publisher-policy.schema.json).
+ * (the publisher key policy of packages/dpp-overlay/README.md,
+ * contracts/publisher-policy.schema.json).
  *
  *   OPERATOR_PRIVATE_KEY=<64 hex> node examples/sign-publisher-policy.mjs <unsigned-policy.json> <signed-chain.json>
  *   node examples/sign-publisher-policy.mjs --dry-run
@@ -18,8 +19,9 @@
  * with the OPERATOR_IDENTITY_KEYS line the script prints.
  *
  * A later version names the digest of the one before in supersedes and is
- * authorised by a key the chain already trusts; spec/services.md section 1
- * says which. This script writes the genesis only.
+ * authorised by a key the chain already trusts; the publisher key policy of
+ * packages/dpp-overlay/README.md says which. This script writes the genesis
+ * only.
  *
  * With --dry-run, what CI runs, a key made for the run stands in for the
  * operator's, the script signs a built-in draft and shows it verifying, then

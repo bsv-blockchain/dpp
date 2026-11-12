@@ -41,7 +41,7 @@ describe('the exchange and operator profile catalogue', () => {
 
   it('keeps the independently administered exercise separate from any local federation run', () => {
     const federated = readOperatorProfile('federated-operators@1') as { status: string; acceptance: Array<{ id: string; independence: string; evidence: string }> }
-    expect(federated.status).toBe('proposed')
+    expect(federated.status).toBe('parked')
     const external = federated.acceptance.filter((a) => a.independence === 'independently-administered')
     expect(external).toHaveLength(1)
     expect(external[0].evidence).toMatch(/not yet run/)

@@ -40,7 +40,7 @@ node conformance/qualify.mjs conformance/selections/dpp-release-2026-11.json
 | Check | Output and conclusion |
 |---|---|
 | Diagnostic, first command | About 170 lines, one finding each. Checks the ledger, baseline, reports and capability example against one another and their pinned sources. |
-| Qualification gate, second command | One line per required claim, eight in all: one per role under `native-baseline@2`, the one baseline a claim names, then `gs1-identifier-discipline` and `profile-governance`. Then twenty-two `withheld:` lines with reasons: the claims scoped to the historical `native-baseline@1`, the optional custody, discovery, exchange, projection, EPCIS and operator profiles, federated operation, the parked VSC compatibility profile and mappings, the status service and version 1.0 readiness. Checks the named selection against the ledger. The standard makes no European system conformance or product-compliance claim. |
+| Qualification gate, second command | One line per required claim, eight in all: one per role under `native-baseline@2`, the one baseline a claim names, then `gs1-identifier-discipline` and `profile-governance`. Then eighteen `withheld:` lines with reasons: the claims scoped to the historical `native-baseline@1`, the optional custody, exchange and EPCIS profiles, the parked VSC compatibility profile and mappings, the status service and version 1.0 readiness. Checks the named selection against the ledger. The standard makes no European system conformance or product-compliance claim. |
 
 The diagnostic ends:
 
