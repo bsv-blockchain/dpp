@@ -129,7 +129,7 @@ These are open standard questions; [known limitations](../operate/limitations.md
 |---|---|
 | Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/spec/gs1-discovery.md) |
 | Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-profiles/src/gs1-resolution.ts) |
-| The reference registry's resolver interface | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml); its `https://id.example.org` is a placeholder origin |
+| The reference registry's resolver interface | The reference registry documents it; the registry contract describes only the minimum every registry serves, which has no resolver route |
 | Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/gs1) |
 
 Next: the [passport reader](../implement/roles/passport-reader.md) verifies discovered evidence.

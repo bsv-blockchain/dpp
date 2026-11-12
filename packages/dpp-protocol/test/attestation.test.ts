@@ -46,25 +46,10 @@ describe('native lifecycle claim v1', () => {
     await expect(signLifecycleClaim({ ...fixture.unsignedClaim, issuer, issuerKeyDid: fixture.claim.issuer }, wallet)).rejects.toThrow('issuer must be a DID')
   })
 
-  it('carries evidence facets under the nested canonical form and pins the fixture claim with evidence (rules.md §2 to §4)', async () => {
-    const F = fixture.claimWithEvidence
-    expect(verifyLifecycleClaim(F.claim)).toEqual({ signature: 'verified', identityBinding: 'key-identified', issuerKey: fixture.issuerKey })
-    expect(Utils.toHex(lifecycleClaimBytes(F.claim))).toBe(F.representationHex)
-    expect(lifecycleClaimDigest(F.claim)).toBe(F.digest)
-    expect(await signLifecycleClaim(F.unsignedClaim, wallet)).toEqual(F.claim)
-    // A claim without evidence canonicalises to the flat bytes, unchanged.
-    expect(Utils.toHex(lifecycleClaimBytes(fixture.claim))).toBe(Utils.toHex(canonicalBytes(fixture.claim)))
-  })
-
-  it.each([
-    { evidence: {} },
-    { evidence: { proof: 'x' } },
-    { evidence: { workDone: '' } },
-    { evidence: { outputs: [] } },
-    { evidence: { dispositionKind: 'burned' } },
-    { evidence: 'sha256:' + 'ab'.repeat(32) },
-  ])('refuses evidence that is not the facets of rules.md §2: %j', async (change) => {
-    await expect(signLifecycleClaim({ ...fixture.unsignedClaim, ...change } as never, wallet)).rejects.toThrow(/evidence/)
+  it('refuses an evidence property: a native claim carries no evidence facets (rules.md §3)', async () => {
+    const evidence = { workDone: `sha256:${'ab'.repeat(32)}` }
+    await expect(signLifecycleClaim({ ...fixture.unsignedClaim, evidence } as never, wallet)).rejects.toThrow('unsupported claim field evidence')
+    expect(verifyLifecycleClaim({ ...fixture.claim, evidence }).signature).toBe('invalid')
   })
 
   it('requires recordId to be the outpoint of the state the claim is about', async () => {

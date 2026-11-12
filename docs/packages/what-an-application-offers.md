@@ -30,13 +30,13 @@ Application planners can turn this inventory of passport screens, users and resp
 |---|---|---|---|---|
 | Account and brand | Signs in; creates a brand | Assigns its identity key in a wallet held by the brand or platform; records who may act for it | The wallet's `getPublicKey`, `didKeyFromIdentityKey` | [Identity and authority](../learn/identity-and-authority.md) |
 | Catalogue | Lists models and items | Stores product records; assigns item identifiers under the brand's GS1 prefix | `buildGs1DigitalLink`, `gs1CheckDigit`, `parseGs1DigitalLink` | [Identifiers](../identifiers.md) |
-| Create a passport | Selects a profile; fills in data | Validates data against the industry profile; builds, checks, announces, sends and proves the `ISSUE` | `readPublicPayloadSchema`, `completeState`, `buildLockingScript` | [Industry profiles](../profiles/README.md), [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) |
+| Create a passport | Selects a profile; fills in data | Validates data against the industry profile; builds, checks, announces, sends and proves the `ISSUE` | `readPublicPayloadSchema`, `completeState`, `buildLockingScript` | [Industry profiles](../profiles/README.md), [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/writing.md) |
 | Update | Records new data, a repair or another change | Writes an `UPDATE`, spending the tip with control proof | `revealOwnerLinkage`, `completeState`, and the unlock that spends the tip's PushDrop output (the script template every state uses) | [Build an application](build-an-application.md) |
 | Hand on | Offers a passport; the recipient accepts by identity key or one-time claim code, distinct from a lifecycle claim | Records offer and acceptance; signs and retains the acceptance record; writes the `TRANSFER` committing to it | `signManagedAcceptance`, `acceptanceCommitment`, `bindAcceptanceToState` | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md) |
 | Retire | Ends the passport, for example at recycling | Writes a `RETIRE`; nothing can follow it | `completeState` | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
-| Claims | Repairer or recycler signs a claim | Signs, obtains registry validation and storage, then anchors | `signLifecycleClaim`, `buildAttestationAnchor` | [Rules](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/rules.md) |
+| Claims | Repairer or recycler signs a claim | Signs, obtains registry validation and storage, then anchors | `signLifecycleClaim`, `buildAttestationAnchor` | [Rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) |
 | Passport page | Opens the identifier or scans the label | Looks up the passport on an index, verifies it and shows its report beside product data | `chainFromBeef`, `verifyPassportEvidence` | [Reading the report](../learn/evidence-and-freshness.md) |
-| Operations | Staff inspect pending work | Shows the journal: unanswered network operations, undelivered proofs and incidents | None; this is the application's own journal | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) sections 6 to 8 |
+| Operations | Staff inspect pending work | Shows the journal: unanswered network operations, undelivered proofs and incidents | None; this is the application's own journal | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/writing.md) sections 6 to 8 |
 
 ## After a hand on
 
@@ -60,9 +60,9 @@ Use this inventory to assign the platform's keys and secrets to their holders.
 | Custodian's identity key | Custodian's BRC-100 wallet | Signs managed acceptance records through a derived key; never exported | Wallet; public half in each record's `custodian` property |
 | Submit token | The index operator and its writers | `POST /submit` and `POST /retract` on that index | `SUBMIT_TOKEN` on the index |
 | Callback token | The index operator and whoever pushes proofs | `POST /arc-ingest` on that index | `ARC_CALLBACK_TOKEN` on the index; one per index, never shared with another |
-| Export signing key and export token | The index operator | Signing evidence packages and exports; reading the complete export | `EXPORT_SIGNING_KEY` and `EXPORT_TOKEN` on the index |
+| Exporter key and export token | The index operator | Its per-passport child signs evidence packages and exports; reading the complete export | `EXPORTER_PRIVATE_KEY` and `EXPORT_TOKEN` on the index |
 | Anchoring service key | The anchoring service's wallet | Signs claim anchors (`anchoredBy`) | The service's wallet; indexes may list it in `ANCHOR_SERVICE_KEYS` |
-| Registry write token | The registry operator | Storing claims and registering certifications | The registry's own configuration |
+| Registry write token | The registry operator | Storing claims | The registry's own configuration |
 | WhatsOnChain key | Readers and indexes using the reference header source | Header lookups without the anonymous rate limit | `WOC_API_KEY` |
 
 ## Duties that run on their own

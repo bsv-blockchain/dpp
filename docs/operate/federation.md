@@ -39,7 +39,7 @@ Both indexes must admit the same records to agree:
 
 An index admitting fewer anchoring services refuses the others' anchors and keeps differing. Check `publisherPolicy.anchoringServices` in the peer's `GET /capabilities`: an empty list admits any, as `anchoring-service-restriction` under `unsupported` confirms.
 
-The [services specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) section 1 asks public indexes to advertise through SHIP and SLAP, the BSV overlay protocols identifying topic hosts and lookup services. `SYNC_DISCOVERY=ship` adds advertised peers; `ADVERTISE=1` advertises this index. Both default off and neither changes admission.
+The [services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) section 1 asks public indexes to advertise through SHIP and SLAP, the BSV overlay protocols identifying topic hosts and lookup services. `SYNC_DISCOVERY=ship` adds advertised peers; `ADVERTISE=1` advertises this index. Both default off and neither changes admission.
 
 ### Discovery in the reviewed source
 
@@ -73,7 +73,7 @@ Edit `deploy/operator-b.env`:
 | `ACCEPTANCE_COMMITMENT` | The first index's value, `required` in the example file. A stricter one refuses version 2 transfers the first admitted. |
 | `ANCHOR_SERVICE_KEYS` | The first index's value, so the second admits the anchors the first admitted. Empty admits a well-formed anchor from any anchoring service, as the hosted reference does. |
 | `SYNC_LEGACY` | `1` to pull the historical `tm_uora_dpp` topic as well, which the hosted reference holds. Empty pulls only `tm_dpp` and `tm_attestation`. |
-| `EXPORT_SIGNING_KEY`, `EXPORT_TOKEN` | Optional. If set, use the second index's own values, never the first's ([export, import and recovery](export-import-recovery.md)). |
+| `EXPORTER_PRIVATE_KEY`, `EXPORT_TOKEN` | Optional. If set, use the second index's own values, never the first's ([export, import and recovery](export-import-recovery.md)). |
 
 `SYNC_PEERS` is the complete list of peers, never the index's own address. It is read at start, so a change applies after the next `up -d`.
 
@@ -104,7 +104,7 @@ Set `activeFrom` no later than the oldest wanted state; earlier states are refus
 Three more rules:
 
 - Keep `topics` at `["tm_dpp"]` unless the policy also names `anchor-publisher` keys: a scope covering `tm_attestation` admits anchors only from those keys.
-- The first version also governs the time before its own `issuedAt`, so a policy written late still admits earlier states inside each key's window ([services](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) section 1).
+- The first version also governs the time before its own `issuedAt`, so a policy written late still admits earlier states inside each key's window ([services](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) section 1).
 - A later version names the previous one's digest in `supersedes` (`policyDigest` in `@bsv/dpp-protocol` computes it) and is authorised by a key the chain already trusts. The script below writes only a first version.
 
 Sign the policy into `deploy/config/`, which the Compose presets mount read-only at `/config` inside the container:
@@ -165,13 +165,16 @@ Save as `restore-package.mjs`. Its source URL, passport and expected export sign
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.
-import { inspectEvidencePackage } from '@bsv/dpp-protocol'
+import { evidencePackageSigner, inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
 const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
-// The key the source index signs its packages with. This default is the hosted reference's.
-const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
+// The key this passport's package is signed by: the child of the exporter identity key the source operator gives you
+// (EXPORTER_IDENTITY_KEY), or for an index on an earlier release its raw export key (EXPORT_SIGNER), by default the hosted reference's.
+const expectedSigner = process.env.EXPORTER_IDENTITY_KEY
+  ? evidencePackageSigner(process.env.EXPORTER_IDENTITY_KEY, passportId)
+  : process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
 const response = await fetch(`${source}/evidence-package?${new URLSearchParams({ passportId })}`)
 if (!response.ok) throw new Error(`GET /evidence-package answered ${response.status}: ${await response.text()}`)
@@ -444,9 +447,9 @@ Capability documents and evidence packages declare one of three operator profile
 | `single-operator@2` | One administration; pulls from named or discovered peers. However many peers it has, it claims no independent replication: `unsupported` includes `independent-replication`. |
 | `federated-operators@1` | Declared only when synchronising and the newest publisher policy names at least two operators. Claims support, not independent operation. |
 
-Two indexes under one administration, including the local presets, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/README.md#a-second-operator)).
+Two indexes under one administration, including the local presets, demonstrate only the mechanism. Separately administered operation needs two organisations with their own administration, credentials, databases and infrastructure ([deploy README](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/README.md#a-second-operator)).
 
-A publisher policy's own `scope.operatorProfile` names the administration the policy governs, `single-operator@1` or `federated-operators@1`, and does not change when the index adds peers or turns discovery on. The step 3 policy stays as written while the index it governs declares `single-operator@2` ([services specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) section 6).
+A publisher policy's own `scope.operatorProfile` names the administration the policy governs, `single-operator@1` or `federated-operators@1`, and does not change when the index adds peers or turns discovery on. The step 3 policy stays as written while the index it governs declares `single-operator@2` ([services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) section 6).
 
 ## Find peers automatically
 
@@ -588,7 +591,7 @@ Retry repairs nothing: admission still refuses an unacceptable state, and a grap
 | Nothing: the peer keeps the previous tip of a passport it holds | The new state is unproven. The overlay SDK needs an unproven state's parent in the graph it assembles but leaves out a parent the peer already holds, so the state cannot arrive; a new passport can. | Push the state's proof to the node the peer pulls from. The next round carries the state with its proof, and the peer admits it on the tip it holds. |
 | Nothing: the state arrived, but readers of the peer see `inclusion` pending | A proof that arrives after a peer synchronised the state does not follow it. | Deliver the proof to the peer (below), or [take it from the chain](#take-a-record-from-the-chain) yourself. |
 
-A proof reaches an index only through that index's own `POST /arc-ingest`, and a peer's `/arc-ingest` answers 404 until the state has arrived there. A writer that knows its index's peers can deliver each proof to them too, retrying that 404, with each peer's own callback token from that peer's operator ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). Nobody is named yet to do this: a writer offers each proof to the indexes it announced the state to ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) section 7), and the [overlay package](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/packages/dpp-overlay/README.md#running-two-operators-locally) expects a writer or gateway to push it to every operator it knows. The [federation test](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-overlay/test/federation.test.ts#L395-L419) shows a later proof staying on one index until it is pushed to the other.
+A proof reaches an index only through that index's own `POST /arc-ingest`, and a peer's `/arc-ingest` answers 404 until the state has arrived there. A writer that knows its index's peers can deliver each proof to them too, retrying that 404, with each peer's own callback token from that peer's operator ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). Nobody is named yet to do this: a writer offers each proof to the indexes it announced the state to ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/writing.md) section 7), and the [overlay package](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#running-two-operators-locally) expects a writer or gateway to push it to every operator it knows. The [federation test](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-overlay/test/federation.test.ts#L395-L419) shows a later proof staying on one index until it is pushed to the other.
 
 A retraction does not reach a peer either. Synchronisation carries admissions only: when a writer withdraws a refused draft from the index it announced it to, that index stops offering the output, and a peer that already pulled it keeps serving it as the tip, with nothing in a later round saying it is gone. The peer's operator withdraws it with the same request on their own index, `POST /retract` with the outpoint and the reason behind their submit token ([wallet, broadcast and proofs](wallet-broadcast-proofs.md)). The same checks apply there, so a state the peer has since proven, or whose transaction the peer's header source knows, is refused, which is the case where the retraction was wrong. Agree with peer operators who tells whom, as for proofs.
 
@@ -612,9 +615,9 @@ Expect `{ acknowledged: true, deletedCount: 1 }` or more, one per topic the peer
 
 ## Sources
 
-- [Second-operator preset](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/deploy/compose.second-operator.yml) and the [preset README](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/README.md), including backup of a node's volume.
-- [Peer configuration, reconciliation and the left-behind retry](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/sync.ts), [peer discovery](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/discovery.ts), [advertising](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/advertise.ts) and every setting in the overlay package's [configuration table](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/packages/dpp-overlay/README.md#configuration).
-- The [services specification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) for admission, publisher policy and synchronisation requirements, and the [publisher policy schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json).
+- [Second-operator preset](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/compose.second-operator.yml) and the [preset README](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/README.md), including backup of a node's volume.
+- [Peer configuration, reconciliation and the left-behind retry](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/sync.ts), [peer discovery](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/discovery.ts), [advertising](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/advertise.ts) and every setting in the overlay package's [configuration table](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#configuration).
+- The [services specification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) for admission, publisher policy and synchronisation requirements, and the [publisher policy schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json).
 - The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records what local tests do not establish about independent operation.
 
 Next: keep evidence you can restore elsewhere with [export, import and recovery](export-import-recovery.md), and read [known limitations](limitations.md) before relying on a peer.

@@ -23,7 +23,8 @@
     "LICENSE",
     "PATENTS",
     "NOTICE",
-    "dist"
+    "dist",
+    "schemas"
   ],
   "scripts": {
     "prepack": "node -e \"const fs=require('fs');for(const f of ['NOTICE','PATENTS'])fs.copyFileSync('../../'+f,f)\"",

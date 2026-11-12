@@ -3,7 +3,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { Beef, MerklePath, PrivateKey, Transaction, Utils } from '@bsv/sdk'
-import { chainFromBeef, inspectEvidencePackage } from '@bsv/dpp-protocol'
+import { chainFromBeef, evidencePackageSigner, inspectEvidencePackage } from '@bsv/dpp-protocol'
 import { buildCapabilities } from '../src/capabilities.js'
 import { buildEvidenceExportPart, envelopeFiles, exportCoveragePreimage, exportManifestDigest, inspectEvidenceExportPart, joinEvidenceExport, type EvidenceExportPart, type EvidencePackageEnvelope } from '../src/evidenceExport.js'
 import { HistoryPaginator } from '../src/history.js'
@@ -12,8 +12,8 @@ import { startOverlayService, type RunningService } from '../src/index.js'
 import { bodyOf, eventTx, fixtureChain, genesisTx, lookupPassport, newNode, SERVER_ID, submitBeef, type TestNode } from './helpers.js'
 
 /**
- * GET /evidence-export (spec/portable-evidence.md section 2, the complete
- * export): a lineage longer than the bounded package's cap leaves operator A
+ * GET /evidence-export (the complete export, a reference feature of this
+ * package and not part of the standard): a lineage longer than the bounded package's cap leaves operator A
  * as parts over one snapshot that tile its sequence range, joins complete,
  * and restores into operator B from the parts alone; a state admitted while
  * the parts are being read stays out of the snapshot; every bound, refusal
@@ -23,7 +23,7 @@ import { bodyOf, eventTx, fixtureChain, genesisTx, lookupPassport, newNode, SERV
 
 const root = new URL('../../../', import.meta.url)
 const packageSchema = JSON.parse(readFileSync(new URL('contracts/evidence-package.schema.json', root), 'utf8'))
-const exportSchema = JSON.parse(readFileSync(new URL('contracts/evidence-export.schema.json', root), 'utf8'))
+const exportSchema = JSON.parse(readFileSync(new URL('../schemas/evidence-export.schema.json', import.meta.url), 'utf8'))
 const ajv = new Ajv2020({ strict: true, allowUnionTypes: true, allErrors: true })
 addFormats(ajv)
 ajv.addSchema(packageSchema)
@@ -31,12 +31,15 @@ const validatePart = ajv.compile(exportSchema)
 
 const HOST = '127.0.0.1'
 const EXPORT_KEY = PrivateKey.fromHex('77'.repeat(32))
-const EXPORTER = EXPORT_KEY.toPublicKey().toString()
+const IDENTITY = EXPORT_KEY.toPublicKey().toString()
 const NOW = new Date('2026-09-06T12:00:00Z')
 const LONG = 505
 const LONG_PASSPORT = 'https://dpp.bsvb.net/01/09521000000018/21/LONG-EXPORT-1'
 const LONG_UID = 'LONG-EXPORT-UID'
 const F = fixtureChain()
+// Each passport's parts are signed by the identity key's child for that passport (spec/portable-evidence.md section 2).
+const EXPORTER = evidencePackageSigner(IDENTITY, F.passportId)
+const LONG_EXPORTER = evidencePackageSigner(IDENTITY, LONG_PASSPORT)
 
 /** A connected lineage of LONG states, each proven before the next spends it so every BEEF stays compact. */
 let long: { txs: Transaction[]; beefs: number[][] }
@@ -71,7 +74,7 @@ async function serve(node: TestNode, extra: Record<string, unknown> = {}): Promi
     port: 0,
     host: HOST,
     components: node.components,
-    exportSigningKey: EXPORT_KEY.toHex(),
+    exportIdentityKey: EXPORT_KEY.toHex(),
     now: () => NOW,
     ...extra,
   })
@@ -139,7 +142,7 @@ describe('GET /evidence-export', () => {
 
     // Each part is a package of its own: inspected on its three questions, with its own declarations.
     for (const part of parts) {
-      const inspection = inspectEvidencePackage(part.package.manifest, envelopeFiles(part.package), { expectedPassportId: LONG_PASSPORT, expectedSigner: EXPORTER })
+      const inspection = inspectEvidencePackage(part.package.manifest, envelopeFiles(part.package), { expectedPassportId: LONG_PASSPORT, expectedSigner: LONG_EXPORTER })
       expect(inspection).toMatchObject({ structureValid: true, inventoryVerified: true, signatureValid: true, failures: [], recoveryBackup: false })
       expect(part.package.manifest.completeness.absent).toEqual([])
       expect(part.package.manifest.completeness.withheld).toHaveLength(3)
@@ -156,7 +159,7 @@ describe('GET /evidence-export', () => {
     expect(Object.keys(first.inventory.length === 0 ? {} : parts[0].package.files).filter((p) => p.startsWith('status/'))).toEqual(['status/spend-observations-part-1.json'])
 
     // Joined, the parts are the whole snapshot: every transaction and proof, none repeated, nothing missing.
-    const joined = joinEvidenceExport(parts, { expectedPassportId: LONG_PASSPORT, expectedSigner: EXPORTER })
+    const joined = joinEvidenceExport(parts, { expectedPassportId: LONG_PASSPORT, expectedSigner: LONG_EXPORTER })
     expect(joined.problems).toEqual([])
     expect(joined.complete).toBe(true)
     expect(joined.absent).toEqual([])
@@ -204,7 +207,7 @@ describe('GET /evidence-export', () => {
     expect(spent.size).toBe(LONG)
     expect([...spent.values()].filter((s) => !s)).toHaveLength(1)
     expect(spent.get(long.txs[LONG - 1].id('hex'))).toBe(false)
-    const again = joinEvidenceExport(await walk(baseB, LONG_PASSPORT), { expectedPassportId: LONG_PASSPORT, expectedSigner: EXPORTER })
+    const again = joinEvidenceExport(await walk(baseB, LONG_PASSPORT), { expectedPassportId: LONG_PASSPORT, expectedSigner: LONG_EXPORTER })
     expect(again.problems).toEqual([])
     expect(again.complete).toBe(true)
     expect([...again.files.keys()].filter((p) => p.startsWith('transactions/')).sort()).toEqual([...joined.files.keys()].filter((p) => p.startsWith('transactions/')).sort())

@@ -257,7 +257,7 @@ You should see the key from 2.1 under `publisher keys`, and the custody profile 
 
 ## 3. Write a passport
 
-Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md)):
+Every state goes through six steps, in this order ([writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/writing.md)):
 
 1. Build the state and its transaction unsent: signed by the wallet but not sent, so it spends nothing yet.
 2. Check it with the reader's own rules.
@@ -341,7 +341,7 @@ To build the same writer into your own application, follow [how the writer examp
 
 A lifecycle claim is a signed statement about a passport, such as a repair or a recycling. It travels on its own track and never spends the passport:
 
-1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`, the state it is about by its outpoint in `recordId`, and under `evidence` the references a mapping needs, such as what a repair did and who did it ([add a claim](add-a-claim.md)). A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
+1. The issuer signs it with `signLifecycleClaim`, naming itself as `issuer`, for example as `didKeyFromIdentityKey(identityKey)`, and the state it is about by its outpoint in `recordId` ([add a claim](add-a-claim.md)). The claim carries no evidence facets; a mapping that needs them reads them from other evidence. A `did:key` is enough at Ring 0, where the platform vouches for the account and nobody checks the issuer's real-world identity ([identity and authority](../learn/identity-and-authority.md)).
 2. A registry validates it (`POST /validate` is open on the hosted registry) and, if you run one or hold its write token, stores it.
 3. An anchoring service builds `buildAttestationAnchor` over `lifecycleClaimDigest(claim)` with `attestationId` `urn:sha256:<digest>`, and announces and sends it like a passport state on `tm_attestation`, the index's topic for anchors. The anchor transaction comes from the service's own wallet, and `anchoredBy` names its key.
 
@@ -403,8 +403,8 @@ To run a second index and exchange records with it, see [federation](../operate/
 | Question | Page |
 |---|---|
 | What each field of a version 2 state means | [Record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
-| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) |
+| What a writer must do, step by step | [Writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/writing.md) |
 | Where the lock sits and who may spend it | [Custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md) |
 | What a reader checks | [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) |
-| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
+| What the index admits and serves | [Services](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/services.md) and the [HTTP contracts](../reference/contracts.md) |
 | Which wallet to use | [Choose a wallet](../operate/wallet-broadcast-proofs.md#choose-a-wallet) |

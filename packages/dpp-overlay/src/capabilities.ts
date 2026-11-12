@@ -119,6 +119,8 @@ export interface CapabilityDocument {
     anchoringServices: string[]
   }
   synchronisation: { profile: string; discovery: 'none' | 'ship-slap' | 'static-peers'; gasp: boolean; peers: string[] }
+  /** The exporter's identity key every evidence package names as exporter.id; its BRC-42 child per passport signs the manifest. Absent when the node signs no package. */
+  exporterIdentityKey?: string
   limits: Record<string, number | string>
   unsupported: Array<{ id: string; reason: string }>
 }
@@ -136,8 +138,10 @@ export interface CapabilityInput {
   controlAuthorities?: string[]
   /** ACCEPTANCE_COMMITMENT=required: the managed-custody profile is selected, so a version 2 TRANSFER must carry its acceptance commitment. */
   managedAcceptance?: boolean
-  /** Whether EXPORT_SIGNING_KEY is set. */
+  /** Whether EXPORTER_PRIVATE_KEY is set, so evidence packages are signed. */
   exportAvailable: boolean
+  /** The public half of EXPORTER_PRIVATE_KEY, which the document names so a reader derives each package's signer from it. */
+  exporterIdentityKey?: string
   /** Whether EXPORT_TOKEN is set, so GET /evidence-export needs a bearer. */
   completeExportBearer?: boolean
   /** Whether POST /retract can ask the network about a transaction (false under CHAIN_TRACKER=scripts-only). */
@@ -240,7 +244,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
   if (!input.exportAvailable) {
     unsupported.push({
       id: 'evidence-package-export',
-      reason: 'EXPORT_SIGNING_KEY is unset, so GET /evidence-package and GET /evidence-export answer 503 export-unavailable; the bounded lookup and GET /history remain.',
+      reason: 'EXPORTER_PRIVATE_KEY is unset, so GET /evidence-package and GET /evidence-export answer 503 export-unavailable; the bounded lookup and GET /history remain.',
     })
   }
   if (!input.networkOracleConfigured) {
@@ -311,6 +315,7 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
       anchoringServices,
     },
     synchronisation: { profile: operatorProfile, discovery, gasp: synchronising, peers },
+    ...(input.exportAvailable && input.exporterIdentityKey != null ? { exporterIdentityKey: input.exporterIdentityKey } : {}),
     limits: {
       maxLookupResults: MAX_LOOKUP_RESULTS,
       defaultAnchorPageSize: DEFAULT_ATTESTATION_RESULTS,

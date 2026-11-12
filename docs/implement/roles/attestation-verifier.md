@@ -39,7 +39,7 @@ This example refuses nothing; use [the cases to run](#the-cases-to-run) for refu
 
 ## Build the verifier
 
-1. **Keep the bytes** ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 4). Store the received bytes before decoding, and refuse duplicate JSON keys.
+1. **Keep the bytes** ([rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) section 4). Store the received bytes before decoding, and refuse duplicate JSON keys.
 2. **Dispatch on the representation** using the table below. Each format has different proof rules. Report an unimplemented representation as `unknown` with `representation-unsupported`, never a pass.
 3. **Verify a native claim** (rules section 3). Accept exactly the allowed properties. Serialise all except `signature` as restricted canonical JSON, hash with SHA-256, and verify the DER signature under the issuer key's BRC-42 child: protocol `[1, 'dpp attestation v1']`, key identifier `passportId`, counterparty `anyone`. A `did:key` issuer names the key; otherwise `issuerKeyDid` names it, and its relationship to the issuer needs separate evidence.
 4. **Decode the anchor** (rules section 5). Check every layout and derivation rule in the anchor table below.
@@ -89,11 +89,11 @@ No fixture case alters the native claim's own signature; add one to your own tes
 
 ## What not to copy from the fixtures
 
-- The fixture claim is about the genesis of `fixtures/chain-v1.json`, named by its outpoint, under `general@2`; `claimWithEvidence` is a second claim carrying the repair facets, whose canonical form nests one object ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
+- The fixture claim is about the genesis of `fixtures/chain-v1.json`, named by its outpoint, under `general@2` ([fields for a live claim](attestation-issuer.md#fields-for-a-live-claim)).
 
 ## Run an anchor proof page
 
-A proof page checks claims without trusting their registry. The registry supplies stored bytes and names each anchor transaction; everything else comes from the chain. The [hosted reference](../../deployment.md#the-hosted-reference) reads `GET /showcase/attestations` and `GET /showcase/verify/{id}`, under the `showcase` tag of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/registry.yaml).
+A proof page checks claims without trusting their registry. The registry supplies stored bytes and names each anchor transaction; everything else comes from the chain. The [hosted reference](../../deployment.md#the-hosted-reference) reads `GET /showcase/attestations` and `GET /showcase/verify/{id}`, two routes the reference registry serves and documents beyond the minimum of the [registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml).
 
 1. Enable both showcase routes in the registry deployment; they are off until enabled.
 2. Set the proof page's RESOLVER field to your registry URL. It defaults to the hosted registry.
@@ -153,10 +153,10 @@ Live identity assurance is Ring 0: the platform vouches only for the account and
 
 ## Exact implementation sources
 
-- [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md)
+- [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md)
 - [spec/identity.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/identity.md)
 - [spec/verification.md](https://github.com/bsv-blockchain/dpp/blob/fc73e35145d19c802c4cd566b4396f5a2b79a75b/spec/verification.md)
 - [spec/legacy-uora-anchor-v3.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md), for the historical anchor
-- [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/attestation-anchor-v1.json) and its [vector form](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/attestation-anchor/v1.json)
+- [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/fixtures/attestation-anchor-v1.json) and its [vector form](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/fixtures/vectors/dpp/attestation-anchor/v1.json)
 
 Record results as [evidence reporting](../reporting.md) describes; the [source gaps](../fixture-runner.md#source-gaps) remain open. Next: the [registry](registry.md), which stores claims and serves the bytes a verifier needs.

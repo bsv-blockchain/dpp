@@ -185,7 +185,7 @@ The report ends with `latest state unknown | no source asked` and thirteen `limi
 - That an index's answer covers every index. A service's answer is evidence from that service.
 - That a credential's status is fresher than the source it was read from.
 
-A complete export covers the history one index held at one snapshot ([export and recovery](../operate/export-import-recovery.md)); it does not supply evidence that index never had.
+The reference index's complete export covers the history that index held at one snapshot ([export and recovery](../operate/export-import-recovery.md)); it does not supply evidence that index never had.
 
 ## Source definitions
 
@@ -193,8 +193,8 @@ A complete export covers the history one index held at one snapshot ([export and
 |---|---|
 | Interpret each check and its reason | [Verification report](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) |
 | Evaluate supplied passport history | [Record verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), [record model version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
-| Evaluate claims and commitments | [Attestation verification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) |
-| Inspect an export's coverage | [Portable evidence](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md), [complete export](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md) |
+| Evaluate claims and commitments | [Attestation verification](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) |
+| Inspect an export's coverage | [Portable evidence](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/portable-evidence.md), [complete export](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md) |
 
 ## Next
 

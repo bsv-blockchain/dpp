@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { afterEach, describe, expect, it } from 'vitest'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import { PrivateKey } from '@bsv/sdk'
 import { STANDARD_VERSION, STANDARD_VERSION_V2 } from '@bsv/dpp-protocol'
 import {
   buildCapabilities,
@@ -260,10 +261,12 @@ describe('GET /capabilities', () => {
 
   it('lists the export as available once a signing key is configured', async () => {
     const node = newNode()
-    running = await startOverlayService(node.engine, { port: 0, host: '127.0.0.1', components: node.components, exportSigningKey: '77'.repeat(32) })
+    running = await startOverlayService(node.engine, { port: 0, host: '127.0.0.1', components: node.components, exportIdentityKey: '77'.repeat(32) })
     const document = await bodyOf(await fetch(`http://127.0.0.1:${running.port}/capabilities`))
     expectValid(document)
     expect(document.limits.evidencePackageExport).toBe('available')
+    // The identity whose child per passport signs every package, so a reader derives the signer (spec/portable-evidence.md section 2).
+    expect(document.exporterIdentityKey).toBe(PrivateKey.fromHex('77'.repeat(32)).toPublicKey().toString())
     expect(ids(document.unsupported)).not.toContain('evidence-package-export')
   })
 })

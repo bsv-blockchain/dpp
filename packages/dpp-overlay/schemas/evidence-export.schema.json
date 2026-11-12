@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bsv-blockchain.github.io/dpp/contracts/evidence-export.schema.json",
+  "$id": "https://bsv-blockchain.github.io/dpp/packages/dpp-overlay/schemas/evidence-export.schema.json",
   "title": "DPP evidence export part, version 1",
-  "description": "One part of a complete export (spec/portable-evidence.md section 2): a dpp-evidence-package@1 over the states of one passport whose source sequence lies in the part's range within one snapshot, beside the coverage record a reader needs to join the parts. The coverage record (exportVersion, passportId, snapshot, part, final, manifestSha256 and the signature's suite and signer) is signed by the exporter with the same key as the package manifest and bound to that manifest by its digest, so no unsigned field establishes coverage or finality; the cursor and the package bytes stay outside it. The parts of one snapshot tile its sequence range from 1 to the snapshot's sequence with no gap and no overlap; a part is complete for its own range and never for the snapshot, unless it is the only part. The package inside is inspected exactly as any other; the record is what says how the packages compose, and a signature over it attributes the assertion to the exporter without proving the exporter held everything that exists elsewhere.",
+  "description": "One part of the complete export of @bsv/dpp-overlay, GET /evidence-export, a reference feature of that package and not part of the standard: a dpp-evidence-package@1 over the states of one passport whose source sequence lies in the part's range within one snapshot, beside the coverage record a reader needs to join the parts. The coverage record (exportVersion, passportId, snapshot, part, final, manifestSha256 and the signature's suite and signer) is signed by the exporter with the same key as the package manifest and bound to that manifest by its digest, so no unsigned field establishes coverage or finality; the cursor and the package bytes stay outside it. The parts of one snapshot tile its sequence range from 1 to the snapshot's sequence with no gap and no overlap; a part is complete for its own range and never for the snapshot, unless it is the only part. The package inside is inspected exactly as any other; the record is what says how the packages compose, and a signature over it attributes the assertion to the exporter without proving the exporter held everything that exists elsewhere.",
   "type": "object",
   "additionalProperties": false,
   "required": ["exportVersion", "passportId", "snapshot", "part", "nextCursor", "final", "manifestSha256", "signature", "package"],
@@ -56,7 +56,7 @@
       "required": ["manifest", "files"],
       "description": "The part's dpp-evidence-package@1 in the JSON envelope form: the signed manifest beside every inventoried file, base64 by path.",
       "properties": {
-        "manifest": { "$ref": "./evidence-package.schema.json" },
+        "manifest": { "$ref": "https://bsv-blockchain.github.io/dpp/contracts/evidence-package.schema.json" },
         "files": {
           "type": "object",
           "additionalProperties": { "type": "string", "contentEncoding": "base64" }

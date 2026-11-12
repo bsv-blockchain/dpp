@@ -29,7 +29,7 @@ curl --fail http://localhost:8080/capabilities
 | Response | What it provides |
 |---|---|
 | `/health` | Topics and lookup services the index runs |
-| `/capabilities` | Roles, protocol versions, profiles, publisher policy, synchronisation, limits and unsupported functions, in the shape of [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/capabilities.schema.json) |
+| `/capabilities` | Roles, protocol versions, profiles, publisher policy, synchronisation, limits and unsupported functions, in the shape of [`contracts/capabilities.schema.json`](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) |
 
 | Missing or unsettled fact | Source and stop condition |
 |---|---|
@@ -82,7 +82,7 @@ Compare indexes by transaction identifiers and proofs. The contract leaves looku
 
 ## Index routes
 
-[`contracts/overlay.yaml`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml) is a profile of the BSV ecosystem's overlay HTTP contract: BRC-22 submission and BRC-24 lookup as upstream defines them, plus the extensions below. The route table gives each token setting.
+[`contracts/overlay.yaml`](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml) is a profile of the BSV ecosystem's overlay HTTP contract: BRC-22 submission and BRC-24 lookup as upstream defines them, plus the standard's additions. It has a core, `x-dpp-core-version` 1, which every index serves: `POST /submit` with `X-Admission`, `POST /lookup` with the passport identifier and data carrier queries, `POST /arc-ingest`, and the listing and documentation routes. Everything else is an optional extension with its own version under `x-dpp-extensions`, marked on its operations with `x-dpp-extension`: `discovery`, `admission-refusal`, `health`, `capabilities`, `publisher-policy`, `registration`, `retraction`, `gs1-key-lookup`, `evidence-package` and `sync`. The core version changes only when the record versions the topics admit change or a must changes. `GET /history` and `GET /evidence-export` are routes of the reference package, outside the contract. The route table gives each token setting.
 
 | Route | Access | Request | Success | Errors |
 |---|---|---|---|---|
@@ -90,9 +90,9 @@ Compare indexes by transaction identifiers and proofs. The contract leaves looku
 | `POST /lookup` | Open | JSON `{ "service": "ls_dpp", "query": { "passportId": "..." } }`, or `ls_attestation` with an anchor query | 200 `{ "type": "output-list", "outputs": [{ "beef", "outputIndex" }] }` | 400 |
 | `POST /arc-ingest` | `ARC_CALLBACK_TOKEN` when set, as a bearer or `X-Callback-Token` | JSON `{ "txid", "merklePath", "blockHeight" }`, the merkle path as BRC-74 BUMP hex: the shape an ARC-compatible broadcaster's callback carries | 200 `{ "status": "applied" }`, or `"ignored"` with `"reason": "no merkle path"` when none was sent | 400 when the proof does not contain the transaction or fails against headers, 401, 404 when the index does not hold the transaction, 503 when the header source cannot evaluate it |
 | `POST /retract` | Bearer `SUBMIT_TOKEN` | JSON `{ "txid", "outputIndex", "reason" }`, for a state the network refused after it was announced | 200 | 401, 404, 409 `retraction-refused` when the index holds a proof for the output, the network knows the transaction or the output is spent, 503 `chain-tracker-unavailable` |
-| `GET /history?passportId=` (or `uid=`), `&limit=&cursor=` | Open | Query string | 200, one page of a passport's history over a snapshot | 400 `cursor-invalid`, 410 `snapshot-expired` after ten minutes |
-| `GET /evidence-package?passportId=` | Open | Query string | 200, the signed package of the newest 500 states | 503 `export-unavailable` without `EXPORT_SIGNING_KEY` |
-| `GET /evidence-export?passportId=&cursor=` | Bearer `EXPORT_TOKEN` when set | Query string | 200, one signed part of the complete export | 401 `export-unauthorised`, 400, 410, 503 |
+| `GET /evidence-package?passportId=` | Open | Query string | 200, the package of the newest 500 states, signed by the child of `EXPORTER_PRIVATE_KEY` for the passport | 503 `export-unavailable` without `EXPORTER_PRIVATE_KEY` |
+| `GET /history?passportId=` (or `uid=`), `&limit=&cursor=`, reference package only | Open | Query string | 200, one page of a passport's history over a snapshot | 400 `cursor-invalid`, 410 `snapshot-expired` after ten minutes |
+| `GET /evidence-export?passportId=&cursor=`, reference package only | Bearer `EXPORT_TOKEN` when set | Query string | 200, one signed part of the complete export | 401 `export-unauthorised`, 400, 410, 503 |
 | `GET /publisher-policy` | Open | | 200, the signed publisher policy chain the index admits under, oldest first | 404 `no-publisher-policy` on an index under one identity key |
 | `GET /capabilities`, `GET /health` | Open | | 200 | |
 | `POST /requestSyncResponse`, `POST /requestForeignGASPNode` | Open, bounded | The synchronisation protocol's bodies | 200 | 404 for a transaction the index does not hold |
@@ -111,7 +111,7 @@ A well-formed, authorised `/submit` answers 200 even when nothing was admitted. 
 
 A refusal also carries `X-Admission-Refusal`, naming the failed check per topic. For the `none` answer above, the index's publisher key differed from the state's. An index on this release adds `X-Admission-Refusal: tm_dpp=publisher-not-authorised`.
 
-The contract lists every code under `x-refusal-codes`, and [when the index refuses a state](../packages/build-an-application.md#when-the-index-refuses-a-state) says what each asks of a writer. Writers and readers see the same code where a verification report names the same failure. Only `tm_dpp` records reasons: an anchor refused on `tm_attestation`, or a state refused by an index on an earlier release, comes back without the header, and then only the operator's log says why ([known limitations](../operate/limitations.md)).
+The header is the contract's `admission-refusal` extension, and its codes are informative: `x-refusal-codes` lists the words the reference index sends, and [when the index refuses a state](../packages/build-an-application.md#when-the-index-refuses-a-state) says what each asks of a writer. Read any code, listed or not, as a refusal. Writers and readers see the same code where a verification report names the same failure. Only `tm_dpp` records reasons: an anchor refused on `tm_attestation`, or a state refused by an index on an earlier release, comes back without the header, and then only the operator's log says why ([known limitations](../operate/limitations.md)).
 
 ## Validate a claim
 
@@ -138,40 +138,39 @@ JS
 
 2. Expect HTTP 200 and a report whose claim signature, subject, validity period and evidence checks pass. Checks needing omitted evidence, such as passport history, read `unknown` with a reason. Set `REGISTRY_URL` to use your own registry.
 
-The answer names its contract and checks, with a shared `report` when the subject can be determined. Read its checks and limits; transport success or a registry-level outcome does not establish each check. Historical claims use a different response contract ([historical claims](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)).
+The answer names its contract and checks, with a shared `report` when the subject can be determined. Read its checks and limits; transport success or a registry-level outcome does not establish each check. A body naming no current representation, a [historical claim](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md) among them, answers with outcome `invalid` and the issue `unsupported representation; an explicit claimFormat or representation is required`: the contract has no legacy intake, and historical records are only read.
 
 | Condition | Interpretation |
 |---|---|
 | Validation only | Does not store or anchor the claim |
-| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/registry.yaml#L743-L786)) |
+| Optional `tokenHistory` | BEEF-encoded request context, removed before claim verification ([operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml#L267-L301)) |
 | HTTP 400 | A malformed or ambiguous request, including unreadable token history; resolve it before interpreting verification |
 | Refused connection | No registry runs at the chosen URL |
 
 ## Registry routes
 
-[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/registry.yaml) defines the attestation registry. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. The main routes:
+[`contracts/registry.yaml`](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) defines the minimum every attestation registry serves, these seven operations. No public reference registry is published; the [registry guide](../implement/roles/registry.md) says what one must serve. A registry may serve more, and the reference registry documents its own further routes, such as a record's report, a passport's history, its GS1 resolver and its health.
 
 | Route | Access | What it does |
 |---|---|---|
 | `POST /validate?subject=` | Open | Verifies a claim without storing or anchoring it |
-| `POST /attestations` | Bearer write token when the registry sets one | Verifies and stores a claim, then reports its anchor; 422 when verification fails or the representation is unsupported, such as a parked `vsc-seal-json-v1` SEAL, with nothing stored |
-| `GET /attestations`, `GET /attestations/{id}/proof`, `GET /attestations/{id}/report` | Open | The stored claims in pages, everything a third party needs to check one claim's anchor, and its verification report |
-| `GET /history`, `GET /chain`, `GET /passports/{passportId}/evidence-package` | Open | A passport's lifecycle history and custody timeline, and its evidence package |
-| `GET /capabilities`, `GET /health` | Open | The registry's own capability document, which may name its anchoring key as `anchoredBy`, and its health |
+| `POST /attestations` | Bearer write token when the registry sets one | Verifies and stores a claim, then reports its anchor; 422 when verification fails, the representation is unsupported, such as a parked `vsc-seal-json-v1` SEAL, or the body names no current representation, such as a historical UORA body, with nothing stored |
+| `GET /attestations`, `GET /attestations/{id}/proof` | Open | The stored claims in pages, and everything a third party needs to check one claim's anchor |
+| `GET /chain`, `GET /passports/{passportId}/evidence-package` | Open | A passport's custody timeline, and its evidence package, signed by the child of the registry's anchoring identity for the passport |
+| `GET /capabilities` | Open | The registry's own capability document, which may name its anchoring key as `anchoredBy`, the identity its evidence packages name as exporter |
 
-The registry contract also defines GS1 resolver routes; [GS1 discovery](../interoperability/gs1-discovery.md) covers them. The [interoperability contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/interoperability.yaml) defines EPCIS import and passport projection routes ([interoperability](../interoperability/README.md)).
+The GS1 resolver a registry may run is the [GS1 discovery](../interoperability/gs1-discovery.md) profile's, outside the registry contract. EPCIS import and passport projection routes are the reference application's own, not a contract of the standard ([interoperability](../interoperability/README.md)).
 
 ## Schemas
 
 | Schema | Defines |
 |---|---|
-| [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/capabilities.schema.json) | An index's or implementation's capability document |
+| [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) | An index's or implementation's capability document |
 | [publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json) | One version of a publisher policy, `dpp-publisher-policy@1` |
 | [verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) | The report a reader produces for one passport |
 | `contracts/verification-report-v1.schema.json` | Report version 1, for validating a stored version 1 report |
-| [paginated-history.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/paginated-history.schema.json) | One page of `GET /history` |
-| [evidence-package.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-package.schema.json) | The signed manifest of an evidence package, `dpp-evidence-package@1` |
-| [evidence-export.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json) | One part of the complete export, with its coverage record |
+| [paginated-history.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/paginated-history.schema.json) | One page of a snapshot, such as a registry's `GET /attestations` |
+| [evidence-package.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/evidence-package.schema.json) | The signed manifest of an evidence package, `dpp-evidence-package@1`, the one export format |
 | [native-evidence-extension.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/native-evidence-extension.schema.json) | A reference, carried inside a credential in another representation, to evidence already on chain in the native records |
 | [epcis-import.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/epcis-import.schema.json) | The record of one retained EPCIS import and its per-event results |
 | [passport-source.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/passport-source.schema.json) | A source revision of a model, batch, item or component record, and a typed relationship between subjects |

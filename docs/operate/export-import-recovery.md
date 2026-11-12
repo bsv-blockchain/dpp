@@ -8,18 +8,18 @@ Index operators and teams replacing a provider can use this guide to back up an 
 |---|---|
 | Whole-index backup or restore | Operator access to the Docker host, the Compose checkout and its `deploy/operator.env`; an empty destination volume for restoration |
 | Passport restoration, either route | Passport identifier and source URL from the publisher; replacement URL and a submit token from its operator, operator-wide or issued for the passport's publisher key; a built [checkout](../quick-start.md#get-the-code) or the package specified below |
-| Trust and admission, either route | Export signer from the source operator; replacement settings that admit the passport's publisher keys through `SERVICE_IDENTITY_KEY` or a [signed publisher policy](federation.md#3-sign-a-publisher-policy) |
-| Bounded package | Source index with an export key; no source token. Use only for a passport with no more than 500 states. |
-| Complete export | Source index's `EXPORT_TOKEN` and export signer from [enable exports](#enable-exports-on-your-index). The hosted token is not public; its operator names recipients [on request](../deployment.md#join-the-hosted-reference). |
+| Trust and admission, either route | The source index's exporter identity key, or for an index on an earlier release its export signer, from the source operator; replacement settings that admit the passport's publisher keys through `SERVICE_IDENTITY_KEY` or a [signed publisher policy](federation.md#3-sign-a-publisher-policy) |
+| Bounded package | Source index with `EXPORTER_PRIVATE_KEY` set, or an earlier release's export key; no source token. Use only for a passport with no more than 500 states. |
+| Complete export | Source index's `EXPORT_TOKEN` and exporter identity key from [enable exports](#enable-exports-on-your-index). A feature of the reference index package, outside the standard. The hosted token is not public; its operator names recipients [on request](../deployment.md#join-the-hosted-reference). |
 
 ## What each archive recovers
 
 | Archive | What it holds | What it lacks | Who can fetch it |
 |---|---|---|---|
 | A backup of the index's MongoDB volume | Everything the index admitted: outputs, transactions, the passport and anchor indexes and the synchronisation checkpoints | Keys, registry claims, restricted tiers | The operator, on the host |
-| The bounded package, `GET /evidence-package` | One passport's newest 500 states: each raw transaction, its BEEF with the merkle path once the index has one, the publisher policy chain, spend observations and a report, inventoried in a signed manifest | States beyond the newest 500, which it declares absent; restricted tiers | Anyone, from an index that sets `EXPORT_SIGNING_KEY` (otherwise 503) |
-| The complete export, `GET /evidence-export` | Every state of one passport, in signed parts over one snapshot | Restricted tiers; the report, which the reader produces over the joined parts | Anyone holding the source index's `EXPORT_TOKEN` when it sets one. The hosted reference sets one and does not give it to outsiders, so use this route on your own index or ask the source operator |
-| A registry export | The claims a registry holds and their evidence, under the [registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml) | Token history, restricted material, keys | Depends on the registry |
+| The bounded package, `GET /evidence-package` | One passport's newest 500 states: each raw transaction, its BEEF with the merkle path once the index has one, the publisher policy chain, spend observations and a report, inventoried in a signed manifest | States beyond the newest 500, which it declares absent; restricted tiers | Anyone, from an index that sets `EXPORTER_PRIVATE_KEY` (otherwise 503) |
+| The complete export, `GET /evidence-export`, a reference package feature | Every state of one passport, in signed parts over one snapshot | Restricted tiers; the report, which the reader produces over the joined parts | Anyone holding the source index's `EXPORT_TOKEN` when it sets one. The hosted reference sets one and does not give it to outsiders, so use this route on your own index or ask the source operator |
+| A registry export | The claims a registry holds and their evidence, under the [registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) | Token history, restricted material, keys | Depends on the registry |
 | The custody keys | The ability to spend or update the passport, which restoring public evidence does not recover | | Only their holder: no export recovers a lost key |
 
 | Term or limit | Meaning |
@@ -31,7 +31,7 @@ Index operators and teams replacing a provider can use this guide to back up an 
 
 ## Back up and restore a whole index
 
-The Compose preset backs up its MongoDB volume. Its [restart, back up and restore recipe](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/deploy/README.md#restart-back-up-restore) uses these steps from the checkout root:
+The Compose preset backs up its MongoDB volume. Its [restart, back up and restore recipe](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/deploy/README.md#restart-back-up-restore) uses these steps from the checkout root:
 
 1. Stop the index so files cannot change during copying.
 2. Copy the volume to `mongo-data.tgz`.
@@ -54,19 +54,19 @@ A volume backup is not a copy another operator can check. Hand over a package or
 
 ## Enable exports on your index
 
-The export signing key identifies the index that assembled a package. It is the index's own private key, never the publisher key, and establishes nothing about admission. Neither export route works without it.
+`EXPORTER_PRIVATE_KEY` is the index's exporter identity key, a key of its own: it is never the publisher key, and it is set apart from `OPERATOR_SIGNING_KEY`, so exporting does not need the key that signs publisher-policy versions on the host. The index signs each passport's package with that key's BRC-42 child for `[1, 'dpp evidence package v1']` and the passport identifier, as every exporter does ([portable evidence](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/portable-evidence.md) section 2), and names its public key as `exporterIdentityKey` in the capability document, so a reader derives the signer for any passport from one key. It establishes nothing about admission. Neither export route works without it.
 
-1. Generate the key from the checkout root:
+1. Generate the key from the checkout root. If an earlier release of your index signed with `EXPORT_SIGNING_KEY`, you can instead move that value to `EXPORTER_PRIVATE_KEY`, which keeps the identity readers already hold:
 
 ```sh
-node --input-type=module -e "import { PrivateKey } from '@bsv/sdk'; const key = PrivateKey.fromRandom(); console.log('EXPORT_SIGNING_KEY=' + key.toHex()); console.log('export signer: ' + key.toPublicKey().toString())"
+node --input-type=module -e "import { PrivateKey } from '@bsv/sdk'; const key = PrivateKey.fromRandom(); console.log('EXPORTER_PRIVATE_KEY=' + key.toHex()); console.log('exporter identity key: ' + key.toPublicKey().toString())"
 ```
 
-2. Put the first line in `deploy/operator.env`. Add `EXPORT_TOKEN=` followed by a secret from `openssl rand -hex 32`; without `EXPORT_TOKEN`, anyone can fetch the complete export.
+2. Put the first line in `deploy/operator.env` and remove any `EXPORT_SIGNING_KEY`, which an earlier release signed with directly and this one refuses to boot with. Add `EXPORT_TOKEN=` followed by a secret from `openssl rand -hex 32`; without `EXPORT_TOKEN`, anyone can fetch the complete export.
 3. Apply both with `docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d`.
-4. Check `GET /capabilities`: under `limits`, expect `"evidencePackageExport": "available"` and `"evidenceExport": "bearer"`.
+4. Check `GET /capabilities`: under `limits`, expect `"evidencePackageExport": "available"` and `"evidenceExport": "bearer"`, and expect `exporterIdentityKey` to be the second line.
 
-5. Publish the second line, the export signer, where readers can find it. They pass it as `expectedSigner`; the capability document does not carry it yet. The [hosted reference page](../deployment.md) lists its signer as `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`.
+5. Publish the second line, the exporter identity key, where readers can find it. A reader compares it with the capability document and passes `evidencePackageSigner(key, passportId)` from `@bsv/dpp-protocol` as `expectedSigner`. If you served packages under an earlier release's `EXPORT_SIGNING_KEY`, keep publishing that key's public half too: a package it signed names it as both `exporter.id` and `signature.signer` and still inspects with it as `expectedSigner`. The [hosted reference page](../deployment.md) lists the raw signer of the release it runs, `02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116`.
 
 ## Restore a passport from the bounded package
 
@@ -76,13 +76,16 @@ The hosted reference supports this route. Its passports require the replacement 
 
 ```js
 // Copy one passport from an index's bounded evidence package into another index.
-import { inspectEvidencePackage } from '@bsv/dpp-protocol'
+import { evidencePackageSigner, inspectEvidencePackage } from '@bsv/dpp-protocol'
 
 const source = process.env.SOURCE_INDEX ?? 'https://dpp-overlay.bsvb.net'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8080'
 const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
-// The key the source index signs its packages with. This default is the hosted reference's.
-const expectedSigner = process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
+// The key this passport's package is signed by: the child of the exporter identity key the source operator gives you
+// (EXPORTER_IDENTITY_KEY), or for an index on an earlier release its raw export key (EXPORT_SIGNER), by default the hosted reference's.
+const expectedSigner = process.env.EXPORTER_IDENTITY_KEY
+  ? evidencePackageSigner(process.env.EXPORTER_IDENTITY_KEY, passportId)
+  : process.env.EXPORT_SIGNER ?? '02f8d12356e30c6063c4a666dcefb099d04369a3c41929687d04610fb1ec9c0116'
 
 const response = await fetch(`${source}/evidence-package?${new URLSearchParams({ passportId })}`)
 if (!response.ok) throw new Error(`GET /evidence-package answered ${response.status}: ${await response.text()}`)
@@ -143,17 +146,20 @@ Use this above 500 states or whenever you need a coverage check. Join every part
 
 Without the hosted export token, use its open [bounded package](#restore-a-passport-from-the-bounded-package) for one passport within the bound.
 
-1. Save this as `restore-export.mjs` at the checkout root, or in a project with `@bsv/dpp-overlay@0.4.0-beta.9` installed:
+1. Save this as `restore-export.mjs` at the checkout root:
 
 ```js
 // Fetch a passport's complete export from one index, check that the parts join, and restore it into another index.
+import { evidencePackageSigner } from '@bsv/dpp-protocol'
 import { joinEvidenceExport } from '@bsv/dpp-overlay'
 
 const source = process.env.SOURCE_INDEX ?? 'http://localhost:8080'
 const replacement = process.env.REPLACEMENT_INDEX ?? 'http://localhost:8081'
 const passportId = process.env.PASSPORT_ID ?? 'https://dpp.bsvb.net/01/09529530005688/21/E18E296BB180'
-const expectedSigner = process.env.EXPORT_SIGNER
-if (!expectedSigner) throw new Error('set EXPORT_SIGNER to the public key the source index signs exports with')
+const expectedSigner = process.env.EXPORTER_IDENTITY_KEY
+  ? evidencePackageSigner(process.env.EXPORTER_IDENTITY_KEY, passportId)
+  : process.env.EXPORT_SIGNER
+if (!expectedSigner) throw new Error('set EXPORTER_IDENTITY_KEY to the source index\'s exporter identity key, or EXPORT_SIGNER to the raw key an index on an earlier release signs with')
 
 const parts = []
 let cursor = null
@@ -183,10 +189,10 @@ for (const [path, bytes] of joined.files) {
 }
 ```
 
-2. Run with the source's export token and signer, and the replacement's submit token and URL:
+2. Run with the source's export token and exporter identity key, and the replacement's submit token and URL:
 
 ```sh
-EXPORT_TOKEN=<source export token> EXPORT_SIGNER=<source export signer> SUBMIT_TOKEN=<replacement submit token> REPLACEMENT_INDEX=http://localhost:8081 node restore-export.mjs
+EXPORT_TOKEN=<source export token> EXPORTER_IDENTITY_KEY=<source exporter identity key> SUBMIT_TOKEN=<replacement submit token> REPLACEMENT_INDEX=http://localhost:8081 node restore-export.mjs
 ```
 
 3. Check the joined result and admission lines. Between two local indexes, the example printed `export joined: 1 part(s) of snapshot <id>, complete` and the same three `200 tm_dpp=admitted` lines as the package restore.
@@ -222,17 +228,17 @@ Inclusion across the chain: verified.
 - An export cannot recover evidence the source did not retain, and a package or export never carries the restricted tiers.
 - Registry claims are a separate archive with no token history, restricted material or keys, so replacing a provider can need an index export, a registry export and separately kept custody access.
 
-The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) marks the complete index export tested and durable independent publication a gap; its evidence is local and synthetic. Other known limits are on [known limitations](limitations.md).
+The complete export is a feature of the reference index package, outside the standard, and its tests are local and synthetic. The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) marks durable independent publication a gap. Other known limits are on [known limitations](limitations.md).
 
 ## Sources
 
 | Recovering | Source |
 |---|---|
-| One passport within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-package.schema.json) |
-| A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml), [part schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
-| Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml) |
-| The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
+| One passport within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/evidence-package.schema.json) |
+| A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md), [part schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/schemas/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
+| Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) |
+| The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
 
-The [portable-evidence requirements](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) and [exchange requirements](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md) define packages, exports and how a reader joins them.
+The [portable-evidence requirements](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/portable-evidence.md) and [exchange requirements](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md) define packages; the overlay package's description covers the complete export and how a reader joins its parts.
 
 Next: to move a whole deployment to a new release, rehearse against a restored copy as [migration](../migration.md) describes; to keep a second index in step continuously instead, see [federation](federation.md).

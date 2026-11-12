@@ -16,11 +16,12 @@
  * Two routes build from the same pieces. `GET /evidence-package` is the
  * bounded package: the newest states within the cap, the rest declared
  * absent, complete for its snapshot only when the cap was not reached. `GET
- * /evidence-export` is the complete export: parts over one snapshot, oldest
- * first, each a package of its own over a contiguous sequence range bounded
- * by states and by bytes, resumed by a cursor, tiling the snapshot so a
- * reader joins them with `joinEvidenceExport` and knows whether it holds
- * everything the snapshot held (`contracts/evidence-export.schema.json`).
+ * /evidence-export` is this package's complete export, a reference feature
+ * and not part of the standard: parts over one snapshot, oldest first, each a
+ * package of its own over a contiguous sequence range bounded by states and
+ * by bytes, resumed by a cursor, tiling the snapshot so a reader joins them
+ * with `joinEvidenceExport` and knows whether it holds everything the
+ * snapshot held (`packages/dpp-overlay/schemas/evidence-export.schema.json`).
  *
  * The archive form is this build's own, as the standard leaves it: a JSON
  * envelope `{ manifest, files: { "<path>": "<base64>" } }`, so a browser or a
@@ -37,6 +38,7 @@ import {
   REPORT_VERSION,
   canonicalJson,
   chainFromBeef,
+  evidencePackageSigningKey,
   inspectEvidencePackage,
   inventoryEntry,
   sha256Hex,
@@ -67,7 +69,12 @@ export interface EvidenceExportRequest {
   passportId: string
   paginator: HistoryPaginator
   engineStorage: Storage
-  /** EXPORT_SIGNING_KEY; the manifest's signer is its public key. */
+  /**
+   * EXPORTER_PRIVATE_KEY, the exporter's identity key: the manifest names its
+   * public key as `exporter.id` and is signed by its BRC-42 child for the
+   * passport (`evidencePackageSigningKey`), as every exporter's is
+   * (`spec/portable-evidence.md` section 2).
+   */
   signingKey: PrivateKey
   publisherPolicy?: PublisherPolicyConfig
   /** The operator profile this index runs, as its capability document names it (`operatorProfileFor`); the policy's own profile when unset. */
@@ -83,7 +90,7 @@ export interface EvidenceExportRequest {
   software: string
 }
 
-/** The version of the complete export's wrapper, `contracts/evidence-export.schema.json`. */
+/** The version of the complete export's wrapper, `packages/dpp-overlay/schemas/evidence-export.schema.json`. */
 export const EVIDENCE_EXPORT_VERSION = '1'
 
 /**
@@ -314,8 +321,10 @@ const operatorProfileOf = (policy: PublisherPolicyConfig | undefined): string =>
 /** A genesis is the state with no predecessor; the first held row is not one merely by being first. */
 const isGenesis = (row: DppRecord | undefined): row is DppRecord => row != null && row.previousTxid === ''
 
-function signedBy(signingKey: PrivateKey): { exporterId: string; sign: (preimage: number[]) => Promise<number[]> } {
-  return { exporterId: signingKey.toPublicKey().toString(), sign: async (preimage) => signingKey.sign(preimage).toDER() as number[] }
+/** The exporter's identity, which the manifest names, and its BRC-42 child for the passport, which signs the manifest and a part's coverage record. */
+function signedBy(identityKey: PrivateKey, passportId: string): { exporterId: string; signer: string; sign: (preimage: number[]) => Promise<number[]> } {
+  const child = evidencePackageSigningKey(identityKey, passportId)
+  return { exporterId: identityKey.toPublicKey().toString(), signer: child.toPublicKey().toString(), sign: async (preimage) => child.sign(preimage).toDER() as number[] }
 }
 
 /**
@@ -393,7 +402,7 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
     represents: `verification-report@${REPORT_VERSION} for ${passportId}`,
   })
 
-  const { exporterId, sign } = signedBy(request.signingKey)
+  const { exporterId, signer, sign } = signedBy(request.signingKey, passportId)
   const unsigned: UnsignedEvidenceManifest = {
     format: EVIDENCE_PACKAGE_FORMAT,
     version: EVIDENCE_PACKAGE_VERSION,
@@ -419,7 +428,7 @@ export async function buildEvidencePackage(request: EvidenceExportRequest): Prom
       { id: DPP_SERVICE, kind: 'spend-status', observedAt: exportedAt, result: spendResult },
     ],
     inventory: files.inventory,
-    signature: { suite: 'bsv-ecdsa-der', signer: exporterId },
+    signature: { suite: 'bsv-ecdsa-der', signer },
   }
   const manifest = await signEvidenceManifest(unsigned, { sign })
   return { manifest, files: files.envelope() }
@@ -477,7 +486,7 @@ export async function buildEvidenceExportPart(request: EvidencePartRequest): Pro
   const tip = more ? undefined : [...taken].reverse().find((row) => !row.spent)
   const observed = last ?? undefined
   const spendResult: SourceObservation['result'] = observed == null ? 'not-found' : observed.spent ? 'spent' : 'unspent'
-  const { exporterId, sign } = signedBy(request.signingKey)
+  const { exporterId, signer, sign } = signedBy(request.signingKey, passportId)
   const unsigned: UnsignedEvidenceManifest = {
     format: EVIDENCE_PACKAGE_FORMAT,
     version: EVIDENCE_PACKAGE_VERSION,
@@ -504,7 +513,7 @@ export async function buildEvidenceExportPart(request: EvidencePartRequest): Pro
     },
     sources: [{ id: DPP_SERVICE, kind: 'spend-status', observedAt: exportedAt, result: spendResult }],
     inventory: files.inventory,
-    signature: { suite: 'bsv-ecdsa-der', signer: exporterId },
+    signature: { suite: 'bsv-ecdsa-der', signer },
   }
   const manifest = await signEvidenceManifest(unsigned, { sign })
   // The coverage record, signed by the same key and bound to the manifest
@@ -517,7 +526,7 @@ export async function buildEvidenceExportPart(request: EvidencePartRequest): Pro
     part: { index, sequenceRange: { from, to }, states: taken.length },
     final,
     manifestSha256: exportManifestDigest(manifest),
-    signature: { suite: 'bsv-ecdsa-der', signer: exporterId, value: '' },
+    signature: { suite: 'bsv-ecdsa-der', signer, value: '' },
   }
   coverage.signature.value = Utils.toHex(await sign(exportCoveragePreimage(coverage)))
   return {

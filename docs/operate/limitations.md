@@ -36,7 +36,7 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 | WhatsOnChain is the only header source | Inclusion trusts its headers. Anonymous access allows a few requests a second. Outages drop proven states during synchronisation; five failed rounds leave them behind until retry. | Set `WOC_API_KEY`; no alternative-header setting exists. [Move checkpoints back](federation.md#move-a-checkpoint-back) for missed states rather than waiting. |
 | No published operator image | Operators build from a checkout. | Use the Compose preset in [run a service](README.md). |
 | History/export snapshots expire after ten minutes | Longer pauses require restarting pagination; process restarts or another answering replica also lose the cursor. | Page promptly; restart when the cursor is lost. |
-| `GET /evidence-package` includes only the newest 500 states | Longer histories are truncated. | Use `GET /evidence-export` ([recovery](export-import-recovery.md)). |
+| `GET /evidence-package` includes only the newest 500 states | Longer histories are truncated. | Use the reference package's `GET /evidence-export` ([recovery](export-import-recovery.md)), a feature outside the standard. |
 | `CHAIN_TRACKER=scripts-only` skips header checks | The index would admit unproven ancestry. | Use only for local development. |
 | The signing example handles only a first, single-operator version | No ready-made tool signs a first version with multiple operators or a later chain version. | Sign `policySigningPreimage(policy)` from `@bsv/dpp-protocol` with every required key; check with `verifyPolicyChain` ([federation step 3](federation.md#3-sign-a-publisher-policy)). |
 | A refused announcement spending a tip marks it spent in the engine | Lookups and history stay unchanged, but peers are no longer offered that tip. | Announce a valid successor; peers are then offered it with its lineage. |
@@ -67,7 +67,7 @@ Limits apply to both releases unless a row names a version. [Resolved questions]
 
 | Limit | Effect | Action |
 |---|---|---|
-| No export signer in capabilities | Readers lack a published comparison key. | Use the [hosted reference key](../deployment.md#the-hosted-reference); ask other operators for theirs. |
+| An index on an earlier release names no exporter key | Its capability document carries no `exporterIdentityKey`, and its packages are signed with a raw key. | Use the [hosted reference key](../deployment.md#the-hosted-reference); ask other operators for theirs. From this release an index names `exporterIdentityKey`, which you still compare with the key its operator gives you. |
 | Operator names bind no key | Documents can share a name. | [Distinguish operators by keys](federation.md#tell-operators-apart). |
 | Registry capabilities have two definitions | The capabilities schema and registry contract locate the anchoring key differently; which document `GET /capabilities` returns is unsettled. | Conform by serving the schema document with the anchoring key under `publisherPolicy.anchoringServices`. Verifiers read that or the contract's `anchoredBy` ([registry](../implement/roles/registry.md#the-minimum-a-registry-serves)). |
 
@@ -112,7 +112,7 @@ These rules have source implementation support. They remain unavailable through 
 | Disclosure of the `legitimate` and `authority` tiers | One owner commitment covers the restricted object. Each disclosure is re-encrypted to an authorised reader's identity key and includes only their entitled tiers ([record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), section 7). |
 | Writing for a holder after a hand on | A custodian's update or retirement for a managed holder depends on custody: the chain cannot show that the holder asked, and the verification report's limits say so. The instruction record that once recorded the request is parked outside the standard ([parked instruction records](../reference/parked/managed-instruction/README.md)). |
 | Managed transfer locking key | Each state's output locks to its field-6 controller key. The custodian wallet spends for managed identities; recipients supplying their own derived destination key can spend from their own wallet ([managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md), section 2). |
-| Structured lifecycle-claim data | Native claims may carry defined `evidence` facets; `recordId` identifies the state outpoint `<txid>:<outputIndex>` ([claim rules](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/spec/rules.md), sections 3 and 4). |
+| Structured lifecycle-claim data | Native claims carry no evidence facets; a profile mapping reads its facets from other evidence, such as a state's `event_data`, and `recordId` identifies the state outpoint `<txid>:<outputIndex>` ([claim rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md), sections 3 and 4). |
 
 ## Open questions in the standard
 

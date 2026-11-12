@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { refuseRemovedCustodySettings, versionTwoAdmission } from '../src/index.js'
+import { exportIdentityKey, refuseRemovedCustodySettings, versionTwoAdmission } from '../src/index.js'
 
 /** The custody settings read from the environment, as the README's configuration table states them. */
 describe('the custody settings from the environment', () => {
@@ -35,5 +35,23 @@ describe('the removed custody settings', () => {
     expect(() => refuseRemovedCustodySettings({ OWNER_CONSENT: 'required' })).toThrow(/OWNER_CONSENT is no longer read.*CONTROL_AUTHORITIES/)
     expect(() => refuseRemovedCustodySettings({ TRANSFER_AUTHORITIES: '02aa' })).toThrow(/TRANSFER_AUTHORITIES is no longer read.*were also the index's control authorities, so move them to CONTROL_AUTHORITIES/)
     expect(() => refuseRemovedCustodySettings({ INSTRUCTION_COMMITMENT: 'required' })).toThrow('INSTRUCTION_COMMITMENT is no longer read: the instruction rule of the managed-custody profile is parked')
+  })
+})
+
+/** Evidence packages are signed by the exporter identity key's child per passport (spec/portable-evidence.md section 2), never by a raw export key. */
+describe('the export signing settings', () => {
+  it('read EXPORTER_PRIVATE_KEY as the exporter identity, and nothing when it is unset', () => {
+    expect(exportIdentityKey({ EXPORTER_PRIVATE_KEY: '77'.repeat(32) })).toBe('77'.repeat(32))
+    expect(exportIdentityKey({})).toBeUndefined()
+    expect(() => exportIdentityKey({ EXPORTER_PRIVATE_KEY: 'not hex' })).toThrow('EXPORTER_PRIVATE_KEY is not a private key in hex')
+  })
+
+  it('never take the exporter identity from OPERATOR_SIGNING_KEY, so registration does not switch exports on', () => {
+    expect(exportIdentityKey({ OPERATOR_SIGNING_KEY: '77'.repeat(32) })).toBeUndefined()
+  })
+
+  it('fail the boot when the raw EXPORT_SIGNING_KEY of an earlier release is set, saying what replaces it', () => {
+    expect(() => exportIdentityKey({ EXPORT_SIGNING_KEY: '77'.repeat(32) })).toThrow(/EXPORT_SIGNING_KEY is no longer read.*EXPORTER_PRIVATE_KEY/)
+    expect(() => exportIdentityKey({ EXPORT_SIGNING_KEY: '77'.repeat(32), EXPORTER_PRIVATE_KEY: '77'.repeat(32) })).toThrow('EXPORT_SIGNING_KEY is no longer read')
   })
 })

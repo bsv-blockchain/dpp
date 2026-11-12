@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { PrivateKey, Utils } from '@bsv/sdk'
+import { PrivateKey, ProtoWallet, PublicKey, Signature, Utils } from '@bsv/sdk'
 import { readFileSync } from 'node:fs'
-import { ACCEPTANCE_RECORD_REPRESENTATION, ACCEPTANCE_RECORD_REPRESENTATIONS, acceptanceRecordsInPackage, inspectEvidencePackage, inventoryEntry, manifestSigningPreimage, pathProblem, signEvidenceManifest, type EvidencePackageManifest, type UnsignedEvidenceManifest } from '../src/evidencePackage.js'
+import { ACCEPTANCE_RECORD_REPRESENTATION, ACCEPTANCE_RECORD_REPRESENTATIONS, EVIDENCE_PACKAGE_PROTOCOL, acceptanceRecordsInPackage, evidencePackageSigner, evidencePackageSigningKey, inspectEvidencePackage, inventoryEntry, manifestSigningPreimage, pathProblem, signEvidenceManifest, type EvidencePackageManifest, type UnsignedEvidenceManifest } from '../src/evidencePackage.js'
 import { acceptanceCommitment, signManagedAcceptance, type ManagedAcceptanceRecord } from '../src/acceptance.js'
 import { custodianWallet } from './helpers-v2.js'
 
@@ -159,5 +159,17 @@ describe('the evidence package (portable-evidence.md §2)', () => {
     expect(records[0].record).toEqual(v2)
     expect(records[1].failure).toContain('listed as dpp-managed-acceptance@1 and holds a dpp-managed-acceptance@2 record')
     expect(records[2].failure).toContain('listed as dpp-managed-acceptance@2 and holds a dpp-managed-acceptance@1 record')
+  })
+
+  it('derives the signer from the exporter identity key, as a reader and a BRC-100 wallet both do (portable-evidence.md §2)', async () => {
+    const identity = exporter.toPublicKey().toString()
+    const passportId = 'urn:example:passport:1'
+    const derived = evidencePackageSigner(identity, passportId)
+    expect(evidencePackageSigningKey(exporter, passportId).toPublicKey().toString()).toBe(derived)
+    expect(derived).not.toBe(identity)
+    expect(evidencePackageSigner(identity, 'urn:example:passport:2')).not.toBe(derived)
+    const preimage = Utils.toArray('manifest', 'utf8')
+    const { signature } = await new ProtoWallet(exporter).createSignature({ data: preimage, protocolID: EVIDENCE_PACKAGE_PROTOCOL, keyID: passportId, counterparty: 'anyone' })
+    expect(PublicKey.fromString(derived).verify(preimage, Signature.fromDER(signature))).toBe(true)
   })
 })

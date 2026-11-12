@@ -158,12 +158,12 @@ Before relying on an embedded index, persist records across restarts, ingest lat
 
 The repository's Compose preset runs this host with persistent storage from one environment file. [Run an index from source](../operate/README.md) covers its startup, checks and an application's connection file; it is the route for a new index.
 
-The host speaks the overlay contract: `POST /submit` and `POST /lookup`, `POST /arc-ingest` for block proofs, `GET /capabilities`, `GET /history`, the evidence exports, `POST /retract` and the synchronisation routes. Its configuration is all environment.
+The host speaks the overlay contract's core, `POST /submit` and `POST /lookup` and `POST /arc-ingest` for block proofs, and its extensions, among them `GET /capabilities`, `GET /evidence-package`, `POST /retract` and the synchronisation routes. `GET /history` and the complete export are its own routes, outside the contract. Its configuration is all environment.
 
 ### Other routes from source
 
 - **With the repository's Compose preset.** Follow [run an index from source](../operate/README.md): it explains the publisher key, the tokens, storage, the first health and capability checks and the application's connection. Then issue [a passport lookup](../reference/contracts.md#find-passport-records).
-- **From a checkout.** Run `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` at the built checkout root: port 8080, in-memory storage, `GET /health` returns `"status":"ok"`. Startup warns for every disabled protection. Before exposing it to strangers, set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/packages/dpp-overlay/README.md) lists every variable.
+- **From a checkout.** Run `SERVICE_IDENTITY_KEY=<publisher key> npm start -w @bsv/dpp-overlay` at the built checkout root: port 8080, in-memory storage, `GET /health` returns `"status":"ok"`. Startup warns for every disabled protection. Before exposing it to strangers, set `SUBMIT_TOKEN`, `ARC_CALLBACK_TOKEN`, `MONGO_URL` and `ANCHOR_SERVICE_KEYS`. The [package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md) lists every variable.
 
 ### Check access and registration outcomes
 
@@ -207,10 +207,10 @@ For self-service registration:
 | Integration | Source |
 |---|---|
 | Embed passport and claim indexing | [Library exports](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/lib.ts) |
-| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/src/index.ts) |
+| Run the HTTP service | [Host and configuration](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/src/index.ts) |
 | Read a historical UORA anchor | `tryParseUoraAnchor` and `expectedLockingKey`, as [`examples/verify-anchor.mjs`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/verify-anchor.mjs) shows for `uora-anchor-v3`; it refuses `uora-anchor-v2` and does not read `uora-anchor-v1` ([legacy UORA anchors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/legacy-uora-anchor-v3.md)) |
-| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/overlay.yaml) |
-| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/b98ddef8904aa3edb60af2e0dd7605f410c287e8/packages/dpp-overlay/README.md) |
+| Serve or consume its interface | [Overlay contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml) |
+| Select storage and service adapters | [Package guide](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md) |
 
 ## Next
 

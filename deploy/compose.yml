@@ -88,10 +88,12 @@ services:
       OWNER_CONSENT: ${OWNER_CONSENT:-}
       TRANSFER_AUTHORITIES: ${TRANSFER_AUTHORITIES:-}
       INSTRUCTION_COMMITMENT: ${INSTRUCTION_COMMITMENT:-}
+      EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
       PUBLISHER_POLICY_FILE: ${PUBLISHER_POLICY_FILE:-}
       PUBLISHER_POLICY_JSON: ${PUBLISHER_POLICY_JSON:-}
       OPERATOR_IDENTITY_KEYS: ${OPERATOR_IDENTITY_KEYS:-}
-      EXPORT_SIGNING_KEY: ${EXPORT_SIGNING_KEY:-}
+      # The exporter's identity key: its child for each passport signs that passport's evidence packages.
+      EXPORTER_PRIVATE_KEY: ${EXPORTER_PRIVATE_KEY:-}
       # The bearer for GET /evidence-export, the complete export; the bounded
       # GET /evidence-package and GET /history stay open. Forwarded here
       # because an env-file value reaches the container only through this list.
