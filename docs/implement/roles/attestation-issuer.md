@@ -38,7 +38,7 @@ Expect `The signed claim matches the fixture.` Stop if either assertion fails.
 
 ## Sign one claim in your own code
 
-[Rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) sections 3 and 4 define the claim, and `fixtures/attestation-anchor-v1.json` gives a value to compare at each step:
+[Rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) sections 3 and 4 define the claim, and `fixtures/attestation-anchor-v1.json` gives a value to compare at each step:
 
 | Field | Source or rule | Fixture comparison |
 |---|---|---|
@@ -106,8 +106,8 @@ When the receiver needs a W3C credential instead, see [external credentials](../
 
 ## Exact implementation sources
 
-- [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md)
+- [spec/rules.md](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md)
 - [spec/identity.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/identity.md)
-- [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/attestation-anchor-v1.json)
+- [fixtures/attestation-anchor-v1.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/fixtures/attestation-anchor-v1.json)
 
 Record results as [evidence reporting](../reporting.md) describes; the [source gaps](../fixture-runner.md#source-gaps) remain open.

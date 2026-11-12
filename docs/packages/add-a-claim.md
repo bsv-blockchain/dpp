@@ -29,14 +29,14 @@ The first ends with a recycler's claim about a retired passport and its anchor, 
 
 ## 1. Fill in the claim
 
-Use exactly these fields. `signLifecycleClaim` refuses any other with `unsupported claim field <name>` ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 3).
+Use exactly these fields. `signLifecycleClaim` refuses any other with `unsupported claim field <name>` ([rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) section 3).
 
 | Field | What to put |
 |---|---|
 | `claimFormat` | Always `dpp-lifecycle-v1` |
 | `passportId` | The passport identifier exactly as the product carries it, at most 512 bytes |
 | `recordId` | The outpoint of the passport state the claim is about, written `<txid>:<outputIndex>`: the transaction identifier, a colon and the output index, such as `4566f1de…6331:0`. `signLifecycleClaim` refuses any other spelling. The example below uses the latest state |
-| `eventType` | One of `Origin`, `Transfer`, `Transformation` or `Disposition`. A repair is `Transformation` and a recycling `Disposition` ([rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) section 2) |
+| `eventType` | One of `Origin`, `Transfer`, `Transformation` or `Disposition`. A repair is `Transformation` and a recycling `Disposition` ([rules](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/spec/rules.md) section 2) |
 | `timestamp` | When the event happened: an ISO date-time with a time zone, such as `2026-10-01T09:30:00Z` |
 | `issuer` | Your DID. With a wallet key, `didKeyFromIdentityKey(identityKey)` |
 | `issuerKeyId` | A label for the signing role, such as `repair bench 1`, at most 256 bytes. It does not select a key |
@@ -141,7 +141,7 @@ In production, replace the `ProtoWallet` with your BRC-100 wallet, for example `
 
 ## 3. Store it
 
-Send the signed claim to the registry you arranged ([registry contract](https://github.com/bsv-blockchain/dpp/blob/b9549475bc008de548ba2368d160dc1ce9ddebb5/contracts/registry.yaml)).
+Send the signed claim to the registry you arranged ([registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml)).
 
 | Request or response | Required content or meaning |
 |---|---|
