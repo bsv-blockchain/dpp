@@ -161,7 +161,6 @@ These are open questions in the standard's own texts, where two sources do not y
 
 | Gap | Sources requiring reconciliation | Meanwhile |
 |---|---|---|
-| Canonical key ordering differs between text and implementation | [Native text](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md#L66), [managed-custody text](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md#L39), [canonicaliser](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/src/canonicalJson.ts#L24-L36) | The texts say code-unit order; the reference sorts by Unicode code point. Every key in every fixture is ASCII, where the two orders agree, so the gap changes no fixture result today. |
 | Pre-1.0 precedence needs a consistent reading | [Governance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/GOVERNANCE.md), [record-model status](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md#L3) | Where two sources disagree, record both readings and the input that shows the difference. |
 
 Next: the [passport reader](roles/passport-reader.md) guide, then [report your results](reporting.md).
