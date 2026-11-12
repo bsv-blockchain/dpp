@@ -74,7 +74,7 @@ node scripts/publish-candidates.mjs
 
 Review source diff, changelog, impact notes, tests and package contents. Stop before committing or pushing until the exact commit content and message are approved. Retain the source revision; a push alone publishes nothing.
 
-Package qualification is separate from battery product qualification, European conformity and application readiness. The release selection withholds those claims.
+Package qualification is separate from battery product qualification, European conformity and application readiness, none of which a release selection claims.
 
 ## 3. Run the GitHub dry run
 

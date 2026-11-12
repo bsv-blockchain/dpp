@@ -14,7 +14,7 @@ Implementers who have run the fixtures can use this page to report their results
 ## The rules
 
 1. **One sentence per check, zeros included.** Include checks that did not pass. Give no aggregate verdict or score: [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) says a report that says "12 of 13" invites exactly the argument a conformance suite exists to end.
-2. **Writers add one sentence per writing rule.** Vectors cannot show that a state was checked before sending or its proof retained. Writers self-report each rule that [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11 lists. Passing every fixture says nothing about a writer without those sentences. [Passport writer](roles/passport-writer.md#prove-it-the-writers-self-report) lists the six rules.
+2. **Writers add one sentence per writing rule.** Vectors cannot show that a state was checked before sending or its proof retained. Writers self-report each rule that [writing](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md) section 11 lists. Passing every fixture says nothing about a writer without those sentences. [Passport writer](roles/passport-writer.md#prove-it-the-writers-self-report) lists the seven rules.
 3. **Say what kind of evidence each sentence is.** A local fixture result, a fresh-record exchange with another implementation and a deployed service are different facts.
 4. **Claim only what the test shows.** A passing native-signature test is evidence about that signature check. It does not establish issuer authority, inclusion or an independent deployment. If a run had no header source, say so beside the checks that passed.
 
@@ -37,16 +37,16 @@ Three sentences in the house style, for a fictional reader called `example-reade
 
 ## Find the requirements
 
-1. Open the selected role in the [baseline](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json) and read `roles.<role>.requires`.
+1. Open the selected role in the [baseline](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/conformance/baseline-native-2.json) and read `roles.<role>.requires`.
 2. Follow each requirement identifier into the [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json), the list of every requirement with its source clause, the roles it binds and its status.
 3. Follow each row's declared source, implementation, test and evidence references. Record the predicate your implementation actually executed. An absent assertion stays missing; a shared source document is not evidence that one fixture exercises every row.
-4. Assemble the conformance claim (a named set of ledger rows), the capability document below and your results, as [conformance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) sections 4 and 6 and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) describe.
+4. Assemble the conformance claim (a named set of ledger rows), the capability document below and your results, as [conformance](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/conformance.md) sections 4 and 6 and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) describe.
 
 The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the status vocabulary. A reference ledger status is not the status of the implementation being reported.
 
 ## Declare what you support
 
-A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) section 4). An index serves it at `GET /capabilities`; a library or tool publishes it with its report.
+A capability document declares supported and unsupported features as JSON under the [capabilities schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json). Reviewers check this support claim against the ledger; it is not proof of conformance ([conformance](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/conformance.md) section 4). An index serves it at `GET /capabilities`; a library or tool publishes it with its report.
 
 | Requiredness | Fields |
 |---|---|

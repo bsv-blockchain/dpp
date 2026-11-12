@@ -11,7 +11,10 @@
  * row that cites it; every claim names rows that exist, and a claim is refused
  * while any required row is unassessed or below the claim's minimum status;
  * each baseline's role requirements exist, its fixtures' digests match, and its
- * wire values are the ones the reference implementation exports; every report
+ * wire values are the ones the reference implementation exports; each role
+ * has one claim scoped to native-baseline@2, naming exactly the baseline's
+ * rows for the role, and those rows include the frozen native-baseline@1
+ * rows for the role; every report
  * in fixtures/evidence-v1.json, fixtures/evidence-v2.json and fixtures/evidence-v3.json validates
  * against the report schema with its checks in the schema's order; the example capability document validates;
  * and the recorded dependency licences match what is installed.
@@ -193,6 +196,26 @@ checkBaseline('conformance/baseline-native-3.json', {
   carrier: true,
 })
 
+// 3b. The claim target: native-baseline@2 is the one baseline a claim names
+// (spec/conformance.md section 3), so each role has exactly one claim scoped
+// to it, and that claim's rows are exactly the baseline's requires list.
+const target = read('conformance/baseline-native-2.json')
+for (const [role, spec] of Object.entries(target.roles)) {
+  const scoped = ledger.claims.filter((c) => c.profileId === target.baselineId && c.role === role)
+  if (scoped.length !== 1) { defect(`${target.baselineId} role ${role} has ${scoped.length} claims scoped to it; the baseline is claimed by exactly one per role.`); continue }
+  const [claim] = scoped
+  const extra = claim.requires.filter((id) => !spec.requires.includes(id))
+  const lacking = spec.requires.filter((id) => !claim.requires.includes(id))
+  if (extra.length === 0 && lacking.length === 0) note(`claim ${claim.id} requires exactly the ${target.baselineId} rows of role ${role}.`)
+  else defect(`claim ${claim.id} differs from the ${target.baselineId} rows of role ${role}: beyond them ${extra.join(', ') || 'nothing'}; lacking ${lacking.join(', ') || 'nothing'}.`)
+}
+// A profile that names the frozen native-baseline@1 is met under
+// native-baseline@2 only while each role's @2 rows include all of its @1 rows.
+const frozen = read('conformance/baseline-native-1.json')
+const dropped = Object.entries(frozen.roles).flatMap(([role, spec]) => spec.requires.filter((id) => !(target.roles[role]?.requires ?? []).includes(id)).map((id) => `${role} ${id}`))
+if (dropped.length === 0) note(`every ${frozen.baselineId} role requirement is also a ${target.baselineId} requirement of the same role, so a profile naming ${frozen.baselineId} is met under ${target.baselineId}.`)
+else defect(`${target.baselineId} lacks ${frozen.baselineId} role requirements, so a profile naming ${frozen.baselineId} is not met under it: ${dropped.join(', ')}.`)
+
 // 4. The report schema and every pinned report.
 const reportSchema = read('contracts/verification-report.schema.json')
 if (!same(reportSchema.$defs.checkName.enum, [...EVIDENCE_CHECK_NAMES])) defect('the report schema lists the check names in a different order from the reference implementation.')
@@ -317,26 +340,6 @@ for (const name of readdirSync(join(root, 'release')).filter((f) => /^dpp-releas
     if (actual === a.sha256) note(`${set.releaseSet} artefact ${a.path} has the recorded digest.`)
     else defect(`${set.releaseSet} artefact ${a.path} has digest ${actual.slice(0, 12)}…, not the recorded ${a.sha256.slice(0, 12)}…; review the change and run conformance/pin-sources.mjs.`)
   }
-}
-
-// 4c. The demonstration definitions: every row and claim each scenario names
-// exists in the ledger, and the release set each names exists and is not
-// superseded, so the demonstration cannot drift from what it bears on.
-const demonstrationsDir = join(root, 'conformance', 'demonstrations')
-for (const name of existsSync(demonstrationsDir) ? readdirSync(demonstrationsDir).filter((f) => f.endsWith('.json')).sort() : []) {
-  const path = `conformance/demonstrations/${name}`
-  const demo = read(path)
-  let problems = 0
-  const setFile = join(root, 'release', `${demo.releaseSet}.json`)
-  if (!existsSync(setFile)) { problems += 1; defect(`${path} names release set ${demo.releaseSet}, which does not exist.`) }
-  else if (read(`release/${demo.releaseSet}.json`).status === 'superseded') { problems += 1; defect(`${path} names release set ${demo.releaseSet}, which is superseded.`) }
-  for (const s of demo.scenarios ?? []) {
-    for (const id of s.rows ?? []) if (!rows.has(id)) { problems += 1; defect(`${path} scenario ${s.id} names requirement ${id}, which the ledger does not carry.`) }
-    for (const role of s.roles ?? []) if (!['passport-reader', 'attestation-verifier', 'passport-writer', 'attestation-issuer', 'registry', 'overlay'].includes(role)) { problems += 1; defect(`${path} scenario ${s.id} names role ${role}, which is not one of the six.`) }
-    for (const key of ['title', 'inputs', 'evidence', 'pass', 'refuse']) if (s[key] == null || s[key].length === 0) { problems += 1; defect(`${path} scenario ${s.id} lacks ${key}.`) }
-  }
-  for (const id of [...(demo.claims?.bearsOn ?? []), ...(demo.claims?.cannotMake ?? [])]) if (!verdicts.has(id)) { problems += 1; defect(`${path} names claim ${id}, which the ledger does not carry.`) }
-  if (problems === 0) note(`${path}: ${demo.scenarios.length} scenarios, every row, role, claim and release set it names exists.`)
 }
 
 // 5. The capability document.

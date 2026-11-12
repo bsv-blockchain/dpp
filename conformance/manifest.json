@@ -8,7 +8,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/record-model.md",
-      "digest": "7cd3f7df25a95161da3f2222e32fb182438fe1749a5cda18f591cadbf18183ab"
+      "digest": "926394a3dbd89d531e823ca47ba721d49821bde8ea9fbf5cb5c5cd54ec43171e"
     },
     {
       "id": "spec-record-model-v2",
@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/writing.md",
-      "digest": "b76cac54cf49f358af7b41ca123a1d7ce2bc1ba327ecbc136edcac1cb16b9fe0"
+      "digest": "025d1f5bcfeb3ed792364ced5d43083b99d467e6f98526b7d89130d94da63032"
     },
     {
       "id": "spec-services",
@@ -88,7 +88,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "ef624e0d24d01fc08ab16583d7c0d26ef426ff83ca2c953886d831f810696b0c"
+      "digest": "4fd43ded478b297f0679088b655918e20b81b6cfd3895504aea4ea508c5b7767"
     },
     {
       "id": "spec-vsc-profile",
@@ -144,7 +144,8 @@
       "version": "native-baseline@1",
       "kind": "local",
       "path": "conformance/baseline-native-1.json",
-      "digest": "a2c8beb61288351917b2e1173e5e7e99f2177d2e3c3a11b98b7690fa67ec4e2b"
+      "digest": "a2c8beb61288351917b2e1173e5e7e99f2177d2e3c3a11b98b7690fa67ec4e2b",
+      "notes": "Frozen from 12 November 2026: earlier selections' role claims are scoped to it and the general@2, battery@2 and textile@2 profile manifests name it as their baseline, so its bytes, the proposed status and quick starts it records included, do not change, and it is no longer a claim target."
     },
     {
       "id": "baseline-native-2",
@@ -152,7 +153,7 @@
       "version": "native-baseline@2",
       "kind": "local",
       "path": "conformance/baseline-native-2.json",
-      "digest": "22a77b0832449008ac72fa3a4a9dadf4a3618091abc592966d495f2a7e71d45e"
+      "digest": "d43c11c15f67d9b20c2a75fa963b571dec306465906e4c330903b5ad096166a3"
     },
     {
       "id": "spec-profiles",
@@ -269,102 +270,6 @@
       "version": "current standard at review",
       "kind": "public",
       "attribution": "GS1"
-    },
-    {
-      "id": "eu-decision-2026-1736",
-      "uri": "https://eur-lex.europa.eu/eli/dec_impl/2026/1736/oj/eng",
-      "version": "Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026)",
-      "kind": "public",
-      "attribution": "European Commission",
-      "notes": "Read on EUR-Lex on 2026-09-06. Cites EN 18216:2026, EN 18219:2026, EN 18220:2026, EN 18221:2026, EN 18222:2026 and EN 18223:2026 in support of Articles 10 and 11 of Regulation (EU) 2024/1781; passports in conformity with those harmonised standards or parts thereof are presumed in conformity with the requirements of Articles 10 and 11 that the standards cover. It cites neither EN 18239 nor EN 18246. Which product categories and delegated acts apply is a separate legal question this source does not answer."
-    },
-    {
-      "id": "cen-dpp-series",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "announcement of 15 July 2026",
-      "kind": "public",
-      "attribution": "CEN-CENELEC",
-      "notes": "Describes an eight-standard series that also includes EN 18239 and EN 18246."
-    },
-    {
-      "id": "en-18216",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "EN 18216:2026",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": true,
-      "notes": "Cited by Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026) in support of Articles 10 and 11 of Regulation (EU) 2024/1781, which presumes conformity for passports in conformity with the harmonised standards or parts thereof. Catalogue abstract, not a clause: data exchange protocols and data formats for the digital product passport. 17 pages, ICS 35.240.63. National catalogue entry (NEN) read on 2026-09-06: published 2026-06-01; the abstract was read and the normative text was not obtained, so no clause is recorded. Account-based viewing offered by the national body was not used; a licensed or view-only copy needs its provenance recorded here before any row cites a clause."
-    },
-    {
-      "id": "en-18219",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "EN 18219:2026",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": true,
-      "notes": "Cited by Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026) in support of Articles 10 and 11 of Regulation (EU) 2024/1781, which presumes conformity for passports in conformity with the harmonised standards or parts thereof. Catalogue abstract, not a clause: unique product, economic operator and facility identifiers: global uniqueness, persistence, syntax, granularity (model, batch, item), interoperability and openness, under issuing agencies or self-issuing schemes. 58 pages, ICS 13.020.20, 35.240.63. National catalogue entry (NEN) read on 2026-09-06: published 2026-06-01; the abstract was read and the normative text was not obtained, so no clause is recorded. Account-based viewing offered by the national body was not used; a licensed or view-only copy needs its provenance recorded here before any row cites a clause."
-    },
-    {
-      "id": "en-18220",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "EN 18220:2026",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": true,
-      "notes": "Cited by Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026) in support of Articles 10 and 11 of Regulation (EU) 2024/1781, which presumes conformity for passports in conformity with the harmonised standards or parts thereof. Catalogue abstract, not a clause: data carriers: symbology, format, error correction, encoding, print and production quality, durability, recognition marks, placement, machine readability, quality checking and the link between the physical product and its digital representation; architecture, use cases, secure elements and cryptographic security features out of scope. 38 pages, ICS 35.240.63. National catalogue entry (NEN) read on 2026-09-06: published 2026-06-01; the abstract was read and the normative text was not obtained, so no clause is recorded. Account-based viewing offered by the national body was not used; a licensed or view-only copy needs its provenance recorded here before any row cites a clause."
-    },
-    {
-      "id": "en-18221",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "EN 18221:2026",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": true,
-      "notes": "Cited by Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026) in support of Articles 10 and 11 of Regulation (EU) 2024/1781, which presumes conformity for passports in conformity with the harmonised standards or parts thereof. Catalogue abstract, not a clause: data storage, archiving and persistence on a decentralised approach, replication between economic operators and back-up operators, and rules for data lifetime definition. 10 pages, ICS 13.020.20, 35.240.63. National catalogue entry (NEN) read on 2026-09-06: published 2026-06-01; the abstract was read and the normative text was not obtained, so no clause is recorded. Account-based viewing offered by the national body was not used; a licensed or view-only copy needs its provenance recorded here before any row cites a clause."
-    },
-    {
-      "id": "en-18222",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "EN 18222:2026",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": true,
-      "notes": "Cited by Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026) in support of Articles 10 and 11 of Regulation (EU) 2024/1781, which presumes conformity for passports in conformity with the harmonised standards or parts thereof. Catalogue abstract, not a clause: the API for searchability of passports and for interactions throughout the lifecycle of a product passport. 19 pages, ICS 13.020.20, 35.240.63. National catalogue entry (NEN) read on 2026-09-06: published 2026-06-01; the abstract was read and the normative text was not obtained, so no clause is recorded. Account-based viewing offered by the national body was not used; a licensed or view-only copy needs its provenance recorded here before any row cites a clause."
-    },
-    {
-      "id": "en-18223",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "EN 18223:2026",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": true,
-      "notes": "Cited by Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026) in support of Articles 10 and 11 of Regulation (EU) 2024/1781, which presumes conformity for passports in conformity with the harmonised standards or parts thereof. Catalogue abstract, not a clause: semantic description of a product and its lifecycle, a common information model for data dictionaries, metadata models and formats for exchange and representation, rules for product-group data models and dictionaries, and technical and organisational interoperability. 25 pages, ICS 13.020.20, 35.240.63. National catalogue entry (NEN) read on 2026-09-06: published 2026-06-01; the abstract was read and the normative text was not obtained, so no clause is recorded. Account-based viewing offered by the national body was not used; a licensed or view-only copy needs its provenance recorded here before any row cites a clause."
-    },
-    {
-      "id": "en-18239",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "prEN 18239:2025 (draft; DIN EN 18239:2025-09, edition 2025-07-25, 38 pages); no EN edition cited in the OJ as at 2026-09-06",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": false,
-      "notes": "Part of the CEN-CENELEC JTC 24 series announced on 15 July 2026; not cited by Decision (EU) 2026/1736. National catalogue entries (DIN) read on 2026-09-06 list it as a draft standard (prEN 18239:2025) on access rights management, information system security and business confidentiality; no published EN edition was found and the draft text was not obtained. Any alignment is draft compatibility under the eu-dpp-system-draft profile, never harmonised conformity, until a published edition is read."
-    },
-    {
-      "id": "en-18246",
-      "uri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "version": "prEN 18246:2025 (draft; DIN EN 18246:2025-09, edition 2025-08-15, 41 pages); no EN edition cited in the OJ as at 2026-09-06",
-      "kind": "licensed",
-      "attribution": "CEN-CENELEC",
-      "harmonisedReference": false,
-      "notes": "Part of the CEN-CENELEC JTC 24 series announced on 15 July 2026; not cited by Decision (EU) 2026/1736. National catalogue entries (DIN) read on 2026-09-06 list it as a draft standard (prEN 18246:2025) on data authentication, reliability and integrity; no published EN edition was found and the draft text was not obtained. Any alignment is draft compatibility under the eu-dpp-system-draft profile, never harmonised conformity, until a published edition is read."
-    },
-    {
-      "id": "eu-batteries-regulation",
-      "uri": "https://eur-lex.europa.eu/eli/reg/2023/1542/2025-07-31/eng",
-      "version": "Regulation (EU) 2023/1542, consolidated 31 July 2025",
-      "kind": "public",
-      "attribution": "European Union",
-      "notes": "Articles 77 and 78 and Annex XIII for battery passports; applicability of any pilot is reviewed separately."
     },
     {
       "id": "uora-published",
@@ -675,14 +580,6 @@
       "kind": "public",
       "attribution": "European Commission (not its official position, by its own disclaimer)",
       "notes": "The data points by category the battery@3 draft applies as requirement statuses and applicability rules; guidance, not a legal instrument."
-    },
-    {
-      "id": "eu-registry-2026-1778",
-      "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32026R1778",
-      "version": "Commission Implementing Regulation (EU) 2026/1778 of 16 July 2026, sha256 9cebbf082dfa4234a19d87c498138c506672333db6dd17f969f832da4523e805",
-      "kind": "public",
-      "attribution": "European Union",
-      "notes": "The Union digital product passport registry; no adapter is implemented and the readiness gate is recorded outside the repository."
     },
     {
       "id": "spec-epcis-event-profile",
@@ -1671,10 +1568,10 @@
         "fixtures/managed-acceptance-v2.json",
         "fixtures/vectors/dpp/managed-acceptance/v2.json"
       ],
-      "status": "independently-tested",
-      "reviewedAt": "2026-11-02",
+      "status": "tested",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. The Python verifier reproduces the preimage, the derived verification key, the signature, the commitment, the binding and the seven refusals from the fixture."
+      "notes": "Decided 2026-11-01: the record is signed with a derived key so that a BRC-100 wallet can be the custodian's wallet. The Python verifier reproduces the preimage, the derived verification key, the signature, the commitment, the binding and the seven refusals from the fixture. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "id": "MC-3-custodian-signing",
@@ -1709,10 +1606,10 @@
         "fixtures/managed-instruction-v1.json#refusals.directlySigned",
         "fixtures/vectors/dpp/managed-acceptance/v2.json"
       ],
-      "status": "independently-tested",
-      "reviewedAt": "2026-11-02",
+      "status": "tested",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: the custodian signs with a derived key so that a BRC-100 wallet can be its wallet. The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim."
+      "notes": "Decided 2026-11-01: the custodian signs with a derived key so that a BRC-100 wallet can be its wallet. The custody constraint of custody.md §1 binds the profile; the reference application and the registry still sign with a raw key held outside a wallet and move to the wallet in a later change, which this row does not claim. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1864,7 +1761,7 @@
       "sourceVersion": "working draft",
       "layer": "profile",
       "profileId": "managed-custody@2",
-      "reviewedAt": "2026-11-02",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "id": "MC-6-instruction-record",
       "clause": "§6",
@@ -1886,8 +1783,8 @@
         "fixtures/vectors/dpp/managed-instruction/v1.json",
         "fixtures/managed-instruction-v1.json#refusals.directlySigned"
       ],
-      "status": "independently-tested",
-      "notes": "Decided 2026-11-01: writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the seven refusals from the fixture."
+      "status": "tested",
+      "notes": "Decided 2026-11-01: writes for a holder need a recorded instruction. The Python verifier reproduces the preimage, signature, commitment, binding and the seven refusals from the fixture. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1895,7 +1792,7 @@
       "sourceVersion": "working draft",
       "layer": "profile",
       "profileId": "managed-custody@2",
-      "reviewedAt": "2026-11-02",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "id": "MC-6-instruction-binding",
       "clause": "§6",
@@ -1916,7 +1813,8 @@
         "fixtures/managed-instruction-v1.json#refusals",
         "fixtures/evidence-v2.json#cases.v2-instruction-mismatch"
       ],
-      "status": "independently-tested"
+      "status": "tested",
+      "notes": "Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "sourceId": "spec-managed-custody",
@@ -1924,7 +1822,7 @@
       "sourceVersion": "working draft",
       "layer": "profile",
       "profileId": "managed-custody@2",
-      "reviewedAt": "2026-11-02",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "id": "MC-6-instruction-rule",
       "clause": "§6",
@@ -1951,8 +1849,8 @@
         "fixtures/evidence-v2.json#cases.v2-valid-with-instruction",
         "fixtures/evidence-v2.json#cases.v2-instruction-not-supplied"
       ],
-      "status": "independently-tested",
-      "notes": "The reference index selects the rule with INSTRUCTION_COMMITMENT=required and declares it as instructionCommitment in its custody profile entry; the hosted index and the reference application do not yet select it, and the application records no instructions, so the hosted declaration stays not-selected until they do."
+      "status": "tested",
+      "notes": "The reference index selects the rule with INSTRUCTION_COMMITMENT=required and declares it as instructionCommitment in its custody profile entry; the hosted index and the reference application do not yet select it, and the application records no instructions, so the hosted declaration stays not-selected until they do. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "id": "MC-7-declaration",
@@ -2008,10 +1906,10 @@
         "fixtures/managed-acceptance-v1.json",
         "fixtures/vectors/dpp/managed-acceptance/v1.json"
       ],
-      "status": "independently-tested",
-      "reviewedAt": "2026-11-02",
+      "status": "tested",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "The version 1 fixture is frozen and never regenerated: it is the pin of what a reader must still verify."
+      "notes": "The version 1 fixture is frozen and never regenerated: it is the pin of what a reader must still verify. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "id": "RULES-3-native-claim",
@@ -2041,10 +1939,10 @@
         "fixtures/attestation-anchor-v1.json#claimWithEvidence",
         "fixtures/vectors/dpp/attestation-anchor/v1.json"
       ],
-      "status": "independently-tested",
-      "reviewedAt": "2026-11-01",
+      "status": "tested",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, and the facets of §2 live under evidence. Both are shapes both implementing parties produce; the fixture moved with them, and the Python verifier reproduces the bytes, the digest of the claim with evidence and the two refusals. Written acceptance by the second implementing party is pending under GOVERNANCE.md."
+      "notes": "Decided 2026-11-01: recordId is <txid>:<outputIndex>, and the facets of §2 live under evidence. Both are shapes both implementing parties produce; the fixture moved with them, and the Python verifier reproduces the bytes, the digest of the claim with evidence and the two refusals. Written acceptance by the second implementing party is pending under GOVERNANCE.md. Set to tested on 12 November 2026: the second implementation behind the former independently-tested status is the Python reader under conformance/independent/, written within this programme, which spec/conformance.md section 6 records as engineering evidence and never as independent testing."
     },
     {
       "id": "RULES-2-version-2-vocabulary",
@@ -2340,6 +2238,31 @@
       "notes": "Deliberately unclaimed; the specification records the boundary."
     },
     {
+      "id": "WR-1-no-version-1-genesis",
+      "sourceId": "spec-writing",
+      "sourceUri": "spec/writing.md",
+      "sourceVersion": "working draft",
+      "clause": "§1",
+      "summary": "A writer MUST NOT start a new lineage with a version 1 genesis (ACTIVATE) and SHOULD write the next state of a version 1 lineage as the version 2 upgrade transition of record-model-v2.md §6; every rule by which a version 1 state is read is unchanged.",
+      "layer": "role",
+      "roles": [
+        "passport-writer"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "examples/write-passport-v2.mjs (an ISSUE genesis)",
+        "examples/lifecycle-v2.mjs (an ISSUE genesis)",
+        "examples/write-passport.mjs (historical: a dry run of the version 1 recipe; refuses to write live)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "implemented",
+      "reviewedAt": "2026-11-12",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Self-reported beside the reference examples, as every writer rule is: no reader can tell when a version 1 genesis was written, so nothing a reader checks changes. The consuming application's writer is assessed in its own repository."
+    },
+    {
       "id": "WR-2-verify-before-send",
       "sourceId": "spec-writing",
       "sourceUri": "spec/writing.md",
@@ -2353,7 +2276,7 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (section 2)",
+        "examples/write-passport.mjs (dry run: the section 2 check on the version 1 fixture genesis)",
         "examples/write-passport-v2.mjs (writeState: verifyChain on the unsent transaction)"
       ],
       "testRefs": [
@@ -2364,7 +2287,7 @@
         "fixtures/chain-v1.json#states[0]"
       ],
       "status": "tested",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "The reference example does this; the consuming application's writer is assessed in its own repository."
     },
@@ -2382,7 +2305,6 @@
       "applicability": "when the deployment names an index (SHOULD)",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (section 3)",
         "examples/write-passport-v2.mjs (announce)"
       ],
       "testRefs": [
@@ -2390,7 +2312,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "Exercised live only; the dry run prints what it would do."
     },
@@ -2408,12 +2330,12 @@
       "applicability": "when the writer announces before sending",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (retract, sections 4 and 5)"
+        "examples/write-passport-v2.mjs (retract, writeState)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "Decided 2026-11-05: the withdrawal is a duty of the §3 order and joins the §11 self-report list. Self-reported beside the reference example, as every writer rule is."
     },
@@ -2431,13 +2353,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (sections 4 and 5, acceptDelayedBroadcast false)",
         "examples/write-passport-v2.mjs (liveAdapter, acceptDelayedBroadcast false)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "The example writes one state under one wallet; concurrent-writer discipline for a multi-instance service is the consuming application's duty."
     },
@@ -2455,14 +2376,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (send)",
         "docs/deployment.md",
         "examples/write-passport-v2.mjs (liveAdapter: sendWith the admitted draft)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2479,13 +2399,12 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (section 6)",
         "examples/write-passport-v2.mjs (writeState: announced again after an unreachable index)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2502,7 +2421,6 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (proveAndPush)",
         "packages/dpp-overlay/src/index.ts (POST /arc-ingest)",
         "examples/write-passport-v2.mjs (proveState, pushProof)"
       ],
@@ -2512,7 +2430,7 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -2530,14 +2448,13 @@
       "applicability": "always",
       "profileId": "core",
       "implementationRefs": [
-        "examples/write-passport.mjs (basket dpp)",
         "contracts/registry.yaml#AnchorProof",
         "examples/write-passport-v2.mjs (basket dpp, keepAndReadBack)"
       ],
       "testRefs": [],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3115,7 +3032,7 @@
         "passport-reader"
       ],
       "applicability": "always",
-      "profileId": "native-baseline@1",
+      "profileId": "core",
       "implementationRefs": [
         "examples/verify-passport.mjs",
         "examples/verify-attestation-anchor.mjs"
@@ -3124,10 +3041,10 @@
         ".github/workflows/ci.yml"
       ],
       "evidenceRefs": [
-        "conformance/baseline-native-1.json#quickStarts"
+        "conformance/baseline-native-2.json#quickStarts"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3136,12 +3053,12 @@
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "native-baseline@1 names exact wire versions, representations, derivations, refused and historical formats, reason codes, fixtures with digests, role requirements and tested dependency versions.",
+      "summary": "native-baseline@1, the version 1 selection earlier selections' role claims are scoped to, is frozen as history: its bytes do not change, because those claims and the profile manifests that name it as their baseline rest on them, and it is no longer a claim target; a profile that names it is met under native-baseline@2, whose requirements for each role include all of its own.",
       "layer": "reference",
       "roles": [
         "all"
       ],
-      "applicability": "when a component claims the baseline",
+      "applicability": "when a historical claim, or a profile that names it as its baseline, is read",
       "profileId": "native-baseline@1",
       "implementationRefs": [
         "conformance/baseline-native-1.json",
@@ -3152,7 +3069,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3161,7 +3078,7 @@
       "sourceUri": "spec/conformance.md",
       "sourceVersion": "working draft",
       "clause": "§3",
-      "summary": "native-baseline@2 is the same selection with record version 2 current and version 1 read beside it, the version 2 derivation, the managed acceptance representation and the version 2 fixtures; neither baseline supersedes the other before 1.0.",
+      "summary": "native-baseline@2 is the one baseline a claim names: record version 2 current and version 1 read beside it, the version 2 derivation, the managed acceptance representation and the version 2 fixtures; each role has one claim scoped to it, whose rows are exactly the baseline's requires list for the role.",
       "layer": "reference",
       "roles": [
         "all"
@@ -3178,7 +3095,7 @@
         "conformance/baseline-native-2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3256,7 +3173,7 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3283,10 +3200,10 @@
       ],
       "evidenceRefs": [
         "conformance/selections/dpp-release-2026-09-3.json",
-        "conformance/selections/eu-dpp-system-2026-09.json"
+        "conformance/selections/dpp-release-2026-11.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "The diagnostic checker keeps exit code 0 with a blocked future claim and reports every selection's blocked required claims by sentence; qualify.mjs exits 1 for the same selection. Both read assess.mjs, so they cannot disagree. Neither is a conformity certificate."
     },
@@ -3781,219 +3698,6 @@
       "notes": "The demonstration lifecycle fixture carries 09521000000018 under prefix 952 with a computed check digit, and the helpers recognise the prefix. The pinned version-1 record and chain fixtures still carry GS1's published example number because a pinned fixture's bytes change only with the format version; moving them is a version-2 fixture set. The live demonstration cannot be moved from here."
     },
     {
-      "id": "EN-18216",
-      "sourceId": "en-18216",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "EN 18216:2026",
-      "clause": "not read: licensed text not obtained",
-      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "EU DPP system requirements; product-category applicability under review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Harmonised reference. No clause number is invented from a catalogue summary. Edition verified on 2026-09-06 against the Commission decision and the national catalogue; the catalogue abstract is recorded on the source and is not a clause."
-    },
-    {
-      "id": "EN-18219",
-      "sourceId": "en-18219",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "EN 18219:2026",
-      "clause": "not read: licensed text not obtained",
-      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "EU DPP system requirements; product-category applicability under review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Harmonised reference. Edition verified on 2026-09-06 against the Commission decision and the national catalogue; the catalogue abstract is recorded on the source and is not a clause."
-    },
-    {
-      "id": "EN-18220",
-      "sourceId": "en-18220",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "EN 18220:2026",
-      "clause": "not read: licensed text not obtained",
-      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "EU DPP system requirements; product-category applicability under review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Harmonised reference. Edition verified on 2026-09-06 against the Commission decision and the national catalogue; the catalogue abstract is recorded on the source and is not a clause."
-    },
-    {
-      "id": "EN-18221",
-      "sourceId": "en-18221",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "EN 18221:2026",
-      "clause": "not read: licensed text not obtained",
-      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "EU DPP system requirements; product-category applicability under review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Harmonised reference. Edition verified on 2026-09-06 against the Commission decision and the national catalogue; the catalogue abstract is recorded on the source and is not a clause."
-    },
-    {
-      "id": "EN-18222",
-      "sourceId": "en-18222",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "EN 18222:2026",
-      "clause": "not read: licensed text not obtained",
-      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "EU DPP system requirements; product-category applicability under review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Harmonised reference. Edition verified on 2026-09-06 against the Commission decision and the national catalogue; the catalogue abstract is recorded on the source and is not a clause."
-    },
-    {
-      "id": "EN-18223",
-      "sourceId": "en-18223",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "EN 18223:2026",
-      "clause": "not read: licensed text not obtained",
-      "summary": "DPP system requirements this standard covers, as cited by Decision (EU) 2026/1736.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "EU DPP system requirements; product-category applicability under review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Only the NEN catalogue abstract of NEN-EN 18223:2026 is held; the normative text was not accessed, so no representation, media type, schema artefact or conformance clause of the standard is claimed, and a request framed as EN 18223 is representation-unsupported. A serializer needs a separate evidence-backed addendum with the exact scope and vectors. Edition verified on 2026-09-06 against the Commission decision and the national catalogue; the catalogue abstract is recorded on the source and is not a clause."
-    },
-    {
-      "id": "EN-18239",
-      "sourceId": "en-18239",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "prEN 18239:2025 (draft; DIN EN 18239:2025-09, edition 2025-07-25, 38 pages); no EN edition cited in the OJ as at 2026-09-06",
-      "clause": "not read: licensed text not obtained",
-      "summary": "Draft standard on access rights management, information system security and business confidentiality, part of the CEN DPP series and not cited by Decision (EU) 2026/1736; a published edition was not found on 2026-09-06, so any alignment is draft compatibility under a separate profile and never harmonised conformity.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "draft compatibility only, under review; no harmonised-reference marker",
-      "profileId": "eu-dpp-system-draft (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Verified as a draft (prEN 2025) from national catalogue entries; the draft text was not obtained and no clause is recorded. Kept apart from the harmonised system claim by profile so the two are never counted together."
-    },
-    {
-      "id": "EN-18246",
-      "sourceId": "en-18246",
-      "sourceUri": "https://www.cencenelec.eu/news-events/news/2026/en-in-the-spotlight/2026-07-15-dpp/",
-      "sourceVersion": "prEN 18246:2025 (draft; DIN EN 18246:2025-09, edition 2025-08-15, 41 pages); no EN edition cited in the OJ as at 2026-09-06",
-      "clause": "not read: licensed text not obtained",
-      "summary": "Draft standard on data authentication, reliability and integrity, part of the CEN DPP series and not cited by Decision (EU) 2026/1736; a published edition was not found on 2026-09-06, so any alignment is draft compatibility under a separate profile and never harmonised conformity.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "draft compatibility only, under review; no harmonised-reference marker",
-      "profileId": "eu-dpp-system-draft (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Verified as a draft (prEN 2025) from national catalogue entries; the draft text was not obtained and no clause is recorded. Kept apart from the harmonised system claim by profile so the two are never counted together."
-    },
-    {
-      "id": "EU-2026-1736-applicability",
-      "sourceId": "eu-decision-2026-1736",
-      "sourceUri": "https://eur-lex.europa.eu/eli/dec_impl/2026/1736/oj/eng",
-      "sourceVersion": "Commission Implementing Decision (EU) 2026/1736 of 14 July 2026 (OJ L, 2026/1736, 15.7.2026)",
-      "clause": "the standards cited and the scope of the conformity presumption",
-      "summary": "The presumption of conformity covers only the requirements the six cited standards cover; product-category applicability is reviewed against the legal instrument and its date, never assumed.",
-      "layer": "profile",
-      "roles": [
-        "all"
-      ],
-      "applicability": "legal review",
-      "profileId": "eu-dpp-system (proposed)",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "The decision was read on EUR-Lex on 2026-09-06: dated 14 July 2026, published in OJ L 2026/1736 on 15 July 2026, citing the six EN 2026 editions for Articles 10 and 11 of Regulation (EU) 2024/1781 and presuming conformity for passports in conformity with the harmonised standards or parts thereof. Whether a given product falls under a delegated act, which requirements of Articles 10 and 11 each standard covers, and what a declaration obligation looks like remain a legal review against the applicable primary sources and the licensed texts; the row stays unassessed until that review is recorded."
-    },
-    {
-      "id": "BATT-annex-xiii",
-      "sourceId": "eu-batteries-regulation",
-      "sourceUri": "https://eur-lex.europa.eu/eli/reg/2023/1542/2025-07-31/eng",
-      "sourceVersion": "Regulation (EU) 2023/1542, consolidated 31 July 2025",
-      "clause": "Articles 77 and 78, Annex XIII",
-      "summary": "Battery passport information, access tiers and responsible actors mapped field by field with data, evidence and access, not four lifecycle labels.",
-      "layer": "profile",
-      "roles": [
-        "attestation-issuer",
-        "registry"
-      ],
-      "applicability": "when the battery industry profile is selected for a covered battery category",
-      "profileId": "battery@2 (existing) and battery@3 (proposed)",
-      "implementationRefs": [
-        "the reference application (not published)"
-      ],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "unassessed",
-      "reviewedAt": "2026-09-05",
-      "reviewOwner": "dpp maintainers",
-      "notes": "The application's battery@2 field set exists; its legal and applicability mapping is the proposed qualification work."
-    },
-    {
       "id": "OVL-contract-must",
       "sourceId": "contract-overlay",
       "sourceUri": "contracts/overlay.yaml",
@@ -4294,7 +3998,7 @@
         "GOVERNANCE.md (Declaring version 1.0, condition 2)"
       ],
       "status": "implemented",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "The Python reader reproduces every pinned preimage, derived key, digest and script and refuses every refusal vector across record-v1, chain-v1, attestation-anchor-v1 and the vector files, without importing reference code. It was written by the same programme, so the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate; rows stay at tested."
     },
@@ -4775,7 +4479,7 @@
         "passport-reader",
         "registry"
       ],
-      "applicability": "for battery@2 qualification",
+      "applicability": "when battery@2 is selected",
       "profileId": "battery@2",
       "implementationRefs": [
         "packages/dpp-profiles/test/battery-lifecycle.test.ts"
@@ -4787,7 +4491,7 @@
         "fixtures/battery-lifecycle-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "Synthetic values validated against the frozen battery@2 public schema; no supplier or third-party assessment evidence is included because none exists for an invented product, and no legal conclusion is drawn."
     },
@@ -5993,27 +5697,6 @@
       "sourceDigest": "1a6a4116cd6aeed5bc996b5d111f33d3116a70ccd127ff7c5e647c8ae7ed252d"
     },
     {
-      "id": "READY-2-eu-registry",
-      "sourceId": "eu-registry-2026-1778",
-      "sourceUri": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32026R1778",
-      "sourceVersion": "Commission Implementing Regulation (EU) 2026/1778 of 16 July 2026, sha256 9cebbf082dfa4234a19d87c498138c506672333db6dd17f969f832da4523e805",
-      "clause": "Articles 3, 4, 5, 6a, 8, 9, 10, 14, 19",
-      "summary": "No adapter to the Union registry is implemented: the implementation does not register, update, transfer or delete registrations, authenticate to the registry, validate registration identifiers or proofs of registration, or represent registry status; an externally supplied registration reference is preserved verbatim as unverified evidence; the API, hash definition, proof format and status vocabulary the regulation defers to implementing acts are the gate for any adapter.",
-      "layer": "profile",
-      "roles": [
-        "none"
-      ],
-      "applicability": "when EU registration is in scope",
-      "profileId": "eu-dpp-system",
-      "implementationRefs": [],
-      "testRefs": [],
-      "evidenceRefs": [],
-      "status": "gap",
-      "reviewedAt": "2026-09-06",
-      "reviewOwner": "dpp maintainers",
-      "notes": "A readiness record with article citations is kept outside the repository; the capability documents carry the statement verbatim."
-    },
-    {
       "id": "EPEV-1-hash-id",
       "sourceId": "spec-epcis-event-profile",
       "sourceUri": "spec/epcis-event-profile.md",
@@ -6135,7 +5818,7 @@
   "claims": [
     {
       "id": "passport-reader-native-baseline-1",
-      "description": "A passport reader conforming to native-baseline@1: supplied-history verification and the verification report, from fixtures alone.",
+      "description": "Historical: superseded on 12 November 2026 by passport-reader-native-baseline-2, the claim for this role under native-baseline@2, the one baseline a claim names. A passport reader conforming to native-baseline@1: supplied-history verification and the verification report, from fixtures alone.",
       "role": "passport-reader",
       "profileId": "native-baseline@1",
       "requires": [
@@ -6157,7 +5840,7 @@
     },
     {
       "id": "attestation-verifier-native-baseline-1",
-      "description": "An attestation verifier conforming to native-baseline@1: native claims, generic anchors, binding and the report.",
+      "description": "Historical: superseded on 12 November 2026 by attestation-verifier-native-baseline-2, the claim for this role under native-baseline@2, the one baseline a claim names. An attestation verifier conforming to native-baseline@1: native claims, generic anchors, binding and the report.",
       "role": "attestation-verifier",
       "profileId": "native-baseline@1",
       "requires": [
@@ -6174,7 +5857,7 @@
     },
     {
       "id": "passport-writer-reference-example",
-      "description": "The reference writer example discharges the writing duties; live duties are self-reported and the consuming application is assessed separately.",
+      "description": "Historical: superseded on 12 November 2026 by passport-writer-native-baseline-2, the claim for this role under native-baseline@2, the one baseline a claim names. The reference writer example discharges the writing duties; live duties are self-reported and the consuming application is assessed separately.",
       "role": "passport-writer",
       "profileId": "native-baseline@1",
       "requires": [
@@ -6254,7 +5937,7 @@
     },
     {
       "id": "registry-current-intake",
-      "description": "The registry's current intake: exact secured bytes, verified native claims, generic anchors and a scoped report.",
+      "description": "Historical: superseded on 12 November 2026 by registry-native-baseline-2, the claim for this role under native-baseline@2, the one baseline a claim names. The registry's current intake: exact secured bytes, verified native claims, generic anchors and a scoped report.",
       "role": "registry",
       "profileId": "native-baseline@1",
       "requires": [
@@ -6360,46 +6043,8 @@
       "minimumStatus": "implemented"
     },
     {
-      "id": "eu-dpp-system-conformance",
-      "description": "Conformance to the EU DPP system standards cited by Decision (EU) 2026/1736.",
-      "profileId": "eu-dpp-system",
-      "requires": [
-        "EN-18216",
-        "EN-18219",
-        "EN-18220",
-        "EN-18221",
-        "EN-18222",
-        "EN-18223",
-        "EU-2026-1736-applicability"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
-      "id": "eu-dpp-draft-security-integrity-compatibility",
-      "description": "Compatibility with the draft prEN 18239:2025 (access rights management, information system security, business confidentiality) and prEN 18246:2025 (data authentication, reliability and integrity): a draft-compatibility claim kept apart from the harmonised system claim by its own profile, never labelled conformity, and re-read against the published editions when they exist.",
-      "profileId": "eu-dpp-system-draft",
-      "requires": [
-        "EN-18239",
-        "EN-18246"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
-      "id": "battery-passport-qualification",
-      "description": "Battery passport applicability, fields, access and actors mapped to the Batteries Regulation.",
-      "profileId": "battery@3",
-      "requires": [
-        "BATT-1-demonstration-lifecycle",
-        "BATT-annex-xiii",
-        "EU-2026-1736-applicability",
-        "MAP-1-row-level-inventory",
-        "PROV-1-value-kinds"
-      ],
-      "minimumStatus": "tested"
-    },
-    {
       "id": "version-1-0-readiness",
-      "description": "The governance conditions for declaring version 1.0 that a ledger can check: an independent implementation passing every fixture.",
+      "description": "The governance conditions for declaring version 1.0 that a ledger can check: an independent implementation passing every fixture. The demonstration plan that would exercise them is parked at docs/reference/parked/independent-implementation-2026-09.json, to be rewritten against the slimmed standard when an independent implementer appears.",
       "requires": [
         "DOC-1-role-quick-starts",
         "GOV-independent-implementation",
@@ -6446,9 +6091,97 @@
         "RM2-6-control-proof",
         "RM2-8-commitment",
         "RM2-9-verifier",
-        "VER-4-version-2-findings",
-        "CONF-3-baseline-2"
-      ]
+        "VER-4-version-2-findings"
+      ],
+      "profileId": "native-baseline@2"
+    },
+    {
+      "id": "attestation-verifier-native-baseline-2",
+      "description": "An attestation verifier conforming to native-baseline@2: native claims, generic anchors, binding and the report.",
+      "role": "attestation-verifier",
+      "profileId": "native-baseline@2",
+      "requires": [
+        "RULES-3-native-claim",
+        "RULES-4-representation-bytes",
+        "RULES-5-anchor",
+        "RULES-6-verification",
+        "RULES-7-compatibility",
+        "VER-2-report",
+        "VER-4-checks",
+        "ID-2-did-key"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "passport-writer-native-baseline-2",
+      "description": "A passport writer conforming to native-baseline@2: states of either record version built to its rules, no lineage started at version 1, and the writing duties, which are self-reported one sentence per rule beside the reference examples.",
+      "role": "passport-writer",
+      "profileId": "native-baseline@2",
+      "requires": [
+        "RM-2-script",
+        "RM-3-fields",
+        "RM-5-signatures",
+        "RM-6-invariants",
+        "WR-1-no-version-1-genesis",
+        "WR-2-verify-before-send",
+        "WR-4-one-writer",
+        "WR-5-broadcast",
+        "WR-6-announce-retry",
+        "WR-7-proof",
+        "WR-8-retain",
+        "RM2-2-script",
+        "RM2-3-fields",
+        "RM2-4-operations",
+        "RM2-5-signatures",
+        "RM2-6-invariants",
+        "RM2-6-control-proof",
+        "RM2-8-commitment"
+      ],
+      "minimumStatus": "implemented"
+    },
+    {
+      "id": "attestation-issuer-native-baseline-2",
+      "description": "An attestation issuer conforming to native-baseline@2: native lifecycle claims signed under the declared format over their canonical bytes, with a did:key issuer.",
+      "role": "attestation-issuer",
+      "profileId": "native-baseline@2",
+      "requires": [
+        "RULES-3-native-claim",
+        "RULES-4-representation-bytes",
+        "ID-2-did-key"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "registry-native-baseline-2",
+      "description": "A registry conforming to native-baseline@2: exact secured bytes, verified native claims, generic anchors, status lists checked by the published algorithm, the contract routes and a scoped report.",
+      "role": "registry",
+      "profileId": "native-baseline@2",
+      "requires": [
+        "SVC-3-registry-bytes",
+        "RULES-4-representation-bytes",
+        "RULES-5-anchor",
+        "RULES-6-verification",
+        "STATUS-validate-algorithm",
+        "REG-contract-routes",
+        "VER-2-report"
+      ],
+      "minimumStatus": "tested"
+    },
+    {
+      "id": "overlay-native-baseline-2",
+      "description": "An overlay conforming to native-baseline@2: admission of passport states of both record versions and of anchors, cursor lookup, proof ingestion and idempotent admission under the overlay contract.",
+      "role": "overlay",
+      "profileId": "native-baseline@2",
+      "requires": [
+        "SVC-2-passport-admission",
+        "SVC-2-anchor-admission",
+        "SVC-2-cursor-lookup",
+        "SVC-2-proof-ingest",
+        "SVC-6-idempotent-admission",
+        "OVL-contract-must",
+        "SVC-2-version-2-admission"
+      ],
+      "minimumStatus": "tested"
     },
     {
       "id": "passport-reader-native-baseline-3",

@@ -75,7 +75,7 @@ node examples/verify-passport.mjs 01/<gtin>/21/<serial> <index URL>
 |---|---|
 | `node examples/write-passport-v2.mjs --dry-run` and `node examples/lifecycle-v2.mjs` | Construct and check version 2 passports without wallet, funds or network. |
 | `node examples/check-registry.mjs --fixture` | Check registry claims offline. |
-| `node examples/write-passport.mjs --dry-run` | Historical version 1 compatibility, not the default new-write path. |
+| `node examples/write-passport.mjs --dry-run` | Historical version 1 dry run only; a new passport never starts at version 1. |
 
 ```sh
 node examples/write-passport-v2.mjs --dry-run

@@ -1,13 +1,14 @@
 {
   "selectionVersion": "1",
   "selectionId": "dpp-release-2026-11",
-  "purpose": "The claims required for the seventh October 2026 candidate set, in which the packages read and write record version 3, the token carrier; the required component claims are those of the preceding set with the version 3 passport reader claim added, epcis-source-exchange-1 withheld and the narrower epcis-source-import-1 required in its place: from 9 November 2026 the VSC compatibility profile and the EPCIS-to-SEAL mappings are parked, and the withheld claim's rows include the mapping. authenticated-status-service is withheld from the same day, because registry contract 0.6.0 defines no status list publication. Two index nodes under one administration exercise the synchronisation mechanism and do not establish federated operation.",
+  "purpose": "The claims required for the November 2026 candidate set from 12 November 2026: one component claim per role under native-baseline@2, the one baseline a claim names, whose rows are exactly the baseline's requires list for the role, and gs1-identifier-discipline and profile-governance, which guard live records. Every other claim the selection names is withheld, each with its reason: a claim scoped to the historical native-baseline@1, the proposed native-baseline@3, or an optional profile or governance condition this release does not claim.",
   "releaseSet": "dpp-release-2026-11",
   "claims": [
     {
       "id": "passport-reader-native-baseline-1",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "Historical: native-baseline@1 is no longer a claim target, and passport-reader-native-baseline-2 requires every row this claim does."
     },
     {
       "id": "passport-reader-native-baseline-2",
@@ -17,25 +18,55 @@
     {
       "id": "passport-reader-native-baseline-3",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "native-baseline@3 is a proposed baseline, and this release claims native-baseline@2 only."
     },
     {
       "id": "attestation-verifier-native-baseline-1",
+      "kind": "component",
+      "disposition": "withheld",
+      "rationale": "Historical: native-baseline@1 is no longer a claim target, and attestation-verifier-native-baseline-2 requires the same rows."
+    },
+    {
+      "id": "attestation-verifier-native-baseline-2",
       "kind": "component",
       "disposition": "required"
     },
     {
       "id": "passport-writer-reference-example",
       "kind": "component",
+      "disposition": "withheld",
+      "rationale": "Historical: native-baseline@1 is no longer a claim target, and passport-writer-native-baseline-2 requires every row this claim does."
+    },
+    {
+      "id": "passport-writer-native-baseline-2",
+      "kind": "component",
+      "disposition": "required"
+    },
+    {
+      "id": "attestation-issuer-native-baseline-2",
+      "kind": "component",
       "disposition": "required"
     },
     {
       "id": "overlay-single-operator-1",
       "kind": "component",
+      "disposition": "withheld",
+      "rationale": "single-operator@1 is an optional operator profile this release does not claim; overlay-native-baseline-2 is the overlay's claim."
+    },
+    {
+      "id": "overlay-native-baseline-2",
+      "kind": "component",
       "disposition": "required"
     },
     {
       "id": "registry-current-intake",
+      "kind": "component",
+      "disposition": "withheld",
+      "rationale": "Historical: native-baseline@1 is no longer a claim target, and registry-native-baseline-2 is the registry's claim."
+    },
+    {
+      "id": "registry-native-baseline-2",
       "kind": "component",
       "disposition": "required"
     },
@@ -43,7 +74,7 @@
       "id": "authenticated-status-service",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "The reference registry no longer publishes status lists: from 9 November 2026 the registry contract defines no status list routes, and STATUS-secured-publication records no implementation. Checking the lists credential issuers publish stays, under STATUS-validate-algorithm, which registry-current-intake still requires."
+      "rationale": "An optional status service this release does not claim, and registry contract 0.6.0 defines no status list publication."
     },
     {
       "id": "profile-governance",
@@ -58,117 +89,108 @@
     {
       "id": "exchange-profiles-groundwork",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "The exchange profile groundwork serves optional profiles this release does not claim."
     },
     {
       "id": "managed-custody-1",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "managed-custody@1 is a superseded optional custody profile this release does not claim."
     },
     {
       "id": "managed-custody-1-writer",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "managed-custody@1 is a superseded optional custody profile this release does not claim."
     },
     {
       "id": "managed-custody-2",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "managed-custody@2 is an optional custody profile this release does not claim."
     },
     {
       "id": "managed-custody-2-writer",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "managed-custody@2 is an optional custody profile this release does not claim."
     },
     {
       "id": "gs1-discovery-1",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "gs1-digital-link@1 is an optional discovery profile this release does not claim."
     },
     {
       "id": "external-credential-ecdsa-1",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "vc-di-ecdsa-rdfc-2019@1 is an optional exchange profile this release does not claim."
     },
     {
       "id": "passport-projection-1",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "passport-projection@1 is an optional profile this release does not claim."
     },
     {
       "id": "epcis-source-import-1",
       "kind": "component",
-      "disposition": "required"
+      "disposition": "withheld",
+      "rationale": "epcis-json@1 is an optional interoperability profile this release does not claim."
     },
     {
       "id": "overlay-federated-operators-1",
       "kind": "operation",
       "disposition": "withheld",
-      "rationale": "Two processes under one administration prove the synchronisation mechanism and never independence; EXPORT-3-durable-publication is a gap until separately administered operators exercise replication and recovery."
+      "rationale": "federated-operators@1 is an optional operator profile this release does not claim, and EXPORT-3-durable-publication stays a gap until separately administered operators exercise replication and recovery."
     },
     {
       "id": "vsc-draft-compat-0.1.0-implemented-subset",
       "kind": "draft-compatibility",
       "disposition": "withheld",
-      "rationale": "Parked: vsc-draft-compat/0.1.0 is an optional compatibility profile that no release requires and the programme does not currently develop. Its code left @bsv/dpp-credentials in 0.2.0-beta.6 and stays in the repository history, and its rows are gaps, so this release does not claim it."
+      "rationale": "vsc-draft-compat/0.1.0 is a parked optional compatibility profile this release does not claim, and its rows are gaps."
     },
     {
       "id": "vsc-draft-compat-0.1.0-full",
       "kind": "draft-compatibility",
       "disposition": "withheld",
-      "rationale": "The upstream context and executable suite are unavailable at the pinned revision, and the profile is parked; neither the full profile nor the implemented subset is claimed."
+      "rationale": "vsc-draft-compat/0.1.0 is a parked optional compatibility profile this release does not claim, and its upstream context and suite are unavailable at the pinned revision."
     },
     {
       "id": "epcis-source-exchange-1",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "The claim covers the parked epcis-vsc@1 mapping as well as the epcis-json@1 source exchange: EPCIS-5-source-reference and EPCIS-6-mapping-outcomes belong to the mapping, which no release requires, and are gaps since the mapping left @bsv/dpp-credentials in 0.2.0-beta.6. This release requires epcis-source-import-1 instead, which covers the source helpers alone."
+      "rationale": "Its rows include the parked epcis-vsc@1 mapping, part of optional profiles this release does not claim."
     },
     {
       "id": "epcis-vsc-mapping-2",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "Parked with the VSC compatibility profile it maps into: epcis-vsc@2 is an optional mapping profile that no release requires and the programme does not currently develop. It left @bsv/dpp-credentials in 0.2.0-beta.6 before any publication, and its rows are gaps."
+      "rationale": "epcis-vsc@2 is a parked optional mapping profile this release does not claim."
     },
     {
       "id": "untp-0.7.0-pilot",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "The UNTP 0.7.0 schemas and context are pinned by digest, and the reference application's pilot is function-level: its credential names the pinned context and validates against the pinned schema only when the caller supplies artefact bytes that hash to the pinned digest, no route exposes it, and it is secured with ES256K, which UNTP's own tooling does not verify (Ed25519 under did:web only). None of that is public evidence, so the profile remains proposed and the claim withheld."
-    },
-    {
-      "id": "eu-dpp-system-conformance",
-      "kind": "system",
-      "disposition": "withheld",
-      "rationale": "No normative EN text has been read; every EN row is unassessed or a gap, and the release set makes no European conformity statement. The selection eu-dpp-system-2026-09 is the gate for that claim."
-    },
-    {
-      "id": "eu-dpp-draft-security-integrity-compatibility",
-      "kind": "draft-compatibility",
-      "disposition": "withheld",
-      "rationale": "prEN 18239:2025 and prEN 18246:2025 are drafts whose text has not been read; nothing is claimed against them."
-    },
-    {
-      "id": "battery-passport-qualification",
-      "kind": "product",
-      "disposition": "withheld",
-      "rationale": "battery@3 and battery@4 remain draft profiles. Product-data qualification, full standards assessment and deployed access and lifecycle evidence are separate gates from this package release."
+      "rationale": "untp-0.7.0-jose@1 is a proposed optional exchange profile this release does not claim."
     },
     {
       "id": "version-1-0-readiness",
       "kind": "governance",
       "disposition": "withheld",
-      "rationale": "No implementation by another implementing party has passed every fixture; the programme-authored Python reader is engineering evidence, not independence."
+      "rationale": "No implementation by another implementing party has passed every fixture, and the plan that would demonstrate one is parked at docs/reference/parked/independent-implementation-2026-09.json until such an implementer appears."
     },
     {
       "id": "epcis-event-signing-1",
       "kind": "component",
       "disposition": "withheld",
-      "rationale": "epcis-event-vc@1 is proposed: its rows are tested on this repository's vectors alone, no deployment signs or anchors an event under it, the reference registry does not accept it (EPEV-4-registry-intake is a gap) and no second implementation has reproduced the hash vectors. A later release claims it once those exist."
+      "rationale": "epcis-event-vc@1 is a proposed optional profile this release does not claim."
     }
   ],
   "exclusions": [],
-  "reviewedAt": "2026-11-09",
+  "reviewedAt": "2026-11-12",
   "reviewOwner": "dpp maintainers",
   "notes": "The qualification of this selection says which claims the ledger's evidence supports for the packages of the candidate set. It is not a statement about the deployed index, the registry runtime, the application, product compliance or any European standard."
 }

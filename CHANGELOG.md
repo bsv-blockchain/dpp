@@ -12,6 +12,13 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-12, the release gate claims native-baseline@2 only
+
+- `native-baseline@2` is the one baseline a claim names, with one claim per role whose rows are exactly the baseline's, which `conformance/check.mjs` now holds; `native-baseline@1` is frozen as history, its claims are superseded, and a profile that names it is met under `native-baseline@2`, whose role rows include all of its own. `dpp-release-2026-11` requires those six claims, `gs1-identifier-discipline` and `profile-governance`, and withholds every other claim with a one-sentence reason.
+- A writer MUST NOT start a new lineage with a version 1 genesis and SHOULD continue a version 1 lineage with the version 2 upgrade (`spec/record-model.md` §1, `spec/writing.md` §1, row `WR-1-no-version-1-genesis`); reading is unchanged. `examples/write-passport.mjs` keeps its dry run and no longer writes live.
+- The EN 18216 to 18223, prEN 18239 and 18246, Decision 2026/1736, Union registry and battery Annex XIII rows, their sources, the three claims on them and `conformance/selections/eu-dpp-system-2026-09.json` leave the ledger; the standard makes no EU system conformance or product-compliance claim.
+- Seven rows marked `independently-tested` on the programme's own Python reader are `tested`, and the independent implementation plan is parked at `docs/reference/parked/` until an independent implementer appears.
+
 ### 2026-11-12, an external credential's type in the registry contract and the overlay ledger rows re-reviewed
 
 - `contracts/registry.yaml` `UoraType` admits an external credential's own type, the first entry of its `type` after `VerifiableCredential` (`VerifiableCredential` when it names no other), beside the five named values, which is what a registry reports for a stored credential on the read routes; the placeholder `AttestationRequest.uora_type` keeps the closed list, and the `GET /attestations` `type` filter names the credential's type. Like the SEAL refusal and the `epcis-event-vc@1` envelopes, this is part of the unpublished `0.6.0`, not a `0.7.0`. The three rows citing the contract were re-reviewed.

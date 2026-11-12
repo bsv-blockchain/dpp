@@ -1,39 +1,21 @@
 #!/usr/bin/env node
 /**
- * Write a passport state the way spec/writing.md says a writer must: checked
- * before it is sent, announced before it is sent, sent and answered for,
- * proven, offered to the index, and kept.
+ * Historical: the version 1 writer's recipe, kept as a dry run. A writer MUST
+ * NOT start a new lineage with a version 1 genesis (spec/writing.md section 1,
+ * spec/record-model.md section 1), so this script no longer writes: run
+ * without --dry-run, it refuses and names examples/write-passport-v2.mjs, the
+ * version 2 writer, which walks every step of spec/writing.md live. Reading a
+ * version 1 state is unchanged.
  *
  *   node examples/write-passport.mjs --dry-run
- *   node examples/write-passport.mjs <passportId> [indexUrl] [--wait-proof=<minutes>]
- *                                    [--submit-token=<t>] [--callback-token=<t>]
- *                                    [--payload=<json>]
- *
- * Live, the script is one owner's application under possession
- * (spec/custody.md section 5): one BRC-100 wallet is actor, owner, publisher
- * and lock, each role one derivation from the wallet's root and no key ever
- * leaving it. It asks the wallet for its identity key and for the passport's
- * owner key, has the wallet make both signatures, builds the ACTIVATE state
- * locked to the owner key, and then walks the writer's lifecycle in order,
- * one sentence per step: the verifier's own checks on the unsent transaction
- * (section 2); the announcement to the index, which admits or refuses while
- * the state is still a draft (section 3); the send, reported only in the
- * network's own words (sections 4 and 5); the wait for the wallet's merkle
- * path and its push to the index's proof route (section 7); and where the
- * bytes now live (section 8). A draft its own check or the index refuses is
- * aborted, so the wallet has its inputs back, and nothing is sent; an index
- * that cannot be reached refuses nothing, so the state is sent and announced
- * again afterwards; a state the index admitted and the network refused is
- * withdrawn from the index with POST /retract. The wallet is whatever BRC-100
- * wallet answers on this machine.
  *
  * With --dry-run, what CI runs, there is no wallet and no network: the
  * fixture's keys stand in, the script rebuilds the chain fixture's first state
  * and shows it byte for byte identical to fixtures/chain-v1.json, so the
- * recipe here is provably the fixture's; runs the section 2 check and shows it
- * accepting; then builds a state the record model forbids and shows the same
- * check refusing it before anything would have been sent. The network steps
- * print as what they would do.
+ * recipe here is provably the fixture's; runs the check of spec/writing.md
+ * section 2 and shows it accepting; then builds a state the record model
+ * forbids and shows the same check refusing it before anything would have
+ * been sent. The network steps print as what they would do.
  *
  * Results print one sentence per step, never a score, as GOVERNANCE.md
  * requires of every conformance surface.
@@ -42,37 +24,23 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  Beef,
   PrivateKey,
   ProtoWallet,
   Transaction,
   UnlockingScript,
-  Utils,
-  WalletClient,
 } from '@bsv/sdk'
 import {
   buildLockingScript,
-  chainFromBeef,
   completeState,
-  ownerBlobHash,
-  ownerKeyFor,
   verifyChain,
 } from '@bsv/dpp-protocol'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const args = process.argv.slice(2)
-const flag = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3)
-const dryRun = args.includes('--dry-run')
-const positional = args.filter((a) => !a.startsWith('--'))
-const passportId = positional[0]
-const indexUrl = (positional[1] ?? 'https://dpp-overlay.bsvb.net').replace(/\/+$/, '')
-const waitMinutes = Number(flag('wait-proof') ?? 0)
-const submitToken = flag('submit-token')
-const callbackToken = flag('callback-token')
-const payloadFlag = flag('payload')
+const dryRun = process.argv.slice(2).includes('--dry-run')
+const indexUrl = 'https://dpp-overlay.bsvb.net'
 
-if (!dryRun && passportId == null) {
-  console.error('usage: write-passport.mjs <passportId> [indexUrl] [--wait-proof=<minutes>] | --dry-run')
+if (!dryRun) {
+  console.error('This version 1 writer no longer writes: a new lineage never starts at version 1 (spec/writing.md section 1). Write a new passport with node examples/write-passport-v2.mjs, or run this recipe with --dry-run.')
   process.exit(2)
 }
 
@@ -157,305 +125,5 @@ async function dryRunFromFixture() {
   )
 }
 
-// --------------------------------------------------------------------- live
-
-/**
- * Section 3. Announce the unsent transaction. Three outcomes, and only one of
- * them is a refusal: the index admitted it, the index refused it, or the index
- * could not be reached, which says nothing about the state.
- */
-async function announce(beef, txid) {
-  let response
-  try {
-    response = await fetch(`${indexUrl}/submit`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'X-Topics': JSON.stringify(['tm_dpp']),
-        ...(submitToken != null ? { Authorization: `Bearer ${submitToken}` } : {}),
-      },
-      body: new Uint8Array(beef),
-    })
-  } catch (cause) {
-    console.log(
-      `The index at ${indexUrl} could not be reached (${cause.message}). That is not a refusal; only an answer refuses (section 3).`
-    )
-    return 'unreachable'
-  }
-  if (response.status === 400) {
-    const body = await response.json().catch(() => ({}))
-    console.log(`The index refused ${short(txid)}: ${body.description ?? 'no reason given'}.`)
-    return 'refused'
-  }
-  if (!response.ok) {
-    console.log(
-      `The index answered HTTP ${response.status} to the announcement, which says nothing about the state; it will be announced again after the send (section 6).`
-    )
-    return 'unreachable'
-  }
-  const admission = response.headers.get('x-admission') ?? ''
-  if (admission.includes('tm_dpp=none')) {
-    const refusal = response.headers.get('x-admission-refusal')
-    console.log(`The index refused ${short(txid)} on admission; ${refusal == null ? 'its log names the reason' : `it says why: ${refusal}`}.`)
-    return 'refused'
-  }
-  console.log(
-    `The index ${admission.includes('duplicate') ? 'already held' : 'admitted'} ${short(txid)} while it was still a draft (section 3).`
-  )
-  return 'admitted'
-}
-
-/**
- * Sections 4 and 5. Send with a send-only action and report nothing but the
- * network's answer: `unproven` is accepted and pending, `sending` is not yet
- * an answer, `failed` never existed. Answers `accepted`, `refused` when the
- * network's answer is that the state never existed, or `unanswered`.
- */
-async function send(wallet, txid) {
-  let result
-  try {
-    result = await wallet.createAction({
-      description: 'dpp send',
-      options: { sendWith: [txid], acceptDelayedBroadcast: false },
-    })
-  } catch (cause) {
-    const reviews = cause?.reviewActionResults ?? []
-    const detail = reviews.length > 0 ? reviews.map((r) => `${short(r.txid)} ${r.status}`).join(', ') : cause.message
-    say(false, `the network did not accept ${short(txid)}: ${detail}. The state never existed and nothing was spent; rebuild only after learning why (section 4).`)
-    return reviews.some((r) => r.txid === txid && r.status === 'invalidTx') ? 'refused' : 'unanswered'
-  }
-  const status = result.sendWithResults?.find((r) => r.txid === txid)?.status
-  if (status === 'unproven') {
-    say(true, `the network accepted ${txid}: the state exists and is pending until mined (sections 4 and 5).`)
-    return 'accepted'
-  }
-  if (status === 'sending') {
-    say(false, `the wallet is still sending ${short(txid)}; that is not yet the network's answer, so the state is not yet written. Wait for the wallet, and do not rebuild (section 4).`)
-    return 'unanswered'
-  }
-  say(false, `the network answered ${status ?? 'nothing the wallet reported'} for ${short(txid)}: the state never existed and nothing was spent (section 4).`)
-  return status === 'failed' ? 'refused' : 'unanswered'
-}
-
-/**
- * Section 3, the other way round. An unsent action holds the wallet's inputs
- * until it is sent or aborted, so a draft that will not be sent is aborted.
- * This one needed no signature from the application, so the wallet returned
- * no signable reference; @bsv/wallet-toolbox then finds the action by its
- * transaction identifier.
- */
-async function discard(wallet, txid) {
-  try {
-    // The wallet answers { aborted: false } rather than throwing when the network already knows the transaction.
-    const result = await wallet.abortAction({ reference: txid })
-    if (result.aborted === false) {
-      say(false, `the wallet did not abort ${short(txid)}, because the network already knows it; do not build again.`)
-      return
-    }
-    console.log(`The unsent action ${short(txid)} is aborted, and the wallet has its inputs back.`)
-  } catch (cause) {
-    say(false, `the wallet did not abort ${short(txid)} (${cause.message}); abort it before building again, or its inputs stay out of use.`)
-  }
-}
-
-/**
- * Section 3's second qualification. The index admitted the draft and the
- * network then refused it, so the index holds a tip that never existed. The
- * writer, who alone knows the network's answer, withdraws it
- * (contracts/overlay.yaml, POST /retract), behind the /submit token.
- */
-async function retract(txid, reason) {
-  let response
-  try {
-    response = await fetch(`${indexUrl}/retract`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(submitToken != null ? { Authorization: `Bearer ${submitToken}` } : {}),
-      },
-      body: JSON.stringify({ txid, outputIndex: 0, reason }),
-    })
-  } catch (cause) {
-    say(false, `the index at ${indexUrl} could not be reached to withdraw ${short(txid)} (${cause.message}); withdraw it before writing this passport again, or the index keeps a tip that never existed.`)
-    return
-  }
-  const body = await response.json().catch(() => ({}))
-  say(
-    response.ok && body.status === 'retracted',
-    response.ok
-      ? `the index withdrew ${short(txid)}, the state the network refused${body.networkChecked === false ? ', without asking the network' : ''}.`
-      : `the index did not withdraw ${short(txid)}: HTTP ${response.status}${body.error != null ? ` ${body.error}` : ''}${body.description != null ? `, ${body.description}` : ''}.`
-  )
-}
-
-/** Whether a merkle path contains the transaction, which is all a path can show before a header source is asked. */
-function pathContains(path, txid) {
-  try {
-    path.computeRoot(txid)
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * The merkle path the wallet has attached, if any, read the way a client can.
- * A parsed BEEF keeps a proven transaction's path in its bumps and not on the
- * transaction, so `tx.merklePath` is always undefined here; the path is read
- * through the transaction's bump index, and only returned if it contains the
- * transaction. A wallet lists spendable outputs only, so this finds the path
- * of the tip and of nothing a later state has spent.
- */
-async function merklePathFromWallet(wallet, txid) {
-  const outputs = await wallet.listOutputs({ basket: 'dpp', include: 'entire transactions', limit: 10000 })
-  if (outputs.BEEF == null) return undefined
-  const beef = Beef.fromBinary(outputs.BEEF)
-  const held = beef.findTxid(txid)
-  const path = held?.bumpIndex == null ? held?.tx?.merklePath : beef.bumps[held.bumpIndex]
-  return path != null && pathContains(path, txid) ? path : undefined
-}
-
-/**
- * Section 7. The wallet obtains the proof as part of being a wallet; the
- * application offers it to the index, because re-announcing the state would
- * do nothing and the index's stored bytes would stay unproven.
- */
-async function proveAndPush(wallet, txid) {
-  const deadline = Date.now() + waitMinutes * 60_000
-  console.log(
-    `Waiting up to ${waitMinutes} minute${waitMinutes === 1 ? '' : 's'} for the wallet to attach the merkle path; its monitor asks a header source once the block is a minute old.`
-  )
-  for (;;) {
-    const path = await merklePathFromWallet(wallet, txid)
-    if (path != null) {
-      const response = await fetch(`${indexUrl}/arc-ingest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(callbackToken != null ? { 'X-Callback-Token': callbackToken } : {}),
-        },
-        body: JSON.stringify({ txid, merklePath: path.toHex(), blockHeight: path.blockHeight }),
-      })
-      const body = await response.json().catch(() => ({}))
-      say(
-        response.ok && body.status === 'applied',
-        `the proof (block ${path.blockHeight}) reached the index: ${body.status ?? `HTTP ${response.status}`}${body.description != null ? `, ${body.description}` : ''} (section 7).`
-      )
-      return
-    }
-    if (Date.now() > deadline) {
-      console.log(
-        `No merkle path yet. Every verifier reads this state as pending until one reaches the index; run again later, or point the wallet's broadcaster callback at ${indexUrl}/arc-ingest (section 7).`
-      )
-      return
-    }
-    await new Promise((resolve) => setTimeout(resolve, 30_000))
-  }
-}
-
-async function live() {
-  // The originator names this application to the wallet. In Node the SDK's
-  // local substrates need one, and without it no wallet is found at all.
-  const wallet = new WalletClient('auto', 'localhost')
-  const { publicKey: identityKey } = await wallet.getPublicKey({ identityKey: true })
-  const ownerKey = await ownerKeyFor(passportId, wallet)
-  console.log(
-    `The wallet's identity key is ${short(identityKey)}; the passport's owner key, one derivation below it, is ${short(ownerKey)} (spec/custody.md section 2). Both signatures and the lock come from the same wallet: possession.`
-  )
-
-  // The owner tier lives off chain, encrypted; only its hash is written. This
-  // example publishes none, so the hash is of a note saying so.
-  const ownerTier = Utils.toArray(JSON.stringify({ note: 'the owner tier is stored off chain by a build; this example writes only its hash' }), 'utf8')
-  const data = {
-    passportId,
-    op: 'ACTIVATE',
-    timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
-    ownerIdentityKey: ownerKey,
-    actorIdentityKey: identityKey,
-    actorKeyId: 'owner',
-    eventData: '',
-    payloadPublic: payloadFlag ?? JSON.stringify({ name: 'Example passport', dataCarrier: passportId }),
-    payloadOwnerHash: ownerBlobHash(ownerTier),
-    previousTxid: '',
-  }
-  const state = await completeState(data, wallet, wallet)
-  const lockingScript = buildLockingScript(state, ownerKey)
-
-  // Built unsent (section 3): complete and signed, spending nothing until sent.
-  const created = await wallet.createAction({
-    description: 'dpp activate',
-    outputs: [
-      {
-        lockingScript: lockingScript.toHex(),
-        satoshis: 1,
-        outputDescription: 'dpp passport state',
-        basket: 'dpp',
-        customInstructions: JSON.stringify({ passportId }),
-      },
-    ],
-    options: { noSend: true, randomizeOutputs: false, acceptDelayedBroadcast: false },
-  })
-  if (created.tx == null || created.txid == null) {
-    console.error('The wallet did not return a signed transaction; nothing was sent.')
-    process.exit(1)
-  }
-  const txid = created.txid
-  console.log(`The wallet built ${txid} unsent: complete, signed, and spending nothing until it is sent.`)
-
-  // Section 2: the verifier's own checks on the unsent transaction.
-  const chain = chainFromBeef(Beef.fromBinary(created.tx), passportId)
-  const checked = await verifyChain(chain, { chainTracker: 'scripts only', serverIdentityKey: identityKey })
-  say(
-    checked.valid,
-    `the writer's own check ${checked.valid ? 'accepts' : 'refuses'} the unsent state (spec/writing.md section 2)${checked.error != null ? `: ${checked.error}` : ''}.`
-  )
-  if (!checked.valid) {
-    console.log('Nothing was sent.')
-    await discard(wallet, txid)
-    process.exit(1)
-  }
-
-  // Section 3: announce first, send only on admission. An unreachable index
-  // refuses nothing: the state is sent and announced again afterwards.
-  let announced = await announce(created.tx, txid)
-  if (announced === 'refused') {
-    console.log('Nothing was sent: the state was refused while it was still a draft (section 3).')
-    await discard(wallet, txid)
-    process.exit(1)
-  }
-
-  // Sections 4 and 5: send, and report only the network's answer.
-  const sent = await send(wallet, txid)
-  if (sent === 'refused' && announced === 'admitted') await retract(txid, 'the network refused the transaction after the index admitted it')
-  if (sent !== 'accepted') process.exit(1)
-
-  // Section 6: an announcement that could not be made is retried, and is never
-  // a reason to spend again.
-  if (announced === 'unreachable') announced = await announce(created.tx, txid)
-
-  // Section 7: the proof, from the wallet, pushed to the index.
-  if (waitMinutes > 0) {
-    await proveAndPush(wallet, txid)
-  } else {
-    console.log(
-      `Not waiting for the merkle path; pass --wait-proof=<minutes> to wait and push it to ${indexUrl}/arc-ingest. Until it reaches the index, every verifier reads this state as pending (section 7).`
-    )
-  }
-
-  // Section 8.
-  console.log(
-    `The bytes live in the wallet's basket "dpp": the transaction, its BEEF and, once mined, its proof, for the passport's life (section 8). The index is where the state is found, never where it is kept.`
-  )
-}
-
-if (dryRun) {
-  await dryRunFromFixture()
-} else {
-  try {
-    await live()
-  } catch (cause) {
-    console.error(`Stopped: ${cause?.message ?? cause}. If no BRC-100 wallet answered on this machine, start one and run again; nothing was sent.`)
-    process.exit(1)
-  }
-}
+await dryRunFromFixture()
 process.exit(failures === 0 ? 0 : 1)

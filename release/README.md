@@ -63,7 +63,7 @@ node scripts/consumer-check.mjs --registry
 
 The second command installs exact versions from public npm in a fresh directory with a fresh cache and checks lockfile integrity, runtime entry points, declaration resolution, carried artefacts and the offline lifecycle. It does not substitute local tarballs when a registry version is missing. A trial consumer can additionally run its own setup, tests and start against those same versions and digests.
 
-A partial publication is not announced as a complete release. Qualification still withholds European conformity, battery product qualification, federated operation and version 1.0 readiness. Package publication changes none of those claims.
+A partial publication is not announced as a complete release. Qualification still withholds federated operation and version 1.0 readiness, and the standard makes no European system conformance or product-compliance claim. Package publication changes none of that.
 
 ## What a consumer does with it
 

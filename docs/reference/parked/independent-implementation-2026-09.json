@@ -1,6 +1,7 @@
 {
   "demonstrationVersion": "1",
   "demonstrationId": "independent-implementation-2026-09",
+  "parked": "Parked on 12 November 2026 and moved here from conformance/demonstrations/: the plan is to be rewritten against the slimmed standard when an independent implementer appears. Until then it is not checked against the ledger, and the claims and rows it names are those of the day it was parked, some since removed or superseded.",
   "purpose": "The interoperability and portability demonstration of the independent implementation trial: what each scenario must run, what evidence it retains, when it passes, when it must refuse, and which ledger rows and claims its evidence bears on. Defined before the second application exists; nothing here is claimed until it has run.",
   "releaseSet": "dpp-release-2026-11",
   "baseline": "native-baseline@2",

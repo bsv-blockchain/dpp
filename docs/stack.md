@@ -30,7 +30,7 @@ The pinned `dpp-core` paths are historical source for the protocol library.
 | Integration task | Source |
 |---|---|
 | Scripts, keys, transactions and proofs | [Core package bindings](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/packages/dpp-core/src/index.ts) |
-| Wallet signing and broadcast | [Writer example](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/examples/write-passport.mjs), [writer duties](https://github.com/bsv-blockchain/dpp/blob/e65498a9570fbb5e859021225875fe7197a06f34/spec/writing.md), [wallet toolbox](https://bsv-blockchain.github.io/ts-stack/packages/wallet/wallet-toolbox/) |
+| Wallet signing and broadcast | [Writer example](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs), [writer duties](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md), [wallet toolbox](https://bsv-blockchain.github.io/ts-stack/packages/wallet/wallet-toolbox/) |
 | Resolvable issuer identity | [BSV DID method and resolution](learn/dids.md) |
 | Topic admission, lookup and synchronisation | [Overlay package](https://github.com/bsv-blockchain/dpp/blob/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-overlay/README.md), [stack components](https://github.com/bsv-blockchain/ts-stack/tree/83a7117b8a02aa16d5a364f186449292810adbd8/packages/overlays) |
 | Credential verification | [Credentials package](packages/dpp-credentials.md) |
