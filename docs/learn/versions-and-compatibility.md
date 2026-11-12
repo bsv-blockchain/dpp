@@ -17,7 +17,7 @@ A [release set](../reference/release-sets.md) is one tested combination, declare
 | Scope | Set and source |
 |---|---|
 | Current source candidate | `dpp-release-2026-11`, declared in `release/dpp-release-2026-11.json`; not yet published. |
-| Last published set | `dpp-release-2026-10-10`, published on 16 October 2026. The [beta.11 receipt](../reference/beta-11-publication.md) preserves its approved plan and source revision. |
+| Last published set | `dpp-release-2026-10-10`, published on 16 October 2026. The [beta.11 receipt](../reference/publication-history/beta-11-publication.md) preserves its approved plan and source revision. |
 
 The candidate inventory below gives each release-set field and the exact spelling in an index's `GET /capabilities` answer.
 

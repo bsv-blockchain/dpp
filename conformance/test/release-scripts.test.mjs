@@ -2,16 +2,17 @@
  * The refusals of the release pipeline's shared checks (scripts/lib/candidates.mjs):
  * a tarball whose bytes changed, a record whose digest does not match, a
  * missing candidate, an unexpected tarball, a record naming another set, a
- * set that is not a candidate, and a set file that moved since the record
- * was made. Built on a temporary directory with tarballs made here, so the
- * test needs no build and no npm.
+ * set that is not a candidate, a set file that moved since the record
+ * was made, and a set or selection kept on the wrong side of the archive.
+ * Built on a temporary directory with tarballs made here, so the test needs
+ * no build and no npm.
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { verifyCandidates, verifyRecordAgainstSet, sha256, integrityOf } from '../../scripts/lib/candidates.mjs'
+import { verifyCandidates, verifyRecordAgainstSet, sha256, integrityOf, releaseSetPath, selectionMisplacement, setMisplacement } from '../../scripts/lib/candidates.mjs'
 
 const failing = (findings) => findings.filter((f) => !f.ok).map((f) => f.sentence)
 
@@ -100,4 +101,37 @@ test('a record is held to its set: identifier, status, every package once at the
     assert.ok(failing(verifyRecordAgainstSet(extra, f.set, f.setBytes)).some((s) => /names no package outside the set: @bsv\/c/.test(s)))
     assert.ok(failing(verifyRecordAgainstSet(f.record, f.set, Buffer.from('set bytes moved'))).some((s) => /not the one the record was made against; re-pack/.test(s)))
   } finally { rmSync(f.dir, { recursive: true, force: true }) }
+})
+
+test('a superseded set and its selection belong in the archive, and nothing else does', () => {
+  const current = { releaseSet: 'dpp-release-new', status: 'candidate' }
+  const old = { releaseSet: 'dpp-release-old', status: 'superseded' }
+  assert.equal(setMisplacement('release/dpp-release-new.json', current), null)
+  assert.equal(setMisplacement('release/archive/dpp-release-old.json', old), null)
+  assert.equal(setMisplacement('release/dpp-release-old.json', old), 'release/dpp-release-old.json is superseded; move it, bytes unchanged, to release/archive/.')
+  assert.equal(setMisplacement('release/archive/dpp-release-new.json', current), 'release/archive/dpp-release-new.json is archived, but its status is candidate; only a superseded set is archived.')
+
+  const selection = (releaseSet) => ({ selectionId: releaseSet ?? 'unnamed', ...(releaseSet ? { releaseSet } : {}) })
+  assert.equal(selectionMisplacement('conformance/selections/dpp-release-new.json', selection('dpp-release-new'), 'candidate'), null)
+  assert.equal(selectionMisplacement('conformance/selections/declaration.json', selection(), null), null)
+  assert.equal(selectionMisplacement('release/archive/selections/dpp-release-old.json', selection('dpp-release-old'), 'superseded'), null)
+  // The set's own status decides, wherever the set is kept: a selection left out
+  // beside a superseded set that was itself left out is still asked to move.
+  assert.equal(selectionMisplacement('conformance/selections/dpp-release-old.json', selection('dpp-release-old'), 'superseded'), 'conformance/selections/dpp-release-old.json qualifies the superseded set dpp-release-old; move it, bytes unchanged, to release/archive/selections/.')
+  assert.match(selectionMisplacement('release/archive/selections/dpp-release-new.json', selection('dpp-release-new'), 'candidate'), /is archived, but dpp-release-new is candidate; only the selection of a superseded set is archived\.$/)
+  assert.match(selectionMisplacement('release/archive/selections/dpp-release-gone.json', selection('dpp-release-gone'), null), /is archived, but dpp-release-gone is kept neither under release\/ nor under the archive;/)
+  assert.match(selectionMisplacement('release/archive/selections/declaration.json', selection(), null), /is archived, but it names no release set;/)
+})
+
+test('a set is found under release/ while current and under the archive once superseded', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'dpp-archive-'))
+  try {
+    mkdirSync(join(dir, 'release', 'archive'), { recursive: true })
+    writeFileSync(join(dir, 'release', 'dpp-release-new.json'), '{}')
+    writeFileSync(join(dir, 'release', 'archive', 'dpp-release-old.json'), '{}')
+    assert.equal(releaseSetPath(dir, 'dpp-release-new'), 'release/dpp-release-new.json')
+    assert.equal(releaseSetPath(dir, 'dpp-release-old'), 'release/archive/dpp-release-old.json')
+    assert.equal(releaseSetPath(dir, 'dpp-release-none'), null)
+    assert.equal(releaseSetPath(dir, undefined), null)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
 })

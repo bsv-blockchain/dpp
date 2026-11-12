@@ -4,7 +4,7 @@ hidden: true
 
 # Beta.2 publication receipt
 
-> Archived release. For current package versions and setup guidance, use [Releases and compatibility](release-sets.md). For other past releases, see [Release history](release-history.md).
+> Archived release. For current package versions and setup guidance, use [Releases and compatibility](../release-sets.md). For other past releases, see [Release history](../release-history.md).
 
 Release reviewers and consumers can check this beta.2 publication against its approved source and archive bytes here. All four packages in `dpp-release-2026-09-4` were published to public npm on **18 September 2026**, using GitHub OIDC trusted publishing with provenance. Their downloaded archives matched the approved bytes, and the final public-registry consumer check passed. The set was superseded by `dpp-release-2026-09-5`; this receipt preserves the publication record.
 
@@ -18,7 +18,7 @@ For optional reproduction:
 | Toolchain | git, Node 22 and npm 11.19.0, matching the recorded toolchain. |
 | Verification inputs | Public access to `https://registry.npmjs.org/` and the approved plan below. |
 
-Prepare dependencies and build at that revision through [package installation](../packages/README.md#source-access).
+Prepare dependencies and build at that revision through [package installation](../../packages/README.md#source-access).
 
 ## Exact source and approval
 
@@ -82,4 +82,4 @@ The original release-set JSON retains `status: candidate`: its exact input diges
 
 `battery@2` and `textile@2` remain current. Versions 3 and 4 remain drafts, and existing frozen definitions remain unchanged. Publication does not upgrade the reference application, activate new writers, publish an operator image, establish a deployed service's readiness or qualify a battery product. The release selection continues to withhold European conformity and version 1.0 readiness claims.
 
-Continue with [consumer adoption](../profiles/updating-applications.md) and [version 4 review](../profiles/version-4-drafts.md). The [publication guide](publishing-profile-updates.md) covers future releases and recovery from delays.
+Continue with [consumer adoption](../../profiles/updating-applications.md) and [version 4 review](../../profiles/version-4-drafts.md). The [publication guide](../publishing-profile-updates.md) covers future releases and recovery from delays.

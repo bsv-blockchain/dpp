@@ -20,7 +20,7 @@ Source changes do not upgrade installed packages or hosted services.
 
 ## Published and in development
 
-Install **`dpp-release-2026-10-10`** from npm: the latest published runtime set has been under `latest` since 16 October 2026. It is superseded as the source development target. Its [publication receipt](../reference/beta-11-publication.md) records the source revision, archive digests and verification results.
+Install **`dpp-release-2026-10-10`** from npm: the latest published runtime set has been under `latest` since 16 October 2026. It is superseded as the source development target. Its [publication receipt](../reference/publication-history/beta-11-publication.md) records the source revision, archive digests and verification results.
 
 | Package | Published on npm | November source candidate |
 |---|---|---|

@@ -9,6 +9,7 @@
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { RELEASE_ARCHIVE, releaseSetPath } from '../scripts/lib/candidates.mjs'
 
 /** The status order the gate compares against; unassessed always blocks. */
 export const STATUS_RANK = { unassessed: -1, gap: 0, 'not-applicable': 1, implemented: 2, tested: 3, 'independently-tested': 4 }
@@ -122,8 +123,9 @@ export function assessSelection(selection, { ledger, rows, sources, verdicts, ro
   const claims = new Map(ledger.claims.map((c) => [c.id, c]))
 
   if (selection.releaseSet != null) {
-    const path = `release/${selection.releaseSet}.json`
-    if (root == null || !existsSync(join(root, path))) invalid.push(`${name} names release set ${selection.releaseSet}, which ${path} does not define.`)
+    // The current set under release/, or a superseded one kept under the archive.
+    const path = root == null ? null : releaseSetPath(root, selection.releaseSet)
+    if (path == null) invalid.push(`${name} names release set ${selection.releaseSet}, which neither release/ nor ${RELEASE_ARCHIVE}/ holds.`)
     else {
       const set = JSON.parse(readFileSync(join(root, path), 'utf8'))
       if (set.status === 'superseded') invalid.push(`${name} names release set ${selection.releaseSet}, which is superseded; a selection qualifies a current set.`)

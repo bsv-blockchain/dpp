@@ -53,7 +53,7 @@ Use the exact npm versions below for published installations.
 
 ## Install from npm
 
-The latest complete publication with a receipt here is `dpp-release-2026-10-10` ([beta.11 receipt](../reference/beta-11-publication.md)); candidate `dpp-release-2026-11` supersedes it for source development. Exact published versions remain available even if mutable tags move.
+The latest complete publication with a receipt here is `dpp-release-2026-10-10` ([beta.11 receipt](../reference/publication-history/beta-11-publication.md)); candidate `dpp-release-2026-11` supersedes it for source development. Exact published versions remain available even if mutable tags move.
 
 | Library | Published npm version | Candidate archive version | Select for |
 |---|---|---|---|
@@ -114,7 +114,7 @@ npm run build
 
 Source includes later work: publisher registration, per-publisher write tokens and the `managed-custody@2` signing rule. Opt-in index discovery and advertising were already in the published overlay beta.12. Building it does not reproduce npm archives, even with unchanged version strings. Reproduce published packages at their [receipt's revision](../reference/release-sets.md).
 
-This historical beta.4 example reproduces all four packages: the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and `@bsv/vsc@0.2.0-beta.3`, under the names the overlay and credentials packages were published with at the time. They repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, recorded in the [beta.4 receipt](../reference/beta-4-publication.md). Its examples predate the current quick start.
+This historical beta.4 example reproduces all four packages: the beta.4 `@bsv/dpp-core`, `@bsv/dpp-overlay-topics` and `@bsv/dpp-profiles` and `@bsv/vsc@0.2.0-beta.3`, under the names the overlay and credentials packages were published with at the time. They repack byte for byte from `f9d8e98658c7cf406702d49194ec5a8480cbca73`, recorded in the [beta.4 receipt](../reference/publication-history/beta-4-publication.md). Its examples predate the current quick start.
 
 ```sh
 git checkout --detach f9d8e98658c7cf406702d49194ec5a8480cbca73

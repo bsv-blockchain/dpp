@@ -161,7 +161,7 @@ node examples/sample-payload.mjs --check <profile@version> <file>
 
 1. [Release sets](../reference/release-sets.md): what the current set contains.
 2. [Migration](../migration.md): move a deployment or application to a new set.
-3. Use the selected release's receipts: [beta.11](../reference/beta-11-publication.md) records the current publication; [beta.4](../reference/beta-4-publication.md) is the historical reproduction example.
+3. Use the selected release's receipts: [beta.11](../reference/publication-history/beta-11-publication.md) records the current publication; [beta.4](../reference/publication-history/beta-4-publication.md) is the historical reproduction example.
 
 **Completion check:** your lockfile names the current set's exact versions and your tests pass.
 

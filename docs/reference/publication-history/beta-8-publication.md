@@ -6,7 +6,7 @@ hidden: true
 
 Reviewers and maintainers can reproduce archive verification for `dpp-release-2026-10-5` with this receipt: all downloaded archives matched approved bytes, and the final public-registry consumer check passed.
 
-> Archived release, superseded by a later set. This receipt records what beta.8 published. [Releases and compatibility](release-sets.md) names the current set and supplies package versions and setup guidance; [Release history](release-history.md) lists other past releases.
+> Archived release, superseded by a later set. This receipt records what beta.8 published. [Releases and compatibility](../release-sets.md) names the current set and supplies package versions and setup guidance; [Release history](../release-history.md) lists other past releases.
 
 ## Before reproducing the verification
 
@@ -86,4 +86,4 @@ The release-set JSON keeps `status: candidate`: its exact input digest was appro
 
 Publication does not upgrade the reference application or registry, redeploy the hosted index, publish an operator image or establish a deployed service's readiness; an index answers `gs1Key` only once it runs this release. The release selection continues to withhold federated operation, European conformity, battery product qualification and version 1.0 readiness.
 
-For future releases and delay recovery, follow the [publication guide](publishing-profile-updates.md). The [beta.7 receipt](beta-7-publication.md) records the preceding publication.
+For future releases and delay recovery, follow the [publication guide](../publishing-profile-updates.md). The [beta.7 receipt](beta-7-publication.md) records the preceding publication.

@@ -1,4 +1,18 @@
 #!/usr/bin/env node
+/**
+ * Prepare, execute or verify the publication of the packed candidates.
+ *
+ *   node scripts/publish-candidates.mjs                       # read-only: write and print the plan and its digest
+ *   node scripts/publish-candidates.mjs --execute --approval=<digest>
+ *   node scripts/publish-candidates.mjs --verify-registry
+ *
+ * The plan binds the source revision and state, the release set and selection
+ * digests, the registry, tag and provenance, and every archive's bytes, and
+ * nothing else: editing the changelog or a guide after approval leaves an
+ * approved plan standing. Execution runs only in the publication workflow,
+ * .github/workflows/publish.yaml, on a public repository, through npm trusted
+ * publishing (GitHub OIDC) with provenance; there is no other publication path.
+ */
 import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -11,9 +25,7 @@ const { values } = parseArgs({ options: {
   execute: { type: 'boolean', default: false },
   'verify-registry': { type: 'boolean', default: false },
   approval: { type: 'string' },
-  provenance: { type: 'string', default: 'true' },
 } })
-if (!['true', 'false'].includes(values.provenance)) throw new Error('provenance must be true or false')
 if (values.execute && values['verify-registry']) throw new Error('choose execution or registry verification')
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const run = (command, args, env = process.env) => execFileSync(command, args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], env }).trim()
@@ -43,11 +55,10 @@ const plan = {
   sourceState: record.sourceState,
   selection: set.selection,
   selectionSha256: sha256(readFileSync(join(root, set.selection))),
-  changelogSha256: sha256(readFileSync(join(root, 'CHANGELOG.md'))),
   registry: NPM_REGISTRY,
   access: 'public',
   tag: distTag,
-  provenance: values.provenance === 'true',
+  provenance: true,
   candidates: candidates.map(({ name, version, filename, sha256, integrity, size }) => ({ name, version, filename, sha256, integrity, size })),
 }
 const planBytes = Buffer.from(JSON.stringify(plan, null, 2) + '\n')
@@ -57,7 +68,7 @@ console.log(planBytes.toString())
 console.log(`Publication plan SHA-256: ${planDigest}`)
 if (values.execute) {
   assertApproval(plan, values.approval, run('git', ['rev-parse', 'HEAD']), run('git', ['status', '--porcelain']) !== '')
-  if (plan.provenance && (process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REPOSITORY_VISIBILITY !== 'public')) throw new Error('provenance requires a public source repository and the GitHub Actions release workflow')
+  if (process.env.GITHUB_ACTIONS !== 'true' || process.env.GITHUB_REPOSITORY_VISIBILITY !== 'public') throw new Error('publication runs only in the GitHub Actions publication workflow of the public source repository, with provenance')
   run('node', ['conformance/qualify.mjs', set.selection])
 }
 const actions = await publicationActions(candidates)
@@ -69,7 +80,7 @@ if (values['verify-registry']) {
   for (const { candidate, action } of actions) {
     if (action === 'already-published') continue
     // Never treat a failed publish as success. A rerun verifies anything that landed.
-    run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', `--tag=${plan.tag}`, `--registry=${NPM_REGISTRY}`, `--provenance=${plan.provenance}`], plan.provenance ? oidcPublishEnv(process.env) : process.env)
+    run('npm', ['publish', join(candidateDir, candidate.filename), '--ignore-scripts', '--access=public', `--tag=${plan.tag}`, `--registry=${NPM_REGISTRY}`, '--provenance'], oidcPublishEnv(process.env))
     await waitForRegistryVersion(candidate, { onProgress: console.log })
   }
   console.log('All packages are available with the approved bytes. Run the registry consumer check before announcing the release.')
