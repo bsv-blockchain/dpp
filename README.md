@@ -77,7 +77,7 @@ The packages below are reusable components. Select them directly when integratin
 
 | Package | Purpose |
 |---|---|
-| [`@bsv/dpp-protocol`](packages/dpp-protocol/README.md) | Read, write and verify passport records, signatures, history, attestations and portable evidence. Supports record versions 1, 2 and 3. |
+| [`@bsv/dpp-protocol`](packages/dpp-protocol/README.md) | Read, write and verify passport records, signatures, history, attestations and portable evidence. Supports record versions 1 and 2. |
 | [`@bsv/dpp-overlay`](packages/dpp-overlay/README.md) | The index runtime the operator preset builds. Direct installation is for custom or embedded indexes; it admits and retrieves records, exports evidence and synchronises with configured peers. |
 | [`@bsv/dpp-profiles`](packages/dpp-profiles/README.md) | Versioned product-data schemas for batteries, textiles and general products, plus identifier, mapping and projection helpers. |
 | [`@bsv/dpp-credentials`](packages/dpp-credentials/README.md) | Verify W3C Verifiable Credentials other parties issue in the supported external profile (`ecdsa-rdfc-2019` over P-256, `did:web` issuers) and import EPCIS 2.0.1 source documents. |

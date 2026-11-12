@@ -31,7 +31,7 @@ const sha256 = (relative) => createHash('sha256').update(readFileSync(join(root,
 // record the day it was frozen.
 const missing = (path) => { console.log(`${path} does not exist; its recorded digest is left as it is.`); return true }
 console.log('conformance/baseline-native-1.json is frozen; its recorded digests are left as history.')
-for (const path of ['conformance/baseline-native-2.json', 'conformance/baseline-native-3.json']) {
+for (const path of ['conformance/baseline-native-2.json']) {
   const baseline = read(path)
   let fixtures = 0
   for (const f of baseline.fixtures) {

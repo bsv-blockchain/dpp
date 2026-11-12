@@ -28,7 +28,7 @@ An account may administer multiple entities and keys, and several authorised acc
 
 ## Carried states
 
-Record version 3 carries the version 2 body behind a generic token prefix (BRC-162) rather than defining a new body. A generic token reader follows a token id and a linear history of one unit without reading the body, which is how a wallet or an index that knows nothing of passports can still find and follow a lineage. The body keeps the verification property: the signatures, the control proof and the lineage binding are in the seventeen fields, verified from bytes and headers as before, and the prefix adds discovery without adding anything a reader must trust. Nothing in version 1 or version 2 changes; a carried lineage begins at its own deploy, and the open points the carrier document lists are the places where a token reader's view and a passport reader's view could have been aligned further and were not yet.
+Record version 3, the token carrier, is parked outside the standard ([`../docs/reference/parked/token-carrier/`](../docs/reference/parked/token-carrier/README.md)).
 
 ## Availability and implementation guidance
 

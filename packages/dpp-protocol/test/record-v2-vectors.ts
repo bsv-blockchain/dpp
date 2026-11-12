@@ -72,18 +72,19 @@ export function recordV2Vectors(F: Fixture) {
     expected: { accepted: false, stage: 'decode', reason: r.reason },
     tags: ['error-case', 'brc-48'],
   }))
-  // Append-only: the vector that pinned version "3" as unsupported keeps its
-  // identifier and bytes, skipped, because version 3 is now a named refusal
-  // (`refuse-version-three-without-prefix`) and an unknown version is "4".
-  const superseded = F.refusals.find((r) => r.name === 'versionThreeWithoutPrefix')!
+  // Append-only: the vector that named version "3" on a bare body keeps its
+  // identifier and bytes, skipped, because record version 3 is parked and a
+  // reader refuses those bytes as a version it does not know, which
+  // `refuse-unsupported-version` pins again.
+  const superseded = F.refusals.find((r) => r.name === 'unsupportedVersion')!
   const skippedVector = {
-    id: 'refuse-unsupported-version',
-    description: 'unsupported standard version "3"',
+    id: 'refuse-version-three-without-prefix',
+    description: 'version "3" is carried behind a token prefix',
     input: { locking_script_hex: superseded.lockingScript },
-    expected: { accepted: false, stage: 'decode', reason: 'unsupported standard version "3"' },
+    expected: { accepted: false, stage: 'decode', reason: 'version "3" is carried behind a token prefix' },
     tags: ['error-case', 'brc-48'],
     skip: true,
-    skip_reason: 'Superseded: version 3 is a known version carried behind a token prefix (spec/token-carrier.md); see refuse-version-three-without-prefix and refuse-unknown-version.',
+    skip_reason: 'Superseded: record version 3, the token carrier, was parked on 12 November 2026, so a reader knows no version 3; see refuse-unsupported-version.',
   }
 
   return {

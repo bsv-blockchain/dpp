@@ -1322,7 +1322,7 @@ components:
         - evidenceAvailability
     EvidenceReport:
       description: |
-        The standard's verification report, version 1, exactly as its schema
+        The standard's verification report, version 2, exactly as its schema
         defines it: `reportVersion`, `checkedAt`, `expectedSubject`,
         `suppliedTip`, `policyId`, sixteen `checks` in the order
         `EvidenceCheckName` lists them (each `pass`, `fail`, `unknown` or
@@ -1336,7 +1336,7 @@ components:
         - $ref: 'https://bsv-blockchain.github.io/dpp/contracts/verification-report.schema.json'
         - type: object
           properties:
-            reportVersion: { const: '1' }
+            reportVersion: { const: '2' }
             checks:
               type: array
               minItems: 16

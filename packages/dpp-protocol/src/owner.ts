@@ -12,7 +12,7 @@ import type { DppStateData, DppStateDataV2 } from './types.js'
 
 /**
  * The owner key and the possession convention (`spec/custody.md` §2 and §3),
- * and the control proof of record versions 2 and 3 with the linkage scalar it
+ * and the control proof of record version 2 with the linkage scalar it
  * carries (`spec/record-model-v2.md` §6), in the four operations a BRC-100
  * wallet already has. Everything here is one derivation from a root and
  * exports nothing, which is the constraint the standard imposes on itself

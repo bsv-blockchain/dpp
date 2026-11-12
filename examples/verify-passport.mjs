@@ -8,7 +8,6 @@
  *   node examples/verify-passport.mjs --fixture
  *   node examples/verify-passport.mjs --fixture --report
  *   node examples/verify-passport.mjs --fixture --version=2 [--report]
- *   node examples/verify-passport.mjs --fixture --version=3 [--report]
  *
  * With a passport identifier, the script asks an index (default: the
  * demonstration deployment) for the record's outputs, rebuilds the chain from
@@ -50,14 +49,6 @@
  * by itself: a lineage of either version, or one that was upgraded, verifies
  * under the same call, and the flag changes nothing.
  *
- * With --version=3 in fixture mode, the same is done for the token carrier
- * (spec/token-carrier.md): fixtures/chain-v3.json, a lineage carried as a
- * BRC-162 token of one unit, is verified under the custodian's publisher key,
- * every one of its refusals is shown refused for the pinned reason, the burn
- * is shown to be no state, and --report compares every case of
- * fixtures/evidence-v3.json. Live, a carried lineage verifies under the same
- * call as any other; the reader finds the prefix by itself.
- *
  * Results print one sentence per check, never a score, as GOVERNANCE.md
  * requires of every conformance surface.
  */
@@ -93,19 +84,16 @@ const args = process.argv.slice(2)
 const fixtureMode = args.includes('--fixture')
 const reportFlag = args.includes('--report')
 const versionFlag = args.find((a) => a.startsWith('--version='))?.slice('--version='.length) ?? '1'
-if (versionFlag !== '1' && versionFlag !== '2' && versionFlag !== '3') {
-  console.error('usage: --version=1 (default), --version=2 or --version=3')
+if (versionFlag !== '1' && versionFlag !== '2') {
+  console.error('usage: --version=1 (default) or --version=2')
   process.exit(2)
 }
 const versionTwo = versionFlag === '2'
-// Version 3 is the token carrier (spec/token-carrier.md): fixtures/chain-v3.json is a
-// carried lineage published by the custodian, verified under the custodian's key.
-const versionThree = versionFlag === '3'
 let passportId = args.find((a) => !a.startsWith('--'))
 const indexUrl = (args.filter((a) => !a.startsWith('--'))[1] ?? 'https://dpp-overlay.bsvb.net').replace(/\/+$/, '')
 
 if (!fixtureMode && passportId == null) {
-  console.error('usage: verify-passport.mjs <passportId> [indexUrl] [--report] | --fixture [--version=2|3] [--report]')
+  console.error('usage: verify-passport.mjs <passportId> [indexUrl] [--report] | --fixture [--version=2] [--report]')
   process.exit(2)
 }
 
@@ -175,7 +163,7 @@ let fixture
 /** True when the identifier came from the index's answer to a GS1 key, not from the caller. */
 let resolvedFromKey = false
 if (fixtureMode) {
-  fixture = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionThree ? 'chain-v3.json' : versionTwo ? 'chain-v2.json' : 'chain-v1.json'), 'utf8'))
+  fixture = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionTwo ? 'chain-v2.json' : 'chain-v1.json'), 'utf8'))
   chain = fixture.states.map((s) => Transaction.fromHex(s.rawTx))
   tracker = 'scripts only'
   console.log(`Fixture chain (record version ${versionFlag}): ${chain.length} states, verified from raw transaction hex, no header source.`)
@@ -242,9 +230,7 @@ console.log(`Operations, genesis to tip: ${ops.join(' -> ')}.`)
 // verified as a verifier configured for that profile and publisher would (spec/managed-custody.md §5).
 const versionTwoOptions = fixtureMode && versionTwo ? { managedAcceptance: true, serverIdentityKey: fixture.custodianKey } : {}
 if (fixtureMode && versionTwo) console.log('The managed-custody profile is selected, with the custodian as the publisher and no control authorities.')
-const versionThreeOptions = fixtureMode && versionThree ? { serverIdentityKey: fixture.custodianKey } : {}
-if (fixtureMode && versionThree) console.log(`The lineage is carried as a token of one unit; its token id is ${fixture.tokenId}. The custodian is the publisher and no control authorities are named.`)
-const result = await verifyChain(chain, { chainTracker: tracker, ...versionTwoOptions, ...versionThreeOptions })
+const result = await verifyChain(chain, { chainTracker: tracker, ...versionTwoOptions })
 
 for (const [i, s] of result.states.entries()) {
   console.log(`State ${i + 1} (${s.op}, ${s.txid.slice(0, 12)}): user signature ${s.userSignatureValid ? 'verifies' : 'FAILS'}; linkage ${s.linkageValid ? 'holds' : 'FAILS'}; inclusion ${s.spv}.`)
@@ -281,20 +267,6 @@ if (fixtureMode && versionTwo) {
   }
 }
 
-// The version 3 fixture's refusals, the carrier's own rules among them, each from raw
-// hex alone; then the burn, the tip spent with no carrier output, which is no state at all.
-if (fixtureMode && versionThree) {
-  console.log(`Version 3 refusals in the fixture: ${fixture.refusals.length}.`)
-  for (const r of fixture.refusals) {
-    const prefix = fixture.states.slice(0, r.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
-    const refused = await verifyChain([...prefix, Transaction.fromHex(r.rawTx)], { chainTracker: 'scripts only' })
-    say(!refused.valid && (refused.error ?? '').includes(r.error), `the verifier refuses ${r.name}: ${r.error}${r.brc162Accepts ? ' (a generic reader of the token protocol accepts this output; the rule is the carrier\'s own)' : ''}.`)
-  }
-  const burnPrefix = fixture.states.slice(0, fixture.burn.appendAfter + 1).map((s) => Transaction.fromHex(s.rawTx))
-  const burned = await verifyChain([...burnPrefix, Transaction.fromHex(fixture.burn.rawTx)], { chainTracker: 'scripts only' })
-  say(!burned.valid && (burned.error ?? '').includes(fixture.burn.error), `the burn is no state: ${fixture.burn.error}; the lineage ended without a RETIRE.`)
-}
-
 // The one verification contract. Live: the report for what the index returned,
 // with the typed identifier as the independently expected subject. Fixture: the
 // standalone surface of the equivalence test over fixtures/evidence-v1.json.
@@ -307,7 +279,7 @@ if (reportFlag && !fixtureMode) {
   printReport(report)
 }
 if (reportFlag && fixtureMode) {
-  const cases = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionThree ? 'evidence-v3.json' : versionTwo ? 'evidence-v2.json' : 'evidence-v1.json'), 'utf8'))
+  const cases = JSON.parse(readFileSync(join(here, '..', 'fixtures', versionTwo ? 'evidence-v2.json' : 'evidence-v1.json'), 'utf8'))
   FIXTURE_CHECKED_AT = cases.checkedAt
   console.log(`Report cases in the fixture: ${cases.cases.length}, checked at ${cases.checkedAt}.`)
   for (const c of cases.cases) {

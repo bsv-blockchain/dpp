@@ -1,6 +1,6 @@
 import { NO_EVENT_OPS, PAYLOAD_CHANGE_OPS, PAYLOAD_CHANGE_OPS_V2 } from './constants.js'
 import { checkControl } from './owner.js'
-import type { DppState, Outpoint, SeventeenFieldState } from './types.js'
+import type { DppState, DppStateV2, Outpoint } from './types.js'
 
 /**
  * Per-link rules from `spec/record-model.md` §4 and §6 (version 1) and
@@ -22,7 +22,7 @@ export interface LinkContext {
 }
 
 export function checkGenesisState(s: DppState): string | null {
-  if (s.version !== '1') {
+  if (s.version === '2') {
     if (s.op !== 'ISSUE') return `genesis op must be ISSUE, got ${s.op}`
     if (s.previousTxid !== '' || s.previousOutputIndex != null) return 'genesis previous_outpoint must be empty'
     if (s.lineageGenesis != null) return 'genesis lineage_genesis must be empty'
@@ -77,13 +77,9 @@ function expectedLineageGenesis(prev: DppState, prevTxid: string, link: LinkCont
   return { txid: prevTxid, outputIndex: link.prevOutputIndex }
 }
 
-function checkTransitionSeventeen(prev: DppState, next: SeventeenFieldState, prevTxid: string, link: LinkContext): string | null {
+function checkTransitionV2(prev: DppState, next: DppStateV2, prevTxid: string, link: LinkContext): string | null {
   if (next.op === 'ISSUE') return 'ISSUE is allowed at genesis only'
-  // A carried lineage begins at its own deploy and stays carried
-  // (`spec/token-carrier.md` §6 rule 7): no version crosses into or out of it.
-  if (next.version === '3' && prev.version !== '3') return 'a version 3 state follows only a version 3 state'
-  if (next.version === '2' && prev.version === '3') return 'a version 2 state cannot follow a version 3 state'
-  if (prev.version !== '1' && prev.op === 'RETIRE') return 'the lineage is retired: no state may follow RETIRE'
+  if (prev.version === '2' && prev.op === 'RETIRE') return 'the lineage is retired: no state may follow RETIRE'
   if (prev.version === '1' && next.op !== 'UPDATE') {
     return 'a version 1 state is followed only by a version 2 UPDATE, the upgrade transition'
   }
@@ -121,10 +117,7 @@ function checkTransitionSeventeen(prev: DppState, next: SeventeenFieldState, pre
  * a version 2 successor binds the predecessor outpoint and the lineage
  * genesis, refuses to follow a RETIRE, proves control of the predecessor, and
  * may follow a version 1 predecessor only as the UPDATE that upgrades the
- * lineage (`spec/record-model-v2.md` §8). A version 3 successor keeps every
- * version 2 rule and follows only a version 3 predecessor
- * (`spec/token-carrier.md` §6); the carrier's own rules run in the verifier,
- * which sees the prefix and the transaction.
+ * lineage (`spec/record-model-v2.md` §8).
  */
 export function checkTransition(
   prev: DppState,
@@ -132,6 +125,6 @@ export function checkTransition(
   prevTxid: string,
   link: LinkContext = {}
 ): string | null {
-  if (next.version !== '1') return checkTransitionSeventeen(prev, next, prevTxid, link)
+  if (next.version === '2') return checkTransitionV2(prev, next, prevTxid, link)
   return checkTransitionV1(prev, next, prevTxid)
 }

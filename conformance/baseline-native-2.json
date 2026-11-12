@@ -27,7 +27,7 @@
       "specification": "spec/rules.md#5-bsv-anchor-v1"
     },
     "verificationReport": {
-      "reportVersion": "1",
+      "reportVersion": "2",
       "schema": "contracts/verification-report.schema.json",
       "checkNames": [
         "recordEncoding",
@@ -355,7 +355,7 @@
     },
     {
       "path": "fixtures/evidence-v1.json",
-      "sha256": "017b42a256bbc55ce977b8733e9ffa707e9ae668dcb316455ebdc47aed7d060e",
+      "sha256": "e6e822753668028abc6a7225347465bf379b711c957564e059f441bb358e9ca5",
       "pins": "the verification report for twenty evidence cases"
     },
     {
@@ -380,8 +380,8 @@
     },
     {
       "path": "fixtures/record-v2.json",
-      "sha256": "d1408b7692779140d1ac37d56d63118f5c6ac34d8670d61ea2be718929f00dd7",
-      "pins": "one record version 2 output with its framed preimages, signatures, keys and ten refusals, two of them the version 3 string on a bare body and an unknown version"
+      "sha256": "801aab6bfe14a329bfdac7c2d88ff1cafde7b514ecbfd9f0f3cf80d431bf1a47",
+      "pins": "one record version 2 output with its framed preimages, signatures, keys and ten refusals, two of them version strings this reader does not know"
     },
     {
       "path": "fixtures/chain-v2.json",
@@ -400,12 +400,12 @@
     },
     {
       "path": "fixtures/evidence-v2.json",
-      "sha256": "2ae75b742d3fedda3fb1f1ef3b9f65c557d31e9ae7451504c301dac8396d59bd",
+      "sha256": "ee22eea1126f3cfd861e5150f9a825a4d28e3ed9a15f945f5b4ae643c17fd2e0",
       "pins": "the verification report for thirteen version 2 evidence cases"
     },
     {
       "path": "fixtures/vectors/dpp/record/v2.json",
-      "sha256": "711bd85f611a6e6a482b06cb3657d1604de15648ab0357104a9f67159ceeba1a",
+      "sha256": "6aa70ebdae6e7ed8e2b9a9fef8f153c5def7496703bb4adf9d648ff1ff908685",
       "pins": "the version 2 record fixture in the stack's vector format"
     },
     {

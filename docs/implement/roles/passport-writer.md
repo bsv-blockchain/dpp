@@ -54,25 +54,7 @@ The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88e
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
-### Reproduce carried states
-
-A carried passport is record version 3 (`spec/token-carrier.md`).
-
-| Part | Target or rule |
-|---|---|
-| Byte fixtures | `fixtures/record-v3.json` and `fixtures/chain-v3.json` |
-| Vector forms | `fixtures/vectors/dpp/record/v3.json` and `fixtures/vectors/dpp/chain/v3.json` |
-| Layout and signing | Version 2 body behind a BRC-162 token prefix, signed under `[1, 'dpp token v3']` and version 3 tags |
-| Genesis | Carrier at output 0; turn off wallet output randomisation for that one action |
-| Funding | Every carried output holds one satoshi |
-
-The output index and funding rules are additional duties beyond the lifecycle below. Run:
-
-```sh
-node examples/lifecycle-v3.mjs
-```
-
-This offline exercise uses fresh keys for issue, update, transfer and retirement, then tests carrier refusals and burn. It ends with `Every sentence above holds.`
+Record version 3, the token carrier, is parked outside the standard ([parked material](../../reference/parked/token-carrier/README.md)), and a writer writes no version 3 state.
 
 ## The write, step by step
 

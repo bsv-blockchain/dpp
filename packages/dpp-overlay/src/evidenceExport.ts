@@ -73,7 +73,7 @@ export interface EvidenceExportRequest {
   /** The operator profile this index runs, as its capability document names it (`operatorProfileFor`); the policy's own profile when unset. */
   operatorProfile?: string
   serviceIdentityKey?: string
-  /** The version 2 and 3 options the node admits under (CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT). */
+  /** The version 2 options the node admits under (CONTROL_AUTHORITIES, ACCEPTANCE_COMMITMENT). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
   chainTracker?: ChainTracker | 'scripts only'

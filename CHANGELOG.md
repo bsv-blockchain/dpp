@@ -12,6 +12,14 @@ The renamed packages, protocol and profiles beta.9, overlay beta.12 and credenti
 
 ## Repository history
 
+### 2026-11-12, record version 3 is parked and the report moves to version 2
+
+- Record version 3, the token carrier, is parked at `docs/reference/parked/token-carrier/` with its specification, fixtures, vectors, the proposed `native-baseline@3` and the lifecycle example, after a read-only mainnet scan found no carrier state on chain. The other specifications say in one sentence that it is parked.
+- `@bsv/dpp-protocol` reads and writes record versions 1 and 2 only: the carrier module, the version 3 constants, preimages and codec branches and each state's `tokenId` are gone, and a seventeen-field output carrying `3` is an unsupported version again.
+- `@bsv/dpp-overlay` drops version 3 admission, the `carrier-prefix-invalid` and `token-id-mismatch` refusals, the `tokenId` lookup and its index, and the capability `dpp-record` version `3`; the `tm_dpp` metadata version is `4.0.0`. The overlay contract keeps `0.14.0-draft`, which no release has published.
+- The verification report is version 2. Its schema drops `carrier-prefix-invalid`, `token-id-mismatch`, `consent-not-proven` and `resource-limit`, which nothing produces, and the registry contract's report is version 2 within the unpublished `0.6.0`. `contracts/verification-report-v1.schema.json` keeps version 1, with a distinct `$id`, so that a stored version 1 report still validates; `native-baseline@1` keeps naming report version 1.
+- Fixtures regenerated: every report in `evidence-v1.json`, `evidence-v2.json` and `battery-lifecycle-v1.json` reads `reportVersion` `2` with nothing else changed, and two descriptions in `evidence-v2.json` no longer mention version 3; `record-v2.json` pins version `3` as `unsupportedVersion` again, with the vector `refuse-version-three-without-prefix` kept skipped. The ten `CAR` rows and the claim `passport-reader-native-baseline-3` move to `docs/reference/parked/ledger-archive.json`.
+
 ### 2026-11-12, one custody profile: the owner-signed transfer is cut and holder instructions are parked
 
 - The owner-signed transfer for version 1 lineages (`owner-consent@1`, `spec/custody.md` §4) is removed: a version 1 `TRANSFER` has no control rule, and record version 2 proves control on every later state. The BRC-69 linkage scalar, its one spelling and the wallet operation that reveals it move into `spec/record-model-v2.md` §6. `owner_linkage` stays reserved with no meaning.

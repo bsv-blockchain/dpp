@@ -16,7 +16,7 @@
  *                  and, for a refused state, X-Admission-Refusal naming why
  *                  (topic=code, the codes in tmDpp.ts)
  *                  Authorization: Bearer <token>   when SUBMIT_TOKEN is set
- *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid"|"tokenId"|"gs1Key": "..."}}
+ *   POST /lookup   {"service":"ls_dpp","query":{"passportId"|"uid"|"gs1Key": "..."}}
  *                  {"service":"ls_uora_dpp","query":{"issuer":"did:key:z..."}}
  *                                                  -> {type:"output-list",
  *                                                      outputs:[{beef,outputIndex}]}
@@ -167,7 +167,7 @@ export interface NodeComponents {
   publisherPolicy?: PublisherPolicyConfig
   serviceIdentityKey?: string
   anchorServiceKeys?: string[]
-  /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 and 3 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
+  /** CONTROL_AUTHORITIES and ACCEPTANCE_COMMITMENT, the version 2 admission options (`spec/record-model-v2.md` §6, `spec/managed-custody.md`). */
   controlAuthorities?: string[]
   managedAcceptance?: boolean
   /**
@@ -1408,7 +1408,7 @@ export function anchorServiceKeys(): string[] {
  * the boot fails rather than admitting what the operator meant to refuse.
  */
 const REMOVED_CUSTODY_SETTINGS: Array<{ name: string; why: string }> = [
-  { name: 'OWNER_CONSENT', why: 'the owner-signed transfer for version 1 lineages was removed from the standard; name recovery keys for version 2 and 3 states in CONTROL_AUTHORITIES' },
+  { name: 'OWNER_CONSENT', why: 'the owner-signed transfer for version 1 lineages was removed from the standard; name recovery keys for version 2 states in CONTROL_AUTHORITIES' },
   { name: 'TRANSFER_AUTHORITIES', why: 'the owner-signed transfer for version 1 lineages was removed from the standard; where CONTROL_AUTHORITIES was unset, these keys were also the index\'s control authorities, so move them to CONTROL_AUTHORITIES to keep admitting the same states' },
   { name: 'INSTRUCTION_COMMITMENT', why: 'the instruction rule of the managed-custody profile is parked outside the standard' },
 ]
@@ -1420,11 +1420,11 @@ export function refuseRemovedCustodySettings(env: NodeJS.ProcessEnv = process.en
 }
 
 /**
- * The version 2 and 3 admission options (`spec/record-model-v2.md` §6,
+ * The version 2 admission options (`spec/record-model-v2.md` §6,
  * `spec/managed-custody.md`). ACCEPTANCE_COMMITMENT=required selects the
- * managed-custody profile: a version 2 or 3 TRANSFER is admitted only with its
+ * managed-custody profile: a version 2 TRANSFER is admitted only with its
  * acceptance commitment. CONTROL_AUTHORITIES names, comma-separated, the
- * identity keys whose version 2 or 3 UPDATE, TRANSFER or RETIRE is admitted
+ * identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted
  * without equality or linkage (recovery); unset, there are none. Public keys
  * only, validated when the topic manager is built; any other value of
  * ACCEPTANCE_COMMITMENT fails the boot.
@@ -1617,7 +1617,7 @@ async function engineFromEnvironment(
       : `${TOPIC} admits a version 2 TRANSFER with or without an acceptance commitment (ACCEPTANCE_COMMITMENT is unset)`
   )
   if (versionTwo.controlAuthorities != null) {
-    console.log(`${TOPIC} admits version 2 and 3 states by the control authorities ${versionTwo.controlAuthorities.join(', ')} without equality or linkage`)
+    console.log(`${TOPIC} admits version 2 states by the control authorities ${versionTwo.controlAuthorities.join(', ')} without equality or linkage`)
   }
 
   const sync = syncSettingsFromEnvironment()

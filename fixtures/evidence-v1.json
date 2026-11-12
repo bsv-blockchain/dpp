@@ -27,7 +27,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -632,7 +632,7 @@
         }
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -1198,7 +1198,7 @@
         "headerSource": "unavailable"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -1730,7 +1730,7 @@
         }
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -2095,7 +2095,7 @@
         }
       ],
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -2554,7 +2554,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -2910,7 +2910,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -3084,7 +3084,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -3344,7 +3344,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-002",
@@ -3877,7 +3877,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -4384,7 +4384,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -4912,7 +4912,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -5434,7 +5434,7 @@
         }
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -5954,7 +5954,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -6143,7 +6143,7 @@
         }
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -6309,7 +6309,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -6479,7 +6479,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -6656,7 +6656,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -6822,7 +6822,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",
@@ -6972,7 +6972,7 @@
         "chainTracker": "scripts-only"
       },
       "report": {
-        "reportVersion": "1",
+        "reportVersion": "2",
         "checkedAt": "2026-09-05T12:00:00Z",
         "expectedSubject": {
           "passportId": "https://id.gs1.org/01/09506000134352/21/JERSEY-001",

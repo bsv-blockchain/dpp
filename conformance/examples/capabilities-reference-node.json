@@ -18,10 +18,6 @@
       "version": "2"
     },
     {
-      "id": "dpp-record",
-      "version": "3"
-    },
-    {
       "id": "bsv-attestation-anchor",
       "version": "1"
     },

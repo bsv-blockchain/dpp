@@ -17,7 +17,7 @@ Readers and application teams can use this page to interpret a report's sixteen 
 
 | Property | What it holds |
 |---|---|
-| `reportVersion` | `1` |
+| `reportVersion` | `2` |
 | `checkedAt` | The time the report was made |
 | `expectedSubject` | The passport you asked about, and where that expectation came from ([below](#supply-the-expected-subject)) |
 | `suppliedTip` | The newest state in the history you supplied |

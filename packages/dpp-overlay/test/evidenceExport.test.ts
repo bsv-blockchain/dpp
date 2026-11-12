@@ -131,7 +131,7 @@ describe('GET /evidence-package', () => {
     expect(observations.snapshotId).toBe(manifest.completeness.snapshots[0].snapshotId)
 
     const report = parseJsonFile(envelope, 'reports/verification-report.json') as EvidenceReport
-    expect(report.reportVersion).toBe('1')
+    expect(report.reportVersion).toBe('2')
     expect(report.checkedAt).toBe(NOW.toISOString())
     expect(report.expectedSubject).toEqual({ passportId: F.passportId, source: 'request-context' })
     expect(report.suppliedTip).toEqual({ txid: F.txs[5].id('hex'), outputIndex: 0 })

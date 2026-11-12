@@ -17,7 +17,6 @@ import {
   MANAGED_CUSTODY_PROFILE,
   STANDARD_VERSION,
   STANDARD_VERSION_V2,
-  STANDARD_VERSION_V3,
   policyInForceAt,
 } from '@bsv/dpp-protocol'
 import { DPP_TOPIC } from './tmDpp.js'
@@ -133,7 +132,7 @@ export interface CapabilityInput {
   serviceIdentityKey?: string
   /** ANCHOR_SERVICE_KEYS: the anchoring services admitted when no chain is configured. */
   anchorServiceKeys?: string[]
-  /** CONTROL_AUTHORITIES: identity keys whose version 2 or 3 UPDATE, TRANSFER or RETIRE is admitted without equality or linkage; none when unset. */
+  /** CONTROL_AUTHORITIES: identity keys whose version 2 UPDATE, TRANSFER or RETIRE is admitted without equality or linkage; none when unset. */
   controlAuthorities?: string[]
   /** ACCEPTANCE_COMMITMENT=required: the managed-custody profile is selected, so a version 2 TRANSFER must carry its acceptance commitment. */
   managedAcceptance?: boolean
@@ -264,7 +263,6 @@ export function buildCapabilities(input: CapabilityInput): CapabilityDocument {
     protocols: [
       { id: 'dpp-record', version: STANDARD_VERSION },
       { id: 'dpp-record', version: STANDARD_VERSION_V2 },
-      { id: 'dpp-record', version: STANDARD_VERSION_V3 },
       protocolFromPrefix(ATTESTATION_ANCHOR_PREFIX),
       { id: 'overlay-http', version: OVERLAY_HTTP_CONTRACT_VERSION },
     ],

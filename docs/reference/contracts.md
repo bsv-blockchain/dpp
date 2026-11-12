@@ -168,6 +168,7 @@ The registry contract also defines GS1 resolver routes; [GS1 discovery](../inter
 | [capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/capabilities.schema.json) | An index's or implementation's capability document |
 | [publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/publisher-policy.schema.json) | One version of a publisher policy, `dpp-publisher-policy@1` |
 | [verification-report.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/verification-report.schema.json) | The report a reader produces for one passport |
+| `contracts/verification-report-v1.schema.json` | Report version 1, for validating a stored version 1 report |
 | [paginated-history.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/paginated-history.schema.json) | One page of `GET /history` |
 | [evidence-package.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-package.schema.json) | The signed manifest of an evidence package, `dpp-evidence-package@1` |
 | [evidence-export.schema.json](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/contracts/evidence-export.schema.json) | One part of the complete export, with its coverage record |

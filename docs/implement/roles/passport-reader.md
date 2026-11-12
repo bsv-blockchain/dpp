@@ -37,28 +37,7 @@ Implement these rules and test each with its fixture:
 6. **Check inclusion** ([record model](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model.md) section 8). For each state with a merkle path (a BUMP, the BSV Unified Merkle Path format of [BRC-74](https://bsv.brc.dev/transactions/0074)), compute the root and ask the header source whether it is the root at that height. An unevaluated proof is pending, never a failure. Separate source observations about the latest state from what bytes prove (verification section 5).
 7. **Return the report** (verification sections 2, 4, 5 and 6): sixteen checks in order, observations and limits. Run `evidence-v1.json` and `evidence-v2.json` before adding a user interface or an application decision; [what a matching report is](../fixture-runner.md#what-a-matching-report-is) says which parts must match.
 
-### Apply the version 3 rules
-
-Record version 3 carries the same seventeen-field body behind a BRC-162 token prefix (`spec/token-carrier.md`).
-
-| Part | Rule |
-|---|---|
-| Recognition | Recognise the carrier from the first chunk |
-| Prefix layout | Token id or `OP_0`, amount `OP_1`, then `OP_2DROP`, before the locking key |
-| Prefix limits | 32-byte id in internal byte order; amount exactly one; no payload beyond an empty slot on the genesis |
-| Body | Read as version 2 with version string `3`, protocol `[1, 'dpp token v3']` and version 3 tags |
-| Lineage | Genesis is a deploy at output 0; every later state's token id names it |
-| Added linkage reasons | `carrier-prefix-invalid` and `token-id-mismatch` |
-| Burn | A tip spend with no carrier output: no state, reported as lineage ended without a `RETIRE` |
-| Fixtures | `record-v3.json`, `chain-v3.json` and `evidence-v3.json` |
-
-Run the reference against those fixtures:
-
-```sh
-node examples/verify-passport.mjs --fixture --version=3 --report
-```
-
-Expect one `ok:` line per refusal and report case.
+Record version 3, the token carrier, is parked outside the standard ([parked material](../../reference/parked/token-carrier/README.md)): a reader decodes versions 1 and 2, and an output in the carried layout is no DPP output.
 
 [Run the fixtures](../fixture-runner.md) explains how to load each file and the policy each case runs under.
 

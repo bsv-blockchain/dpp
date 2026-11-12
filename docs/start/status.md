@@ -36,8 +36,8 @@ Both starters were published on 20 October and pin generated projects to the pub
 ## Works today
 
 - **Create an application:** the published [application starter](../packages/create-dpp-app.md). It has an offline lifecycle exercise; live writes need a funded wallet and index access.
-- **Read and verify** record versions 1, 2 and 3. Reports cover encoding, signatures, linkage, inclusion, subject binding, claims, anchors and evidence, explicitly showing missing evidence ([quick start](../quick-start.md#read-a-live-passport)).
-- **Write** record versions 2 and 3 with a BRC-100 wallet, and continue a version 1 passport through the version 2 upgrade; a new passport never starts at version 1. Announce to an index before sending and push proofs. Version 3 adds the BRC-162 token carrier ([build an application](../packages/build-an-application.md)).
+- **Read and verify** record versions 1 and 2. Reports cover encoding, signatures, linkage, inclusion, subject binding, claims, anchors and evidence, explicitly showing missing evidence ([quick start](../quick-start.md#read-a-live-passport)).
+- **Write** record version 2 with a BRC-100 wallet, and continue a version 1 passport through the version 2 upgrade; a new passport never starts at version 1. Announce to an index before sending and push proofs ([build an application](../packages/build-an-application.md)). Record version 3, the token carrier, is [parked](../reference/parked/token-carrier/README.md).
 - **Run an index** with Docker from the [Compose preset](../operate/README.md): lookups, history, evidence packages, complete exports, proof ingestion and configured-peer synchronisation. Operators can select SHIP peer discovery, SHIP/SLAP advertising and retries for outputs left behind ([federation](../operate/federation.md)).
 - **Sign, anchor and validate claims** about a passport, kept apart from the passport itself ([passport states and attestations](../learn/passport-and-attestations.md)).
 - **Carry product data** under the current `general@2`, `battery@2` and `textile@2` profiles, with version 4 drafts to evaluate ([profiles](../profiles/README.md)).

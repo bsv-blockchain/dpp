@@ -30,7 +30,7 @@ const statuses = (report: EvidenceReport): Record<string, string> =>
 describe('verifyPassportEvidence, the one verification contract (spec/verification.md)', () => {
   it('reports exactly the sixteen checks in order, versioned, at the injected time', async () => {
     const report = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, publisherKeys: [F.serverKey], chainTracker: 'scripts only' })
-    expect(report.reportVersion).toBe('1')
+    expect(report.reportVersion).toBe('2')
     expect(report.checkedAt).toBe(CHECKED_AT)
     expect(report.checks.map((c) => c.name)).toEqual([...EVIDENCE_CHECK_NAMES])
     expect(report.policyId).toBe('none')

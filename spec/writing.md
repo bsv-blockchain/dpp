@@ -34,7 +34,7 @@ The writer's wallet broadcasts: sending is the wallet's `createAction`, and how 
 
 The status vocabulary the standard needs is §4's. A broadcaster's finer distinctions, how many nodes have seen a transaction or how deep its block is, are the broadcaster's opinion and not a verifier's finding, and the standard names no confirmation depth: a state is proven when its merkle path validates against block headers ([`record-model.md`](record-model.md) §8), and `pending` before, and a reorganisation that refutes a proof returns it to `pending` (§9). A deployment may show its users whatever a broadcaster reports; it may not make the record's truth depend on it.
 
-A carried state ([`token-carrier.md`](token-carrier.md) §8) adds two rules to the action the wallet makes. The genesis's carrier output is output 0, because a deploy under BRC-162 is output 0 of its transaction and a reader refuses a genesis anywhere else, so the writer sets the action's output randomisation off for that one transaction and leaves it on for every later one, where a carried output may sit at any index. And every carried output, genesis and later, holds one satoshi.
+Record version 3, the token carrier, is parked outside the standard ([`../docs/reference/parked/token-carrier/`](../docs/reference/parked/token-carrier/README.md)).
 
 ## 6. Announce
 

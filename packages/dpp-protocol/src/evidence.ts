@@ -11,7 +11,7 @@ import { didKeyFromIdentityKey } from './did.js'
 import { inspectChain, type ChainInspection, type StateInspection } from './verifyChain.js'
 import { verifyPolicyChain, type PublisherPolicy } from './publisherPolicy.js'
 import { bindAcceptanceToState, inspectManagedAcceptance, type ManagedAcceptanceRecord } from './acceptance.js'
-import type { Outpoint, SeventeenFieldState } from './types.js'
+import type { DppStateV2, Outpoint } from './types.js'
 
 /**
  * The one verification contract (`spec/verification.md`): sixteen named checks,
@@ -27,7 +27,14 @@ import type { Outpoint, SeventeenFieldState } from './types.js'
  * passed because it was not looked at.
  */
 
-export const REPORT_VERSION = '1' as const
+/**
+ * Version 2 of the report, from 12 November 2026. It drops the shared reason
+ * codes nothing produces any more (those of the parked token carrier, the
+ * removed owner-signed transfer and the parked instruction record, and
+ * `resource-limit`) and the per-state `ownerConsentValid` and `tokenId`;
+ * everything else is version 1's.
+ */
+export const REPORT_VERSION = '2' as const
 
 export const EVIDENCE_CHECK_NAMES = [
   'recordEncoding',
@@ -337,7 +344,6 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
     index: s.index,
     txid: s.txid,
     version: s.version,
-    ...(s.tokenId == null ? {} : { tokenId: s.tokenId }),
     op: s.op,
     userSignatureValid: s.userSignatureValid,
     serverSignatureValid: s.serverSignatureValid,
@@ -416,12 +422,10 @@ function tokenChecks(txs: Transaction[] | undefined, inspection: ChainInspection
  * and a person reads the sentence. Exported so an index refusing the same
  * link says the same word a verifier would.
  */
-export function linkageReasonCode(message: string): 'lineage-retired' | 'control-not-proven' | 'version-transition-invalid' | 'token-id-mismatch' | 'carrier-prefix-invalid' | 'link-broken' {
+export function linkageReasonCode(message: string): 'lineage-retired' | 'control-not-proven' | 'version-transition-invalid' | 'link-broken' {
   if (message.includes('retired')) return 'lineage-retired'
-  if (message.includes('token id names') || message.includes('token id cannot be checked')) return 'token-id-mismatch'
-  if (message.includes('is a deploy at output 0') || message.includes('empty token id') || message.includes('lineage token id')) return 'carrier-prefix-invalid'
   if (message.includes('control_linkage') || message.includes('not the controller')) return 'control-not-proven'
-  if (message.includes('version 1') || message.includes('version 2') || message.includes('version 3') || message.includes('upgrade transition')) return 'version-transition-invalid'
+  if (message.includes('version 1') || message.includes('version 2') || message.includes('upgrade transition')) return 'version-transition-invalid'
   return 'link-broken'
 }
 
@@ -821,7 +825,7 @@ export async function verifyPassportEvidence(
   const acceptanceParts: PartialCheck[] = []
   const acceptanceCustodianQuestions: AuthorityQuestion[] = []
   const committedTransfers = (token.inspection?.states ?? []).filter(
-    (s): s is StateInspection & { state: SeventeenFieldState } => s.state.version !== '1' && s.state.op === 'TRANSFER' && s.state.authorisationCommitment !== ''
+    (s): s is StateInspection & { state: DppStateV2 } => s.state.version === '2' && s.state.op === 'TRANSFER' && s.state.authorisationCommitment !== ''
   )
   const suppliedAcceptances = (evidence.acceptanceRecords ?? []).map((value, index) => ({ index, value, inspection: inspectManagedAcceptance(value) }))
   for (const transfer of committedTransfers) {
@@ -862,7 +866,7 @@ export async function verifyPassportEvidence(
   // After a committed TRANSFER the holder may be a managed identity whose
   // keys the custodian keeps, so nothing on the chain shows that a later
   // UPDATE or RETIRE was asked for (`spec/managed-custody.md` §6).
-  const firstCommitted = (token.inspection?.states ?? []).findIndex((s) => s.state.version !== '1' && s.state.op === 'TRANSFER' && s.state.authorisationCommitment !== '')
+  const firstCommitted = (token.inspection?.states ?? []).findIndex((s) => s.state.version === '2' && s.state.op === 'TRANSFER' && s.state.authorisationCommitment !== '')
   if (firstCommitted >= 0 && (token.inspection?.states ?? []).slice(firstCommitted + 1).some((s) => s.state.op === 'UPDATE' || s.state.op === 'RETIRE')) {
     limits.push('After a committed TRANSFER, an UPDATE or RETIRE the custodian writes for a managed holder depends on custody: the chain shows that the custodian acted, not that the holder asked.')
   }
@@ -954,9 +958,6 @@ export async function verifyPassportEvidence(
   }
   if (forks.length > 0) {
     limits.push('Two valid successors of one state were supplied; which continuation is recognised is decided by accepted-chain spending evidence, never by this report or by counting sources.')
-  }
-  if ((token.inspection?.states ?? []).some((s) => s.version === '3')) {
-    limits.push('Version 3 states are carried as token outputs; a reader that follows the token id alone verifies neither the body\'s signatures nor its control proof, and a wallet\'s display of the token says nothing about the passport.')
   }
   if ((token.inspection?.states ?? []).some((s) => s.version === '1')) {
     limits.push('Version 1 states sign an unframed preimage: their field boundaries are established by field validation and the chain rules, not by the signature alone, and a version 1 state proves no control of the state it spends; control is proven from the version 2 upgrade on.')

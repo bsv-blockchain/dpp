@@ -4,9 +4,8 @@ import { verifyServerSignature, verifyUserSignature } from './signatures.js'
 import { publisherKeysAt, type PublisherPolicy } from './publisherPolicy.js'
 import { checkControl, normaliseControlAuthorities } from './owner.js'
 import { checkGenesisState, checkTransition } from './transition.js'
-import { checkCarrier, tokenIdOf } from './carrier.js'
 import type { DppVersion } from './constants.js'
-import type { CarrierPrefix, ChainVerifyResult, DppState, Outpoint, StateCheck } from './types.js'
+import type { ChainVerifyResult, DppState, Outpoint, StateCheck } from './types.js'
 
 export interface VerifyChainOptions {
   /**
@@ -22,7 +21,7 @@ export interface VerifyChainOptions {
    */
   serverIdentityKey?: string
   /**
-   * Identity keys the policy names as control authorities for version 2 and 3
+   * Identity keys the policy names as control authorities for version 2
    * states (`spec/record-model-v2.md` §6): an UPDATE, TRANSFER or RETIRE by
    * one of them passes without equality or linkage (recovery). Empty by
    * default, which is the record model's baseline. A malformed key throws
@@ -43,8 +42,6 @@ export interface DppOutputRef {
   state: DppState
   outputIndex: number
   lockingPublicKey: PublicKey
-  /** The token prefix a version 3 state is carried behind; absent for versions 1 and 2. */
-  carrier?: CarrierPrefix
 }
 
 /** What a reader reports when the managed-custody profile is selected and a version 2 TRANSFER carries no commitment. The text names no version: the rule is the same under every version of the profile. */
@@ -59,7 +56,7 @@ export function findDppOutputs(tx: Transaction): DppOutputRef[] {
   tx.outputs.forEach((output, outputIndex) => {
     const parsed = tryParseDppOutput(output.lockingScript)
     if (parsed != null) {
-      refs.push({ state: parsed.state, outputIndex, lockingPublicKey: parsed.lockingPublicKey, ...(parsed.carrier == null ? {} : { carrier: parsed.carrier }) })
+      refs.push({ state: parsed.state, outputIndex, lockingPublicKey: parsed.lockingPublicKey })
     }
   })
   return refs
@@ -94,8 +91,6 @@ export interface StateInspection extends StateCheck {
   state: DppState
   /** The record version the state carries. */
   version: DppVersion
-  /** The token id of a carried lineage, `<deploy txid>_0`; present on every version 3 state (`spec/token-carrier.md` §5). */
-  tokenId?: string
   linkError: string | null
   /** The managed-custody profile's refusal of a TRANSFER without its acceptance commitment, when the profile is selected. */
   commitmentError: string | null
@@ -168,7 +163,7 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
     if (refs.length !== 1) {
       return stop(i, txid, 'encoding', `exactly one DPP output required, found ${refs.length}`)
     }
-    const { state, outputIndex, carrier } = refs[0]
+    const { state, outputIndex } = refs[0]
 
     const userSignatureValid = verifyUserSignature(state)
     const serverSignatureValid = !publisherSelected
@@ -179,16 +174,11 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
 
     let linkError: string | null
     let controlValid: boolean | null = null
-    // The carrier's own rules first (`spec/token-carrier.md` §6, §9): the
-    // prefix's role against the state's position and its token id against
-    // the lineage genesis. The codec held the prefix to its shape already.
-    const carrierError =
-      carrier == null ? null : checkCarrier(carrier, { genesis: prev == null, outputIndex, ...(genesis == null ? {} : { lineageGenesis: genesis }) })
     if (prev == null) {
-      linkError = checkGenesisState(state) ?? carrierError
+      linkError = checkGenesisState(state)
       genesis = { txid, outputIndex }
     } else {
-      linkError = carrierError ?? checkTransition(prev.state, state, prev.txid, {
+      linkError = checkTransition(prev.state, state, prev.txid, {
         prevOutputIndex: prev.outputIndex,
         lineageGenesis: genesis,
         authorities: controlAuthorities,
@@ -203,14 +193,14 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       }
       // The version 2 control proof is part of the link; it is reported on
       // its own as well, so a report can say which rule a refused state broke.
-      if (state.version !== '1') controlValid = checkControl(prev.state, state, controlAuthorities) == null
+      if (state.version === '2') controlValid = checkControl(prev.state, state, controlAuthorities) == null
     }
 
-    // The managed-custody profile's requirement on a version 2 or 3 TRANSFER
+    // The managed-custody profile's requirement on a version 2 TRANSFER
     // whose link holds (`spec/managed-custody.md` §4), run only where the
     // profile is selected.
     let commitmentError: string | null = null
-    if (prev != null && linkError == null && state.op === 'TRANSFER' && state.version !== '1' && options.managedAcceptance === true && state.authorisationCommitment === '') {
+    if (prev != null && linkError == null && state.op === 'TRANSFER' && state.version === '2' && options.managedAcceptance === true && state.authorisationCommitment === '') {
       commitmentError = ACCEPTANCE_COMMITMENT_REFUSAL
     }
 
@@ -282,7 +272,6 @@ export async function inspectChain(txs: Transaction[], options: InspectChainOpti
       outputIndex,
       state,
       version: state.version,
-      ...(state.version === '3' && genesis != null ? { tokenId: tokenIdOf(genesis) } : {}),
       txid,
       op: state.op,
       userSignatureValid,
