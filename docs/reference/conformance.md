@@ -18,12 +18,12 @@ For optional execution:
 |---|---|
 | Requirement | One rule from a specification, with its layer and the roles it binds. |
 | Ledger | [`conformance/manifest.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json): every requirement with its source, the code and tests behind it, retained evidence and a status such as `tested`, `implemented`, `gap` or `unassessed`. Each source is pinned by its digest. |
-| Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/baseline-native-2.json). |
+| Baseline | One complete recommended selection of the current native formats, for example [`conformance/baseline-native-2.json`](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/conformance/baseline-native-2.json). |
 | Claim | A release's conformance statement, separate from a signed product claim, such as "a passport reader conforms to `native-baseline@2`", which is true only if every requirement row it needs is tested or better. |
 | Selection | The claims one release requires and the claims it withholds, for example `conformance/selections/dpp-release-2026-11.json` for the current release. |
 | Withheld | A claim the release deliberately does not make, with the reason. Withheld claims are part of the result, not a failure. |
 
-The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the fields and statuses; the [conformance specification](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) define how a claim is made and reported.
+The [ledger schema](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.schema.json) defines the fields and statuses; the [conformance specification](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/conformance.md) and [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) define how a claim is made and reported.
 
 ## Run the checks
 

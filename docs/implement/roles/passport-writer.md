@@ -50,7 +50,7 @@ node examples/write-passport.mjs --dry-run
 
 It prints `ok:` lines showing that the locking script and transaction equal state 1 of `fixtures/chain-v1.json` byte for byte, that the writer's own check accepts the state, and that the same check refuses a forbidden state before anything would be sent. It then prints what it would announce, send, prove and retain.
 
-The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/examples/write-passport.mjs) remains as a dry run only: a writer must not start a new lineage at version 1, so without `--dry-run` it refuses and names the version 2 writer. Removing `--dry-run` from the version 2 writer selects a live wallet/service workflow. The invocation below maps the version 2 inputs; each file's usage lists its arguments.
+The [version 2 writer](https://github.com/bsv-blockchain/dpp/blob/aea0afb775c88ecb72bcb1ef83c1c2f03cf7b6c7/examples/write-passport-v2.mjs) is the complete issue/update example used by [build an application](../../packages/build-an-application.md#3-write-a-passport). The [version 1 writer](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/examples/write-passport.mjs) remains as a dry run only: a writer must not start a new lineage at version 1, so without `--dry-run` it refuses and names the version 2 writer. Removing `--dry-run` from the version 2 writer selects a live wallet/service workflow. The invocation below maps the version 2 inputs; each file's usage lists its arguments.
 
 The version 2 byte targets are `fixtures/record-v2.json` (one state) and `fixtures/chain-v2.json` (five states). Their vector forms, `fixtures/vectors/dpp/record/v2.json` and `fixtures/vectors/dpp/chain/v2.json`, publish the synthetic test private keys in their positive vectors, so a writer in any language reproduces every pinned byte ([run the fixtures](../fixture-runner.md#the-vector-form)).
 
@@ -76,7 +76,7 @@ This offline exercise uses fresh keys for issue, update, transfer and retirement
 
 ## The write, step by step
 
-Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
+Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
 
 1. **Build the state and its transaction, unsent** (section 3). Validate the payload under its profile. Build against the tip you mean to spend, the passport's newest state, which the index's `ls_dpp` lookup returns.
 2. **Check it with the reader's rules** (section 2). Decode the locking script you built, check the chain invariants against the tip it spends, verify both signatures, and under the managed custody profile bind the acceptance record to the `TRANSFER`. A state that fails is never sent.
@@ -119,7 +119,7 @@ An operator running the Compose preset hands you a connection file from `dpp-ind
 
 ## Prove it: the writer's self-report
 
-Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
+Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
 
 1. Section 1: no new lineage starts with a version 1 genesis, and a version 1 lineage continues through the version 2 upgrade.
 2. Section 2: the reader's check runs before any send or announcement.
@@ -147,7 +147,7 @@ These standard and deployment questions remain open. [Known limitations](../../o
 
 ## Exact implementation sources
 
-- [spec/writing.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/writing.md)
+- [spec/writing.md](https://github.com/bsv-blockchain/dpp/blob/5bf77e7a858d7b380a0ebcd0f46d2d5eea6393cf/spec/writing.md)
 - [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/record-model-v2.md)
 - [spec/custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/custody.md)
 - [spec/managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md)
