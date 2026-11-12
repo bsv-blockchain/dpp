@@ -52,7 +52,7 @@ node examples/lifecycle-v2.mjs
 
 Expect no `FAIL:` or `FAILS:` lines and exit status 0. The lifecycle exercise ends `Every sentence above holds.` No wallet, funds or network is needed; fixture inclusion remains pending or `unknown`. Stop on an unexpected failure before changing the deployment.
 
-The [managed-custody specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/managed-custody.md) records the signature rules and compatibility boundary. The second implementing party's written acceptance of the version 2 signed shape remains outstanding. Testing these changes does not upgrade the hosted services or establish a completed cross-implementation trial.
+The [managed-custody specification](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md) records the signature rules and compatibility boundary. The second implementing party's written acceptance of the version 2 signed shape remains outstanding. Testing these changes does not upgrade the hosted services or establish a completed cross-implementation trial.
 
 ## Rename dpp-overlay-topics to dpp-overlay, and vsc to dpp-credentials
 

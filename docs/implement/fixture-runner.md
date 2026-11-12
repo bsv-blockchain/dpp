@@ -73,7 +73,7 @@ Do not compare whole reports as JSON. Some fields are free text or implementatio
 
 | Part of the report | How to compare |
 |---|---|
-| `checks`: `name`, `status` and `reasonCode` | Must match. Sixteen entries, in the order of [verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md) section 4. A pass may carry no `reasonCode`. |
+| `checks`: `name`, `status` and `reasonCode` | Must match. Sixteen entries, in the order of [verification](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/verification.md) section 4. A pass may carry no `reasonCode`. |
 | `checks[].scope` | Must match where the fixture gives one, such as `{"stateIndex":2}` |
 | `reportVersion`, `checkedAt`, `expectedSubject`, `suppliedTip`, `policyId` | Must match |
 | `observations.latestState` and `observations.candidateOutpoints` | Must match |
@@ -81,7 +81,7 @@ Do not compare whole reports as JSON. Some fields are free text or implementatio
 | `limits` | Check that the sentences verification section 6 requires are present, in your own words; do not compare the text |
 | `checks[].detail`, `observations.queryScope`, `observations.sources[].id` | Not compared |
 
-This is the equivalence the parked [interoperability trial](../reference/parked/interoperability-trial/README.md) asks for in its `reader-equivalence` scenario: "the same check statuses and reason codes". Verification section 8 asks a conforming verifier for "equivalent reports for the pinned fixture cases"; the [fixture guide](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md)'s "equal to `report`" is what the reference itself meets.
+This is the equivalence the parked [interoperability trial](../reference/parked/interoperability-trial/README.md) asks for in its `reader-equivalence` scenario: "the same check statuses and reason codes". Verification section 8 asks a conforming verifier for "equivalent reports for the pinned fixture cases"; the [fixture guide](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/fixtures/README.md)'s "equal to `report`" is what the reference itself meets.
 
 Inspect the required comparison fields for one case:
 
@@ -131,7 +131,7 @@ The formats that have no top-level file are published in the BSV stack's cross-l
 - A refusal in `attestation-anchor/v1.json` expects `{ "accepted": false }`.
 - Vector identifiers are permanent while their file is published: a corrected expectation is a new vector, and the old one is marked skipped with a reason. A runner runs no skipped vector. A file retired whole takes its identifiers with it, and they are not reused.
 
-Until 12 November 2026 the record, chain, historical anchor, acceptance and registration files were also published in the vector form. Those copies restated the top-level files and were removed. The [fixture guide](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md) lists the synthetic test private keys they published, so that a writer reproduces every pinned byte, and says how to build the four historical anchor refusals only `anchor/v3.json` carried.
+Until 12 November 2026 the record, chain, historical anchor, acceptance and registration files were also published in the vector form. Those copies restated the top-level files and were removed. The [fixture guide](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/fixtures/README.md) lists the synthetic test private keys they published, so that a writer reproduces every pinned byte, and says how to build the four historical anchor refusals only `anchor/v3.json` carried.
 
 Optionally check the vector structure with the stack runner:
 
@@ -146,14 +146,14 @@ The programme's Python reader, written from the specification, was parked on 12 
 
 | Need | Source |
 |---|---|
-| Fixture inventory and generation policy | [Fixture guide](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md) |
-| Baseline role and test selection | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/conformance/baseline-native-2.json) |
+| Fixture inventory and generation policy | [Fixture guide](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/fixtures/README.md) |
+| Baseline role and test selection | [Native baseline](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/conformance/baseline-native-2.json) |
 | Cross-language vector format | [Vector format](https://github.com/bsv-blockchain/ts-stack/blob/83a7117b8a02aa16d5a364f186449292810adbd8/conformance/VECTOR-FORMAT.md) |
 | Interoperability vectors | [Interoperability fixture guide](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/README.md) |
-| Record bytes and signing | [Record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md), [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
-| Native claims and anchors | [Attestation rules](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md) |
-| Acceptance and portable evidence | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md), [portable evidence](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) |
-| The report | [Verification](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) |
+| Record bytes and signing | [Record model](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md), [version 2](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md) |
+| Native claims and anchors | [Attestation rules](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/rules.md) |
+| Acceptance and portable evidence | [Managed custody](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md), [portable evidence](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/portable-evidence.md) |
+| The report | [Verification](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/verification.md), [report schema](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/verification-report.schema.json) |
 
 ## Source gaps
 
@@ -162,6 +162,6 @@ These are open questions in the standard's own texts, where two sources do not y
 | Gap | Sources requiring reconciliation | Meanwhile |
 |---|---|---|
 | Canonical key ordering differs between text and implementation | [Native text](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/rules.md#L66), [managed-custody text](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/managed-custody.md#L39), [canonicaliser](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-core/src/canonicalJson.ts#L24-L36) | The texts say code-unit order; the reference sorts by Unicode code point. Every key in every fixture is ASCII, where the two orders agree, so the gap changes no fixture result today. |
-| Pre-1.0 precedence needs a consistent reading | [Governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md), [record-model status](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md#L3) | Where two sources disagree, record both readings and the input that shows the difference. |
+| Pre-1.0 precedence needs a consistent reading | [Governance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/GOVERNANCE.md), [record-model status](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/record-model.md#L3) | Where two sources disagree, record both readings and the input that shows the difference. |
 
 Next: the [passport reader](roles/passport-reader.md) guide, then [report your results](reporting.md).

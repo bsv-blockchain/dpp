@@ -29,7 +29,7 @@ Use the build order below for either route.
 
 ## What an index must serve
 
-The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
+The contract has a core and extensions. The core, `x-dpp-core-version` 1, is what every index serves, and its `x-dpp-profile` sorts it into must, should and may; the core version changes only when the record versions the topics admit change or a must changes. Every other feature is an optional extension under `x-dpp-extensions`, each with its own version, marked on its operations with `x-dpp-extension`. The last column names the [baseline](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/conformance/baseline-native-2.json)'s required rows for the overlay role that each line meets.
 
 | Level | What | Ledger rows |
 |---|---|---|
@@ -92,9 +92,9 @@ Each applies to any new index, whatever its code. [Known limitations](../../oper
 
 - [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/overlay.yaml)
 - [The upstream overlay HTTP contract](https://bsv-blockchain.github.io/ts-stack/specs/overlay-http/)
-- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/services.md)
+- [spec/services.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/services.md)
 - [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md)
-- [spec/exchange.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/spec/exchange.md)
+- [spec/exchange.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/exchange.md)
 - [contracts/capabilities.schema.json](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/capabilities.schema.json) and the [reference index's capability document](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/conformance/examples/capabilities-reference-node.json)
 - [contracts/publisher-policy.schema.json](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/contracts/publisher-policy.schema.json)
 

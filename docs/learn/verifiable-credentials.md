@@ -84,7 +84,7 @@ The reference application, whose source is not public, issues and verifies compa
 | UNTP traceability event | `gap` (row `UNTP-0.7.0-dte`): no event export exists, and the mapping needs actual event evidence |
 | An optional ES256 application signer | Not implemented; the tested ES256K signer does not provide it (row `EXCH-4-signer`) |
 
-The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/external-credential-profile.md) defines the external representation. The BSV DID method does not replace the DID method, proof purpose or curve a profile selects.
+The [external credential profile](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/external-credential-profile.md) defines the external representation. The BSV DID method does not replace the DID method, proof purpose or curve a profile selects.
 
 ## Parked: the VSC SEAL
 

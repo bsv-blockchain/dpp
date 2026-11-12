@@ -31,7 +31,7 @@ Imports and projections are separate from passport operations:
 | External credential verification | Shared-report findings: `externalCredentialProof`, `schema`, `credentialTime`, `credentialStatus`, `issuerAuthority` and `evidenceAvailability`. |
 | Projection | Product view with its own digest for a passport page. |
 
-Keep original sources and mapping results so participants can see what survived exchange. Agree representation and profile version with the receiving party before live exchange. The [interoperability profile schema](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/packages/dpp-profiles/schemas/interoperability-profile.schema.json) and [exchange source](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/exchange.md) define profile selection.
+Keep original sources and mapping results so participants can see what survived exchange. Agree representation and profile version with the receiving party before live exchange. The [interoperability profile schema](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/packages/dpp-profiles/schemas/interoperability-profile.schema.json) and [exchange source](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/exchange.md) define profile selection.
 
 ## Not available in this release
 

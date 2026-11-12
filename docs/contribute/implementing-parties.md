@@ -4,7 +4,7 @@ Organisations building their own implementation can use this page to request an 
 
 | Governance fact | Meaning or current evidence |
 |---|---|
-| Implementing party | Runs a conforming implementation against real records, as [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#roles) defines. |
+| Implementing party | Runs a conforming implementation against real records, as [GOVERNANCE.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/GOVERNANCE.md#roles) defines. |
 | Normative wire changes | A change to a wire shape both parties produce needs each one's written acceptance. |
 | Version 1.0 | Needs at least two independent implementations, neither importing the other, that pass every fixture. |
 | Parties counted today | GOVERNANCE.md counts this repository's reference implementation and the attestation registry. Neither is an independent implementation. |

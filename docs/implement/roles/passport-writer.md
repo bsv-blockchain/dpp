@@ -58,7 +58,7 @@ Record version 3, the token carrier, is parked outside the standard ([parked mat
 
 ## The write, step by step
 
-Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
+Follow the [writing lifecycle](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/writing.md). Record each step in an operation journal so retries continue the same operation.
 
 1. **Build the state and its transaction, unsent** (section 3). Validate the payload under its profile. Build against the tip you mean to spend, the passport's newest state, which the index's `ls_dpp` lookup returns.
 2. **Check it with the reader's rules** (section 2). Decode the locking script you built, check the chain invariants against the tip it spends, verify both signatures, and under the managed custody profile bind the acceptance record to the `TRANSFER`. A state that fails is never sent.
@@ -101,7 +101,7 @@ An operator running the Compose preset hands you a connection file from `dpp-ind
 
 ## Prove it: the writer's self-report
 
-Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
+Fixtures cannot show that a state was checked before sending or its proof retained. Writer conformance therefore needs one sentence per rule in [writing](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/writing.md) section 11, in the [governance](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/GOVERNANCE.md#conformance-reporting) style. Passing every fixture says nothing about a writer without these seven sentences:
 
 1. Section 1: no new lineage starts with a version 1 genesis, and a version 1 lineage continues through the version 2 upgrade.
 2. Section 2: the reader's check runs before any send or announcement.
@@ -129,11 +129,11 @@ These standard and deployment questions remain open. [Known limitations](../../o
 
 ## Exact implementation sources
 
-- [spec/writing.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/writing.md)
+- [spec/writing.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/writing.md)
 - [spec/record-model-v2.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model-v2.md)
-- [spec/custody.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/custody.md)
-- [spec/managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/managed-custody.md)
+- [spec/custody.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/custody.md)
+- [spec/managed-custody.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md)
 - [contracts/overlay.yaml](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/contracts/overlay.yaml)
-- [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/fixtures/README.md)
+- [fixtures/README.md](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/fixtures/README.md)
 
 The [source gaps](../fixture-runner.md#source-gaps) remain open. Next: the [attestation issuer](attestation-issuer.md) if you also sign claims, or [implementing parties](../../contribute/implementing-parties.md) to have the reference verify what you write.
