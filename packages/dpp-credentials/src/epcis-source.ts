@@ -9,8 +9,9 @@
  * event pointers, the canonical event-body digest a duplicate or a conflict is
  * decided by, the local identity of an event that carries no eventID, and the
  * signed source-reference extension a mapped credential carries. Durable
- * retention, idempotency keys, checkpoints and the pull client are the
- * application service's, because they need a store and a network.
+ * retention, idempotency and arrival records are epcis-exchange.ts, over a
+ * store the application supplies. Checkpoints and the pull client are the
+ * application service's, because they need a network.
  *
  * Nothing here strips, coerces, reorders or rewrites a source. A safely
  * parsed document that fails EPCIS validation is returned with its findings
@@ -546,7 +547,9 @@ export function classifyEpcisIdentifier(path: string, value: unknown): EpcisIden
     const qualifiers = (link[2] ?? '').split('/').filter((s) => s !== '');
     for (let i = 0; i + 1 < qualifiers.length; i += 2) {
       const ai = qualifiers[i];
-      const qualifier = decodeURIComponent(qualifiers[i + 1] as string);
+      let qualifier: string;
+      // A qualifier that is not valid percent-encoding is a finding about the identifier, never an exception out of a validation.
+      try { qualifier = decodeURIComponent(qualifiers[i + 1] as string); } catch { finding.problem = 'a qualifier is not valid percent-encoding'; continue; }
       if (ai === '21') finding.serial = qualifier;
       else if (ai === '10') finding.lot = qualifier;
     }

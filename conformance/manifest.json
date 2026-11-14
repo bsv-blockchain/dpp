@@ -272,7 +272,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "f92f0f8a4759ae118c51613b743fa9d5949c4fa9687c169f5f6ddf7a9f73cdce"
+      "digest": "e4292c5948da2a1dfc169b7056310677e5fff397cdb2b25b1276256613f4cecd"
     },
     {
       "id": "spec-external-credential-profile",
@@ -285,10 +285,18 @@
     {
       "id": "contract-epcis-import",
       "uri": "contracts/epcis-import.schema.json",
-      "version": "1",
+      "version": "2",
       "kind": "local",
       "path": "contracts/epcis-import.schema.json",
-      "digest": "7406e539087a08b5b6673d6e8c86f9e8f6797a2ef3af9b0b27091e5d1ce9482b"
+      "digest": "323abe890bc84bbef81eacbbfc9b3573314f6a98da6f0b8a9cc523c37c3557bf"
+    },
+    {
+      "id": "contract-epcis-exchange-records",
+      "uri": "contracts/epcis-exchange-records.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/epcis-exchange-records.schema.json",
+      "digest": "bf1a3da94f62db2cd9b728b27723ea2c60205e1be1d327d1150696040b80e05e"
     },
     {
       "id": "profiles-manifest-v2-schema",
@@ -3697,7 +3705,7 @@
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§1",
-      "summary": "A source is read as exact bytes under the disclosed limits; malformed UTF-8, duplicate keys, depth over 64, non-finite or inexact numbers and oversized documents are refused before anything is retained; a safely parsed document that fails validation is retained with its findings and is not publishable.",
+      "summary": "A source is read as exact bytes under the disclosed limits; malformed UTF-8, duplicate keys, depth over 64, non-finite or inexact numbers, oversized documents, more context declarations or inline context bytes than the limits allow, and a string with no canonical form are refused before anything is retained, as is any import without the pinned schema; a safely parsed document that fails validation is retained with its findings and is not publishable.",
       "layer": "profile",
       "roles": [
         "registry",
@@ -3706,10 +3714,12 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "packages/dpp-credentials/src/epcis-source.ts#parseEpcisSource"
+        "packages/dpp-credentials/src/epcis-source.ts#parseEpcisSource",
+        "packages/dpp-credentials/src/epcis-exchange/exchange.ts#importEpcisSource"
       ],
       "testRefs": [
-        "packages/dpp-credentials/test/epcis-source.test.ts"
+        "packages/dpp-credentials/test/epcis-source.test.ts",
+        "packages/dpp-credentials/test/epcis-exchange.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
@@ -3717,7 +3727,8 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f92f0f8a4759ae118c51613b743fa9d5949c4fa9687c169f5f6ddf7a9f73cdce"
+      "sourceDigest": "e4292c5948da2a1dfc169b7056310677e5fff397cdb2b25b1276256613f4cecd",
+      "notes": "Re-read 2026-11-14 after section 1 named the context limit refusals, the refusal of a string with an unpaired surrogate and the refusal of an import without the pinned schema. importEpcisSource enforces those three and the retention rule, and its tests hold every refusal to leaving nothing in the store; parseEpcisSource is unchanged."
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -3784,7 +3795,7 @@
       "sourceUri": "spec/epcis-interoperability.md",
       "sourceVersion": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "clause": "§2",
-      "summary": "Under a scoped event identity a repeat is a duplicate, a changed record time or error declaration is a new observation, and a changed body is a conflict retained with both digests visible; an event without an identifier receives a labelled local identity.",
+      "summary": "Under a scoped event identity a repeat is a duplicate, a changed record time or error declaration is a new observation, and a changed body is a conflict retained with both digests visible; an arriving event is compared with every observation held, a declared eventID and a local identity are compared apart, an event without an identifier receives a labelled local identity, and a conflict is settled only by a recorded decision that names every competing observation and that a later body reopens.",
       "layer": "profile",
       "roles": [
         "registry",
@@ -3793,10 +3804,12 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "packages/dpp-credentials/src/epcis-source.ts#classifyEventArrival"
+        "packages/dpp-credentials/src/epcis-source.ts#classifyEventArrival",
+        "packages/dpp-credentials/src/epcis-exchange/exchange.ts"
       ],
       "testRefs": [
-        "packages/dpp-credentials/test/epcis-source.test.ts"
+        "packages/dpp-credentials/test/epcis-source.test.ts",
+        "packages/dpp-credentials/test/epcis-exchange.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
@@ -3804,15 +3817,16 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f92f0f8a4759ae118c51613b743fa9d5949c4fa9687c169f5f6ddf7a9f73cdce"
+      "sourceDigest": "e4292c5948da2a1dfc169b7056310677e5fff397cdb2b25b1276256613f4cecd",
+      "notes": "Re-read 2026-11-14 after section 2 said how an arrival is compared when the identity holds more than one observation, kept the two kinds of identity apart and defined the conflict decision. The pair rule of classifyEventArrival is unchanged; the exchange module applies it to every held observation and records decisions."
     },
     {
       "id": "EPCIS-7-import-record",
       "sourceId": "contract-epcis-import",
       "sourceUri": "contracts/epcis-import.schema.json",
-      "sourceVersion": "1",
+      "sourceVersion": "2",
       "clause": "schema",
-      "summary": "The durable import record carries the received bytes' identity, provenance without credentials, per-event validation, mapping, conflict and publication results, and progress with completeness limits.",
+      "summary": "The durable import record, version 2, carries the received bytes' identity, the request digest with its idempotency scope and rule, provenance without credentials, the document's validity, per-event validation, mapping, arrival, conflict and publication results, and progress with completeness limits; a record stored under version 1 validates under the version 1 schema kept beside it.",
       "layer": "role",
       "roles": [
         "passport-writer",
@@ -3822,18 +3836,20 @@
       "profileId": "epcis-json@1",
       "implementationRefs": [
         "contracts/epcis-import.schema.json",
-        "the reference application (not published)"
+        "contracts/epcis-import-v1.schema.json",
+        "packages/dpp-credentials/src/epcis-exchange/exchange.ts#importEpcisSource"
       ],
       "testRefs": [
-        "packages/dpp-credentials/test/epcis-artefacts.test.ts",
-        "the reference application (not published)"
+        "packages/dpp-credentials/test/epcis-exchange-contract.test.ts",
+        "packages/dpp-credentials/test/epcis-exchange.test.ts",
+        "packages/dpp-credentials/test/epcis-exchange-adapters.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-09",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "7406e539087a08b5b6673d6e8c86f9e8f6797a2ef3af9b0b27091e5d1ce9482b",
-      "notes": "The record validates against the schema; the exact bytes and digest survive a store round trip and a simulated restart on a real mongod. Re-read 2026-11-09 after the profileRefs and mapping descriptions stopped presenting epcis-vsc@1 as the usual profile and said that an import without a mapping profile records not-attempted; the record's shape is unchanged. The public test ref validates the interoperability manifests only; no public test builds or validates an import record, which only the reference application exercises."
+      "sourceDigest": "323abe890bc84bbef81eacbbfc9b3573314f6a98da6f0b8a9cc523c37c3557bf",
+      "notes": "Moved to version 2 on 2026-11-14: requestDigest, idempotency, documentValidity and limits are required, an event may name its observation and its conflict decision, eventId is recorded as declared and eventType may be empty. The public tests build records through every arrival, a refusal, an unfinished import and a conflict decision, validate each against the schema, and hold the exact bytes and the record to surviving a stop before and after every durable step on both shipped storage adapters. The version 1 schema is kept byte for byte apart from its $id and a comment. The reference application, which is not published, was assessed against version 1 and is not cited for version 2."
     },
     {
       "id": "EPCIS-8-no-token-operation",
@@ -3850,17 +3866,19 @@
       "applicability": "when the source exchange profile is selected",
       "profileId": "epcis-json@1",
       "implementationRefs": [
-        "the reference application (not published)"
+        "the reference application (not published)",
+        "packages/dpp-credentials/src/epcis-exchange.ts"
       ],
       "testRefs": [
-        "the reference application (not published)"
+        "the reference application (not published)",
+        "packages/dpp-credentials/test/epcis-exchange.test.ts"
       ],
       "evidenceRefs": [],
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f92f0f8a4759ae118c51613b743fa9d5949c4fa9687c169f5f6ddf7a9f73cdce",
-      "notes": "Import and pull retain and evaluate only; the passport store is untouched by every import. Re-read 2026-11-12: the publication of a mapped event and the treatment of an EPCIS error declaration, which the summary also stated, are parked with the epcis-vsc mappings (spec/epcis-interoperability.md sections 5 to 7), so the row keeps only the rule that stays with epcis-json@1."
+      "sourceDigest": "e4292c5948da2a1dfc169b7056310677e5fff397cdb2b25b1276256613f4cecd",
+      "notes": "Import and pull retain and evaluate only; the passport store is untouched by every import. Re-read 2026-11-12: the publication of a mapped event and the treatment of an EPCIS error declaration, which the summary also stated, are parked with the epcis-vsc mappings (spec/epcis-interoperability.md sections 5 to 7), so the row keeps only the rule that stays with epcis-json@1. Re-read 2026-11-14 after sections 1, 2 and 6 were refined; section 7 is unchanged. From that day the exchange module of @bsv/dpp-credentials is held by a public test to an import graph that reaches no signing, wallet or chain code and to results that name no token operation."
     },
     {
       "id": "EPCIS-9-pull-outcomes",
@@ -3885,8 +3903,39 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "f92f0f8a4759ae118c51613b743fa9d5949c4fa9687c169f5f6ddf7a9f73cdce",
-      "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
+      "sourceDigest": "e4292c5948da2a1dfc169b7056310677e5fff397cdb2b25b1276256613f4cecd",
+      "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected. Re-read 2026-11-14 after sections 1, 2 and 6 were refined for file import; section 3 is unchanged, and the pull client stays outside the public package."
+    },
+    {
+      "id": "EPCIS-10-exchange-records",
+      "sourceId": "contract-epcis-exchange-records",
+      "sourceUri": "contracts/epcis-exchange-records.schema.json",
+      "sourceVersion": "1",
+      "clause": "schema",
+      "summary": "Each observation of an event, each conflict decision, each association index entry, each retention entry and each journal entry of unfinished work carries its own type and version; a decision names every competing observation and changes none; the index is rebuildable from the retained sources and records and never records a class or quantity reference as an individual item.",
+      "layer": "role",
+      "roles": [
+        "passport-writer",
+        "registry"
+      ],
+      "applicability": "when the source exchange profile is selected",
+      "profileId": "epcis-json@1",
+      "implementationRefs": [
+        "contracts/epcis-exchange-records.schema.json",
+        "packages/dpp-credentials/src/epcis-exchange/records.ts",
+        "packages/dpp-credentials/src/epcis-exchange/exchange.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-credentials/test/epcis-exchange-contract.test.ts",
+        "packages/dpp-credentials/test/epcis-exchange.test.ts",
+        "packages/dpp-credentials/test/epcis-exchange-adapters.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-11-14",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "bf1a3da94f62db2cd9b728b27723ea2c60205e1be1d327d1150696040b80e05e",
+      "notes": "New on 2026-11-14 with the exchange module. Every record the module writes, the unfinished ones included, validates against the schema; a rebuilt index equals the one built as imports arrived; recovery after a stop at any durable step leaves no acknowledged source lost and nothing half recorded. No recovery export carries these records yet."
     },
     {
       "id": "EXTC-1-representation",
@@ -4443,7 +4492,7 @@
     },
     {
       "id": "epcis-source-import-1",
-      "description": "The epcis-json@1 source helpers without the parked epcis-vsc mappings: exact-byte reading under the disclosed limits with unsafe sources refused before retention, validation against the pinned schema without repair, stable event-body digests and arrival classification. The durable import record, the separation from token operations and the bounded pull client (EPCIS-7, EPCIS-8 and EPCIS-9) are exercised only in the reference application, which is not published, so this claim does not require them.",
+      "description": "The epcis-json@1 source helpers without the parked epcis-vsc mappings: exact-byte reading under the disclosed limits with unsafe sources refused before retention, validation against the pinned schema without repair, stable event-body digests and arrival classification. This claim does not require the durable import record, the separation from token operations, the bounded pull client or the other exchange records (EPCIS-7, EPCIS-8, EPCIS-9 and EPCIS-10): from 14 November 2026 the public exchange module exercises all but the pull client, which only the reference application, which is not published, exercises.",
       "profileId": "epcis-json@1",
       "requires": [
         "EPCIS-1-strict-parse",

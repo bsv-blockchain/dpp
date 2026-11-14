@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/contracts/epcis-exchange-records.schema.json",
+  "title": "DPP EPCIS exchange records, version 1",
+  "description": "The durable records an EPCIS source exchange keeps beside its import records (epcis-import.schema.json) under the epcis-json@1 profile (spec/epcis-interoperability.md sections 2 and 6): each distinct observation of an event, each decision about a conflict, each entry of the associations index, which imports retain which bytes, and work that has begun and is not finished. Every record names its type and carries its own version, so that a recovery export can carry them as they are stored. A conflict decision cannot be rebuilt from any source; an observation can be rebuilt only in the order the sources were received; the associations index and the retention entries can be rebuilt from the import records and the retained bytes. No record here is a token operation, and none says who made a source or that an event happened.",
+  "oneOf": [
+    { "$ref": "#/$defs/observation" },
+    { "$ref": "#/$defs/conflictResolution" },
+    { "$ref": "#/$defs/association" },
+    { "$ref": "#/$defs/retention" },
+    { "$ref": "#/$defs/journal" }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "dateTime": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$" },
+    "pointer": { "type": "string", "pattern": "^(/[^/]*)*$", "description": "An RFC 6901 JSON pointer into the retained document." },
+    "name": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "identityKind": { "enum": ["event-id", "local"], "description": "event-id: the identity is the eventID the source declared. local: the identity was assigned at ingestion to an event that declares none. Neither is a GS1 CBV Event Hash ID." },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "sourceId", "identity", "identityKind", "sequence", "importId", "pointer", "sourceSha256", "eventType", "bodyDigest", "arrival", "observedAt"],
+      "description": "One distinct observation of an event under its scoped identity: the source scope, the kind of identity and the identity. Written once and never changed. A duplicate arrival adds no observation; its import record names the one it repeats.",
+      "properties": {
+        "recordType": { "const": "epcis-observation" },
+        "recordVersion": { "const": "1" },
+        "sourceId": { "$ref": "#/$defs/name" },
+        "identity": { "type": "string", "minLength": 1 },
+        "identityKind": { "$ref": "#/$defs/identityKind" },
+        "eventId": { "type": "string", "minLength": 1, "description": "The event's own eventID, exactly as declared, when it declares one." },
+        "sequence": { "type": "integer", "minimum": 1, "description": "The position of this observation among those held under the identity, in the order they were recorded." },
+        "importId": { "type": "string", "minLength": 1 },
+        "pointer": { "$ref": "#/$defs/pointer" },
+        "sourceSha256": { "$ref": "#/$defs/sha256", "description": "The digest of the retained bytes the observation was read from." },
+        "eventType": { "type": "string" },
+        "bodyDigest": { "$ref": "#/$defs/sha256" },
+        "recordTime": { "description": "The repository's record time, exactly as present: a string in a valid event." },
+        "errorDeclaration": { "description": "The error declaration, exactly as present." },
+        "arrival": { "enum": ["new", "new-observation", "conflict"] },
+        "observedAt": { "$ref": "#/$defs/dateTime", "description": "When the source that carried it was received." }
+      }
+    },
+    "conflictResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "resolutionId", "conflictId", "sourceId", "identity", "identityKind", "sequence", "decision", "disposition", "decidedAt", "bodyDigests", "observations"],
+      "description": "One decision about the bodies held under one event identity. Appended and never edited: a later decision names the one it supersedes and both are kept. It changes and removes no observation and no source.",
+      "properties": {
+        "recordType": { "const": "epcis-conflict-resolution" },
+        "recordVersion": { "const": "1" },
+        "resolutionId": { "type": "string", "minLength": 1 },
+        "conflictId": { "type": "string", "minLength": 1 },
+        "sourceId": { "$ref": "#/$defs/name" },
+        "identity": { "type": "string", "minLength": 1 },
+        "identityKind": { "$ref": "#/$defs/identityKind" },
+        "sequence": { "type": "integer", "minimum": 1, "description": "The position of this decision among those recorded for the conflict." },
+        "supersedes": { "type": "string", "minLength": 1, "description": "The resolutionId of the decision this one replaces." },
+        "decision": { "type": "string", "minLength": 1, "maxLength": 4000, "description": "What was decided, in the decider's words." },
+        "disposition": { "enum": ["body-selected", "all-retained", "none-relied-on"], "description": "body-selected: later work reads the body selectedBodyDigest names. all-retained: no body is preferred and the difference is accepted. none-relied-on: no body is relied on. Every body stays retained under each." },
+        "selectedBodyDigest": { "$ref": "#/$defs/sha256" },
+        "decidedAt": { "$ref": "#/$defs/dateTime" },
+        "decidedBy": { "$ref": "#/$defs/name", "description": "Who decided, as the application names them. Never a credential." },
+        "bodyDigests": { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "$ref": "#/$defs/sha256" }, "description": "Every body the decision covers. A body that arrives later is not covered, and the conflict is open again." },
+        "observations": {
+          "type": "array",
+          "minItems": 2,
+          "description": "Every competing observation, by reference.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sequence", "importId", "pointer", "sourceSha256", "bodyDigest"],
+            "properties": {
+              "sequence": { "type": "integer", "minimum": 1 },
+              "importId": { "type": "string", "minLength": 1 },
+              "pointer": { "$ref": "#/$defs/pointer" },
+              "sourceSha256": { "$ref": "#/$defs/sha256" },
+              "bodyDigest": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        }
+      },
+      "if": { "properties": { "disposition": { "const": "body-selected" } } },
+      "then": { "properties": { "selectedBodyDigest": { "$ref": "#/$defs/sha256" } }, "required": ["selectedBodyDigest"] },
+      "else": { "properties": { "selectedBodyDigest": false } }
+    },
+    "association": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "identifier", "granularity", "role", "scheme", "sourceId", "importId", "pointer", "path", "identity", "identityKind", "eventType", "errorDeclared"],
+      "description": "One relationship an event states between an identifier and itself. An index entry, rebuildable from the import records and the retained bytes, and made only from imports whose document is valid.",
+      "properties": {
+        "recordType": { "const": "epcis-association" },
+        "recordVersion": { "const": "1" },
+        "identifier": { "type": "string", "minLength": 1, "description": "The identifier exactly as the event writes it. No other spelling of the same item is implied." },
+        "granularity": { "enum": ["instance", "class"], "description": "instance: one individual item. class: a product class, a lot or a pattern, which names no individual item. A quantity element is always class." },
+        "role": {
+          "enum": ["object", "object-quantity", "aggregation-parent", "aggregation-child", "aggregation-child-quantity", "transaction-parent", "transaction-object", "transaction-object-quantity", "transformation-input", "transformation-input-quantity", "transformation-output", "transformation-output-quantity", "association-parent", "association-child", "association-child-quantity"],
+          "description": "The place the event gives the identifier: an object list, a parent, a child list, a transformation input or output, or the quantity list beside each."
+        },
+        "scheme": { "enum": ["gs1-sgtin", "gs1-lgtin", "gs1-sgtin-pattern", "gs1-digital-link", "epc-other", "other"] },
+        "gtin": { "type": "string", "pattern": "^\\d{14}$" },
+        "serial": { "type": "string" },
+        "lot": { "type": "string" },
+        "quantity": { "type": "number" },
+        "uom": { "type": "string" },
+        "sourceId": { "$ref": "#/$defs/name" },
+        "importId": { "type": "string", "minLength": 1 },
+        "pointer": { "$ref": "#/$defs/pointer", "description": "The event." },
+        "path": { "$ref": "#/$defs/pointer", "description": "The identifier within the document." },
+        "identity": { "type": "string", "minLength": 1 },
+        "identityKind": { "$ref": "#/$defs/identityKind" },
+        "eventType": { "type": "string", "minLength": 1 },
+        "eventTime": { "type": "string" },
+        "errorDeclared": { "type": "boolean", "description": "True when the event carries an error declaration." }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "sha256", "importId"],
+      "description": "One import's hold on retained bytes. Bytes are removed only when no import holds them.",
+      "properties": {
+        "recordType": { "const": "epcis-retention" },
+        "recordVersion": { "const": "1" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "importId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "journal": {
+      "type": "object",
+      "required": ["recordType", "recordVersion", "entry", "startedAt"],
+      "description": "Work that has begun and is not finished. Recovery finishes or discards each entry and removes it. intake: a request was noted and has no receipt yet, so it was never acknowledged. import: a receipt is durable and its event results or index entries are not complete. resolution: a decision is recorded and the imports it releases are not all marked. rebuild: the associations index is being rebuilt. discard: bytes that an unacknowledged request left are to be removed, unless an import holds them.",
+      "properties": {
+        "recordType": { "const": "epcis-journal" },
+        "recordVersion": { "const": "1" },
+        "entry": { "enum": ["intake", "import", "resolution", "rebuild", "discard"] },
+        "startedAt": { "$ref": "#/$defs/dateTime" },
+        "importId": { "type": "string", "minLength": 1 },
+        "sourceId": { "$ref": "#/$defs/name" },
+        "requestId": { "$ref": "#/$defs/name" },
+        "requestDigest": { "$ref": "#/$defs/sha256" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "conflictId": { "type": "string", "minLength": 1 },
+        "resolutionId": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "entry": { "const": "intake" } } }, "then": { "properties": { "importId": true, "sourceId": true, "requestId": true, "requestDigest": true, "sha256": true }, "required": ["importId", "sourceId", "requestId", "requestDigest", "sha256"] } },
+        { "if": { "properties": { "entry": { "const": "import" } } }, "then": { "properties": { "importId": true }, "required": ["importId"] } },
+        { "if": { "properties": { "entry": { "const": "resolution" } } }, "then": { "properties": { "conflictId": true, "resolutionId": true }, "required": ["conflictId", "resolutionId"] } },
+        { "if": { "properties": { "entry": { "const": "discard" } } }, "then": { "properties": { "sha256": true }, "required": ["sha256"] } }
+      ]
+    }
+  }
+}

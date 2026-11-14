@@ -137,6 +137,7 @@ const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MA
 const credentials = await import('@bsv/dpp-credentials')
 const exchange = await import('@bsv/dpp-credentials/exchange')
 const epcisSource = await import('@bsv/dpp-credentials/epcis-source')
+const epcisExchange = await import('@bsv/dpp-credentials/epcis-exchange')
 const chain = JSON.parse(readFileSync('fixtures/chain-v2.json', 'utf8'))
 const txs = chain.states.map((s) => Transaction.fromHex(s.rawTx))
 const result = await verifyChain(txs, { chainTracker: 'scripts only', managedAcceptance: true, serverIdentityKey: chain.custodianKey })
@@ -201,6 +202,10 @@ out.push(['dpp-credentials and dpp-profiles: no GS1 file is inside the installed
 let unprovisioned
 try { epcisSource.validateEpcisDocument(parsed.document, { artefactsDir: join(process.cwd(), 'gs1-not-provisioned') }) } catch (e) { unprovisioned = e }
 out.push(['dpp-credentials/epcis-source: validation without the provisioned GS1 schema throws gs1-artefact-unavailable and returns nothing', unprovisioned instanceof credentials.Gs1ArtefactUnavailableError && unprovisioned.code === 'gs1-artefact-unavailable' && unprovisioned.artefactId === 'epcis-json-schema'])
+// The durable import refuses the same way, and a refusal leaves the store as it found it.
+const exchangeStore = epcisExchange.createMemoryEpcisStorage()
+const unprovisionedImport = await epcisExchange.importEpcisSource({ storage: exchangeStore, sourceId: 'consumer-check', requestId: 'request-1', bytes: new TextEncoder().encode(JSON.stringify(parsed.document)), mediaType: 'application/json', receivedAt: '2026-09-06T00:00:00Z', provenance: { kind: 'file' }, policy: { policyId: 'consumer-check@1' }, artefactsDir: join(process.cwd(), 'gs1-not-provisioned') })
+out.push(['dpp-credentials/epcis-exchange: an import without the provisioned GS1 schema is refused by name and keeps nothing', unprovisionedImport.outcome === 'refused' && unprovisionedImport.reason === 'gs1-artefact-unavailable' && exchangeStore.state.bytes.size === 0 && exchangeStore.state.records.size === 0 && typeof epcisExchange.exportEpcisSource === 'function' && typeof epcisExchange.epcisStorageAdapterSuite === 'function'])
 out.push(['dpp-credentials: the root exports the GS1 provisioning functions and the three pinned EPCIS files', typeof credentials.provisionGs1Artefacts === 'function' && typeof credentials.verifyGs1Artefacts === 'function' && credentials.EPCIS_GS1_ARTEFACTS.length === 3 && credentials.verifyGs1Artefacts({ dir: join(process.cwd(), 'gs1-not-provisioned') }).ok === false])
 out.push(['dpp-credentials: the dpp-gs1-artefacts executable is installed', existsSync(join('node_modules', '.bin', 'dpp-gs1-artefacts'))])
 console.log(JSON.stringify(out))
@@ -239,6 +244,7 @@ import { readManifest, type ProfileManifest, type InteroperabilityProfileId, typ
 import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
+import { importEpcisSource, type EpcisExchangeStorage, type EpcisImportRecord, type EpcisImportOutcome } from '@bsv/dpp-credentials/epcis-exchange'
 import type { Transaction } from '@bsv/sdk'
 export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
 export const startHost: typeof startOverlayService = startOverlayService
@@ -262,11 +268,15 @@ export async function credentials(credential: Credential, bytes: Uint8Array, pol
   void credential
   return [external, parsed]
 }
+export async function retain(storage: EpcisExchangeStorage, bytes: Uint8Array): Promise<EpcisImportRecord | undefined> {
+  const outcome: EpcisImportOutcome = await importEpcisSource({ storage, sourceId: 'source', requestId: 'request', bytes, mediaType: 'application/json', receivedAt: '2026-09-06T00:00:00Z', provenance: { kind: 'file' }, policy: { policyId: 'policy@1' } })
+  return outcome.outcome === 'retained' ? outcome.record : undefined
+}
 `)
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))
   try {
     run(['npx', 'tsc', '-p', 'tsconfig.json'], dir)
-    say(true, 'the declarations of @bsv/dpp-protocol, @bsv/dpp-overlay, @bsv/dpp-profiles, @bsv/dpp-credentials, @bsv/dpp-credentials/exchange and @bsv/dpp-credentials/epcis-source resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
+    say(true, 'the declarations of @bsv/dpp-protocol, @bsv/dpp-overlay, @bsv/dpp-profiles, @bsv/dpp-credentials, @bsv/dpp-credentials/exchange, @bsv/dpp-credentials/epcis-source and @bsv/dpp-credentials/epcis-exchange resolve and type-check in a strict TypeScript consumer with skipLibCheck off.')
   } catch (error) {
     say(false, `type-check failed: ${String(error.stdout ?? error.message).split('\n').slice(0, 8).join(' | ')}`)
   }

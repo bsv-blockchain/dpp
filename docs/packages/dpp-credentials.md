@@ -17,13 +17,15 @@ Application developers verifying W3C Verifiable Credentials that partners issue 
 
 **A W3C Verifiable Credential** names an issuer and a subject and secures its claims with a proof a recipient can check. This package verifies credentials other parties issue in the external passport format, `vc-di-ecdsa-rdfc-2019@1`: VC Data Model 2.0 with an `ecdsa-rdfc-2019` proof from a `did:web` issuer. It parses the exact bytes strictly, then checks the proof and the issuer's key binding, validity times, status through an authenticated Bitstring Status List, authority under your policy and the subject, and reports each finding separately. It issues nothing under that profile. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
 
-It also reads GS1 EPCIS 2.0.1 event documents under `epcis-json@1`: exact received bytes, validation against the pinned schema, event digests and arrival classification. The schema is GS1's and is not in the package: you obtain it once ([GS1 files](#gs1-files)).
+It also reads GS1 EPCIS 2.0.1 event documents under `epcis-json@1`: exact received bytes, validation against the pinned schema, event digests and arrival classification. It can keep them too: `./epcis-exchange` imports a file into storage you supply and exports the original bytes unchanged ([durable EPCIS import](#durable-epcis-import)). The schema is GS1's and is not in the package: you obtain it once ([GS1 files](#gs1-files)).
 
 | You want to | Need this package? |
 |---|---|
 | Read, verify or write passports, or sign native claims | No: use [@bsv/dpp-protocol](dpp-protocol.md) |
 | Verify a W3C credential in the external passport format, or feed one into a passport's verification report | Yes, `@bsv/dpp-credentials/exchange` |
-| Import EPCIS 2.0.1 event documents | Yes, `@bsv/dpp-credentials/epcis-source` |
+| Read and validate an EPCIS 2.0.1 event document | Yes, `@bsv/dpp-credentials/epcis-source` |
+| Retain EPCIS documents, tell a repeat from a change, and export them unchanged | Yes, `@bsv/dpp-credentials/epcis-exchange` |
+| Run an EPCIS repository, capture events or query an EPCIS endpoint | No: the package does none of these |
 | Issue or verify SEALs, or map EPCIS events to SEALs | No: the parked VSC compatibility profile and its mappings left the package in 0.2.0-beta.6 ([parked profile](#parked-the-vsc-compatibility-profile)) |
 
 Wallet funding, passport movement and index lookups stay with [@bsv/dpp-protocol](dpp-protocol.md) and your wallet. This package has no BSV runtime dependency.
@@ -52,6 +54,7 @@ A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin
 |---|---|---|
 | `@bsv/dpp-credentials/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `parseExternalCredentialBytes` reads its exact bytes strictly; `verifyBitstringStatus` checks status; `createExternalDocumentLoader` serves pinned contexts and resolves `did:web` within allowed origins; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
 | `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema, read from the provisioned folder; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
+| `@bsv/dpp-credentials/epcis-exchange` | `importEpcisSource` retains a file's exact bytes and an import record in storage you supply; `exportEpcisSource` returns the original; `resolveEpcisConflict` records a decision; `findEpcisAssociations` and `rebuildEpcisAssociations` read and rebuild the index; `recoverEpcisExchange` finishes or discards interrupted work; `createMemoryEpcisStorage`, `openFileEpcisStorage` and `epcisStorageAdapterSuite` are the two adapters and the suite every adapter must pass | [Import a file](../interoperability/epcis.md#import-a-file) |
 | `@bsv/dpp-credentials` | Re-exports every `/epcis-source` function, `createDidWebResolver`, `parseStrictJsonBytes` and `verifyTemporal`, with the shared credential and check types, and exports `provisionGs1Artefacts`, `verifyGs1Artefacts`, `readGs1Artefact` and `gs1ArtefactsDir` ([GS1 files](#gs1-files)); it loads no proof suite | `npm run test -w @bsv/dpp-credentials -- test/strict-json.test.ts test/temporal.test.ts` in a checkout |
 | `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files, including the owned context and schemas the parked VSC manifests pin. No GS1 file is among them. | |
 | `dpp-gs1-artefacts` (executable) | `fetch`, `verify` and `path` for the GS1 files | [GS1 files](#gs1-files) |
@@ -126,14 +129,33 @@ events: ObjectEvent at /epcisBody/eventList/0
 schema: pass ; findings: 0
 ```
 
-3. Retain exact received bytes, without reserialising the parsed object. Stop on parse refusal or schema findings before treating it as validated.
+3. Retain exact received bytes, without reserialising the parsed object. Stop on parse refusal or schema findings before treating it as validated. `importEpcisSource` does the retaining for you ([durable EPCIS import](#durable-epcis-import)).
 
 | Command | Expected result |
 |---|---|
 | `node epcis-first.mjs` | One `ObjectEvent` at `/epcisBody/eventList/0`; schema `pass`, zero findings |
-| `node examples/import-epcis.mjs` | In a checkout: provisions the GS1 files on first use, reads the seven-event fixture and prints each event's identity and body digest; it maps nothing. |
+| `node examples/import-epcis.mjs` | In a checkout: provisions the GS1 files on first use, imports the seven-event fixture into memory, prints each event's identity, body digest and arrival, repeats the request and exports the original bytes unchanged; it maps nothing. |
 
 To verify a partner's credential instead, follow [external credential verification](../interoperability/external-credentials.md), which runs the vector file's credentials through `verifyExternalCredential`.
+
+## Durable EPCIS import
+
+`@bsv/dpp-credentials/epcis-exchange` is the durable part of `epcis-json@1`. Loading it starts nothing: it opens no database, reads no file and reaches no network. You hand each function the storage it works on.
+
+| Question | Answer |
+|---|---|
+| What it does | Retains a file's exact bytes under their SHA-256 with an import record; classifies each event against what the same source already holds; records conflict decisions; keeps a rebuildable index from identifiers to events; exports the original bytes. |
+| What it does not do | It is not an EPCIS repository. It does not capture events. It does not query or pull from an EPCIS endpoint: querying is a later change. It signs, issues and anchors nothing, and writes no passport state. |
+| What an import proves | Nothing about origin. An import is data: a valid document is not a signed one, and no result says who observed an event. |
+| Storage | `EpcisExchangeStorage`, six methods: exact bytes under their digest, and JSON records written in batches that apply completely or not at all. `createMemoryEpcisStorage()` is for tests; `openFileEpcisStorage(folder)` is durable, for one process and one folder. |
+| Other databases | The interface alone promises nothing about them. An adapter is fit only when it passes `epcisStorageAdapterSuite`, which the package ships so that you can run it against your own. |
+| Idempotency | A `requestId` is unique within its `sourceId` and is bound to a digest of the request. The same request again answers the same import and writes no second record; the same `requestId` with other bytes is `request-conflict`. |
+| Refused | Bytes that are unsafe to parse, over a limit or of another media type, a malformed request, and any import while the pinned GS1 schema is not provisioned. Nothing is kept and nothing changes. |
+| Retained | Every document that parses safely, valid or not. An invalid one keeps its findings and is left out of the index and of anything described as valid. |
+| Export | `exportEpcisSource` returns the retained original, byte for byte, or nothing. `deriveEpcisEventProjection` returns a generated view labelled `derived` with its own digest, and is never returned in place of an original. |
+| After a crash | `recoverEpcisExchange(storage)`, called when the store is opened, finishes or discards what was interrupted and reports it. No acknowledged source is lost and nothing is left half recorded. |
+
+[Import, retain and export](../interoperability/epcis.md#import-retain-and-export) has a runnable import, the outcomes, how each event arrives, conflict decisions, the storage promises and the durable steps with what recovery does at each. Every durable record carries its own version: `contracts/epcis-import.schema.json` is version 2 of the import record, which now requires `requestDigest`, and `contracts/epcis-exchange-records.schema.json` holds the rest.
 
 ## Parked: the VSC compatibility profile
 
@@ -147,7 +169,7 @@ The profile and the EPCIS-to-SEAL mappings `epcis-vsc@1` and `epcis-vsc@2` are p
 |---|---|
 | Import any of the [removed names](#removed-names) | Stay on the published `0.2.0-beta.5`, which exports the profile and `epcis-vsc@1`, or take the code from the repository history at commit [`8c82c5e`](https://github.com/bsv-blockchain/dpp/tree/8c82c5e6ca31cd991e701d1051047153c7395eae/packages/dpp-credentials), which also carries `epcis-vsc@2` and the tests. |
 | Verify credentials other parties issue | Use `@bsv/dpp-credentials/exchange`, which is not parked. |
-| Import EPCIS events | Use `@bsv/dpp-credentials/epcis-source`, and record each event's mapping outcome as `not-attempted`. |
+| Import EPCIS events | Use `@bsv/dpp-credentials/epcis-exchange`, which records each event's mapping outcome as `not-attempted`; `@bsv/dpp-credentials/epcis-source` holds the parsing and validation it runs on. |
 
 The current candidate's selection, `conformance/selections/dpp-release-2026-11.json`, withholds `epcis-source-import-1`, the claim on the source helpers, from 12 November 2026, because it claims no optional profile, and the claims of the profile and both mappings moved to the ledger archive the same day, with `epcis-source-exchange-1`, whose rows included the `epcis-vsc@1` mapping; earlier sets, including the latest published `dpp-release-2026-10-10`, claimed the implemented subset and `epcis-vsc@1`. A credential's own claim that its issuer is trusted is never enough; the [package guide](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/packages/dpp-credentials/README.md) of an earlier commit shows the SEAL calls with each policy.
 
@@ -177,6 +199,7 @@ These names left the root `@bsv/dpp-credentials` in 0.2.0-beta.6. The three mark
 | `@bsv/dpp-credentials/exchange` | [External credential profile](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/external-credential-profile.md) |
 | `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/spec/epcis-interoperability.md) |
 | The parked VSC profile, no longer in the package | [Parked credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/vsc-profile.md) |
+| `@bsv/dpp-credentials/epcis-exchange` | The same specification, sections 1, 2, 6 and 7; `packages/dpp-credentials/src/epcis-exchange.ts`; `contracts/epcis-import.schema.json` and `contracts/epcis-exchange-records.schema.json` |
 | `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
 | GS1 files and `dpp-gs1-artefacts` | [Provisioning module](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/packages/dpp-credentials/src/gs1-artefacts.ts) |
 
