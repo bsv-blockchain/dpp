@@ -4,7 +4,9 @@ info:
   version: 0.6.0
   summary: Verified native lifecycle claims, external and directly signed EPCIS event credentials with independent BSV anchors.
   description: |
-    Current intake uses explicit signed native claims, the external vc-di-ecdsa-rdfc-2019@1 credential representation or the proposed epcis-event-vc@1 directly signed EPCIS event representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
+    Current intake uses explicit signed native claims, the external vc-di-ecdsa-rdfc-2019@1 credential representation or the parked epcis-event-vc@1 directly signed EPCIS event representation. Missing proof, status, authority or issuer-binding evidence fails closed. Anchor broadcast, credential verification, discovery and confirmed chain inclusion are separate claims.
+
+    The directly signed EPCIS event representation (epcis-event-vc@1) is parked with its profile while its representation is reconsidered: its envelope stays defined here with no change of shape, path or status code, no release requires it, and a registry that does not implement it refuses it as unsupported, as it refuses any representation it does not implement.
 
     The VSC SEAL representation (vsc-seal-json-v1) is parked with its vsc-draft-compat/0.1.0 profile: new submissions are refused as representation-unsupported, and records stored before remain readable without content verification. The contract defines no status list publication: a registry checks the status lists credential issuers publish. The contract has no legacy intake: a historical UORA body names no current representation and is refused as any such body is, while records stored under the historical representation, `legacy-uora-json`, remain readable. Such a record retains no secured bytes, so the record list names it, the proof and chain routes serve its canonical bytes, and the evidence package names it under what the registry could not produce.
 
@@ -401,6 +403,7 @@ components:
         the event's CBV 2.0 Event Hash ID, secured as a compact JWS under
         ES256K by the party's published credential key. The exact JWS string
         is what is retained and anchored; uniqueness is per hash ID and issuer.
+        The profile is parked, and this envelope is kept as it was defined.
       properties:
         representation: { const: 'epcis-event-vc@1' }
         credential: { type: string, description: 'The exact compact JWS as issued, at most 2 MiB.' }

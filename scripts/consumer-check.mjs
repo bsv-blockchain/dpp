@@ -149,6 +149,9 @@ out.push(['reader path: acceptance binds to the transfer', bindAcceptanceToState
 const report = await verifyPassportEvidence({ tokenHistory: txs, acceptanceRecords: [acceptance.record] }, { passportId: chain.states[0].data.passportId, source: 'request-context' }, { chainTracker: 'scripts only', publisherKeys: [chain.custodianKey], managedAcceptance: { required: true } })
 out.push(['reader path: report linkage pass and inclusion unknown without a header source', report.checks.find((c) => c.name === 'linkage').status === 'pass' && report.checks.find((c) => c.name === 'inclusion').status !== 'pass'])
 out.push(['protocol constants: version 2 is 17 fields', STANDARD_VERSION_V2 === '2' && FIELD_COUNT_V2 === 17])
+// The directly signed EPCIS event module is parked and stays in the repository; a name of it at the entry point would be public API again.
+const protocol = await import('@bsv/dpp-protocol')
+out.push(['protocol: the entry point exports none of the parked directly signed EPCIS event module', !('epcisEventHashId' in protocol) && !('verifyEpcisEventCredential' in protocol) && !('EPCIS_EVENT_REPRESENTATION' in protocol)])
 const tm = new DppTopicManager(chain.custodianKey, { managedAcceptance: true })
 out.push(['overlay: topic manager documentation names version 2', (await tm.getDocumentation()).includes('record-model-v2')])
 const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorServiceKeys: [], managedAcceptance: true, exportAvailable: false, networkOracleConfigured: false, at: new Date() })

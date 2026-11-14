@@ -9,9 +9,9 @@ Electronic Product Code Information Services (EPCIS) is the GS1 standard for obs
 | `epcis-json@1` | Retains EPCIS 2.0.1 JSON or JSON-LD exactly as received, with its validation findings, event digests and arrival classification. | Current |
 | `epcis-vsc@1` | Maps events to unsigned SEALs, the Verifiable Supply Chain (VSC) profile's event credentials. A separately authorised issuer may sign them. | Parked |
 | `epcis-vsc@2` | Maps the same way after deciding each CBV 2.0 disposition through a published crosswalk, refuses error declarations, and names why an event has no SEAL. | Parked, never current |
-| `epcis-event-vc@1` | Signs an event as it stands, as a W3C credential keyed by its CBV 2.0 Event Hash ID, with the party's own key, for anchoring beside a passport (`@bsv/dpp-protocol`). | Proposed |
+| `epcis-event-vc@1` | Signs an event as it stands, as a W3C credential keyed by its CBV 2.0 Event Hash ID, with the party's own key, for anchoring beside a passport. | Parked |
 
-`@bsv/dpp-credentials` implements `epcis-json@1`. The two mapping profiles are parked with the VSC profile, and their manifests say so with the status `parked`: no release requires them, the programme does not currently develop them, and from `@bsv/dpp-credentials` 0.2.0-beta.6 their code is no longer in the package ([parked: map events to SEALs](#parked-map-events-to-seals)). [Sign an event](#sign-an-event) covers the direct route, which needs no mapping.
+`@bsv/dpp-credentials` implements `epcis-json@1`. The two mapping profiles are parked with the VSC profile, and their manifests say so with the status `parked`: no release requires them, the programme does not currently develop them, and from `@bsv/dpp-credentials` 0.2.0-beta.6 their code is no longer in the package ([parked: map events to SEALs](#parked-map-events-to-seals)). The direct route, which signs an event without a mapping, is parked as well ([parked: sign an event](#parked-sign-an-event)).
 
 The current candidate, `dpp-release-2026-11`, carries the `epcis-json@1` source helpers, which are strict parsing under the disclosed limits, validation against the pinned schema, event-body digests and arrival classification. From 12 November 2026 its selection claims no optional profile, so it withholds `epcis-source-import-1`, the claim on those helpers. The earlier `epcis-source-exchange-1`, whose rows also covered the parked `epcis-vsc@1` mapping, moved to the ledger archive the same day. The durable import record, the separation from token operations and the pull client are left out of `epcis-source-import-1` because only the reference application exercises them; their ledger rows stay tested.
 
@@ -93,33 +93,11 @@ The `epcis-vsc@1` and `epcis-vsc@2` mapping profiles and the [VSC profile](../pa
 
 The profiles themselves are unchanged. A mapping answers one of four outcomes per event, `lossless`, `transformed`, `unsupported` or `insufficient-data`, and never invents a custody event or measurement to reach a SEAL; `epcis-vsc@2` decides each CBV 2.0 disposition through the crosswalk its manifest publishes and refuses an event carrying an error declaration. The [specification](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/spec/epcis-interoperability.md), sections 5 and 6, gives the rules and their reasons; `packages/dpp-profiles/manifests/interoperability/` holds both manifests, and the two mapping vectors of `fixtures/vectors/dpp/interoperability/epcis/v1.json` and all of `v2.json` pin every outcome, as published.
 
-## Sign an event
+## Parked: sign an event
 
-A party that observed or performed a step can sign the EPCIS event itself, without a mapping, under the proposed exchange profile `epcis-event-vc@1` (`spec/epcis-event-profile.md`). The credential is a W3C Verifiable Credential 2.0 whose subject is the event exactly as the party holds it, whose `id` is the event's CBV 2.0 Event Hash ID, and whose proof is a compact JWS under ES256K signed by the party's one published credential key: the BRC-42 child of its identity key under `[1, 'dpp epcis event v1']` with key identifier `credential`. A verifier recomputes the hash from the subject, checks the signature against the key the `kid` names and reports each finding separately; a registry anchors the exact JWS bytes once per hash ID and issuer. Two parties signing one event are two attestations of one hash ID.
+The directly signed EPCIS event profile, `epcis-event-vc@1`, is parked while its representation is reconsidered. The module stays in the repository and is no longer exported: `packages/dpp-protocol/src/epcisEvent.ts` keeps the code, its tests still run with the package's own, and `@bsv/dpp-protocol` exports none of it. No published version exported it, so no installed package changes. No release requires the profile, and an implementer need not support it. Its ledger rows, `EPEV-1-hash-id` to `EPEV-4-registry-intake`, and its claim, `epcis-event-signing-1`, are in the [ledger archive](../reference/parked/ledger-archive.json).
 
-```js
-import { PrivateKey, ProtoWallet } from '@bsv/sdk'
-import {
-  buildEpcisEventCredential, didKeyFromIdentityKey, epcisEventCredentialKey,
-  signEpcisEventCredential, verifyEpcisEventCredential, epcisEventAnchorMetadata,
-} from '@bsv/dpp-protocol'
-
-const identity = PrivateKey.fromHex('7a'.repeat(32))            // a test scalar; a wallet holds the real one
-const credentialKey = epcisEventCredentialKey(identity.toPublicKey().toString())
-const issuer = didKeyFromIdentityKey(credentialKey)              // or your did:web, listing the key for assertion
-const kid = `${issuer}#${issuer.slice('did:key:'.length)}`
-
-const credential = buildEpcisEventCredential({ event, issuer, validFrom: new Date().toISOString() })
-const jws = await signEpcisEventCredential(credential, { kid, signer: new ProtoWallet(identity) })
-
-const result = await verifyEpcisEventCredential(jws, { checkedAt: new Date().toISOString() })
-console.log(result.proof, result.time, result.hashId)
-console.log(epcisEventAnchorMetadata(result))                    // the anchor fields a registry writes
-```
-
-`event` is one EPCIS 2.0.1 event object; extension members need their prefixes declared in `extensionContexts`, passed to `buildEpcisEventCredential`, and the pinned EPCIS context's own prefixes need no declaration. A BRC-100 wallet replaces the `ProtoWallet` and signs through `createSignature`; no private key reaches the profile's code. The writer refuses what it cannot hash: an event carrying `errorDeclaration`, an EPC scheme outside the subset the profile names, a Digital Link whose GTIN is not fourteen digits, an extension inside a sensor element, a vocabulary value spelled as a compact IRI, and a prefix no carried context declares, each by name. Where the hash algorithm's ratified text and the two independent reference generators part, the profile refuses rather than choosing: `fixtures/vectors/dpp/interoperability/epcis/hash-v1.json` records, for every positive case, what each generator answered and the clause the profile follows, and `fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json` pins the signed credentials with published test scalars.
-
-Status checking, DID document resolution and the EPCIS schema check are the caller's: `verifyEpcisEventCredential` takes `resolveKey` for issuers other than `did:key`, `statusVerifier` for a credential that carries `credentialStatus`, and `eventSchemaValidator` for the pinned schema; without them the status and schema findings stay `unknown`. `epcisEventCredentialVerifierFor(options)` returns the `credentialVerifier` the passport report takes. The profile is proposed and claimed by no release; the ledger rows are `EPEV-1-hash-id` to `EPEV-3-anchor-and-uniqueness`, with the registry's intake (`EPEV-4-registry-intake`) a gap.
+The profile itself is unchanged. Under it, a party that observed or performed a step signs the EPCIS event itself, without a mapping. The credential is a W3C Verifiable Credential 2.0 whose subject is the event exactly as the party holds it, whose `id` is the event's CBV 2.0 Event Hash ID, and whose proof is a compact JWS under ES256K signed by the party's one published credential key. A verifier recomputes the hash from the subject, checks the signature against the key the `kid` names and reports each finding separately; a registry anchors the exact JWS bytes once per hash ID and issuer. `spec/epcis-event-profile.md` gives the rules as they stood, `packages/dpp-profiles/manifests/exchange/epcis-event-vc@1.json` is the manifest, whose status reads `parked`, and `fixtures/vectors/dpp/interoperability/epcis/hash-v1.json` and `fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json` pin the hash and the signed credentials, as published.
 
 ## Source definitions
 
@@ -129,6 +107,6 @@ Status checking, DID document resolution and the EPCIS schema check are the call
 | Store an import record | [Import schema](https://github.com/bsv-blockchain/dpp/blob/d7dc9bfa6d1ca7d11df446a9882dba4f0692c2d9/contracts/epcis-import.schema.json) |
 | Use reference parsing | [Credentials package](../packages/dpp-credentials.md) |
 | Run every selected case; the parked mapping outcomes stay pinned beside them | [EPCIS vectors](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/epcis/v1.json), and `fixtures/vectors/dpp/interoperability/epcis/v2.json` for `epcis-vsc@2` |
-| Sign and verify an event directly | `spec/epcis-event-profile.md`; `@bsv/dpp-protocol` (`epcisEvent.ts`); `fixtures/vectors/dpp/interoperability/epcis/hash-v1.json` and `fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json` |
+| Read the parked profile for directly signed events | `spec/epcis-event-profile.md`; `packages/dpp-protocol/src/epcisEvent.ts`, which the package no longer exports; `fixtures/vectors/dpp/interoperability/epcis/hash-v1.json` and `fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json` |
 
 The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) records exercised import and pull outcomes. Next: [external credentials](external-credentials.md), to verify a partner's W3C credential beside the passport.

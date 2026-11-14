@@ -1600,6 +1600,136 @@
         "reviewOwner": "dpp maintainers",
         "notes": "Deliberately unclaimed from 9 November 2026: the parked epcis-vsc@1 and epcis-vsc@2 mappings left @bsv/dpp-credentials in 0.2.0-beta.6, with the tests that exercised this row. The crosswalk was checked against the section 7.2.3 table of the ratified CBV 2.0 text: 33 values, no_pedigree_match among them as deprecated in 2.0, and the five values section 7.2.3.1 replaces; the epcis-vsc@2 manifest keeps it as published. The code and its tests stay in the repository history at commit 8c82c5e6ca31cd991e701d1051047153c7395eae."
       }
+    },
+    {
+      "archivedAt": "2026-11-14",
+      "reason": "Parked on 14 November 2026 with the directly signed EPCIS event profile, epcis-event-vc@1, which spec/epcis-event-profile.md marks parked while its representation is reconsidered and no release selection requires. Its module, packages/dpp-protocol/src/epcisEvent.ts, stays in the repository with its tests and vectors and is no longer exported from @bsv/dpp-protocol; lastWorkingCommit is the last commit on main whose package exports it, and no published version did.",
+      "lastWorkingCommit": "3f11c0b35300fe2169d7eb9f84d40c7b64a94c55",
+      "row": {
+        "id": "EPEV-1-hash-id",
+        "sourceId": "spec-epcis-event-profile",
+        "sourceUri": "spec/epcis-event-profile.md",
+        "sourceVersion": "epcis-event-vc@1",
+        "layer": "profile",
+        "applicability": "when epcis-event-vc@1 is selected",
+        "profileId": "epcis-event-vc@1 (proposed)",
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "clause": "§3",
+        "roles": [
+          "attestation-issuer",
+          "attestation-verifier",
+          "registry"
+        ],
+        "summary": "The Event Hash ID is CBV 2.0 §8.9.2 with the @1 scope: the canonical order with certificationInfo after the offset, identifiers converted within the subset and Digital Links constrained, vocabulary expanded from bare and URN spellings, extensions from carried prefix declarations, timestamps in UTC with milliseconds, empty lists and eventID and recordTime ignored; error declarations, identifiers outside the subset, compact IRI values, sensor extensions and undeclared prefixes are refused by name.",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/epcisEvent.ts#epcisEventHashId",
+          "packages/dpp-protocol/src/epcisEvent.ts#canonicalEpcisIdentifier"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/epcisEvent.test.ts",
+          "packages/dpp-protocol/test/epcis-event-vectors.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/interoperability/epcis/hash-v1.json"
+        ],
+        "notes": "Fifteen positive vectors with pre-hash strings and fifteen refusals. Every positive vector agrees with at least one of two independent generators run on 9 November 2026 (epcis2.js 2.7.3 and epcis-event-hash-generator 1.9.3) and seven agree with both; each difference is recorded in the vector with the clause the profile follows. Tested on this repository's vectors only; no second implementation has reproduced them."
+      }
+    },
+    {
+      "archivedAt": "2026-11-14",
+      "reason": "Parked on 14 November 2026 with the directly signed EPCIS event profile, epcis-event-vc@1, which spec/epcis-event-profile.md marks parked while its representation is reconsidered and no release selection requires. Its module, packages/dpp-protocol/src/epcisEvent.ts, stays in the repository with its tests and vectors and is no longer exported from @bsv/dpp-protocol; lastWorkingCommit is the last commit on main whose package exports it, and no published version did.",
+      "lastWorkingCommit": "3f11c0b35300fe2169d7eb9f84d40c7b64a94c55",
+      "row": {
+        "id": "EPEV-2-credential-and-signature",
+        "sourceId": "spec-epcis-event-profile",
+        "sourceUri": "spec/epcis-event-profile.md",
+        "sourceVersion": "epcis-event-vc@1",
+        "layer": "profile",
+        "applicability": "when epcis-event-vc@1 is selected",
+        "profileId": "epcis-event-vc@1 (proposed)",
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "clause": "§2, §4, §5 and §7",
+        "roles": [
+          "attestation-issuer",
+          "attestation-verifier"
+        ],
+        "summary": "A credential of exactly the profile's members over the pinned contexts, secured as a compact JWS under ES256K by the party's one published credential key, parsed strictly and verified from the bytes: the hash ID recomputed against id and eventID, the signature against the key kid names (a did:key from its own bytes, others through the caller's resolver), the validity interval, and status, schema and authority through supplied verifiers, each reported separately; another alg is suite-unsupported.",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/epcisEvent.ts#buildEpcisEventCredential",
+          "packages/dpp-protocol/src/epcisEvent.ts#signEpcisEventCredential",
+          "packages/dpp-protocol/src/epcisEvent.ts#verifyEpcisEventCredential",
+          "packages/dpp-protocol/src/epcisEvent.ts#epcisEventCredentialVerifierFor"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/epcisEvent.test.ts",
+          "packages/dpp-protocol/test/epcis-event-vectors.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json"
+        ],
+        "notes": "Eighteen credential vectors with published test scalars. Signing goes through createSignature, so a BRC-100 wallet and a ProtoWallet produce the same bytes; the vectors are produced with a ProtoWallet. No credential has yet been issued through a connected wallet and verified by a JOSE library other than this implementation."
+      }
+    },
+    {
+      "archivedAt": "2026-11-14",
+      "reason": "Parked on 14 November 2026 with the directly signed EPCIS event profile, epcis-event-vc@1, which spec/epcis-event-profile.md marks parked while its representation is reconsidered and no release selection requires. Its module, packages/dpp-protocol/src/epcisEvent.ts, stays in the repository with its tests and vectors and is no longer exported from @bsv/dpp-protocol; lastWorkingCommit is the last commit on main whose package exports it, and no published version did. The registry contract keeps the envelope and the per-issuer collision rule the row cites.",
+      "lastWorkingCommit": "3f11c0b35300fe2169d7eb9f84d40c7b64a94c55",
+      "row": {
+        "id": "EPEV-3-anchor-and-uniqueness",
+        "sourceId": "spec-epcis-event-profile",
+        "sourceUri": "spec/epcis-event-profile.md",
+        "sourceVersion": "epcis-event-vc@1",
+        "layer": "profile",
+        "applicability": "when epcis-event-vc@1 is selected",
+        "profileId": "epcis-event-vc@1 (proposed)",
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "clause": "§6",
+        "roles": [
+          "registry",
+          "attestation-verifier"
+        ],
+        "summary": "The anchor commits to the exact JWS bytes with attestationId the hash ID, issuer the credential issuer, subject the lexically first object identifier in canonical form and attestationType the event type, derived only from a credential whose proof held; uniqueness is per (attestationId, issuer): a second issuer for one hash ID is accepted, a second byte string from the same issuer is refused and never replaces the first.",
+        "implementationRefs": [
+          "packages/dpp-protocol/src/epcisEvent.ts#epcisEventAnchorMetadata",
+          "contracts/registry.yaml (EpcisEventEnvelope and the 409 rule)"
+        ],
+        "testRefs": [
+          "packages/dpp-protocol/test/epcisEvent.test.ts",
+          "packages/dpp-protocol/test/epcis-event-vectors.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/vectors/dpp/exchange/epcis-event-vc/v1.json"
+        ],
+        "notes": "The anchor fields are tested; the pair rule is stated by the registry contract and pinned by the re-encoded-copy and second-issuer vectors as expected intake outcomes. Its enforcement is the registry's and is a gap (EPEV-4-registry-intake)."
+      }
+    },
+    {
+      "archivedAt": "2026-11-14",
+      "reason": "Parked on 14 November 2026 with the directly signed EPCIS event profile, epcis-event-vc@1, which spec/epcis-event-profile.md marks parked while its representation is reconsidered and no release selection requires. Its module, packages/dpp-protocol/src/epcisEvent.ts, stays in the repository with its tests and vectors and is no longer exported from @bsv/dpp-protocol; lastWorkingCommit is the last commit on main whose package exports it, and no published version did. The row was a gap: the reference registry never accepted the representation.",
+      "lastWorkingCommit": "3f11c0b35300fe2169d7eb9f84d40c7b64a94c55",
+      "row": {
+        "id": "EPEV-4-registry-intake",
+        "sourceId": "spec-epcis-event-profile",
+        "sourceUri": "spec/epcis-event-profile.md",
+        "sourceVersion": "epcis-event-vc@1",
+        "layer": "profile",
+        "applicability": "when epcis-event-vc@1 is selected",
+        "profileId": "epcis-event-vc@1 (proposed)",
+        "reviewedAt": "2026-11-09",
+        "reviewOwner": "dpp maintainers",
+        "clause": "§6 and §7",
+        "roles": [
+          "registry"
+        ],
+        "summary": "A registry accepts the representation in its explicit envelope, verifies it under the profile, retains the exact JWS, enforces the pair rule and anchors it under the derived fields.",
+        "implementationRefs": [],
+        "testRefs": [],
+        "evidenceRefs": [],
+        "notes": "The reference registry (not published) does not yet accept epcis-event-vc@1; the contract (registry.yaml 0.6.0) states the envelope and the collision rule."
+      }
     }
   ],
   "claims": [
@@ -1883,6 +2013,25 @@
           "EPCIS-7-import-record",
           "EPCIS-8-no-token-operation",
           "EPCIS-9-pull-outcomes"
+        ],
+        "minimumStatus": "tested"
+      }
+    },
+    {
+      "archivedAt": "2026-11-14",
+      "reason": "Parked on 14 November 2026 with epcis-event-vc@1 (spec/epcis-event-profile.md); the three EPEV rows it required are in this archive, EXCH-1-representations and EXCH-6-exact-byte-anchoring stay in the ledger, and the release selection withheld it.",
+      "lastWorkingCommit": "3f11c0b35300fe2169d7eb9f84d40c7b64a94c55",
+      "claim": {
+        "id": "epcis-event-signing-1",
+        "description": "A verifier of directly signed EPCIS events under epcis-event-vc@1: the hash ID with its @1 scope, the credential and its ES256K proof, and the anchor fields and pair rule, from fixtures alone. The registry's intake (EPEV-4-registry-intake) is outside this claim.",
+        "role": "attestation-verifier",
+        "profileId": "epcis-event-vc@1",
+        "requires": [
+          "EPEV-1-hash-id",
+          "EPEV-2-credential-and-signature",
+          "EPEV-3-anchor-and-uniqueness",
+          "EXCH-1-representations",
+          "EXCH-6-exact-byte-anchoring"
         ],
         "minimumStatus": "tested"
       }

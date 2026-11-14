@@ -115,16 +115,10 @@
       "kind": "governance",
       "disposition": "withheld",
       "rationale": "No implementation by another implementing party has passed every fixture, and the plan that would demonstrate one is parked at docs/reference/parked/independent-implementation-2026-09.json until such an implementer appears."
-    },
-    {
-      "id": "epcis-event-signing-1",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "epcis-event-vc@1 is a proposed optional profile this release does not claim."
     }
   ],
   "exclusions": [],
-  "reviewedAt": "2026-11-12",
+  "reviewedAt": "2026-11-14",
   "reviewOwner": "dpp maintainers",
   "notes": "The qualification of this selection says which claims the ledger's evidence supports for the packages of the candidate set. It is not a statement about the deployed index, the registry runtime, the application, product compliance or any European standard."
 }

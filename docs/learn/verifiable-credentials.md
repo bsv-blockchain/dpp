@@ -33,7 +33,7 @@ The proof suite in that table:
 
 `verifyExternalCredential` comes from `@bsv/dpp-credentials/exchange`, not from the root entry point: importing it from `@bsv/dpp-credentials` gives `undefined`.
 
-A third representation lives in `@bsv/dpp-protocol` rather than in the credentials package: `epcis-event-vc@1`, a GS1 EPCIS event signed by the party that observed it as a VC 2.0 credential under ES256K, keyed by the event's CBV 2.0 Event Hash ID and anchored by its exact bytes ([sign an event](../interoperability/epcis.md#sign-an-event)). It is proposed, tested on this repository's vectors (rows `EPEV-1-hash-id` to `EPEV-3-anchor-and-uniqueness`) and claimed by no release.
+A third representation is parked: `epcis-event-vc@1`, a GS1 EPCIS event signed by the party that observed it as a VC 2.0 credential under ES256K, keyed by the event's CBV 2.0 Event Hash ID and anchored by its exact bytes. The directly signed EPCIS event profile is parked while its representation is reconsidered. The module stays in the repository and is no longer exported from `@bsv/dpp-protocol`, no release claims it, and its rows are in the ledger archive ([parked: sign an event](../interoperability/epcis.md#parked-sign-an-event)).
 
 The ledger rows are in the [conformance ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json); [conformance and the ledger](../reference/conformance.md) explains how to read and check them.
 

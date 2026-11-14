@@ -165,6 +165,15 @@ export interface DeclaredPayload {
   ref: string
   /** The state's position in the supplied history, genesis first. */
   stateIndex: number
+  /**
+   * The `passport_id` field of the decoded state the payload sits in. The
+   * verifier reads it from that state and from nowhere else: not from the
+   * payload, the expected subject or the outpoint. A validator can therefore
+   * check that a product document inside the payload belongs to the passport
+   * that carries it; whether the state belongs to the passport asked about
+   * stays `subjectBinding`'s question.
+   */
+  passportId: string
 }
 
 /** A check's answer from a pluggable verifier, before the report names and orders it. */
@@ -276,7 +285,9 @@ export interface EvidencePolicy {
    * state that declares a profile answers `unknown` with
    * `schema-unavailable`; a state whose payload declares no profile answers
    * `unknown` with `profile-undeclared` either way, because no schema is
-   * selected for it.
+   * selected for it. Each call names the passport through
+   * `DeclaredPayload.passportId`, taken from the decoded state; a validator
+   * that does not need it ignores it.
    */
   payloadValidator?: (payload: DeclaredPayload) => Promise<PartialCheck>
   observers?: LatestStateObserver[]
@@ -919,7 +930,9 @@ export async function verifyPassportEvidence(
       schemaParts.push({ status: 'unknown', reasonCode: 'profile-undeclared', evidenceRefs: [ref], detail: `state ${s.index} declares no profile in its public payload` })
       continue
     }
-    const payload: DeclaredPayload = { ...declared, payloadPublic: s.state.payloadPublic, ref, stateIndex: s.index }
+    // The identity comes from the decoded state under examination, so a
+    // payload cannot name the passport it is checked against.
+    const payload: DeclaredPayload = { ...declared, payloadPublic: s.state.payloadPublic, ref, stateIndex: s.index, passportId: s.state.passportId }
     if (policy.payloadValidator == null) {
       schemaParts.push({ status: 'unknown', reasonCode: 'schema-unavailable', evidenceRefs: [ref], detail: `${declared.profile}@${declared.profileVersion}` })
       continue

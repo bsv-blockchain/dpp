@@ -98,6 +98,11 @@ describe('the capability document', () => {
     // package this one does not depend on; the baseline is where it is pinned.
     const seal = baseline.representations.find((r: any) => r.id === VSC_SEAL_REPRESENTATION)
     expect(seal?.mediaType).toBe(VSC_SEAL_MEDIA_TYPE)
+    // The directly signed EPCIS event representation is repeated too, since
+    // the parked module that names it is no longer exported; its manifest is
+    // where it is pinned, and the document declares the commitment alone.
+    const epcisEvent = readJson('packages/dpp-profiles/manifests/exchange/epcis-event-vc@1.json')
+    expect(document.representations).toContainEqual({ id: epcisEvent.representation, mediaType: epcisEvent.mediaType, verification: 'commitment-only' })
     expect(baseline.refused).toContain('uora-anchor-v2')
     expect(document.anchorFormats.filter((f) => f.status === 'refused').map((f) => f.prefix)).toEqual(baseline.refused)
   })

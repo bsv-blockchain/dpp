@@ -10,8 +10,6 @@
 import { readFileSync } from 'node:fs'
 import {
   ATTESTATION_ANCHOR_PREFIX,
-  EPCIS_EVENT_MEDIA_TYPE,
-  EPCIS_EVENT_REPRESENTATION,
   LIFECYCLE_MEDIA_TYPE,
   LIFECYCLE_REPRESENTATION,
   MANAGED_CUSTODY_PROFILE,
@@ -93,6 +91,17 @@ export function operatorProfileFor(policy: PublisherPolicyConfig | undefined, sy
  */
 export const VSC_SEAL_REPRESENTATION = 'vsc-seal-json-v1'
 export const VSC_SEAL_MEDIA_TYPE = 'application/vc+ld+json'
+
+/**
+ * The directly signed EPCIS event representation this node indexes
+ * commitments to. Its rules are those of the parked profile in
+ * `spec/epcis-event-profile.md`, whose module `@bsv/dpp-protocol` keeps in the
+ * repository and no longer exports, so the two identifiers are repeated here;
+ * a test holds them equal to the profile's manifest. They are not exported:
+ * the document is where a consumer reads them.
+ */
+const EPCIS_EVENT_REPRESENTATION = 'epcis-event-vc@1'
+const EPCIS_EVENT_MEDIA_TYPE = 'application/vc+jwt'
 
 export type CapabilityRole = 'passport-reader' | 'attestation-verifier' | 'passport-writer' | 'attestation-issuer' | 'registry' | 'overlay'
 

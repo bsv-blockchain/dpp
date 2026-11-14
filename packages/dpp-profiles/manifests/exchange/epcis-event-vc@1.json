@@ -4,7 +4,7 @@
   "version": "1",
   "profile": "epcis-event-vc@1",
   "kind": "exchange",
-  "status": "proposed",
+  "status": "parked",
   "title": "Directly signed EPCIS events as VC 2.0 credentials keyed by the CBV 2.0 Event Hash ID",
   "description": "The exchange profile for a GS1 EPCIS 2.0 event signed by the party that observed or performed the step: a W3C Verifiable Credentials Data Model 2.0 credential whose subject is the event, whose id is the event's CBV 2.0 Event Hash ID, secured as a compact JWS under ES256K with the party's one published credential key, and committed by the exact JWS bytes under the generic anchor. No custody model and no mapping stand between the event and its proof; several parties may sign one event, and uniqueness is per hash ID and issuer. The hash algorithm's scope under this version is fixed in spec/epcis-event-profile.md section 3, with refusals by name where the ratified text and the two independent reference generators part. Not a UNTP traceability event: the shape follows UNTP's prose for an EPCIS event carried as a credential and validates against no UNTP schema.",
   "representation": "epcis-event-vc@1",

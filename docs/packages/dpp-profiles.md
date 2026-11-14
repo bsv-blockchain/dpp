@@ -139,7 +139,7 @@ Stop before treating this payload as valid: supply the required values and valid
 
 Reuse compiled schemas with `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`. Every lineage state declares the same profile; `readPublicPayloadSchema` returns fresh copies, and Ajv refuses a second copy of an existing `$id`.
 
-4. To include validation in a report, pass `profilePayloadValidator(ajv)` as the policy's `payloadValidator` to `verifyPassportEvidence`. Use the same Ajv instance.
+4. To include validation in a report, pass `profilePayloadValidator(ajv)` as the policy's `payloadValidator` to `verifyPassportEvidence`. Use the same Ajv instance. The report hands the validator each state's `passportId` beside its payload, read from the decoded state. `profilePayloadValidator` takes it as an optional member of `PayloadToValidate` and ignores it, because a schema says nothing about which passport carries a payload; a validator of your own can use it to check that a product document inside the payload belongs to that passport.
 
 | Token payload | Report's `schema` result |
 |---|---|

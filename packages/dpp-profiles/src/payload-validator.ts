@@ -46,6 +46,13 @@ export interface PayloadToValidate {
   profile: string
   profileVersion: number
   payloadPublic: string
+  /**
+   * The passport the payload sits in, as `verifyPassportEvidence` reads it
+   * from the decoded state. Optional, so a caller that validates a payload
+   * outside a report need not invent one. `profilePayloadValidator` ignores
+   * it: a schema says nothing about which passport carries the payload.
+   */
+  passportId?: string
 }
 
 /** The validator's answer, in the report's own words: a partial check for `schema`. */

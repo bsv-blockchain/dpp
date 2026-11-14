@@ -11,7 +11,6 @@ import {
   base64UrlEncode,
   buildEpcisEventCredential,
   constrainedCanonicalDigitalLink,
-  didKeyFromIdentityKey,
   epcUriToDigitalLink,
   epcisEventAnchorMetadata,
   epcisEventCredentialKey,
@@ -22,7 +21,8 @@ import {
   parseStrictJson,
   signEpcisEventCredential,
   verifyEpcisEventCredential,
-} from '../src/index.js'
+} from '../src/epcisEvent.js'
+import { didKeyFromIdentityKey } from '../src/index.js'
 import { COMMISSIONING_EVENT } from './epcis-event-vectors.js'
 import { EPCIS_GS1_ARTEFACTS, readGs1Artefact } from '../../dpp-credentials/src/gs1-artefacts.js'
 
@@ -192,5 +192,17 @@ describe('the credential', () => {
     expect(ours.proof).toEqual({ status: 'pass' })
     expect(ours.subjects).toEqual(['https://id.gs1.org/01/09521234123453/21/SER1'])
     expect(ours.attestationType).toBe('ObjectEvent')
+  })
+})
+
+describe('the package entry point', () => {
+  it('exports nothing of this parked module', async () => {
+    // The profile is parked while its representation is reconsidered, so the
+    // module is held to its own path: a name that reached the entry point
+    // again would be public API on the next publication.
+    const entry = await import('../src/index.js')
+    const parked = Object.keys(await import('../src/epcisEvent.js'))
+    expect(parked).toEqual(expect.arrayContaining(['epcisEventHashId', 'verifyEpcisEventCredential', 'EPCIS_EVENT_REPRESENTATION']))
+    for (const name of parked) expect(name in entry, name).toBe(false)
   })
 })
