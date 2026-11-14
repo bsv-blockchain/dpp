@@ -6,6 +6,7 @@ This file records what a consumer of the `@bsv/dpp-*` packages, the contracts an
 
 `dpp-release-2026-11` is the current candidate: `@bsv/dpp-protocol` and `@bsv/dpp-profiles` `0.3.0-beta.10`, `@bsv/dpp-overlay` `0.4.0-beta.13`, `@bsv/dpp-credentials` `0.2.0-beta.6` and `@bsv/create-dpp-app` `0.1.0-beta.2`. Each line below is a change since the last publication, `dpp-release-2026-10-10` on 16 October 2026. A step number is a step of [test the November source candidate](docs/migration.md#test-the-november-source-candidate).
 
+- The W3C credentials context in `@bsv/dpp-credentials` now ships with the full W3C Software and Document License text and its copyright notice in `artifacts/w3c/NOTICE.md`, and the index image carries `NOTICE` and `PATENTS` beside `LICENSE`. No API changes.
 - `managed-custody@2` is the one custody profile: readers read `dpp-managed-acceptance@1` under its direct-signature rule and `@2` under the derived key, and nothing writes `@1` (step 1).
 - `signManagedAcceptance` takes the state-signing `DataSigner` in place of the removed `AcceptanceSigner` interface and writes `dpp-managed-acceptance@2` only, signed by the custodian's BRC-42 child for `[1, 'dpp managed record v1']`; `MANAGED_CUSTODY_PROFILE` is `managed-custody@2`, which the index declares, and `MANAGED_RECORD_PROTOCOL_ID`, `managedRecordVerificationKey`, `MANAGED_ACCEPTANCE_FORMAT_V1` and `MANAGED_CUSTODY_PROFILE_V1` are new (step 2).
 - Under `managed-custody@2` each state locks to its own field-6 controller key (`spec/managed-custody.md` §2).

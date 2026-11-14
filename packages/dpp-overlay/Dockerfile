@@ -44,7 +44,9 @@ RUN test "$(node --version)" = "v22.23.4"
 WORKDIR /repo
 ENV NODE_ENV=production
 
-COPY LICENSE ./
+# The attribution notice and the patent statement travel with the licence,
+# so the image carries the same three files the packages do.
+COPY LICENSE NOTICE PATENTS ./
 COPY package.json package-lock.json ./
 COPY packages/dpp-protocol/package.json packages/dpp-protocol/
 COPY packages/dpp-overlay/package.json packages/dpp-overlay/
