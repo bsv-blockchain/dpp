@@ -215,6 +215,18 @@ const noSnapshot = await epcisExchange.restoreEpcisRecovery({ storage: exchangeS
 out.push(['dpp-credentials/epcis-exchange: a recovery export of an empty store answers no-source-scope, a restore without a descriptor answers descriptor-missing, and neither writes anything', nothingToCarry.ok === false && nothingToCarry.code === 'no-source-scope' && noSnapshot.ok === false && noSnapshot.code === 'descriptor-missing' && exchangeStore.state.bytes.size === 0 && exchangeStore.state.records.size === 0 && typeof epcisExchange.verifyEpcisRecovery === 'function' && typeof epcisExchange.exportEpcisPublicEvidence === 'function'])
 out.push(['dpp-credentials: the root exports the GS1 provisioning functions and the three pinned EPCIS files', typeof credentials.provisionGs1Artefacts === 'function' && typeof credentials.verifyGs1Artefacts === 'function' && credentials.EPCIS_GS1_ARTEFACTS.length === 3 && credentials.verifyGs1Artefacts({ dir: join(process.cwd(), 'gs1-not-provisioned') }).ok === false])
 out.push(['dpp-credentials: the dpp-gs1-artefacts executable is installed', existsSync(join('node_modules', '.bin', 'dpp-gs1-artefacts'))])
+// The validator service and its client install with the profiles package and need nothing more to load. This consumer
+// did not install the engine libraries, so a client with no service to ask answers that the engine could not run,
+// never a result, and the service refuses to start and names a library it lacks. Which one it names first depends on
+// what another package brought in: the credentials package depends on a JSON-LD processor of its own.
+out.push(['dpp-profiles: the dpp-validator executable is installed', existsSync(join('node_modules', '.bin', 'dpp-validator'))])
+const validatorClient = await import('@bsv/dpp-profiles/validator-client')
+const unanswered = await validatorClient.createValidatorClient({ url: 'http://127.0.0.1:9', timeoutMs: 2000 }).jsonLd.toRdf({ document: {}, contexts: [] })
+out.push(['dpp-profiles/validator-client: with no service at its address the engine answers that it could not run and returns no result', unanswered.ok === false && (unanswered.reason === 'engine-error' || unanswered.reason === 'timeout')])
+const validatorService = await import('@bsv/dpp-profiles/validator-service')
+let notStarted
+try { const started = await validatorService.startValidatorService(); await started.close() } catch (e) { notStarted = e }
+out.push(['dpp-profiles/validator-service: without the engine libraries installed the service does not start and names one it lacks', notStarted instanceof Error && notStarted.message.includes('The validation engine did not load') && /\\b(n3@2\\.13\\.12|shacl-engine@1\\.1\\.3|jsonld@9\\.0\\.0)\\b/.test(notStarted.message)])
 console.log(JSON.stringify(out))
 `)
   const outcome = JSON.parse(run(['node', 'consumer.mjs'], dir).trim().split('\n').at(-1))

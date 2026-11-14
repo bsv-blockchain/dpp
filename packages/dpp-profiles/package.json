@@ -6,6 +6,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "dpp-validator": "./dist/validator-cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -14,6 +17,14 @@
     "./validation-engine": {
       "types": "./dist/validation-engine.d.ts",
       "default": "./dist/validation-engine.js"
+    },
+    "./validator-client": {
+      "types": "./dist/validator-client.d.ts",
+      "default": "./dist/validator-client.js"
+    },
+    "./validator-service": {
+      "types": "./dist/validator-service.d.ts",
+      "default": "./dist/validator-service.js"
     },
     "./manifests/*": "./manifests/*",
     "./schemas/*": "./schemas/*",

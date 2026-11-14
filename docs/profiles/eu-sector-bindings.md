@@ -333,7 +333,7 @@ The shapes check granularity as well, with a SPARQL constraint: the declared lev
 - `fail` at `assembly`: the two parts do not belong together, and `refusal` on that step names why ([rejoin refusals](../packages/dpp-profiles.md#split-and-rejoin-on-their-own)).
 - `fail` at `json-ld-expand` naming `_comment` or another property: the document carries a member its contexts do not define. Remove it or define it in a context the binding lists.
 - `fail` at `json-ld-expand` naming a context: the document names a context outside the binding.
-- `unknown` with `validator-unavailable`: an engine is missing, lacks SPARQL constraints, timed out or failed. Install the libraries and build the engine with `createValidationEngine()`.
+- `unknown` with `validator-unavailable`: an engine is missing, lacks SPARQL constraints, timed out or failed. Install the libraries and build the engine with `createValidationEngine()`, or start a [validator service](../packages/dpp-profiles.md#run-the-engines-as-a-service) and check the address the client was given.
 - `unknown` with `profile-unknown`: the bindings were not registered, or a registration was refused. Read the results of `registerBundledBindings`, or of `registerProfileBundle` where the bindings were restored from a package.
 
 ## Sources

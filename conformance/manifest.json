@@ -64,7 +64,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/services.md",
-      "digest": "d266d7cb6c1cf7cda12183fb0ecccd4abd58bd4c866fb89c38385a6ab9934787"
+      "digest": "8505ce3e3ef12409625894582e6d82ba8fa307007df6ad9e6a615083b576559b"
     },
     {
       "id": "spec-verification",
@@ -305,6 +305,14 @@
       "kind": "local",
       "path": "contracts/epcis-recovery.schema.json",
       "digest": "87464c91edef5be1bf853dfe5d14089f151352b1a2dc851d646b67af85bb4e24"
+    },
+    {
+      "id": "contract-validator",
+      "uri": "contracts/validator.schema.json",
+      "version": "1",
+      "kind": "local",
+      "path": "contracts/validator.schema.json",
+      "digest": "e6dedc9ed9f1173363e961682592692465ee8563c077b591330d84747fa3aceb"
     },
     {
       "id": "profiles-manifest-v2-schema",
@@ -1736,9 +1744,9 @@
         "contracts/overlay.yaml#x-dpp-profile.topics.tm_dpp"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "SVC-2-version-2-admission",
@@ -1765,9 +1773,9 @@
         "fixtures/chain-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "SVC-2-anchor-admission",
@@ -1794,9 +1802,9 @@
         "fixtures/attestation-anchor-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "SVC-2-cursor-lookup",
@@ -1821,9 +1829,9 @@
         "contracts/overlay.yaml#components.schemas.anchorLookup"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Pagination observes the live index; a snapshot export is a separate proposed contract. Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged."
+      "notes": "Pagination observes the live index; a snapshot export is a separate proposed contract. Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "SVC-2-proof-ingest",
@@ -1848,9 +1856,9 @@
         "contracts/overlay.yaml#paths./arc-ingest"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "SVC-2-registration",
@@ -1880,10 +1888,10 @@
         "contracts/overlay.yaml#paths./register"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-02: the default index registers a newcomer from the quick start; registration.test.ts exercises the derived key and every refusal the fixture pins. Narrowed on 12 November 2026 to the signed request: open and approval modes, rate limits, token issuance, revocation and the policy version an accepted request appends are the reference package's registration, documented in the @bsv/dpp-overlay README.",
-      "sourceDigest": "d266d7cb6c1cf7cda12183fb0ecccd4abd58bd4c866fb89c38385a6ab9934787"
+      "notes": "Decided 2026-11-02: the default index registers a newcomer from the quick start; registration.test.ts exercises the derived key and every refusal the fixture pins. Narrowed on 12 November 2026 to the signed request: open and approval modes, rate limits, token issuance, revocation and the policy version an accepted request appends are the reference package's registration, documented in the @bsv/dpp-overlay README. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged.",
+      "sourceDigest": "8505ce3e3ef12409625894582e6d82ba8fa307007df6ad9e6a615083b576559b"
     },
     {
       "id": "SVC-1-publisher-keys",
@@ -1913,10 +1921,10 @@
         "conformance/examples/capabilities-reference-node.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Kept on 12 November 2026 when the signed publisher policy chain moved to the reference layer (PUB-1-publisher-policy). The capability document lists the keys active now, and the report checks each state against the keys its policy supplies.",
-      "sourceDigest": "d266d7cb6c1cf7cda12183fb0ecccd4abd58bd4c866fb89c38385a6ab9934787"
+      "notes": "Kept on 12 November 2026 when the signed publisher policy chain moved to the reference layer (PUB-1-publisher-policy). The capability document lists the keys active now, and the report checks each state against the keys its policy supplies. Re-read 2026-11-15 after §7 described the validation engine as a service; §1 is unchanged.",
+      "sourceDigest": "8505ce3e3ef12409625894582e6d82ba8fa307007df6ad9e6a615083b576559b"
     },
     {
       "id": "SVC-2-retraction",
@@ -1943,9 +1951,9 @@
         "contracts/overlay.yaml#paths./retract"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-05: peers are not told of a retraction; the federation test shows the withdrawn state no longer offered and the peer keeping it until its own retraction route is used. From 2026-11-12 retraction is the overlay contract's optional retraction extension, so the row applies to an index that serves it; the reference index does. Re-read 2026-11-12 after §2 left synchronisation to the reference package: the summary now says that an index holding a synchronised copy keeps it until its own operator withdraws it."
+      "notes": "Decided 2026-11-05: peers are not told of a retraction; the federation test shows the withdrawn state no longer offered and the peer keeping it until its own retraction route is used. From 2026-11-12 retraction is the overlay contract's optional retraction extension, so the row applies to an index that serves it; the reference index does. Re-read 2026-11-12 after §2 left synchronisation to the reference package: the summary now says that an index holding a synchronised copy keeps it until its own operator withdraws it. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "SVC-3-registry-bytes",
@@ -1971,9 +1979,9 @@
         "fixtures/attestation-anchor-v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Implemented in the registry repository against the shared fixture; assessed there, recorded here. Re-read 2026-11-09 after §3 stated the refusal of a representation the registry does not implement: its tests refuse the parked SEAL in its envelope and as the request body with 422 and representation-unsupported, nothing stored or anchored, and serve a SEAL stored before byte for byte on the proof, chain, collection, report and evidence package routes. Re-read 2026-11-12 after §3 and the registry contract dropped the legacy intake: the reference registry refuses a historical placeholder or SD-JWT body to POST /attestations with 422, outcome invalid and the issue naming the missing representation, answers it on POST /validate with outcome invalid and no report, stores and anchors nothing, and still holds a record stored under a historical UORA representation. Such a record retains no secured bytes: the record list names it as legacy-uora-json, the proof and chain routes serve its canonical bytes, the bytes its digest commits to, the report route answers it with 409 legacy_representation, and the evidence package names it under what the registry could not produce, which no test yet exercises."
+      "notes": "Implemented in the registry repository against the shared fixture; assessed there, recorded here. Re-read 2026-11-09 after §3 stated the refusal of a representation the registry does not implement: its tests refuse the parked SEAL in its envelope and as the request body with 422 and representation-unsupported, nothing stored or anchored, and serve a SEAL stored before byte for byte on the proof, chain, collection, report and evidence package routes. Re-read 2026-11-12 after §3 and the registry contract dropped the legacy intake: the reference registry refuses a historical placeholder or SD-JWT body to POST /attestations with 422, outcome invalid and the issue naming the missing representation, answers it on POST /validate with outcome invalid and no report, stores and anchors nothing, and still holds a record stored under a historical UORA representation. Such a record retains no secured bytes: the record list names it as legacy-uora-json, the proof and chain routes serve its canonical bytes, the bytes its digest commits to, the report route answers it with 409 legacy_representation, and the evidence package names it under what the registry could not produce, which no test yet exercises. Re-read 2026-11-15 after §7 described the validation engine as a service; §3 is unchanged."
     },
     {
       "id": "SVC-6-idempotent-admission",
@@ -2000,9 +2008,81 @@
         "contracts/overlay.yaml#x-dpp-profile.must"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §6 made the operator profiles and write credentials the reference index package's; the replay and eviction rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §6 made the operator profiles and write credentials the reference index package's; the replay and eviction rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §6 is unchanged."
+    },
+    {
+      "id": "SVC-7-validator-service",
+      "sourceId": "spec-services",
+      "sourceUri": "spec/services.md",
+      "sourceVersion": "working draft",
+      "clause": "§7",
+      "summary": "A validation engine reached in another process is an engine and nothing more: it answers expansion and validation over the files a request carries, holds each file to the SHA-256 sent with it, uses no context the request did not carry and fetches nothing, refuses a validation that requires a capability it lacks, bounds request size, concurrency and time, and logs and retains nothing a request carries. Its caller keeps every trust decision, follows no redirect, sends its credential to the configured address only, and treats an unreachable service, a late answer, any status other than 200, an answer outside the contract or over the size it reads, a lesser capability and an engine that did not finish as a step that could not run, never as a pass.",
+      "layer": "role",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when an application runs the JSON-LD and SHACL steps of a profile held by a binding in a validator service; no role requires the service",
+      "profileId": "core (when selected)",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/validator-wire.ts",
+        "packages/dpp-profiles/src/validator-service.ts",
+        "packages/dpp-profiles/src/validator-worker.ts",
+        "packages/dpp-profiles/src/validator-client.ts",
+        "packages/dpp-profiles/src/validator-command.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/validator-parity.test.ts",
+        "packages/dpp-profiles/test/validator-client.test.ts",
+        "packages/dpp-profiles/test/validator-service.test.ts",
+        "packages/dpp-profiles/test/validator-workers.test.ts",
+        "packages/dpp-profiles/test/validator-image.test.ts"
+      ],
+      "evidenceRefs": [
+        "scripts/validator-parity.mjs",
+        "scripts/validator-image-check.mjs",
+        "packages/dpp-profiles/validator-image/image-check.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-15",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "8505ce3e3ef12409625894582e6d82ba8fa307007df6ad9e6a615083b576559b",
+      "notes": "New on 2026-11-15 with the section. The sector bindings' and the example profiles' vectors, 49 answers, are identical with the engine in process, through the service started in the test in both of its arrangements, and through the built image with no network and from outside it; a second implementation of the contract, written for the test in a process of its own, decides every vector the same way, finding for finding. A stopped service, a service without SPARQL constraints and every malformed, oversized, late or redirected answer give unknown. An operation over the time limit is stopped by ending its thread, which a test shows with a pattern that never yields; an engine a caller supplies in place of the package's cannot be stopped, and the service says so in its answer. The image check is a script and a recorded result, not a unit test, and the continuous integration workflow runs it."
+    },
+    {
+      "id": "VAL-1-validator-contract",
+      "sourceId": "contract-validator",
+      "sourceUri": "contracts/validator.schema.json",
+      "sourceVersion": "1",
+      "clause": "schema",
+      "summary": "Every body a validator service exchanges is the contract's: the expansion and validation requests with each file as canonical base64 beside its SHA-256, the two answers with the engine's capabilities and its result, the capability document, the health answer and the refusal with its code; a body with a member the contract does not name is refused by either side.",
+      "layer": "reference",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when an application reaches its validation engine through the reference validator service or a replacement for it",
+      "profileId": "core (when selected)",
+      "implementationRefs": [
+        "contracts/validator.schema.json",
+        "packages/dpp-profiles/src/validator-wire.ts",
+        "packages/dpp-profiles/src/validator-service.ts",
+        "packages/dpp-profiles/src/validator-worker.ts",
+        "packages/dpp-profiles/src/validator-client.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/validator-service.test.ts",
+        "packages/dpp-profiles/test/validator-client.test.ts",
+        "packages/dpp-profiles/test/validator-parity.test.ts"
+      ],
+      "evidenceRefs": [],
+      "status": "tested",
+      "reviewedAt": "2026-11-15",
+      "reviewOwner": "dpp maintainers",
+      "sourceDigest": "e6dedc9ed9f1173363e961682592692465ee8563c077b591330d84747fa3aceb",
+      "notes": "New on 2026-11-15. Every request the client writes and every answer and refusal the service gives in the tests validates against the schema's definitions, and the service refuses each malformed request the tests send before any engine is asked. The stand-in service of the tests was written from this schema and the specification alone."
     },
     {
       "id": "VER-2-report",
@@ -2494,9 +2574,9 @@
       ],
       "evidenceRefs": [],
       "status": "gap",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Deliberately unclaimed from 12 November 2026, when the reference registry removed fetchStatusCredential with its legacy intake. Until then it fetched status lists with a 5000 ms budget, 1 MiB declared and streamed caps, 1 MiB decompressed, no redirects except one explicitly permitted destination re-checked against the host policy, and the host policy applied before any connection. No kept implementation fetches a status list: verifyBitstringStatus reads one through the status policy's resolve, which the reference registry answers from the documents its external policy pins and never from the network. What remains covers identity documents only and is not the whole row: createDidWebResolver, which the exchange entry uses when an operator permits did:web origins, fetches a DID document only from a permitted origin, with a 5000 ms timeout and a 256 KiB declared and streamed cap by default and redirects refused, and checks no address; did-web.test.ts exercises the origin rule and the cap, not the timeout or the redirect refusal. verifyBitstringStatus bounds a list's compressed and decompressed size at 1 MiB. The rule still applies, as stated, to a verifier that fetches status or identity documents."
+      "notes": "Deliberately unclaimed from 12 November 2026, when the reference registry removed fetchStatusCredential with its legacy intake. Until then it fetched status lists with a 5000 ms budget, 1 MiB declared and streamed caps, 1 MiB decompressed, no redirects except one explicitly permitted destination re-checked against the host policy, and the host policy applied before any connection. No kept implementation fetches a status list: verifyBitstringStatus reads one through the status policy's resolve, which the reference registry answers from the documents its external policy pins and never from the network. What remains covers identity documents only and is not the whole row: createDidWebResolver, which the exchange entry uses when an operator permits did:web origins, fetches a DID document only from a permitted origin, with a 5000 ms timeout and a 256 KiB declared and streamed cap by default and redirects refused, and checks no address; did-web.test.ts exercises the origin rule and the cap, not the timeout or the redirect refusal. verifyBitstringStatus bounds a list's compressed and decompressed size at 1 MiB. The rule still applies, as stated, to a verifier that fetches status or identity documents. Re-read 2026-11-15 after §7 described the validation engine as a service; §3 and §5 are unchanged."
     },
     {
       "id": "W3C-VC-JOSE-ES256K",
@@ -3356,9 +3436,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Relations supersedes, revokes, suspends and expires (derived at evaluation time) are recorded and served with their source and reason; disputes has no producing path and is listed as not produced; conflicts under different frameworks or anchors are returned unresolved with every candidate named; independent assessments do not compete. From 9 November 2026 the reference registry no longer produces the sources vsc-correction, vsc-parent and status-publication, because it accepts no new SEAL and publishes no status lists; relations recorded under them stay served, which its tests exercise. revokes and suspends now have one producing path, an authenticated status observation made while reporting on a stored record (status-observation); the relation store tests persist and clear relations of that source, and test/external-credentials.test.ts drives an observation through the report into a relation: a set bit on an authenticated revocation or suspension list records revokes or suspends, served on the report and the proof, a forged or stale list records nothing, and an authenticated read of the bit unset marks a suspension cleared and never clears a revocation. Re-read 2026-11-12 after the reference registry removed its legacy intake with the conflict cascade and the certification registry: it no longer produces the source conflict-cascade, so supersedes joins disputes as not produced, and the relations recorded under it stay served. It holds no authority evidence to rank issuers by, so every conflict is returned unresolved with every candidate named; the competing-claim fixture shows timestamp-first would pick the later claim and the registry picks none."
+      "notes": "Relations supersedes, revokes, suspends and expires (derived at evaluation time) are recorded and served with their source and reason; disputes has no producing path and is listed as not produced; conflicts under different frameworks or anchors are returned unresolved with every candidate named; independent assessments do not compete. From 9 November 2026 the reference registry no longer produces the sources vsc-correction, vsc-parent and status-publication, because it accepts no new SEAL and publishes no status lists; relations recorded under them stay served, which its tests exercise. revokes and suspends now have one producing path, an authenticated status observation made while reporting on a stored record (status-observation); the relation store tests persist and clear relations of that source, and test/external-credentials.test.ts drives an observation through the report into a relation: a set bit on an authenticated revocation or suspension list records revokes or suspends, served on the report and the proof, a forged or stale list records nothing, and an authenticated read of the bit unset marks a suspension cleared and never clears a revocation. Re-read 2026-11-12 after the reference registry removed its legacy intake with the conflict cascade and the certification registry: it no longer produces the source conflict-cascade, so supersedes joins disputes as not produced, and the relations recorded under it stay served. It holds no authority evidence to rank issuers by, so every conflict is returned unresolved with every candidate named; the competing-claim fixture shows timestamp-first would pick the later claim and the registry picks none. Re-read 2026-11-15 after §7 described the validation engine as a service; §3 is unchanged."
     },
     {
       "id": "LIFE-2-mapping-results",
@@ -3631,9 +3711,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
-      "notes": "Guarded in the topic manager: every refusal returns the offered coins as coinsToRetain, and ls_dpp records a spend only once the spending transaction is admitted, so a refused spend leaves /lookup, /history and the record store unchanged, the tip unspent, and a valid successor admitted. What the Engine still does: it marks the tip spent in its own storage until a valid successor arrives and records the refused transaction as applied, so the same bytes announced again are a duplicate no-op; both need an upstream distinction between a refused and an unretained spend. Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged."
+      "notes": "Guarded in the topic manager: every refusal returns the offered coins as coinsToRetain, and ls_dpp records a spend only once the spending transaction is admitted, so a refused spend leaves /lookup, /history and the record store unchanged, the tip unspent, and a valid successor admitted. What the Engine still does: it marks the tip spent in its own storage until a valid successor arrives and records the refused transaction as applied, so the same bytes announced again are a duplicate no-op; both need an upstream distinction between a refused and an unretained spend. Re-read 2026-11-12 after §2 marked the extensions as wire shapes, kept synchronisation and registration operations out of the standard and narrowed registration to the signed request; the rule this row assesses is unchanged. Re-read 2026-11-15 after §7 described the validation engine as a service; §2 is unchanged."
     },
     {
       "id": "OVL-2-retraction",

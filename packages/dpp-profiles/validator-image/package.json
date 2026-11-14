@@ -1,0 +1,13 @@
+{
+  "name": "dpp-validator-image",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The production dependencies of the dpp-validator image: the engine libraries at the versions @bsv/dpp-profiles/validation-engine names, and nothing else. Not a workspace and never published.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "jsonld": "9.0.0",
+    "n3": "2.13.12",
+    "shacl-engine": "1.1.3"
+  }
+}

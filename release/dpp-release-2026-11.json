@@ -115,10 +115,12 @@
       "name": "@bsv/dpp-profiles",
       "version": "0.3.0-beta.10",
       "directory": "packages/dpp-profiles",
-      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports; the retired sector profiles as frozen files, read for inspection and never written or validated under; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules; profile bundles that carry those bindings and their files in an evidence package, restored through the destination's own trusted digests",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports; the retired sector profiles as frozen files, read for inspection and never written or validated under; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules; profile bundles that carry those bindings and their files in an evidence package, restored through the destination's own trusted digests; a validator service that runs the JSON-LD and SHACL engines in another process under the dpp-validator/1 contract (./validator-service), the client an application configures in the engines' place (./validator-client), and the dpp-validator executable that starts the service",
       "entryPoints": [
         ".",
         "./validation-engine",
+        "./validator-client",
+        "./validator-service",
         "./manifests/*",
         "./schemas/*",
         "./generated/*",
@@ -134,8 +136,10 @@
       "nodeBuiltins": [
         "node:crypto",
         "node:fs",
+        "node:http",
         "node:path",
-        "node:url"
+        "node:url",
+        "node:worker_threads"
       ],
       "support": [
         {
@@ -155,6 +159,24 @@
           "types": true,
           "sideEffects": false,
           "notes": "The JSON-LD and SHACL engines for profiles held by a binding. Importing it loads nothing; createValidationEngine loads jsonld, n3 and shacl-engine, which the caller installs and the package does not depend on."
+        },
+        {
+          "entryPoint": "./validator-client",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The JSON-LD and SHACL engines answered by a validator service over the dpp-validator/1 contract. Importing it loads nothing and creating a client opens no connection; a service that cannot be used answers as an engine that could not run, never as a pass."
+        },
+        {
+          "entryPoint": "./validator-service",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "unsupported",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The validation engine behind a network call. Importing it starts nothing; startValidatorService listens, and runs the engine in threads it can stop, loading jsonld, n3 and shacl-engine there, which the caller installs and the package does not depend on. The dpp-validator executable calls it."
         },
         {
           "entryPoint": "./manifests/*",
@@ -400,6 +422,11 @@
       "path": "contracts/epcis-recovery.schema.json",
       "sha256": "87464c91edef5be1bf853dfe5d14089f151352b1a2dc851d646b67af85bb4e24",
       "pins": "the descriptor of an EPCIS exchange snapshot, format 1: every file the snapshot needs, the source scopes covered, the boundary, what is left out and what is claimed, for an authorised recovery snapshot and for the public form"
+    },
+    {
+      "path": "contracts/validator.schema.json",
+      "sha256": "e6dedc9ed9f1173363e961682592692465ee8563c077b591330d84747fa3aceb",
+      "pins": "the wire contract of the validator service, dpp-validator/1: the two engine operations, the capability document and the refusals"
     },
     {
       "path": "contracts/profile-evidence.schema.json",

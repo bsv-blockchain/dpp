@@ -42,7 +42,10 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 | `src/binding-validator.ts`, `src/product-identity.ts`, `src/strict-json.ts` | `bindingPayloadValidator`: the envelope, the binding digest, the binding's steps and the product-to-passport identity rules. A step that could not run is `unknown`, never `pass`. |
 | `src/access-tiers.ts`, `src/bound-payload.ts` | The split a binding's `access` member states, by top-level property and restricted unless listed: `splitProductByAccess`, `assembleProduct` with its typed refusals, and `prepareBoundPayload`, which validates the whole document, splits it and returns the public payload as the text to sign. `authorisedPayloadValidator` checks both parts rejoined. |
 | `src/profile-bundle.ts` | Portable profiles. `exportProfileBundle` returns the files and inventory entries that carry registered bindings in a `dpp-evidence-package@1`: each binding in its exact bytes, every artefact it lists, its notices and a descriptor. `openProfileBundle` reads a bundle from memory (`profileBundleFiles`) or from a folder (`profileBundleDirectory`), and `registerProfileBundle` registers it through the destination's own registry and trusted digests, with one named refusal per cause. A file GS1 publishes is named by address and digest and never carried. `bundledBindingNotices` and `bundledBindingLicenceTexts` supply the notice and licence text of the bundled bindings, and a restored bundle hands on the ones it carries. |
-| `src/validation-engine.ts` | The `@bsv/dpp-profiles/validation-engine` entry point: JSON-LD and SHACL engines over `jsonld`, `n3` and `shacl-engine`, which the caller installs. Nothing else in the package imports it. |
+| `src/validation-engine.ts` | The `@bsv/dpp-profiles/validation-engine` entry point: JSON-LD and SHACL engines over `jsonld`, `n3` and `shacl-engine`, which the caller installs. Nothing the main entry point reaches imports it; the validator service's engine thread is the one module that does. |
+| `src/validator-service.ts`, `src/validator-worker.ts`, `src/validator-command.ts`, `src/validator-cli.ts` | The `@bsv/dpp-profiles/validator-service` entry point and the `dpp-validator` command: the same engines behind the `dpp-validator/1` contract (`contracts/validator.schema.json`, `spec/services.md` §7). The service holds every file a request carries to its SHA-256, fetches nothing, bounds request size, concurrency and time, and ends the thread of an operation that runs over. Importing it starts nothing. |
+| `src/validator-client.ts`, `src/validator-wire.ts` | The `@bsv/dpp-profiles/validator-client` entry point: `createValidatorClient({ url })` returns the engines `bindingPayloadValidator` takes, answered by a validator service. A service that is stopped, slow, redirecting or answering anything but the contract reads as an engine that could not run, so the validator answers `unknown`, never `pass`. |
+| `validator-image/` | The image of the service: its `Dockerfile`, a `package.json` and `package-lock.json` of its own that hold the engine libraries and nothing else, `lock.mjs`, which derives that lockfile from the repository's, `inventory.mjs`, which writes `licence-inventory.json` from it, and `notices.mjs`, which the build runs to hold what it installed to the inventory and to write the third-party notices. Not a workspace and not published with the package. |
 | `src/identifiers.ts` | GS1 check digit, GTIN-14 spelling, the demonstration prefix 952 and the Digital Link path parser and builder. |
 | `src/combinations.ts` | `checkSelection`: supported combinations of baseline, industry, exchange and operator profiles pass, and contradictory selections are refused by name (a retired industry profile, a write under a superseded version, a claim on a proposed profile, a single operator with peers, a federation of one). A parked exchange profile is refused for no purpose and named parked in a note, because a claim on it rests on its own ledger rows. |
 | `src/mapping.ts` | `mapNativeOperation`: the conditional lifecycle mapping of `spec/rules.md` §2, one of four outcomes with a loss list on every outcome that is not lossless. |
@@ -90,6 +93,32 @@ npm test           # schema validity, uniqueness, freezing, deterministic genera
 ```
 
 A frozen profile changes only by publishing a new version. A corrected mandatory field, a changed meaning or an incompatible validation rule is a new version; a state decodes under the version it declares and is never reinterpreted under a newer one. `--refreeze` exists for a reviewed change to the generator's output for an existing version, and the diff it produces is the review.
+
+## Run the validator service
+
+The JSON-LD and SHACL engines can run in another process. One command starts the service, on `127.0.0.1:8090` unless the environment says otherwise:
+
+```sh
+node packages/dpp-profiles/dist/validator-cli.js   # from a built checkout; `npx dpp-validator` in a project that installed the package and the three libraries
+```
+
+As an image, built from the repository root and run without privileges, a writable file system or capabilities:
+
+```sh
+docker build -f packages/dpp-profiles/validator-image/Dockerfile -t dpp-validator .
+docker run --rm -p 127.0.0.1:8090:8090 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true dpp-validator
+```
+
+An application reaches it with `createValidatorClient({ url })` from `@bsv/dpp-profiles/validator-client`, in place of `createValidationEngine()`. The settings, the limits, what a stopped service reads as and how to replace the service are in the package guide, `docs/packages/dpp-profiles.md`, under "Run the engines as a service".
+
+After a change to the repository's lockfile that touches the engine libraries, bring the image's files back in step, and review the inventory's diff:
+
+```sh
+node packages/dpp-profiles/validator-image/lock.mjs
+node packages/dpp-profiles/validator-image/inventory.mjs
+```
+
+`node scripts/validator-image-check.mjs --image dpp-validator` holds a built image to the same vectors as the tests, with no network and from outside the container, and checks what the image contains.
 
 ## Using it
 
