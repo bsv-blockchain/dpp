@@ -14,7 +14,7 @@
  * - a local ingestion identity, assigned here to an event that declares no
  *   `eventID` (`identityKind: 'local'`);
  * - identifiers of this module's own records (`importId`, `conflictId`,
- *   `resolutionId`), each a URN that names what it is.
+ *   `resolutionId`, `pullId`), each a URN that names what it is.
  *
  * None of them is a GS1 CBV Event Hash ID. This module computes no event
  * hash and never presents an `eventID`, a body digest or a local identity as
@@ -47,6 +47,10 @@ export const EPCIS_RECORD_KINDS = {
   association: 'association',
   /** Work that has begun and is not finished: what recovery reads. */
   journal: 'journal',
+  /** One record per configured query against a source: its definition, how far it got and where it resumes. Not rebuildable from any source. */
+  pull: 'pull',
+  /** One record per page a pull acknowledged, in order, with the import that holds it. */
+  pullPage: 'pull-page',
 } as const;
 
 export const EPCIS_IMPORT_VERSION = '2';
@@ -117,12 +121,27 @@ export const REBUILD_JOURNAL_KEY = 'rebuild.associations';
 
 /* ------------------------------ import record ---------------------------- */
 
-export interface EpcisProvenance {
-  /** How the bytes arrived. This module imports files; a later pull adds `query`. */
+export interface EpcisFileProvenance {
   kind: 'file';
   /** The name the file arrived under, when the caller knows one. A name, never a path with credentials. */
   filename?: string;
 }
+
+/** The standard query parameters a page's provenance may name. Nothing else is recorded, so nothing else can ride in. */
+export const EPCIS_QUERY_PARAMETERS = ['MATCH_anyEPC', 'eventType', 'GE_eventTime', 'LT_eventTime', 'GE_recordTime', 'EQ_eventID', 'perPage', 'nextPageToken'] as const;
+
+export interface EpcisQueryProvenance {
+  kind: 'query';
+  /** The configured origin the query was made to: scheme, host and port, and nothing else. */
+  origin: string;
+  /** The standard query parameters that were sent, by name. */
+  query: Record<string, string>;
+  /** The page's position in its traversal of the query, from 1. */
+  page: number;
+}
+
+/** How the bytes arrived: as a file, or as one page of a standard events query. Provenance is never a credential and never proof of origin. */
+export type EpcisProvenance = EpcisFileProvenance | EpcisQueryProvenance;
 
 export interface EpcisContextRef {
   kind: 'iri' | 'inline';
@@ -306,6 +325,245 @@ export interface EpcisRetentionRecord {
   recordVersion: typeof EPCIS_RECORD_VERSION;
   sha256: string;
   importId: string;
+}
+
+/* ---------------------------------- pulls -------------------------------- */
+
+export const EPCIS_PULL_VERSION = '1';
+
+/** The eight outcomes of reaching a source (`spec/epcis-interoperability.md` section 3). One never stands in for another. */
+export type EpcisSourceOutcome = 'source-link-missing' | 'source-authentication-required' | 'source-forbidden' | 'source-unavailable' | 'unexpected-media-type' | 'invalid-source' | 'partial-history' | 'ok';
+
+/** Why a run ended as it did. Each belongs to exactly one outcome; see EPCIS_PULL_REASON_OUTCOME in pull.ts. */
+export type EpcisPullReason =
+  | 'exhausted'
+  | 'page-limit' | 'byte-limit' | 'time-limit' | 'cursor-unusable' | 'pagination-malformed' | 'pagination-target-refused'
+  | 'no-base-address'
+  | 'http-401'
+  | 'http-403'
+  | 'timeout' | 'network-error' | 'http-error' | 'redirect-refused' | 'redirect-limit' | 'redirect-malformed' | 'target-refused'
+  | 'media-type' | 'html-body'
+  | 'page-oversized' | 'wire-version-missing' | 'wire-version-unsupported' | 'credential-echoed' | 'import-refused';
+
+/** `exhausted`: the source named no further page. `stopped-at-limit`: a run limit ended the run first. `failed`: the run ended for any other reason. */
+export type EpcisPullCompletion = 'exhausted' | 'stopped-at-limit' | 'failed';
+
+/** A departure from the strict reading of the query interface that was accepted, and recorded where it was met. */
+export type EpcisPullLeniency = 'link-relation-unquoted' | 'next-page-token-numeric' | 'cbv-version-header-absent' | 'empty-final-page' | 'cursor-expiry-unreadable';
+
+/** The query a pull makes, as it was configured. Lists are sorted and without repeats, so one definition has one form. */
+export interface EpcisPullQuery {
+  /** Product selection, sent as MATCH_anyEPC. */
+  matchAnyEPC?: string[];
+  /** Sent as eventType. */
+  eventTypes?: string[];
+  /** Sent as GE_eventTime and LT_eventTime. */
+  eventTime?: { from?: string; until?: string };
+  /** Sent as GE_recordTime. */
+  recordTime?: { from?: string };
+  /** An explicit refresh of known events, sent as EQ_eventID. */
+  eventIds?: string[];
+  /** Sent as perPage. */
+  perPage: number;
+}
+
+/** The source scope of a pull as it is recorded. It holds no credential, only whether one was configured. */
+export interface EpcisPullSourceScope {
+  sourceId: string;
+  /** The address the events query is made under, without user information, query or fragment. */
+  baseUrl: string;
+  /** Every origin a request of this pull may be made to. */
+  permittedOrigins: string[];
+  /** True when plain http and private addresses were permitted, which is for local tests only. */
+  localTest: boolean;
+  credentialsConfigured: boolean;
+  /** The versions sent in GS1-EPCIS-Version and GS1-CBV-Version. */
+  wireVersions: { epcis: string; cbv: string };
+}
+
+/** Where the next page is, as the source named it. */
+export interface EpcisPullCursor {
+  /** The address of the next page, checked against the permitted origins before it was recorded and again before it is used. */
+  target: string;
+  /** The nextPageToken the address carries, when it carries one. */
+  token?: string;
+  /** When the source said the cursor expires, when it said so in a form that could be read. */
+  expiresAt?: string;
+  /** The page of the traversal that named it. */
+  afterPage: number;
+}
+
+export interface EpcisPullServerVersions {
+  /** GS1-EPCIS-Version as the source reported it. */
+  epcis?: string;
+  /** GS1-CBV-Version as the source reported it. Absent when the source sent none. */
+  cbv?: string;
+}
+
+export interface EpcisPullEventCounts {
+  total: number;
+  new: number;
+  duplicate: number;
+  newObservation: number;
+  conflict: number;
+}
+
+/** One traversal of the source's pages for one window of the query. */
+export interface EpcisPullPass {
+  /** From 1. A new pass begins only after the one before it was exhausted. */
+  number: number;
+  /** From 1. One more each time the pass is replayed from its bounds because its cursor could not be reused. */
+  attempt: number;
+  /** The standard query parameters every request of this pass is made with, by name. The retained query bounds a replay starts from. */
+  parameters: Record<string, string>;
+  /** `query-bounds`: the query as configured. `watermark`: the record-time lower bound was moved to the watermark less the overlap margin. */
+  window: { basis: 'query-bounds' | 'watermark'; recordTimeFrom?: string; overlapSeconds?: number };
+  startedAt: string;
+  /** Pages acknowledged in the current attempt. */
+  pagesAcknowledged: number;
+  /** True once the source named no further page. */
+  exhausted: boolean;
+  /** The greatest record time seen in the pass so far. */
+  maxRecordTime?: string;
+}
+
+/** A page that was read and whose import had begun when the record was written. It is finished, never fetched again, if its receipt is held. */
+export interface EpcisPullPending {
+  sequence: number;
+  pass: number;
+  attempt: number;
+  page: number;
+  requestId: string;
+  /** True when this pull already holds an import of exactly these bytes, so the page answers that import and writes no second one. */
+  importReplayed: boolean;
+  sha256: string;
+  byteLength: number;
+  mediaType: string;
+  receivedAt: string;
+  /** The standard parameters the page was asked for with. */
+  query: Record<string, string>;
+  /** The cursor for the page after it. Absent when the source named none. */
+  next?: EpcisPullCursor;
+  /** True when the source named no further page. */
+  last: boolean;
+  /** Set when the source named a further page that could not be recorded. The page is still acknowledged, and the run then ends. */
+  nextProblem?: { reason: 'pagination-malformed' | 'pagination-target-refused'; detail: string };
+  server: EpcisPullServerVersions;
+  leniencies: EpcisPullLeniency[];
+}
+
+export interface EpcisPullRunSummary {
+  /** From 1. */
+  run: number;
+  startedAt: string;
+  /** Absent while the run is under way, or when its process stopped. */
+  endedAt?: string;
+  outcome?: EpcisSourceOutcome;
+  reason?: EpcisPullReason;
+  completion?: EpcisPullCompletion;
+  detail?: string;
+  /** Pages read from the source in this run, replayed ones included. */
+  pagesFetched: number;
+  pagesAcknowledged: number;
+  bytesRead: number;
+  /** How often this run fell back to a replay. */
+  replays: number;
+  /** True when the run began from state an earlier run left. */
+  resumed: boolean;
+}
+
+/** The durable state of one configured query against one source. Versioned, and never rebuilt from a source. */
+export interface EpcisPullRecord {
+  recordType: 'epcis-pull';
+  recordVersion: typeof EPCIS_PULL_VERSION;
+  pullId: string;
+  sourceId: string;
+  /** The caller's name for the configured query. Unique within one `sourceId`. */
+  queryId: string;
+  /** The digest the name is bound to: the source identity, the base address, the query and the overlap margin. The same name with another definition is refused. */
+  definitionDigest: string;
+  source: EpcisPullSourceScope;
+  query: EpcisPullQuery;
+  /** How far before the watermark the record-time bound of a later pass begins. */
+  recordTimeOverlapSeconds: number;
+  policyId: string;
+  /** The limits in force for the latest run. */
+  limits: Record<string, number>;
+  /** Every limit the operator set away from the profile's default, in the latest run. */
+  limitOverrides: Array<{ limit: string; default: number; value: number }>;
+  /** `running`: a run is under way, or its process stopped. `exhausted`, `stopped-at-limit` and `failed` are how the latest run ended. */
+  status: 'running' | EpcisPullCompletion;
+  pass: EpcisPullPass;
+  /** The checkpoint: where the next page is. It is moved only in the batch that acknowledges the page that named it. */
+  cursor?: EpcisPullCursor;
+  pending?: EpcisPullPending;
+  /** The latest replay, and how many pages had been acknowledged in the pass when it was decided. */
+  replay?: { reason: 'cursor-expired' | 'cursor-rejected' | 'cursor-missing'; decidedAt: string; pass: number; attempt: number; pagesAcknowledgedBefore: number };
+  /** The greatest record time seen when a pass was last exhausted. It bounds the next pass and proves nothing about corrections. */
+  watermark?: { recordTime: string; pass: number; establishedAt: string };
+  /** Pages acknowledged over the life of the pull: the number of page records. */
+  pagesAcknowledged: number;
+  runs: number;
+  lastRun: EpcisPullRunSummary;
+  totals: { bytes: number; events: EpcisPullEventCounts };
+  /** Every reason the retained events are not the complete history of the source. */
+  completenessLimits: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** One acknowledged page. Written once, in the batch that moves the checkpoint past it. */
+export interface EpcisPullPageRecord {
+  recordType: 'epcis-pull-page';
+  recordVersion: typeof EPCIS_PULL_VERSION;
+  pullId: string;
+  sourceId: string;
+  /** The page's position among every page the pull acknowledged, from 1. */
+  sequence: number;
+  run: number;
+  pass: number;
+  attempt: number;
+  /** The page's position in its traversal, from 1. */
+  page: number;
+  /** The import that holds the page. */
+  importId: string;
+  /** True when this pull already held an import of exactly these bytes, so the page answered that import and no second one was written. */
+  importReplayed: boolean;
+  sha256: string;
+  byteLength: number;
+  mediaType: string;
+  receivedAt: string;
+  /** The standard parameters the page was asked for with. */
+  query: Record<string, string>;
+  documentValidity: 'valid' | 'invalid';
+  events: EpcisPullEventCounts;
+  /** True when the source named no further page. */
+  last: boolean;
+  server: EpcisPullServerVersions;
+  leniencies: EpcisPullLeniency[];
+}
+
+/** The storage key of a pull: one per source scope and query name. */
+export function epcisPullKey(sourceId: string, queryId: string): string {
+  return digestOf(['pull', sourceId, queryId]);
+}
+
+/** The stable identity of a pull. */
+export function epcisPullId(sourceId: string, queryId: string): string {
+  return `urn:bsv:dpp:epcis:pull:sha256:${epcisPullKey(sourceId, queryId)}`;
+}
+
+const PULL_ID = /^urn:bsv:dpp:epcis:pull:sha256:([0-9a-f]{64})$/;
+
+export function pullKeyOf(pullId: string): string | undefined {
+  return PULL_ID.exec(pullId)?.[1];
+}
+
+export const pullPageKey = (pullKey: string, sequence: number): string => `${pullKey}.${padded(sequence, 10)}`;
+
+/** The digest a query name is bound to. Limits, permitted origins and credentials are not part of it: an operator may tighten those without making a new source. */
+export function epcisPullDefinitionDigest(definition: { sourceId: string; baseUrl: string; query: EpcisPullQuery; recordTimeOverlapSeconds: number }): string {
+  return digestOf({ baseUrl: definition.baseUrl, query: definition.query, recordTimeOverlapSeconds: definition.recordTimeOverlapSeconds, sourceId: definition.sourceId });
 }
 
 /* ------------------------------ associations ----------------------------- */

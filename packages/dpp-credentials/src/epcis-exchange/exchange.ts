@@ -1,5 +1,5 @@
 /**
- * EPCIS file import, export, conflict decisions, the associations index and
+ * EPCIS import, export, conflict decisions, the associations index and
  * recovery, over an injected store (`spec/epcis-interoperability.md`, the
  * epcis-json@1 profile, sections 1, 2, 6 and 7).
  *
@@ -7,10 +7,11 @@
  * epcis-source.ts. It retains the exact bytes of a source, records what the
  * source held and how each event arrived, and gives the bytes back unchanged.
  *
- * What this is not: an EPCIS repository, a capture interface or a query
- * client. It reaches no network. An import is data. It moves no passport,
- * and a document that passes validation says nothing about who wrote it or
- * whether its events happened.
+ * What this is not: an EPCIS repository or a capture interface. It reaches
+ * no network: the query pull is pull.ts, which hands each page it reads to
+ * the import here. An import is data. It moves no passport, and a document
+ * that passes validation says nothing about who wrote it or whether its
+ * events happened.
  *
  * The durable steps of one import, in order:
  *
@@ -49,6 +50,7 @@ import { JcsError, canonicalizeJcs } from '../jcs.js';
 import type { JsonObject } from '../types.js';
 import {
   EPCIS_IMPORT_VERSION,
+  EPCIS_QUERY_PARAMETERS,
   EPCIS_RECORD_KINDS,
   EPCIS_RECORD_VERSION,
   REBUILD_JOURNAL_KEY,
@@ -77,6 +79,8 @@ import {
   type EpcisJournalRecord,
   type EpcisObservationRecord,
   type EpcisProvenance,
+  type EpcisPullPageRecord,
+  type EpcisPullRecord,
   type EpcisResolutionDisposition,
   type EpcisResolutionRecord,
   type EpcisRetentionRecord,
@@ -102,7 +106,7 @@ export interface ImportEpcisSourceInput {
   mediaType: string;
   /** When the bytes were received, as an ISO 8601 date-time. */
   receivedAt: string;
-  /** Where the bytes came from. Recorded as given, so it never carries a credential. */
+  /** Where the bytes came from: a file, or one page of a standard events query. Recorded as given, so it never carries a credential. */
   provenance: EpcisProvenance;
   policy: EpcisImportPolicy;
   /** The folder the pinned GS1 schema is read from; see gs1-artefacts.ts for the default. */
@@ -305,13 +309,43 @@ function requestProblem(input: ImportEpcisSourceInput): string | undefined {
   if (policyProblem != null) return policyProblem;
   const provenance = input.provenance as unknown;
   if (provenance == null || typeof provenance !== 'object' || Array.isArray(provenance)) return 'provenance is an object';
+  return provenanceProblem(provenance as Record<string, unknown>);
+}
+
+/** A page's origin is exactly a scheme, a host and a port: no path, no query and no user information, so nothing but the place is recorded. */
+function isOrigin(value: unknown): value is string {
+  if (typeof value !== 'string' || value.length > 512) return false;
+  try { const url = new URL(value); return (url.protocol === 'https:' || url.protocol === 'http:') && url.origin === value; } catch { return false; }
+}
+
+// Only what this module knows how to record is accepted, so a token or a header cannot ride in on an unknown member.
+function provenanceProblem(provenance: Record<string, unknown>): string | undefined {
   const members = Object.keys(provenance);
-  // Only what this module knows how to record is accepted, so a token or a header cannot ride in on an unknown member.
-  if (members.some((member) => member !== 'kind' && member !== 'filename')) return 'provenance carries kind and filename only';
-  if ((provenance as { kind?: unknown }).kind !== 'file') return 'provenance.kind is file; no other kind is imported by this module';
-  const filename = (provenance as { filename?: unknown }).filename;
-  if (filename !== undefined && (typeof filename !== 'string' || filename.length < 1 || filename.length > 1024 || CONTROL.test(filename) || /:\/\/|[?#]/.test(filename))) return 'provenance.filename is a file name of at most 1024 characters, not an address, a query or a fragment';
-  return undefined;
+  if (provenance.kind === 'file') {
+    if (members.some((member) => member !== 'kind' && member !== 'filename')) return 'file provenance carries kind and filename only';
+    const filename = provenance.filename;
+    if (filename !== undefined && (typeof filename !== 'string' || filename.length < 1 || filename.length > 1024 || CONTROL.test(filename) || /:\/\/|[?#]/.test(filename))) return 'provenance.filename is a file name of at most 1024 characters, not an address, a query or a fragment';
+    return undefined;
+  }
+  if (provenance.kind === 'query') {
+    if (members.some((member) => member !== 'kind' && member !== 'origin' && member !== 'query' && member !== 'page')) return 'query provenance carries kind, origin, query and page only';
+    if (!isOrigin(provenance.origin)) return 'provenance.origin is an http or https origin: a scheme, a host and a port, and nothing else';
+    const query = provenance.query;
+    if (query == null || typeof query !== 'object' || Array.isArray(query)) return 'provenance.query is an object of the standard query parameters that were sent';
+    for (const [name, value] of Object.entries(query)) {
+      if (!(EPCIS_QUERY_PARAMETERS as readonly string[]).includes(name)) return `provenance.query names only the standard parameters ${EPCIS_QUERY_PARAMETERS.join(', ')}`;
+      if (typeof value !== 'string' || value.length > 8192 || CONTROL.test(value)) return `provenance.query.${name} is a string of at most 8192 characters without control characters`;
+    }
+    if (!Number.isSafeInteger(provenance.page) || (provenance.page as number) < 1) return 'provenance.page is the position of the page, from 1';
+    return undefined;
+  }
+  return 'provenance.kind is file or query';
+}
+
+/** Provenance as it is recorded: the members this module names, copied, and nothing the caller's object happened to carry beside them. */
+function recordedProvenance(provenance: EpcisProvenance): EpcisProvenance {
+  if (provenance.kind === 'file') return { kind: 'file', ...(provenance.filename == null ? {} : { filename: provenance.filename }) };
+  return { kind: 'query', origin: provenance.origin, query: { ...provenance.query }, page: provenance.page };
 }
 
 interface Prepared {
@@ -459,7 +493,7 @@ function prepare(input: ImportEpcisSourceInput, clock: () => string): Refusal | 
       byteLength: parsed.byteLength,
       sha256,
       bytesRef: `sha256:${sha256}`,
-      sourceLocation: { kind: 'file', ...(input.provenance.filename == null ? {} : { filename: input.provenance.filename }) },
+      sourceLocation: recordedProvenance(input.provenance),
       contextRefs,
       profileRefs: [EPCIS_SOURCE_PROFILE],
       policyId: input.policy.policyId,
@@ -470,7 +504,10 @@ function prepare(input: ImportEpcisSourceInput, clock: () => string): Refusal | 
       findings: documentFindings,
       preservedExtensions: validation.preservedExtensions,
       events,
-      progress: { pagesRead: 1, bytesRead: parsed.byteLength, complete: true, completenessLimits: ['a file import holds what the file carries and says nothing about what else its source holds'] },
+      progress: input.provenance.kind === 'file'
+        ? { pagesRead: 1, bytesRead: parsed.byteLength, complete: true, completenessLimits: ['a file import holds what the file carries and says nothing about what else its source holds'] }
+        // One page is never the whole answer, whatever page it is. How far the query got is the pull record's to say.
+        : { pagesRead: input.provenance.page, bytesRead: parsed.byteLength, complete: false, completenessLimits: ['this is one page of a query result; the pull record says how far the query got and within which bounds', 'a query result holds what its filters matched when it was answered and says nothing about what else its source holds'] },
       createdAt: input.receivedAt,
       updatedAt: now,
     };
@@ -1021,7 +1058,8 @@ export function recoverEpcisExchange(storage: EpcisExchangeStorage, options: { n
  * Check a store against the promises of this module and list every breach.
  * An empty list means: nothing is journalled as unfinished; every import has
  * its exact bytes, its retention entry and its event results; every
- * observation belongs to an import that names it; and sequences have no gap.
+ * observation belongs to an import that names it; sequences have no gap; and
+ * every page a pull acknowledged has its page record and its import.
  * With `associations`, the index is also compared with what a rebuild would
  * write. The adapter suite runs it after every simulated crash.
  */
@@ -1071,6 +1109,17 @@ export async function checkEpcisExchangeInvariants(storage: EpcisExchangeStorage
       const scopeKey = conflictScopeKeyOf(value.conflictId);
       if (scopeKey == null || (await storage.get(K.observation, observationKey(scopeKey, reference.sequence))) == null) breaches.push(`resolution ${value.resolutionId}: observation ${reference.sequence} is not held`);
     }
+  }
+  // A pull's checkpoint never points past what is retained: every page it acknowledged has its record, in order, and its import.
+  for (const held of await listAll(storage, K.pull)) {
+    const pull = held.value as unknown as EpcisPullRecord;
+    const pages = (await listAll(storage, K.pullPage, `${held.key}.`)).map((page) => page.value as unknown as EpcisPullPageRecord);
+    if (pages.length !== pull.pagesAcknowledged) breaches.push(`pull ${pull.pullId}: ${pull.pagesAcknowledged} pages acknowledged and ${pages.length} page records held`);
+    pages.forEach((page, index) => {
+      if (page.sequence !== index + 1) breaches.push(`pull ${pull.pullId}: page record ${page.sequence} where ${index + 1} was expected`);
+      if (imports.get(page.importId)?.sha256 !== page.sha256) breaches.push(`pull ${pull.pullId} page ${page.sequence}: its import is not held with those bytes`);
+    });
+    if (pull.cursor != null && pull.cursor.afterPage !== pull.pass.pagesAcknowledged) breaches.push(`pull ${pull.pullId}: the cursor was named by page ${pull.cursor.afterPage} and the pass has acknowledged ${pull.pass.pagesAcknowledged}`);
   }
   if (options.associations === true) {
     const found = new Map((await listAll(storage, K.association)).map((held) => [held.key, held.value]));

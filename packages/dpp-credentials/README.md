@@ -8,7 +8,7 @@
 |---|---|
 | `@bsv/dpp-credentials/exchange` | Verify-only intake of external credentials under `vc-di-ecdsa-rdfc-2019@1`: `verifyExternalCredential`, strict parsing of the exact bytes (`parseExternalCredentialBytes`), authenticated Bitstring Status List checking (`verifyBitstringStatus`), bounded `did:web` resolution through `createExternalDocumentLoader`, and `externalCredentialVerifierFor` for the passport verification report. |
 | `@bsv/dpp-credentials/epcis-source` | The EPCIS 2.0.1 source helpers of `epcis-json@1`, with the pinned schema and context. |
-| `@bsv/dpp-credentials/epcis-exchange` | Durable EPCIS source exchange over storage you supply: `importEpcisSource`, `exportEpcisSource`, `resolveEpcisConflict`, `findEpcisAssociations`, `rebuildEpcisAssociations`, `recoverEpcisExchange`, the in-memory and file-system storage adapters, and `epcisStorageAdapterSuite`, the suite every adapter must pass. |
+| `@bsv/dpp-credentials/epcis-exchange` | Durable EPCIS source exchange over storage you supply: `importEpcisSource`, `exportEpcisSource`, `resolveEpcisConflict`, `findEpcisAssociations`, `rebuildEpcisAssociations`, `recoverEpcisExchange`, the in-memory and file-system storage adapters, and `epcisStorageAdapterSuite`, the suite every adapter must pass; and `pullEpcisEvents`, one bounded run against a source's standard events query. |
 | `@bsv/dpp-credentials` | Re-exports the EPCIS source helpers and the general `createDidWebResolver`, `parseStrictJsonBytes` and `verifyTemporal`, with the shared credential and check types. It loads no proof suite. |
 | `@bsv/dpp-credentials/artifacts/*` | The pinned W3C, EPCIS and external passport artefacts, and the owned context and schemas of the parked VSC profile, as files. |
 
@@ -46,7 +46,15 @@ Each event is classified against what its source already holds as `new`, `duplic
 
 `EpcisExchangeStorage` is six methods: exact bytes under their digest, and JSON records written in batches that apply completely or not at all. `createMemoryEpcisStorage` and `openFileEpcisStorage` ship with the package. The interface alone promises nothing about another database: an adapter is fit only when it passes `epcisStorageAdapterSuite`, which stops the store before and after every durable step and checks that no acknowledged source is lost and nothing is half recorded. `recoverEpcisExchange`, called when a store is opened, finishes or discards interrupted work and reports it.
 
-The module is not an EPCIS repository. It does not capture events and it does not query: querying is a later change. It signs, issues and anchors nothing. An import is data, and a valid document proves nothing about who observed an event. The [EPCIS guide](../../docs/interoperability/epcis.md#import-retain-and-export) has a runnable import and the durable steps.
+The module is not an EPCIS repository. It does not capture events, subscribe to a source or crawl one. It signs, issues and anchors nothing. An import is data, and a valid document proves nothing about who observed an event. The [EPCIS guide](../../docs/interoperability/epcis.md#import-retain-and-export) has a runnable import and the durable steps.
+
+## EPCIS query pull
+
+`pullEpcisEvents` is a client of the standard events query of the GS1 EPCIS 2.0 REST binding, `GET /events`. Each call is one bounded run against a source you configure: an identifier, a base address, the origins its requests may go to, the limits in force and a function that obtains its credential. The transport is handed in as `fetch`.
+
+Every page goes through `importEpcisSource`, and the checkpoint moves only after a page is retained, so a restart or a crash continues without losing, skipping or repeating a page. A cursor that has expired, was rejected or is missing leads to a bounded replay of the same query, which recognises what is already held. A result says whether the source's pages were exhausted, a limit stopped the run or it failed, and never reports a partial history as complete.
+
+Every address, each redirect and each next page, is checked against the permitted origins before it is requested. A credential goes to the base address's origin only and is written nowhere. A body is counted as it arrives and abandoned at its limit. Plain `http` and private addresses are refused unless `localTest` is set, which every result records. The [EPCIS guide](../../docs/interoperability/epcis.md#pull-events-from-a-source) has the configuration, the outcomes, the limits and the leniencies.
 
 ## GS1 files
 

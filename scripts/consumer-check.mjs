@@ -206,6 +206,9 @@ out.push(['dpp-credentials/epcis-source: validation without the provisioned GS1 
 const exchangeStore = epcisExchange.createMemoryEpcisStorage()
 const unprovisionedImport = await epcisExchange.importEpcisSource({ storage: exchangeStore, sourceId: 'consumer-check', requestId: 'request-1', bytes: new TextEncoder().encode(JSON.stringify(parsed.document)), mediaType: 'application/json', receivedAt: '2026-09-06T00:00:00Z', provenance: { kind: 'file' }, policy: { policyId: 'consumer-check@1' }, artefactsDir: join(process.cwd(), 'gs1-not-provisioned') })
 out.push(['dpp-credentials/epcis-exchange: an import without the provisioned GS1 schema is refused by name and keeps nothing', unprovisionedImport.outcome === 'refused' && unprovisionedImport.reason === 'gs1-artefact-unavailable' && exchangeStore.state.bytes.size === 0 && exchangeStore.state.records.size === 0 && typeof epcisExchange.exportEpcisSource === 'function' && typeof epcisExchange.epcisStorageAdapterSuite === 'function'])
+// A pull from a source with no base address requests nothing, and says so by name.
+const linkMissing = await epcisExchange.pullEpcisEvents({ storage: exchangeStore, source: { sourceId: 'consumer-check', permittedOrigins: [], policy: { policyId: 'consumer-check@1' } }, queryId: 'query-1', query: {}, fetch: () => { throw new Error('nothing may be requested') } })
+out.push(['dpp-credentials/epcis-exchange: a pull from a source with no base address answers source-link-missing, requests nothing and keeps nothing', linkMissing.outcome === 'source-link-missing' && linkMissing.completion === 'failed' && linkMissing.pull === undefined && exchangeStore.state.records.size === 0 && typeof epcisExchange.getEpcisPull === 'function'])
 out.push(['dpp-credentials: the root exports the GS1 provisioning functions and the three pinned EPCIS files', typeof credentials.provisionGs1Artefacts === 'function' && typeof credentials.verifyGs1Artefacts === 'function' && credentials.EPCIS_GS1_ARTEFACTS.length === 3 && credentials.verifyGs1Artefacts({ dir: join(process.cwd(), 'gs1-not-provisioned') }).ok === false])
 out.push(['dpp-credentials: the dpp-gs1-artefacts executable is installed', existsSync(join('node_modules', '.bin', 'dpp-gs1-artefacts'))])
 console.log(JSON.stringify(out))
@@ -244,7 +247,7 @@ import { readManifest, type ProfileManifest, type InteroperabilityProfileId, typ
 import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
-import { importEpcisSource, type EpcisExchangeStorage, type EpcisImportRecord, type EpcisImportOutcome } from '@bsv/dpp-credentials/epcis-exchange'
+import { importEpcisSource, pullEpcisEvents, type EpcisExchangeStorage, type EpcisFetch, type EpcisImportRecord, type EpcisImportOutcome, type EpcisPullOutcome, type EpcisPullSource } from '@bsv/dpp-credentials/epcis-exchange'
 import type { Transaction } from '@bsv/sdk'
 export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
 export const startHost: typeof startOverlayService = startOverlayService
@@ -271,6 +274,11 @@ export async function credentials(credential: Credential, bytes: Uint8Array, pol
 export async function retain(storage: EpcisExchangeStorage, bytes: Uint8Array): Promise<EpcisImportRecord | undefined> {
   const outcome: EpcisImportOutcome = await importEpcisSource({ storage, sourceId: 'source', requestId: 'request', bytes, mediaType: 'application/json', receivedAt: '2026-09-06T00:00:00Z', provenance: { kind: 'file' }, policy: { policyId: 'policy@1' } })
   return outcome.outcome === 'retained' ? outcome.record : undefined
+}
+// The standard fetch is the transport a pull is handed, with no adapter between them.
+export const transport: EpcisFetch = fetch
+export async function pull(storage: EpcisExchangeStorage, source: EpcisPullSource): Promise<EpcisPullOutcome> {
+  return pullEpcisEvents({ storage, source, queryId: 'query', query: { perPage: 10 }, fetch })
 }
 `)
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))

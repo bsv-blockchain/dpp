@@ -2,13 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/epcis-exchange-records.schema.json",
   "title": "DPP EPCIS exchange records, version 1",
-  "description": "The durable records an EPCIS source exchange keeps beside its import records (epcis-import.schema.json) under the epcis-json@1 profile (spec/epcis-interoperability.md sections 2 and 6): each distinct observation of an event, each decision about a conflict, each entry of the associations index, which imports retain which bytes, and work that has begun and is not finished. Every record names its type and carries its own version, so that a recovery export can carry them as they are stored. A conflict decision cannot be rebuilt from any source; an observation can be rebuilt only in the order the sources were received; the associations index and the retention entries can be rebuilt from the import records and the retained bytes. No record here is a token operation, and none says who made a source or that an event happened.",
+  "description": "The durable records an EPCIS source exchange keeps beside its import records (epcis-import.schema.json) under the epcis-json@1 profile (spec/epcis-interoperability.md sections 2, 3 and 6): each distinct observation of an event, each decision about a conflict, each entry of the associations index, which imports retain which bytes, work that has begun and is not finished, the state of each query pull and each page a pull acknowledged. Every record names its type and carries its own version, so that a recovery export can carry them as they are stored. A conflict decision and the state of a pull cannot be rebuilt from any source; an observation can be rebuilt only in the order the sources were received; the associations index and the retention entries can be rebuilt from the import records and the retained bytes. No record here is a token operation, none says who made a source or that an event happened, and none carries a credential.",
   "oneOf": [
     { "$ref": "#/$defs/observation" },
     { "$ref": "#/$defs/conflictResolution" },
     { "$ref": "#/$defs/association" },
     { "$ref": "#/$defs/retention" },
-    { "$ref": "#/$defs/journal" }
+    { "$ref": "#/$defs/journal" },
+    { "$ref": "#/$defs/pull" },
+    { "$ref": "#/$defs/pullPage" }
   ],
   "$defs": {
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
@@ -124,6 +126,240 @@
         "recordVersion": { "const": "1" },
         "sha256": { "$ref": "#/$defs/sha256" },
         "importId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "origin": { "type": "string", "pattern": "^https?://[^/?#@\\s]+$", "maxLength": 512, "description": "A scheme, a host and a port, and nothing else." },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Standard query parameters of the REST binding's events query, by name. No other parameter is sent or recorded.",
+      "properties": {
+        "MATCH_anyEPC": { "type": "string" },
+        "eventType": { "type": "string" },
+        "GE_eventTime": { "$ref": "#/$defs/dateTime" },
+        "LT_eventTime": { "$ref": "#/$defs/dateTime" },
+        "GE_recordTime": { "$ref": "#/$defs/dateTime" },
+        "EQ_eventID": { "type": "string" },
+        "perPage": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+        "nextPageToken": { "type": "string" }
+      }
+    },
+    "sourceOutcome": { "enum": ["source-link-missing", "source-authentication-required", "source-forbidden", "source-unavailable", "unexpected-media-type", "invalid-source", "partial-history", "ok"], "description": "The eight outcomes of reaching a source, as epcis-import.schema.json defines them." },
+    "pullReason": {
+      "enum": ["exhausted", "page-limit", "byte-limit", "time-limit", "cursor-unusable", "pagination-malformed", "pagination-target-refused", "no-base-address", "http-401", "http-403", "timeout", "network-error", "http-error", "redirect-refused", "redirect-limit", "redirect-malformed", "target-refused", "media-type", "html-body", "page-oversized", "wire-version-missing", "wire-version-unsupported", "credential-echoed", "import-refused"],
+      "description": "The named cause of a run's outcome. Each belongs to one outcome: exhausted to ok; the three limits, cursor-unusable and the two pagination reasons to partial-history; no-base-address to source-link-missing; http-401 to source-authentication-required; http-403 to source-forbidden; timeout, network-error, http-error, the three redirect reasons and target-refused to source-unavailable; media-type and html-body to unexpected-media-type; the rest to invalid-source."
+    },
+    "pullCompletion": { "enum": ["exhausted", "stopped-at-limit", "failed"], "description": "exhausted: the source named no further page. stopped-at-limit: a run limit ended the run first. failed: the run ended for any other reason. None of them says the history of the source is complete." },
+    "leniencies": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["link-relation-unquoted", "next-page-token-numeric", "cbv-version-header-absent", "empty-final-page", "cursor-expiry-unreadable"] },
+      "description": "Departures from the strict reading of the query interface that were accepted for a page. None changes what is retained."
+    },
+    "serverVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The wire versions the source reported in GS1-EPCIS-Version and GS1-CBV-Version.",
+      "properties": { "epcis": { "type": "string", "pattern": "^2\\.0(\\.[0-9]{1,4})?$" }, "cbv": { "type": "string", "pattern": "^2\\.0(\\.[0-9]{1,4})?$" } }
+    },
+    "eventCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "new", "duplicate", "newObservation", "conflict"],
+      "description": "How events arrived, by the arrival classification of the import record.",
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "new": { "type": "integer", "minimum": 0 },
+        "duplicate": { "type": "integer", "minimum": 0 },
+        "newObservation": { "type": "integer", "minimum": 0 },
+        "conflict": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cursor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "afterPage"],
+      "description": "Where the next page is, as the source named it. Its address was checked against the permitted origins before it was recorded and is checked again before it is used.",
+      "properties": {
+        "target": { "type": "string", "minLength": 1, "maxLength": 8192 },
+        "token": { "type": "string", "maxLength": 2048, "description": "The nextPageToken the address carries, when it carries one." },
+        "expiresAt": { "$ref": "#/$defs/dateTime", "description": "When the source said the cursor expires. A cursor past it is not sent." },
+        "afterPage": { "type": "integer", "minimum": 1, "description": "The page of the traversal that named it." }
+      }
+    },
+    "pull": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "pullId", "sourceId", "queryId", "definitionDigest", "source", "query", "recordTimeOverlapSeconds", "policyId", "limits", "limitOverrides", "status", "pass", "pagesAcknowledged", "runs", "lastRun", "totals", "completenessLimits", "createdAt", "updatedAt"],
+      "description": "The durable state of one configured query against one source scope: its definition and bounds, the limits in force, how the latest run ended, the pass under way and its checkpoint. It is written before a page is requested and after each page is retained, and its checkpoint is moved only in the batch that records the page that named it. It holds no credential.",
+      "properties": {
+        "recordType": { "const": "epcis-pull" },
+        "recordVersion": { "const": "1" },
+        "pullId": { "type": "string", "minLength": 1 },
+        "sourceId": { "$ref": "#/$defs/name" },
+        "queryId": { "$ref": "#/$defs/name", "description": "The caller's name for the configured query, unique within sourceId." },
+        "definitionDigest": { "$ref": "#/$defs/sha256", "description": "SHA-256 over the RFC 8785 form of an object with exactly the members baseUrl, query, recordTimeOverlapSeconds and sourceId. The same queryId with another digest is another definition and is refused." },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceId", "baseUrl", "permittedOrigins", "localTest", "credentialsConfigured", "wireVersions"],
+          "description": "The source scope, without credentials.",
+          "properties": {
+            "sourceId": { "$ref": "#/$defs/name" },
+            "baseUrl": { "type": "string", "format": "uri", "description": "The address the events query is made under, without user information, query or fragment." },
+            "permittedOrigins": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/origin" }, "description": "Every origin a request of the pull may be made to." },
+            "localTest": { "type": "boolean", "description": "True when plain http and private addresses were permitted, which is for local tests only." },
+            "credentialsConfigured": { "type": "boolean", "description": "Whether a credential was configured. The credential itself is never recorded." },
+            "wireVersions": { "type": "object", "additionalProperties": false, "required": ["epcis", "cbv"], "properties": { "epcis": { "type": "string" }, "cbv": { "type": "string" } }, "description": "The versions sent in GS1-EPCIS-Version and GS1-CBV-Version." }
+          }
+        },
+        "query": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["perPage"],
+          "description": "The query as configured: the bounds a replay starts from.",
+          "properties": {
+            "matchAnyEPC": { "type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+            "eventTypes": { "type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+            "eventTime": { "type": "object", "additionalProperties": false, "properties": { "from": { "$ref": "#/$defs/dateTime" }, "until": { "$ref": "#/$defs/dateTime" } } },
+            "recordTime": { "type": "object", "additionalProperties": false, "properties": { "from": { "$ref": "#/$defs/dateTime" } } },
+            "eventIds": { "type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+            "perPage": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "recordTimeOverlapSeconds": { "type": "integer", "minimum": 0, "maximum": 86400, "description": "How far before the watermark the record-time bound of a later pass begins." },
+        "policyId": { "type": "string", "minLength": 1 },
+        "limits": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 }, "description": "The limits in force for the latest run." },
+        "limitOverrides": {
+          "type": "array",
+          "description": "Every limit the operator set away from the profile's default, in the latest run.",
+          "items": { "type": "object", "additionalProperties": false, "required": ["limit", "default", "value"], "properties": { "limit": { "type": "string", "minLength": 1 }, "default": { "type": "integer", "minimum": 1 }, "value": { "type": "integer", "minimum": 1 } } }
+        },
+        "status": { "enum": ["running", "exhausted", "stopped-at-limit", "failed"], "description": "running: a run is under way, or its process stopped. The others are how the latest run ended." },
+        "pass": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["number", "attempt", "parameters", "window", "startedAt", "pagesAcknowledged", "exhausted"],
+          "description": "One traversal of the source's pages for one window of the query. A new pass begins only after the one before it was exhausted.",
+          "properties": {
+            "number": { "type": "integer", "minimum": 1 },
+            "attempt": { "type": "integer", "minimum": 1, "description": "One more each time the pass is replayed from its bounds because its cursor could not be reused." },
+            "parameters": { "$ref": "#/$defs/parameters" },
+            "window": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["basis"],
+              "properties": {
+                "basis": { "enum": ["query-bounds", "watermark"], "description": "query-bounds: the query as configured. watermark: the record-time lower bound is the watermark less the overlap margin." },
+                "recordTimeFrom": { "$ref": "#/$defs/dateTime" },
+                "overlapSeconds": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "startedAt": { "$ref": "#/$defs/dateTime" },
+            "pagesAcknowledged": { "type": "integer", "minimum": 0, "description": "Pages acknowledged in the current attempt." },
+            "exhausted": { "type": "boolean", "description": "True once the source named no further page. Never a statement that its history is complete." },
+            "maxRecordTime": { "$ref": "#/$defs/dateTime" }
+          }
+        },
+        "cursor": { "$ref": "#/$defs/cursor" },
+        "pending": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sequence", "pass", "attempt", "page", "requestId", "importReplayed", "sha256", "byteLength", "mediaType", "receivedAt", "query", "last", "server", "leniencies"],
+          "description": "A page that was read and whose import had begun when the record was written. A later run finishes it from its receipt when one is held, and asks for the page again when none is. It is never a checkpoint.",
+          "properties": {
+            "sequence": { "type": "integer", "minimum": 1 },
+            "pass": { "type": "integer", "minimum": 1 },
+            "attempt": { "type": "integer", "minimum": 1 },
+            "page": { "type": "integer", "minimum": 1 },
+            "requestId": { "$ref": "#/$defs/name", "description": "The request identifier the page is imported under." },
+            "importReplayed": { "type": "boolean" },
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "byteLength": { "type": "integer", "minimum": 0 },
+            "mediaType": { "enum": ["application/json", "application/ld+json"] },
+            "receivedAt": { "$ref": "#/$defs/dateTime" },
+            "query": { "$ref": "#/$defs/parameters" },
+            "next": { "$ref": "#/$defs/cursor" },
+            "last": { "type": "boolean" },
+            "nextProblem": { "type": "object", "additionalProperties": false, "required": ["reason", "detail"], "properties": { "reason": { "enum": ["pagination-malformed", "pagination-target-refused"] }, "detail": { "type": "string" } } },
+            "server": { "$ref": "#/$defs/serverVersions" },
+            "leniencies": { "$ref": "#/$defs/leniencies" }
+          }
+        },
+        "replay": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reason", "decidedAt", "pass", "attempt", "pagesAcknowledgedBefore"],
+          "description": "The latest fall back to a replay: the pass was begun again from its retained bounds because its cursor had expired, was rejected or was missing. It is the same pull and the same pass.",
+          "properties": {
+            "reason": { "enum": ["cursor-expired", "cursor-rejected", "cursor-missing"] },
+            "decidedAt": { "$ref": "#/$defs/dateTime" },
+            "pass": { "type": "integer", "minimum": 1 },
+            "attempt": { "type": "integer", "minimum": 1, "description": "The attempt that was abandoned." },
+            "pagesAcknowledgedBefore": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "watermark": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["recordTime", "pass", "establishedAt"],
+          "description": "The greatest record time seen when a pass was last exhausted. It bounds the next pass and is no evidence that every correction was received.",
+          "properties": { "recordTime": { "$ref": "#/$defs/dateTime" }, "pass": { "type": "integer", "minimum": 1 }, "establishedAt": { "$ref": "#/$defs/dateTime" } }
+        },
+        "pagesAcknowledged": { "type": "integer", "minimum": 0, "description": "Pages acknowledged over the life of the pull: the number of its page records." },
+        "runs": { "type": "integer", "minimum": 1 },
+        "lastRun": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["run", "startedAt", "pagesFetched", "pagesAcknowledged", "bytesRead", "replays", "resumed"],
+          "properties": {
+            "run": { "type": "integer", "minimum": 1 },
+            "startedAt": { "$ref": "#/$defs/dateTime" },
+            "endedAt": { "$ref": "#/$defs/dateTime" },
+            "outcome": { "$ref": "#/$defs/sourceOutcome" },
+            "reason": { "$ref": "#/$defs/pullReason" },
+            "completion": { "$ref": "#/$defs/pullCompletion" },
+            "detail": { "type": "string" },
+            "pagesFetched": { "type": "integer", "minimum": 0 },
+            "pagesAcknowledged": { "type": "integer", "minimum": 0 },
+            "bytesRead": { "type": "integer", "minimum": 0 },
+            "replays": { "type": "integer", "minimum": 0 },
+            "resumed": { "type": "boolean" }
+          }
+        },
+        "totals": { "type": "object", "additionalProperties": false, "required": ["bytes", "events"], "properties": { "bytes": { "type": "integer", "minimum": 0 }, "events": { "$ref": "#/$defs/eventCounts" } } },
+        "completenessLimits": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Every reason the retained events are not the complete history of the source. Never empty once a run has ended." },
+        "createdAt": { "$ref": "#/$defs/dateTime" },
+        "updatedAt": { "$ref": "#/$defs/dateTime" }
+      }
+    },
+    "pullPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "pullId", "sourceId", "sequence", "run", "pass", "attempt", "page", "importId", "importReplayed", "sha256", "byteLength", "mediaType", "receivedAt", "query", "documentValidity", "events", "last", "server", "leniencies"],
+      "description": "One page a pull acknowledged. Written once, in the batch that moves the checkpoint past it, and only after the import it names is durable.",
+      "properties": {
+        "recordType": { "const": "epcis-pull-page" },
+        "recordVersion": { "const": "1" },
+        "pullId": { "type": "string", "minLength": 1 },
+        "sourceId": { "$ref": "#/$defs/name" },
+        "sequence": { "type": "integer", "minimum": 1, "description": "The page's position among every page the pull acknowledged." },
+        "run": { "type": "integer", "minimum": 1 },
+        "pass": { "type": "integer", "minimum": 1 },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "page": { "type": "integer", "minimum": 1, "description": "The page's position in its traversal." },
+        "importId": { "type": "string", "minLength": 1, "description": "The import that holds the page." },
+        "importReplayed": { "type": "boolean", "description": "True when the pull already held an import of exactly these bytes, so the page answered that import and no second one was written." },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byteLength": { "type": "integer", "minimum": 0 },
+        "mediaType": { "enum": ["application/json", "application/ld+json"] },
+        "receivedAt": { "$ref": "#/$defs/dateTime" },
+        "query": { "$ref": "#/$defs/parameters" },
+        "documentValidity": { "enum": ["valid", "invalid"] },
+        "events": { "$ref": "#/$defs/eventCounts" },
+        "last": { "type": "boolean", "description": "True when the source named no further page." },
+        "server": { "$ref": "#/$defs/serverVersions" },
+        "leniencies": { "$ref": "#/$defs/leniencies" }
       }
     },
     "journal": {

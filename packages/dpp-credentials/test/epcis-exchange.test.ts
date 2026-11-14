@@ -584,16 +584,42 @@ describe('bounds: every limit is enforced and disclosed', () => {
   it('refuses provenance that could carry a secret or that it does not know how to record', async () => {
     const storage = createMemoryEpcisStorage();
     const bytes = compact(document());
+    const query = { kind: 'query', origin: 'https://events.example.org', query: { perPage: '100' }, page: 1 };
     for (const provenance of [
       { kind: 'file', token: 'secret' },
       { kind: 'file', filename: 'https://user:password@example.org/events.json' },
       { kind: 'file', filename: 'events.json?access_token=abc' },
-      { kind: 'query', origin: 'https://example.org' },
       { kind: 'file', filename: 'x'.repeat(1025) },
+      { kind: 'file', origin: 'https://events.example.org' },
+      { kind: 'query', origin: 'https://example.org' },
+      { ...query, origin: 'https://user:password@events.example.org' },
+      { ...query, origin: 'https://events.example.org/epcis' },
+      { ...query, origin: 'https://events.example.org?key=abc' },
+      { ...query, origin: 'ftp://events.example.org' },
+      { ...query, query: { perPage: '100', access_token: 'abc' } },
+      { ...query, query: { perPage: 100 } },
+      { ...query, query: { nextPageToken: 'a\nb' } },
+      { ...query, page: 0 },
+      { ...query, headers: { authorization: 'Bearer abc' } },
+      { ...query, filename: 'events.json' },
+      { kind: 'stream' },
     ]) {
       expect(await importEpcisSource(request(storage, bytes, { provenance: provenance as never })), JSON.stringify(provenance)).toMatchObject({ outcome: 'refused', reason: 'invalid-request' });
     }
     expect(isEmpty(storage)).toBe(true);
+  });
+
+  it('records the provenance of a query page: the origin, the standard parameters and the page, and nothing else', async () => {
+    const storage = createMemoryEpcisStorage();
+    const provenance = { kind: 'query' as const, origin: 'https://events.example.org', query: { MATCH_anyEPC: PACK, eventType: 'ObjectEvent', GE_eventTime: RECEIVED, LT_eventTime: RECEIVED, GE_recordTime: RECEIVED, EQ_eventID: 'urn:uuid:1', perPage: '100', nextPageToken: '7' }, page: 3 };
+    const { record } = retained(await importEpcisSource(request(storage, compact(epcisQueryDocument(fiveEventList().slice(2, 4))), { provenance })));
+    expect(record.sourceLocation).toEqual(provenance);
+    // One page is never the whole answer, so it never reads as complete.
+    expect(record.progress).toMatchObject({ pagesRead: 3, complete: false });
+    expect(record.progress.completenessLimits.join(' ')).toMatch(/one page of a query result/);
+    // The request digest is the one a file import has: provenance is no part of it.
+    expect(record.requestDigest).toBe(epcisRequestDigest({ sourceId: 'source-a', mediaType: 'application/ld+json', byteLength: record.byteLength, sha256: record.sha256 }));
+    expect(retained(await importEpcisSource(request(storage, compact(epcisQueryDocument(fiveEventList().slice(2, 4)))))).replayed).toBe(true);
   });
 
   it('stays bounded on hostile input', async () => {
@@ -987,6 +1013,8 @@ describe('boundaries', () => {
       'epcis-exchange/adapter-suite.ts',
       'epcis-exchange/exchange.ts',
       'epcis-exchange/file-storage.ts',
+      'epcis-exchange/pull-transport.ts',
+      'epcis-exchange/pull.ts',
       'epcis-exchange/records.ts',
       'epcis-exchange/storage.ts',
       'epcis-source.ts',
@@ -1002,7 +1030,8 @@ describe('boundaries', () => {
       // node:crypto is used for digests and random names only.
       expect(text, file).not.toMatch(/createSign|createVerify|createPrivateKey|createPublicKey|generateKeyPair|createHmac|createCipher|\.sign\(|subtle\b/);
       expect(text, file).not.toMatch(/['"]@bsv\/|wallet|broadcast|createAction|new Transaction|Transaction\.from|PrivateKey|jsonld-signatures|digitalbazaar/i);
-      if (file.startsWith('epcis-exchange')) expect(text, file).not.toMatch(/\bfetch\(|node:https?|node:net|node:child_process/);
+      // The pull requests through the transport it is handed. No module here opens a connection, names the global transport or resolves a host itself.
+      if (file.startsWith('epcis-exchange')) expect(text, file).not.toMatch(/\bfetch\(|globalThis|node:https?|node:net|node:dns|node:tls|node:child_process/);
     }
   });
 

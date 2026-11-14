@@ -10,8 +10,8 @@
  * decided by, the local identity of an event that carries no eventID, and the
  * signed source-reference extension a mapped credential carries. Durable
  * retention, idempotency and arrival records are epcis-exchange.ts, over a
- * store the application supplies. Checkpoints and the pull client are the
- * application service's, because they need a network.
+ * store the application supplies. The query pull and its checkpoints are
+ * there too, over a transport the application supplies.
  *
  * Nothing here strips, coerces, reorders or rewrites a source. A safely
  * parsed document that fails EPCIS validation is returned with its findings

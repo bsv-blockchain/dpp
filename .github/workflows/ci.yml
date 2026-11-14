@@ -59,6 +59,8 @@ jobs:
       # The interoperability profiles, each from the built packages alone.
       - run: node examples/resolve-digital-link.mjs
       - run: node examples/import-epcis.mjs
+      # The query pull, against a stand-in source the example starts on the runner and stops again.
+      - run: node examples/pull-epcis.mjs
       - run: node examples/verify-external-credential.mjs
       - run: node examples/project-passport.mjs
       # A profile held by a binding, registered from its folder and checked against its own vectors.

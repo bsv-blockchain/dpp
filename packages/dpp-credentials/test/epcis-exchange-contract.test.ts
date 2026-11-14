@@ -103,8 +103,8 @@ describe('the durable record schemas', () => {
     }
     expect(new Set((seen.get('journal') ?? []).map((j) => j.entry))).toEqual(new Set(['intake', 'import', 'resolution', 'rebuild', 'discard']));
     expect((seen.get('resolution') ?? []).map((r) => r.disposition).sort()).toEqual(expect.arrayContaining(['all-retained', 'body-selected']));
-    // Every kind the module writes has a schema: nothing durable is outside the two contracts.
-    expect([...seen.keys()].sort()).toEqual(Object.values(EPCIS_RECORD_KINDS).sort());
+    // Every kind a file import writes has a schema: nothing durable is outside the two contracts. The two kinds a query pull adds are held to the same contract in epcis-pull.test.ts.
+    expect([...seen.keys()].sort()).toEqual(Object.values(EPCIS_RECORD_KINDS).filter((kind) => kind !== EPCIS_RECORD_KINDS.pull && kind !== EPCIS_RECORD_KINDS.pullPage).sort());
   });
 
   it('refuses records the contracts do not allow', async () => {
