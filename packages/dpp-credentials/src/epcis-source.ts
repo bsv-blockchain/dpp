@@ -19,20 +19,26 @@
  * a double cannot carry) is refused before anything is produced.
  */
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
 import { Ajv } from 'ajv';
 import addFormats from 'ajv-formats';
+import { EPCIS_GS1_ARTEFACTS, gs1ArtefactsDir, readGs1Artefact } from './gs1-artefacts.js';
 import { canonicalizeJcs } from './jcs.js';
 import type { JsonObject } from './types.js';
 
 /* ------------------------------ artefacts ------------------------------- */
 
-/** The pinned GS1 artefacts this module validates against (artifacts/epcis/NOTICE.md). */
+/**
+ * The pinned GS1 artefacts of the epcis-json@1 profile. None is carried in
+ * this package: GS1 publishes them under its own terms. `provisioned` marks
+ * the three a deployment obtains into its artefacts folder under `fileName`
+ * (see gs1-artefacts.ts); the REST binding is pinned by digest only and is
+ * never obtained.
+ */
 export const EPCIS_ARTEFACTS = [
-  { id: 'epcis-json-schema', kind: 'json-schema', version: '2.0.1', path: 'artifacts/epcis/epcis-json-schema-2.0.1.json', uri: 'https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json', sha256: '0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af', byteLength: 55680, carried: true },
-  { id: 'epcis-context', kind: 'jsonld-context', version: '2.0.1', path: 'artifacts/epcis/epcis-context-2.0.1.jsonld', uri: 'https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld', sha256: '5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737', byteLength: 20690, carried: true },
-  { id: 'epcis-query-schema', kind: 'json-schema', version: '2.0.1', path: 'artifacts/epcis/query-schema-2.0.1.json', uri: 'https://ref.gs1.org/standards/epcis/2.0.1/query-schema.json', sha256: '4b5583c9a0a715324594617f3cf6744f4f930568484f7df8fb7aa81819355341', byteLength: 27229, carried: true },
-  { id: 'epcis-openapi', kind: 'openapi', version: '2.0.1', path: null, uri: 'https://ref.gs1.org/standards/epcis/2.0.1/openapi.json', sha256: '3d33792c520d7a7a1d080382d956730bb07021c7dd1cc17229fce27b784d66fc', byteLength: 351201, carried: false },
+  { ...EPCIS_GS1_ARTEFACTS[0], kind: 'json-schema', provisioned: true },
+  { ...EPCIS_GS1_ARTEFACTS[1], kind: 'jsonld-context', provisioned: true },
+  { ...EPCIS_GS1_ARTEFACTS[2], kind: 'json-schema', provisioned: true },
+  { id: 'epcis-openapi', standard: 'GS1 EPCIS', kind: 'openapi', version: '2.0.1', fileName: null, uri: 'https://ref.gs1.org/standards/epcis/2.0.1/openapi.json', sha256: '3d33792c520d7a7a1d080382d956730bb07021c7dd1cc17229fce27b784d66fc', byteLength: 351201, provisioned: false },
 ] as const;
 
 export const EPCIS_VERSION = '2.0.1';
@@ -584,16 +590,23 @@ export function eventIdentifiers(event: JsonObject, pointer = ''): EpcisIdentifi
   return found;
 }
 
-let compiledSchema: ((value: unknown) => boolean) & { errors?: Array<{ instancePath: string; keyword: string; message?: string; schemaPath: string }> | null } | undefined;
+type SchemaValidator = ((value: unknown) => boolean) & { errors?: Array<{ instancePath: string; keyword: string; message?: string; schemaPath: string }> | null };
 
-function schemaValidator(): NonNullable<typeof compiledSchema> {
-  if (compiledSchema == null) {
-    const schema = JSON.parse(readFileSync(new URL('../artifacts/epcis/epcis-json-schema-2.0.1.json', import.meta.url), 'utf8')) as object;
+/** One compiled schema per artefacts folder: the bytes are read and verified once, on the first validation that names the folder. */
+const compiledSchemas = new Map<string, SchemaValidator>();
+
+function schemaValidator(artefactsDir?: string): SchemaValidator {
+  const dir = gs1ArtefactsDir(artefactsDir);
+  let compiled = compiledSchemas.get(dir);
+  if (compiled == null) {
+    // Throws Gs1ArtefactUnavailableError when the schema is absent or altered, so nothing is cached and nothing validates without it.
+    const schema = JSON.parse(readGs1Artefact(EPCIS_GS1_ARTEFACTS[0], { dir }).toString('utf8')) as object;
     const ajv = new Ajv({ allErrors: true, strict: false });
     (addFormats as unknown as (a: Ajv) => void)(ajv);
-    compiledSchema = ajv.compile(schema) as unknown as NonNullable<typeof compiledSchema>;
+    compiled = ajv.compile(schema) as unknown as SchemaValidator;
+    compiledSchemas.set(dir, compiled);
   }
-  return compiledSchema;
+  return compiled;
 }
 
 /**
@@ -602,9 +615,16 @@ function schemaValidator(): NonNullable<typeof compiledSchema> {
  * is repaired. `schema` says whether the pinned schema accepted the whole
  * document; the identifier findings are independent of it, so a document
  * the schema rejects still has its identifiers read.
+ *
+ * The schema is GS1's and is not part of this package. It is read from the
+ * artefacts folder (`artefactsDir`, else DPP_GS1_ARTEFACTS_DIR, else the
+ * per-user cache folder), which provisionGs1Artefacts fills. When the schema
+ * is absent or does not match its pinned digest this throws
+ * Gs1ArtefactUnavailableError and returns no findings: a document is never
+ * passed, failed or skipped without the schema.
  */
-export function validateEpcisDocument(document: JsonObject, options: { events?: EpcisEventPointer[] } = {}): EpcisValidationFindings {
-  const validate = schemaValidator();
+export function validateEpcisDocument(document: JsonObject, options: { events?: EpcisEventPointer[]; artefactsDir?: string } = {}): EpcisValidationFindings {
+  const validate = schemaValidator(options.artefactsDir);
   const findings: EpcisFinding[] = [];
   const passed = validate(document);
   for (const error of validate.errors ?? []) {

@@ -9,7 +9,7 @@ Application developers verifying W3C Verifiable Credentials that partners issue 
 | Procedure | Input and source |
 |---|---|
 | Installed examples | Node 22 or later, ECMAScript modules and this package; release status is in Install. |
-| First EPCIS call | The included document; no network, key or checkout. |
+| First EPCIS call | The included document and the three pinned GS1 files, obtained once from `https://ref.gs1.org/` ([GS1 files](#gs1-files)); no key or checkout. |
 | External credential verification | The credential's exact received bytes; issuer `did:web` documents, status evidence and an authority policy from configured evidence sources, never self-asserted trust. |
 | Checkout exercises | Repository checkout; run `npm ci` and `npm run build` before commands at its root. |
 
@@ -17,7 +17,7 @@ Application developers verifying W3C Verifiable Credentials that partners issue 
 
 **A W3C Verifiable Credential** names an issuer and a subject and secures its claims with a proof a recipient can check. This package verifies credentials other parties issue in the external passport format, `vc-di-ecdsa-rdfc-2019@1`: VC Data Model 2.0 with an `ecdsa-rdfc-2019` proof from a `did:web` issuer. It parses the exact bytes strictly, then checks the proof and the issuer's key binding, validity times, status through an authenticated Bitstring Status List, authority under your policy and the subject, and reports each finding separately. It issues nothing under that profile. [Verifiable credentials](../learn/verifiable-credentials.md) explains the formats and how they relate to DIDs.
 
-It also reads GS1 EPCIS 2.0.1 event documents under `epcis-json@1`: exact received bytes, validation against the pinned schema, event digests and arrival classification.
+It also reads GS1 EPCIS 2.0.1 event documents under `epcis-json@1`: exact received bytes, validation against the pinned schema, event digests and arrival classification. The schema is GS1's and is not in the package: you obtain it once ([GS1 files](#gs1-files)).
 
 | You want to | Need this package? |
 |---|---|
@@ -51,16 +51,45 @@ A bare `npm install @bsv/dpp-credentials` selects `latest`, the newest beta. Pin
 | Entry point | Main functions | A runnable call |
 |---|---|---|
 | `@bsv/dpp-credentials/exchange` | `verifyExternalCredential` verifies a VC Data Model 2.0 credential under `ecdsa-rdfc-2019`; `parseExternalCredentialBytes` reads its exact bytes strictly; `verifyBitstringStatus` checks status; `createExternalDocumentLoader` serves pinned contexts and resolves `did:web` within allowed origins; `externalCredentialVerifierFor` adapts it as the `credentialVerifier` of a verification report | [Prepare the verifier inputs](../interoperability/external-credentials.md#verify-the-vector-files-credentials) |
-| `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
-| `@bsv/dpp-credentials` | Re-exports every `/epcis-source` function, `createDidWebResolver`, `parseStrictJsonBytes` and `verifyTemporal`, with the shared credential and check types; it loads no proof suite | `npm run test -w @bsv/dpp-credentials -- test/strict-json.test.ts test/temporal.test.ts` in a checkout |
-| `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files, including the owned context and schemas the parked VSC manifests pin | |
+| `@bsv/dpp-credentials/epcis-source` | `parseEpcisSource` reads an EPCIS document's exact bytes under disclosed limits; `validateEpcisDocument` checks it against the pinned EPCIS 2.0.1 schema, read from the provisioned folder; `epcisEventBodyDigest` and `classifyEventArrival` tell a repeat from a change | The call below, and [EPCIS source exchange](../interoperability/epcis.md) |
+| `@bsv/dpp-credentials` | Re-exports every `/epcis-source` function, `createDidWebResolver`, `parseStrictJsonBytes` and `verifyTemporal`, with the shared credential and check types, and exports `provisionGs1Artefacts`, `verifyGs1Artefacts`, `readGs1Artefact` and `gs1ArtefactsDir` ([GS1 files](#gs1-files)); it loads no proof suite | `npm run test -w @bsv/dpp-credentials -- test/strict-json.test.ts test/temporal.test.ts` in a checkout |
+| `@bsv/dpp-credentials/artifacts/*` | The retained schemas, contexts and notices, as files, including the owned context and schemas the parked VSC manifests pin. No GS1 file is among them. | |
+| `dpp-gs1-artefacts` (executable) | `fetch`, `verify` and `path` for the GS1 files | [GS1 files](#gs1-files) |
+
+## GS1 files
+
+GS1 publishes the EPCIS schemas and context under its own terms. This repository and its packages do not redistribute them. Each deployment obtains them from GS1 and the package checks every byte against a pinned digest. After that, validation runs offline from a local folder.
+
+| File | GS1 address | SHA-256 | Bytes |
+|---|---|---|---|
+| `epcis-json-schema-2.0.1.json` | `https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json` | `0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af` | 55680 |
+| `epcis-context-2.0.1.jsonld` | `https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld` | `5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737` | 20690 |
+| `query-schema-2.0.1.json` | `https://ref.gs1.org/standards/epcis/2.0.1/query-schema.json` | `4b5583c9a0a715324594617f3cf6744f4f930568484f7df8fb7aa81819355341` | 27229 |
+
+The same facts are the exported table `EPCIS_GS1_ARTEFACTS`. Only the JSON schema is read by the package today, by `validateEpcisDocument`.
+
+| Way | What to do |
+|---|---|
+| The command | `npx dpp-gs1-artefacts fetch` once per deployment. `npx dpp-gs1-artefacts verify` checks the folder without the network, and `npx dpp-gs1-artefacts path` prints it. Each takes `--dir <folder>`. `fetch` and `verify` exit 1 when a file is missing or does not match. |
+| The function | `await provisionGs1Artefacts()` from `@bsv/dpp-credentials`, before the first validation. It returns `{ ok, dir, files }`, where each file is `present`, `fetched` or `failed` with a reason. `verifyGs1Artefacts()` is the check without the network. |
+| The folder | `--dir` or the `dir` option, else the environment variable `DPP_GS1_ARTEFACTS_DIR`, else `$XDG_CACHE_HOME/dpp/gs1`, else `~/.cache/dpp/gs1`. In a container, point `DPP_GS1_ARTEFACTS_DIR` at a mounted volume and provision when the container starts, not when the image is built, so no image layer holds the files. |
+| Without network access | Download the three files from the addresses above on a machine that has access, place them in the folder under the file names above, then run `npx dpp-gs1-artefacts verify`. `provisionGs1Artefacts({ offline: true })` and `fetch --offline` do the same check and never fetch. |
+
+Nothing is fetched when the package installs or when a module loads. Provisioning only requests `https://ref.gs1.org/`, refuses a redirect that leaves it, keeps nothing that fails its length or digest, and never parses or runs what it fetched.
+
+**When a file is absent or altered**, `validateEpcisDocument` throws `Gs1ArtefactUnavailableError`, with `code` `gs1-artefact-unavailable`, the artefact's `artefactId`, the `dir` it looked in and a `remedy` sentence. It returns no findings. Treat it as a refusal with no side effect, like a transport refusal: the document was neither passed nor failed, and nothing was skipped. `validateEpcisDocument(document, { artefactsDir })` names the folder for one call.
 
 ## First call
 
-1. Save this complete file as `epcis-first.mjs` in your installed project. It parses and validates one EPCIS document of the kind a supplier sends:
+1. Save this complete file as `epcis-first.mjs` in your installed project. It obtains the GS1 files if the folder does not hold them yet, then parses and validates one EPCIS document of the kind a supplier sends:
 
 ```js
+import { provisionGs1Artefacts } from '@bsv/dpp-credentials'
 import { parseEpcisSource, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
+
+// Once per deployment: obtain GS1's files and check every byte. Later runs find them and use no network.
+const artefacts = await provisionGs1Artefacts()
+if (!artefacts.ok) throw new Error(`GS1 files unavailable in ${artefacts.dir}: ${artefacts.files.filter(f => f.outcome === 'failed').map(f => `${f.fileName} (${f.reason})`).join(', ')}`)
 
 // One EPCIS 2.0.1 document with one event, as a supplier's system might send it.
 const document = {
@@ -102,7 +131,7 @@ schema: pass ; findings: 0
 | Command | Expected result |
 |---|---|
 | `node epcis-first.mjs` | One `ObjectEvent` at `/epcisBody/eventList/0`; schema `pass`, zero findings |
-| `node examples/import-epcis.mjs` | Reads the seven-event fixture and prints each event's identity and body digest; it maps nothing. |
+| `node examples/import-epcis.mjs` | In a checkout: provisions the GS1 files on first use, reads the seven-event fixture and prints each event's identity and body digest; it maps nothing. |
 
 To verify a partner's credential instead, follow [external credential verification](../interoperability/external-credentials.md), which runs the vector file's credentials through `verifyExternalCredential`.
 
@@ -149,6 +178,7 @@ These names left the root `@bsv/dpp-credentials` in 0.2.0-beta.6. The three mark
 | `@bsv/dpp-credentials/epcis-source` | [Source-event exchange](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/epcis-interoperability.md) |
 | The parked VSC profile, no longer in the package | [Parked credential profile](https://github.com/bsv-blockchain/dpp/blob/bb82d30c988f7432e3157f8d60296855c7c935ba/spec/vsc-profile.md) |
 | `@bsv/dpp-credentials/artifacts/*` | [Retained schemas, contexts and notices](https://github.com/bsv-blockchain/dpp/tree/a508eecf467640b5b29a31eb0e0cbc3c8af5617c/packages/dpp-credentials/artifacts) |
+| GS1 files and `dpp-gs1-artefacts` | [Provisioning module](https://github.com/bsv-blockchain/dpp/blob/e775b52cbf88558b13557a9ef588ed026427ada2/packages/dpp-credentials/src/gs1-artefacts.ts) |
 
 ## Next
 

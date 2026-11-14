@@ -129,6 +129,7 @@ These are open standard questions; [known limitations](../operate/limitations.md
 |---|---|
 | Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/gs1-discovery.md) |
 | Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/src/gs1-resolution.ts) |
+| GS1's resolver schemas and linkset context | Pinned by address, SHA-256 and length in [`GS1_RESOLVER_ARTEFACTS`](https://github.com/bsv-blockchain/dpp/blob/e775b52cbf88558b13557a9ef588ed026427ada2/packages/dpp-profiles/src/gs1-artefacts.ts), and not in the repository or the package: GS1 publishes them under its own terms. To validate a linkset or a description file against them, obtain them with `provisionGs1Artefacts({ artefacts: GS1_RESOLVER_ARTEFACTS })` from `@bsv/dpp-credentials` ([GS1 files](../packages/dpp-credentials.md#gs1-files)) |
 | The reference registry's resolver interface | The reference registry documents it; the registry contract describes only the minimum every registry serves, which has no resolver route |
 | Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/gs1) |
 

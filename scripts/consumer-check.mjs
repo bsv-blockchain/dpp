@@ -186,7 +186,13 @@ out.push(['dpp-credentials: root re-exports strict parsing and the EPCIS source 
 out.push(['dpp-credentials/exchange: verifies the external representation', typeof exchange.verifyExternalCredential === 'function' && exchange.EXTERNAL_REPRESENTATIONS.includes('vc-di-ecdsa-rdfc-2019@1')])
 const parsed = epcisSource.parseEpcisSource(new TextEncoder().encode(JSON.stringify({ '@context': ['https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld'], type: 'EPCISDocument', schemaVersion: '2.0', creationDate: '2026-09-06T00:00:00Z', epcisBody: { eventList: [] } })), { mediaType: 'application/json' })
 out.push(['dpp-credentials/epcis-source: parses an empty document', parsed.ok === true])
-out.push(['dpp-credentials: the pinned EPCIS schema is inside the installed package', existsSync(join('node_modules', '@bsv', 'dpp-credentials', 'artifacts', 'epcis', 'epcis-json-schema-2.0.1.json'))])
+// GS1 publishes its files under its own terms, so no installed package contains one, and validation refuses by name until the consumer provisions them.
+out.push(['dpp-credentials and dpp-profiles: no GS1 file is inside the installed packages', !existsSync(join('node_modules', '@bsv', 'dpp-credentials', 'artifacts', 'epcis')) && !existsSync(join('node_modules', '@bsv', 'dpp-profiles', 'schemas', 'gs1'))])
+let unprovisioned
+try { epcisSource.validateEpcisDocument(parsed.document, { artefactsDir: join(process.cwd(), 'gs1-not-provisioned') }) } catch (e) { unprovisioned = e }
+out.push(['dpp-credentials/epcis-source: validation without the provisioned GS1 schema throws gs1-artefact-unavailable and returns nothing', unprovisioned instanceof credentials.Gs1ArtefactUnavailableError && unprovisioned.code === 'gs1-artefact-unavailable' && unprovisioned.artefactId === 'epcis-json-schema'])
+out.push(['dpp-credentials: the root exports the GS1 provisioning functions and the three pinned EPCIS files', typeof credentials.provisionGs1Artefacts === 'function' && typeof credentials.verifyGs1Artefacts === 'function' && credentials.EPCIS_GS1_ARTEFACTS.length === 3 && credentials.verifyGs1Artefacts({ dir: join(process.cwd(), 'gs1-not-provisioned') }).ok === false])
+out.push(['dpp-credentials: the dpp-gs1-artefacts executable is installed', existsSync(join('node_modules', '.bin', 'dpp-gs1-artefacts'))])
 console.log(JSON.stringify(out))
 `)
   const outcome = JSON.parse(run(['node', 'consumer.mjs'], dir).trim().split('\n').at(-1))

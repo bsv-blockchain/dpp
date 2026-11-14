@@ -33,10 +33,11 @@ import {
   type ResolutionRequest,
 } from '../src/gs1-resolution.js'
 import { encodeSgtinBits, hexFromBits } from '../src/gs1-epc-binary.js'
+import { GS1_RESOLVER_ARTEFACTS } from '../src/gs1-artefacts.js'
+import { readGs1Artefact } from '../../dpp-credentials/src/gs1-artefacts.js'
 
 const root = join(import.meta.dirname, '..')
 const FIXTURES = join(root, '..', '..', 'fixtures', 'vectors', 'dpp', 'interoperability', 'gs1')
-const read = (relative: string): object => JSON.parse(readFileSync(join(root, relative), 'utf8'))
 
 /**
  * GS1 publishes its schemas in draft-07 with keywords Ajv's strict mode does
@@ -45,8 +46,10 @@ const read = (relative: string): object => JSON.parse(readFileSync(join(root, re
  */
 const ajv = new Ajv({ allErrors: true, strict: false })
 addFormats(ajv)
-const validateLinkset = ajv.compile(read('schemas/gs1/resolver-linkset-schema-1.2.1.json'))
-const validateDescription = ajv.compile(read('schemas/gs1/resolver-description-file-schema-1.2.0.json'))
+// GS1's schemas are not in the repository; the test set-up provisions them and readGs1Artefact refuses any bytes but the pinned ones.
+const gs1Schema = (id: string): object => JSON.parse(readGs1Artefact(GS1_RESOLVER_ARTEFACTS.find((a) => a.id === id)!).toString('utf8'))
+const validateLinkset = ajv.compile(gs1Schema('resolver-linkset-schema'))
+const validateDescription = ajv.compile(gs1Schema('resolver-description-file-schema'))
 
 /** A GTIN under the demonstration prefix, check digit computed and never typed. */
 const GTIN = '09521234000013'

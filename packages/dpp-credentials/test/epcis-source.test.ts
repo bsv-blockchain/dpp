@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   EPCIS_CONTEXT_DIGEST,
@@ -17,6 +20,7 @@ import {
   unresolvedCorrections,
   validateEpcisDocument,
 } from '../src/epcis-source.js';
+import { EPCIS_GS1_ARTEFACTS, Gs1ArtefactUnavailableError, readGs1Artefact } from '../src/gs1-artefacts.js';
 import type { JsonObject } from '../src/types.js';
 import { CELL_A, PACK, PACK_LINK, correctionEvents, epcisDocument, epcisQueryDocument, fiveEventList, refusedTransports, schemaInvalidDocument } from './epcis-fixture.js';
 
@@ -124,6 +128,42 @@ describe('validateEpcisDocument', () => {
     expect(validation.events[6]!.preservedExtensions).toEqual(['example:note']);
     expect(validation.preservedExtensions).toEqual([]);
     expect(document).toEqual(epcisDocument(fiveEventList()));
+  });
+
+  it('refuses with the named error, and returns no findings, when the schema has not been provisioned', () => {
+    const empty = mkdtempSync(join(tmpdir(), 'dpp-gs1-empty-'));
+    try {
+      let outcome: unknown;
+      let thrown: unknown;
+      try { outcome = validateEpcisDocument(epcisDocument(fiveEventList()), { artefactsDir: empty }); } catch (error) { thrown = error; }
+      expect(outcome).toBeUndefined();
+      expect(thrown).toBeInstanceOf(Gs1ArtefactUnavailableError);
+      expect(thrown).toMatchObject({ code: 'gs1-artefact-unavailable', artefactId: 'epcis-json-schema', dir: empty, status: 'missing' });
+      // A document the schema would reject is refused the same way: absence is never read as a failure either.
+      expect(() => validateEpcisDocument(schemaInvalidDocument(), { artefactsDir: empty })).toThrow(Gs1ArtefactUnavailableError);
+    } finally { rmSync(empty, { recursive: true, force: true }); }
+  });
+
+  it('refuses with the named error when the provisioned schema has been altered', () => {
+    const altered = mkdtempSync(join(tmpdir(), 'dpp-gs1-altered-'));
+    try {
+      const genuine = readGs1Artefact(EPCIS_GS1_ARTEFACTS[0]);
+      // Same length, one byte changed: a permissive schema must not be accepted in place of the pinned one.
+      const bytes = Buffer.from(genuine);
+      bytes[bytes.length - 2] = bytes[bytes.length - 2] === 0x20 ? 0x0a : 0x20;
+      writeFileSync(join(altered, EPCIS_GS1_ARTEFACTS[0].fileName), bytes);
+      expect(() => validateEpcisDocument(epcisDocument(fiveEventList()), { artefactsDir: altered })).toThrow(Gs1ArtefactUnavailableError);
+      try { validateEpcisDocument(epcisDocument([]), { artefactsDir: altered }); } catch (error) { expect(error).toMatchObject({ status: 'mismatch', dir: altered }); }
+    } finally { rmSync(altered, { recursive: true, force: true }); }
+  });
+
+  it('validates from an explicit folder once it holds the verified schema', () => {
+    const provisioned = mkdtempSync(join(tmpdir(), 'dpp-gs1-explicit-'));
+    try {
+      writeFileSync(join(provisioned, EPCIS_GS1_ARTEFACTS[0].fileName), readGs1Artefact(EPCIS_GS1_ARTEFACTS[0]));
+      expect(validateEpcisDocument(epcisDocument(fiveEventList()), { artefactsDir: provisioned }).schema).toBe('pass');
+      expect(validateEpcisDocument(schemaInvalidDocument(), { artefactsDir: provisioned }).schema).toBe('fail');
+    } finally { rmSync(provisioned, { recursive: true, force: true }); }
   });
 
   it('fails the schema for a safely retained document and names the paths, repairing nothing', () => {

@@ -20,13 +20,14 @@ The current candidate, `dpp-release-2026-11`, carries the `epcis-json@1` source 
 | Exercise | Input and source |
 |---|---|
 | All local commands | Node 22 or later, npm and a checkout with `npm ci` and `npm run build` completed through [setup](../quick-start.md#get-the-code). Run from its root. |
-| Fixture exercises | Checkout fixture `fixtures/vectors/dpp/interoperability/epcis/v1.json`. Every identifier is synthetic; no keys or external service are required. Nothing is signed or issued. |
+| Fixture exercises | Checkout fixture `fixtures/vectors/dpp/interoperability/epcis/v1.json`. Every identifier is synthetic; no keys are required. Nothing is signed or issued. |
+| GS1 files | The pinned EPCIS 2.0.1 schema is GS1's and is not in the repository or the package. Obtain it once with `node packages/dpp-credentials/dist/gs1-artefacts-cli.js fetch`, which requests `https://ref.gs1.org/` and checks every byte against a pinned digest; later runs are offline. [GS1 files](../packages/dpp-credentials.md#gs1-files) covers the folder, the environment variable and the route without network access. |
 | Own-document exercise | An EPCIS 2.0.1 `<document.json>` from your source system. |
 
 ## Parse and validate
 
 1. Parse to establish what arrived and each event's location.
-2. Validate structure against the pinned EPCIS 2.0.1 schema.
+2. Validate structure against the pinned EPCIS 2.0.1 schema. If the schema has not been provisioned, validation throws `Gs1ArtefactUnavailableError` and returns no findings; the document is neither passed nor failed.
 
 Run the fixture parse and validation:
 
