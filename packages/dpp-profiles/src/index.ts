@@ -33,6 +33,8 @@ export * from './product-identity.js'
 export * from './profile-registry.js'
 export * from './binding-validator.js'
 export * from './bundled-bindings.js'
+export { assembleProduct, splitProductByAccess, type AccessBinding, type ProductAssembly, type ProductAssemblyRefusal, type ProductAssemblyRefusalCode, type SplitProduct } from './access-tiers.js'
+export * from './bound-payload.js'
 
 export type ValueType = 'id' | 'text' | 'enum' | 'multi' | 'decimal' | 'integer' | 'percent' | 'monthYear' | 'date' | 'url' | 'document' | 'graphic' | 'country' | 'record' | 'any'
 export type AccessTier = 'public' | 'owner' | 'legitimate' | 'authority'

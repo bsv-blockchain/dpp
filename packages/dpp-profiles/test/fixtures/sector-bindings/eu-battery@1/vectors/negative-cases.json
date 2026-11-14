@@ -1,5 +1,5 @@
 {
-  "description": "The payloads eu-battery@1 refuses or cannot decide. A positive vector is one of the two product documents beside this file, with its `_comment` note members removed, wrapped in the payload envelope and checked under a passport identifier built from its own GTIN and serial at another host. The test makes every case below from a positive vector by the change the case names, so no altered copy of a product document is stored.",
+  "description": "The payloads eu-battery@1 refuses or cannot decide. A positive vector is one of the two product documents beside this file, with its `_comment` note members removed, cut into the public and restricted parts the binding names, the public part wrapped in the payload envelope, and the two parts checked together under a passport identifier built from its own GTIN and serial at another host. The test makes every case below from a positive vector by the change the case names, so no altered copy of a product document is stored.",
   "cases": [
     {
       "name": "notes-kept",

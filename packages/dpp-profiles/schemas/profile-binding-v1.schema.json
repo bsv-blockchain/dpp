@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/profiles/schemas/profile-binding-v1.schema.json",
   "title": "DPP profile binding, format 1",
-  "description": "One immutable file per version of an externally defined profile (spec/profiles.md section 7). It names every file that defines the profile, each by byte length and SHA-256, the checks a payload goes through in order, and how the product document in the payload must match the passport that carries it. The binding digest is the SHA-256 of this file's exact bytes, so the file holds no digest of itself. Rules that relate one member to another, such as profile being id@version, are stated in the specification and checked at registration.",
+  "description": "One immutable file per version of an externally defined profile (spec/profiles.md section 7). It names every file that defines the profile, each by byte length and SHA-256, the checks a payload goes through in order, how the product document in the payload must match the passport that carries it, and optionally which top-level properties of that document are public. The binding digest is the SHA-256 of this file's exact bytes, so the file holds no digest of itself. Rules that relate one member to another, such as profile being id@version, are stated in the specification and checked at registration.",
   "type": "object",
   "additionalProperties": false,
   "required": ["bindingVersion", "id", "version", "profile", "title", "scope", "publisher", "source", "granularity", "payload", "artefacts", "validation", "identity", "vectors", "baseline", "roles"],
@@ -145,6 +145,24 @@
               "relation": { "enum": ["model", "batch"] }
             }
           }
+        }
+      }
+    },
+    "access": {
+      "type": "object",
+      "description": "Which top-level properties of the product document are public. Every other property is restricted, one the binding does not name included. Absent: the profile has one tier and the whole product document is public.",
+      "additionalProperties": false,
+      "required": ["policy", "tierSplit", "default", "public"],
+      "properties": {
+        "policy": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[1-9][0-9]*$", "description": "The name of this split, as id@version." },
+        "tierSplit": { "const": "top-level-property", "description": "A property is wholly public or wholly restricted. Nothing is split inside a nested object or a list." },
+        "default": { "const": "restricted" },
+        "public": {
+          "type": "array",
+          "description": "The public property names, each exactly as a product document writes it.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
         }
       }
     },

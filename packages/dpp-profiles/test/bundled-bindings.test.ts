@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join, relative } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
-import { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, createProfileRegistry, describeArtefact, profileBindingDigest, readProfileBinding, registerBundledBindings, type ProfileBinding } from '../src/index.js'
+import { BUNDLED_BINDINGS, BUNDLED_BINDING_DIGESTS, createProfileRegistry, describeArtefact, profileBindingDigest, profileBindingInconsistencies, readProfileBinding, registerBundledBindings, type ProfileBinding } from '../src/index.js'
 
 // The package ships bindings of its own under bindings/. Two things make
 // them safe to use: the list of their digests is written into the source, so
@@ -76,6 +76,50 @@ describe('the bundled bindings are the files the package pins', () => {
       // A battery names its model beside the item. It is a related identity and never the subject.
       related: b.profile === 'eu-battery@1' ? [{ pointer: '/product/eubat:batteryModelIdentifier', relation: 'model' }] : [],
     })
+  })
+
+  it.each(each)('%s: splits the product document by top-level property, and restricts whatever it does not list', (_profile, b) => {
+    const access = b.binding.access!
+    expect({ ...access, public: [] }).toEqual({ policy: `${b.binding.id}-access@1`, tierSplit: 'top-level-property', default: 'restricted', public: [] })
+    expect(new Set(access.public).size).toBe(access.public.length)
+    // What a reader needs to read the payload at all, under either spelling a document may use.
+    for (const name of ['@context', 'id', '@id', 'type', '@type']) expect(access.public, name).toContain(name)
+    // Every member the identity rules read, so a reader of the public payload makes the writer's comparison.
+    const identity = b.binding.identity
+    const read = [...identity.subject.pointers, ...identity.mustEqual.map((r) => r.pointer), ...identity.mustNotContradict.map((r) => r.pointer), identity.granularityMember!.pointer]
+    expect(read.every((pointer) => /^\/product\/[^/]+$/.test(pointer))).toBe(true)
+    for (const pointer of read) expect(access.public, pointer).toContain(pointer.slice('/product/'.length))
+    expect(profileBindingInconsistencies(b.binding)).toEqual([])
+  })
+
+  it('eu-battery@1 publishes the declaration of conformity and the schema version, and keeps the mixed containers restricted', () => {
+    const open = bundled[0]!.binding.access!.public
+    expect(open.length).toBe(46)
+    for (const name of ['eubat:hasEuDeclarationOfConformity', 'schema:schemaVersion', 'eubat:batteryModelIdentifier', 'eubat:hasCarbonFootprintDeclaration', 'gs1:manufacturer']) expect(open, name).toContain(name)
+    for (const name of ['eubat:hasTechnicalSpecifications', 'eubat:criticalRawMaterialsStatement', 'eubat:hasManufacturingPlace', 'eubat:hasBatteryChemistry', 'eubat:hasHazardousSubstances', 'eubat:hasSupplyChainDueDiligence', 'eubat:hasEndOfLifeInfo', 'eubat:hasOperatorInformation', 'eubat:hasBatteryState', 'eubat:hasMaterialComposition', 'eubat:resultOfTestReport', 'gs1:referencedFile', 'gs1:regulatoryInformation', 'schema:status']) expect(open, name).not.toContain(name)
+  })
+
+  it('eu-textile@1 publishes the consumer-facing properties, and keeps the operator, the facilities and the mixed containers restricted', () => {
+    const open = bundled[1]!.binding.access!.public
+    expect(open.length).toBe(54)
+    for (const name of ['gs1:textileMaterial', 'eutex:hasCareInstructions', 'oec:passportIdentifier', 'gs1:hasSerialNumber', 'gs1:manufacturer']) expect(open, name).toContain(name)
+    for (const name of ['oec:hasOperatorInformation', 'eutex:hasCutAndSewFacility', 'eutex:hasDyeingFacility', 'eutex:hasRecycledContentDeclaration', 'eutex:hasEnvironmentalFootprint', 'eutex:hasSubstancesOfConcern', 'eutex:hasWaterUsage', 'oec:hasDocuments', 'oec:hasAccessRights', 'gs1:referencedFile', 'gs1:regulatoryInformation']) expect(open, name).not.toContain(name)
+  })
+
+  it('the documentation page lists the public properties of each binding, and the restricted ones the test documents carry, as the bindings have them', () => {
+    const page = readFileSync(join(packageRoot, '..', '..', 'docs', 'profiles', 'eu-sector-bindings.md'), 'utf8')
+    const rows = [...page.matchAll(/^\| `([^`]+)` \| (public|restricted) \| (public|restricted) \|$/gm)].map((m) => ({ name: m[1]!, tiers: [m[2]!, m[3]!] }))
+    expect(new Set(rows.map((row) => row.name)).size).toBe(rows.length)
+    bundled.forEach((b, column) => {
+      expect(rows.filter((row) => row.tiers[column] === 'public').map((row) => row.name).sort(), b.profile).toEqual([...b.binding.access!.public].sort())
+      const carried = [...new Set(b.binding.vectors.positive.flatMap((path) => Object.keys(JSON.parse(readFileSync(join(fixturesDir, b.profile, path), 'utf8')) as object)).filter((name) => !name.startsWith('_comment') && !b.binding.access!.public.includes(name)))]
+      // The row that counts both, then the row that names the restricted ones.
+      expect(page).toContain(`| \`${b.profile}\` | ${b.binding.access!.public.length} | ${carried.length} |`)
+      const listed = page.split('\n').find((line) => line.startsWith(`| \`${b.profile}\` | \``) && line.includes('`, `'))?.split(' | ')[1]?.split(', ').map((name) => name.replace(/[`| ]/g, ''))
+      expect(listed?.sort(), b.profile).toEqual(carried.sort())
+    })
+    // A property public in neither binding has no row: the table is of the public lists.
+    for (const row of rows) expect(row.tiers, row.name).toContain('public')
   })
 
   it.each(each)('%s: the scope says the name is about the data model and claims no compliance', (_profile, b) => {

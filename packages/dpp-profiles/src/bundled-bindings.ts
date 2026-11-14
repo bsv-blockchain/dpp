@@ -20,8 +20,8 @@ import type { ProfileRegistry, RegistrationResult } from './profile-registry.js'
 
 /** Every binding the package ships, with the SHA-256 of its `binding.json`. */
 export const BUNDLED_BINDINGS = [
-  { profile: 'eu-battery@1', bindingDigest: '681c0e2b65ad2cf36a4d9477ec6942343a5c241405e44634a35caebbab3e0d1c' },
-  { profile: 'eu-textile@1', bindingDigest: '4c35aa8dafd58d32884b4e6ef111514e48d9062a682e8854eedaf96663af1bee' },
+  { profile: 'eu-battery@1', bindingDigest: '89c5687f441926e8af37696a8f703342364e060f71d817badf3e1366043010b4' },
+  { profile: 'eu-textile@1', bindingDigest: '8bccb7952d24180327a318772a2462141c4b84a37f1b16f0b9eee131e362d994' },
 ] as const
 
 export type BundledBindingId = (typeof BUNDLED_BINDINGS)[number]['profile']

@@ -1,16 +1,16 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { MAX_PAYLOAD_PUBLIC_BYTES_V2 } from '@bsv/dpp-protocol'
 import {
   BUNDLED_BINDINGS,
   BUNDLED_BINDING_DIGESTS,
-  bindingPayloadValidator,
+  authorisedPayloadValidator,
   buildGs1DigitalLink,
   createProfileRegistry,
   isDemonstrationGtin,
   parseGs1DigitalLink,
   registerBundledBindings,
+  splitProductByAccess,
   type BindingArtefact,
   type BindingValidationDetail,
   type PayloadValidation,
@@ -22,13 +22,16 @@ import { createValidationEngine } from '../src/validation-engine.js'
 
 // The two sector bindings the package bundles, taken through the whole
 // pipeline with the real engines: registered from the package folder, then
-// every vector checked as a writer or a verifier would check it.
+// every vector checked as a reader who holds both parts of a state checks it.
 //
 // The product documents under test/fixtures/sector-bindings/ are unmodified
 // copies. Every payload here is made from one of them in memory, so no
 // altered copy of a document is stored: a positive vector is the document
-// with its note members removed, in the payload envelope, and each negative
-// is a positive vector with the one change its case names.
+// with its note members removed, and each negative is a positive vector
+// with the one change its case names. Both bindings split the document into
+// a public and a restricted part, so each is cut as its binding says and the
+// two parts are checked together, which checks the whole document. What a
+// reader of the public payload alone can decide is in sector-access.test.ts.
 const packageRoot = join(import.meta.dirname, '..')
 const NOTICE = 'Demonstration record: this passport describes no real product.'
 /** The passport is issued under the writer's own host, which is not the host the product document names. */
@@ -98,8 +101,17 @@ beforeAll(async () => {
 })
 afterAll(() => { globalThis.fetch = realFetch })
 
-const validate = (sector: Sector, payload: Json, options: { passportId?: string; engines?: ValidationEngines; registry?: ProfileRegistry } = {}): Promise<PayloadValidation> =>
-  bindingPayloadValidator({ registry: options.registry ?? registry, engines: options.engines ?? engines })({ profile: sector.binding.id, profileVersion: sector.binding.version, payloadPublic: JSON.stringify(payload), ...(options.passportId == null ? {} : { passportId: options.passportId }) })
+/** The envelope's product cut in two, and both parts checked together. */
+const validate = (sector: Sector, payload: Json, options: { passportId?: string; engines?: ValidationEngines; registry?: ProfileRegistry } = {}): Promise<PayloadValidation> => {
+  const { publicProduct, restrictedProduct } = splitProductByAccess({ binding: sector.binding, product: payload.product as Json })
+  return authorisedPayloadValidator({ registry: options.registry ?? registry, engines: options.engines ?? engines })({
+    profile: sector.binding.id,
+    profileVersion: sector.binding.version,
+    payloadPublic: JSON.stringify({ ...payload, product: publicProduct }),
+    ...(restrictedProduct == null ? {} : { restrictedProduct }),
+    ...(options.passportId == null ? {} : { passportId: options.passportId }),
+  })
+}
 const stepsOf = (result: PayloadValidation): BindingValidationDetail['steps'] => (result.detail as BindingValidationDetail).steps
 const violationsOf = (result: PayloadValidation): string[] => (stepsOf(result).find((s) => s.step === 'shacl')?.findings ?? []).filter((f) => f.severity === 'Violation').map((f) => f.constraint)
 
@@ -157,7 +169,7 @@ describe('the sector bindings accept their positive vectors', () => {
     const result = await validate(sector, envelope(sector, product), { passportId })
     expect(result.status, JSON.stringify(result.detail)).toBe('pass')
     expect(result.reasonCode).toBeUndefined()
-    expect(stepsOf(result).map((s) => [s.step, s.status])).toEqual([['envelope', 'pass'], ['binding', 'pass'], ['json-ld-expand', 'pass'], ['shacl', 'pass'], ['passport-identity', 'pass']])
+    expect(stepsOf(result).map((s) => [s.step, s.status])).toEqual([['envelope', 'pass'], ['binding', 'pass'], ['assembly', 'pass'], ['json-ld-expand', 'pass'], ['shacl', 'pass'], ['passport-identity', 'pass']])
     expect(violationsOf(result)).toEqual([])
   })
 
@@ -168,20 +180,6 @@ describe('the sector bindings accept their positive vectors', () => {
     expect(removed.length).toBeGreaterThan(0)
     expect(removed.every((name) => name.startsWith('_comment'))).toBe(true)
     for (const name of Object.keys(product)) if (!hasNotes(document[name])) expect(product[name]).toEqual(document[name])
-  })
-
-  it('fits the public payload limit, minified, with room to spare', () => {
-    const sizes = Object.fromEntries(positives.map(([name, sector, path]) => [name, new TextEncoder().encode(JSON.stringify(envelope(sector, positive(sector, path)))).byteLength]))
-    console.log(`Minified payload envelopes, in bytes, against the limit of ${MAX_PAYLOAD_PUBLIC_BYTES_V2}:\n${Object.entries(sizes).map(([name, size]) => `  ${name}: ${size}`).join('\n')}`)
-    expect(MAX_PAYLOAD_PUBLIC_BYTES_V2).toBe(65535)
-    for (const [name, size] of Object.entries(sizes)) expect(size, name).toBeLessThanOrEqual(MAX_PAYLOAD_PUBLIC_BYTES_V2)
-    // The sizes are recorded, so a change to a vector or to the envelope shows here.
-    expect(sizes).toEqual({
-      'eu-battery@1 vectors/amperia-staxwall-item.jsonld': 4703,
-      'eu-battery@1 vectors/battery-product.jsonld': 28157,
-      'eu-textile@1 vectors/fjordline-aurora-item.jsonld': 727,
-      'eu-textile@1 vectors/garment-product.jsonld': 26190,
-    })
   })
 })
 

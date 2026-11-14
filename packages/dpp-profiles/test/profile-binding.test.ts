@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import { describeArtefact, profileBindingDigest, profileBindingInconsistencies, profileBindingProblems, readProfileBinding, type ProfileBinding } from '../src/index.js'
-import { bindingBytes, sha256Hex, syntheticBinding, utf8 } from './binding-fixture.js'
+import { SYNTHETIC_PUBLIC, bindingBytes, sha256Hex, syntheticAccessBinding, syntheticBinding, utf8 } from './binding-fixture.js'
 
 // The binding file has two descriptions: the JSON Schema a tool in any
 // language can apply, and the check this package runs at registration without
@@ -15,6 +15,8 @@ const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema)
 type Mutation = (binding: Record<string, any>) => void
 const vary = (change: Mutation): unknown => { const copy = syntheticBinding() as unknown as Record<string, any>; change(copy); return copy }
 
+const withAccess = (change: Mutation): unknown => { const copy = syntheticAccessBinding() as unknown as Record<string, any>; change(copy.access); return copy }
+
 const positives: Array<[string, unknown]> = [
   ['the binding that uses every step', syntheticBinding()],
   ['a plain JSON Schema profile: one schema artefact and two steps', vary((b) => { b.artefacts = [b.artefacts[0]]; b.validation = { steps: ['json-schema', 'passport-identity'], blockingSeverities: ['Violation'] } })],
@@ -22,6 +24,9 @@ const positives: Array<[string, unknown]> = [
   ['no granularity member and no related identifiers', vary((b) => { delete b.identity.granularityMember; b.identity.related = []; b.identity.mustEqual = []; b.identity.mustNotContradict = [] })],
   ['warnings that block as well as violations', vary((b) => { b.validation.blockingSeverities = ['Violation', 'Warning'] })],
   ['a version written as a whole number with a decimal point', JSON.parse(JSON.stringify(syntheticBinding()).replace('"version":1,', '"version":1.0,'))],
+  ['a public and a restricted tier, split by top-level property', syntheticAccessBinding()],
+  ['one public property', vary((b) => { b.access = { policy: 'example-lamp-access@1', tierSplit: 'top-level-property', default: 'restricted', public: ['id'] } })],
+  ['a public property named by a full IRI', vary((b) => { b.access = { ...syntheticAccessBinding().access, public: ['id', 'https://profiles.example/lamp/v1#name'] } })],
 ]
 
 const negatives: Array<[string, unknown]> = [
@@ -85,6 +90,20 @@ const negatives: Array<[string, unknown]> = [
   ['a granularity member that expects a model', vary((b) => { b.identity.granularityMember.whenPresent = 'model' })],
   ['a related identifier with a relation the format does not name', vary((b) => { b.identity.related[0].relation = 'sibling' })],
   ['no related list', vary((b) => { delete b.identity.related })],
+  ['an access member that is a list of names', vary((b) => { b.access = ['id', 'name'] })],
+  ['an access split with no policy name', withAccess((a) => { delete a.policy })],
+  ['an access policy that is not id@version in form', withAccess((a) => { a.policy = 'public-by-default' })],
+  ['an access split inside nested objects', withAccess((a) => { a.tierSplit = 'json-pointer' })],
+  ['an access split with no stated unit', withAccess((a) => { delete a.tierSplit })],
+  ['an access default of public', withAccess((a) => { a.default = 'public' })],
+  ['an access split with no default', withAccess((a) => { delete a.default })],
+  ['no public property', withAccess((a) => { a.public = [] })],
+  ['no public list', withAccess((a) => { delete a.public })],
+  ['a public property listed twice', withAccess((a) => { a.public = ['id', 'name', 'id'] })],
+  ['a public property with an empty name', withAccess((a) => { a.public = ['id', ''] })],
+  ['a public property that is not a name', withAccess((a) => { a.public = ['id', { pointer: '/product/name' }] })],
+  ['a list of restricted properties beside the public one', withAccess((a) => { a.restricted = ['lumens'] })],
+  ['a public property made conditional on its content', withAccess((a) => { a.conditions = { name: 'no-serial' } })],
   ['no positive vector', vary((b) => { b.vectors.positive = [] })],
   ['no negative vector', vary((b) => { b.vectors.negative = [] })],
   ['a vector listed twice', vary((b) => { b.vectors.negative = ['vectors/negative.json', 'vectors/negative.json'] })],
@@ -149,6 +168,54 @@ describe('profile binding: rules that relate one member to another', () => {
 
   it('refuses a pointer the identity rules read in two ways', () => {
     expect(inconsistent((b) => { b.identity.related.push({ pointer: '/product/id', relation: 'model' }) })).toEqual([expect.stringMatching(/\/product\/id.*subject.*related/)])
+  })
+})
+
+describe('profile binding: the access split against the identity rules', () => {
+  const split = (publicNames: string[], change: Mutation = () => {}): string[] => {
+    const binding = syntheticAccessBinding() as unknown as Record<string, any>
+    binding.access.public = publicNames
+    change(binding)
+    return profileBindingInconsistencies(binding as ProfileBinding)
+  }
+  const without = (...names: string[]): string[] => SYNTHETIC_PUBLIC.filter((name) => !names.includes(name))
+
+  it('finds nothing wrong when every member the identity rules read is public', () => {
+    expect(profileBindingInconsistencies(syntheticAccessBinding())).toEqual([])
+    expect(readProfileBinding(bindingBytes(syntheticAccessBinding()))).toMatchObject({ ok: true })
+  })
+
+  it('refuses a restricted identifier, under either name the subject may be written with', () => {
+    expect(split(without('id'))).toEqual(['`access.public` does not list id, which the identity rules read at /product/id.'])
+    expect(split(without('@id'))).toEqual(['`access.public` does not list @id, which the identity rules read at /product/@id.'])
+  })
+
+  it('refuses a restricted GTIN, serial, coarser link or granularity member', () => {
+    expect(split(without('gtin'))).toEqual([expect.stringMatching(/does not list gtin.*\/product\/gtin/)])
+    expect(split(without('serialNumber'))).toEqual([expect.stringMatching(/does not list serialNumber/)])
+    expect(split(without('model'))).toEqual([expect.stringMatching(/does not list model/)])
+    expect(split(without('granularity'))).toEqual([expect.stringMatching(/does not list granularity/)])
+  })
+
+  it('names a property once, however many rules read inside it', () => {
+    expect(split(without('gtin'), (b) => { b.identity.mustEqual = [{ pointer: '/product/gtin/0', part: 'gtin' }, { pointer: '/product/gtin/1', part: 'gtin' }] })).toEqual([expect.stringMatching(/does not list gtin.*\/product\/gtin\/0/)])
+  })
+
+  it('leaves a related identifier to the binding: the identity rules never read it', () => {
+    expect(SYNTHETIC_PUBLIC).not.toContain('batch')
+    expect(syntheticAccessBinding().identity.related).toEqual([{ pointer: '/product/batch', relation: 'batch' }])
+    expect(split(SYNTHETIC_PUBLIC)).toEqual([])
+  })
+
+  it('refuses a restricted @context where the payload is read as JSON-LD, and allows it for a plain schema profile', () => {
+    expect(split(without('@context'))).toEqual(['`access.public` does not list @context, which the json-ld-expand step needs to read a public payload.'])
+    expect(split(without('@context'), (b) => { b.artefacts = [b.artefacts[0]]; b.validation = { steps: ['json-schema', 'passport-identity'], blockingSeverities: ['Violation'] } })).toEqual([])
+  })
+
+  it('is refused at reading as inconsistent, so it can never be registered', () => {
+    const binding = syntheticAccessBinding()
+    binding.access!.public = without('gtin')
+    expect(readProfileBinding(bindingBytes(binding))).toMatchObject({ ok: false, code: 'binding-inconsistent' })
   })
 })
 

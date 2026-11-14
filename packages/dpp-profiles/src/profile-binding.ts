@@ -3,14 +3,16 @@
  * `schemas/profile-binding-v1.schema.json`): one immutable JSON file per
  * version of a profile whose definitions are written outside this package.
  * It names every file that defines the profile by byte length and SHA-256,
- * lists the checks a payload goes through, and says how the product document
- * must match the passport that carries it.
+ * lists the checks a payload goes through, says how the product document
+ * must match the passport that carries it, and may say which top-level
+ * properties of that document are public.
  *
  * The file is checked here by hand, because this package takes no validator
  * library. The JSON Schema beside it says the same thing for every other
  * tool, and a test gives both the same vectors and compares the verdicts.
  */
 import { createHash } from 'node:crypto'
+import { topLevelProperty } from './access-tiers.js'
 import { parseStrictJson } from './strict-json.js'
 
 export const PROFILE_BINDING_VERSION = '1'
@@ -48,6 +50,22 @@ export interface BindingIdentity {
   related: Array<{ pointer: string; relation: 'model' | 'batch' }>
 }
 
+/**
+ * Which top-level properties of the product document are public. Every other
+ * property is restricted, one the binding has never heard of included. The
+ * list sits in the binding so the digest a payload declares also commits to
+ * what was public when it was written.
+ */
+export interface BindingAccess {
+  /** The name of this split, as `id@version`. */
+  policy: string
+  /** A property is wholly public or wholly restricted. Nothing is split inside a nested object or a list. */
+  tierSplit: 'top-level-property'
+  default: 'restricted'
+  /** The public property names, each exactly as a product document writes it. */
+  public: string[]
+}
+
 export interface ProfileBinding {
   bindingVersion: '1'
   id: string
@@ -67,6 +85,8 @@ export interface ProfileBinding {
     blockingSeverities: FindingSeverity[]
   }
   identity: BindingIdentity
+  /** Absent: the profile has one tier and the whole product document is public. */
+  access?: BindingAccess
   vectors: { positive: string[]; negative: string[] }
   baseline: string
   roles: string[]
@@ -142,7 +162,7 @@ export function profileBindingProblems(value: unknown): string[] {
   }
   const pointerText = 'a JSON Pointer under /product'
 
-  const binding = members(value, '', ['bindingVersion', 'id', 'version', 'profile', 'title', 'scope', 'publisher', 'source', 'granularity', 'payload', 'artefacts', 'validation', 'identity', 'vectors', 'baseline', 'roles'])
+  const binding = members(value, '', ['bindingVersion', 'id', 'version', 'profile', 'title', 'scope', 'publisher', 'source', 'granularity', 'payload', 'artefacts', 'validation', 'identity', 'vectors', 'baseline', 'roles'], ['access'])
   if (binding == null) return problems
 
   constant(binding, 'bindingVersion', '', PROFILE_BINDING_VERSION)
@@ -249,6 +269,16 @@ export function profileBindingProblems(value: unknown): string[] {
     }
   }
 
+  if (has(binding, 'access')) {
+    const access = members(binding.access, 'access', ['policy', 'tierSplit', 'default', 'public'])
+    if (access != null) {
+      text(access, 'policy', 'access', PROFILE, 'an identifier of the form id@version')
+      constant(access, 'tierSplit', 'access', 'top-level-property')
+      constant(access, 'default', 'access', 'restricted')
+      list(access, 'public', 'access', { min: 1, unique: true }, textItem(undefined, 'text of at least one character'))
+    }
+  }
+
   if (has(binding, 'vectors')) {
     const vectors = members(binding.vectors, 'vectors', ['positive', 'negative'])
     if (vectors != null) {
@@ -315,6 +345,20 @@ export function profileBindingInconsistencies(binding: ProfileBinding): string[]
     ...binding.identity.related.map((rule): [string, string] => [rule.pointer, 'a related identifier']),
   ]
   for (const [pointer, use] of others) if (subject.has(pointer)) problems.push(`${pointer} is read both as the subject and as ${use}.`)
+
+  if (binding.access != null) {
+    const open = new Set(binding.access.public)
+    // A reader of the public payload makes the same identity comparison as a writer. A member the comparison
+    // reads that sat in the restricted tier would be skipped there without a word, and the two could disagree.
+    const read = [...binding.identity.subject.pointers, ...binding.identity.mustEqual.map((rule) => rule.pointer), ...binding.identity.mustNotContradict.map((rule) => rule.pointer), ...(binding.identity.granularityMember == null ? [] : [binding.identity.granularityMember.pointer])]
+    const missing = new Map<string, string>()
+    for (const pointer of read) {
+      const property = topLevelProperty(pointer)
+      if (!open.has(property) && !missing.has(property)) missing.set(property, pointer)
+    }
+    for (const [property, pointer] of missing) problems.push(`\`access.public\` does not list ${property}, which the identity rules read at ${pointer}.`)
+    if (steps.includes('json-ld-expand') && !open.has('@context')) problems.push('`access.public` does not list @context, which the json-ld-expand step needs to read a public payload.')
+  }
   return problems
 }
 

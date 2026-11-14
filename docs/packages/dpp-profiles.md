@@ -176,7 +176,8 @@ A profile does not have to be one of the manifests this package publishes. A dat
 |---|---|
 | Binding | A JSON file naming every file that defines the profile, the checks to run and how the product must match its passport. Schema: `@bsv/dpp-profiles/schemas/profile-binding-v1.schema.json` |
 | Registry | `createProfileRegistry`: holds the bindings you trust and the manifest profiles, behind one `resolve(id, version)` |
-| Validator | `bindingPayloadValidator`: the function a writer calls before issuing and a verifier passes as `payloadValidator` |
+| Validator | `bindingPayloadValidator`: the function a verifier passes as `payloadValidator`. It checks a public payload, which is what any reader has |
+| Access split | A binding's optional `access` member: which top-level properties of the product document are public. `prepareBoundPayload` is the writer's call, and `authorisedPayloadValidator` checks both parts together ([split a product](#split-a-product-into-public-and-restricted-parts)) |
 | Engine adapter | `@bsv/dpp-profiles/validation-engine`: JSON-LD and SHACL engines over libraries you install |
 | Example profiles | `examples/custom-profile/` in the repository: `example-bottle@1` uses every step, `example-notebook@1` uses a schema only |
 | Bundled bindings | `eu-battery@1` and `eu-textile@1`, shipped under `bindings/` with their artefacts and notices. `BUNDLED_BINDING_DIGESTS` is their trusted digest list and `registerBundledBindings(registry)` registers them from the package folder ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)) |
@@ -190,7 +191,7 @@ A state's `payload_public` under a binding is an envelope around one product doc
 | `notice` | Optional, first, and only on a demonstration record: the sentence saying so |
 | `profile`, `profile_version` | The binding's `id` and `version` |
 | `profile_binding_sha256` | The binding digest: the SHA-256 of the binding file's exact bytes, in lower-case hexadecimal |
-| `product` | The product document, unchanged |
+| `product` | The product document, unchanged. Under a binding with an `access` member, its public properties only |
 
 No other member is allowed. Product data goes inside `product`. A payload that carries a member name twice, at any depth, is refused.
 
@@ -209,6 +210,7 @@ A binding is format 1 when its `bindingVersion` is `"1"`. The file holds no dige
 | `validation.engine.requires` | Capabilities the engines must have: `json-schema-2020-12`, `shacl-core`, `shacl-sparql-constraints` |
 | `validation.blockingSeverities` | Which SHACL severities fail the check, usually `["Violation"]`. Other findings are reported and do not block |
 | `identity` | Where the product document states its identifier, its GTIN and serial, a coarser product link, its granularity and related model or batch identifiers |
+| `access` | Optional. Which top-level properties are public; every other property is restricted ([split a product](#split-a-product-into-public-and-restricted-parts)). Without it the whole product document is public |
 | `vectors` | The payloads your profile accepts and refuses, as files beside the binding |
 | `baseline`, `roles` | The baseline the profile requires and the roles it binds |
 
@@ -316,8 +318,13 @@ A step that fails makes the answer `fail`. Otherwise a step that could not run m
 | `profile-unknown` | `unknown`, `schema-unavailable` | The registry holds no such profile |
 | `validator-unavailable` | `unknown`, `schema-unavailable` | No engine, an engine without a required capability, a timeout or an engine error |
 | `product-identity-unavailable` | `unknown`, `schema-unavailable` | No `passportId` was supplied, or an identifier is in a form the rules do not read |
+| `restricted-property-disclosed` | `fail`, `schema-invalid` | The public payload carries a property the binding does not list as public. Nothing after it is checked |
+| `product-assembly-refused` | `fail`, `schema-invalid` | The authorised view could not rejoin the two parts. The `assembly` step's `refusal` is the code |
+| `restricted-tier-withheld` | `unknown`, `schema-unavailable` | A rule needs a restricted property, which a public payload does not carry. `detail.access.withheld` lists each such rule |
 
 Each entry of a `shacl` step's `findings` carries `severity`, `constraint`, `focusNode`, `path`, `message` and `value`, where the engine reports them. A warning under a binding that blocks on violations only appears there and the step still passes.
+
+Under a binding with an `access` member, `detail.access` carries the `policy`, the `view` that was checked (`public`, `authorised` or, for a writer, `whole`) and `withheld`, the rules that view could not decide.
 
 ### How the product must match the passport
 
@@ -335,6 +342,96 @@ The expected identity is the `passportId` you supply, never anything in the payl
 | Has a GTIN with a wrong check digit | `fail` |
 | Uses a compressed link, another primary key or a non-GS1 identifier | `unknown` |
 | Is checked with no `passportId` | `unknown` |
+
+### Split a product into public and restricted parts
+
+A state has a public payload, on chain and readable by anyone for good, and a restricted part that its owner encrypts and keeps off chain ([record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md#7-the-owner-tier-binding) section 7). A binding with an `access` member says which top-level properties of the product document are public ([profiles](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/profiles.md) section 7):
+
+```json
+"access": {
+  "policy": "example-access@1",
+  "tierSplit": "top-level-property",
+  "default": "restricted",
+  "public": ["@context", "id", "@id", "type", "@type", "name", "gtin", "serialNumber"]
+}
+```
+
+| Rule | Detail |
+|---|---|
+| Unit | A top-level property of the product document is wholly public or wholly restricted. Nothing is split inside a nested object or a list |
+| Default | A property `public` does not list is restricted, one the binding has never heard of included |
+| Names | A name matches exactly as a document writes it. List both spellings where a document may use either, such as `id` and `@id` |
+| Required entries | Every property the identity rules read, and `@context` for a JSON-LD profile. A binding without them is refused as `binding-inconsistent`. List the node's type as well, so a reader's shapes still select the product |
+| Commitment | The list is in the binding, so the `profile_binding_sha256` a payload declares also commits to which properties were public |
+| No `access` | One tier: the whole product document is public, as before |
+
+The two bundled bindings carry such a list ([which properties are public](../profiles/eu-sector-bindings.md#which-properties-are-public)), and that page has a complete script.
+
+#### Prepare a payload
+
+`prepareBoundPayload` is the writer's one call before a state is issued or updated. It validates the whole document, splits it, builds the public payload as the exact text to sign, holds that text to 65,535 bytes of UTF-8, and checks it once more the way any reader will. It issues, signs, encrypts and stores nothing.
+
+**Fragment, not runnable alone:** supply a `registry` and `engines` as in [register a profile and validate a payload](#register-a-profile-and-validate-a-payload), the complete `product` document and the `passportId` of the passport that will carry it.
+
+```js
+import { prepareBoundPayload } from '@bsv/dpp-profiles'
+
+const prepared = await prepareBoundPayload({ registry, engines, profile: 'eu-battery', profileVersion: 1, product, passportId })
+if (!prepared.ok) throw new Error(`${prepared.code}: ${prepared.detail}`)
+const { payloadPublic, restrictedProduct, validation, publicView } = prepared
+```
+
+| Member | What it is |
+|---|---|
+| `payloadPublic`, `byteLength` | The public payload: the exact text to write as `payload_public` and to sign, and its size in UTF-8 bytes |
+| `restrictedProduct` | The restricted part, for you to encrypt and keep off chain: the product's identifier, then every restricted property. Absent when the document has none |
+| `validation` | The check of the whole document. Its status is `pass` |
+| `publicView` | The check any reader will make of `payloadPublic`: `pass`, or `unknown` with the rules it cannot decide |
+
+Pass `notice` for a demonstration record, and it is written first. A refusal is returned, never thrown:
+
+| `code` | Cause |
+|---|---|
+| `validation-failed` | The whole document fails a check. `validation` names it |
+| `validation-unavailable` | A check could not run: no engine, a missing capability, a timeout, an unregistered profile or no `passportId`. A check that could not run is not a pass, so nothing is prepared |
+| `public-payload-too-large` | The public payload is over 65,535 bytes. `byteLength` is its actual size. The restricted part does not count |
+| `public-view-failed` | The whole document passes and its public part alone fails a rule, which every reader would see. `publicView` names it |
+| `profile-not-bound` | The identifier names a manifest-format profile, which has no binding |
+
+#### Validate by view
+
+| You hold | Call | It checks |
+|---|---|---|
+| The public payload | `bindingPayloadValidator({ registry, engines })` | The payload as a projection of the whole document. This is what a report runs |
+| Both parts | `authorisedPayloadValidator({ registry, engines })`, with `restrictedProduct` beside the payload | The envelope and the binding digest, then the two parts rejoined, through every step and the identity check |
+
+| Public view | Result |
+|---|---|
+| Carries a property the binding does not list as public | `fail`, `restricted-property-disclosed`. The answer names the property and does not repeat its value |
+| A rule misses only a restricted property: a minimum count on the product itself, or a required top-level schema property | Withheld, not failed. The answer is `unknown`, `restricted-tier-withheld`, and lists the rule |
+| Breaks any other rule, or leaves out a public property a rule requires | `fail`, as for any payload |
+| Every rule could be evaluated and held | `pass` |
+
+A public `pass` covers the rules the public payload could break. It says nothing about the restricted properties: a fault inside one is invisible to this view, and only the writer's check and the authorised view find it.
+
+In the authorised view, omit `restrictedProduct` only for a state that has no restricted part. Parts that do not rejoin fail with `product-assembly-refused`, and the `assembly` step's `refusal` names the code below.
+
+A `pass` in the authorised view says the rejoined document satisfies the profile. It is not evidence that the restricted part is the one the record commits to. Compare the stored blob with the record's `payload_owner_hash` first, as the [record model](https://github.com/bsv-blockchain/dpp/blob/7e0e9386bc0af9ae0e941c2d0676845c3ac513ea/spec/record-model.md#7-the-owner-tier-binding) requires. Nothing in this package makes or replaces that comparison.
+
+#### Split and rejoin on their own
+
+`splitProductByAccess({ binding, product })` returns `{ publicProduct, restrictedProduct }` and changes nothing it is given. It validates nothing, so validate first. It throws a `TypeError` for a product that is not an object, and for one with restricted properties and no identifier.
+
+`assembleProduct({ binding, publicProduct, restrictedProduct })` returns `{ ok: true, product }`: the public properties in their order, then the restricted ones, so the same parts always give the same JSON text. The result is for validation and display. It is not what was signed. A refusal is `{ ok: false, code, detail }`:
+
+| `code` | Cause |
+|---|---|
+| `part-not-an-object` | A part is not one JSON object. `part` says which |
+| `join-key-missing` | A part does not carry the product's identifier. `part` says which |
+| `restricted-part-names-another-product` | The restricted part carries another product's identifier |
+| `property-in-both-parts` | A property other than the identifier sits in both parts |
+| `restricted-property-in-public-part` | The public part carries a property the binding does not list as public |
+| `public-property-in-restricted-part` | The restricted part carries a property the binding lists as public |
 
 ### When registration is refused
 

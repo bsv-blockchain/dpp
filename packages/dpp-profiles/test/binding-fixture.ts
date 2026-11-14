@@ -83,6 +83,14 @@ export function syntheticBinding(): ProfileBinding {
   }
 }
 
+/** The properties the synthetic access split makes public. `lumens` and `batch` are left out, so they are restricted. */
+export const SYNTHETIC_PUBLIC = ['@context', 'id', '@id', 'name', 'gtin', 'serialNumber', 'granularity', 'model']
+
+/** The synthetic binding with a public and a restricted tier, under an identifier of its own. */
+export function syntheticAccessBinding(): ProfileBinding {
+  return { ...syntheticBinding(), id: 'example-lamp-tiers', profile: 'example-lamp-tiers@1', access: { policy: 'example-lamp-access@1', tierSplit: 'top-level-property', default: 'restricted', public: [...SYNTHETIC_PUBLIC] } }
+}
+
 /** The exact bytes a binding is registered and digested as. */
 export const bindingBytes = (binding: unknown): Uint8Array => utf8(JSON.stringify(binding, null, 2) + '\n')
 
