@@ -80,7 +80,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/conformance.md",
-      "digest": "b204d1931ebf03d512dd6af581d95b65b101504d38da59a1715d2c0666a11547"
+      "digest": "d3b310853b849eaa2dfa66f3d7f2a27a97fdd013ca1b624ce7dce55a19e77baa"
     },
     {
       "id": "spec-legacy-anchor-v3",
@@ -112,7 +112,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "61a386482371e289fd977ee239cb122443d0f2bc47812ee6e570c5da342cf0de"
+      "digest": "5b7f7085bbd9c954a40a03ffe1cff35e73202686ea9bf1d6a76d086c69ae3387"
     },
     {
       "id": "profiles-frozen",
@@ -212,11 +212,11 @@
     },
     {
       "id": "profiles-mapping-inventories",
-      "uri": "packages/dpp-profiles/generated/mapping/battery@2.md",
-      "version": "battery@2",
+      "uri": "packages/dpp-profiles/generated/mapping/general@2.md",
+      "version": "general@2",
       "kind": "local",
-      "path": "packages/dpp-profiles/generated/mapping/battery@2.md",
-      "digest": "c6398774469b4d8b289e9f54605e6f43ddf12eb3adabf0720723c1be091825e9"
+      "path": "packages/dpp-profiles/generated/mapping/general@2.md",
+      "digest": "2676806923b2b2a10d5a6259be244fffc1f38de480964cb57cd468d51a055ae3"
     },
     {
       "id": "contract-publisher-policy",
@@ -233,14 +233,6 @@
       "kind": "local",
       "path": "docs/quick-start.md",
       "digest": "0266d85e9ecdb7a747acd4b461cb0a7209a2875b91509f77d3bc9f99ed5a3e8e"
-    },
-    {
-      "id": "fixture-battery-lifecycle",
-      "uri": "fixtures/battery-lifecycle-v1.json",
-      "version": "1",
-      "kind": "local",
-      "path": "fixtures/battery-lifecycle-v1.json",
-      "digest": "eeea5a2bc1cac27e3a8f4d6cb43ac9c8a9602673922b87ddab40fe6ca3dee330"
     },
     {
       "id": "vectors-publisher-policy",
@@ -264,7 +256,7 @@
       "version": "0.1.0",
       "kind": "local",
       "path": "packages/dpp-profiles/src/combinations.ts",
-      "digest": "c5446b51f86c1e1c31158c47228eaf45106acd0e23715adc1a532834e15cba97"
+      "digest": "c40c2e1c7fce79842b06884d3fd7dc0649350ea19ee365bc05dad0cc7fbe48c7"
     },
     {
       "id": "spec-gs1-discovery",
@@ -2112,6 +2104,7 @@
       "testRefs": [
         "packages/dpp-protocol/test/evidence.test.ts",
         "packages/dpp-profiles/test/payload-validator.test.ts",
+        "packages/dpp-profiles/test/retired-profiles.test.ts",
         "packages/dpp-profiles/test/battery-lifecycle.test.ts"
       ],
       "evidenceRefs": [
@@ -2122,7 +2115,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Decided 2026-11-01: validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states pass under the profiles package's validator. Re-read 2026-11-14 after §4 said the reference hands the validator the passport_id of the state beside its payload: DeclaredPayload.passportId is read from the decoded state, and evidence.test.ts pins that for a genesis and a later state and that it never comes from the payload, the expected subject or the outpoint. No finding, reason code, fixture or report changed."
+      "notes": "Decided 2026-11-01: validate inside the report. The pinned chain fixtures predate the profile stamps, so their reports pin profile-undeclared; the battery lifecycle fixture declares battery@2 and its states passed under the profiles package's validator when its report was recorded. Re-read 2026-11-14 after §4 said the reference hands the validator the passport_id of the state beside its payload: DeclaredPayload.passportId is read from the decoded state, and evidence.test.ts pins that for a genesis and a later state and that it never comes from the payload, the expected subject or the outpoint. No finding, reason code, fixture or report changed. Re-read 2026-11-14 once more when battery@2 was retired (spec/profiles.md §4): the profiles package's validator now answers unknown with schema-unavailable and the cause profile-retired for a state that declares a retired profile, never a pass and never a failure. The battery lifecycle fixture keeps its bytes and its recorded report; battery-lifecycle.test.ts reads it as history and holds that every check but schema answers as recorded. No reason code and no report schema changed."
     },
     {
       "id": "VER-5-observations",
@@ -2238,9 +2231,9 @@
         "conformance/baseline-native-2.json#quickStarts"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after the overlay role of §2 dropped its synchronisation profile; the reader quick start rule is unchanged."
+      "notes": "Re-read 2026-11-12 after the overlay role of §2 dropped its synchronisation profile; the reader quick start rule is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-3-baseline",
@@ -2264,8 +2257,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-14",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; native-baseline@1 keeps its bytes and this row is unchanged."
     },
     {
       "id": "CONF-3-baseline-2",
@@ -2290,8 +2284,9 @@
         "conformance/baseline-native-2.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-14",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-4-capability-schema",
@@ -2315,9 +2310,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §4 said the named operator profiles are the reference index package's own; the capability document rule this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §4 said the named operator profiles are the reference index package's own; the capability document rule this row assesses is unchanged. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-4-overlay-capabilities",
@@ -2343,9 +2338,9 @@
         "conformance/examples/capabilities-reference-node.json (hand-written example of what the node would serve)"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "GET /capabilities builds the document from constants and configuration, validates against contracts/capabilities.schema.json, and under the reference configuration equals conformance/examples/capabilities-reference-node.json exactly; the operator profile, active publisher keys, export and retraction availability and every unsupported item are stated by name. Re-read 2026-11-12: the operator profile the document names is a label of the reference package, documented in its README."
+      "notes": "GET /capabilities builds the document from constants and configuration, validates against contracts/capabilities.schema.json, and under the reference configuration equals conformance/examples/capabilities-reference-node.json exactly; the operator profile, active publisher keys, export and retraction availability and every unsupported item are stated by name. Re-read 2026-11-12: the operator profile the document names is a label of the reference package, documented in its README. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-6-ledger-gate",
@@ -2369,8 +2364,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers"
+      "reviewedAt": "2026-11-14",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "CONF-6-selected-claim-qualification",
@@ -2399,9 +2395,9 @@
         "conformance/selections/dpp-release-2026-11.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The diagnostic checker keeps exit code 0 with a blocked future claim and reports every selection's blocked required claims by sentence; qualify.mjs exits 1 for the same selection. Both read assess.mjs, so they cannot disagree. Neither is a conformity certificate."
+      "notes": "The diagnostic checker keeps exit code 0 with a blocked future claim and reports every selection's blocked required claims by sentence; qualify.mjs exits 1 for the same selection. Both read assess.mjs, so they cannot disagree. Neither is a conformity certificate. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "STATUS-validate-algorithm",
@@ -2809,7 +2805,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 gained the manifest version 2 paragraph; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the manifest shape this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 gained the manifest version 2 paragraph; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired, and the example identifier of §2 became general@2; the manifest shape this row assesses is unchanged."
     },
     {
       "id": "PROF-3-fields",
@@ -2841,7 +2837,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §3 took the composable rules, the evaluator and the shared shapes from the parked projection specification; the field rules this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the field rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the field rules are unchanged."
+      "notes": "Re-read 2026-11-12 after §3 took the composable rules, the evaluator and the shared shapes from the parked projection specification; the field rules this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the field rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the field rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the field rules are unchanged."
     },
     {
       "id": "PROF-3-access-tiers",
@@ -2867,7 +2863,7 @@
       "status": "unassessed",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the tiers §3 gives a manifest profile are unchanged, the split a binding states is a separate rule of §7 that this row does not assess, and the row stays unassessed."
+      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the tiers §3 gives a manifest profile are unchanged, the split a binding states is a separate rule of §7 that this row does not assess, and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the access tiers are unchanged and the row stays unassessed."
     },
     {
       "id": "PROF-4-freeze",
@@ -2875,7 +2871,7 @@
       "sourceUri": "spec/profiles.md",
       "sourceVersion": "working draft",
       "clause": "§4",
-      "summary": "battery@2, textile@2, general@2, textile@1 and general@1 are frozen by digest; a frozen manifest changes only by a new version or a reviewed re-freeze; generation is deterministic and drift is a red test.",
+      "summary": "general@2 and general@1 are frozen by digest, as is every retired profile; a frozen manifest changes only by a new version or a reviewed re-freeze; generation is deterministic and drift is a red test.",
       "layer": "core",
       "roles": [
         "all"
@@ -2895,7 +2891,45 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §4 named battery@4 the one draft successor, parked battery@3, textile@3 and textile@4 with their bytes frozen, and stated the additive freeze; no digest moved. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the freezing rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the freezing rules are unchanged."
+      "notes": "Re-read 2026-11-12 after §4 named battery@4 the one draft successor, parked battery@3, textile@3 and textile@4 with their bytes frozen, and stated the additive freeze; no digest moved. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the freezing rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the freezing rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired: no digest moved, the retired manifests and their generated files stay frozen, and PROF-4-retirement assesses the rule."
+    },
+    {
+      "id": "PROF-4-retirement",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§4, retirement",
+      "summary": "A retired profile keeps its frozen definition and its identity is never reused or reinterpreted; a writer issues no state or claim and prepares or validates no payload under it; a reader reports a payload that declares it as unknown with schema-unavailable and a cause naming the retirement, never a pass or a failure, and a registry reports the identity as retired, distinct from unknown; every other check is unaffected. battery@2, battery@3, battery@4 and textile@1 to textile@4 are retired, replaced by eu-battery@1 and eu-textile@1.",
+      "layer": "core",
+      "roles": [
+        "passport-writer",
+        "passport-reader",
+        "registry"
+      ],
+      "applicability": "always",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/retired-profiles.ts",
+        "packages/dpp-profiles/src/payload-validator.ts",
+        "packages/dpp-profiles/src/validation-pipeline.ts",
+        "packages/dpp-profiles/src/profile-registry.ts",
+        "packages/dpp-profiles/src/bound-payload.ts",
+        "packages/create-dpp-app/template/apps/api/src/writer.ts"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/retired-profiles.test.ts",
+        "packages/dpp-profiles/test/battery-lifecycle.test.ts",
+        "packages/create-dpp-app/template/apps/api/test/retired-profiles.test.ts",
+        "conformance/test/retired-profiles-bytes.test.mjs"
+      ],
+      "evidenceRefs": [
+        "packages/dpp-profiles/frozen.json",
+        "fixtures/battery-lifecycle-v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-14",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Added 2026-11-14 with the rule. RETIRED_PROFILE_IDS is the one list; the refusal code and the cause are both profile-retired. The file readers, the field lists, the change report and the lifecycle mapping still accept a retired manifest, because they describe a frozen definition and judge no payload. The byte comparison with the main branch is skipped, and says so, in a checkout that does not hold that branch."
     },
     {
       "id": "PROF-5-identifiers",
@@ -2923,7 +2957,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged."
+      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged."
     },
     {
       "id": "PROF-5-demonstration-notice",
@@ -2948,7 +2982,7 @@
       "status": "unassessed",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged, and the binding envelope of §7 permits the same notice; the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged and the row stays unassessed."
+      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged, and the binding envelope of §7 permits the same notice; the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged and the row stays unassessed."
     },
     {
       "id": "PROF-6-generated-consumers",
@@ -2976,7 +3010,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check. Re-read 2026-11-12 after §6 said how the generator treats a version 2 manifest; the generation rule this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §6 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §6 is unchanged."
+      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check. Re-read 2026-11-12 after §6 said how the generator treats a version 2 manifest; the generation rule this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §6 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §6 is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §6 is unchanged, and the generated files of a retired profile stay as frozen."
     },
     {
       "id": "GOV-independent-implementation",
@@ -2998,9 +3032,9 @@
         "GOVERNANCE.md (Declaring version 1.0, condition 2)"
       ],
       "status": "gap",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Lowered from implemented to gap on 12 November 2026, when the programme's Python reader, the only second reader the row cited, was parked (docs/reference/parked/python-reader/; it last passed at c678cf9281168179d16d599e5fdb3846ddbbaf61). It was written by the same programme, so it never met this row, and no implementation by another implementing party has passed every fixture: the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate."
+      "notes": "Lowered from implemented to gap on 12 November 2026, when the programme's Python reader, the only second reader the row cited, was parked (docs/reference/parked/python-reader/; it last passed at c678cf9281168179d16d599e5fdb3846ddbbaf61). It was written by the same programme, so it never met this row, and no implementation by another implementing party has passed every fixture: the organisational independence GOVERNANCE.md requires before 1.0 remains an open gate. Re-read 2026-11-14 after the profile example of §1 became general@2 and §3 called battery@2 and textile@2 retired; the rule this row assesses is unchanged."
     },
     {
       "id": "EXCH-1-representations",
@@ -3299,8 +3333,8 @@
     {
       "id": "MAP-1-row-level-inventory",
       "sourceId": "profiles-mapping-inventories",
-      "sourceUri": "packages/dpp-profiles/generated/mapping/battery@2.md",
-      "sourceVersion": "battery@2",
+      "sourceUri": "packages/dpp-profiles/generated/mapping/general@2.md",
+      "sourceVersion": "general@2",
       "clause": "whole document",
       "summary": "Every field of a current profile has a generated inventory row: external semantic field or not mapped, type and unit or code list, granularity, obligation, legal basis, applicability, access tier, capturing party and required evidence, with needs-review where no generator can decide and no legal conclusion drawn.",
       "layer": "profile",
@@ -3309,7 +3343,7 @@
         "registry"
       ],
       "applicability": "for every current industry profile",
-      "profileId": "battery@2, textile@2, general@2",
+      "profileId": "general@2",
       "implementationRefs": [
         "packages/dpp-profiles/scripts/build.mjs"
       ],
@@ -3318,9 +3352,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "battery@2, textile@2 and general@2 inventories are generated from the manifests and frozen. External exchange vocabularies are not mapped until their artefacts are pinned; the legal columns are the manifests' recorded bases, not assessments."
+      "notes": "battery@2, textile@2 and general@2 inventories are generated from the manifests and frozen. External exchange vocabularies are not mapped until their artefacts are pinned; the legal columns are the manifests' recorded bases, not assessments. Re-pointed 2026-11-14 from the battery@2 inventory to the general@2 one when battery@2 and textile@2 were retired: general@2 is the one current manifest profile. The inventories of the retired profiles stay in the package at their frozen digests and are read as history."
     },
     {
       "id": "PUB-1-publisher-policy",
@@ -3370,7 +3404,7 @@
         "attestation-verifier"
       ],
       "applicability": "for every profile field",
-      "profileId": "battery@2, textile@2, general@2",
+      "profileId": "general@2",
       "implementationRefs": [
         "packages/dpp-profiles/schemas/profile-manifest.schema.json"
       ],
@@ -3381,7 +3415,7 @@
       "status": "implemented",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the value kinds are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the value kinds are unchanged."
+      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the value kinds are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the value kinds are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the value kinds are unchanged. battery@2 and textile@2 are retired, so the row now names general@2, the one current manifest profile; the retired manifests keep the kinds they declared."
     },
     {
       "id": "DOC-1-role-quick-starts",
@@ -3434,35 +3468,6 @@
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
       "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged. Re-read 2026-11-12 after the contract dropped the legacy intake and its placeholder request; the insert-first order for the current representations is unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the insert-first order is unchanged, and EPEV-4-registry-intake is in the ledger archive."
-    },
-    {
-      "id": "BATT-1-demonstration-lifecycle",
-      "sourceId": "fixture-battery-lifecycle",
-      "sourceUri": "fixtures/battery-lifecycle-v1.json",
-      "sourceVersion": "1",
-      "clause": "whole fixture",
-      "summary": "A marked industrial-battery demonstration lifecycle under the GS1 demonstration prefix: manufacture, sale with movement evidence, a token transfer with no custody evidence, repair, reassessment and recycling into new identities, each state with its signed native claim, evidence facets and mapping result, under one verification report; a token transfer maps to insufficient-data.",
-      "layer": "profile",
-      "roles": [
-        "passport-writer",
-        "passport-reader",
-        "registry"
-      ],
-      "applicability": "when battery@2 is selected",
-      "profileId": "battery@2",
-      "implementationRefs": [
-        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
-      ],
-      "testRefs": [
-        "packages/dpp-profiles/test/battery-lifecycle.test.ts"
-      ],
-      "evidenceRefs": [
-        "fixtures/battery-lifecycle-v1.json"
-      ],
-      "status": "tested",
-      "reviewedAt": "2026-11-12",
-      "reviewOwner": "dpp maintainers",
-      "notes": "Synthetic values validated against the frozen battery@2 public schema; no supplier or third-party assessment evidence is included because none exists for an invented product, and no legal conclusion is drawn."
     },
     {
       "id": "VEC-1-publisher-policy-vectors",
@@ -3528,7 +3533,7 @@
       "sourceUri": "packages/dpp-profiles/src/combinations.ts",
       "sourceVersion": "0.1.0",
       "clause": "whole module",
-      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a write or claim under a superseded industry version, a claim on a proposed exchange profile, an operator profile that is not current or unpinned artefacts, single-operator@1 declaring peers, GASP or advertisement, single-operator@2 without peers or discovery or with two operators, a federation of one or without discovery, and unknown identifiers; single-operator@2 with named or discovered peers passes, and a parked exchange or operator profile is named parked in a note for every purpose, never read as current.",
+      "summary": "Industry, exchange and operator profiles are selected together against the baseline; supported combinations pass, and contradictory selections are refused by name: a retired industry profile for any purpose, a write or claim under a superseded industry version, a claim on a proposed exchange profile, an operator profile that is not current or unpinned artefacts, single-operator@1 declaring peers, GASP or advertisement, single-operator@2 without peers or discovery or with two operators, a federation of one or without discovery, and unknown identifiers; single-operator@2 with named or discovered peers passes, and a parked exchange or operator profile is named parked in a note for every purpose, never read as current.",
       "layer": "profile",
       "roles": [
         "all"
@@ -3543,9 +3548,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "A current exchange profile with unretrieved upstream artefacts supports the implemented-subset claim with a note; the ledger's claim gate keeps the full claim blocked. checkSelection refuses nothing for a parked exchange profile, such as vsc-draft-compat@0.1.0 since 2026-11-09, and names it parked in a note with any unretrieved artefacts. Re-read 2026-11-12 when federated-operators@1 was parked: checkSelection now names a parked operator profile in a note for every purpose and still refuses a claim on it, because it is not current."
+      "notes": "A current exchange profile with unretrieved upstream artefacts supports the implemented-subset claim with a note; the ledger's claim gate keeps the full claim blocked. checkSelection refuses nothing for a parked exchange profile, such as vsc-draft-compat@0.1.0 since 2026-11-09, and names it parked in a note with any unretrieved artefacts. Re-read 2026-11-12 when federated-operators@1 was parked: checkSelection now names a parked operator profile in a note for every purpose and still refuses a claim on it, because it is not current. Re-read 2026-11-14 after checkSelection gained industry-retired: a retired industry profile is refused for reading, writing and a claim alike, before its frozen status is consulted, and the refusal names its replacement."
     },
     {
       "id": "OVL-1-refused-spend-eviction",
@@ -4048,10 +4053,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
       "sourceDigest": "dbb99ff6ea5c939d9aef34c2cbb45acc2e44bc702a8bcb1a9870e998680c0a6d",
-      "notes": "Re-read 2026-11-12 after the schema description cited spec/profiles.md sections 2 to 4 in place of the parked projection specification; the schema is otherwise unchanged. From 2026-11-12 profile-governance requires it."
+      "notes": "Re-read 2026-11-12 after the schema description cited spec/profiles.md sections 2 to 4 in place of the parked projection specification; the schema is otherwise unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 when the four published manifest version 2 profiles, battery@3, battery@4, textile@3 and textile@4, were retired: the schema is unchanged, the retired manifests still validate against it as frozen files, and manifest-v2.test.ts holds the format with a manifest of its own."
     },
     {
       "id": "PROF-3-applicability-evaluator",
@@ -4076,8 +4081,8 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "61a386482371e289fd977ee239cb122443d0f2bc47812ee6e570c5da342cf0de",
-      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the evaluator rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the evaluator rules are unchanged."
+      "sourceDigest": "5b7f7085bbd9c954a40a03ffe1cff35e73202686ea9bf1d6a76d086c69ae3387",
+      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the evaluator rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the evaluator rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the evaluator rules are unchanged. Every published manifest version 2 profile is now retired, so the completeness check refuses them and applicability.test.ts holds the evaluator with a manifest of its own."
     },
     {
       "id": "PROF-3-shared-shapes",
@@ -4105,8 +4110,8 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the shared shapes are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the shared shapes are unchanged.",
-      "sourceDigest": "61a386482371e289fd977ee239cb122443d0f2bc47812ee6e570c5da342cf0de"
+      "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the shared shapes are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the shared shapes are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the shared shapes are unchanged. battery@4, which used three of them, is retired, and its frozen schema still embeds them.",
+      "sourceDigest": "5b7f7085bbd9c954a40a03ffe1cff35e73202686ea9bf1d6a76d086c69ae3387"
     },
     {
       "id": "PROF-4-frozen-unchanged",
@@ -4130,10 +4135,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
       "sourceDigest": "1a6a4116cd6aeed5bc996b5d111f33d3116a70ccd127ff7c5e647c8ae7ed252d",
-      "notes": "From 2026-11-12 profile-governance requires it; §4 of spec/profiles.md now states the additive freeze it tests."
+      "notes": "From 2026-11-12 profile-governance requires it; §4 of spec/profiles.md now states the additive freeze it tests. Re-read 2026-11-14 when the sector profiles were retired: frozen.json is unchanged, and retirement moved no digest."
     }
   ],
   "claims": [
@@ -4227,11 +4232,12 @@
     },
     {
       "id": "profile-governance",
-      "description": "Industry profiles are published as frozen manifests with generated schemas, every consumer is generated from them, and manifest version 2 adds the three-valued evaluator and the shared shapes and freezes only additively.",
+      "description": "Industry profiles are published as frozen manifests with generated schemas, every consumer is generated from them, a retired profile keeps its definition and is neither written nor passed, and manifest version 2 adds the three-valued evaluator and the shared shapes and freezes only additively.",
       "requires": [
         "PROF-2-manifest",
         "PROF-3-fields",
         "PROF-4-freeze",
+        "PROF-4-retirement",
         "PROF-5-identifiers",
         "PROF-6-generated-consumers",
         "PROF-7-combinations",

@@ -20,6 +20,9 @@
  * engine does not have, a timeout, an unknown profile and a missing passport
  * identifier are all steps that could not run, so none of them can pass.
  *
+ * A payload that declares a retired profile is answered before any of that:
+ * `unknown` with the cause `profile-retired`, whatever the registry holds.
+ *
  * A binding with an `access` member splits the product document in two, and
  * the payload on chain then carries the public part only. Such a payload is
  * checked here as a projection of the whole document, which is what any
@@ -110,6 +113,8 @@ export type BindingValidationCause =
   | 'envelope-invalid'
   /** The registry holds no profile for the identifier and version the payload declares. */
   | 'profile-unknown'
+  /** The payload declares a retired profile. Its rules are no longer applied, so no step ran. */
+  | 'profile-retired'
   /** The payload declares a binding digest other than the registered binding's. */
   | 'profile-binding-mismatch'
   /** The product does not validate against the binding's JSON Schema. */
@@ -172,6 +177,8 @@ export interface BindingValidationDetail {
   bindingDigest?: string
   /** The cause of the first failure, else of the first step that could not run. Absent on a pass. */
   cause?: BindingValidationCause
+  /** With `profile-retired`: the profile that replaces the retired one. */
+  replacedBy?: string
   /** The steps that ran, in order. */
   steps: BindingStepOutcome[]
   /** Present when the binding splits the product document: which view was checked, and every rule that view could not decide. */

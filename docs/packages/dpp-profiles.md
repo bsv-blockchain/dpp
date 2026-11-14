@@ -43,9 +43,9 @@ A manifest defines a profile's fields, labels, tiers, obligations and applicabil
 
 | Version | Where you see it | What it means |
 |---|---|---|
-| Profile version | The number after `@` in `battery@2`, and a payload's `profile_version` | The edition of a profile's field list. Current: `battery@2`, `textile@2`, `general@2`. Draft: `battery@4`. Parked drafts, still readable: `battery@3`, `textile@3`, `textile@4`. Superseded: `textile@1`, `general@1` |
-| Manifest format | A manifest's `manifestVersion`, `"1"` or `"2"` | The manifest file's layout. Current profiles use format 1; drafts use format 2, which adds value types and rules |
-| Record version | A passport state's `version`, 1 or 2 | The passport record model, unrelated to profiles: a version 2 state can carry a `battery@2` payload |
+| Profile version | The number after `@` in `general@2`, and a payload's `profile_version` | The edition of a profile's field list. Supported manifest profiles: `general@2`, current, and `general@1`, superseded. Held by bundled bindings: `eu-battery@1`, `eu-textile@1`. Retired: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` ([retired profiles](#retired-profiles)) |
+| Manifest format | A manifest's `manifestVersion`, `"1"` or `"2"` | The manifest file's layout. `general@1` and `general@2` use format 1. Format 2 adds value types and rules, and the only manifests published in it are retired drafts |
+| Record version | A passport state's `version`, 1 or 2 | The passport record model, unrelated to profiles: a version 2 state can carry a `general@2` payload |
 
 ## Inspect applicable fields
 
@@ -56,31 +56,31 @@ A manifest defines a profile's fields, labels, tiers, obligations and applicabil
 ```js
 import { readManifest, fieldsFor, missingRequired } from '@bsv/dpp-profiles'
 
-const manifest = readManifest('battery@2')
+const manifest = readManifest('general@2')
 console.log('categories:', manifest.applicability.categories.map(({ value }) => value).join(', '))
-const fields = fieldsFor(manifest, 'industrial')
-console.log('fields that apply to an industrial battery:', fields.applies.length, '; need review:', fields.needsReview.length)
+const fields = fieldsFor(manifest, 'furniture')
+console.log('fields that apply to furniture:', fields.applies.length, '; need review:', fields.needsReview.length)
 console.log('first three:', fields.applies.slice(0, 3).map(({ key, label, accessTier }) => `${key} (${label}, ${accessTier})`).join('; '))
-const gaps = missingRequired(manifest, {}, 'industrial')
+const gaps = missingRequired(manifest, {}, 'furniture')
 console.log('an empty payload lacks', gaps.missing.length, 'required fields, starting with', gaps.missing.slice(0, 3).map(({ key }) => key).join(', '))
 ```
 
 2. Run `node inspect-fields.mjs`. Expected output:
 
 ```
-categories: lmt, ev, industrial, stationary
-fields that apply to an industrial battery: 87 ; need review: 0
-first three: passportId (Passport reference, public); serial (Serial number, public); modelName (Model name, public)
-an empty payload lacks 63 required fields, starting with serial, modelName, manufacturer
+categories: bicycle, watch, instrument, furniture, luggage, jewellery, appliance, sportsEquipment, artwork
+fields that apply to furniture: 40 ; need review: 0
+first three: name (Product name, public); category (Kind of object, public); manufacturer (Maker, public)
+an empty payload lacks 6 required fields, starting with name, category, manufacturer
 ```
 
 | Finding | Interpretation |
 |---|---|
-| `category` | Must name one of the manifest's `applicability.categories`. |
+| `category` | Names one of the manifest's `applicability.categories`. The `general@2` list is open, so other text is accepted and cannot be labelled. |
 | `missingRequired` | Checks presence of fields captured at registration only. It is neither schema validation nor product assessment. |
 | `needsReview` | Show each field and its condition beside schema results. Never present it as satisfied. |
 
-Format 2 drafts use `readManifestAny`, `fieldsForV2` and `missingRequiredV2` with richer applicability context. `compareProfiles(from, to)` reports version changes; `reviewProfileData` adds cross-field findings ([evaluate the battery@4 draft](../profiles/version-4-drafts.md)). [Authoring](../profiles/authoring.md) covers generation and freezing.
+A format 2 manifest uses `readManifestAny`, `fieldsForV2` and `missingRequiredV2` with richer applicability context, and `compareProfiles(from, to)` reports version changes. `missingRequired`, `missingRequiredV2` and `reviewProfileData` throw `ProfileRetiredError` for a retired profile ([retired profiles](#retired-profiles)). [Authoring](../profiles/authoring.md) covers generation and freezing.
 
 ## Check a payload against its profile
 
@@ -88,7 +88,7 @@ Two readers return a profile's manifest:
 
 | Function | Takes | Returns |
 |---|---|---|
-| `readManifest(profile)` | An identifier in `PROFILE_IDS`, drafts included, such as `battery@2` or `battery@4` | The frozen manifest as published, typed for format 1: a draft comes back in format 2 with keys the type does not name |
+| `readManifest(profile)` | An identifier in `PROFILE_IDS`, such as `general@2`. The list holds every published manifest, the retired ones included, which are read as history | The frozen manifest as published, typed for format 1: a format 2 manifest comes back with keys the type does not name |
 | `readManifestAny(profile)` | Any `id@version` identifier | The manifest in format 1 or 2, typed for both. It checks only the identifier's form, so check `PROFILE_IDS` first; an identifier the package does not hold fails with `ENOENT` |
 
 Each manifest generates two JSON Schemas (2020-12):
@@ -98,7 +98,7 @@ Each manifest generates two JSON Schemas (2020-12):
 | `readPublicPayloadSchema(profile)` | An identifier in `PROFILE_IDS` | The schema for a state's `payload_public`: every `public`-tier field |
 | `readRestrictedPayloadSchema(profile)` | An identifier in `PROFILE_IDS` | The schema for the `owner`, `legitimate` and `authority` tiers together, in one object |
 
-Outside `PROFILE_IDS`, `readManifest` and both schema readers throw `"<identifier>" is not a published industry profile`. Check the declared `profile` against this list first.
+Outside `PROFILE_IDS`, `readManifest` and both schema readers throw `"<identifier>" is not a published industry profile`. `PROFILE_IDS` says what the package publishes, not what it validates: before you check a payload, hold its declared `profile` to `SUPPORTED_PROFILE_IDS`, and treat one in `RETIRED_PROFILE_IDS` as [retired](#retired-profiles).
 
 Public schemas accept five additional properties:
 
@@ -147,6 +147,7 @@ Reuse compiled schemas with `ajv.getSchema(schema.$id) ?? ajv.compile(schema)`. 
 | Declares a published profile and validates | `pass` |
 | Declares a published profile and is invalid | `fail`, `schema-invalid`, with one sentence per problem |
 | Declares a profile this package does not publish | `unknown`, `schema-unavailable` |
+| Declares a retired profile | `unknown`, `schema-unavailable`, with `detail.cause` `profile-retired` and `detail.replacedBy`. Never `pass` and never `fail`, whatever the payload holds |
 | Lacks the two profile stamps | `unknown`, `profile-undeclared` |
 
 **Fragment, not runnable alone:** supply your reader's `evidence`, `expected` and `policy`. The [complete reader](dpp-protocol.md#gather-a-passports-evidence) shows their contents.
@@ -167,6 +168,7 @@ const report = await verifyPassportEvidence(evidence, expected, { ...policy, pay
 | `node examples/sample-payload.mjs general@2` | Passing payload |
 | `--demonstration` | Starts the payload with a demonstration record's `notice` |
 | `node examples/sample-payload.mjs --check <profile@version> <file>` | One sentence explaining each problem in the supplied payload file |
+| Either command with a retired profile | `profile-retired`, the replacement, and exit status 2. Nothing is generated or checked |
 
 ## Validate a profile defined outside the package
 
@@ -175,7 +177,7 @@ A profile does not have to be one of the manifests this package publishes. A dat
 | Piece | What it is |
 |---|---|
 | Binding | A JSON file naming every file that defines the profile, the checks to run and how the product must match its passport. Schema: `@bsv/dpp-profiles/schemas/profile-binding-v1.schema.json` |
-| Registry | `createProfileRegistry`: holds the bindings you trust and the manifest profiles, behind one `resolve(id, version)` |
+| Registry | `createProfileRegistry`: holds the bindings you trust and the supported manifest profiles, behind one `resolve(id, version)`. `status(id, version)` says whether an identifier is `registered`, `retired` or `unknown` |
 | Validator | `bindingPayloadValidator`: the function a verifier passes as `payloadValidator`. It checks a public payload, which is what any reader has |
 | Access split | A binding's optional `access` member: which top-level properties of the product document are public. `prepareBoundPayload` is the writer's call, and `authorisedPayloadValidator` checks both parts together ([split a product](#split-a-product-into-public-and-restricted-parts)) |
 | Engine adapter | `@bsv/dpp-profiles/validation-engine`: JSON-LD and SHACL engines over libraries you install |
@@ -316,6 +318,7 @@ A step that fails makes the answer `fail`. Otherwise a step that could not run m
 | `profile-rule-violation` | `fail`, `schema-invalid` | An unlisted context, a document its contexts do not define, or a SHACL finding of a blocking severity |
 | `product-identity-mismatch` | `fail`, `schema-invalid` | The product document is not about the passport's item |
 | `profile-unknown` | `unknown`, `schema-unavailable` | The registry holds no such profile |
+| `profile-retired` | `unknown`, `schema-unavailable` | The payload declares a [retired profile](#retired-profiles). No step ran, `detail.steps` is empty and `detail.replacedBy` names the replacement |
 | `validator-unavailable` | `unknown`, `schema-unavailable` | No engine, an engine without a required capability, a timeout or an engine error |
 | `product-identity-unavailable` | `unknown`, `schema-unavailable` | No `passportId` was supplied, or an identifier is in a form the rules do not read |
 | `restricted-property-disclosed` | `fail`, `schema-invalid` | The public payload carries a property the binding does not list as public. Nothing after it is checked |
@@ -397,6 +400,7 @@ Pass `notice` for a demonstration record, and it is written first. A refusal is 
 | `public-payload-too-large` | The public payload is over 65,535 bytes. `byteLength` is its actual size. The restricted part does not count |
 | `public-view-failed` | The whole document passes and its public part alone fails a rule, which every reader would see. `publicView` names it |
 | `profile-not-bound` | The identifier names a manifest-format profile, which has no binding |
+| `profile-retired` | The identifier names a [retired profile](#retired-profiles). Nothing is prepared under one |
 
 #### Validate by view
 
@@ -442,19 +446,54 @@ A `pass` in the authorised view says the rejoined document satisfies the profile
 | `binding-untrusted` | The binding's digest is not on the trusted list. Nothing else about it was read |
 | `binding-not-json`, `binding-invalid`, `binding-inconsistent` | Not strict JSON, not the format's structure, or members that contradict one another |
 | `binding-conflict` | Another binding with a different digest already answers for this `id` and `version`. Registering the same bytes again succeeds with `alreadyRegistered: true` |
-| `profile-held-by-manifest` | The identifier and version belong to a manifest this package publishes |
+| `profile-held-by-manifest` | The identifier and version belong to a supported manifest this package publishes |
+| `profile-retired` | The identifier and version belong to a [retired profile](#retired-profiles), whose identity is never given another definition |
 | `artefact-unavailable`, `artefact-length-mismatch`, `artefact-digest-mismatch` | A listed file was not supplied, or is not the file the binding records. `artefact` names it |
+
+## Retired profiles
+
+The sector profiles first published as manifests are retired from 14 November 2026 ([profiles](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md), the section on versions, freezing, retirement and migration). Retiring a profile changes what the package does with it and nothing it says.
+
+| Export | What it is |
+|---|---|
+| `RETIRED_PROFILE_IDS` | The one list: `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3`, `textile@4` |
+| `RETIRED_PROFILE_REPLACEMENTS` | The replacement of each: `eu-battery@1` or `eu-textile@1` |
+| `SUPPORTED_PROFILE_IDS` | The manifest profiles a payload is written and validated under: `general@2` and `general@1` |
+| `isRetiredProfile(profile)`, `assertProfileNotRetired(profile)` | The test, and the same test as a throw |
+| `ProfileRetiredError` | What a helper throws: `code` is `profile-retired`, with `profile` and `replacedBy` |
+| `PROFILE_RETIRED` | The string `profile-retired`: the refusal code and the validation cause |
+
+| Asked to | These answer |
+|---|---|
+| Validate a payload that declares a retired profile: `profilePayloadValidator`, `bindingPayloadValidator`, `authorisedPayloadValidator` | `unknown`, `schema-unavailable`, with `detail` `{ profile, cause: 'profile-retired', replacedBy, steps: [] }`. The answer is the same for a payload the frozen schema would accept, one it would refuse and text that is not JSON |
+| Prepare a payload: `prepareBoundPayload` | `{ ok: false, code: 'profile-retired' }` |
+| Check or review data before writing: `missingRequired`, `missingRequiredV2`, `reviewProfileData` | Throw `ProfileRetiredError` |
+| Project a passport: `projectPassport` | Throws `ProfileRetiredError` |
+| Select it: `checkSelection` | The conflict `industry-retired`, for every purpose |
+| Register a binding under its identifier: `registry.register` | `{ ok: false, code: 'profile-retired' }` |
+| Resolve it: `registry.resolve`, `registry.list` | `undefined`, and not listed. `registry.status` answers `{ state: 'retired', profile, replacedBy }` |
+
+These still read a retired profile. They are historical: each returns or describes a frozen definition and judges no payload.
+
+| Function | Why it still reads |
+|---|---|
+| `readManifest`, `readManifestAny`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readFrozen` | Each returns a frozen file. The same files are data entry points of the package |
+| `fieldsFor`, `fieldsForV2`, `evaluateFieldApplicability`, `categoryOf` | Each describes which fields a definition applies. None checks a payload for writing |
+| `compareProfiles` | A structural difference between two frozen manifests |
+| `mapNativeOperation` | Names the external event a native operation corresponds to under a manifest's event mappings. It reads no payload value and passes none |
+
+A retired manifest keeps the `status` it was frozen with, such as `current` or `draft`, because the file is immutable. Read retirement from `RETIRED_PROFILE_IDS`, never from that member. There is no converter and no reader of the retired rules: a product moves to a replacement as a newly issued passport ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
 
 ## Show a stored payload under its profile
 
-Show data under the profile its record declares, including draft or superseded profiles, never a newer one.
+Show data under the profile its record declares, a superseded one included, never a newer one. A record that declares a retired profile is shown as unsupported, without labels from the retired manifest.
 
 1. Save this as `show-payload.mjs`:
 
 ```js
 import { Beef } from '@bsv/sdk'
 import { chainFromBeef, findDppOutputs } from '@bsv/dpp-protocol'
-import { PROFILE_IDS, readManifestAny } from '@bsv/dpp-profiles'
+import { SUPPORTED_PROFILE_IDS, describeRetiredProfile, isRetiredProfile, readManifestAny } from '@bsv/dpp-profiles'
 
 const index = 'https://dpp-overlay.bsvb.net'
 const passportId = 'https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8'
@@ -467,9 +506,14 @@ for (const output of outputs.slice(1)) merged.mergeBeef(output.beef)
 const tip = chainFromBeef(merged, passportId).at(-1)
 const payload = JSON.parse(findDppOutputs(tip)[0].state.payloadPublic)
 
-// The profile the record declares is the record's word: check it is one this package publishes before reading it.
+// The profile the record declares is the record's word: check it is one this package supports before reading it.
 const declared = `${payload.profile}@${payload.profile_version}`
-if (!PROFILE_IDS.includes(declared)) throw new Error(`${declared} is not a profile this package publishes`)
+if (isRetiredProfile(declared)) {
+  // Unsupported: say so, and label nothing from the retired manifest.
+  console.log(describeRetiredProfile(declared))
+  process.exit(0)
+}
+if (!SUPPORTED_PROFILE_IDS.includes(declared)) throw new Error(`${declared} is not a profile this package supports`)
 const manifest = readManifestAny(declared)
 console.log(declared, manifest.status, manifest.title)
 
@@ -479,27 +523,27 @@ for (const field of manifest.fields.filter(({ key }) => key in payload).slice(0,
 }
 ```
 
-2. Run `node show-payload.mjs`. Expected output:
+2. Run `node show-payload.mjs`. This demonstration passport declares `battery@4`, which is retired, so the expected output is:
 
 ```
-battery@4 draft Battery passport
-  Passport reference: "https://dpp.bsvb.net/01/09522156492290/21/792B7797E3D8"
-  Serial number: "10000000122"
-  Model name: "Hearth 10"
+battery@4 is retired: nothing is issued or validated under it, and a record that declares it is reported as unsupported. eu-battery@1 replaces it, and there is no converter.
 ```
+
+For a passport that declares `general@2`, the script prints the profile, its status and title, then three labelled values.
 
 3. Apply these display rules:
 
 | Condition | Required action |
 |---|---|
 | Any `notice` | Show it before product data. |
-| `manifest.status` is `draft` | Label the data as draft. |
+| Profile in `RETIRED_PROFILE_IDS` | Say that the profile is retired and name its replacement. Do not label the values. |
+| `manifest.status` is `superseded` | Say so beside the data. |
 | Latest state decoded by this example | Verify it before relying on it; see [gather a passport's evidence](dpp-protocol.md#gather-a-passports-evidence). Decoding alone does not verify. |
-| Profile outside `PROFILE_IDS` | Cannot label: show unlabelled values or no values. |
+| Profile outside `SUPPORTED_PROFILE_IDS` and not retired | Cannot label: show unlabelled values or no values. |
 
 ## Read a field
 
-Each `manifest.fields` entry describes one value. All current profiles use these format 1 properties:
+Each `manifest.fields` entry describes one value. `general@2` uses these format 1 properties:
 
 | Property | Values | What it tells an application |
 |---|---|---|
@@ -513,7 +557,7 @@ Each `manifest.fields` entry describes one value. All current profiles use these
 | `accessTier` | `public`, `owner`, `legitimate`, `authority` | Who may read it. `public` is on chain in `payload_public`; the others form one object encrypted to the owner and held off chain, each tier described in the manifest's `accessTiers`, and a `legitimate` or `authority` reader receives its tier re-encrypted to its own key ([choose an industry profile](../profiles/README.md)) |
 | `obligation`, `legalBasis` | `required`, `recommended`, `optional`; a citation or the statement that none applies | Whether to insist on the value, and why. A field can be required with no legal basis |
 | `applicability` | `{ rule: 'always' }`, `{ rule: 'category-in', categories }`, `{ rule: 'needs-review', condition }` | When the field applies, as `fieldsFor(manifest, category)` evaluates it. Never treat a `needs-review` field as satisfied or always required |
-| `group`, `parts` | A group identifier; for a `record`, its parts | The form section, one of the manifest's `groups`, and a `record`'s inputs. `battery@2` lists groups but assigns none to its fields |
+| `group`, `parts` | A group identifier; for a `record`, its parts | The form section, one of the manifest's `groups`, and a `record`'s inputs |
 
 | `valueType` | JSON value | A form shows |
 |---|---|---|
@@ -577,4 +621,4 @@ Until profile versioning and canonical locations are decided, this package's fro
 | Choose the profile for your product | [Industry profiles](../profiles/README.md) |
 | Put the payload into a passport state | [Build an application](build-an-application.md), step 3 |
 | Adopt a new profile version | [Update profiles and consuming applications](../profiles/updating-applications.md) |
-| Evaluate a draft before it becomes current | [Evaluate the battery@4 draft](../profiles/version-4-drafts.md) |
+| Move off a retired sector profile | [Move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles) |

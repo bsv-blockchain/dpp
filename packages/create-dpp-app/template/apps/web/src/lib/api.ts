@@ -238,6 +238,8 @@ export interface PassportView {
   passportId: string
   brandId: string
   profile: string
+  /** Present when the passport's profile is retired: nothing further is written for it, and this names the profile that replaces it. */
+  profileRetired?: { replacedBy: string }
   status: 'active' | 'retired'
   demonstration: boolean
   holder: { party: string; controllerKey: string }

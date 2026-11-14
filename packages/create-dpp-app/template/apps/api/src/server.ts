@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hash, Utils } from '@bsv/sdk'
 import { verifyLifecycleClaim } from '@bsv/dpp-protocol'
-import { readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
+import { PROFILE_RETIRED, ProfileRetiredError, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile, readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node'
 import { sessionFrom, type Auth, type Session } from './auth.js'
@@ -82,6 +82,8 @@ function publicView(record: PassportRecord, policyIsDemo: boolean) {
     passportId: record.passportId,
     brandId: record.brandId,
     profile: record.profile,
+    // Present only for a passport journalled under a retired profile: the page then offers no write and names the replacement.
+    ...(isRetiredProfile(record.profile) ? { profileRetired: { replacedBy: RETIRED_PROFILE_REPLACEMENTS[record.profile] } } : {}),
     status: record.status,
     demonstration: policyIsDemo,
     holder: record.holder,
@@ -191,6 +193,8 @@ export function createServer(options: ServerOptions): express.Express {
       const bound = platform.profiles.get(id)
       // A profile held by a binding has no field list: its product document is the profile's own data model, and the form asks for its code lists as it needs them.
       if (bound != null) return { ...platform.profiles.describe(bound), examples: sectorExamples(bound, policy), demonstration: demo }
+      // Gone, not unknown: the profile was published and is retired, so no form, sample or schema is served for it.
+      if (isRetiredProfile(id)) throw new HttpError(410, PROFILE_RETIRED, describeRetiredProfile(id))
       if (!isProfileId(id)) throw new HttpError(404, 'profile-unknown', `${id} is not a profile this platform knows`)
       const manifest = manifestFor(id)
       return {
@@ -292,6 +296,7 @@ export function createServer(options: ServerOptions): express.Express {
       if (brandRecord == null) throw new HttpError(404, 'brand-unknown', `no brand ${brandId}`)
       const { profile, itemReference, serial, payload, ownerFields } = req.body ?? {}
       const bound = typeof profile === 'string' ? platform.profiles.get(profile) : undefined
+      if (typeof profile === 'string' && isRetiredProfile(profile)) throw new HttpError(409, PROFILE_RETIRED, `${describeRetiredProfile(profile)} Nothing was signed.`)
       if (bound == null && !isProfileId(profile)) throw new HttpError(400, 'profile-unknown', `${String(profile)} is not a profile this platform knows`)
       if (typeof itemReference !== 'string' || typeof serial !== 'string') throw new HttpError(400, 'identifier-required', 'give itemReference (digits) and serial')
       let passportId: string
@@ -466,6 +471,11 @@ export function createServer(options: ServerOptions): express.Express {
     }
     if (error instanceof WriteRefused) {
       res.status(error.code.endsWith('-unknown') ? 404 : 409).json({ error: error.code, description: error.message, ...error.data })
+      return
+    }
+    // The package's own refusal of a retired profile, from a helper that checks or starts a payload.
+    if (error instanceof ProfileRetiredError) {
+      res.status(409).json({ error: error.code, description: error.message, replacedBy: error.replacedBy })
       return
     }
     // A body the JSON parser refused. Its error quotes the body, and a body may hold restricted product data, so neither is logged or sent back.

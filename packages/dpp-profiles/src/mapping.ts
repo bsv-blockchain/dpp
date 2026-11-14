@@ -10,6 +10,11 @@
  * operation; `insufficient-data` means the evidence condition is not met. No
  * result other than `lossless` comes without its list of what was lost or is
  * missing, and nothing is dropped silently.
+ *
+ * The mapping reads a manifest's event mappings and the names of payload
+ * keys. It reads no payload value and passes or fails none, so it accepts a
+ * retired manifest as it accepts any other: what it gives for one is what
+ * the frozen definition says, as history, and is no check of a record.
  */
 import type { ProfileManifest } from './index.js'
 

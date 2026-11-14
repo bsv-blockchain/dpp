@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PROFILE_IDS, createProfileRegistry, readManifestAny, readPublicPayloadSchema, type BindingArtefact } from '../src/index.js'
+import { RETIRED_PROFILE_IDS, SUPPORTED_PROFILE_IDS, createProfileRegistry, readManifestAny, readPublicPayloadSchema, type BindingArtefact } from '../src/index.js'
 import { SYNTHETIC_FILES, bindingBytes, resolveSynthetic, sha256Hex, syntheticBinding, utf8 } from './binding-fixture.js'
 
 // The registry is the one place a profile becomes usable. A binding gets in
@@ -158,9 +158,13 @@ describe('createProfileRegistry: the trusted list', () => {
 })
 
 describe('createProfileRegistry: the manifest-format profiles answer through the same interface', () => {
-  it('resolves every published manifest profile without a registration', () => {
+  it('resolves every supported manifest profile without a registration, and no retired one', () => {
     const registry = trusting()
-    for (const id of PROFILE_IDS) {
+    for (const id of RETIRED_PROFILE_IDS) {
+      const [name, version] = id.split('@') as [string, string]
+      expect(registry.resolve(name, Number(version)), id).toBeUndefined()
+    }
+    for (const id of SUPPORTED_PROFILE_IDS) {
       const [name, version] = id.split('@') as [string, string]
       const profile = registry.resolve(name, Number(version))
       expect(profile, id).toMatchObject({ format: 'manifest', id: name, version: Number(version), profile: id })
@@ -172,9 +176,9 @@ describe('createProfileRegistry: the manifest-format profiles answer through the
 
   it('lists manifest profiles and bindings together, and resolves nothing it does not hold', async () => {
     const registry = trusting(digest)
-    expect(registry.list().map((p) => p.profile)).toEqual([...PROFILE_IDS])
+    expect(registry.list().map((p) => p.profile)).toEqual([...SUPPORTED_PROFILE_IDS])
     await registry.register({ bindingBytes: bytes, resolveArtefact: resolveSynthetic })
-    expect(registry.list().map((p) => `${p.format}:${p.profile}`)).toEqual([...PROFILE_IDS.map((id) => `manifest:${id}`), 'binding:example-lamp@1'])
+    expect(registry.list().map((p) => `${p.format}:${p.profile}`)).toEqual([...SUPPORTED_PROFILE_IDS.map((id) => `manifest:${id}`), 'binding:example-lamp@1'])
     for (const [id, version] of [['toaster', 9], ['general', 3], ['example-lamp', 2], ['general', 1.5], ['__proto__', 1], ['general@2', 2]] as const) expect(registry.resolve(id, version), `${id}@${version}`).toBeUndefined()
   })
 

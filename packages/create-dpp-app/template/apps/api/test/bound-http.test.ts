@@ -75,7 +75,8 @@ describe('profiles over HTTP', () => {
   it('lists the manifest profiles and the bound profiles, each with its format', async () => {
     const { body } = await get('/api/profiles')
     const formats = Object.fromEntries((body as Array<{ id: string; format: string }>).map((p) => [p.id, p.format]))
-    expect(formats).toMatchObject({ 'general@2': 'manifest', 'battery@2': 'manifest', 'textile@2': 'manifest', 'eu-battery@1': 'binding', 'eu-textile@1': 'binding' })
+    // The retired sector profiles are not among them: the bound profiles replace them.
+    expect(formats).toEqual({ 'general@2': 'manifest', 'eu-battery@1': 'binding', 'eu-textile@1': 'binding' })
     expect((await get('/api/health')).body.validationEngine).toBe(true)
   })
 

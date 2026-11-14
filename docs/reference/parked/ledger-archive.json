@@ -1730,6 +1730,39 @@
         "evidenceRefs": [],
         "notes": "The reference registry (not published) does not yet accept epcis-event-vc@1; the contract (registry.yaml 0.6.0) states the envelope and the collision rule."
       }
+    },
+    {
+      "archivedAt": "2026-11-14",
+      "reason": "Retired on 14 November 2026 with battery@2 (spec/profiles.md §4). The row applied when battery@2 was selected, and a retired profile is selected by nothing, so the requirement left the standard. The fixture, fixtures/battery-lifecycle-v1.json, keeps its bytes at SHA-256 eeea5a2bc1cac27e3a8f4d6cb43ac9c8a9602673922b87ddab40fe6ca3dee330 and is no longer generated: packages/dpp-profiles/test/battery-lifecycle.test.ts reads it as history. lastWorkingCommit is the last commit on main at which that test generated the fixture and its states passed under the battery@2 schema.",
+      "lastWorkingCommit": "3f11c0b35300fe2169d7eb9f84d40c7b64a94c55",
+      "row": {
+        "id": "BATT-1-demonstration-lifecycle",
+        "sourceId": "fixture-battery-lifecycle",
+        "sourceUri": "fixtures/battery-lifecycle-v1.json",
+        "sourceVersion": "1",
+        "layer": "profile",
+        "applicability": "when battery@2 is selected",
+        "profileId": "battery@2",
+        "reviewedAt": "2026-11-12",
+        "reviewOwner": "dpp maintainers",
+        "clause": "whole fixture",
+        "roles": [
+          "passport-writer",
+          "passport-reader",
+          "registry"
+        ],
+        "summary": "A marked industrial-battery demonstration lifecycle under the GS1 demonstration prefix: manufacture, sale with movement evidence, a token transfer with no custody evidence, repair, reassessment and recycling into new identities, each state with its signed native claim, evidence facets and mapping result, under one verification report; a token transfer maps to insufficient-data.",
+        "implementationRefs": [
+          "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+        ],
+        "testRefs": [
+          "packages/dpp-profiles/test/battery-lifecycle.test.ts"
+        ],
+        "evidenceRefs": [
+          "fixtures/battery-lifecycle-v1.json"
+        ],
+        "notes": "Synthetic values validated against the frozen battery@2 public schema; no supplier or third-party assessment evidence is included because none exists for an invented product, and no legal conclusion is drawn."
+      }
     }
   ],
   "claims": [

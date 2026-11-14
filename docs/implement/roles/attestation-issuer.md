@@ -88,7 +88,7 @@ The fixture's values are test values. Replace them for a live claim:
 | Field | Live value and limit | Fixture value |
 |---|---|---|
 | `recordId` | State outpoint, `<txid>:<outputIndex>` (rules section 3). Any other spelling is refused. | Genesis of `fixtures/chain-v1.json` |
-| `profile`, `profile_version` | Product profile and version, such as `battery` and `2` for `battery@2` | `general@2` |
+| `profile`, `profile_version` | Product profile and version, such as `general` and `2` for `general@2`. Not a retired profile | `general@2` |
 | Registry identifier | `urn:sha256:` followed by your claim's own `digest` (rules section 6) | The anchor's `attestationId` identifies the fixture claim. |
 | No `evidence` | A claim carries the event type and time, not what was done: rules section 3 names no evidence property, and `signLifecycleClaim` refuses one. A mapping needing the facets of rules section 2 reads them from other evidence, such as a state's `event_data`. | The fixture claim carries none. |
 

@@ -6,7 +6,7 @@
  *   node examples/sample-payload.mjs <profile@version>                 print a minimal valid public payload
  *   node examples/sample-payload.mjs <profile@version> --demonstration the same, starting with the notice a demonstration record carries
  *   node examples/sample-payload.mjs --check <profile@version> <file>  check a payload file against the profile
- *   node examples/sample-payload.mjs --all                             generate and check a sample for every profile
+ *   node examples/sample-payload.mjs --all                             generate and check a sample for every supported profile
  *
  * The sample is generated from the profile's published public payload schema
  * in @bsv/dpp-profiles (generated/payload-schema/<profile>.public.schema.json):
@@ -22,7 +22,14 @@
  *
  * With --check, every problem is printed as one sentence naming the field,
  * and the command exits non-zero if there is any. With --all, what CI runs,
- * a sample is generated and checked for every published profile version.
+ * a sample is generated and checked for every supported profile version.
+ *
+ * A retired profile (RETIRED_PROFILE_IDS in @bsv/dpp-profiles) is refused by
+ * name, `profile-retired`, with what replaces it: no sample is started and
+ * no payload is checked under one, though its frozen schema is still
+ * published. The profiles that replace the retired sector profiles are held
+ * by a binding and have product documents, not samples from a schema
+ * (docs/profiles/eu-sector-bindings.md).
  *
  * Results print one sentence per check, never a score, as GOVERNANCE.md
  * requires of every conformance surface.
@@ -30,7 +37,7 @@
 import { readFileSync } from 'node:fs'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { PROFILE_IDS, readPublicPayloadSchema } from '@bsv/dpp-profiles'
+import { PROFILE_RETIRED, RETIRED_PROFILE_IDS, SUPPORTED_PROFILE_IDS, describeRetiredProfile, isRetiredProfile, readPublicPayloadSchema } from '@bsv/dpp-profiles'
 
 const ajv = new Ajv2020({ allErrors: true, strict: false })
 addFormats(ajv)
@@ -84,10 +91,17 @@ function generate(profile, demonstration = false) {
   return { payload, valid: validate(payload), errors: problems(validate) }
 }
 
+/** Stop, by name, when the profile asked for is retired: nothing is generated or checked under it. */
+function refuseRetired(profile) {
+  if (typeof profile !== 'string' || !isRetiredProfile(profile)) return
+  console.error(`${PROFILE_RETIRED}: ${describeRetiredProfile(profile)}`)
+  process.exit(2)
+}
+
 const args = process.argv.slice(2)
 if (args[0] === '--all') {
   let failures = 0
-  for (const profile of PROFILE_IDS) {
+  for (const profile of SUPPORTED_PROFILE_IDS) {
     const { payload, valid, errors } = generate(profile)
     if (!valid) failures += 1
     console.log(`${valid ? 'ok' : 'FAIL'}: the ${profile} sample fills ${Object.keys(payload).length} required fields and ${valid ? 'is valid under its published schema' : `is refused: ${errors.join('; ')}`}.`)
@@ -95,13 +109,17 @@ if (args[0] === '--all') {
     if (!demo.valid) failures += 1
     console.log(`${demo.valid ? 'ok' : 'FAIL'}: its demonstration sample, starting with notice, ${demo.valid ? 'is valid too' : `is refused: ${demo.errors.join('; ')}`}.`)
   }
+  const offered = RETIRED_PROFILE_IDS.filter((profile) => SUPPORTED_PROFILE_IDS.includes(profile))
+  if (offered.length > 0) failures += 1
+  console.log(`${offered.length === 0 ? 'ok' : 'FAIL'}: no sample is generated for a retired profile (${RETIRED_PROFILE_IDS.join(', ')})${offered.length === 0 ? '' : `, yet ${offered.join(', ')} is still offered`}.`)
   console.log(failures === 0 ? 'Every sentence above holds.' : 'At least one sentence above does not hold.')
   process.exit(failures === 0 ? 0 : 1)
 }
 if (args[0] === '--check') {
   const [, profile, file] = args
-  if (!PROFILE_IDS.includes(profile) || file == null) {
-    console.error(`usage: node examples/sample-payload.mjs --check <profile@version> <file>; profiles: ${PROFILE_IDS.join(', ')}`)
+  refuseRetired(profile)
+  if (!SUPPORTED_PROFILE_IDS.includes(profile) || file == null) {
+    console.error(`usage: node examples/sample-payload.mjs --check <profile@version> <file>; profiles: ${SUPPORTED_PROFILE_IDS.join(', ')}`)
     process.exit(2)
   }
   const validate = ajv.compile(readPublicPayloadSchema(profile))
@@ -115,8 +133,9 @@ if (args[0] === '--check') {
 }
 const demonstration = args.includes('--demonstration')
 const [profile] = args.filter((arg) => !arg.startsWith('--'))
-if (!PROFILE_IDS.includes(profile)) {
-  console.error(`usage: node examples/sample-payload.mjs <profile@version> [--demonstration]; profiles: ${PROFILE_IDS.join(', ')}`)
+refuseRetired(profile)
+if (!SUPPORTED_PROFILE_IDS.includes(profile)) {
+  console.error(`usage: node examples/sample-payload.mjs <profile@version> [--demonstration]; profiles: ${SUPPORTED_PROFILE_IDS.join(', ')}`)
   process.exit(2)
 }
 const { payload, valid, errors } = generate(profile, demonstration)

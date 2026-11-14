@@ -59,7 +59,9 @@ Passports are GS1 Digital Links, `https://<PASSPORT_HOST>/01/<GTIN>/21/<serial>`
 
 ## Product documents under a binding
 
-Besides the manifest profiles (`general@2`, `battery@2`, `textile@2`), the application writes and reads passports under profiles held by a binding: a data model defined outside the DPP packages, as JSON-LD contexts and SHACL shapes or as a JSON Schema, that one immutable `binding.json` pins file by file. The profiles package ships two, `eu-battery@1` and `eu-textile@1`, for battery and textile data of one serialised item. Each name states which data model a product document uses. Neither claims that a passport or a product complies with any law.
+Besides the manifest profile `general@2`, the application writes and reads passports under profiles held by a binding: a data model defined outside the DPP packages, as JSON-LD contexts and SHACL shapes or as a JSON Schema, that one immutable `binding.json` pins file by file. The profiles package ships two, `eu-battery@1` and `eu-textile@1`, for battery and textile data of one serialised item. Each name states which data model a product document uses. Neither claims that a passport or a product complies with any law.
+
+The two bundled profiles replace the earlier manifest profiles `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`, which are retired. The application offers none of them and refuses every write under one with `profile-retired`. A passport already in the journal under one is still shown, with its profile reported as retired and not checked, and it gets no further state, hand-on or claim. Nothing converts it: issue a new passport under the replacement.
 
 Under such a profile a passport carries one product document, and the binding lists which of its top-level properties are public. The rest are restricted.
 

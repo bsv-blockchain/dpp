@@ -17,7 +17,7 @@ For a public report, copy this into the issue and fill in every line:
 
 ```
 Source revision: <commit hash of the specification and fixtures you read>
-Role and profile: <for example passport reader, native-baseline@2, battery@2>
+Role and profile: <for example passport reader, native-baseline@2, general@2>
 Input: <fixture file and case identifier, or the smallest input that still shows the disagreement>
 Command: <the command that reproduces your result>
 Actual result: <what your implementation produced>

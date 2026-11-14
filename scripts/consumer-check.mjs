@@ -96,9 +96,9 @@ try {
   // One sample file per data entry point pattern, read through the package's exports map.
   const dataSamples = {
     '@bsv/dpp-protocol/schemas/*': 'verification-report.schema.json',
-    '@bsv/dpp-profiles/manifests/*': 'battery@2.json',
+    '@bsv/dpp-profiles/manifests/*': 'general@2.json',
     '@bsv/dpp-profiles/schemas/*': 'profile-manifest.schema.json',
-    '@bsv/dpp-profiles/generated/*': 'payload-schema/battery@2.public.schema.json',
+    '@bsv/dpp-profiles/generated/*': 'payload-schema/general@2.public.schema.json',
     '@bsv/dpp-profiles/frozen.json': '',
     '@bsv/dpp-credentials/artifacts/*': 'profile-0.1.0.json',
   }
@@ -133,7 +133,7 @@ const { verifyChain, verifyPassportEvidence, inspectManagedAcceptance, bindAccep
 const { DppTopicManager, DppLookupService, InMemoryDppStorage, buildCapabilities, joinEvidenceExport } = await import('@bsv/dpp-overlay')
 const host = await import('@bsv/dpp-overlay/server')
 out.push(['overlay/server: importing starts no process and exposes the host', typeof host.startOverlayService === 'function' && typeof host.runFromEnvironment === 'function'])
-const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData } = await import('@bsv/dpp-profiles')
+const { readManifest, mapNativeOperation, checkSelection, VERSION_2_OPERATION_MAPPING, parseGs1DigitalLinkUri, decompressGs1DigitalLink, readInteroperabilityProfile, readManifestAny, evaluateApplicability, projectPassport, compareProfiles, reviewProfileData, profilePayloadValidator, createProfileRegistry, RETIRED_PROFILE_IDS, RETIRED_PROFILE_REPLACEMENTS, SUPPORTED_PROFILE_IDS } = await import('@bsv/dpp-profiles')
 const credentials = await import('@bsv/dpp-credentials')
 const exchange = await import('@bsv/dpp-credentials/exchange')
 const epcisSource = await import('@bsv/dpp-credentials/epcis-source')
@@ -158,32 +158,39 @@ const caps = buildCapabilities({ serviceIdentityKey: chain.custodianKey, anchorS
 out.push(['overlay: capabilities name the managed-custody profile', caps.profiles.some((p) => p.id === 'managed-custody')])
 out.push(['overlay: lookup service constructs over in-memory storage', new DppLookupService(new InMemoryDppStorage()) != null])
 out.push(['overlay: the complete export join is exported', typeof joinEvidenceExport === 'function'])
-const battery = readManifest('battery@2')
-out.push(['profiles: manifest battery@2 reads with fields', battery.fields.length > 0])
-out.push(['profiles: version 2 mapping ISSUE to Origin and RETIRE to RECYCLED', mapNativeOperation(battery, { nativeOperation: 'ISSUE' }).eventType === 'Origin' && VERSION_2_OPERATION_MAPPING.RETIRE === 'RECYCLED'])
+const general = readManifest('general@2')
+out.push(['profiles: manifest general@2 reads with fields', general.fields.length > 0])
+out.push(['profiles: version 2 mapping ISSUE to Origin and RETIRE to RECYCLED', mapNativeOperation(general, { nativeOperation: 'ISSUE' }).eventType === 'Origin' && VERSION_2_OPERATION_MAPPING.RETIRE === 'RECYCLED'])
 out.push(['profiles: native-baseline@2 selection known', checkSelection({ baseline: 'native-baseline@2', purpose: 'read' }).conflicts.every((c) => c.code !== 'baseline-unknown')])
 out.push(['profiles: gs1 grammar reads a serialised identifier', parseGs1DigitalLinkUri('https://id.example.org/01/09520123456788/21/SER1').kind === 'uncompressed'])
 out.push(['profiles: gs1 decompression decodes the compression standard worked example', decompressGs1DigitalLink('https://example.com/eh30164596f40c0e5cbe991a83').ok === true])
 out.push(['profiles: interoperability manifests carried', ['gs1-digital-link@1', 'epcis-json@1', 'epcis-vsc@1'].every((id) => typeof readInteroperabilityProfile(id).role === 'string')])
-out.push(['profiles: battery@3 reads as a manifest version 2 draft', readManifestAny('battery@3').manifestVersion === '2' && readManifestAny('battery@3').status === 'draft'])
+out.push(['profiles: the retired battery@3 still reads, as the manifest version 2 draft it was frozen as', readManifestAny('battery@3').manifestVersion === '2' && readManifestAny('battery@3').status === 'draft'])
 out.push(['profiles: applicability evaluator answers unresolved for an unresolved rule', evaluateApplicability({ rule: 'unresolved', reason: 'no criterion' }, {}).outcome === 'unresolved'])
 out.push(['profiles: projectPassport exported', typeof projectPassport === 'function'])
-for (const industry of ['battery', 'textile']) {
-  const current = industry + '@2'
-  const draft = industry + '@4'
-  out.push(['profiles: ' + current + ' remains current beside the draft', readManifestAny(current).status === 'current' && readManifestAny(draft).status === 'draft'])
-  const changes = compareProfiles(current, draft)
-  out.push(['profiles: ' + draft + ' change report requires explicit consumer review', changes.requiresConsumerReview && changes.from.profile === current && changes.to.profile === draft && changes.activation === 'explicit-consumer-selection'])
+// The retired sector profiles: every frozen file is still packaged and read, nothing is validated under one, and each refusal is by name.
+out.push(['profiles: the seven sector profiles are retired and general@2 and general@1 are supported', RETIRED_PROFILE_IDS.join(',') === 'battery@2,battery@3,battery@4,textile@1,textile@2,textile@3,textile@4' && SUPPORTED_PROFILE_IDS.join(',') === 'general@2,general@1'])
+const consumerRegistry = createProfileRegistry({ trustedBindingDigests: [] })
+const retiredValidator = profilePayloadValidator({ compile: () => { throw new Error('no schema is compiled for a retired profile') }, getSchema: () => undefined })
+for (const retired of RETIRED_PROFILE_IDS) {
+  const [id, version] = retired.split('@')
+  out.push(['profiles: the retired ' + retired + ' manifest is packaged and still reads', readManifestAny(retired).profile === retired])
   for (const tier of ['public', 'restricted']) {
-    const path = import.meta.resolve('@bsv/dpp-profiles/generated/payload-schema/' + draft + '.' + tier + '.schema.json')
-    out.push(['profiles: ' + draft + ' ' + tier + ' schema is packaged', JSON.parse(readFileSync(new URL(path), 'utf8')).type === 'object'])
+    const path = import.meta.resolve('@bsv/dpp-profiles/generated/payload-schema/' + retired + '.' + tier + '.schema.json')
+    out.push(['profiles: the retired ' + retired + ' ' + tier + ' schema is packaged', JSON.parse(readFileSync(new URL(path), 'utf8')).type === 'object'])
   }
+  const answer = await retiredValidator({ profile: id, profileVersion: Number(version), payloadPublic: '{}' })
+  out.push(['profiles: a payload that declares ' + retired + ' is unknown with profile-retired, never passed or failed', answer.status === 'unknown' && answer.reasonCode === 'schema-unavailable' && answer.detail.cause === 'profile-retired' && answer.detail.replacedBy === RETIRED_PROFILE_REPLACEMENTS[retired]])
+  const status = consumerRegistry.status(id, Number(version))
+  out.push(['profiles: the registry reports ' + retired + ' as retired and does not resolve it', status.state === 'retired' && consumerRegistry.resolve(id, Number(version)) === undefined])
+  let reviewRefusal
+  try { reviewProfileData(retired, {}) } catch (e) { reviewRefusal = e.code }
+  out.push(['profiles: the data review refuses ' + retired + ' as profile-retired', reviewRefusal === 'profile-retired'])
+  out.push(['profiles: no selection may name ' + retired, checkSelection({ baseline: 'native-baseline@2', industry: retired, purpose: 'read' }).conflicts.some((c) => c.code === 'industry-retired')])
 }
-out.push(['profiles: battery@4 cross-field review rejects mismatched manufacturing dates', reviewProfileData('battery@4', { manufacturingMonth: '2026-09', manufacturingDate: '2026-08-01' }).some(f => f.field === 'manufacturingDate' && f.outcome === 'invalid')])
-out.push(['profiles: textile@4 cross-field review retains unresolved composition', reviewProfileData('textile@4', { components: [{ component: 'shell' }], componentFibres: [{ component: 'shell', percent: 80 }] }).some(f => f.field === 'componentFibres' && f.outcome === 'needs-review')])
-let historicalReviewRefused = false
-try { reviewProfileData('battery@2', {}) } catch { historicalReviewRefused = true }
-out.push(['profiles: version 4 data review refuses to reinterpret a historical profile', historicalReviewRefused])
+const changes = compareProfiles('battery@2', 'battery@4')
+out.push(['profiles: two frozen manifests still compare, as history', changes.from.profile === 'battery@2' && changes.to.profile === 'battery@4' && changes.activation === 'explicit-consumer-selection'])
+out.push(['profiles: the registry distinguishes an unknown profile from a retired one', consumerRegistry.status('toaster', 9).state === 'unknown' && consumerRegistry.status('general', 2).state === 'registered'])
 
 out.push(['dpp-credentials: root re-exports strict parsing and the EPCIS source helpers, and none of the parked SEAL profile', typeof credentials.parseStrictJsonBytes === 'function' && typeof credentials.parseEpcisSource === 'function' && !('verifySeal' in credentials) && !('mapEpcisEventWithReport' in credentials)])
 out.push(['dpp-credentials/exchange: verifies the external representation', typeof exchange.verifyExternalCredential === 'function' && exchange.EXTERNAL_REPRESENTATIONS.includes('vc-di-ecdsa-rdfc-2019@1')])
@@ -228,7 +235,7 @@ import type { DppState, DppStateV2, ManagedAcceptanceRecord, EvidenceReport, Evi
 import { verifyChain } from '@bsv/dpp-protocol'
 import { DppTopicManager, type DppRecordStore, type EvidenceExportPart } from '@bsv/dpp-overlay'
 import { startOverlayService, type OverlayHttpOptions } from '@bsv/dpp-overlay/server'
-import { readManifest, type ProfileManifest, type InteroperabilityProfileId } from '@bsv/dpp-profiles'
+import { readManifest, type ProfileManifest, type InteroperabilityProfileId, type ProfileStatus, type RetiredProfileId } from '@bsv/dpp-profiles'
 import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
@@ -240,9 +247,11 @@ export async function check(txs: Transaction[], key: string): Promise<{ v2: DppS
   const tm = new DppTopicManager(key, { managedAcceptance: true, controlAuthorities: [] })
   const states: DppState[] = result.states.length === 0 ? [] : []
   const state: DppState | undefined = states[0]
-  const manifest: ProfileManifest = readManifest('battery@2')
+  const manifest: ProfileManifest = readManifest('general@2')
   const id: InteroperabilityProfileId = 'gs1-digital-link@1'
-  void tm; void manifest; void id
+  const retired: RetiredProfileId = 'battery@2'
+  const status: ProfileStatus = { state: 'retired', profile: retired, replacedBy: 'eu-battery@1' }
+  void tm; void manifest; void id; void status
   return { v2: state != null && state.version === '2' ? state : undefined }
 }
 export function stores(store: DppRecordStore, part: EvidenceExportPart): [DppRecordStore, EvidenceExportPart] { return [store, part] }

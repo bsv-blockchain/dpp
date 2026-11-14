@@ -8,19 +8,25 @@
  * and version, and every file the binding names has been read and found to
  * be the file it names, byte for byte.
  *
+ * A retired profile (`RETIRED_PROFILE_IDS`) is in neither group. It does not
+ * resolve, no binding may claim its identity, and `status` reports it as
+ * retired, which is a different answer from unknown: the registry knows the
+ * identity and knows that nothing is to be done under it.
+ *
  * Where the files come from is the caller's business. The registry asks the
  * caller's resolver for each one and checks what comes back, so a deployment
  * may bundle them, read them from disk or fetch them, and the registry reads
  * nothing itself.
  */
-import { PROFILE_IDS, readPublicPayloadSchema, type ProfileId } from './index.js'
+import { SUPPORTED_PROFILE_IDS, readPublicPayloadSchema, type SupportedProfileId } from './index.js'
 import { readManifestAny, type AnyProfileManifest } from './manifest-v2.js'
 import { describeArtefact, profileBindingDigest, readProfileBinding, type BindingArtefact, type ProfileBinding } from './profile-binding.js'
+import { PROFILE_RETIRED, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile } from './retired-profiles.js'
 
 /** The caller's side of registration: the bytes of one artefact, or `undefined` when the caller does not hold it. */
 export type ArtefactResolver = (artefact: BindingArtefact) => Uint8Array | undefined | Promise<Uint8Array | undefined>
 
-/** A profile this package publishes as a manifest (`PROFILE_IDS`). Its files are read when asked for. */
+/** A supported profile this package publishes as a manifest (`SUPPORTED_PROFILE_IDS`). Its files are read when asked for. */
 export interface ManifestProfile {
   format: 'manifest'
   id: string
@@ -44,6 +50,17 @@ export interface BindingProfile {
 
 export type RegisteredProfile = ManifestProfile | BindingProfile
 
+/**
+ * What a registry knows about an identifier and version. `retired` and
+ * `unknown` both mean no rules are applied, and they are told apart so a
+ * reader can say which: a retired profile was published and withdrawn from
+ * use, and an unknown one was never registered here.
+ */
+export type ProfileStatus =
+  | { state: 'registered'; profile: RegisteredProfile }
+  | { state: 'retired'; /** `id@version`. */ profile: string; /** The profile that replaces it. */ replacedBy: string }
+  | { state: 'unknown'; /** `id@version`, as asked. */ profile: string }
+
 /** Why a registration was refused. One code per cause, so a caller branches on the code and shows the detail. */
 export type RegistrationRefusalCode =
   /** The binding's digest is not on the trusted list. Nothing else about the bytes was read. */
@@ -58,6 +75,8 @@ export type RegistrationRefusalCode =
   | 'binding-conflict'
   /** A manifest this package publishes already defines this identifier and version. */
   | 'profile-held-by-manifest'
+  /** The binding claims the identity of a retired profile, which is never given another definition. */
+  | 'profile-retired'
   /** The resolver did not return the bytes of an artefact. */
   | 'artefact-unavailable'
   /** An artefact is not the length the binding records. */
@@ -89,15 +108,17 @@ export type RegistrationResult = RegistrationAccepted | RegistrationRefusal
 export interface ProfileRegistry {
   /** Add the profile a binding file defines. `bindingBytes` are the file's exact bytes; the digest is taken over them. */
   register(input: { bindingBytes: Uint8Array; resolveArtefact: ArtefactResolver }): Promise<RegistrationResult>
-  /** The profile that answers for an identifier and version, whichever format defines it, or `undefined`. */
+  /** The profile that answers for an identifier and version, whichever format defines it, or `undefined`. A retired profile does not resolve. */
   resolve(id: string, version: number): RegisteredProfile | undefined
-  /** Every profile that resolves: the manifest-format profiles first, in the package's order, then bindings in the order registered. */
+  /** Whether an identifier and version is registered, retired or unknown here. */
+  status(id: string, version: number): ProfileStatus
+  /** Every profile that resolves: the manifest-format profiles first, in the package's order, then bindings in the order registered. No retired profile is listed. */
   list(): RegisteredProfile[]
 }
 
 const SHA256 = /^[0-9a-f]{64}$/
 
-function manifestProfile(profile: ProfileId): ManifestProfile {
+function manifestProfile(profile: SupportedProfileId): ManifestProfile {
   const [id, version] = profile.split('@') as [string, string]
   return {
     format: 'manifest',
@@ -121,7 +142,7 @@ export function createProfileRegistry(options: { trustedBindingDigests: Iterable
     if (typeof digest !== 'string' || !SHA256.test(digest)) throw new TypeError(`a trusted binding digest is 64 lower-case hexadecimal characters; got ${JSON.stringify(digest)}`)
     trusted.add(digest)
   }
-  const manifests = new Map<string, ManifestProfile>(PROFILE_IDS.map((profile) => [profile, manifestProfile(profile)]))
+  const manifests = new Map<string, ManifestProfile>(SUPPORTED_PROFILE_IDS.map((profile) => [profile, manifestProfile(profile)]))
   const bindings = new Map<string, BindingProfile>()
 
   const register: ProfileRegistry['register'] = async ({ bindingBytes, resolveArtefact }) => {
@@ -138,6 +159,8 @@ export function createProfileRegistry(options: { trustedBindingDigests: Iterable
     const { binding } = read
     const profile = binding.profile
 
+    // A retired identity keeps the one meaning its frozen manifest gave it, so nothing else may answer to it.
+    if (isRetiredProfile(profile)) return refuse(PROFILE_RETIRED, `${describeRetiredProfile(profile)} A retired identity is never registered again.`, { profile })
     if (manifests.has(profile)) return refuse('profile-held-by-manifest', `${profile} is defined by a manifest this package publishes, so no binding can answer for it.`, { profile })
     const conflict = (held: BindingProfile): RegistrationRefusal => refuse('binding-conflict', `${profile} is already registered with binding digest ${held.bindingDigest}. A changed binding is a new version.`, { profile })
     const held = bindings.get(profile)
@@ -175,5 +198,12 @@ export function createProfileRegistry(options: { trustedBindingDigests: Iterable
     return manifests.get(profile) ?? bindings.get(profile)
   }
 
-  return { register, resolve, list: () => [...manifests.values(), ...bindings.values()] }
+  const status: ProfileRegistry['status'] = (id, version) => {
+    const profile = `${String(id)}@${String(version)}`
+    if (isRetiredProfile(profile)) return { state: 'retired', profile, replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile] }
+    const registered = resolve(id, version)
+    return registered == null ? { state: 'unknown', profile } : { state: 'registered', profile: registered }
+  }
+
+  return { register, resolve, status, list: () => [...manifests.values(), ...bindings.values()] }
 }

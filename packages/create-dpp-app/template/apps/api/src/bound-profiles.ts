@@ -168,6 +168,7 @@ const SCHEMA_SUMMARIES: Record<ViewStatus, string> = {
 
 const NOT_CHECKED_REASONS: Record<string, string> = {
   'profile-unknown': 'This application holds no binding for the profile the payload declares.',
+  'profile-retired': 'The payload declares a retired profile. Its rules are no longer applied, so the payload is neither passed nor failed.',
   'validator-unavailable': 'A validation step could not run.',
   'product-identity-unavailable': 'The product document could not be compared with the passport identifier.',
   'restricted-tier-withheld': 'A rule needs a restricted property, which this view does not hold.',
@@ -452,12 +453,13 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
       const flat = steps.flatMap((step) => (step.findings ?? []).map((finding) => ({ ...finding, step: step.step })))
       const findings = located == null ? flat : await locate(located.profile, located.product, flat)
       const messages = typeof validation.detail === 'string' ? [validation.detail] : Array.isArray(validation.detail) ? validation.detail : []
-      const reason = status !== 'not-checked' ? '' : ` ${cause === 'validator-unavailable' && engineProblem != null ? `The validation engine is not available: ${engineProblem}` : (NOT_CHECKED_REASONS[cause ?? ''] ?? 'A check could not run.')} A check that could not run is not a pass.`
+      const replaced = cause === 'profile-retired' && detail?.replacedBy != null ? ` ${detail.replacedBy} replaces it.` : ''
+      const reason = status !== 'not-checked' ? '' : ` ${cause === 'validator-unavailable' && engineProblem != null ? `The validation engine is not available: ${engineProblem}` : (NOT_CHECKED_REASONS[cause ?? ''] ?? 'A check could not run.')}${replaced} A check that could not run is not a pass.`
       return {
         view,
         status,
         ...(cause == null ? {} : { cause }),
-        summary: `${detail == null && view === 'public' ? SCHEMA_SUMMARIES[status] : SUMMARIES[view][status]}${reason}`,
+        summary: `${(detail == null || cause === 'profile-retired') && view === 'public' ? SCHEMA_SUMMARIES[status] : SUMMARIES[view][status]}${reason}`,
         steps: detail == null ? (messages.length === 0 || status === 'pass' ? [] : [{ step: 'json-schema', status, messages }]) : steps.map((step) => ({ step: step.step, status: viewStatus(step.status), ...(step.cause == null ? {} : { cause: step.cause }), messages: step.messages ?? [] })),
         findings,
         withheld: detail?.access?.withheld ?? [],

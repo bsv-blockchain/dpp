@@ -35,7 +35,7 @@ Readers, application teams and operators can use this glossary to interpret DPP 
 | Outpoint | One output, named by its transaction identifier and output index. |
 | Overlay | The BSV software name for an index. See Index. |
 | Owner tier | The passport's restricted data, every field not marked `public`. It is encrypted off chain; only its hash goes into the state. |
-| Profile | Product fields a passport carries for an industry, such as `battery@2` or `general@2`, with a JSON Schema for public and restricted parts. |
+| Profile | Product data a passport carries for an industry, such as `general@2`, a manifest with a JSON Schema for public and restricted parts, or `eu-battery@1`, a data model held by a binding. A retired profile keeps its definition and is no longer written or validated. |
 | Publisher key | The service key countersigning each state. An index admits only states countersigned by keys in its publisher policy. |
 | Publisher policy | An operator's signed list of the publisher keys it accepts and when each is active: a feature of the overlay package, outside the standard, which asks only for the flat key list in the capability document. |
 | PushDrop | BSV script template used by every state: fields are pushed and dropped; the output locks to a key (BRC-48). Spending the tip unlocks its PushDrop output. |

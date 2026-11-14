@@ -41,6 +41,7 @@ Public read access does not imply submission, callback or export access.
 | Make live writes and proof delivery reliable | [Wallet, broadcast and proofs](wallet-broadcast-proofs.md) | Funding, operation recovery and responsibility for sending later proofs to every relevant index |
 | Exchange records with another index | [Federation](federation.md) | Direction of synchronisation, compatible admission, record agreement and operator independence |
 | Retain and recover evidence | [Export, import and recovery](export-import-recovery.md) | Complete rather than bounded history, snapshot expiry, trust keys and separate recovery of restricted data and secrets |
+| Clear demonstration records issued under a retired profile | [Clear retired-profile demonstration records](retired-profile-records.md) | Backups taken, both listings reviewed, and only reviewed identifiers removed; records on the blockchain stay |
 | Supply a registry | [Registry implementation](../implement/roles/registry.md) | The complete selected role, including storage and retrieval; no released registry image is available |
 | Prepare a production release | [Production readiness](production-readiness.md) | Evidence for the chosen product and operating model, with owners for outstanding dependencies |
 

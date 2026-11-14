@@ -138,7 +138,7 @@ Build against the contract with the reference helpers or your own implementation
 ## Product data
 
 1. [Choose a profile](../profiles/README.md): which fields a passport carries.
-2. [General](../profiles/general.md), [battery](../profiles/battery.md) or [textile](../profiles/textile.md): the current profiles.
+2. [General](../profiles/general.md) or the [EU battery and textile bindings](../profiles/eu-sector-bindings.md): the current profiles. The earlier battery and textile manifest profiles are [retired](../profiles/README.md#retired-profiles).
 3. [Author a profile](../profiles/authoring.md) or [update applications](../profiles/updating-applications.md) when a profile changes.
 4. At the prepared checkout root, substitute your selected profile and payload path in `node examples/sample-payload.mjs --check <profile@version> <file>`:
 

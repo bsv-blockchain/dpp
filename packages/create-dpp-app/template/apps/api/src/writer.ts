@@ -23,12 +23,12 @@ import {
   type DppStateV2,
   type ManagedAcceptanceRecord,
 } from '@bsv/dpp-protocol'
-import type { BindingProfile, BindingValidationDetail, PayloadValidation, ProfileId } from '@bsv/dpp-profiles'
+import { PROFILE_RETIRED, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile, type BindingProfile, type BindingValidationDetail, type PayloadValidation } from '@bsv/dpp-profiles'
 import type { BoundProfiles, ViewCheck } from './bound-profiles.js'
 import { identifierProblems, isDemonstrationPolicy, type IdentifierPolicy } from './identifiers.js'
 import type { IndexClient } from './index-client.js'
 import type { Party } from './parties.js'
-import { DEMONSTRATION_NOTICE, isProfileId, validatePayload } from './profiles.js'
+import { DEMONSTRATION_NOTICE, isProfileId, validatePayload, type ManifestProfileId } from './profiles.js'
 import type { PassportRecord, StateEntry, Store } from './store.js'
 import type { PlatformWallet, Tip } from './wallet.js'
 
@@ -44,6 +44,17 @@ export class WriteRefused extends Error {
   ) {
     super(detail)
   }
+}
+
+/**
+ * Refuse a write under a retired profile, by the one code every such
+ * refusal carries. It covers a new payload and equally a state that would
+ * carry an old payload forward, since that state would declare the retired
+ * profile too. Called before anything is derived, signed or asked of the
+ * index.
+ */
+export function refuseRetiredProfile(profile: string): void {
+  if (isRetiredProfile(profile)) throw new WriteRefused(PROFILE_RETIRED, `${describeRetiredProfile(profile)} Nothing was signed.`, { replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile] })
 }
 
 export interface WriterOptions {
@@ -93,7 +104,7 @@ export class Writer {
   }
 
   /** The owner tier of a manifest profile: checked against the profile's restricted schema, then sealed. */
-  private async sealOwnerTier(controller: Party, passportId: string, profile: ProfileId, fields: Record<string, unknown>): Promise<{ hash: string; ciphertext: number[] }> {
+  private async sealOwnerTier(controller: Party, passportId: string, profile: ManifestProfileId, fields: Record<string, unknown>): Promise<{ hash: string; ciphertext: number[] }> {
     const check = validatePayload(profile, 'restricted', fields)
     if (!check.valid) throw new WriteRefused('owner-tier-invalid', `the owner tier is refused by the restricted schema of ${profile}: ${check.problems.join('; ')}`)
     return await this.seal(controller, passportId, fields)
@@ -141,6 +152,8 @@ export class Writer {
     const { record, op, actor, controller, profile } = args
     const { store, wallet, index } = this.options
     const passportId = record.passportId
+    // Every operation, RETIRE included: each would sign a state whose payload declares the retired profile.
+    refuseRetiredProfile(profile)
     const tip = this.tipOf(record)
     if (op === 'ISSUE' && tip != null) throw new WriteRefused('already-issued', `${passportId} already has ${record.states.length} state(s); a second genesis is never written`)
     if (op !== 'ISSUE' && tip == null) throw new WriteRefused('not-issued', `${passportId} has no genesis to follow`)
@@ -389,6 +402,8 @@ export class Writer {
 
   /** The first state: the brand opens the passport under its own controller key. */
   async issue(args: { brandId: string; brand: Party; passportId: string; profile: string; payload?: Record<string, unknown>; ownerFields?: Record<string, unknown>; product?: Record<string, unknown> }): Promise<WriteOutcome> {
+    // Before the identifier is checked or the index asked: the answer does not depend on either.
+    refuseRetiredProfile(args.profile)
     const problems = identifierProblems(args.passportId, this.options.identifiers)
     if (problems.length > 0) throw new WriteRefused('identifier-refused', `${args.passportId} cannot be written because ${problems.join('; and ')}`)
     const existing = await this.options.store.getPassport(args.passportId)

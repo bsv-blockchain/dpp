@@ -116,7 +116,8 @@ The folder is registered at start with no source change. A folder whose digest i
 ### What the candidate does not do
 
 - It imports, pulls and exports no EPCIS events.
-- It retires no profile: `battery@2`, `textile@2` and `general@2` work as before.
+- It writes nothing under a retired profile. `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are not offered, a write under one is refused with `profile-retired`, and a record that declares one reads as not checked, with the replacement named. `general@2` works as before ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
+- It converts nothing. A passport already in the journal under a retired profile stays there as written, and it gets no further state, hand-on or claim.
 - After a hand-on the restricted part stays sealed to the holder who wrote it. The new holder's authorised view is not checked until they write an update.
 - The web app has no test runner. Its form logic is tested by the API's tests, and its pages are type-checked by the build.
 

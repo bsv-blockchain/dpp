@@ -116,12 +116,18 @@ describe('the profile manifests (spec/profiles.md)', () => {
     const textile = readManifest('textile@2')
     const conditional = textile.fields.filter((f) => f.applicability.rule === 'needs-review')
     expect(conditional.length).toBeGreaterThan(0)
-    const check = missingRequired(textile, {}, 'apparel')
+    // textile@2 is retired, so its field lists are read as history and no payload is checked for completeness under it.
+    const apparel = fieldsFor(textile, 'apparel')
     for (const f of conditional) {
-      expect(check.missing.includes(f)).toBe(false)
-      if (f.obligation === 'required') expect(check.needsReview.includes(f)).toBe(true)
+      expect(apparel.applies.includes(f)).toBe(false)
+      expect(apparel.needsReview.includes(f)).toBe(true)
     }
+    // The completeness check a writer runs, under the profile a payload is still written under.
+    const general = readManifest('general@2')
+    const check = missingRequired(general, {}, 'furniture')
     expect(check.missing.length).toBeGreaterThan(0)
+    expect(check.missing.every((f) => f.obligation === 'required' && fieldsFor(general, 'furniture').applies.includes(f))).toBe(true)
+    expect(check.needsReview).toEqual([])
   })
 
   it('produces the legacy consumer document shape the registry and application serve', () => {

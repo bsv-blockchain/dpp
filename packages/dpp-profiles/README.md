@@ -36,32 +36,46 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 | `frozen.json` | The digests every published manifest and generated file is held to. |
 | `bindings/<profile>/` | The bindings the package ships, `eu-battery@1` and `eu-textile@1`: `binding.json`, the contexts, shapes and background file it pins by length and SHA-256, and a `NOTICE.md` that names the source and licence of each file. |
 | `src/bundled-bindings.ts` | `BUNDLED_BINDINGS` and `BUNDLED_BINDING_DIGESTS`, the trusted digest list for those bindings, and `registerBundledBindings`, which reads them from the package folder into a registry. Nothing is read at import. |
+| `src/retired-profiles.ts` | `RETIRED_PROFILE_IDS`, the one list of retired profiles, with `RETIRED_PROFILE_REPLACEMENTS`, `isRetiredProfile` and `ProfileRetiredError`. Every refusal to write under a retired profile and every `unknown` answer about one starts here ([retired profiles](#retired-profiles)). |
 | `src/profile-binding.ts`, `src/profile-registry.ts` | `readProfileBinding` and its hand-written structural check, held to the same verdict as the schema, and `createProfileRegistry`: a binding registers only when its digest is trusted and every artefact it names matches its recorded length and SHA-256. The manifest profiles resolve through the same registry. |
 | `src/binding-validator.ts`, `src/product-identity.ts`, `src/strict-json.ts` | `bindingPayloadValidator`: the envelope, the binding digest, the binding's steps and the product-to-passport identity rules. A step that could not run is `unknown`, never `pass`. |
 | `src/access-tiers.ts`, `src/bound-payload.ts` | The split a binding's `access` member states, by top-level property and restricted unless listed: `splitProductByAccess`, `assembleProduct` with its typed refusals, and `prepareBoundPayload`, which validates the whole document, splits it and returns the public payload as the text to sign. `authorisedPayloadValidator` checks both parts rejoined. |
 | `src/validation-engine.ts` | The `@bsv/dpp-profiles/validation-engine` entry point: JSON-LD and SHACL engines over `jsonld`, `n3` and `shacl-engine`, which the caller installs. Nothing else in the package imports it. |
 | `src/identifiers.ts` | GS1 check digit, GTIN-14 spelling, the demonstration prefix 952 and the Digital Link path parser and builder. |
-| `src/combinations.ts` | `checkSelection`: supported combinations of baseline, industry, exchange and operator profiles pass, and contradictory selections are refused by name (a write under a superseded version, a claim on a proposed profile, a single operator with peers, a federation of one). A parked exchange profile is refused for no purpose and named parked in a note, because a claim on it rests on its own ledger rows. |
+| `src/combinations.ts` | `checkSelection`: supported combinations of baseline, industry, exchange and operator profiles pass, and contradictory selections are refused by name (a retired industry profile, a write under a superseded version, a claim on a proposed profile, a single operator with peers, a federation of one). A parked exchange profile is refused for no purpose and named parked in a note, because a claim on it rests on its own ledger rows. |
 | `src/mapping.ts` | `mapNativeOperation`: the conditional lifecycle mapping of `spec/rules.md` §2, one of four outcomes with a loss list on every outcome that is not lossless. |
 | `src/gs1-resolution.ts`, `src/gs1-epc-binary.ts` | Reference code for the `gs1-digital-link@1` discovery profile, which reads GS1-Conformant Resolver 1.2.1 and GS1 Digital Link URI Syntax 1.7.0 for resolution, link types and linksets; `spec/gs1-discovery.md` keeps only the DPP identifier rules. The helpers cover the full grammar for primary key 01 with its qualifiers and data attributes, key-tuple equivalence across hosts, EPC-binary decompression for SGTIN-96 and SGTIN-198, resolution records, the linkset hierarchy and selection, and the resolver description file. The GS1 resolver schemas and context are pinned by address, SHA-256 and length in `GS1_RESOLVER_ARTEFACTS` and are not in this package: GS1 publishes them under its own terms, and a party that validates against them obtains them from GS1 and checks them against those digests, for which `provisionGs1Artefacts` of `@bsv/dpp-credentials` accepts the table. |
 | `manifests/interoperability/*.json`, `schemas/interoperability-profile.schema.json` | The interoperability profiles: discovery (`gs1-digital-link@1`), source exchange (`epcis-json@1`) and the parked mapping to VSC SEALs (`epcis-vsc@1`, and `epcis-vsc@2` with its CBV 2.0 disposition crosswalk), which no release requires, each recording its standards, pinned artefacts, formats, limits and what it cannot map. |
 | `src/evidence-shapes.ts`, `src/applicability.ts`, `src/projections.ts` | The shared evidence, measurement, certification, document and language shapes of `contracts/profile-evidence.schema.json`, the declarative applicability evaluator of manifest version 2 (`schemas/profile-manifest-v2.schema.json`) whose `unresolved` outcome is never a pass, and `projectPassport`, the pure deterministic `passport-projection@1` over versioned model, batch and item sources, digested under RFC 8785. Projections are a reference feature of this package, not part of the standard: their schemas are `schemas/passport-source.schema.json` and `schemas/passport-projection.schema.json`, and their specification is parked under `docs/reference/parked/passport-projections/`. |
 
-Five frozen profiles, current or superseded, are published: `battery@2`, `textile@2` and `general@2` (current) and `textile@1` and `general@1` (superseded, and served for as long as any state declares them). They were inventoried from the application's attribute registries in full, including the fields captured over life or derived rather than at registration, and frozen. `battery@4` is the one draft successor under manifest version 2: opt-in by explicit version, carrying a requirement status per field and a migration outcome per field, and leaving every byte of the current versions unchanged until a reviewed cutover.
+Two manifest profiles are supported: `general@2`, current, and `general@1`, superseded and served for as long as any state declares it (`SUPPORTED_PROFILE_IDS`). They were inventoried from the application's attribute registries in full, including the fields captured over life or derived rather than at registration, and frozen.
 
-Since `@bsv/dpp-profiles@0.3.0-beta.2` the package includes `battery@4`, which succeeds the earlier draft `battery@3` and adds truthful month-only manufacture capture, postal delivery information, power reference conditions and separate individual performance measurements. It does not change the current profile selection or establish regulatory qualification. The drafts `battery@3`, `textile@3` and `textile@4` are parked: no successor is proposed under them and no claim names them, and their manifests and generated files stay published byte for byte, because a record may declare one.
+## Retired profiles
+
+The sector profiles first published as manifests are retired (`spec/profiles.md` §4): `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3` and `textile@4`. `RETIRED_PROFILE_IDS` is the one list, and `RETIRED_PROFILE_REPLACEMENTS` names what replaces each: the bundled bindings `eu-battery@1` and `eu-textile@1`.
+
+Retiring a profile changes what the package does with it and nothing it says. The manifests, generated schemas, consumer documents and mapping inventories stay in the package byte for byte, `frozen.json` still holds every one to its digest, and the identifiers are never given another definition.
+
+| Asked to | The package answers |
+|---|---|
+| Validate a payload that declares one (`profilePayloadValidator`, `bindingPayloadValidator`, `authorisedPayloadValidator`) | `unknown` with `schema-unavailable`, and `detail` `{ profile, cause: 'profile-retired', replacedBy, steps: [] }`. Never `pass` and never `fail`, whatever the payload holds |
+| Prepare or check a payload for writing (`prepareBoundPayload`, `missingRequired`, `missingRequiredV2`, `reviewProfileData`), or project a passport (`projectPassport`) | A refusal named `profile-retired`: returned by `prepareBoundPayload`, thrown as `ProfileRetiredError` by the others |
+| Select it (`checkSelection`) or register a binding under it (`registry.register`) | The conflict `industry-retired`, and the refusal `profile-retired` |
+| Resolve it (`registry.resolve`, `registry.list`) | `undefined`, and not listed. `registry.status` says `retired`, with the replacement, which is a different answer from `unknown` |
+
+These still read a retired profile, as history, because each returns or describes a frozen definition and judges no payload: `readManifest`, `readManifestAny`, `readPublicPayloadSchema`, `readRestrictedPayloadSchema`, `readConsumerDocument`, `readFrozen`, `fieldsFor`, `fieldsForV2`, `evaluateFieldApplicability`, `categoryOf`, `compareProfiles` and `mapNativeOperation`. A retired manifest keeps the `status` it was frozen with, so read retirement from the list and never from that member.
+
+There is no converter and no reader of the retired rules. `reviewProfileData` had rules for `battery@4` and `textile@4` only, so it has no profile left to review: it refuses a retired one as `profile-retired` and any other as not implemented.
 
 ## Review a profile update
 
-After building this checkout, generate a deterministic consumer impact report:
+After building this checkout, generate a deterministic consumer impact report for two versions of one profile:
 
 ```sh
-npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
+npm run changes -w @bsv/dpp-profiles -- general@1 general@2
 ```
 
 The Node API is `compareProfiles(from, to)`. It reports added, changed and removed fields, all changed field properties, top-level metadata changes, source/target status and manifest byte digests. It does not infer safe conversions, send notifications or activate a writer. Include the report in the consumer upgrade proposal, then review the application's UI, backend and export changes.
-
-For `battery@4`, and for a record that declares the parked `textile@4`, run `reviewProfileData(profile, payload)` after generated-schema validation and alongside `missingRequiredV2`. It returns `invalid` or `needs-review` findings for manufacture-date consistency, individual measurement context and component declarations. An empty result is not a qualification result. The helper refuses other versions so a historical record cannot silently acquire version 4 interpretation. See the documentation's draft guide for migration steps and remaining assessment limits.
 
 ## Working on it
 
@@ -80,9 +94,9 @@ A frozen profile changes only by publishing a new version. A corrected mandatory
 ```ts
 import { readManifest, fieldsFor, missingRequired, parseGs1DigitalLink, parseGs1DigitalLinkUri, decompressGs1DigitalLink, projectPassport } from '@bsv/dpp-profiles'
 
-const battery = readManifest('battery@2')
-const { applies, needsReview } = fieldsFor(battery, 'ev')
-const gaps = missingRequired(battery, payload, 'ev') // gaps.missing blocks; gaps.needsReview is shown, never assumed
+const general = readManifest('general@2')
+const { applies, needsReview } = fieldsFor(general, 'furniture')
+const gaps = missingRequired(general, payload, 'furniture') // gaps.missing blocks; gaps.needsReview is shown, never assumed
 const link = parseGs1DigitalLink(passportId)         // link.checkDigitValid, link.demonstration, never allocation authority
 const request = parseGs1DigitalLinkUri(uri)          // key 01 with 22, 10 and 21, data attributes, linkType; never an exception
 const plain = decompressGs1DigitalLink(compressed)   // eh and ex forms carrying SGTIN-96 or SGTIN-198; other schemes refused by name

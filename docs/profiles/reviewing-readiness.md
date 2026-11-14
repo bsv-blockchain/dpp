@@ -8,11 +8,11 @@ Use the process when a profile changes, a source is revised or an application ad
 
 | Input | Source and scope |
 |---|---|
-| Profile baseline | Exact version, such as `battery@2`, and generated schema digests from its manifest; the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records digests for every version. Record the installed package version too. |
+| Profile baseline | Exact version, such as `general@2`, and generated schema digests from its manifest; the [frozen inventory](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/frozen.json) records digests for every version. Record the installed package version too. |
 | Application baseline | Application revision and evaluation date from the deployment being assessed. |
 | External sources | Each source's edition, retrieval date and role: legislation, standard, guidance, proposal or test-tool implementation. Obtain the actual compared files and hosted-run schema selection as well as documentation. |
 | Product scope | Product classification, use case and market that determine applicability. |
-| Changed-profile review | Checkout containing both versions and its change report; see [evaluate the battery@4 draft](version-4-drafts.md#try-a-draft-in-your-application). |
+| Changed-profile review | Checkout containing both versions and its change report; see [see what changed](updating-applications.md#2-see-what-changed). |
 
 ## Establish the comparison baseline
 
@@ -27,12 +27,12 @@ The stage ends with a dated baseline naming the files, deployment and product sc
 
 ## Build a cross-reference in both directions
 
-**Stage 2: build the comparison record.** Start from the generated mapping inventory, such as [battery@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/battery@2.md): one row per field, including semantic field, legal basis, applicability and access tier.
+**Stage 2: build the comparison record.** For a manifest profile, start from its generated mapping inventory, such as [general@2](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/packages/dpp-profiles/generated/mapping/general@2.md): one row per field, including semantic field, legal basis, applicability and access tier. For a profile held by a binding, such as `eu-battery@1`, start from the shapes and contexts its binding pins ([EU battery and textile bindings](eu-sector-bindings.md)).
 
-For a changed profile, also run `npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4` in the checkout to list every added, changed and removed field:
+For a changed manifest profile, also run the change report in the checkout to list every added, changed and removed field:
 
 ```sh
-npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
+npm run changes -w @bsv/dpp-profiles -- general@1 general@2
 ```
 
 Create a row for each external requirement or data attribute, including nested fields. Copy this row template:

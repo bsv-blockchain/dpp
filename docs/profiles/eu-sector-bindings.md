@@ -34,7 +34,7 @@ The contexts and shapes of both profiles are unmodified files published by the O
 | Findings that block | Violations. Warnings and information findings are reported and do not block |
 | Network | None. The contexts are read from the package, and a context the binding does not list is refused |
 
-`battery@2` and `textile@2` stay the current manifest profiles ([choose an industry profile](README.md)). These bindings are separate profiles with their own identifiers, and a record is read under the one it declares.
+These bindings replace the manifest profiles `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`, which are retired from 14 November 2026 ([retired profiles](README.md#retired-profiles)). Each binding is a separate profile with its own identifier and its own data model, not a later version of a retired one, so nothing converts a payload from one to the other and a record is read under the profile it declares. A record that declares a retired profile is reported as unsupported ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
 
 ## What a payload looks like
 

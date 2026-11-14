@@ -10,7 +10,7 @@ import { bindAcceptanceToState, canonicalJson, inspectManagedAcceptance, signMan
 import type { Parties, Party } from './parties.js'
 import type { OfferRecord, PassportRecord, Store } from './store.js'
 import type { PlatformWallet } from './wallet.js'
-import { WriteRefused, type Writer } from './writer.js'
+import { WriteRefused, refuseRetiredProfile, type Writer } from './writer.js'
 
 const instant = (offsetSeconds = 0): string => new Date(Date.now() + offsetSeconds * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z')
 const sha256hex = (text: string): string => Utils.toHex(Hash.sha256(Utils.toArray(text, 'utf8')))
@@ -37,6 +37,8 @@ export class Custody {
    */
   async offer(args: { record: PassportRecord; holder: Party; terms: Record<string, unknown>; mechanism?: 'claim-code' | 'named-recipient'; recipientIdentityKey?: string }): Promise<{ offer: OfferRecord; claimCode?: string }> {
     const { record, holder } = args
+    // A hand-on ends in a TRANSFER, which the writer refuses under a retired profile. Refused here, no offer is left open that can never complete.
+    refuseRetiredProfile(record.profile)
     if (record.status === 'retired') throw new WriteRefused('retired', `${record.passportId} is retired`)
     if (record.holder.party !== holder.name) throw new WriteRefused('not-the-holder', `${holder.name} does not hold ${record.passportId}`)
     const tip = record.states.at(-1)
@@ -117,6 +119,8 @@ export class Custody {
     if (retrying && offer.mechanism === 'claim-code' && (args.claimCode == null || sha256hex(args.claimCode) !== offer.claimCodeHash)) throw new WriteRefused('claim-code-wrong', 'the claim code does not match this offer')
     const passport = await store.getPassport(offer.passportId)
     if (passport == null) throw new WriteRefused('passport-unknown', `no passport ${offer.passportId}`)
+    // Before an acceptance record is signed: an offer made before the profile was retired cannot be completed either.
+    refuseRetiredProfile(passport.profile)
     const tip = passport.states.at(-1)
     if (tip == null || tip.txid !== offer.expectedPredecessor.txid) throw new WriteRefused('tip-moved', 'the passport moved since the offer was made; ask for a new offer')
     const holder = this.holderOf(passport)

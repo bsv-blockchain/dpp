@@ -18,6 +18,7 @@ import { splitProductByAccess } from './access-tiers.js'
 import type { BindingValidationDetail, ValidationEngines } from './binding-validator.js'
 import type { PayloadValidation } from './payload-validator.js'
 import type { ProfileRegistry } from './profile-registry.js'
+import { PROFILE_RETIRED, describeRetiredProfile, isRetiredProfile } from './retired-profiles.js'
 import { createValidationPipeline } from './validation-pipeline.js'
 
 /** The most UTF-8 bytes a version 2 state holds in `payload_public` (`spec/record-model-v2.md` §3). */
@@ -41,6 +42,8 @@ export interface BoundPayloadInput {
 }
 
 export type BoundPayloadRefusalCode =
+  /** The identifier and version name a retired profile. Nothing is prepared under one. */
+  | 'profile-retired'
   /** The identifier and version name a manifest-format profile, which has no binding digest and no envelope. */
   | 'profile-not-bound'
   /** The whole document fails a check. `validation` says which. */
@@ -94,6 +97,8 @@ export async function prepareBoundPayload(input: BoundPayloadInput): Promise<Pre
   const check = (payloadPublic: string, view: 'whole' | 'public'): Promise<PayloadValidation> => run({ payload: { profile, profileVersion, payloadPublic, passportId }, view })
   const refuse = (code: BoundPayloadRefusalCode, detail: string, extra: Partial<BoundPayloadRefusal> = {}): BoundPayloadRefusal => ({ ok: false, code, detail, ...extra })
 
+  // First, and on the identity alone: no registry and no engine makes a retired profile writable.
+  if (isRetiredProfile(id)) return refuse(PROFILE_RETIRED, `${describeRetiredProfile(id)} Nothing was prepared.`)
   const registered = registry.resolve(profile, profileVersion)
   if (registered?.format === 'manifest') return refuse('profile-not-bound', `${id} is a manifest-format profile. It has no binding, so there is no bound payload to prepare.`)
   // The pipeline answers for an unknown profile before it reads the payload.

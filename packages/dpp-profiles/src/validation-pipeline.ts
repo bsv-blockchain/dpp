@@ -15,10 +15,11 @@
 import canonicalize from 'canonicalize'
 import { assembleProduct, isPublicProperty, joinKeyProperties } from './access-tiers.js'
 import type { BindingStepOutcome, BindingValidationCause, BindingValidationDetail, BindingValidationView, EngineContext, EngineFile, EngineFinding, JsonLdEngine, JsonLdExpansion, ShaclValidation, ValidationEngines, WithheldCheck } from './binding-validator.js'
-import { describeSchemaProblems, profilePayloadValidator, type CompiledSchema, type PayloadToValidate, type PayloadValidation, type SchemaCompiler, type SchemaProblem } from './payload-validator.js'
+import { describeSchemaProblems, profilePayloadValidator, retiredProfileValidation, type CompiledSchema, type PayloadToValidate, type PayloadValidation, type SchemaCompiler, type SchemaProblem } from './payload-validator.js'
 import { checkProductIdentity } from './product-identity.js'
 import type { BindingAccess, BindingArtefact, BindingStep, EngineCapability, ProfileBinding } from './profile-binding.js'
 import type { BindingProfile, ProfileRegistry } from './profile-registry.js'
+import { isRetiredProfile } from './retired-profiles.js'
 import { parseStrictJson } from './strict-json.js'
 
 /** How each cause reads in the report's shared vocabulary: a check that ran and did not hold, or one that could not be completed. */
@@ -31,6 +32,7 @@ const REASON_CODE: Record<BindingValidationCause, NonNullable<PayloadValidation[
   'restricted-property-disclosed': 'schema-invalid',
   'product-assembly-refused': 'schema-invalid',
   'profile-unknown': 'schema-unavailable',
+  'profile-retired': 'schema-unavailable',
   'product-identity-unavailable': 'schema-unavailable',
   'validator-unavailable': 'schema-unavailable',
   'restricted-tier-withheld': 'schema-unavailable',
@@ -201,6 +203,8 @@ export function createValidationPipeline(options: { registry: ProfileRegistry; e
 
   return async ({ payload, view, restrictedProduct }) => {
     const id = `${payload.profile}@${payload.profileVersion}`
+    // Decided on the identity, before the registry is asked: a retired profile is retired in every registry, and in every view.
+    if (isRetiredProfile(id)) return retiredProfileValidation(id)
     const profile = registry.resolve(payload.profile, payload.profileVersion)
     // An unknown profile selects no rules. Guessing some would be a pass nobody earned.
     if (profile == null) return { status: 'unknown', reasonCode: REASON_CODE['profile-unknown'], detail: { profile: id, cause: 'profile-unknown', steps: [] } }

@@ -41,7 +41,7 @@ Use exactly these fields. `signLifecycleClaim` refuses any other with `unsupport
 | `issuer` | Your DID. With a wallet key, `didKeyFromIdentityKey(identityKey)` |
 | `issuerKeyId` | A label for the signing role, such as `repair bench 1`, at most 256 bytes. It does not select a key |
 | `issuerKeyDid` | Omit it when `issuer` is a `did:key`. Otherwise, the `did:key` of the signing key |
-| `profile`, `profile_version` | The product data profile, normally the one the passport's payload declares, such as `battery` and `2` |
+| `profile`, `profile_version` | The product data profile, normally the one the passport's payload declares, such as `general` and `2`. A new claim does not name a retired profile |
 
 ## 2. Sign it, have a registry check it and prepare the anchor
 

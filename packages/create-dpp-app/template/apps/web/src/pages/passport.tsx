@@ -44,6 +44,9 @@ function PassportPage() {
   const view = passport.data
   const needsClaimCode = view.holder.party.startsWith('recipient:')
   const retired = view.status === 'retired'
+  // A passport under a retired profile is shown as it was written. The API refuses every write for it, so none is offered.
+  const profileRetired = view.profileRetired
+  const closed = retired || profileRetired != null
   const ident = parseIdentifier(view.passportId)
   const publicPath = publicPathOf(view.passportId)
   const close = () => setDialog(undefined)
@@ -86,6 +89,17 @@ function PassportPage() {
         </span>
       </div>
 
+      {profileRetired == null ? null : (
+        <Alert>
+          <AlertTitle>Profile {view.profile} is retired</AlertTitle>
+          <AlertDescription>
+            <p>
+              This passport stays as it was written, and its product data is not checked against the retired profile. No further state, hand-on or claim is made for it. {profileRetired.replacedBy} replaces the profile, and nothing converts this passport: issue a new one under the replacement.
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {needsClaimCode ? (
         <Alert>
           <AlertTitle>Held by a recipient</AlertTitle>
@@ -96,16 +110,16 @@ function PassportPage() {
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => setDialog('update')} disabled={retired}>
+        <Button onClick={() => setDialog('update')} disabled={closed}>
           Update
         </Button>
-        <Button variant="outline" onClick={() => setDialog('offer')} disabled={retired}>
+        <Button variant="outline" onClick={() => setDialog('offer')} disabled={closed}>
           Hand on
         </Button>
-        <Button variant="outline" onClick={() => setDialog('retire')} disabled={retired}>
+        <Button variant="outline" onClick={() => setDialog('retire')} disabled={closed}>
           Retire
         </Button>
-        <Button variant="outline" onClick={() => setDialog('claim')}>
+        <Button variant="outline" onClick={() => setDialog('claim')} disabled={profileRetired != null}>
           Add a claim
         </Button>
         {retired ? <span className="self-center text-sm text-muted-foreground">Retired: no further state can be written.</span> : null}

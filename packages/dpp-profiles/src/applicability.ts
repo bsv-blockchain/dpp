@@ -9,6 +9,7 @@
  */
 import type { ApplicabilityRule, ProfileManifest, ProfileField } from './index.js'
 import { isFieldV2, type AnyProfileField, type AnyProfileManifest, type ApplicabilityRuleV2 } from './manifest-v2.js'
+import { assertProfileNotRetired } from './retired-profiles.js'
 
 export type ApplicabilityOutcome = 'applies' | 'not-applicable' | 'unresolved'
 
@@ -145,7 +146,9 @@ export interface FieldsForResult<F extends AnyProfileField> {
  * The fields of a version 1 or version 2 manifest under a context: what
  * applies, what does not, and what is unresolved with its reasons. The
  * version 1 `fieldsFor` remains the reader for version 1 manifests with a
- * bare category; this one takes the whole context.
+ * bare category; this one takes the whole context. It describes a
+ * definition and checks no payload, so it also answers for a retired
+ * manifest, as history.
  */
 export function fieldsForV2<M extends AnyProfileManifest>(manifest: M, ctx: ApplicabilityContext = {}): FieldsForResult<M['fields'][number]> {
   type F = M['fields'][number]
@@ -184,10 +187,13 @@ export interface MissingRequiredV2Result<F extends AnyProfileField> {
  * displayed or under review is deferred and never blocks, so an adopter can
  * keep incomplete draft data without a false failure or a false pass. A
  * field the payload declares inapplicable under `inapplicableFields` is
- * not-applicable where it would otherwise be unresolved.
+ * not-applicable where it would otherwise be unresolved. Throws
+ * `ProfileRetiredError` for a retired manifest: this is a check made before
+ * writing, and nothing is written under a retired profile.
  */
 export function missingRequiredV2<M extends AnyProfileManifest>(manifest: M, payload: Record<string, unknown>, ctx: ApplicabilityContext = {}): MissingRequiredV2Result<M['fields'][number]> {
   type F = M['fields'][number]
+  assertProfileNotRetired(manifest.profile)
   const result: MissingRequiredV2Result<F> = { missing: [], unresolved: [], deferred: [] }
   // The payload's own declarations, unless the caller supplied the list.
   const effective: ApplicabilityContext = ctx.declaredNotApplicable == null ? { ...ctx, declaredNotApplicable: declaredInapplicable(payload) } : ctx

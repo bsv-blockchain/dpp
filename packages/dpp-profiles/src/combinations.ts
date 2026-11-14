@@ -2,8 +2,9 @@
  * Profile combinations (`spec/conformance.md` §4, `spec/profiles.md`): an
  * industry profile says what a passport carries, an exchange profile how a
  * credential travels beside it, an operator profile how an index is run. They
- * are selected together, and some selections contradict themselves: a new
- * state under a superseded version, a conformance claim on a proposed profile
+ * are selected together, and some selections contradict themselves: a
+ * retired industry profile, a new state under a superseded version, a
+ * conformance claim on a proposed profile
  * whose artefacts were never pinned, a single operator declaring peers, a
  * federation of one. `checkSelection` names every contradiction rather than
  * choosing for the caller, and passes with notes when the selection is only
@@ -11,6 +12,7 @@
  */
 import { EXCHANGE_PROFILE_IDS, OPERATOR_PROFILE_IDS, PROFILE_IDS, readExchangeProfile, readOperatorProfile, type ExchangeProfileId, type OperatorProfileId } from './index.js'
 import { isManifestV2, readManifestAny } from './manifest-v2.js'
+import { describeRetiredProfile, isRetiredProfile } from './retired-profiles.js'
 
 export const BASELINE_ID = 'native-baseline@1'
 /** The second recommended baseline: record version 2 with the managed-custody profile (conformance/baseline-native-2.json). */
@@ -38,6 +40,7 @@ export interface ProfileSelection {
 export type SelectionConflictCode =
   | 'baseline-unknown'
   | 'industry-unknown'
+  | 'industry-retired'
   | 'industry-superseded'
   | 'industry-draft'
   | 'exchange-unknown'
@@ -66,7 +69,10 @@ export function checkSelection(selection: ProfileSelection): SelectionResult {
   if (!(BASELINE_IDS as readonly string[]).includes(selection.baseline)) conflict('baseline-unknown', `${selection.baseline} is not a baseline this catalogue knows; the baselines are ${BASELINE_IDS.join(' and ')}`)
 
   if (selection.industry != null) {
-    if (!(PROFILE_IDS as readonly string[]).includes(selection.industry)) {
+    if (isRetiredProfile(selection.industry)) {
+      // Retired for every purpose: nothing is written or claimed under it, and a reader has no rules to apply to a record that declares it.
+      conflict('industry-retired', describeRetiredProfile(selection.industry))
+    } else if (!(PROFILE_IDS as readonly string[]).includes(selection.industry)) {
       conflict('industry-unknown', `${selection.industry} is not an industry profile in this catalogue`)
     } else {
       const manifest = readManifestAny(selection.industry)

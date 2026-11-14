@@ -140,4 +140,4 @@ After publication and registry verification, update documentation in one change:
 
 ## Earlier publications
 
-[Release history](release-history.md) lists every earlier set, its date, what it published and its receipt; each receipt records any exception to this procedure and how to reproduce its plan at its recorded revision. Package versions differ from industry profile versions: battery@2 and textile@2 remain current, versions 3 and 4 remain drafts, and historical definitions remain available.
+[Release history](release-history.md) lists every earlier set, its date, what it published and its receipt; each receipt records any exception to this procedure and how to reproduce its plan at its recorded revision. Package versions differ from industry profile versions: `general@2` is current, the battery and textile manifest profiles and their drafts are retired from 14 November 2026, and every published definition remains available at its frozen digest.
