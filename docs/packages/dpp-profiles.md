@@ -179,6 +179,7 @@ A profile does not have to be one of the manifests this package publishes. A dat
 | Validator | `bindingPayloadValidator`: the function a writer calls before issuing and a verifier passes as `payloadValidator` |
 | Engine adapter | `@bsv/dpp-profiles/validation-engine`: JSON-LD and SHACL engines over libraries you install |
 | Example profiles | `examples/custom-profile/` in the repository: `example-bottle@1` uses every step, `example-notebook@1` uses a schema only |
+| Bundled bindings | `eu-battery@1` and `eu-textile@1`, shipped under `bindings/` with their artefacts and notices. `BUNDLED_BINDING_DIGESTS` is their trusted digest list and `registerBundledBindings(registry)` registers them from the package folder ([EU battery and textile bindings](../profiles/eu-sector-bindings.md)) |
 
 ### The payload under a binding
 
@@ -447,7 +448,7 @@ export default {
 }
 ```
 
-The package computes data-file paths in its own directory at call time; bundlers and file tracers cannot follow them.
+The package computes data-file paths in its own directory at call time; bundlers and file tracers cannot follow them. A deployment that registers the bundled bindings adds `bindings` to the folder list above, or names the folder it copied them to in the `directory` option of `registerBundledBindings`.
 
 | Next.js 16 production configuration | Result |
 |---|---|

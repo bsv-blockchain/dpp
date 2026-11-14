@@ -27,6 +27,7 @@
     * [General](profiles/general.md)
     * [Battery](profiles/battery.md)
     * [Textile](profiles/textile.md)
+    * [EU battery and textile bindings](profiles/eu-sector-bindings.md)
     * [Evaluate draft profiles](profiles/version-4-drafts.md)
     * [Author a profile](profiles/authoring.md)
     * [Review profile and application readiness](profiles/reviewing-readiness.md)

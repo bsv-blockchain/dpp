@@ -1,0 +1,153 @@
+{
+  "bindingVersion": "1",
+  "id": "eu-textile",
+  "version": 1,
+  "profile": "eu-textile@1",
+  "title": "Textile passport data, serialised item",
+  "scope": "The name states which data model the product document uses: a textile passport data model written for Regulation (EU) 2024/1781 and Regulation (EU) No 1007/2011. It makes no claim that a passport or its product complies with those regulations or with any other law.",
+  "publisher": {
+    "name": "BSV Association",
+    "registration": "bundled"
+  },
+  "source": {
+    "name": "OpenEPCIS DPP-Ready",
+    "repository": "https://github.com/openepcis/openepcis-dpp-ready",
+    "release": "0.13.1",
+    "revision": "7a3f28d8869d2e5dd1fb31ace39f538fa04def4e",
+    "licence": "Apache-2.0",
+    "notices": [
+      "NOTICE.md"
+    ]
+  },
+  "granularity": "item",
+  "payload": {
+    "root": "/product",
+    "mediaType": "application/ld+json",
+    "documents": "one-self-contained"
+  },
+  "artefacts": [
+    {
+      "role": "context",
+      "path": "dpp-core-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/common/core/dpp-core-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 15357,
+      "sha256": "96239fd7c8b867f3f15b64931889fa51104357d8edb29a1ac07ae03099673021",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "assessment-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/common/assessment/assessment-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 4463,
+      "sha256": "29f093936b53d91561e5ae07822164b214213fa4833101244131763125f1f6af",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "textile-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/eu/textile/textile-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 5547,
+      "sha256": "32f98d76207a2b0dafc280c996a7ee60dfb4a51a38060039894eee0f4c4c1d80",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "gs1-shortcuts-context.jsonld",
+      "uri": "https://ref.openepcis.org/extensions/common/core/gs1-shortcuts-context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 51869,
+      "sha256": "d607f9ba803d5d760b9dbec78c531cfa77896963540dd3123c33be46be46da6b",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "shapes",
+      "path": "shapes.ttl",
+      "mediaType": "text/turtle",
+      "byteLength": 56571,
+      "sha256": "85af353af8d89930da31d513c36f4f1c36de0384024d1027dfb6d63b4ea71d77",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "background",
+      "path": "background.ttl",
+      "mediaType": "text/turtle",
+      "byteLength": 433252,
+      "sha256": "cedc73cab93ab40dc5cbf3d1e4903bef0c098b0b4d79dba8827c13d21c3ae8c4",
+      "licence": "Apache-2.0"
+    }
+  ],
+  "validation": {
+    "steps": [
+      "json-ld-expand",
+      "shacl",
+      "passport-identity"
+    ],
+    "engine": {
+      "requires": [
+        "shacl-core",
+        "shacl-sparql-constraints"
+      ]
+    },
+    "blockingSeverities": [
+      "Violation"
+    ]
+  },
+  "identity": {
+    "scheme": "gs1-digital-link",
+    "comparison": "gs1-key-tuple",
+    "subject": {
+      "pointers": [
+        "/product/id",
+        "/product/@id"
+      ],
+      "keys": [
+        "01",
+        "21"
+      ]
+    },
+    "mustEqual": [
+      {
+        "pointer": "/product/gs1:gtin",
+        "part": "gtin"
+      },
+      {
+        "pointer": "/product/gs1:hasSerialNumber",
+        "part": "serial"
+      },
+      {
+        "pointer": "/product/schema:serialNumber",
+        "part": "serial"
+      }
+    ],
+    "mustNotContradict": [
+      {
+        "pointer": "/product/oec:passportIdentifier"
+      },
+      {
+        "pointer": "/product/gs1:productID"
+      }
+    ],
+    "granularityMember": {
+      "pointer": "/product/oec:granularityLevel",
+      "whenPresent": "item"
+    },
+    "related": []
+  },
+  "vectors": {
+    "positive": [
+      "vectors/fjordline-aurora-item.jsonld",
+      "vectors/garment-product.jsonld"
+    ],
+    "negative": [
+      "vectors/negative-cases.json"
+    ]
+  },
+  "baseline": "native-baseline@2",
+  "roles": [
+    "passport-writer",
+    "passport-reader"
+  ]
+}

@@ -27,6 +27,7 @@
     "manifests",
     "schemas",
     "generated",
+    "bindings",
     "frozen.json",
     "README.md",
     "LICENSE"

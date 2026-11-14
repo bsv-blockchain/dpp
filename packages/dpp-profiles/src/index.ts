@@ -3,8 +3,10 @@
  *
  * The package is data first. `manifests/` holds the immutable profile
  * manifests, `schemas/` their JSON Schema, `generated/` what the deterministic
- * generator derives from them (payload schemas and consumer documents), and
- * `frozen.json` the digests a published version is held to. This module gives
+ * generator derives from them (payload schemas and consumer documents),
+ * `frozen.json` the digests a published version is held to, and `bindings/`
+ * the profiles defined elsewhere that the package ships, each with the files
+ * its binding pins and a notice of where they come from. This module gives
  * a consumer typed access to those files and the GS1 identifier helpers a
  * writer needs. Its one runtime dependency is the RFC 8785 canonicaliser the
  * projection digest uses; it reads its data files through the Node file
@@ -30,6 +32,7 @@ export * from './profile-binding.js'
 export * from './product-identity.js'
 export * from './profile-registry.js'
 export * from './binding-validator.js'
+export * from './bundled-bindings.js'
 
 export type ValueType = 'id' | 'text' | 'enum' | 'multi' | 'decimal' | 'integer' | 'percent' | 'monthYear' | 'date' | 'url' | 'document' | 'graphic' | 'country' | 'record' | 'any'
 export type AccessTier = 'public' | 'owner' | 'legitimate' | 'authority'

@@ -134,6 +134,7 @@ Both are gaps in the standard ([known limitations](../operate/limitations.md)).
 | Adopt a new profile version in an application | [Update profiles and consuming applications](updating-applications.md) |
 | Compare a profile and an application with regulations, standards or an external validator | [Review profile and application readiness](reviewing-readiness.md) |
 | Add or revise a profile | [Author and propose a profile](authoring.md) |
+| Check a battery or textile product document written in the JSON-LD data models the package bundles | [EU battery and textile bindings](eu-sector-bindings.md) |
 | Publish a profile package update (maintainers) | [Publish a profile package update](../reference/publishing-profile-updates.md) |
 | Show one product view that combines model, batch and item sources | [Passport projections](../interoperability/projections.md) |
 

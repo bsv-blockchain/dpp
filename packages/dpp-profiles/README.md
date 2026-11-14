@@ -34,6 +34,8 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 | `generated/mapping/<profile>.md` | The row-level field mapping inventory of each current profile, generated from the manifest; `needs review` where no generator can decide. |
 | `generated/index.json` | Every file with its digest. |
 | `frozen.json` | The digests every published manifest and generated file is held to. |
+| `bindings/<profile>/` | The bindings the package ships, `eu-battery@1` and `eu-textile@1`: `binding.json`, the contexts, shapes and background file it pins by length and SHA-256, and a `NOTICE.md` that names the source and licence of each file. |
+| `src/bundled-bindings.ts` | `BUNDLED_BINDINGS` and `BUNDLED_BINDING_DIGESTS`, the trusted digest list for those bindings, and `registerBundledBindings`, which reads them from the package folder into a registry. Nothing is read at import. |
 | `src/profile-binding.ts`, `src/profile-registry.ts` | `readProfileBinding` and its hand-written structural check, held to the same verdict as the schema, and `createProfileRegistry`: a binding registers only when its digest is trusted and every artefact it names matches its recorded length and SHA-256. The manifest profiles resolve through the same registry. |
 | `src/binding-validator.ts`, `src/product-identity.ts`, `src/strict-json.ts` | `bindingPayloadValidator`: the envelope, the binding digest, the binding's steps and the product-to-passport identity rules. A step that could not run is `unknown`, never `pass`. |
 | `src/validation-engine.ts` | The `@bsv/dpp-profiles/validation-engine` entry point: JSON-LD and SHACL engines over `jsonld`, `n3` and `shacl-engine`, which the caller installs. Nothing else in the package imports it. |

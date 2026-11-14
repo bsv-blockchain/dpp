@@ -1,0 +1,90 @@
+{
+  "description": "The payloads eu-textile@1 refuses or cannot decide. A positive vector is one of the two product documents beside this file, with its `_comment` note members removed, wrapped in the payload envelope and checked under a passport identifier built from its own GTIN and serial at another host. The test makes every case below from a positive vector by the change the case names, so no altered copy of a product document is stored.",
+  "cases": [
+    {
+      "name": "notes-kept",
+      "description": "The document exactly as published. It carries note members that its contexts do not define, and a member no context defines is refused.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "fail", "cause": "profile-rule-violation", "step": "json-ld-expand" }
+    },
+    {
+      "name": "other-product",
+      "description": "A document that satisfies every rule of the profile, checked under the passport of another garment.",
+      "from": "vectors/garment-product.jsonld",
+      "passportOf": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "fail", "cause": "product-identity-mismatch", "step": "passport-identity" }
+    },
+    {
+      "name": "conflicting-serial",
+      "description": "The stated serial number is another item's.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "set": { "schema:serialNumber": "AUR-2026-000002" },
+      "expected": { "status": "fail", "cause": "product-identity-mismatch", "step": "passport-identity" }
+    },
+    {
+      "name": "conflicting-gtin",
+      "description": "The stated GTIN is another product's.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "set": { "gs1:gtin": "09521000001428" },
+      "expected": { "status": "fail", "cause": "product-identity-mismatch", "step": "passport-identity" }
+    },
+    {
+      "name": "granularity-mismatch",
+      "description": "The document declares the model level under an item identifier. The shapes find it with a SPARQL constraint, and the identity rules find it as well.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "set": { "oec:granularityLevel": "model" },
+      "expected": { "status": "fail", "cause": "profile-rule-violation", "step": "shacl", "constraint": "SPARQLConstraintComponent" }
+    },
+    {
+      "name": "granularity-product-link",
+      "description": "The document declares the item level and states a product identifier at model level. Only the SPARQL constraint finds it: the identity rules accept a coarser link to the same product.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "set": { "gs1:productID": "https://id.gs1.org/01/09521234003007" },
+      "expected": { "status": "fail", "cause": "profile-rule-violation", "step": "shacl", "constraint": "SPARQLConstraintComponent" }
+    },
+    {
+      "name": "missing-required-property",
+      "description": "The location number the shapes require of an economic operator is absent.",
+      "from": "vectors/garment-product.jsonld",
+      "remove": ["/oec:hasOperatorInformation/gs1:globalLocationNumber"],
+      "expected": { "status": "fail", "cause": "profile-rule-violation", "step": "shacl", "constraint": "MinCountConstraintComponent" }
+    },
+    {
+      "name": "unlisted-context",
+      "description": "The document names a context the binding does not list.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "fail", "cause": "profile-rule-violation", "step": "json-ld-expand" }
+    },
+    {
+      "name": "no-passport-identifier",
+      "description": "A valid document checked with no passport identifier.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "unknown", "cause": "product-identity-unavailable", "step": "passport-identity" }
+    },
+    {
+      "name": "engine-outage",
+      "description": "A valid document checked while the SHACL engine cannot answer.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "unknown", "cause": "validator-unavailable", "step": "shacl" }
+    },
+    {
+      "name": "wrong-binding-digest",
+      "description": "A valid document in an envelope that declares another binding.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "expected": { "status": "fail", "cause": "profile-binding-mismatch", "step": "binding" }
+    },
+    {
+      "name": "model-level-document",
+      "description": "A document about the model: its identifier has no serial, it declares the model level and it states no serial number. The shapes accept it, and the identity rules refuse the model.",
+      "from": "vectors/fjordline-aurora-item.jsonld",
+      "set": { "id": "https://id.gs1.org/01/09521234003007", "oec:granularityLevel": "model" },
+      "remove": ["/schema:serialNumber"],
+      "expected": { "status": "fail", "cause": "product-identity-mismatch", "step": "passport-identity" }
+    },
+    {
+      "name": "altered-artefact",
+      "description": "The background file with one byte changed and its length kept. Registration refuses it and names the file.",
+      "expected": { "refusal": "artefact-digest-mismatch", "artefact": "background.ttl" }
+    }
+  ]
+}
