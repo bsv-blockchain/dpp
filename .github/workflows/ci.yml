@@ -16,6 +16,10 @@ permissions:
 jobs:
   packages:
     runs-on: ubuntu-latest
+    env:
+      # The folder the tests, the command and the EPCIS example read GS1's
+      # files from. It is under node_modules, so it is never part of the tree.
+      DPP_GS1_ARTEFACTS_DIR: ${{ github.workspace }}/node_modules/.cache/dpp-gs1
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -24,8 +28,22 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      # GS1 publishes its EPCIS and resolver files under its own terms, so the
+      # repository does not contain them. They are obtained from GS1 once and
+      # checked against the pinned digests; the folder is cached under a key
+      # made of the two tables that hold those digests, so a changed pin is a
+      # new cache. Restored after npm ci, which replaces node_modules. The
+      # command fetches the EPCIS files and the test set-up the resolver
+      # files; with a warm cache neither fetches anything. A file that cannot
+      # be obtained fails the job here or in the test set-up, never a skip.
+      - uses: actions/cache@v5
+        with:
+          path: node_modules/.cache/dpp-gs1
+          key: gs1-artefacts-${{ hashFiles('packages/dpp-credentials/src/gs1-artefacts.ts', 'packages/dpp-profiles/src/gs1-artefacts.ts') }}
+      - run: node packages/dpp-credentials/dist/gs1-artefacts-cli.js fetch
       - run: npm run typecheck
       - run: npm test
+      - run: node packages/dpp-credentials/dist/gs1-artefacts-cli.js verify
       - run: node examples/verify-passport.mjs --fixture
       - run: node examples/verify-passport.mjs --fixture --report
       - run: node examples/verify-passport.mjs --fixture --version=2

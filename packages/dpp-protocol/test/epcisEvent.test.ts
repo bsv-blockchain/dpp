@@ -24,13 +24,15 @@ import {
   verifyEpcisEventCredential,
 } from '../src/index.js'
 import { COMMISSIONING_EVENT } from './epcis-event-vectors.js'
+import { EPCIS_GS1_ARTEFACTS, readGs1Artefact } from '../../dpp-credentials/src/gs1-artefacts.js'
 
 const vectors = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', '..', 'fixtures', 'vectors', 'dpp', 'interoperability', 'epcis', 'hash-v1.json'), 'utf8'))
 const expected = (id: string): any => vectors.vectors.find((v: any) => v.id === id).expected
 
 describe('the pinned EPCIS context', () => {
   it('declares exactly the prefixes the hash builder knows', () => {
-    const context = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'dpp-credentials', 'artifacts', 'epcis', 'epcis-context-2.0.1.jsonld'), 'utf8'))['@context']
+    // GS1's context is not in the repository; the test set-up provisions it and readGs1Artefact refuses any bytes but the pinned ones.
+    const context = JSON.parse(readGs1Artefact(EPCIS_GS1_ARTEFACTS[1]).toString('utf8'))['@context']
     const prefixes = Object.fromEntries(Object.entries(context).filter(([, v]) => typeof v === 'string' && /[/#:]$/.test(v as string)))
     expect(prefixes).toEqual(EPCIS_CONTEXT_PREFIXES)
   })

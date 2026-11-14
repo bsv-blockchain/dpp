@@ -15,8 +15,8 @@
     { "id": "vsc-draft-compat", "name": "VSC draft compatibility profile", "version": "0.1.0", "uri": "spec/vsc-profile.md", "scope": "The SEAL structure, custody state model and correction rules the mapped credential must satisfy unchanged." }
   ],
   "artefacts": [
-    { "id": "epcis-json-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json", "version": "2.0.1", "digest": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af", "byteLength": 55680, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/epcis-json-schema-2.0.1.json" },
-    { "id": "epcis-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld", "version": "2.0.1", "digest": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737", "byteLength": 20690, "retrieval": "pinned", "carried": "packages/vsc/artifacts/epcis/epcis-context-2.0.1.jsonld" },
+    { "id": "epcis-json-schema", "kind": "json-schema", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json", "version": "2.0.1", "digest": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af", "byteLength": 55680, "retrieval": "pinned" },
+    { "id": "epcis-context", "kind": "jsonld-context", "uri": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld", "version": "2.0.1", "digest": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737", "byteLength": 20690, "retrieval": "pinned" },
     { "id": "owned-seal-schema", "kind": "json-schema", "uri": "urn:bsv:vsc:schema:0.1.0", "version": "0.1.0", "digest": "839123ea6a2ca459c62143a9a38ece281a7b91e719dca057b28baf4d53106d15", "retrieval": "owned", "carried": "packages/vsc/artifacts/seal-0.1.0.schema.json", "notes": "The mapped SEAL validates against the owned schema before it is returned." },
     { "id": "owned-context", "kind": "jsonld-context", "uri": "urn:bsv:vsc:context:0.1.0", "version": "0.1.0", "digest": "3c74b79c50ebb151086c8bbe05222d0177a9d20c6f7b725b4e3a60645274cccc", "retrieval": "owned", "carried": "packages/vsc/artifacts/context-0.1.0.jsonld" }
   ],

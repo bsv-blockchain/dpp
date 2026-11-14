@@ -6,6 +6,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "dpp-gs1-artefacts": "./dist/gs1-artefacts-cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

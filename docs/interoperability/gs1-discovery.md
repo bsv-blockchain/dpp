@@ -37,7 +37,7 @@ Build a resolver with published `@bsv/dpp-profiles` helpers, or name an external
 | `describeResolver` | Build description files |
 | `selectLink` | Select links on the client |
 
-The [specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/gs1-discovery.md) keeps only the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 for everything a resolver does, so these helpers are reference code for that standard, not further rules of this one. The reference registry has no public source, package or image ([registry](../implement/roles/registry.md)). Despite its name, `dpp-resolver.bsvb.net` is the claim registry: its capability document reports `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. The hosted application at `dpp.bsvb.net` resolves the identifiers minted under that host: it publishes `/.well-known/gs1resolver`, and each passport page is at `/passport/01/<gtin>/21/<serial>`, registered as the item's `gs1:dpp` default ([hosted reference](../deployment.md#the-hosted-reference)).
+The [specification](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/spec/gs1-discovery.md) keeps only the DPP identifier rules and cites GS1-Conformant Resolver 1.2.1 for everything a resolver does, so these helpers are reference code for that standard, not further rules of this one. The reference registry has no public source, package or image ([registry](../implement/roles/registry.md)). Despite its name, `dpp-resolver.bsvb.net` is the claim registry: its capability document reports `"discovery": "not-configured"` and it serves no `/.well-known/gs1resolver`. The hosted application at `dpp.bsvb.net` resolves the identifiers minted under that host: it publishes `/.well-known/gs1resolver`, and each passport page is at `/passport/01/<gtin>/21/<serial>`, registered as the item's `gs1:dpp` default ([hosted reference](../deployment.md#the-hosted-reference)).
 
 ## Follow a scanned identifier
 
@@ -127,8 +127,9 @@ These are open standard questions; [known limitations](../operate/limitations.md
 
 | Integration input | Source |
 |---|---|
-| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/gs1-discovery.md) |
+| Selected discovery profile | [GS1 discovery source](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/spec/gs1-discovery.md) |
 | Identifier and resolution helpers | [Reference helpers](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-profiles/src/gs1-resolution.ts) |
+| GS1's resolver schemas and linkset context | Pinned by address, SHA-256 and length in [`GS1_RESOLVER_ARTEFACTS`](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/packages/dpp-profiles/src/gs1-artefacts.ts), and not in the repository or the package: GS1 publishes them under its own terms. To validate a linkset or a description file against them, obtain them with `provisionGs1Artefacts({ artefacts: GS1_RESOLVER_ARTEFACTS })` from `@bsv/dpp-credentials` ([GS1 files](../packages/dpp-credentials.md#gs1-files)) |
 | The reference registry's resolver interface | The reference registry documents it; the registry contract describes only the minimum every registry serves, which has no resolver route |
 | Positive and refusal cases | [Discovery vectors](https://github.com/bsv-blockchain/dpp/tree/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/fixtures/vectors/dpp/interoperability/gs1) |
 

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { EPCIS_ARTEFACTS, EPCIS_CONTEXT_DIGEST, EPCIS_DEFAULT_LIMITS } from '../src/epcis-source.js';
+import { EPCIS_GS1_ARTEFACTS, readGs1Artefact, verifyGs1Artefacts } from '../src/gs1-artefacts.js';
 import { epcisSourceVectors } from './epcis-fixture.js';
 
 const root = join(import.meta.dirname, '..');
@@ -12,16 +13,20 @@ const repo = join(root, '..', '..');
 const sha256 = (bytes: Buffer): string => createHash('sha256').update(bytes).digest('hex');
 
 describe('the pinned EPCIS artefacts', () => {
-  it('carries each pinned file at the digest and length the constant and the notice record', () => {
-    const notice = readFileSync(join(root, 'artifacts/epcis/NOTICE.md'), 'utf8');
-    for (const artefact of EPCIS_ARTEFACTS) {
-      if (!artefact.carried) continue;
-      expect(notice, artefact.id).toContain(artefact.sha256);
-      const bytes = readFileSync(join(root, artefact.path));
-      expect(sha256(bytes), artefact.path).toBe(artefact.sha256);
-      expect(bytes.byteLength, artefact.path).toBe(artefact.byteLength);
-      expect(notice).toContain(artefact.uri);
+  it('pins each provisioned file at the SHA-256 and length GS1 serves, and carries none of them', () => {
+    const provisioned = EPCIS_ARTEFACTS.filter((a) => a.provisioned);
+    expect(provisioned.map((a) => a.id)).toEqual(EPCIS_GS1_ARTEFACTS.map((a) => a.id));
+    for (const artefact of EPCIS_GS1_ARTEFACTS) {
+      // readGs1Artefact refuses bytes that do not match; the digest and length are recomputed here so the test does not lean on it.
+      const bytes = readGs1Artefact(artefact);
+      expect(sha256(bytes), artefact.fileName).toBe(artefact.sha256);
+      expect(bytes.byteLength, artefact.fileName).toBe(artefact.byteLength);
+      expect(artefact.uri.startsWith('https://ref.gs1.org/standards/epcis/2.0.1/'), artefact.uri).toBe(true);
+      expect(EPCIS_ARTEFACTS.find((a) => a.id === artefact.id)).toMatchObject(artefact);
     }
+    expect(verifyGs1Artefacts().ok).toBe(true);
+    const binding = EPCIS_ARTEFACTS.find((a) => a.id === 'epcis-openapi');
+    expect(binding).toMatchObject({ provisioned: false, fileName: null });
     expect(EPCIS_ARTEFACTS.find((a) => a.id === 'epcis-context')?.sha256).toBe(EPCIS_CONTEXT_DIGEST);
   });
 
@@ -39,9 +44,8 @@ describe('the pinned EPCIS artefacts', () => {
         expect(artefact.retrieval).toBe('pinned');
         expect(artefact.digest).toBe(pinned.sha256);
         expect(artefact.byteLength).toBe(pinned.byteLength);
-        // The version 1 manifests record the directory the package had when they were frozen, packages/vsc; a manifest's carried paths cannot change without a new version, and epcis-vsc@2 records the directory it has now.
-        if (pinned.carried) expect(artefact.carried).toBe(`packages/${id === 'epcis-vsc@2' ? 'dpp-credentials' : 'vsc'}/${pinned.path}`);
-        else expect(artefact.carried).toBeUndefined();
+        // GS1's files are pinned and never carried, so no manifest names a path for one.
+        expect(artefact.carried, `${id} ${artefact.id}`).toBeUndefined();
       }
     }
     for (const id of ['epcis-vsc@1', 'epcis-vsc@2']) {

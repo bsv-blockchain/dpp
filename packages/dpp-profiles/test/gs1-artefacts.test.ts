@@ -1,50 +1,65 @@
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { INTEROPERABILITY_PROFILE_IDS, readInteroperabilityProfile } from '../src/index.js'
+import { GS1_RESOLVER_ARTEFACTS, INTEROPERABILITY_PROFILE_IDS, readInteroperabilityProfile } from '../src/index.js'
+import { readGs1Artefact, verifyGs1Artefacts } from '../../dpp-credentials/src/gs1-artefacts.js'
 
 const root = join(import.meta.dirname, '..')
-const sha256 = (relative: string): string => createHash('sha256').update(readFileSync(join(root, relative))).digest('hex')
+const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex')
 
 /**
- * The GS1 resolver artefacts carried under schemas/gs1/ are the published
- * bytes, held to the digests NOTICE.md records; a changed upstream artefact is
- * a new pinned version, never an edit. The discovery manifest records the
- * same digests, so the manifest, the notice and the bytes cannot drift apart.
+ * GS1 publishes the resolver schemas and context under its own terms, so
+ * this package pins them by address, digest and length and does not contain
+ * them. The test set-up obtains the published bytes; these tests hold the
+ * table and the discovery manifest to those bytes, so the table, the manifest
+ * and what GS1 serves cannot drift apart. A changed upstream file is a new
+ * pinned version, never an edit.
  */
-const PINNED: Array<[string, string]> = [
-  ['schemas/gs1/resolver-linkset-schema-1.2.1.json', 'd2e23510f17558c29f9d1baf9e112a70df42efd6557a49dc9a317048973669f2'],
-  ['schemas/gs1/resolver-description-file-schema-1.2.0.json', '99d505c7aa2004cde3277651e8db0e019eab61d2746b2631ddab3fec8a13617e'],
-  ['schemas/gs1/resolver-linkset-context-1.2.1.jsonld', '05792d010165fa6f28cc9cc3463cc1668f522ac75c26abe5b2877ec4a37b1312'],
-]
-
 describe('the pinned GS1 resolver artefacts', () => {
-  it.each(PINNED)('%s has the digest NOTICE.md records', (relative, digest) => {
-    expect(sha256(relative)).toBe(digest)
-    expect(readFileSync(join(root, 'schemas/gs1/NOTICE.md'), 'utf8')).toContain(digest)
+  it.each(GS1_RESOLVER_ARTEFACTS.map((a) => [a.fileName, a] as const))('%s is pinned at the SHA-256 and length GS1 serves', (_name, artefact) => {
+    // readGs1Artefact refuses bytes that do not match; the digest and length are recomputed here so the test does not lean on it.
+    const bytes = readGs1Artefact(artefact)
+    expect(sha256(bytes)).toBe(artefact.sha256)
+    expect(bytes.byteLength).toBe(artefact.byteLength)
+    expect(artefact.uri.startsWith('https://ref.gs1.org/standards/resolver/')).toBe(true)
   })
 
-  it('are recorded as pinned, with the same digests, by the discovery manifest', () => {
+  it('are all present in the provisioned folder', () => {
+    expect(verifyGs1Artefacts({ artefacts: GS1_RESOLVER_ARTEFACTS })).toMatchObject({ ok: true })
+  })
+
+  it('are recorded as pinned and not carried, with the same digests, by the discovery manifest', () => {
     const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: true })
     addFormats(ajv)
     const validate = ajv.compile(JSON.parse(readFileSync(join(root, 'schemas/interoperability-profile.schema.json'), 'utf8')))
     expect((INTEROPERABILITY_PROFILE_IDS as readonly string[]).includes('gs1-digital-link@1')).toBe(true)
-    const manifest = readInteroperabilityProfile('gs1-digital-link@1') as { profile: string; role: string; artefacts: Array<{ id: string; retrieval: string; digest?: string; carried?: string }> }
+    const manifest = readInteroperabilityProfile('gs1-digital-link@1') as { profile: string; role: string; artefacts: Array<{ id: string; uri: string; version: string; retrieval: string; digest?: string; byteLength?: number; carried?: string }> }
     expect(validate(manifest), JSON.stringify(validate.errors)).toBe(true)
     expect(manifest.profile).toBe('gs1-digital-link@1')
     expect(manifest.role).toBe('discovery')
-    for (const [relative, digest] of PINNED) {
-      const artefact = manifest.artefacts.find((a) => a.carried === relative)
-      expect(artefact, relative).toBeDefined()
-      expect(artefact?.retrieval).toBe('pinned')
-      expect(artefact?.digest).toBe(digest)
+    for (const pinned of GS1_RESOLVER_ARTEFACTS) {
+      const artefact = manifest.artefacts.find((a) => a.id === pinned.id)
+      expect(artefact, pinned.id).toBeDefined()
+      expect(artefact).toMatchObject({ retrieval: 'pinned', digest: pinned.sha256, byteLength: pinned.byteLength, uri: pinned.uri, version: pinned.version })
+      expect(artefact?.carried, pinned.id).toBeUndefined()
     }
     for (const artefact of manifest.artefacts) {
       if (artefact.retrieval === 'not-retrieved' || artefact.retrieval === 'unavailable') expect(artefact.digest, artefact.id).toBeUndefined()
       if (artefact.retrieval === 'pinned') expect(artefact.digest).toMatch(/^[0-9a-f]{64}$/)
     }
+  })
+
+  it('are not in this package: no schemas/gs1 folder, and nothing GS1 publishes in what npm would pack', () => {
+    expect(existsSync(join(root, 'schemas', 'gs1'))).toBe(false)
+    // Scripts are off so listing the package does not copy the repository notices into it.
+    const [packed] = JSON.parse(execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })) as Array<{ files: Array<{ path: string }> }>
+    const paths = packed.files.map((f) => f.path)
+    expect(paths).toContain('schemas/interoperability-profile.schema.json')
+    const names = new Set<string>(GS1_RESOLVER_ARTEFACTS.map((a) => a.fileName))
+    expect(paths.filter((path) => path.startsWith('schemas/gs1/') || names.has(path.split('/').at(-1)!))).toEqual([])
   })
 })

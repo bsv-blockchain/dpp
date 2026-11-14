@@ -2,11 +2,18 @@
 /**
  * Import one EPCIS document under the epcis-json@1 profile, printing one
  * sentence per finding and no score (spec/epcis-interoperability.md). Runs
- * from the packed packages: the only import is the ./epcis-source entry
- * point of @bsv/dpp-credentials.
+ * from the packed packages: the only imports are @bsv/dpp-credentials and
+ * its ./epcis-source entry point.
  *
  *   node examples/import-epcis.mjs                        # the five-event-document fixture, seven events
  *   node examples/import-epcis.mjs path/to/document.json  # any EPCIS 2.0.1 JSON or JSON-LD document
+ *   node examples/import-epcis.mjs --offline              # use the provisioned GS1 files and fetch nothing
+ *
+ * GS1 publishes the EPCIS schema under its own terms and the package does
+ * not contain it. The first run obtains the three pinned EPCIS files from
+ * https://ref.gs1.org/ into the artefacts folder (DPP_GS1_ARTEFACTS_DIR, or
+ * the per-user cache folder) and checks every byte against a pinned digest.
+ * Later runs find them there and use no network.
  *
  * What it does: parses the bytes strictly under the disclosed limits,
  * validates against the pinned 2.0.1 schema without repairing anything, and
@@ -18,16 +25,26 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { provisionGs1Artefacts } from '@bsv/dpp-credentials'
 import { EPCIS_DEFAULT_LIMITS, epcisEventBodyDigest, parseEpcisSource, pinnedContextDigests, unresolvedCorrections, validateEpcisDocument } from '@bsv/dpp-credentials/epcis-source'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const say = (sentence) => console.log(sentence)
 
 const args = process.argv.slice(2)
-const unknown = args.filter((a) => a.startsWith('--'))
+const unknown = args.filter((a) => a.startsWith('--') && a !== '--offline')
 if (unknown.length > 0) {
-  console.error(`usage: node examples/import-epcis.mjs [document.json]; unknown option ${unknown.join(', ')}`)
+  console.error(`usage: node examples/import-epcis.mjs [--offline] [document.json]; unknown option ${unknown.join(', ')}`)
   process.exit(2)
+}
+
+// Provisioning is explicit and comes first: validation refuses to run without the pinned schema, and never fetches by itself.
+const artefacts = await provisionGs1Artefacts({ offline: args.includes('--offline') })
+for (const file of artefacts.files.filter((f) => f.outcome === 'fetched')) say(`Obtained ${file.fileName} from GS1 and checked it against its pinned digest.`)
+if (!artefacts.ok) {
+  for (const file of artefacts.files.filter((f) => f.outcome === 'failed')) say(`The pinned GS1 file ${file.fileName} is not available in ${artefacts.dir}: ${file.reason}: ${file.detail}.`)
+  say('Nothing is validated without the pinned schema. Run dpp-gs1-artefacts fetch with network access, or place the files GS1 publishes in that folder.')
+  process.exit(1)
 }
 
 let bytes

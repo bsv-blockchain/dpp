@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-12",
+  "updatedAt": "2026-11-14",
   "sources": [
     {
       "id": "spec-record-model",
@@ -272,7 +272,7 @@
       "version": "gs1-digital-link@1",
       "kind": "local",
       "path": "spec/gs1-discovery.md",
-      "digest": "fa484d6dc3f82b4780d8583320aa4834e7bd8e8ed8a7f8512b52453ceeaf6826"
+      "digest": "95eda52ad598d149b68e865af68181aaea3374dca410ea70d970c86262a9e409"
     },
     {
       "id": "spec-epcis-interoperability",
@@ -280,7 +280,7 @@
       "version": "epcis-json@1, epcis-vsc@1, epcis-vsc@2",
       "kind": "local",
       "path": "spec/epcis-interoperability.md",
-      "digest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f"
+      "digest": "0c4e0dac1ff866b4188eea49c047b32d20aa920c7f7fe8514142e3b2a33aa286"
     },
     {
       "id": "spec-external-credential-profile",
@@ -312,7 +312,7 @@
       "version": "2.0.1",
       "kind": "public",
       "attribution": "GS1",
-      "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) carried under packages/dpp-credentials/artifacts/epcis/ and the REST binding pinned by digest 3d33792c... in the epcis-json@1 manifest."
+      "notes": "The JSON Schema (0f46ff69...), JSON-LD context (5056c65f...) and query schema (4b5583c9...) are pinned by digest in packages/dpp-credentials/src/gs1-artefacts.ts and obtained from GS1 by each deployment, not carried; the REST binding is pinned by digest 3d33792c... in the epcis-json@1 manifest."
     },
     {
       "id": "w3c-vc-di-ecdsa",
@@ -2673,10 +2673,10 @@
         "fixtures/vectors/dpp/interoperability/gs1/uri-syntax.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
       "notes": "Re-pointed on 12 November 2026 from the reading rule of GS1D-2-key-tuple, now in the ledger archive. Both parsers report checkDigitValid false and read on; the passport reader of @bsv/dpp-protocol does not parse the GTIN at all, so it cannot refuse on it.",
-      "sourceDigest": "fa484d6dc3f82b4780d8583320aa4834e7bd8e8ed8a7f8512b52453ceeaf6826"
+      "sourceDigest": "95eda52ad598d149b68e865af68181aaea3374dca410ea70d970c86262a9e409"
     },
     {
       "id": "GS1-identifier-host",
@@ -2698,10 +2698,10 @@
         "docs/packages/create-dpp-app.md"
       ],
       "status": "gap",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
       "notes": "Kept on 12 November 2026 when spec/gs1-discovery.md was cut to the DPP identifier rules; the rule stood in its section 1 before and no row assessed it. A gap because the application starter, this repository's writer, answers each identifier's path with the passport page and does not yet resolve or redirect key 01; the hosted reference application resolves the identifiers minted under its host, which is not evidence this repository can show. No test in this repository exercises the rule.",
-      "sourceDigest": "fa484d6dc3f82b4780d8583320aa4834e7bd8e8ed8a7f8512b52453ceeaf6826"
+      "sourceDigest": "95eda52ad598d149b68e865af68181aaea3374dca410ea70d970c86262a9e409"
     },
     {
       "id": "OVL-contract-must",
@@ -3716,9 +3716,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f"
+      "sourceDigest": "0c4e0dac1ff866b4188eea49c047b32d20aa920c7f7fe8514142e3b2a33aa286"
     },
     {
       "id": "EPCIS-2-schema-validation",
@@ -3736,17 +3736,18 @@
       "profileId": "epcis-json@1",
       "implementationRefs": [
         "packages/dpp-credentials/src/epcis-source.ts#validateEpcisDocument",
-        "packages/dpp-credentials/artifacts/epcis/NOTICE.md"
+        "packages/dpp-credentials/src/gs1-artefacts.ts#readGs1Artefact"
       ],
       "testRefs": [
         "packages/dpp-credentials/test/epcis-source.test.ts",
-        "packages/dpp-credentials/test/epcis-artefacts.test.ts"
+        "packages/dpp-credentials/test/epcis-artefacts.test.ts",
+        "packages/dpp-credentials/test/gs1-artefacts.test.ts"
       ],
       "evidenceRefs": [
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-09-06",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers"
     },
     {
@@ -3802,9 +3803,9 @@
         "fixtures/vectors/dpp/interoperability/epcis/v1.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f"
+      "sourceDigest": "0c4e0dac1ff866b4188eea49c047b32d20aa920c7f7fe8514142e3b2a33aa286"
     },
     {
       "id": "EPCIS-7-import-record",
@@ -3857,9 +3858,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f",
+      "sourceDigest": "0c4e0dac1ff866b4188eea49c047b32d20aa920c7f7fe8514142e3b2a33aa286",
       "notes": "Import and pull retain and evaluate only; the passport store is untouched by every import. Re-read 2026-11-12: the publication of a mapped event and the treatment of an EPCIS error declaration, which the summary also stated, are parked with the epcis-vsc mappings (spec/epcis-interoperability.md sections 5 to 7), so the row keeps only the rule that stays with epcis-json@1."
     },
     {
@@ -3883,9 +3884,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "53826550d0117ae6e2f940f599d6f4744fd801749106f50d16941aef6ffba43f",
+      "sourceDigest": "0c4e0dac1ff866b4188eea49c047b32d20aa920c7f7fe8514142e3b2a33aa286",
       "notes": "Seven of the eight outcomes are exercised (invalid-source is implemented and not yet exercised); checkpoints only after a durable page, an expired page reference replayed once with deduplication, a looping next link and the page limit detected."
     },
     {
