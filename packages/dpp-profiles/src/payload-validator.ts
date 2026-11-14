@@ -19,6 +19,7 @@
  * does not publish, because an unknown profile selects no schema here and
  * guessing one would be a pass nobody earned.
  */
+import type { BindingValidationDetail } from './binding-validator.js'
 import { PROFILE_IDS, readPublicPayloadSchema, type ProfileId } from './index.js'
 
 /** One problem a compiled validator reports, in the shape Ajv gives. */
@@ -33,6 +34,8 @@ export interface SchemaProblem {
 export interface CompiledSchema {
   (data: unknown): boolean
   errors?: SchemaProblem[] | null
+  /** The schema the validator was compiled from, as Ajv exposes it. `bindingPayloadValidator` reads it to tell whether a schema the compiler already holds is the one it was about to compile. */
+  schema?: unknown
 }
 
 /** The compiler the caller supplies: an Ajv 2020 instance with formats added, structurally. */
@@ -55,11 +58,16 @@ export interface PayloadToValidate {
   passportId?: string
 }
 
-/** The validator's answer, in the report's own words: a partial check for `schema`. */
+/**
+ * The validator's answer, in the report's own words: a partial check for
+ * `schema`. `detail` is text from `profilePayloadValidator`. From
+ * `bindingPayloadValidator`, for a profile held by a binding, it is the
+ * step-by-step record, which names the precise cause.
+ */
 export interface PayloadValidation {
   status: 'pass' | 'fail' | 'unknown'
   reasonCode?: 'schema-invalid' | 'schema-unavailable'
-  detail?: string | string[]
+  detail?: string | string[] | BindingValidationDetail
 }
 
 const isProfileId = (value: string): value is ProfileId => (PROFILE_IDS as readonly string[]).includes(value)

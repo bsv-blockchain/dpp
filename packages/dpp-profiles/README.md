@@ -27,12 +27,16 @@ The canonical industry data profiles of the DPP standard, as `spec/profiles.md` 
 | `manifests/<id>@<version>.json` | The canonical definition of one profile: every field with its pointer, semantic URI, value type, unit or code list, resolved constraints, cardinality, granularity, provenance, access tier, obligation, legal basis and applicability; the stamps, event mappings, access tiers, sources and identity model. Immutable once published. |
 | `schemas/profile-manifest.schema.json` | The JSON Schema (2020-12) every manifest validates against. |
 | `schemas/product-identity.schema.json` | The model, batch and item identity document a passport may relate. |
+| `schemas/profile-binding-v1.schema.json` | The JSON Schema (2020-12) of a profile binding, format 1: the immutable file that holds a profile defined outside this package (`spec/profiles.md` §7). |
 | `generated/payload-schema/<profile>.public.schema.json` | The JSON Schema for the public payload carried on chain, generated from the manifest. |
 | `generated/payload-schema/<profile>.restricted.schema.json` | The same for the off-chain restricted tiers. |
 | `generated/consumer/<id>-v<version>.json` | The legacy consumer document the registry serves and the application publishes, generated from the manifest. |
 | `generated/mapping/<profile>.md` | The row-level field mapping inventory of each current profile, generated from the manifest; `needs review` where no generator can decide. |
 | `generated/index.json` | Every file with its digest. |
 | `frozen.json` | The digests every published manifest and generated file is held to. |
+| `src/profile-binding.ts`, `src/profile-registry.ts` | `readProfileBinding` and its hand-written structural check, held to the same verdict as the schema, and `createProfileRegistry`: a binding registers only when its digest is trusted and every artefact it names matches its recorded length and SHA-256. The manifest profiles resolve through the same registry. |
+| `src/binding-validator.ts`, `src/product-identity.ts`, `src/strict-json.ts` | `bindingPayloadValidator`: the envelope, the binding digest, the binding's steps and the product-to-passport identity rules. A step that could not run is `unknown`, never `pass`. |
+| `src/validation-engine.ts` | The `@bsv/dpp-profiles/validation-engine` entry point: JSON-LD and SHACL engines over `jsonld`, `n3` and `shacl-engine`, which the caller installs. Nothing else in the package imports it. |
 | `src/identifiers.ts` | GS1 check digit, GTIN-14 spelling, the demonstration prefix 952 and the Digital Link path parser and builder. |
 | `src/combinations.ts` | `checkSelection`: supported combinations of baseline, industry, exchange and operator profiles pass, and contradictory selections are refused by name (a write under a superseded version, a claim on a proposed profile, a single operator with peers, a federation of one). A parked exchange profile is refused for no purpose and named parked in a note, because a claim on it rests on its own ledger rows. |
 | `src/mapping.ts` | `mapNativeOperation`: the conditional lifecycle mapping of `spec/rules.md` §2, one of four outcomes with a loss list on every outcome that is not lossless. |

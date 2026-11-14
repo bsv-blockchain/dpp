@@ -1,6 +1,6 @@
 # Profiles and identifiers
 
-**Status: working draft, pre-1.0.** This document defines what a profile is, how one is published, versioned and selected, how a payload is checked against it, and how the identifiers a passport carries relate the model, the batch and the item. It binds the industry data profiles this repository publishes in `packages/dpp-profiles`, and it is the rule an application or registry follows when it consumes them. The record model fixes what a state is; this document fixes what its public payload is expected to say under a named profile.
+**Status: working draft, pre-1.0.** This document defines what a profile is, how one is published, versioned and selected, how a payload is checked against it, how a profile defined elsewhere is held by a binding, and how the identifiers a passport carries relate the model, the batch and the item. It binds the industry data profiles this repository publishes in `packages/dpp-profiles`, and it is the rule an application or registry follows when it consumes them. The record model fixes what a state is; this document fixes what its public payload is expected to say under a named profile.
 
 ## 1. What a profile is
 
@@ -10,7 +10,7 @@ A profile MUST name its use case, the baseline it requires, the roles it binds, 
 
 ## 2. The profile manifest
 
-An industry profile is published as a manifest conforming to `packages/dpp-profiles/schemas/profile-manifest.schema.json`. The manifest is the canonical definition; every form, validator, consumer document and registry endpoint is generated from it, and nothing that consumes it edits it.
+An industry profile is published as a manifest conforming to `packages/dpp-profiles/schemas/profile-manifest.schema.json`. The manifest is the canonical definition; every form, validator, consumer document and registry endpoint is generated from it, and nothing that consumes it edits it. An industry profile whose definitions are written outside a manifest is held by a binding instead (§7).
 
 | Property | Requirement |
 |---|---|
@@ -74,6 +74,34 @@ The resolver location, the host a Digital Link is minted under and any link set 
 
 An application's field registry, its forms and its payload validators, and any profile endpoint a registry serves, are generated from the manifest by a deterministic generator, and a test in each consumer holds the generated artefacts identical to what the generator produces from the pinned manifest digest. Two consumers of one manifest therefore agree field by field, and drift is a red test rather than a support case. For a version 2 manifest the generator embeds the shape definitions into every payload schema that uses one, patterns a month-precision date as a month and carries the version 2 keys in the consumer document. The legacy consumer document (`packages/dpp-profiles/generated/consumer/`) is one such generated projection. So is the field mapping inventory of each current profile (`packages/dpp-profiles/generated/mapping/`): one row per field with its external semantic field or `not mapped`, type and unit or list, granularity, obligation, legal basis, applicability, access tier, capturing party and required evidence, with `needs review` wherever no generator can decide and no legal conclusion drawn.
 
-## 7. Normative and implementation
+## 7. Externally defined profiles
 
-What a conforming party reproduces: the manifest shape, version 2 included, and its immutability (§2), the field rules, the `needs-review` semantics, the three-valued evaluator and the shared shapes with the refusals their helpers make (§3), the versioning and the additive freezing discipline (§4), the three granularities and the GS1 rules where selected (§5), and generated rather than hand-kept consumers (§6). What is a build's own: which profiles it offers, how it renders a form, where it stores the restricted tier, and which resolver hosts its identifiers.
+An industry profile whose data model is defined outside a manifest, by a JSON Schema, JSON-LD contexts or SHACL shapes of its own, is held by a **binding**: one JSON file per profile version, conforming to `packages/dpp-profiles/schemas/profile-binding-v1.schema.json`. The manifest format of §2 is unchanged. Both formats answer through one registry, so a consumer asks for a profile by `id` and `version` and does not depend on which format defines it, and one `(id, version)` is defined by exactly one of them.
+
+**The binding.** A binding states its `id`, `version` and `profile`, a `scope` sentence saying what the name covers and what it does not claim, its publisher and source, the granularity it supports, every artefact that defines the profile, the validation steps in order, the finding severities that block, the identity rules below and its acceptance vectors. Each artefact is listed with its role (`context`, `shapes`, `background` or `schema`), its byte length, its SHA-256 and its licence, and a context also with the URI documents name it by. The **binding digest** is the SHA-256 of the binding file's exact bytes, and the file holds no digest of itself. A binding is immutable: a changed binding is a new version. Binding format 1 supports the `item` granularity only.
+
+**Registration.** A profile held by a binding is usable only once its binding is registered. A registry MUST refuse a binding whose digest is not on the list its operator trusts. It MUST refuse a second binding for an `(id, version)` already registered with a different digest, and registering the same bytes again changes nothing. It MUST hold every listed artefact to its recorded byte length and SHA-256 before the profile is used. How a deployment obtains the artefacts is its own.
+
+**The payload.** A `payload_public` under a binding is one JSON object with exactly the members `profile`, `profile_version`, `profile_binding_sha256` and `product`, and optionally the `notice` of §5. `profile_binding_sha256` is the binding digest in lower-case hexadecimal, and `product` is the product document, unchanged. A payload in which any object carries one member name twice MUST be refused. A payload whose `profile_binding_sha256` is not the digest of the binding registered for its `profile` and `profile_version` MUST be refused.
+
+**Validation.** A validator checks the envelope and the binding digest, then runs the steps the binding lists, in the binding's order. `json-schema` validates `product` against the binding's schema. `json-ld-expand` reads `product` as RDF using only the binding's contexts. `shacl` validates that RDF against the binding's shapes with its background data. `passport-identity` applies the identity rules below, and every binding lists it. A product document MUST name its contexts only by the URIs the binding lists: any other context, one written into the document included, is refused, and a validator MUST NOT fetch a context. A finding fails the check only when the binding lists its severity as blocking, and every finding is reported.
+
+**A check that could not run is never a pass.** If any step fails, the result is `fail`. Otherwise, if any step could not run, the result is `unknown`. Only when every step ran and held is the result `pass`. A step could not run when the profile is not registered, when a validation engine is absent or lacks a capability the binding requires, when the engine did not finish in time, or when no passport identifier was supplied. A verifier reports the result under the `schema` check of [`verification.md`](verification.md) §4.
+
+**Product-to-passport identity.** A product document can satisfy every rule of its own profile and still describe another product. The expected identity is the `passport_id` of the state being written or read, supplied by the writer or the verifier and never taken from the payload. The identifiers are read as GS1 Digital Links (§5).
+
+1. Where no passport identifier is supplied, the result is `unknown`.
+2. The product document's own identifier MUST be an uncompressed GS1 Digital Link with primary key 01 and a serial under 21, and its GTIN and serial MUST equal the passport's. A document that states two different identifiers fails.
+3. The host is not compared.
+4. A GTIN of 8, 12, 13 or 14 digits is compared at fourteen digits. A wrong check digit fails.
+5. A serial read from a link is percent-decoded once and compared code point for code point, with no trimming, case folding or normalisation.
+6. Every GTIN and serial the document states, at a member the binding names, MUST equal the subject's.
+7. A passport or product identifier, at a member the binding names, MAY be coarser than the item. It MUST carry the same GTIN, and the same serial if it carries one.
+8. A subject that is a model or a batch fails. A granularity the document declares MUST be `item`.
+9. A related model or batch identifier is never compared as the subject.
+10. A compressed link, another primary key or an identifier that is not a GS1 Digital Link gives `unknown`.
+11. Nothing is rewritten: the comparison uses parsed values and the signed bytes stay as received.
+
+## 8. Normative and implementation
+
+What a conforming party reproduces: the manifest shape, version 2 included, and its immutability (§2), the field rules, the `needs-review` semantics, the three-valued evaluator and the shared shapes with the refusals their helpers make (§3), the versioning and the additive freezing discipline (§4), the three granularities and the GS1 rules where selected (§5), generated rather than hand-kept consumers (§6), and, for a profile held by a binding, the binding shape and digest, the registration refusals, the payload envelope, the step order, the rule that a check that could not run is never a pass, and the identity rules (§7). What is a build's own: which profiles it offers, how it renders a form, where it stores the restricted tier, which resolver hosts its identifiers, which bindings it trusts, how it obtains their artefacts and which validation engines it runs.

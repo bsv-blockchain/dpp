@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bsv-blockchain.github.io/dpp/profiles/schemas/profile-binding-v1.schema.json",
+  "title": "DPP profile binding, format 1",
+  "description": "One immutable file per version of an externally defined profile (spec/profiles.md section 7). It names every file that defines the profile, each by byte length and SHA-256, the checks a payload goes through in order, and how the product document in the payload must match the passport that carries it. The binding digest is the SHA-256 of this file's exact bytes, so the file holds no digest of itself. Rules that relate one member to another, such as profile being id@version, are stated in the specification and checked at registration.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["bindingVersion", "id", "version", "profile", "title", "scope", "publisher", "source", "granularity", "payload", "artefacts", "validation", "identity", "vectors", "baseline", "roles"],
+  "properties": {
+    "bindingVersion": { "const": "1", "description": "The format of this file." },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "profile": { "type": "string", "pattern": "^[a-z][a-z0-9-]*@[1-9][0-9]*$", "description": "id@version." },
+    "title": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1, "description": "One or more sentences saying what the name covers and what it does not claim." },
+    "publisher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "registration"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "registration": { "enum": ["bundled", "local"], "description": "bundled: shipped with a package. local: added by the operator who runs the registry." }
+      }
+    },
+    "source": {
+      "type": "object",
+      "description": "Where the definitions come from and under which terms.",
+      "additionalProperties": false,
+      "required": ["name", "licence", "notices"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "repository": { "type": "string", "pattern": "^[a-z][a-z0-9+.-]*:[^\\s]+$" },
+        "release": { "type": "string", "minLength": 1 },
+        "revision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "licence": { "type": "string", "minLength": 1 },
+        "notices": { "type": "array", "items": { "$ref": "#/$defs/path" } }
+      }
+    },
+    "granularity": { "enum": ["item"], "description": "The one granularity the product document describes. Format 1 supports the serialised item only." },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "mediaType", "documents"],
+      "properties": {
+        "root": { "const": "/product", "description": "Where the product document sits in the payload envelope." },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "documents": { "const": "one-self-contained" }
+      }
+    },
+    "artefacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/artefact" }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps", "blockingSeverities"],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "description": "The checks a product document goes through, in this order, after the envelope and the binding digest.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["json-schema", "json-ld-expand", "shacl", "passport-identity"] },
+          "contains": { "const": "passport-identity" }
+        },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requires"],
+          "properties": {
+            "requires": {
+              "type": "array",
+              "description": "Capabilities a validation engine must declare. An engine that lacks one answers unknown, never pass.",
+              "uniqueItems": true,
+              "items": { "enum": ["json-schema-2020-12", "shacl-core", "shacl-sparql-constraints"] }
+            }
+          }
+        },
+        "blockingSeverities": {
+          "type": "array",
+          "description": "The finding severities that fail the check. Any other finding is reported and does not block.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["Violation", "Warning", "Info"] }
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "description": "How the product document must match the passport that carries it.",
+      "additionalProperties": false,
+      "required": ["scheme", "comparison", "subject", "mustEqual", "mustNotContradict", "related"],
+      "properties": {
+        "scheme": { "const": "gs1-digital-link" },
+        "comparison": { "const": "gs1-key-tuple" },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pointers", "keys"],
+          "properties": {
+            "pointers": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/pointer" } },
+            "keys": { "const": ["01", "21"] }
+          }
+        },
+        "mustEqual": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pointer", "part"],
+            "properties": {
+              "pointer": { "$ref": "#/$defs/pointer" },
+              "part": { "enum": ["gtin", "serial"] }
+            }
+          }
+        },
+        "mustNotContradict": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pointer"],
+            "properties": { "pointer": { "$ref": "#/$defs/pointer" } }
+          }
+        },
+        "granularityMember": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pointer", "whenPresent"],
+          "properties": {
+            "pointer": { "$ref": "#/$defs/pointer" },
+            "whenPresent": { "const": "item" }
+          }
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pointer", "relation"],
+            "properties": {
+              "pointer": { "$ref": "#/$defs/pointer" },
+              "relation": { "enum": ["model", "batch"] }
+            }
+          }
+        }
+      }
+    },
+    "vectors": {
+      "type": "object",
+      "description": "The acceptance vectors published with the binding.",
+      "additionalProperties": false,
+      "required": ["positive", "negative"],
+      "properties": {
+        "positive": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+        "negative": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } }
+      }
+    },
+    "baseline": { "type": "string", "minLength": 1 },
+    "roles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+  },
+  "$defs": {
+    "path": {
+      "type": "string",
+      "description": "A file name relative to the binding, with no empty, dot or dot-dot segment.",
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9_@-][A-Za-z0-9._@-]*(/[A-Za-z0-9_@-][A-Za-z0-9._@-]*)*$"
+    },
+    "pointer": {
+      "type": "string",
+      "description": "A JSON Pointer into the payload envelope, under /product.",
+      "pattern": "^/product(/[^/]+)+$"
+    },
+    "artefact": {
+      "description": "One file the profile is defined by. A context carries the URI documents name it by; no other artefact has one.",
+      "oneOf": [{ "$ref": "#/$defs/contextArtefact" }, { "$ref": "#/$defs/fileArtefact" }]
+    },
+    "contextArtefact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "uri", "mediaType", "byteLength", "sha256", "licence"],
+      "properties": {
+        "role": { "const": "context" },
+        "path": { "$ref": "#/$defs/path" },
+        "uri": { "type": "string", "pattern": "^[a-z][a-z0-9+.-]*:[^\\s]+$" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "byteLength": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "licence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "fileArtefact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "mediaType", "byteLength", "sha256", "licence"],
+      "properties": {
+        "role": { "enum": ["shapes", "background", "schema"] },
+        "path": { "$ref": "#/$defs/path" },
+        "mediaType": { "type": "string", "minLength": 1 },
+        "byteLength": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "licence": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

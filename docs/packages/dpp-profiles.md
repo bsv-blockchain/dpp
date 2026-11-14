@@ -13,6 +13,7 @@ Developers and data reviewers can use `@bsv/dpp-profiles` to build, validate and
 | Payload validation | `ajv@8.20.0` and `ajv-formats@3.0.1`, installed below. The package supplies no validator library. |
 | Report fragment | `@bsv/dpp-protocol@0.3.0-beta.10`; your reader's `evidence`, `expected` and `policy` ([report reference](dpp-protocol.md#what-the-report-takes)). |
 | Stored payload example | `@bsv/dpp-protocol@0.3.0-beta.10`, `@bsv/sdk@2.8.10` and access to the hosted index named in `show-payload.mjs`. |
+| Profile held by a binding | `ajv@8.20.0` and `ajv-formats@3.0.1` for its schema. For JSON-LD and SHACL steps, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`, installed [below](#install-the-validation-engines). The package depends on none of them. |
 | Commands naming `examples/` | Repository checkout after `npm ci` and `npm run build`; run from its root. |
 
 ## Install
@@ -167,6 +168,185 @@ const report = await verifyPassportEvidence(evidence, expected, { ...policy, pay
 | `--demonstration` | Starts the payload with a demonstration record's `notice` |
 | `node examples/sample-payload.mjs --check <profile@version> <file>` | One sentence explaining each problem in the supplied payload file |
 
+## Validate a profile defined outside the package
+
+A profile does not have to be one of the manifests this package publishes. A data model written elsewhere, as a JSON Schema, JSON-LD contexts or SHACL shapes, is held by a **binding**: one immutable JSON file per profile version. You register the binding and validate payloads against it without editing the package ([profiles](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/profiles.md) section 7).
+
+| Piece | What it is |
+|---|---|
+| Binding | A JSON file naming every file that defines the profile, the checks to run and how the product must match its passport. Schema: `@bsv/dpp-profiles/schemas/profile-binding-v1.schema.json` |
+| Registry | `createProfileRegistry`: holds the bindings you trust and the manifest profiles, behind one `resolve(id, version)` |
+| Validator | `bindingPayloadValidator`: the function a writer calls before issuing and a verifier passes as `payloadValidator` |
+| Engine adapter | `@bsv/dpp-profiles/validation-engine`: JSON-LD and SHACL engines over libraries you install |
+| Example profiles | `examples/custom-profile/` in the repository: `example-bottle@1` uses every step, `example-notebook@1` uses a schema only |
+
+### The payload under a binding
+
+A state's `payload_public` under a binding is an envelope around one product document:
+
+| Member | Value |
+|---|---|
+| `notice` | Optional, first, and only on a demonstration record: the sentence saying so |
+| `profile`, `profile_version` | The binding's `id` and `version` |
+| `profile_binding_sha256` | The binding digest: the SHA-256 of the binding file's exact bytes, in lower-case hexadecimal |
+| `product` | The product document, unchanged |
+
+No other member is allowed. Product data goes inside `product`. A payload that carries a member name twice, at any depth, is refused.
+
+### Write a binding
+
+A binding is format 1 when its `bindingVersion` is `"1"`. The file holds no digest of itself, and a changed binding is a new version.
+
+| Member | What you write |
+|---|---|
+| `id`, `version`, `profile` | The identifier, a whole number from 1, and `id@version` |
+| `title`, `scope` | A name, and one or more sentences saying what the name covers and what it does not claim |
+| `publisher`, `source` | Who published the binding, and where the definitions come from with their licence and notice files |
+| `granularity`, `payload` | `item`, and `{ "root": "/product", "mediaType": ..., "documents": "one-self-contained" }` |
+| `artefacts` | One entry per file: `role` (`schema`, `context`, `shapes` or `background`), `path` relative to the binding, `mediaType`, `byteLength`, `sha256`, `licence`, and for a context the `uri` documents name it by |
+| `validation.steps` | The checks in order, from `json-schema`, `json-ld-expand`, `shacl` and `passport-identity`. `passport-identity` is always listed, and `shacl` follows `json-ld-expand` |
+| `validation.engine.requires` | Capabilities the engines must have: `json-schema-2020-12`, `shacl-core`, `shacl-sparql-constraints` |
+| `validation.blockingSeverities` | Which SHACL severities fail the check, usually `["Violation"]`. Other findings are reported and do not block |
+| `identity` | Where the product document states its identifier, its GTIN and serial, a coarser product link, its granularity and related model or batch identifiers |
+| `vectors` | The payloads your profile accepts and refuses, as files beside the binding |
+| `baseline`, `roles` | The baseline the profile requires and the roles it binds |
+
+`describeArtefact(bytes)` returns the `byteLength` and `sha256` an artefact entry records, and `profileBindingDigest(bytes)` returns the binding digest. In a checkout, `node examples/custom-profile.mjs --describe <file>...` prints the first for each file.
+
+Give each binding's schema an `$id` of its own. A compiler holds one schema per `$id`, so a second binding that reuses one for other rules answers `unknown` on the compiler that already holds the first.
+
+`readProfileBinding(bytes)` checks a binding without registering it: strict JSON, the format's structure (`profileBindingProblems`), then the rules that relate one member to another (`profileBindingInconsistencies`), such as a step with no artefact to read.
+
+### Install the validation engines
+
+The schema step uses the JSON Schema compiler you already supply. The `json-ld-expand` and `shacl` steps need three more libraries. Install them only where you validate such a profile:
+
+```sh
+npm install --save-exact jsonld@9.0.0 n3@2.13.12 shacl-engine@1.1.3
+```
+
+`VALIDATION_ENGINE_LIBRARIES` names these versions. The package lists none of them as a dependency, so a service that only reads token history installs nothing extra. Importing `@bsv/dpp-profiles/validation-engine` loads nothing. `createValidationEngine()` loads the libraries and rejects with `ValidationEngineUnavailableError`, naming the library, when one is missing.
+
+| Option | Effect |
+|---|---|
+| `timeoutMs` | The limit for one expansion or one validation, 10 000 by default. A result that arrives after it is discarded and the step answers `unknown` |
+| `sparql: false` | Builds the engine without SPARQL constraints. It declares `shacl-core` only, so a binding that requires `shacl-sparql-constraints` answers `unknown` |
+| `load` | How a library is loaded by name. A bundler cannot follow the default dynamic import, so a bundled application passes a function that imports each name statically |
+
+The adapter uses only the contexts the binding lists, refuses any other and never fetches. It keeps nothing between calls. The time limit is a deadline and cannot interrupt work that does not yield: run the engine in a worker you can stop if you must bound the time itself. To use another SHACL engine, implement `JsonLdEngine` and `ShaclEngine` and pass them in place of the adapter's.
+
+### Register a profile and validate a payload
+
+1. Save this as `check-custom-profile.mjs`:
+
+```js
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import Ajv2020 from 'ajv/dist/2020.js'
+import addFormats from 'ajv-formats'
+import { bindingPayloadValidator, createProfileRegistry, profileBindingDigest } from '@bsv/dpp-profiles'
+import { createValidationEngine } from '@bsv/dpp-profiles/validation-engine'
+
+const folder = process.argv[2]
+const bindingBytes = new Uint8Array(readFileSync(join(folder, 'binding.json')))
+
+// Trust is a list of binding digests. This script trusts the one binding it was pointed at.
+const registry = createProfileRegistry({ trustedBindingDigests: [profileBindingDigest(bindingBytes)] })
+const registered = await registry.register({ bindingBytes, resolveArtefact: (artefact) => new Uint8Array(readFileSync(join(folder, artefact.path))) })
+if (!registered.ok) throw new Error(`${registered.code}: ${registered.detail}`)
+console.log('registered', registered.profile.profile, 'with', registered.profile.artefacts.length, 'artefacts')
+
+const ajv = new Ajv2020({ allErrors: true, strict: false })
+addFormats(ajv)
+const validate = bindingPayloadValidator({ registry, engines: { jsonSchema: ajv, ...(await createValidationEngine()) } })
+
+// The first vector the binding lists as accepted, and the first it lists as refused.
+const { id, version, vectors } = registered.profile.binding
+for (const path of [vectors.positive[0], vectors.negative[0]]) {
+  const vector = JSON.parse(readFileSync(join(folder, path), 'utf8'))
+  const result = await validate({ profile: id, profileVersion: version, payloadPublic: JSON.stringify(vector.payload), passportId: vector.passportId })
+  console.log([path, '=>', result.status, result.reasonCode, result.detail.cause].filter(Boolean).join(' '))
+  for (const step of result.detail.steps) console.log(['  ' + step.step, step.status, ...(step.messages ?? [])].join(' '))
+}
+```
+
+2. Run it against the example profile in a repository checkout, replacing `/absolute/path/to/dpp` with the checkout's absolute path: `node check-custom-profile.mjs /absolute/path/to/dpp/examples/custom-profile/example-bottle@1`. Expected output:
+
+```
+registered example-bottle@1 with 4 artefacts
+vectors/item.json => pass
+  envelope pass
+  binding pass
+  json-schema pass
+  json-ld-expand pass
+  shacl pass
+  passport-identity pass
+vectors/other-product.json => fail schema-invalid product-identity-mismatch
+  envelope pass
+  binding pass
+  json-schema pass
+  json-ld-expand pass
+  shacl pass
+  passport-identity fail The product document describes a different product from the passport that carries it.
+```
+
+The second payload satisfies every rule of the profile. It is another bottle's document, so the identity check refuses it.
+
+3. In production, set `trustedBindingDigests` to the digests you reviewed and chose, never to whatever binding arrives. `resolveArtefact` is yours: read the files from disk, bundle them or fetch them. The registry checks every byte against the binding either way.
+
+4. To include the check in a report, pass the same function as the policy's `payloadValidator` to `verifyPassportEvidence`. The report supplies each state's `passportId`. A manifest profile such as `general@2` resolves through the same registry, and the validator answers for it exactly as `profilePayloadValidator` does, so one function serves both formats.
+
+| Checkout command | Expected result |
+|---|---|
+| `node examples/custom-profile.mjs` | Registers both example profiles from their folders and checks every vector they list, ending `Every sentence above holds.` |
+| `node examples/custom-profile.mjs <folder>` | The same for a profile folder of your own that holds `binding.json` |
+
+### Read the answer
+
+A step that fails makes the answer `fail`. Otherwise a step that could not run makes it `unknown`. Only every step passing is `pass`. The report's vocabulary has two reason codes for a payload check, so `detail.cause` names the precise cause, and `detail.steps` lists every step with its messages and SHACL findings.
+
+| `detail.cause` | Status and reason code | What happened |
+|---|---|---|
+| `envelope-invalid` | `fail`, `schema-invalid` | Not strict JSON, a member missing, or a member the envelope does not define |
+| `profile-binding-mismatch` | `fail`, `schema-invalid` | The payload declares another binding digest. Nothing after it is checked |
+| `schema-invalid` | `fail`, `schema-invalid` | The product does not validate against the binding's JSON Schema |
+| `profile-rule-violation` | `fail`, `schema-invalid` | An unlisted context, a document its contexts do not define, or a SHACL finding of a blocking severity |
+| `product-identity-mismatch` | `fail`, `schema-invalid` | The product document is not about the passport's item |
+| `profile-unknown` | `unknown`, `schema-unavailable` | The registry holds no such profile |
+| `validator-unavailable` | `unknown`, `schema-unavailable` | No engine, an engine without a required capability, a timeout or an engine error |
+| `product-identity-unavailable` | `unknown`, `schema-unavailable` | No `passportId` was supplied, or an identifier is in a form the rules do not read |
+
+Each entry of a `shacl` step's `findings` carries `severity`, `constraint`, `focusNode`, `path`, `message` and `value`, where the engine reports them. A warning under a binding that blocks on violations only appears there and the step still passes.
+
+### How the product must match the passport
+
+The expected identity is the `passportId` you supply, never anything in the payload. `checkProductIdentity({ payload, identity, passportId })` applies the rules on their own.
+
+| The product document | Result |
+|---|---|
+| Names the passport's GTIN and serial, at any host | `pass` |
+| Writes the GTIN with 8, 12, 13 or 14 digits | Compared at fourteen digits |
+| Names another serial or GTIN, or differs only in case or by a space | `fail` |
+| States a GTIN or serial member that differs from its own identifier | `fail` |
+| Carries a product link at model level with the same GTIN | Accepted: coarser is not a contradiction |
+| Carries a product link to another product | `fail` |
+| Identifies a model or a batch, or declares a granularity other than `item` | `fail` |
+| Has a GTIN with a wrong check digit | `fail` |
+| Uses a compressed link, another primary key or a non-GS1 identifier | `unknown` |
+| Is checked with no `passportId` | `unknown` |
+
+### When registration is refused
+
+`register` returns `{ ok: false, code, detail }` with one code per cause, and never throws for these:
+
+| `code` | Cause |
+|---|---|
+| `binding-untrusted` | The binding's digest is not on the trusted list. Nothing else about it was read |
+| `binding-not-json`, `binding-invalid`, `binding-inconsistent` | Not strict JSON, not the format's structure, or members that contradict one another |
+| `binding-conflict` | Another binding with a different digest already answers for this `id` and `version`. Registering the same bytes again succeeds with `alreadyRegistered: true` |
+| `profile-held-by-manifest` | The identifier and version belong to a manifest this package publishes |
+| `artefact-unavailable`, `artefact-length-mismatch`, `artefact-digest-mismatch` | A listed file was not supplied, or is not the file the binding records. `artefact` names it |
+
 ## Show a stored payload under its profile
 
 Show data under the profile its record declares, including draft or superseded profiles, never a newer one.
@@ -279,9 +459,10 @@ The package computes data-file paths in its own directory at call time; bundlers
 
 | Entry point | Use |
 |---|---|
-| `@bsv/dpp-profiles` | Manifest access, applicability, mapping, identifier and projection helpers, in Node |
+| `@bsv/dpp-profiles` | Manifest access, applicability, mapping, identifier and projection helpers, the profile registry and the binding validator, in Node |
+| `@bsv/dpp-profiles/validation-engine` | JSON-LD and SHACL engines for profiles held by a binding, in Node. Loads its libraries only when `createValidationEngine` is called |
 | `@bsv/dpp-profiles/manifests/*` | Profile manifests, as JSON |
-| `@bsv/dpp-profiles/schemas/*` | Manifest and supporting schemas |
+| `@bsv/dpp-profiles/schemas/*` | Manifest, binding and supporting schemas |
 | `@bsv/dpp-profiles/generated/*` | Generated payload schemas and profile documents |
 | `@bsv/dpp-profiles/frozen.json` | Frozen file digests |
 

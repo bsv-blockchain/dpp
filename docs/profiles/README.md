@@ -47,7 +47,7 @@ Passport writers and readers can use this page to choose an industry profile and
 
 ### If no profile fits
 
-Use `general@2`, which fits any product and claims no regulation. Other applications cannot read your own profile until `@bsv/dpp-profiles` publishes it: readers accept only the fixed `PROFILE_IDS` list and refuse others with `"<identifier>" is not a published industry profile`. Follow [author and propose a profile](authoring.md) to add one.
+Use `general@2`, which fits any product and claims no regulation. Other applications cannot read your own profile until `@bsv/dpp-profiles` publishes it: readers accept only the fixed `PROFILE_IDS` list and refuse others with `"<identifier>" is not a published industry profile`. Follow [author and propose a profile](authoring.md) to add one. A deployment can instead hold a data model of its own by a binding, which an application reads once it registers the same binding: see [validate a profile defined outside the package](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package).
 
 ## Check a payload
 

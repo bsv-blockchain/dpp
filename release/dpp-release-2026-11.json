@@ -115,9 +115,10 @@
       "name": "@bsv/dpp-profiles",
       "version": "0.3.0-beta.10",
       "directory": "packages/dpp-profiles",
-      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports and version 4 cross-field data review",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports and version 4 cross-field data review; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules",
       "entryPoints": [
         ".",
+        "./validation-engine",
         "./manifests/*",
         "./schemas/*",
         "./generated/*",
@@ -145,6 +146,15 @@
           "notes": "Reads its data files through the Node file system; the one runtime dependency is the RFC 8785 canonicaliser."
         },
         {
+          "entryPoint": "./validation-engine",
+          "kind": "module",
+          "runtime": "node",
+          "browser": "untested",
+          "types": true,
+          "sideEffects": false,
+          "notes": "The JSON-LD and SHACL engines for profiles held by a binding. Importing it loads nothing; createValidationEngine loads jsonld, n3 and shacl-engine, which the caller installs and the package does not depend on."
+        },
+        {
           "entryPoint": "./manifests/*",
           "kind": "data",
           "runtime": "any",
@@ -167,7 +177,7 @@
           "carries": [
             "schemas/*.schema.json"
           ],
-          "notes": "The manifest, identity, exchange, operator and interoperability schemas. The GS1 resolver schemas are pinned by digest in GS1_RESOLVER_ARTEFACTS and are not carried."
+          "notes": "The manifest, binding, identity, exchange, operator and interoperability schemas. The GS1 resolver schemas are pinned by digest in GS1_RESOLVER_ARTEFACTS and are not carried."
         },
         {
           "entryPoint": "./generated/*",

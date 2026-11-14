@@ -1,0 +1,141 @@
+{
+  "bindingVersion": "1",
+  "id": "example-bottle",
+  "version": 1,
+  "profile": "example-bottle@1",
+  "title": "Example refillable bottle, serialised item, a second edition under the same version",
+  "scope": "An example written for this repository to show how a custom profile is bound. The name states which data model the product document uses. It makes no claim that a product or a passport complies with any law or standard.",
+  "publisher": {
+    "name": "Example publisher",
+    "registration": "local"
+  },
+  "source": {
+    "name": "Digital Product Passport standard, example profiles",
+    "repository": "https://github.com/bsv-blockchain/dpp",
+    "licence": "Apache-2.0",
+    "notices": []
+  },
+  "granularity": "item",
+  "payload": {
+    "root": "/product",
+    "mediaType": "application/ld+json",
+    "documents": "one-self-contained"
+  },
+  "artefacts": [
+    {
+      "role": "schema",
+      "path": "product.schema.json",
+      "mediaType": "application/schema+json",
+      "byteLength": 2072,
+      "sha256": "c0246d22d4bfcbb8a24d2c06e047234c313d026ca376f0a34504f3350a31659e",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "context",
+      "path": "context.jsonld",
+      "uri": "https://profiles.example/bottle/v1/context.jsonld",
+      "mediaType": "application/ld+json",
+      "byteLength": 1137,
+      "sha256": "51c2663755c6c1d856a0ee2ba2fedc922a22e35b14eb1ef0894e670af119f699",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "shapes",
+      "path": "shapes.ttl",
+      "mediaType": "text/turtle",
+      "byteLength": 2846,
+      "sha256": "d7d4cb7951e7c4e6269c41a0ed824ed4280b1d3ebc9d707c97f6f091d7ed592f",
+      "licence": "Apache-2.0"
+    },
+    {
+      "role": "background",
+      "path": "background.ttl",
+      "mediaType": "text/turtle",
+      "byteLength": 1001,
+      "sha256": "9ee7ed8eff1f11b075cf142ae309522f410337a54189b44569a6f60cd45c99b3",
+      "licence": "Apache-2.0"
+    }
+  ],
+  "validation": {
+    "steps": [
+      "json-schema",
+      "json-ld-expand",
+      "shacl",
+      "passport-identity"
+    ],
+    "engine": {
+      "requires": [
+        "json-schema-2020-12",
+        "shacl-core",
+        "shacl-sparql-constraints"
+      ]
+    },
+    "blockingSeverities": [
+      "Violation"
+    ]
+  },
+  "identity": {
+    "scheme": "gs1-digital-link",
+    "comparison": "gs1-key-tuple",
+    "subject": {
+      "pointers": [
+        "/product/id"
+      ],
+      "keys": [
+        "01",
+        "21"
+      ]
+    },
+    "mustEqual": [
+      {
+        "pointer": "/product/gtin",
+        "part": "gtin"
+      },
+      {
+        "pointer": "/product/serialNumber",
+        "part": "serial"
+      }
+    ],
+    "mustNotContradict": [
+      {
+        "pointer": "/product/model"
+      }
+    ],
+    "granularityMember": {
+      "pointer": "/product/granularity",
+      "whenPresent": "item"
+    },
+    "related": [
+      {
+        "pointer": "/product/batch",
+        "relation": "batch"
+      }
+    ]
+  },
+  "vectors": {
+    "positive": [
+      "vectors/item.json",
+      "vectors/item-gtin-13.json"
+    ],
+    "negative": [
+      "vectors/other-product.json",
+      "vectors/conflicting-serial.json",
+      "vectors/conflicting-gtin.json",
+      "vectors/model-as-subject.json",
+      "vectors/granularity-mismatch.json",
+      "vectors/missing-required-property.json",
+      "vectors/unlisted-context.json",
+      "vectors/no-passport-identifier.json",
+      "vectors/wrong-binding-digest.json",
+      "vectors/part-not-dishwasher-safe.json",
+      "vectors/registration/altered-artefact.json",
+      "vectors/registration/untrusted-binding.json",
+      "vectors/registration/conflicting-second-registration.json"
+    ]
+  },
+  "baseline": "native-baseline@2",
+  "roles": [
+    "passport-writer",
+    "passport-reader"
+  ]
+}

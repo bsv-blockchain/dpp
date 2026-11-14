@@ -1,0 +1,584 @@
+{
+  "description": "Thirty-three cases for the product-to-passport identity rules of spec/profiles.md section 7. Every product is invented and every GTIN is under the GS1 demonstration prefix 952. The documents name their products at one host and the passports were minted at another, because the host is never compared. `rules` names the rules each case exercises.",
+  "identity": {
+    "scheme": "gs1-digital-link",
+    "comparison": "gs1-key-tuple",
+    "subject": {
+      "pointers": [
+        "/product/id",
+        "/product/@id"
+      ],
+      "keys": [
+        "01",
+        "21"
+      ]
+    },
+    "mustEqual": [
+      {
+        "pointer": "/product/gtin",
+        "part": "gtin"
+      },
+      {
+        "pointer": "/product/serialNumber",
+        "part": "serial"
+      }
+    ],
+    "mustNotContradict": [
+      {
+        "pointer": "/product/model"
+      }
+    ],
+    "granularityMember": {
+      "pointer": "/product/granularity",
+      "whenPresent": "item"
+    },
+    "related": [
+      {
+        "pointer": "/product/batch",
+        "relation": "batch"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "item document: kettle, identifier, GTIN and serial all stated",
+      "rules": [
+        2,
+        3,
+        6
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000018/21/KET-000001",
+      "product": {
+        "id": "https://id.example/01/09521000000018/21/KET-000001",
+        "name": "Kettle",
+        "gtin": "09521000000018",
+        "serialNumber": "KET-000001"
+      }
+    },
+    {
+      "name": "item document: lamp, identifier carries a lot before the serial",
+      "rules": [
+        2,
+        3,
+        9
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000025/21/LMP-7731",
+      "product": {
+        "id": "https://id.example/01/09521000000025/10/LOT7/21/LMP-7731",
+        "name": "Lamp",
+        "gtin": "09521000000025",
+        "serialNumber": "LMP-7731"
+      }
+    },
+    {
+      "name": "item document: chair, identifier under the unaliased keyword",
+      "rules": [
+        2,
+        3
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000032/21/CH-2026-0042",
+      "product": {
+        "@id": "https://id.example/01/09521000000032/21/CH-2026-0042",
+        "name": "Chair",
+        "gtin": "09521000000032"
+      }
+    },
+    {
+      "name": "item document: flask, identifier only",
+      "rules": [
+        2,
+        3
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000049/21/000123",
+      "product": {
+        "id": "https://id.example/01/09521000000049/21/000123",
+        "name": "Flask"
+      }
+    },
+    {
+      "name": "item document: jacket, with its model link and its batch",
+      "rules": [
+        2,
+        3,
+        7,
+        9
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000056/21/JK-88-A",
+      "product": {
+        "id": "https://id.example/01/09521000000056/21/JK-88-A",
+        "name": "Jacket",
+        "gtin": "09521000000056",
+        "serialNumber": "JK-88-A",
+        "model": "https://id.example/01/09521000000056",
+        "batch": "https://id.example/01/09521000000056/10/AW26"
+      }
+    },
+    {
+      "name": "item document: bicycle, serial with an escaped slash",
+      "rules": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000063/21/FR%2F2026%2F17",
+      "product": {
+        "id": "https://id.example/01/09521000000063/21/FR%2F2026%2F17",
+        "name": "Bicycle",
+        "gtin": "09521000000063",
+        "serialNumber": "FR/2026/17"
+      }
+    },
+    {
+      "name": "item document: radio, both identifier members present and the same",
+      "rules": [
+        2,
+        3
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000070/21/RD-1",
+      "product": {
+        "id": "https://id.example/01/09521000000070/21/RD-1",
+        "@id": "https://id.example/01/09521000000070/21/RD-1",
+        "name": "Radio",
+        "serialNumber": "RD-1"
+      }
+    },
+    {
+      "name": "item document: toaster, declares item granularity, identifier ends in a slash",
+      "rules": [
+        2,
+        3,
+        8
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09521000000087/21/T0A5T",
+      "product": {
+        "id": "https://id.example/01/09521000000087/21/T0A5T/",
+        "name": "Toaster",
+        "gtin": "09521000000087",
+        "serialNumber": "T0A5T",
+        "granularity": "item"
+      }
+    },
+    {
+      "name": "item document that contradicts itself: mixer",
+      "rules": [
+        6
+      ],
+      "want": "fail",
+      "code": "stated-gtin-mismatch",
+      "passportId": "https://passports.example/01/09522000000015/21/MX-01",
+      "product": {
+        "id": "https://id.example/01/09522000000015/21/MX-01",
+        "name": "Mixer",
+        "gtin": "09522000000022",
+        "serialNumber": "MX-01"
+      }
+    },
+    {
+      "name": "item document that contradicts itself: drill",
+      "rules": [
+        6
+      ],
+      "want": "fail",
+      "code": "stated-gtin-mismatch",
+      "passportId": "https://passports.example/01/09522000000039/21/DR-77",
+      "product": {
+        "id": "https://id.example/01/09522000000039/21/DR-77",
+        "name": "Drill",
+        "gtin": "09522000000046",
+        "serialNumber": "DR-77"
+      }
+    },
+    {
+      "name": "item document that contradicts itself: scooter",
+      "rules": [
+        6
+      ],
+      "want": "fail",
+      "code": "stated-gtin-mismatch",
+      "passportId": "https://passports.example/01/09522000000053/21/SC-5",
+      "product": {
+        "id": "https://id.example/01/09522000000053/21/SC-5",
+        "name": "Scooter",
+        "gtin": "09522000000060",
+        "serialNumber": "SC-5"
+      }
+    },
+    {
+      "name": "model document under an item passport: kettle",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000018/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000018",
+        "name": "kettle model",
+        "gtin": "09521000000018",
+        "granularity": "model"
+      }
+    },
+    {
+      "name": "model document under an item passport: lamp",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000025/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000025",
+        "name": "lamp model",
+        "gtin": "09521000000025",
+        "granularity": "model"
+      }
+    },
+    {
+      "name": "model document under an item passport: chair",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000032/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000032",
+        "name": "chair model",
+        "gtin": "09521000000032",
+        "granularity": "model"
+      }
+    },
+    {
+      "name": "model document under an item passport: jacket",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000056/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000056",
+        "name": "jacket model",
+        "gtin": "09521000000056",
+        "granularity": "model"
+      }
+    },
+    {
+      "name": "model document under an item passport: bicycle",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000063/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000063",
+        "name": "bicycle model",
+        "gtin": "09521000000063",
+        "granularity": "model"
+      }
+    },
+    {
+      "name": "batch document under an item passport: flask",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000049/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000049/10/B-2026-03",
+        "name": "flask batch",
+        "gtin": "09521000000049",
+        "granularity": "batch"
+      }
+    },
+    {
+      "name": "batch document under an item passport: radio",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000070/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000070/10/RUN9",
+        "name": "radio batch",
+        "gtin": "09521000000070",
+        "granularity": "batch"
+      }
+    },
+    {
+      "name": "batch document under an item passport: toaster",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "subject-not-an-item",
+      "passportId": "https://passports.example/01/09521000000087/21/ANY-SERIAL",
+      "product": {
+        "id": "https://id.example/01/09521000000087/10/W45",
+        "name": "toaster batch",
+        "gtin": "09521000000087",
+        "granularity": "batch"
+      }
+    },
+    {
+      "name": "equivalent: GTIN written with thirteen digits",
+      "rules": [
+        4
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "9523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "equivalent: product identifier at model level, same GTIN",
+      "rules": [
+        7
+      ],
+      "want": "pass",
+      "code": "identity-match",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://elsewhere.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "another product's valid document",
+      "rules": [
+        2
+      ],
+      "want": "fail",
+      "code": "subject-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000002",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "conflicting serial member",
+      "rules": [
+        6
+      ],
+      "want": "fail",
+      "code": "stated-serial-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000009",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "serial differing only in case",
+      "rules": [
+        5
+      ],
+      "want": "fail",
+      "code": "subject-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/ht10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "serial member with a trailing space",
+      "rules": [
+        5,
+        6
+      ],
+      "want": "fail",
+      "code": "stated-serial-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001 ",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "conflicting GTIN member",
+      "rules": [
+        6
+      ],
+      "want": "fail",
+      "code": "stated-gtin-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000029",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "GTIN member with a wrong check digit",
+      "rules": [
+        4
+      ],
+      "want": "fail",
+      "code": "stated-gtin-invalid",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000013",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "product identifier of another product",
+      "rules": [
+        7
+      ],
+      "want": "fail",
+      "code": "product-identifier-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000029"
+      }
+    },
+    {
+      "name": "item document declaring model granularity",
+      "rules": [
+        8
+      ],
+      "want": "fail",
+      "code": "granularity-mismatch",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "model",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "two different identifiers in one document",
+      "rules": [
+        2
+      ],
+      "want": "fail",
+      "code": "subject-ambiguous",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012",
+        "@id": "https://id.example/01/09523000000029/21/HT-OTHER-1"
+      }
+    },
+    {
+      "name": "no passport identifier supplied",
+      "rules": [
+        1
+      ],
+      "want": "unknown",
+      "code": "passport-identifier-missing",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "subject is not a GS1 Digital Link",
+      "rules": [
+        10
+      ],
+      "want": "unknown",
+      "code": "subject-unsupported",
+      "passportId": "https://passports.example/01/09523000000012/21/HT10-2026-000001",
+      "product": {
+        "id": "urn:uuid:5b1d0c4e-0000-4000-8000-000000000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    },
+    {
+      "name": "passport identifier is a model, not an item",
+      "rules": [
+        1,
+        10
+      ],
+      "want": "unknown",
+      "code": "passport-not-an-item",
+      "passportId": "https://passports.example/01/09523000000012",
+      "product": {
+        "id": "https://id.example/01/09523000000012/21/HT10-2026-000001",
+        "name": "Heater",
+        "gtin": "09523000000012",
+        "serialNumber": "HT10-2026-000001",
+        "granularity": "item",
+        "model": "https://id.example/01/09523000000012"
+      }
+    }
+  ]
+}

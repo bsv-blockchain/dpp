@@ -1,0 +1,112 @@
+# Shapes for the example bottle profile, version 1.
+# Written for this repository as a worked example of a custom profile.
+
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix bottle: <https://profiles.example/bottle/v1#> .
+
+<https://profiles.example/bottle/v1/shapes>
+  a owl:Ontology ;
+  sh:declare [
+    sh:prefix "bottle" ;
+    sh:namespace "https://profiles.example/bottle/v1#"^^xsd:anyURI
+  ] .
+
+bottle:BottleShape
+  a sh:NodeShape ;
+  sh:targetClass bottle:Bottle ;
+  sh:property [
+    sh:path bottle:name ;
+    sh:datatype xsd:string ;
+    sh:minLength 1 ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:gtin ;
+    sh:pattern "^([0-9]{8}|[0-9]{12,14})$" ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:serialNumber ;
+    sh:datatype xsd:string ;
+    sh:minLength 1 ;
+    sh:maxLength 20 ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:granularity ;
+    sh:in ( "item" "batch" "model" ) ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:capacityMillilitres ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 100 ;
+    sh:maxInclusive 5000 ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:recycledContentPercent ;
+    sh:minInclusive 0 ;
+    sh:maxInclusive 100 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:dishwasherSafe ;
+    sh:datatype xsd:boolean ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:part ;
+    sh:node bottle:PartShape ;
+    sh:minCount 1
+  ] ;
+  # A recommendation, not a requirement: the binding blocks on violations only.
+  sh:property [
+    sh:path bottle:careNote ;
+    sh:minCount 1 ;
+    sh:severity sh:Warning ;
+    sh:message "A care note is recommended."
+  ] ;
+  # No core constraint can say this: it joins each part's material to a fact
+  # the background file states about that material.
+  sh:sparql [
+    sh:message "A bottle declared dishwasher safe has a part made of a material that does not withstand a dishwasher." ;
+    sh:prefixes <https://profiles.example/bottle/v1/shapes> ;
+    sh:select """
+      SELECT $this ?value
+      WHERE {
+        $this bottle:dishwasherSafe true ;
+              bottle:part ?part .
+        ?part bottle:material ?value .
+        ?value bottle:withstandsDishwasher false .
+      }
+    """
+  ] .
+
+bottle:PartShape
+  a sh:NodeShape ;
+  sh:property [
+    sh:path bottle:name ;
+    sh:datatype xsd:string ;
+    sh:minLength 1 ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:material ;
+    sh:class bottle:Material ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path bottle:massGrams ;
+    sh:minExclusive 0 ;
+    sh:maxCount 1
+  ] .

@@ -11,6 +11,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./validation-engine": {
+      "types": "./dist/validation-engine.d.ts",
+      "default": "./dist/validation-engine.js"
+    },
     "./manifests/*": "./manifests/*",
     "./schemas/*": "./schemas/*",
     "./generated/*": "./generated/*",

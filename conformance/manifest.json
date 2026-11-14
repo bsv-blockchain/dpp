@@ -112,7 +112,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "60f1b33035529be2161ad761f885ce5cae65eff15200f382b6b452e3de4be307"
+      "digest": "21ff5b16c1be8f4cc69372cd480cd9b4bf3a9ca348bfe78c6a37dc0bed0f2305"
     },
     {
       "id": "profiles-frozen",
@@ -2807,9 +2807,9 @@
         "packages/dpp-profiles/generated/index.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 gained the manifest version 2 paragraph; the manifest shape this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 gained the manifest version 2 paragraph; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the manifest shape this row assesses is unchanged."
     },
     {
       "id": "PROF-3-fields",
@@ -2839,9 +2839,9 @@
         "packages/dpp-profiles/generated/payload-schema/"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §3 took the composable rules, the evaluator and the shared shapes from the parked projection specification; the field rules this row assesses are unchanged."
+      "notes": "Re-read 2026-11-12 after §3 took the composable rules, the evaluator and the shared shapes from the parked projection specification; the field rules this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the field rules are unchanged."
     },
     {
       "id": "PROF-3-access-tiers",
@@ -2865,9 +2865,9 @@
       ],
       "evidenceRefs": [],
       "status": "unassessed",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged."
+      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the access tiers are unchanged and the row stays unassessed."
     },
     {
       "id": "PROF-4-freeze",
@@ -2893,9 +2893,9 @@
         "packages/dpp-profiles/frozen.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §4 named battery@4 the one draft successor, parked battery@3, textile@3 and textile@4 with their bytes frozen, and stated the additive freeze; no digest moved."
+      "notes": "Re-read 2026-11-12 after §4 named battery@4 the one draft successor, parked battery@3, textile@3 and textile@4 with their bytes frozen, and stated the additive freeze; no digest moved. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the freezing rules are unchanged."
     },
     {
       "id": "PROF-5-identifiers",
@@ -2921,9 +2921,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-09-05",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row."
+      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged."
     },
     {
       "id": "PROF-5-demonstration-notice",
@@ -2946,9 +2946,9 @@
         "docs/packages/what-an-application-offers.md"
       ],
       "status": "unassessed",
-      "reviewedAt": "2026-09-30",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet."
+      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged, and the binding envelope of §7 permits the same notice; the row stays unassessed."
     },
     {
       "id": "PROF-6-generated-consumers",
@@ -2974,9 +2974,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check. Re-read 2026-11-12 after §6 said how the generator treats a version 2 manifest; the generation rule this row assesses is unchanged."
+      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check. Re-read 2026-11-12 after §6 said how the generator treats a version 2 manifest; the generation rule this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §6 is unchanged."
     },
     {
       "id": "GOV-independent-implementation",
@@ -3379,9 +3379,9 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged."
+      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the value kinds are unchanged."
     },
     {
       "id": "DOC-1-role-quick-starts",
@@ -4074,10 +4074,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "60f1b33035529be2161ad761f885ce5cae65eff15200f382b6b452e3de4be307",
-      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it."
+      "sourceDigest": "21ff5b16c1be8f4cc69372cd480cd9b4bf3a9ca348bfe78c6a37dc0bed0f2305",
+      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the evaluator rules are unchanged."
     },
     {
       "id": "PROF-3-shared-shapes",
@@ -4103,10 +4103,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-12",
+      "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms.",
-      "sourceDigest": "60f1b33035529be2161ad761f885ce5cae65eff15200f382b6b452e3de4be307"
+      "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the shared shapes are unchanged.",
+      "sourceDigest": "21ff5b16c1be8f4cc69372cd480cd9b4bf3a9ca348bfe78c6a37dc0bed0f2305"
     },
     {
       "id": "PROF-4-frozen-unchanged",

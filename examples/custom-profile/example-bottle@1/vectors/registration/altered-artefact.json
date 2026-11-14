@@ -1,0 +1,19 @@
+{
+  "description": "The background file with one fact changed and its length kept: bamboo is said to withstand a dishwasher. Registration refuses it and names the file.",
+  "kind": "registration",
+  "trustedBindingDigests": [
+    "5c63b1ad50c8c6fc299199fa80fccf47029d76db616213cd671d86844e204456"
+  ],
+  "register": [
+    {
+      "binding": "binding.json",
+      "substitute": {
+        "background.ttl": "vectors/registration/altered-background.ttl"
+      }
+    }
+  ],
+  "expected": {
+    "refusal": "artefact-digest-mismatch",
+    "artefact": "background.ttl"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "bindingVersion": "1",
+  "id": "example-notebook",
+  "version": 1,
+  "profile": "example-notebook@1",
+  "title": "Example notebook, serialised item",
+  "scope": "An example written for this repository to show how a custom profile is bound. The name states which data model the product document uses. It makes no claim that a product or a passport complies with any law or standard.",
+  "publisher": {
+    "name": "Example publisher",
+    "registration": "local"
+  },
+  "source": {
+    "name": "Digital Product Passport standard, example profiles",
+    "repository": "https://github.com/bsv-blockchain/dpp",
+    "licence": "Apache-2.0",
+    "notices": []
+  },
+  "granularity": "item",
+  "payload": {
+    "root": "/product",
+    "mediaType": "application/json",
+    "documents": "one-self-contained"
+  },
+  "artefacts": [
+    {
+      "role": "schema",
+      "path": "product.schema.json",
+      "mediaType": "application/schema+json",
+      "byteLength": 1134,
+      "sha256": "0f0e6064346769e6995777e27680e1baf1debc607f16612aaa78bd17e2d36110",
+      "licence": "Apache-2.0"
+    }
+  ],
+  "validation": {
+    "steps": [
+      "json-schema",
+      "passport-identity"
+    ],
+    "engine": {
+      "requires": [
+        "json-schema-2020-12"
+      ]
+    },
+    "blockingSeverities": [
+      "Violation"
+    ]
+  },
+  "identity": {
+    "scheme": "gs1-digital-link",
+    "comparison": "gs1-key-tuple",
+    "subject": {
+      "pointers": [
+        "/product/id"
+      ],
+      "keys": [
+        "01",
+        "21"
+      ]
+    },
+    "mustEqual": [
+      {
+        "pointer": "/product/gtin",
+        "part": "gtin"
+      },
+      {
+        "pointer": "/product/serialNumber",
+        "part": "serial"
+      }
+    ],
+    "mustNotContradict": [],
+    "related": []
+  },
+  "vectors": {
+    "positive": [
+      "vectors/item.json"
+    ],
+    "negative": [
+      "vectors/other-product.json",
+      "vectors/missing-required-property.json",
+      "vectors/no-passport-identifier.json"
+    ]
+  },
+  "baseline": "native-baseline@2",
+  "roles": [
+    "passport-writer",
+    "passport-reader"
+  ]
+}

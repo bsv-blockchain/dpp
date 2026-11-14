@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://profiles.example/notebook/v1/product.schema.json",
+  "title": "Example notebook, version 1: the product document",
+  "description": "The product document a passport carries under example-notebook@1. This profile is plain JSON: it has a schema and no context or shapes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "gtin", "serialNumber", "pages", "ruling"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "gtin": { "type": "string", "pattern": "^([0-9]{8}|[0-9]{12,14})$" },
+    "serialNumber": { "type": "string", "minLength": 1, "maxLength": 20 },
+    "pages": { "type": "integer", "minimum": 1 },
+    "ruling": { "enum": ["plain", "lined", "squared", "dotted"] },
+    "paper": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "recycledPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "gramsPerSquareMetre": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}
