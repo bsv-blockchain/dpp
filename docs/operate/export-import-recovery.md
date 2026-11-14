@@ -227,6 +227,7 @@ Inclusion across the chain: verified.
 - Keep custody keys in the recovery plan separately.
 - An export cannot recover evidence the source did not retain, and a package or export never carries the restricted tiers.
 - Registry claims are a separate archive with no token history, restricted material or keys, so replacing a provider can need an index export, a registry export and separately kept custody access.
+- An index's package and export hold token history. They do not hold the files that define a profile held by a binding, which a reader needs to validate a payload under that profile. An application carries those as a [profile bundle](../packages/dpp-profiles.md#carry-a-profile-to-another-deployment) in a package it assembles, and the replacement registers them against its own trusted binding digests.
 
 The complete export is a feature of the reference index package, outside the standard, and its tests are local and synthetic. The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) marks durable independent publication a gap. Other known limits are on [known limitations](limitations.md).
 

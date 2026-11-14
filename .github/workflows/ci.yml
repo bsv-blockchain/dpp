@@ -65,6 +65,8 @@ jobs:
       - run: node examples/project-passport.mjs
       # A profile held by a binding, registered from its folder and checked against its own vectors.
       - run: node examples/custom-profile.mjs
+      # The same profiles carried in a signed evidence package and validated from it with the network off.
+      - run: node examples/portable-profile.mjs
       # The documentation site: navigation, links, pinned repository paths,
       # example commands, version references and the two generated pages.
       - run: node scripts/docs-check.mjs

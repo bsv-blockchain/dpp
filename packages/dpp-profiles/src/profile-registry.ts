@@ -44,6 +44,8 @@ export interface BindingProfile {
   profile: string
   /** The SHA-256 of the binding file's exact bytes: what a payload under this profile must declare. */
   bindingDigest: string
+  /** The binding file's exact bytes, as registered: the bytes `bindingDigest` is taken over, and what an export carries. */
+  bindingBytes: Uint8Array
   binding: ProfileBinding
   artefacts: ReadonlyArray<{ artefact: BindingArtefact; bytes: Uint8Array }>
 }
@@ -186,7 +188,7 @@ export function createProfileRegistry(options: { trustedBindingDigests: Iterable
     const arrived = bindings.get(profile)
     if (arrived != null) return arrived.bindingDigest === bindingDigest ? { ok: true, profile: arrived, alreadyRegistered: true } : conflict(arrived)
 
-    const registered: BindingProfile = { format: 'binding', id: binding.id, version: binding.version, profile, bindingDigest, binding, artefacts }
+    const registered: BindingProfile = { format: 'binding', id: binding.id, version: binding.version, profile, bindingDigest, bindingBytes: bytes, binding, artefacts }
     bindings.set(profile, registered)
     return { ok: true, profile: registered, alreadyRegistered: false }
   }

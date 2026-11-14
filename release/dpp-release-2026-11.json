@@ -115,7 +115,7 @@
       "name": "@bsv/dpp-profiles",
       "version": "0.3.0-beta.10",
       "directory": "packages/dpp-profiles",
-      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports; the retired sector profiles as frozen files, read for inspection and never written or validated under; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules",
+      "role": "the industry, exchange and operator profiles as frozen manifests with generated schemas and consumer documents, the lifecycle mapping for both record versions, and the GS1 identifier helpers; the GS1 discovery helpers, the interoperability manifests, the shared evidence shapes, the declarative applicability evaluator and the deterministic passport projection; structural profile change reports; the retired sector profiles as frozen files, read for inspection and never written or validated under; profile bindings for externally defined profiles, with the profile registry, the binding payload validator and the product-to-passport identity rules; profile bundles that carry those bindings and their files in an evidence package, restored through the destination's own trusted digests",
       "entryPoints": [
         ".",
         "./validation-engine",
@@ -133,7 +133,9 @@
       ],
       "nodeBuiltins": [
         "node:crypto",
-        "node:fs"
+        "node:fs",
+        "node:path",
+        "node:url"
       ],
       "support": [
         {
@@ -177,7 +179,7 @@
           "carries": [
             "schemas/*.schema.json"
           ],
-          "notes": "The manifest, binding, identity, exchange, operator and interoperability schemas. The GS1 resolver schemas are pinned by digest in GS1_RESOLVER_ARTEFACTS and are not carried."
+          "notes": "The manifest, binding, bundle descriptor, identity, exchange, operator and interoperability schemas. The GS1 resolver schemas are pinned by digest in GS1_RESOLVER_ARTEFACTS and are not carried."
         },
         {
           "entryPoint": "./generated/*",
