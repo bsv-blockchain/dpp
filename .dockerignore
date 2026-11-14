@@ -7,6 +7,8 @@
 !package.json
 !package-lock.json
 !LICENSE
+!NOTICE
+!PATENTS
 !tsconfig.base.json
 !packages/
 !scripts/
