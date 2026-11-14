@@ -15,6 +15,7 @@ The contexts and shapes of both profiles are unmodified files published by the O
 | Run the example | Node.js 22 or later and a [repository checkout](../quick-start.md) prepared with `npm ci` and `npm run build`; run commands at its root |
 | Validate in your own project | `@bsv/dpp-profiles` from a publication that carries `bindings/`, and the three engine libraries from [install the validation engines](../packages/dpp-profiles.md#install-the-validation-engines). The bindings are in the unpublished candidate `dpp-release-2026-11`; until it is published, use the checkout |
 | Write a payload | A complete product document in the profile's data model, and the identifier of the passport that will carry it |
+| Try both profiles in an application | The application starter's source candidate, which has a form for each and reads them back ([product documents under a binding](../packages/create-dpp-app.md#product-documents-under-a-binding)) |
 
 ## The two profiles
 

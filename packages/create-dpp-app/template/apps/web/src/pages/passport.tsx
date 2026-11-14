@@ -11,10 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { CopyButton, DefinitionList, ErrorNotice, Field, Loading, Mono, PageTitle, Section, ToneBadge, YesNo, entriesOf, indexTone, networkTone, statusTone } from '@/components/bits'
+import { BoundPassportForm, type BoundSubmission } from '@/components/bound/bound-passport-form'
+import { HolderReading, boundPayload } from '@/components/bound/readings'
 import { RequireAccount } from '@/components/layout'
 import { PassportForm, type PassportFormValues } from '@/components/passport-form'
-import { EVENT_TYPES, api, type ClaimView, type EventType, type OfferView, type PassportView } from '@/lib/api'
+import { EVENT_TYPES, api, type AuthorisedReading, type BoundProfile, type ClaimView, type EventType, type OfferView, type PassportView } from '@/lib/api'
 import { formatTime, holderLabel, humanise, isRecord, parseIdentifier, passportIdFromRef, publicPathOf, shortKey, shortTxid } from '@/lib/format'
+import { useHealth } from '@/lib/session'
 import { useLoad } from '@/lib/use-load'
 
 type DialogKind = 'update' | 'offer' | 'retire' | 'claim'
@@ -44,6 +47,8 @@ function PassportPage() {
   const ident = parseIdentifier(view.passportId)
   const publicPath = publicPathOf(view.passportId)
   const close = () => setDialog(undefined)
+  // Under a profile held by a binding the payload is one product document, split into a public and a restricted part.
+  const bound = boundPayload(view.payload)
 
   return (
     <div className="space-y-10">
@@ -106,9 +111,13 @@ function PassportPage() {
         {retired ? <span className="self-center text-sm text-muted-foreground">Retired: no further state can be written.</span> : null}
       </div>
 
-      <Section title="Public payload">
-        <DefinitionList entries={entriesOf(view.payload, new Set(), humanise)} />
-      </Section>
+      {bound == null ? (
+        <Section title="Public payload">
+          <DefinitionList entries={entriesOf(view.payload, new Set(), humanise)} />
+        </Section>
+      ) : (
+        <HolderReading passportId={view.passportId} payload={bound} needsClaimCode={needsClaimCode} />
+      )}
 
       <Section title="Journal">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -251,7 +260,8 @@ function PassportPage() {
         )}
       </Section>
 
-      {dialog === 'update' ? <UpdateDialog passport={view} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
+      {dialog === 'update' && bound == null ? <UpdateDialog passport={view} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
+      {dialog === 'update' && bound != null ? <BoundUpdateDialog passport={view} publicProduct={bound.product} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
       {dialog === 'offer' ? <HandOnDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} onDone={offers.reload} /> : null}
       {dialog === 'retire' ? <RetireDialog passportId={view.passportId} needsClaimCode={needsClaimCode} onClose={close} onDone={passport.setData} /> : null}
       {dialog === 'claim' ? <ClaimDialog passportId={view.passportId} onClose={close} onDone={claims.reload} /> : null}
@@ -351,7 +361,7 @@ function UpdateDialog({ passport, needsClaimCode, onClose, onDone }: { passport:
         </Alert>
         {profile.loading ? (
           <Loading what="Loading the profile" />
-        ) : profile.error != null || profile.data == null ? (
+        ) : profile.error != null || profile.data == null || profile.data.format !== 'manifest' ? (
           <ErrorNotice error={profile.error ?? new Error('no answer')} title={`Could not load ${passport.profile}`} />
         ) : (
           <PassportForm
@@ -363,6 +373,99 @@ function UpdateDialog({ passport, needsClaimCode, onClose, onDone }: { passport:
             onSubmit={submit}
             after={needsClaimCode ? <ClaimCodeField value={claimCode} onChange={setClaimCode} /> : null}
           />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/**
+ * An update under a profile held by a binding: a new complete product
+ * document. The form starts from the document as it stands, which needs the
+ * restricted part opened. Where it cannot be opened the form starts from
+ * the public part and says what that means.
+ */
+function BoundUpdateDialog({ passport, publicProduct, needsClaimCode, onClose, onDone }: { passport: PassportView; publicProduct: Record<string, unknown>; needsClaimCode: boolean; onClose: () => void; onDone: (view: PassportView) => void }) {
+  const { health } = useHealth()
+  const profile = useLoad(() => api.profile(passport.profile), [passport.profile])
+  const [claimCode, setClaimCode] = useState('')
+  const [opened, setOpened] = useState<{ reading?: AuthorisedReading; error?: unknown }>()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<unknown>()
+  // A brand member's restricted part is opened straight away; a recipient gives the claim code first.
+  const auto = useLoad(() => (needsClaimCode ? Promise.resolve(undefined) : api.authorisedView(passport.passportId)), [passport.passportId, needsClaimCode])
+  const reading = opened?.reading ?? auto.data
+  const ready = needsClaimCode ? opened != null : !auto.loading
+
+  async function open(event: FormEvent) {
+    event.preventDefault()
+    try {
+      setOpened({ reading: await api.authorisedView(passport.passportId, claimCode) })
+    } catch (cause) {
+      setOpened({ error: cause })
+    }
+  }
+
+  async function submit(submission: BoundSubmission) {
+    setBusy(true)
+    setError(undefined)
+    try {
+      const view = await api.updatePassport(passport.passportId, { product: submission.product, ...(needsClaimCode ? { claimCode } : {}) })
+      onDone(view)
+      onClose()
+    } catch (cause) {
+      setError(cause)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const whole = reading?.product
+  return (
+    <Dialog open onOpenChange={(open) => (open ? undefined : onClose())}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Update the passport</DialogTitle>
+          <DialogDescription>A new state carrying the complete product document you submit. Its public part is written on chain and its restricted part is sealed again.</DialogDescription>
+        </DialogHeader>
+        {needsClaimCode && opened?.reading == null ? (
+          <form onSubmit={open} className="space-y-3">
+            <ClaimCodeField value={claimCode} onChange={setClaimCode} />
+            {opened?.error == null ? null : <ErrorNotice error={opened.error} title="The restricted part was not opened" />}
+            <Button type="submit" variant="outline">
+              Open the document
+            </Button>
+          </form>
+        ) : null}
+        {!ready || profile.loading ? (
+          needsClaimCode && opened == null ? null : <Loading what="Loading the document" />
+        ) : profile.error != null || profile.data == null || profile.data.format !== 'binding' ? (
+          <ErrorNotice error={profile.error ?? new Error(`${passport.profile} is not registered in this application, so its documents cannot be written here`)} title={`Could not load ${passport.profile}`} />
+        ) : (
+          <>
+            {whole == null ? (
+              <Alert>
+                <AlertTitle>The restricted part is not filled in</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    {reading?.authorisedView.summary ?? (auto.error instanceof Error ? auto.error.message : 'The restricted part could not be opened.')} The form starts from the public part alone. What you submit becomes the whole document: a restricted property you do not enter again is no longer
+                    part of it.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            ) : null}
+            <BoundPassportForm
+              key={whole == null ? 'public' : 'whole'}
+              profile={profile.data as BoundProfile}
+              policy={{ host: health?.identifiers.host ?? window.location.host, prefix: health?.identifiers.prefix ?? '952' }}
+              passportId={passport.passportId}
+              initialProduct={whole ?? publicProduct}
+              submitLabel="Write the update"
+              busy={busy}
+              error={error}
+              onSubmit={submit}
+            />
+          </>
         )}
       </DialogContent>
     </Dialog>

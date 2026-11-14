@@ -114,12 +114,21 @@ try {
         assert.ok(installed.integrity.startsWith('sha512-'))
       } else assert.equal(installed.integrity, archives.get(name).integrity, `${name} must match the packed candidate bytes`)
     }
+    // A profile held by a binding is validated with three libraries the profiles package does not install itself.
+    // The generated app declares them at the exact versions that package is tested with, and installs those from npm.
+    const { VALIDATION_ENGINE_LIBRARIES } = await import('@bsv/dpp-profiles/validation-engine')
+    for (const [name, version] of Object.entries(VALIDATION_ENGINE_LIBRARIES)) {
+      assert.equal(api.dependencies[name], version, `${name} must be declared at the version the validation engine is tested with`)
+      const installed = lock.packages[`node_modules/${name}`] ?? lock.packages[`apps/api/node_modules/${name}`]
+      assert.equal(installed?.version, version, `${name} must install at its pinned version`)
+      assert.equal(new URL(installed.resolved).origin, 'https://registry.npmjs.org')
+    }
     run('npm', ['run', 'typecheck'], target)
     run('npm', ['run', 'build'], target)
     run('npm', ['test'], target)
     await goLivePath(target)
     await connectionFilePath(target, freshEnv)
-    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
+    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
   }
 } finally {
   for (const stop of stops) stop()

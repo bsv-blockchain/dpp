@@ -1,0 +1,26 @@
+{
+  "description": "A notebook that satisfies the schema, under its own passport.",
+  "kind": "payload",
+  "passportId": "https://passports.example/01/09529876000101/21/NB-0001",
+  "payload": {
+    "notice": "Demonstration record: this passport describes no real product.",
+    "profile": "example-notebook",
+    "profile_version": 1,
+    "profile_binding_sha256": "5261083e202d8a1acc6f4d45ba13fcbaa0e268511410fafde2e48251c9f4e7b4",
+    "product": {
+      "id": "https://id.example/01/09529876000101/21/NB-0001",
+      "title": "Field notebook A5",
+      "gtin": "09529876000101",
+      "serialNumber": "NB-0001",
+      "pages": 96,
+      "ruling": "dotted",
+      "paper": {
+        "recycledPercent": 100,
+        "gramsPerSquareMetre": 90
+      }
+    }
+  },
+  "expected": {
+    "status": "pass"
+  }
+}

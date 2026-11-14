@@ -9,7 +9,7 @@ The application uses `@bsv/dpp-protocol` directly and pins the `dpp-release-2026
 | Part | Where | What it does |
 |---|---|---|
 | Web app | `apps/web` | React single-page app: brand dashboard, passport pages, hand-on acceptance, public verification |
-| API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps the journal and runs the unattended duties |
+| API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, validates product data against its profile, keeps the journal and runs the unattended duties |
 | Application database | `deploy/compose.yml` | MongoDB for application records, journal and sign-in |
 
 The API's routes are in [apps/api/API.md](apps/api/API.md).
@@ -24,7 +24,7 @@ No wallet, funds, Docker or network:
 npm test
 ```
 
-This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. Then:
+This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. It also writes and reads a battery passport and a textile passport under the two sector profiles, and registers a profile from a folder. Then:
 
 ```sh
 npm run dev
@@ -56,6 +56,46 @@ Under managed custody a compromised platform can forge what it holds. Keep the r
 ## Identifiers
 
 Passports are GS1 Digital Links, `https://<PASSPORT_HOST>/01/<GTIN>/21/<serial>`. The default GS1 prefix, 952, is GS1's demonstration prefix, never licensed to anyone; every payload written under it starts with a notice saying nothing real stands behind it. When you hold a licensed GS1 company prefix, set `GS1_PREFIX` and the notice switches off. The API refuses any identifier outside the configured prefix and host, because a state under someone else's GTIN is permanent.
+
+## Product documents under a binding
+
+Besides the manifest profiles (`general@2`, `battery@2`, `textile@2`), the application writes and reads passports under profiles held by a binding: a data model defined outside the DPP packages, as JSON-LD contexts and SHACL shapes or as a JSON Schema, that one immutable `binding.json` pins file by file. The profiles package ships two, `eu-battery@1` and `eu-textile@1`, for battery and textile data of one serialised item. Each name states which data model a product document uses. Neither claims that a passport or a product complies with any law.
+
+Under such a profile a passport carries one product document, and the binding lists which of its top-level properties are public. The rest are restricted.
+
+| Part | Where it goes | Who reads it |
+|---|---|---|
+| Public properties | The state's public payload, on chain | Anyone, for good. It cannot be withdrawn or redacted |
+| Restricted properties | Encrypted to the holder's key and kept in the journal, as every owner tier is. Only the hash of the ciphertext is on chain | The holder |
+
+The split is by property, not by value. A restricted value that you repeat inside a public property, such as a name in a description or a link to a private file, is published with that property. The form labels every property Public or Restricted before you submit and asks you to confirm the public list.
+
+**Writing.** Choose `eu-battery@1` or `eu-textile@1` when you issue a passport. The form asks for the item reference and serial once, and writes the document's identifier, GTIN and serial from them, so they cannot disagree with the passport identifier. A field left empty is absent from the document: the form makes up no identifier, classification, date, unit or precision, and a number is written with the digits you typed. A measurement is a value with its unit. **Load example** fills the form with invented data under the demonstration prefix, and **Load a document from a file** takes a product document of your own in the profile's data model. A property the form has no field for is kept as JSON under **Other properties** and written unchanged.
+
+The API validates the whole document against the passport identifier it is about to sign, splits it, and signs exactly the public payload the profiles package returns. A document that fails, that could not be checked, or whose public part is over 65,535 bytes is refused before anything is signed, and the form shows each finding at the field it concerns.
+
+**Reading.** A passport page shows the product data as structure, each property with its tier, and two checks that are kept apart:
+
+| Check | Who sees it | What it says |
+|---|---|---|
+| Public view | Anyone | The public payload carries public properties only, keeps every rule it could break, and describes this passport's item. It says nothing about restricted data |
+| Authorised view | The holder | The public payload rejoined with the restricted part satisfies the profile |
+| Owner-tier check | The holder | The stored ciphertext hashes to the state's `payload_owner_hash`. This is the protocol's check, and the only statement about the on-chain commitment |
+
+A check that could not run is shown as **Not checked**, never as passed. After a hand-on the restricted part stays sealed to the holder who wrote it, so the new holder's authorised view is not checked until they write an update.
+
+**The validation engine.** The API depends on `jsonld`, `n3` and `shacl-engine` at the versions `@bsv/dpp-profiles` is tested with, and builds the engine once at start. It reads every context from the binding's folder and fetches nothing. If the libraries are missing the API still starts and says so: a profile held by a binding then cannot be written, and its readings say not checked.
+
+**A profile of your own.** Put its `binding.json` and the files it names in a folder ([how to write a binding](https://github.com/bsv-blockchain/dpp/blob/main/docs/packages/dpp-profiles.md#write-a-binding)), then name the folder and trust its binding in `.env`:
+
+```sh
+CUSTOM_PROFILE_DIRS=profiles/example-bottle@1
+TRUSTED_BINDING_DIGESTS=<the SHA-256 of that folder's binding.json>
+```
+
+`shasum -a 256 profiles/example-bottle@1/binding.json` prints the digest. Trust is that digest: the API registers the folder at start only when its `binding.json` has a listed digest and every file it names matches the length and SHA-256 the binding records. A folder that is not trusted, or that changed since you trusted it, is refused by name in the start-up log and on the Operations page, and the application runs without it. No source file changes. `apps/api/test/fixtures/custom-profile/` holds two example profiles to try this with, and `apps/api/test/custom-profile.test.ts` shows them trusted, untrusted and altered. A profile with no form in the web app is written as a JSON document, with the same labels and the same warning.
+
+Restricted values never reach the application's logs, its listings, the index or any public export: `apps/api/test/bound-http.test.ts` issues passports carrying a value that appears nowhere else and searches all of them for it.
 
 ## Going live
 

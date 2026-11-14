@@ -13,8 +13,12 @@ import {
   type ProfileManifest,
 } from '@bsv/dpp-profiles'
 
-const ajv = new Ajv2020({ allErrors: true, strict: false })
+/** The one JSON Schema compiler of the application. A profile held by a binding compiles its own schema into it. */
+export const ajv = new Ajv2020({ allErrors: true, strict: false })
 ;(addFormats as unknown as (instance: Ajv2020) => void)(ajv)
+
+/** The sentence a record under the demonstration prefix carries first (spec/profiles.md section 5). */
+export const DEMONSTRATION_NOTICE = 'Demonstration record. Nothing here describes a real product.'
 
 /** The profiles a brand may choose: every published version whose manifest says it is current. */
 export function currentProfiles(): Array<{ id: ProfileId; title: string; description?: string }> {
@@ -95,6 +99,6 @@ export function samplePayload(profile: ProfileId, demonstration: boolean): Recor
 export function sampleWithProblems(profile: ProfileId, demonstration: boolean): { payload: Record<string, unknown>; problems: string[] } {
   const schema = readPublicPayloadSchema(profile) as Record<string, unknown>
   const required = placeholder(schema, 'payload') as Record<string, unknown>
-  const payload = demonstration ? { notice: 'Demonstration record. Nothing here describes a real product.', ...required } : required
+  const payload = demonstration ? { notice: DEMONSTRATION_NOTICE, ...required } : required
   return { payload, problems: validatePayload(profile, 'public', payload).problems }
 }

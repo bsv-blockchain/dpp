@@ -1,0 +1,44 @@
+{
+  "description": "Another bottle's valid document inside this passport. Every profile rule holds, and the document is about serial BTL-0002.",
+  "kind": "payload",
+  "passportId": "https://passports.example/01/09521234543213/21/BTL-0001",
+  "payload": {
+    "notice": "Demonstration record: this passport describes no real product.",
+    "profile": "example-bottle",
+    "profile_version": 1,
+    "profile_binding_sha256": "5c63b1ad50c8c6fc299199fa80fccf47029d76db616213cd671d86844e204456",
+    "product": {
+      "@context": "https://profiles.example/bottle/v1/context.jsonld",
+      "id": "https://id.example/01/09521234543213/21/BTL-0002",
+      "type": "Bottle",
+      "name": "Trail bottle 750",
+      "gtin": "09521234543213",
+      "serialNumber": "BTL-0002",
+      "granularity": "item",
+      "model": "https://id.example/01/09521234543213",
+      "batch": "LOT-2026-07",
+      "capacityMillilitres": 750,
+      "recycledContentPercent": 60,
+      "dishwasherSafe": true,
+      "parts": [
+        {
+          "type": "Part",
+          "name": "Body",
+          "material": "stainless-steel",
+          "massGrams": 240
+        },
+        {
+          "type": "Part",
+          "name": "Cap",
+          "material": "polypropylene",
+          "massGrams": 35
+        }
+      ]
+    }
+  },
+  "expected": {
+    "status": "fail",
+    "cause": "product-identity-mismatch",
+    "step": "passport-identity"
+  }
+}

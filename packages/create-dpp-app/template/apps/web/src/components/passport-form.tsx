@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { ErrorNotice, Field } from '@/components/bits'
-import type { Profile, ProfileField } from '@/lib/api'
+import type { ManifestProfile, ProfileField } from '@/lib/api'
 import { humanise } from '@/lib/format'
 
 export interface PassportFormValues {
@@ -18,7 +18,7 @@ export interface PassportFormValues {
 }
 
 interface Props {
-  profile: Profile
+  profile: ManifestProfile
   /** Where the values start: the sample for a new passport, the current payload for an update. */
   initial: { payload: Record<string, unknown>; ownerFields?: Record<string, unknown> }
   submitLabel: string

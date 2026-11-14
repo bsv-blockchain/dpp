@@ -6,12 +6,15 @@
 export class ApiError extends Error {
   readonly code: string
   readonly status: number
+  /** Everything else the API put in its answer: for a refused product document, the validation with its findings. */
+  readonly details: Record<string, unknown>
 
-  constructor(message: string, code: string, status: number) {
+  constructor(message: string, code: string, status: number, details: Record<string, unknown> = {}) {
     super(message)
     this.name = 'ApiError'
     this.code = code
     this.status = status
+    this.details = details
   }
 }
 
@@ -32,8 +35,9 @@ async function request<T>(path: string, method: 'GET' | 'POST' = 'GET', body?: u
     parsed = undefined
   }
   if (!response.ok) {
-    const failure = (parsed ?? {}) as { error?: string; description?: string }
-    throw new ApiError(failure.description ?? `the API answered HTTP ${response.status}`, failure.error ?? `http-${response.status}`, response.status)
+    const failure = (typeof parsed === 'object' && parsed !== null ? parsed : {}) as { error?: string; description?: string } & Record<string, unknown>
+    const { error: code, description, ...details } = failure
+    throw new ApiError(description ?? `the API answered HTTP ${response.status}`, code ?? `http-${response.status}`, response.status, details)
   }
   if (parsed === undefined) throw new ApiError('the API answered with something that is not JSON', 'not-json', response.status)
   return parsed as T
@@ -55,6 +59,8 @@ export interface Health {
   publisherKey: string
   wallet: 'toolbox' | 'test'
   livePublishing: boolean
+  /** False when the validation libraries did not load: a profile held by a binding then cannot be written, and its readings say "not checked". */
+  validationEngine: boolean
   identifiers: { host: string; prefix: string; demonstration: boolean }
   signIn: boolean
   devSession?: { name: string; brandIds: string[] }
@@ -64,6 +70,8 @@ export interface ProfileSummary {
   id: string
   title: string
   description?: string
+  /** `manifest`: a field list this application's form is drawn from. `binding`: a data model defined elsewhere, written as one product document. */
+  format: 'manifest' | 'binding'
 }
 
 export interface CodeList {
@@ -95,11 +103,83 @@ export interface ProfileField {
   cardinality?: 'one' | 'many'
 }
 
-export interface Profile extends ProfileSummary {
+export interface ManifestProfile extends ProfileSummary {
+  format: 'manifest'
   fields: ProfileField[]
   publicSchema: unknown
   restrictedSchema: unknown
   sample: Record<string, unknown>
+}
+
+/** A profile held by a binding: its product document is split by top-level property into a public part, on chain, and a restricted part, sealed off chain. */
+export interface BoundProfile extends ProfileSummary {
+  format: 'binding'
+  bindingDigest: string
+  steps: string[]
+  /** The binding's public list. Every other property is restricted. Absent when the binding makes no split: the whole document is then public. */
+  access?: { policy: string; public: string[] }
+  contexts: Array<{ path: string; uri: string }>
+  prefixes: Record<string, string>
+  engine: { available: boolean; problem?: string }
+  /** Complete product documents of invented data, minted for this deployment's host and prefix. */
+  examples: Array<{ title: string; itemReference: string; serial: string; passportId: string; product: Record<string, unknown> }>
+  demonstration: boolean
+}
+
+export type Profile = ManifestProfile | BoundProfile
+
+export type CodeLists = Record<string, Array<{ value: string; label: string }>>
+
+/** How a view of a payload came out. `not-checked` is never a pass. */
+export type ViewStatus = 'pass' | 'fail' | 'not-checked'
+
+export interface Finding {
+  severity: 'Violation' | 'Warning' | 'Info'
+  constraint: string
+  step: string
+  focusNode?: string
+  path?: string
+  message?: string
+  value?: string
+  /** A JSON pointer into the product document, when the finding could be placed. */
+  pointer?: string
+  property?: string
+}
+
+export interface ViewCheck {
+  view: 'public' | 'authorised' | 'whole'
+  status: ViewStatus
+  cause?: string
+  summary: string
+  steps: Array<{ step: string; status: ViewStatus; cause?: string; messages: string[] }>
+  findings: Finding[]
+  withheld: Array<{ step: string; property: string; constraint: string; message?: string }>
+}
+
+export interface PayloadCheck {
+  txid: string
+  stateIndex: number
+  profile: string
+  publicView: ViewCheck
+}
+
+export interface ProductReading {
+  profile: string
+  bindingDigest: string
+  notice?: string
+  publicProduct: Record<string, unknown>
+  access?: { policy: string; public: string[] }
+}
+
+/** The holder's view of a passport under a bound profile. The owner-tier check is the protocol's, and the only statement about the on-chain commitment. */
+export interface AuthorisedReading {
+  passportId: string
+  profile?: string
+  ownerTier: { status: ViewStatus; txid?: string; detail: string }
+  authorisedView: ViewCheck
+  restrictedProduct?: Record<string, unknown>
+  product?: Record<string, unknown>
+  access?: { policy: string; public: string[] }
 }
 
 export type CheckStatus = 'pass' | 'fail' | 'unknown' | 'not-applicable'
@@ -126,6 +206,10 @@ export interface Verification {
   checks: Check[]
   report: { checkedAt?: string; limits?: string[]; [key: string]: unknown }
   publisherKeys: string[]
+  /** One entry per state whose payload declares a profile, genesis first. */
+  payloadChecks?: PayloadCheck[]
+  /** Present when the newest state carries a product document under a binding. */
+  product?: ProductReading
 }
 
 export type Op = 'ISSUE' | 'UPDATE' | 'TRANSFER' | 'RETIRE'
@@ -231,6 +315,8 @@ export interface Duty {
 export interface Operations {
   duties: Duty[]
   passports: Array<{ passportId: string; brandId: string; status: string; journal: JournalSummary }>
+  /** What start-up could not load: the validation engine's problem, and each profile folder that was refused. */
+  profiles?: { engine: { available: boolean; problem?: string }; refused: Array<{ source: string; code: string; detail: string }> }
 }
 
 export interface WalletView {
@@ -257,6 +343,7 @@ export const api = {
   health: () => get<Health>('/api/health'),
   profiles: () => get<ProfileSummary[]>('/api/profiles'),
   profile: (id: string) => get<Profile>(`/api/profiles/${encodeURIComponent(id)}`),
+  profileCodes: (id: string, classes: string[]) => (classes.length === 0 ? Promise.resolve<CodeLists>({}) : get<CodeLists>(`/api/profiles/${encodeURIComponent(id)}/codes?${classes.map((name) => `class=${encodeURIComponent(name)}`).join('&')}`)),
   verify: (passportId: string) => get<Verification>(`/api/verify?passportId=${encodeURIComponent(passportId)}`),
   passport: (passportId: string) => get<PassportView>(`/api/passports/${passportRef(passportId)}`),
   passportClaims: (passportId: string) => get<ClaimView[]>(`/api/passports/${passportRef(passportId)}/claims`),
@@ -268,10 +355,11 @@ export const api = {
   brands: () => get<Brand[]>('/api/brands'),
   createBrand: (name: string) => post<Brand>('/api/brands', { name }),
   brandPassports: (brandId: string) => get<PassportView[]>(`/api/brands/${encodeURIComponent(brandId)}/passports`),
-  issuePassport: (brandId: string, body: { profile: string; itemReference: string; serial: string; payload: Record<string, unknown>; ownerFields: Record<string, unknown> }) =>
+  issuePassport: (brandId: string, body: { profile: string; itemReference: string; serial: string } & ({ payload: Record<string, unknown>; ownerFields: Record<string, unknown> } | { product: Record<string, unknown> })) =>
     post<PassportView>(`/api/brands/${encodeURIComponent(brandId)}/passports`, body),
-  updatePassport: (passportId: string, body: { payload: Record<string, unknown>; ownerFields: Record<string, unknown>; eventData?: Record<string, unknown>; claimCode?: string }) =>
+  updatePassport: (passportId: string, body: ({ payload: Record<string, unknown>; ownerFields: Record<string, unknown> } | { product: Record<string, unknown> }) & { eventData?: Record<string, unknown>; claimCode?: string }) =>
     post<PassportView>(`/api/passports/${passportRef(passportId)}/update`, body),
+  authorisedView: (passportId: string, claimCode?: string) => post<AuthorisedReading>(`/api/passports/${passportRef(passportId)}/authorised-view`, claimCode == null ? {} : { claimCode }),
   offerPassport: (passportId: string, body: { terms: { word: string; note?: string }; claimCode?: string }) =>
     post<{ offer: OfferView; claimCode?: string }>(`/api/passports/${passportRef(passportId)}/offer`, body),
   passportOffers: (passportId: string) => get<OfferView[]>(`/api/passports/${passportRef(passportId)}/offers`),

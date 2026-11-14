@@ -19,6 +19,8 @@ export interface Config {
   passportHost: string
   gs1Prefix: string
   registry: { url?: string; token?: string }
+  /** Profiles held by a binding in a folder of your own, and the binding digests this deployment trusts for them. */
+  customProfiles: { dirs: string[]; trustedBindingDigests: string[] }
   livePublishing: boolean
   spendCapSatoshis: number
   /** DPP_TEST_WALLET=1: the scaffold check's switch for the test wallet on the configured root key. */
@@ -35,6 +37,13 @@ export const KNOWN_INDEX_HOSTS: Record<string, Network> = {
   'dpp-overlay-testnet.bsvb.net': 'test',
   'dpp-overlay.bsvb.net': 'main',
 }
+
+/** A comma-separated setting as its entries, without the empty ones. */
+const list = (env: NodeJS.ProcessEnv, name: string): string[] =>
+  (text(env, name) ?? '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry !== '')
 
 const SECRETS = ['AUTH_SECRET', 'BRAND_ROOT_SECRET', 'MANAGED_IDENTITY_SECRET'] as const
 const DEVELOPMENT_DEFAULTS: Record<(typeof SECRETS)[number], string> = {
@@ -68,6 +77,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   // A real passport announced only to the in-process index would be on the chain and findable by nobody after a restart.
   if (livePublishing && indexUrl == null) throw new Error('LIVE_PUBLISHING=true needs INDEX_URL: connect an index that persists before writing to the chain (README, Connect an index)')
   if (livePublishing && !joined) throw new Error('LIVE_PUBLISHING=true needs the index tokens: run npm run go-live, which registers this app with the index and stores them')
+  // Trust is the digest of exact bytes, so a value that is not a digest is a mistake to fix, never something to guess at.
+  const trustedBindingDigests = list(env, 'TRUSTED_BINDING_DIGESTS')
+  for (const digest of trustedBindingDigests) {
+    if (!/^[0-9a-f]{64}$/.test(digest)) throw new Error(`TRUSTED_BINDING_DIGESTS holds "${digest}", which is not a binding digest: each entry is the SHA-256 of a binding.json, 64 lower-case hexadecimal characters`)
+  }
   return {
     network,
     port: Number(text(env, 'PORT') ?? 3000),
@@ -87,6 +101,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     passportHost: text(env, 'PASSPORT_HOST') ?? 'localhost:3000',
     gs1Prefix: text(env, 'GS1_PREFIX') ?? '952',
     registry: { url: text(env, 'REGISTRY_URL')?.replace(/\/+$/, ''), token: text(env, 'REGISTRY_TOKEN') },
+    customProfiles: { dirs: list(env, 'CUSTOM_PROFILE_DIRS'), trustedBindingDigests },
     livePublishing,
     spendCapSatoshis: Number(text(env, 'SPEND_CAP_SATOSHIS') ?? 20_000),
     testWallet: text(env, 'DPP_TEST_WALLET') === '1',

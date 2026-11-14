@@ -4,14 +4,15 @@
 // claims. In development with no INDEX_URL an index runs in this process.
 import { MongoClient, type Db } from 'mongodb'
 import type { ChainTracker } from '@bsv/sdk'
+import { openBoundProfiles, type BoundProfiles } from './bound-profiles.js'
 import { Claims } from './claims.js'
 import type { Config } from './config.js'
 import { Custody } from './custody.js'
 import { startDevIndex, type DevIndex } from './dev-index.js'
 import { IndexClient } from './index-client.js'
-import { managedParties, type Parties } from './parties.js'
-import { headerSource, readPassport, type PassportReading } from './reader.js'
-import { MemoryStore, MongoStore, type Store } from './store.js'
+import { managedParties, type Parties, type Party } from './parties.js'
+import { headerSource, readAuthorised, readPassport, type AuthorisedReading, type PassportReading } from './reader.js'
+import { MemoryStore, MongoStore, type PassportRecord, type Store } from './store.js'
 import { openTestWallet, openToolboxWallet, type PlatformWallet } from './wallet.js'
 import { Writer } from './writer.js'
 
@@ -28,7 +29,11 @@ export interface Platform {
   custody: Custody
   claims: Claims
   chainTracker: ChainTracker | 'scripts only'
+  /** The profiles held by a binding, the validation engine and anything refused at start-up. */
+  profiles: BoundProfiles
   read(passportId: string): Promise<PassportReading>
+  /** The holder's view of a passport under a bound profile: the owner-tier check, then the two parts rejoined and checked whole. */
+  readAuthorised(record: PassportRecord, holder: Party): Promise<AuthorisedReading>
   close(): Promise<void>
 }
 
@@ -37,6 +42,8 @@ export interface PlatformOptions {
   /** 'test' wires a memory store, a test wallet and an in-process index with nothing live. */
   mode: 'live' | 'test'
   log?: (line: string) => void
+  /** How a validation library is loaded; a test passes one that fails, to stand in for libraries that are not installed. */
+  loadEngineLibrary?: (name: string) => Promise<unknown>
 }
 
 export async function openPlatform(options: PlatformOptions): Promise<Platform> {
@@ -99,12 +106,21 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     }
   }
 
+  // Built once: the engine, the two bindings the profiles package ships and any folder the configuration trusts.
+  const profiles = await openBoundProfiles({
+    customProfileDirs: config.customProfiles.dirs,
+    trustedBindingDigests: config.customProfiles.trustedBindingDigests,
+    ...(options.loadEngineLibrary == null ? {} : { loadEngineLibrary: options.loadEngineLibrary }),
+    log,
+  })
+
   const parties = managedParties({ brandRootSecret: config.brandRootSecret, managedIdentitySecret: config.managedIdentitySecret })
   const writer = new Writer({
     store,
     wallet,
     index,
     identifiers: { host: config.passportHost, prefix: config.gs1Prefix },
+    bound: profiles,
     livePublishing: config.livePublishing,
     spendCapSatoshis: config.spendCapSatoshis,
     log,
@@ -126,11 +142,15 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     custody,
     claims,
     chainTracker,
+    profiles,
+    async readAuthorised(record, holder) {
+      return await readAuthorised({ record, holder, index, profiles })
+    },
     async read(passportId) {
       // A passport this platform wrote: its brand is the genesis issuer the policy names, and its acceptance records are supplied. Another platform's passport is read with what the index holds, and authority stays unknown.
       const own = await store.getPassport(passportId)
       const genesisIssuers = own == null ? [] : [parties.brand(own.brandId).identityKey]
-      return await readPassport(passportId, { index, chainTracker, acceptanceCustodians: [wallet.identityKey], genesisIssuers }, { acceptanceRecords: own?.acceptanceRecords ?? [] })
+      return await readPassport(passportId, { index, chainTracker, acceptanceCustodians: [wallet.identityKey], genesisIssuers, profiles }, { acceptanceRecords: own?.acceptanceRecords ?? [] })
     },
     async close() {
       await wallet.close()
