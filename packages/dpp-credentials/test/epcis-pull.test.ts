@@ -5,11 +5,13 @@ import { gzipSync } from 'node:zlib';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import { EPCIS_DEFAULT_LIMITS } from '../src/epcis-source.js';
+import { CBV_VERSION, EPCIS_DEFAULT_LIMITS, EPCIS_VERSION } from '../src/epcis-source.js';
 import {
+  CBV_WIRE_VERSION,
   EPCIS_PULL_LIMIT_CEILINGS,
   EPCIS_PULL_REASON_OUTCOME,
   EPCIS_RECORD_KINDS,
+  EPCIS_WIRE_VERSION,
   EpcisStorageFault,
   checkEpcisExchangeInvariants,
   createMemoryEpcisState,
@@ -187,7 +189,8 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
       const asked = server.pageRequests();
       expect(asked).toHaveLength(3);
       expect(asked.map((request) => Object.keys(request.query).sort())).toEqual([['perPage'], ['nextPageToken', 'perPage'], ['nextPageToken', 'perPage']]);
-      for (const request of asked) expect(request.headers).toMatchObject({ 'gs1-epcis-version': '2.0.0', 'gs1-cbv-version': '2.0.0', accept: 'application/ld+json, application/json' });
+      // The versions asked under are the pinned ones, three parts each, whatever version the source then reports.
+      for (const request of asked) expect(request.headers).toMatchObject({ 'gs1-epcis-version': '2.0.1', 'gs1-cbv-version': '2.0.0', accept: 'application/ld+json, application/json' });
       expect(asked.every((request) => request.headers.authorization === undefined)).toBe(true);
 
       const state = (await getEpcisPull(storage, 'source-a', 'query-1'))!;
@@ -224,6 +227,23 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
       expect(result.completenessLimits.join(' ')).toMatch(/record time cannot discover every retrospective error declaration/);
       expect(result.completenessLimits.join(' ')).toMatch(/does not retrieve the transformations/);
       expect(epcisQueryParameters({ eventIds: ['b', 'a'], perPage: 5 })).toEqual({ EQ_eventID: 'b|a', perPage: '5' });
+    });
+
+    it('asks under the pinned EPCIS and CBV versions by default, and under the versions a source is configured with', async () => {
+      const { storage } = await newStore();
+      const server = await serve(pullEvents(1));
+      expect([EPCIS_WIRE_VERSION, CBV_WIRE_VERSION]).toEqual([EPCIS_VERSION, CBV_VERSION]);
+      expect([EPCIS_WIRE_VERSION, CBV_WIRE_VERSION]).toEqual(['2.0.1', '2.0.0']);
+      const byDefault = ran(await pull(storage, server));
+      expect(server.pageRequests().at(-1)!.headers).toMatchObject({ 'gs1-epcis-version': EPCIS_VERSION, 'gs1-cbv-version': CBV_VERSION });
+      expect(byDefault.pull!.source.wireVersions).toEqual({ epcis: EPCIS_VERSION, cbv: CBV_VERSION });
+      // Each is configured on its own, and what was sent is what the record says was sent.
+      const configured = ran(await pull(storage, server, { queryId: 'other-versions', source: sourceOf(server, { wireVersions: { epcis: '2.0.0' } }) }));
+      expect(server.pageRequests().at(-1)!.headers).toMatchObject({ 'gs1-epcis-version': '2.0.0', 'gs1-cbv-version': CBV_VERSION });
+      expect(configured.pull!.source.wireVersions).toEqual({ epcis: '2.0.0', cbv: CBV_VERSION });
+      const both = ran(await pull(storage, server, { queryId: 'both-versions', source: sourceOf(server, { wireVersions: { epcis: '2.0', cbv: '2.0.1' } }) }));
+      expect(server.pageRequests().at(-1)!.headers).toMatchObject({ 'gs1-epcis-version': '2.0', 'gs1-cbv-version': '2.0.1' });
+      expect(both.pull!.source.wireVersions).toEqual({ epcis: '2.0', cbv: '2.0.1' });
     });
 
     it('sends a credential to the origin it was configured for, and records only that one was configured', async () => {
@@ -853,6 +873,84 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
       expect(result.pages.map((page) => [page.page, page.events.total, page.last, page.leniencies])).toEqual([[1, 2, false, []], [2, 2, false, []], [3, 0, true, ['empty-final-page']]]);
     });
 
+    describe('a list sent as repeated parameters', () => {
+      /** Three event types and three items, so each of the two lists holds more than one value. */
+      const mixed = (): JsonObject[] => [pullEvent(1), pullEvent(2, { type: 'AggregationEvent', parentID: pullItem(2), childEPCs: [pullItem(20)], epcList: undefined }), pullEvent(3), pullEvent(4, { type: 'TransactionEvent', bizTransactionList: [{ type: 'po', bizTransaction: 'urn:epcglobal:cbv:bt:9521234000004:PO-1' }] }), pullEvent(5)];
+      const query = { eventTypes: ['ObjectEvent', 'AggregationEvent'], matchAnyEPC: [pullItem(1), pullItem(2), pullItem(3), pullItem(5)], perPage: 2 };
+      const repeating = (server: FixtureServer, over: Partial<EpcisPullSource> = {}): EpcisPullSource => sourceOf(server, { repeatListParameters: true, ...over });
+
+      it('sends a list pipe-delimited by default, which a source that reads only repeated parameters answers with an error', async () => {
+        const { storage } = await newStore();
+        const server = await serve(mixed(), { listParameters: 'repeated' });
+        const result = ran(await pull(storage, server, { query }));
+        expect(result).toMatchObject({ outcome: 'source-unavailable', reason: 'http-error', status: 500, completion: 'failed', pages: [], leniencies: [] });
+        expect(server.pageRequests()[0]!.queryAll).toMatchObject({ eventType: ['AggregationEvent|ObjectEvent'], MATCH_anyEPC: [[pullItem(1), pullItem(2), pullItem(3), pullItem(5)].join('|')] });
+        expect(result.pull!.source).not.toHaveProperty('repeatListParameters');
+        expect(await listEpcisImports(storage)).toEqual([]);
+      });
+
+      it('makes the same query succeed when the source is configured for it, and records the leniency in the pull record, each page and the result', async () => {
+        const { storage } = await newStore();
+        const server = await serve(mixed(), { listParameters: 'repeated' });
+        // The query that failed, under the same name: how a list is written is the operator's to change without making a new pull.
+        expect(ran(await pull(storage, server, { query }))).toMatchObject({ outcome: 'source-unavailable', reason: 'http-error' });
+        const result = ran(await pull(storage, server, { query, source: repeating(server) }));
+        expect(result).toMatchObject({ outcome: 'ok', reason: 'exhausted', events: { total: 4, new: 4 }, leniencies: ['list-parameters-repeated'] });
+        expect(result.pull!.source).toMatchObject({ repeatListParameters: true });
+        expect(result.pages).toHaveLength(2);
+        expect(result.pages.every((page) => page.leniencies.includes('list-parameters-repeated'))).toBe(true);
+        expect((await getEpcisPull(storage, 'source-a', 'query-1'))!.source.repeatListParameters).toBe(true);
+
+        // One parameter per value on the wire, on the first page and on the page the source's own link names.
+        const [, first, second] = server.pageRequests();
+        expect(first!.queryAll).toEqual({ MATCH_anyEPC: [pullItem(1), pullItem(2), pullItem(3), pullItem(5)], eventType: ['AggregationEvent', 'ObjectEvent'], perPage: ['2'] });
+        expect(second!.queryAll).toMatchObject({ eventType: ['AggregationEvent', 'ObjectEvent'], nextPageToken: [expect.any(String)] });
+        // What is recorded has one form whatever was sent: the query, the pass and each page's provenance keep the list in one value.
+        const recorded = { MATCH_anyEPC: [pullItem(1), pullItem(2), pullItem(3), pullItem(5)].join('|'), eventType: 'AggregationEvent|ObjectEvent', perPage: '2' };
+        expect(result.pull!.pass.parameters).toEqual(recorded);
+        expect(result.pages[0]!.query).toEqual(recorded);
+        expect((await getEpcisImport(storage, result.pages[0]!.importId))!.sourceLocation).toMatchObject({ kind: 'query', query: recorded });
+        expect(await checkEpcisExchangeInvariants(storage, { associations: true })).toEqual([]);
+      });
+
+      it('retains exactly what the pipe-delimited query retains from a source that reads that form', async () => {
+        const piped = await newStore();
+        expect(ran(await pull(piped.storage, await serve(mixed()), { query }))).toMatchObject({ outcome: 'ok', events: { total: 4 }, leniencies: [] });
+        const repeated = await newStore();
+        const server = await serve(mixed(), { listParameters: 'repeated' });
+        ran(await pull(repeated.storage, server, { query, source: repeating(server) }));
+        expect(await retainedBy(repeated.storage)).toEqual(await retainedBy(piped.storage));
+        expect(await retainedBy(repeated.storage)).toHaveLength(4);
+      });
+
+      it('continues after a restart in the middle, still sending nothing pipe-delimited', async () => {
+        const { storage, reopen } = await newStore();
+        const server = await serve(mixed(), { listParameters: 'repeated' });
+        const first = ran(await pull(storage, server, { query, source: limited(server, { maxPullPages: 1 }, { repeatListParameters: true }) }));
+        expect(first).toMatchObject({ outcome: 'partial-history', reason: 'page-limit', leniencies: ['list-parameters-repeated'] });
+        const second = ran(await pull(await reopen(), server, { query, source: repeating(server) }));
+        expect(second).toMatchObject({ outcome: 'ok', reason: 'exhausted', leniencies: ['list-parameters-repeated'], run: { resumed: true } });
+        expect(first.events.total + second.events.total).toBe(4);
+        expect(server.pageRequests().every((request) => Object.values(request.queryAll).flat().every((value) => !value.includes('|')))).toBe(true);
+      });
+
+      it('records no leniency when every list holds one value, since nothing is sent differently', async () => {
+        const { storage } = await newStore();
+        const server = await serve(mixed(), { listParameters: 'repeated' });
+        const result = ran(await pull(storage, server, { query: { eventTypes: ['ObjectEvent'], eventIds: [pullEventId(1)], perPage: 2 }, source: repeating(server) }));
+        expect(result).toMatchObject({ outcome: 'ok', events: { total: 1 }, leniencies: [] });
+        expect(result.pages[0]!.leniencies).toEqual([]);
+        // The configuration is still recorded as it was.
+        expect(result.pull!.source.repeatListParameters).toBe(true);
+      });
+
+      it('says how it asked even when the run fails before a page is held', async () => {
+        const { storage } = await newStore();
+        const server = await serve(mixed(), { listParameters: 'repeated', forbid: true });
+        expect(ran(await pull(storage, server, { query, source: repeating(server) }))).toMatchObject({ outcome: 'source-forbidden', pages: [], leniencies: ['list-parameters-repeated'] });
+      });
+    });
+
     it('follows a relative next link, which is no leniency', async () => {
       const { storage } = await newStore();
       const result = ran(await pull(storage, await serve(pullEvents(4), { linkTarget: 'relative' })));
@@ -924,6 +1022,7 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
         ['an overlap past a day', { recordTimeOverlapSeconds: 86_401 }],
         ['an unknown window', { window: 'everything' as never }],
         ['a wire version that is not one', { source: sourceOf(server, { wireVersions: { epcis: 'latest' } }) }],
+        ['a list encoding that is not a switch', { source: sourceOf(server, { repeatListParameters: 'repeated' as never }) }],
         ['no query name', { queryId: '' }],
         ['no transport', { fetch: undefined as never }],
       ];
@@ -987,6 +1086,8 @@ describe('the pull records and their contract', () => {
     const failing = await serve(pullEvents(3), { pageHeaders: (headers) => { headers.Link = '<http://[bad>; rel="next"'; } });
     ran(await pull(watching, failing, { queryId: 'failing' }));
     ran(await pull(watching, await serve([], { forbid: true }), { queryId: 'forbidden' }));
+    const repeating = await serve(pullEvents(3), { listParameters: 'repeated' });
+    ran(await pull(watching, repeating, { queryId: 'repeated', query: { eventIds: [pullEventId(1), pullEventId(2), pullEventId(3)], perPage: 2 }, source: sourceOf(repeating, { repeatListParameters: true }) }));
 
     const pulls = seen.get('pull') ?? [];
     const pages = seen.get('pull-page') ?? [];
@@ -998,6 +1099,10 @@ describe('the pull records and their contract', () => {
     // Every state the contract must be able to say was seen.
     expect(new Set(pulls.map((record) => record.status))).toEqual(new Set(['running', 'exhausted', 'stopped-at-limit', 'failed']));
     expect(pulls.some((record) => record.pending != null)).toBe(true);
+    // The configured leniency is in the contract where it is recorded: the source scope, a page read ahead of its checkpoint and each page record.
+    expect(pulls.some((record) => (record.source as JsonObject).repeatListParameters === true)).toBe(true);
+    expect(pulls.some((record) => ((record.pending as JsonObject | undefined)?.leniencies as string[] | undefined)?.includes('list-parameters-repeated') === true)).toBe(true);
+    expect(pages.filter((record) => (record.leniencies as string[]).includes('list-parameters-repeated'))).toHaveLength(2);
     expect(pulls.some((record) => record.cursor != null && (record.cursor as JsonObject).expiresAt != null)).toBe(true);
     expect(pulls.some((record) => record.replay != null)).toBe(true);
     expect(pulls.some((record) => record.watermark != null && ((record.pass as JsonObject).window as JsonObject).basis === 'watermark')).toBe(true);

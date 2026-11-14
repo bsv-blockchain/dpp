@@ -30,8 +30,10 @@
  *   EPCIS_INTEROP_PER_PAGE            perPage. The page event limit, 100, by default.
  *   EPCIS_INTEROP_MAX_PAGES           the run's page limit, when not the default 10.
  *   EPCIS_INTEROP_RUNS                how many bounded runs to make while the source has further pages. 1 by default.
- *   EPCIS_INTEROP_EPCIS_VERSION       the value sent in GS1-EPCIS-Version, when not the default.
- *   EPCIS_INTEROP_CBV_VERSION         the value sent in GS1-CBV-Version, when not the default.
+ *   EPCIS_INTEROP_EPCIS_VERSION       the value sent in GS1-EPCIS-Version, when not the default, the pinned EPCIS version.
+ *   EPCIS_INTEROP_CBV_VERSION         the value sent in GS1-CBV-Version, when not the default, the pinned CBV version.
+ *   EPCIS_INTEROP_REPEAT_LISTS=1      send each value of a list as its own parameter, for an endpoint that does not read
+ *                                     the pipe-delimited form the interface description declares. Reported as a leniency.
  *   EPCIS_INTEROP_STORE               a folder to keep what is retained. Memory by default, gone when the run ends.
  *   EPCIS_INTEROP_REPORT              where the JSON report is written. ./epcis-interop-report.json by default.
  *   EPCIS_INTEROP_OFFLINE=1           use the provisioned GS1 files and fetch nothing from GS1.
@@ -94,6 +96,7 @@ const source = {
   ...(credential == null ? {} : { credentials: () => credential }),
   localTest: env.EPCIS_INTEROP_LOCAL_TEST === '1',
   wireVersions: { epcis: env.EPCIS_INTEROP_EPCIS_VERSION || EPCIS_WIRE_VERSION, cbv: env.EPCIS_INTEROP_CBV_VERSION || CBV_WIRE_VERSION },
+  repeatListParameters: env.EPCIS_INTEROP_REPEAT_LISTS === '1',
 }
 
 // The module sends a credential to the endpoint's origin only. This transport holds it to that a second time, and notes what each answer reported.
@@ -108,7 +111,7 @@ const transport = async (url, init) => {
 }
 
 const storage = env.EPCIS_INTEROP_STORE ? await openFileEpcisStorage(env.EPCIS_INTEROP_STORE) : createMemoryEpcisStorage()
-const report = { reportVersion: '1', generatedAt: new Date().toISOString(), endpoint: { baseUrl: `${endpoint.origin}${endpoint.pathname.replace(/\/+$/, '')}`, permittedOrigins: source.permittedOrigins, localTest: source.localTest, credentialConfigured: credential != null }, versionsSent: source.wireVersions, query: {}, runs: [], pages: [], answers, serverVersions: [], leniencies: [], totals: { runs: 0, pagesRetrieved: 0, eventsRetrieved: 0, bytes: 0 }, completenessLimits: [] }
+const report = { reportVersion: '1', generatedAt: new Date().toISOString(), endpoint: { baseUrl: `${endpoint.origin}${endpoint.pathname.replace(/\/+$/, '')}`, permittedOrigins: source.permittedOrigins, localTest: source.localTest, credentialConfigured: credential != null }, versionsSent: source.wireVersions, listParameters: source.repeatListParameters ? 'repeated' : 'pipe-delimited', query: {}, runs: [], pages: [], answers, serverVersions: [], leniencies: [], totals: { runs: 0, pagesRetrieved: 0, eventsRetrieved: 0, bytes: 0 }, completenessLimits: [] }
 let last
 try {
   await recoverEpcisExchange(storage)
@@ -119,7 +122,7 @@ try {
     if (last.outcome === 'refused') { say(`Refused before anything was requested: ${last.reason}: ${last.detail}`); report.refused = { reason: last.reason, detail: last.detail }; break }
     if (run === 1 && last.pull != null) {
       report.query = last.pull.pass.parameters
-      say(`Query subset exercised: ${Object.entries(report.query).map(([name, value]) => `${name}=${value}`).join(', ')}; versions sent: GS1-EPCIS-Version ${source.wireVersions.epcis}, GS1-CBV-Version ${source.wireVersions.cbv}.`)
+      say(`Query subset exercised: ${Object.entries(report.query).map(([name, value]) => `${name}=${value}`).join(', ')}; versions sent: GS1-EPCIS-Version ${source.wireVersions.epcis}, GS1-CBV-Version ${source.wireVersions.cbv}; lists sent ${source.repeatListParameters ? 'as repeated parameters' : 'pipe-delimited'}.`)
     }
     for (const page of last.pages) {
       say(`Page ${page.page} of attempt ${page.attempt}: ${page.events.total} event${page.events.total === 1 ? '' : 's'} in ${page.byteLength} bytes, ${page.documentValidity}; ${page.events.new} new, ${page.events.duplicate} already held, ${page.events.newObservation} observed again, ${page.events.conflict} in conflict; the server reported EPCIS ${page.server.epcis ?? 'in no header'} and CBV ${page.server.cbv ?? 'in no header'}${page.leniencies.length === 0 ? '' : `; accepted leniently: ${page.leniencies.join(', ')}`}.`)

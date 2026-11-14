@@ -95,6 +95,17 @@ The candidate check installs the packed generator, creates the app at the chosen
 
 The candidate application also writes and reads product documents under `eu-battery@1`, `eu-textile@1` and a bound profile of your own, with the document split into a public and a restricted part ([product documents under a binding](create-dpp-app.md#product-documents-under-a-binding)).
 
+It also imports EPCIS 2.0 documents, pulls events from a source you configure and exports what it received, byte for byte ([EPCIS exchange](create-dpp-app.md#epcis-exchange)). It does this by calling `@bsv/dpp-credentials/epcis-exchange` and supplies only the storage, the routes and the pages. Keep that boundary when you build on it:
+
+| Rule | Why |
+|---|---|
+| Call the module for import, pull, export and recovery | A second implementation drifts from the first, and from the records the contract describes |
+| Hand the EPCIS routes the exchange and the sign-in check, and nothing else | An import or a pull then cannot reach the wallet, the writer or the index. The starter's tests fail if the code those routes are built from can |
+| Show an event as supplied data | A valid document passed a check of its format. It is not signed, and it is not evidence of the passport |
+| Keep a source's credential on the server | It never belongs in the database, an answer, a log line or the browser |
+
+The candidate's first `npm test` fetches the three pinned GS1 files and a MongoDB test binary once, for the EPCIS tests. The passport lifecycle exercise itself needs no network.
+
 For deployment, connect a compatible index or [run your own](../operate/README.md) from the repository's Compose preset. The app's Compose file starts its database; the preset builds the maintained index runtime and needs no additional overlay installation. Offline success does not establish production readiness: complete the generated guide and [production checks](../operate/production-readiness.md).
 
 ## What you are building

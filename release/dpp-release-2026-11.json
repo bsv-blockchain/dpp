@@ -391,7 +391,7 @@
     },
     {
       "path": "contracts/epcis-exchange-records.schema.json",
-      "sha256": "e58a647b7a4ab9b25904e88df913d4f12ec1ed05efaceb3e930fec8f1e04bded",
+      "sha256": "247e1b86567aba85a488b99e6ff2e171dc6bce5c932b2fa64a44f0a2f840b54a",
       "pins": "the other durable records of an EPCIS exchange: observations, conflict decisions, association index entries, retention entries, the journal, and the state of each query pull with the pages it acknowledged"
     },
     {

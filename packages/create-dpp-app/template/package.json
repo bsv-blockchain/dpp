@@ -39,6 +39,7 @@
   },
   "allowScripts": {
     "better-sqlite3@13.0.3": true,
-    "esbuild@0.28.2": true
+    "esbuild@0.28.2": true,
+    "mongodb-memory-server@11.2.0": false
   }
 }

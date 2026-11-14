@@ -149,8 +149,16 @@ export interface EpcisPullSource {
   credentials?: () => EpcisSourceCredential | undefined | Promise<EpcisSourceCredential | undefined>;
   /** Permits plain http and private addresses. For local tests only, and recorded in every result. */
   localTest?: boolean;
-  /** The versions sent in GS1-EPCIS-Version and GS1-CBV-Version, when not the defaults. */
+  /** The versions sent in GS1-EPCIS-Version and GS1-CBV-Version, when not the defaults: the pinned EPCIS and CBV versions. */
   wireVersions?: { epcis?: string; cbv?: string };
+  /**
+   * Send each value of a list as its own parameter (`eventType=A&eventType=B`)
+   * in place of one pipe-delimited parameter. Off by default: the interface
+   * description declares lists pipe-delimited. It is for a source that accepts
+   * only the repeated form, and it is recorded as the leniency
+   * `list-parameters-repeated`.
+   */
+  repeatListParameters?: boolean;
 }
 
 /** The query as a caller writes it. `perPage` defaults to the page event limit in force. */
@@ -223,7 +231,7 @@ export interface EpcisPullResult {
   localTest: boolean;
   /** The versions the source reported on the last page read. */
   server: EpcisPullServerVersions;
-  /** Every leniency a page of this run needed. */
+  /** Every leniency a page of this run needed, and `list-parameters-repeated` when a request of the run sent a list as repeated parameters. */
   leniencies: EpcisPullLeniency[];
   /** Set when this run fell back to a replay. */
   replay?: EpcisPullRecord['replay'];
@@ -259,7 +267,7 @@ function inTurn<T>(storage: EpcisExchangeStorage, key: string, run: () => Promis
   return next;
 }
 
-/** The standard query parameters of a query, by their names in the REST binding. A list is one parameter whose values are separated by `|`. Nothing provider-specific is ever sent. */
+/** The standard query parameters of a query, by their names in the REST binding, in the one form they are recorded in: a list is one parameter whose values are separated by `|`. That is also how a list is sent, unless the source is configured with `repeatListParameters`. Nothing provider-specific is ever sent. */
 export function epcisQueryParameters(query: EpcisPullQuery, recordTimeFrom: string | undefined = query.recordTime?.from): Record<string, string> {
   const parameters: Record<string, string> = {};
   if (query.matchAnyEPC != null && query.matchAnyEPC.length > 0) parameters.MATCH_anyEPC = query.matchAnyEPC.join('|');
@@ -272,9 +280,19 @@ export function epcisQueryParameters(query: EpcisPullQuery, recordTimeFrom: stri
   return parameters;
 }
 
-function eventsAddress(baseUrl: string, parameters: Record<string, string>): string {
+/** The standard parameters that carry a list. Their values never hold the separator, so a recorded list splits back into the values it was made of. */
+const LIST_PARAMETERS: readonly string[] = ['MATCH_anyEPC', 'eventType', 'EQ_eventID'];
+
+/** True when sending the lists repeated would put other bytes on the wire than the pipe-delimited form: some list holds more than one value. */
+const hasRepeatableList = (parameters: Record<string, string>): boolean => LIST_PARAMETERS.some((name) => parameters[name]?.includes('|') === true);
+
+/** The address of a query's first page. Parameters are recorded in one form, pipe-delimited; `repeatLists` changes only how a list is written into the address. */
+function eventsAddress(baseUrl: string, parameters: Record<string, string>, repeatLists: boolean): string {
   const url = new URL(`${baseUrl}/events`);
-  for (const [name, value] of Object.entries(parameters)) url.searchParams.set(name, value);
+  for (const [name, value] of Object.entries(parameters)) {
+    if (repeatLists && LIST_PARAMETERS.includes(name)) for (const each of value.split('|')) url.searchParams.append(name, each);
+    else url.searchParams.set(name, value);
+  }
   return url.toString();
 }
 
@@ -290,6 +308,7 @@ interface Prepared {
   permittedOrigins: string[];
   localTest: boolean;
   wireVersions: { epcis: string; cbv: string };
+  repeatLists: boolean;
   query: EpcisPullQuery;
   overlap: number;
   policyId: string;
@@ -312,6 +331,7 @@ function prepare(input: PullEpcisEventsInput): EpcisPullRefusal | Prepared {
   if (policyProblem != null) return bad(policyProblem);
   if (source.credentials !== undefined && typeof source.credentials !== 'function') return bad('source.credentials is a function that obtains the credential, never the credential itself');
   if (source.localTest !== undefined && typeof source.localTest !== 'boolean') return bad('source.localTest is true or false');
+  if (source.repeatListParameters !== undefined && typeof source.repeatListParameters !== 'boolean') return bad('source.repeatListParameters is true or false');
 
   let limits: EpcisLimits;
   try { limits = resolveEpcisLimits(source.policy.limits ?? {}); } catch (error) { return bad((error as Error).message); }
@@ -322,7 +342,7 @@ function prepare(input: PullEpcisEventsInput): EpcisPullRefusal | Prepared {
   }
 
   const wire = { epcis: source.wireVersions?.epcis ?? EPCIS_WIRE_VERSION, cbv: source.wireVersions?.cbv ?? CBV_WIRE_VERSION };
-  if (typeof wire.epcis !== 'string' || typeof wire.cbv !== 'string' || !WIRE_VERSION.test(wire.epcis) || !WIRE_VERSION.test(wire.cbv)) return bad('source.wireVersions names versions as digits and dots, such as 2.0.0');
+  if (typeof wire.epcis !== 'string' || typeof wire.cbv !== 'string' || !WIRE_VERSION.test(wire.epcis) || !WIRE_VERSION.test(wire.cbv)) return bad('source.wireVersions names versions as digits and dots, such as 2.0.1');
 
   if (!Array.isArray(source.permittedOrigins) || source.permittedOrigins.length > 16) return bad('source.permittedOrigins is a list of at most 16 origins');
   const permittedOrigins: string[] = [];
@@ -399,6 +419,7 @@ function prepare(input: PullEpcisEventsInput): EpcisPullRefusal | Prepared {
     permittedOrigins,
     localTest: source.localTest === true,
     wireVersions: wire,
+    repeatLists: source.repeatListParameters === true,
     query,
     overlap,
     policyId: source.policy.policyId,
@@ -530,7 +551,7 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
 
   const log = (entry: EpcisPullLogEntry): void => { try { input.log?.({ at: clock(), ...entry }); } catch { /* a logger never ends a run */ } };
   const policy: EpcisTargetPolicy = { permittedOrigins: prepared.permittedOrigins, localTest: prepared.localTest, ...(input.resolveHost == null ? {} : { resolveHost: input.resolveHost }) };
-  const scope: EpcisPullSourceScope = { sourceId, baseUrl, permittedOrigins: prepared.permittedOrigins, localTest: prepared.localTest, credentialsConfigured, wireVersions: prepared.wireVersions };
+  const scope: EpcisPullSourceScope = { sourceId, baseUrl, permittedOrigins: prepared.permittedOrigins, localTest: prepared.localTest, credentialsConfigured, wireVersions: prepared.wireVersions, ...(prepared.repeatLists ? { repeatListParameters: true as const } : {}) };
   const definitionDigest = epcisPullDefinitionDigest({ sourceId, baseUrl, query, recordTimeOverlapSeconds: prepared.overlap });
 
   /* ---- step 1: the pull record ---- */
@@ -585,7 +606,7 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
     revision = (revision ?? 0) + 1;
   };
   await write();
-  log({ event: 'run-start', sourceId, queryId, run: summary.run, pass: state.pass.number, attempt: state.pass.attempt, resumed: summary.resumed, localTest: prepared.localTest, credentialsConfigured });
+  log({ event: 'run-start', sourceId, queryId, run: summary.run, pass: state.pass.number, attempt: state.pass.attempt, resumed: summary.resumed, localTest: prepared.localTest, credentialsConfigured, repeatListParameters: prepared.repeatLists });
 
   /* ---- step 5: how the run ended ---- */
 
@@ -668,6 +689,8 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
     }
   }
 
+  // Only a list of two or more values is written differently, so only then is anything departed from.
+  const listsRepeated = (): boolean => prepared.repeatLists && hasRepeatableList(state.pass.parameters);
   const asked = new Set<string>();
   const replay = (reason: NonNullable<EpcisPullRecord['replay']>['reason']): boolean => {
     if (summary.replays >= EPCIS_PULL_MAX_REPLAYS_PER_RUN) return false;
@@ -703,7 +726,9 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
       if (!replay('cursor-missing')) return finish('cursor-unusable', 'a second cursor could not be reused in one run: none was recorded');
       continue;
     } else {
-      target = eventsAddress(baseUrl, state.pass.parameters);
+      target = eventsAddress(baseUrl, state.pass.parameters, prepared.repeatLists);
+      // The leniency is the run's as soon as a request is sent that way, so a run that fails on it still says how it asked.
+      if (listsRepeated()) leniencies.add('list-parameters-repeated');
     }
     const answer: EpcisPageAnswer = await fetchEpcisPage({
       url: target, usesCursor: cursor != null, credentialOrigin: baseOrigin, policy, guard, wireVersions: prepared.wireVersions,
@@ -729,7 +754,8 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
       query: { ...state.pass.parameters, ...(cursor?.token == null ? {} : { nextPageToken: cursor.token }) },
       ...(answer.next == null ? {} : { next: { ...answer.next, afterPage: page } }), last: answer.last,
       ...(answer.nextProblem == null ? {} : { nextProblem: { reason: answer.nextProblem.reason, detail: guard.redact(answer.nextProblem.detail) } }),
-      server: answer.server, leniencies: answer.leniencies,
+      // A page a cursor names continues a traversal that was begun with the lists repeated, so it carries the leniency too.
+      server: answer.server, leniencies: listsRepeated() ? [...answer.leniencies, 'list-parameters-repeated'] : answer.leniencies,
     };
     state.pending = pending;
     await write();

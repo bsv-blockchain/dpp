@@ -1,25 +1,35 @@
 // The HTTP surface for profiles held by a binding, and the one promise it
 // has to keep above all: a restricted value of a product document reaches
-// the holder who may open it and nobody else. The last test issues passports
+// the holder who may open it and nobody else. One test issues passports
 // carrying a value that appears nowhere else, then searches everything this
-// application prints, lists, indexes and exports for it.
+// application prints, lists, indexes and exports for it, the EPCIS exchange
+// included. The last does the same for the credential of an EPCIS source.
 import { once } from 'node:events'
 import type { AddressInfo } from 'node:net'
 import type { Server } from 'node:http'
 import { format } from 'node:util'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { ViewCheck } from '../src/bound-profiles.js'
+import { EPCIS_RECORD_KINDS } from '@bsv/dpp-credentials/epcis-exchange'
 import { loadConfig } from '../src/config.js'
+import { startEpcisExchange, type EpcisExchange } from '../src/epcis/exchange.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import type { AuthorisedReading, PassportReading } from '../src/reader.js'
 import { createServer } from '../src/server.js'
+import { epcisDocument, gs1Dir, item, objectEvent, startEpcisSource, type FixtureSource } from './epcis-fixtures.js'
 
 type Json = Record<string, unknown>
+
+/** The credential of the EPCIS source below. It is in no fixture and no key: wherever it turns up, it was copied there. */
+const credential = 'EPCIS-CREDENTIAL-CANARY-4D1E88F0'
 
 const config = loadConfig({ NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' })
 const brandId = 'dev-brand'
 const printed: string[] = []
 let platform: Platform
+let exchange: EpcisExchange
+let epcisSource: FixtureSource
+let echoingSource: FixtureSource
 let server: Server
 let base: string
 const spies: Array<{ mockRestore: () => void }> = []
@@ -39,14 +49,39 @@ beforeAll(async () => {
   platform = await openPlatform({ config, mode: 'test', log: (line) => printed.push(line) })
   const party = platform.parties.brand(brandId)
   await platform.store.saveBrand({ id: brandId, name: 'Development brand', identityKey: party.identityKey, did: party.did, createdAt: new Date().toISOString() })
-  const app = createServer({ platform, devSession: { userId: 'developer', email: 'developer@localhost', name: 'Developer', brandIds: [brandId] } })
+  // Two EPCIS sources on this machine. One wants the credential. The other answers with whatever credential it was sent, as a careless source might.
+  epcisSource = await startEpcisSource(Array.from({ length: 5 }, (_, index) => objectEvent(index + 1, [item(`LEAK-${index + 1}`)])), { requireAuthorization: `Bearer ${credential}` })
+  echoingSource = await startEpcisSource([], { answer: { status: 200, mediaType: 'application/ld+json', body: JSON.stringify({ type: 'EPCISQueryDocument', note: `you sent ${credential}` }) } })
+  const sources = loadConfig({
+    DPP_GS1_ARTEFACTS_DIR: gs1Dir(),
+    DPP_GS1_ARTEFACTS_OFFLINE: 'true',
+    EPCIS_SOURCES: 'supplier-a,echo,stranger',
+    EPCIS_SOURCE_SUPPLIER_A_URL: epcisSource.baseUrl,
+    EPCIS_SOURCE_SUPPLIER_A_LOCAL_TEST: 'true',
+    EPCIS_SOURCE_SUPPLIER_A_BEARER_TOKEN: credential,
+    EPCIS_SOURCE_ECHO_URL: echoingSource.baseUrl,
+    EPCIS_SOURCE_ECHO_LOCAL_TEST: 'true',
+    EPCIS_SOURCE_ECHO_HEADER_NAME: 'X-Api-Key',
+    EPCIS_SOURCE_ECHO_HEADER_VALUE: credential,
+    // The same source again, under a credential it does not accept.
+    EPCIS_SOURCE_STRANGER_URL: epcisSource.baseUrl,
+    EPCIS_SOURCE_STRANGER_LOCAL_TEST: 'true',
+    EPCIS_SOURCE_STRANGER_BASIC_USER: 'operator',
+    EPCIS_SOURCE_STRANGER_BASIC_PASSWORD: credential,
+  }).epcis
+  exchange = await startEpcisExchange({ config: sources, log: (line) => printed.push(line) })
+  const app = createServer({ platform, exchange, devSession: { userId: 'developer', email: 'developer@localhost', name: 'Developer', brandIds: [brandId] } })
   server = app.listen(0, '127.0.0.1')
   await once(server, 'listening')
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
 })
 
 afterAll(async () => {
+  server.closeAllConnections()
   server.close()
+  await exchange.close()
+  await epcisSource.close()
+  await echoingSource.close()
   await platform.close()
   for (const spy of spies) spy.mockRestore()
 })
@@ -62,6 +97,25 @@ const post = async (path: string, body: unknown, raw?: string): Promise<{ status
   return { status: response.status, text, body: text === '' ? undefined : JSON.parse(text) }
 }
 const ref = (passportId: string): string => encodeURIComponent(passportId)
+/** A body sent as the bytes given, which is how an EPCIS document is uploaded. */
+const upload = async (path: string, text: string, mediaType = 'application/ld+json'): Promise<{ status: number; text: string; body: any }> => {
+  const response = await fetch(`${base}${path}`, { method: 'POST', headers: { 'content-type': mediaType }, body: text })
+  const answer = await response.text()
+  let body: unknown
+  try {
+    body = answer === '' ? undefined : JSON.parse(answer)
+  } catch {
+    body = undefined
+  }
+  return { status: response.status, text: answer, body }
+}
+/** Everything the EPCIS store holds, as text: every record of every kind, and the retained bytes of every import. */
+async function epcisStore(): Promise<string> {
+  const out: string[] = []
+  for (const kind of Object.values(EPCIS_RECORD_KINDS)) for (const held of await exchange.storage.list(kind, { limit: 100_000 })) out.push(JSON.stringify(held))
+  for (const record of await exchange.listImports({ limit: 200 })) out.push(Buffer.from((await exchange.storage.getBytes(record.sha256))!).toString('latin1'))
+  return out.join('\n')
+}
 
 /** The profile's example as the API serves it, under a serial of the test's own. */
 async function exampleFor(profile: string, serial: string): Promise<{ itemReference: string; serial: string; passportId: string; product: Json }> {
@@ -227,6 +281,23 @@ describe('a restricted value', () => {
       }
     }
 
+    // The EPCIS exchange: events that name both passports are imported, and everything it lists and exports is searched too.
+    const events = epcisDocument(passports.map((passportId, index) => objectEvent(index + 1, [passportId], { bizStep: 'shipping', disposition: 'in_transit' })))
+    const imported = await upload('/api/epcis/imports?requestId=leak-events', JSON.stringify(events))
+    expect(imported.status).toBe(201)
+    keep('epcis import response', imported.text)
+    keep('epcis imports', (await get('/api/epcis/imports')).text)
+    keep('epcis import record', (await get(`/api/epcis/imports/${ref(imported.body.record.importId)}`)).text)
+    keep('epcis original', (await get(`/api/epcis/imports/${ref(imported.body.record.importId)}/original`)).text)
+    for (const passportId of passports) {
+      const named = await get(`/api/epcis/events?identifier=${ref(passportId)}`)
+      expect(named.body.events).toHaveLength(1)
+      keep(`epcis events, ${passportId}`, named.text)
+    }
+    keep('epcis status', (await get('/api/epcis/status')).text)
+    keep('epcis conflicts', (await get('/api/epcis/conflicts')).text)
+    keep('epcis store', await epcisStore())
+
     keep('passport list', (await get(`/api/brands/${brandId}/passports`)).text)
     keep('operations', (await get('/api/operations')).text)
     keep('operations run', (await post('/api/operations/run', {})).text)
@@ -256,5 +327,75 @@ describe('a restricted value', () => {
     const lines = printed.slice(before).join('\n')
     expect(lines).toMatch(/request failed: Error: unexpected/)
     expect(lines).not.toContain(canary)
+  })
+})
+
+describe('the credential of an EPCIS source', () => {
+  // Every form the credential travels in: as it is, as an address would spell it, and as a basic authorisation carries it.
+  const forms = [credential, encodeURIComponent(credential), Buffer.from(`operator:${credential}`).toString('base64')]
+
+  it('reaches the source it was configured for, and nothing this application answers, lists, stores, exports or prints', async () => {
+    const seen: Array<[string, string]> = []
+    const keep = (where: string, text: string): string => {
+      seen.push([where, text])
+      return text
+    }
+    const before = printed.length
+
+    // The source is described: that a credential is set, and which kind.
+    const described = await get('/api/epcis/sources')
+    expect(described.body.map((source: Json) => [source.sourceId, source.credentialConfigured, source.credentialScheme])).toEqual([['supplier-a', true, 'bearer'], ['echo', true, 'header'], ['stranger', true, 'basic']])
+    keep('sources', described.text)
+    keep('status', (await get('/api/epcis/status')).text)
+
+    // A pull that works, over several pages. The control: the source did receive the credential, so this search can find it where it is.
+    const pulled = await post('/api/epcis/sources/supplier-a/pulls', { queryId: 'leak', query: { perPage: 2 } })
+    expect(pulled.body).toMatchObject({ outcome: 'ok', events: { total: 5 }, pull: { source: { credentialsConfigured: true } } })
+    expect(epcisSource.requests.filter((request) => request.headers.authorization === `Bearer ${credential}`)).toHaveLength(3)
+    keep('pull result', pulled.text)
+    keep('pull state', (await get('/api/epcis/sources/supplier-a/pulls/leak')).text)
+    for (const page of pulled.body.pages as Json[]) {
+      keep(`page import ${String(page.page)}`, (await get(`/api/epcis/imports/${ref(String(page.importId))}`)).text)
+      keep(`page original ${String(page.page)}`, (await get(`/api/epcis/imports/${ref(String(page.importId))}/original`)).text)
+    }
+    keep('events of a pulled item', (await get(`/api/epcis/events?identifier=${ref(item('LEAK-3'))}`)).text)
+
+    // A source that refuses the credential it is sent, and one that sends it back in its answer. Neither answer is kept, and neither refusal quotes it.
+    const refused = await post('/api/epcis/sources/stranger/pulls', { queryId: 'leak', query: {} })
+    expect(refused.body).toMatchObject({ outcome: 'source-authentication-required', pages: [] })
+    expect(epcisSource.requests.at(-1)!.headers.authorization).toBe(`Basic ${Buffer.from(`operator:${credential}`).toString('base64')}`)
+    keep('refused pull', refused.text)
+    const echoed = await post('/api/epcis/sources/echo/pulls', { queryId: 'leak', query: {} })
+    expect(echoed.body).toMatchObject({ outcome: 'invalid-source', reason: 'credential-echoed', pages: [] })
+    expect(echoingSource.requests.at(-1)!.headers['x-api-key']).toBe(credential)
+    keep('echoed pull', echoed.text)
+    keep('echoed pull state', (await get('/api/epcis/sources/echo/pulls/leak')).text)
+
+    // A request that carries the credential itself: as a query value, which the pull refuses, and in a body that is not JSON.
+    const carried = await post('/api/epcis/sources/supplier-a/pulls', { queryId: 'carried', query: { eventIds: [`urn:example:${credential}`] } })
+    expect(carried.status).toBe(400)
+    keep('pull with the credential as a query value', carried.text)
+    const garbled = await post('/api/epcis/sources/supplier-a/pulls', undefined, `{"queryId":"${credential}`)
+    expect(garbled.status).toBe(400)
+    expect(garbled.body.error).toBe('body-not-json')
+    keep('garbled pull request', garbled.text)
+
+    keep('imports', (await get('/api/epcis/imports?limit=200')).text)
+    keep('conflicts', (await get('/api/epcis/conflicts')).text)
+    keep('health', (await get('/api/health')).text)
+    keep('operations', (await get('/api/operations')).text)
+    // The store, which is what a database dump would show, and every line printed since this test began.
+    keep('epcis store', await epcisStore())
+    keep('everything printed', printed.slice(before).join('\n'))
+
+    // The listings did hold the pulled pages and the log did follow the pulls, so an empty answer is not what kept the credential out.
+    expect((await get('/api/epcis/imports?limit=200')).body.imports.filter((entry: Json) => (entry.provenance as Json).kind === 'query')).toHaveLength(3)
+    expect(seen.find(([where]) => where === 'epcis store')![1]).toContain('"credentialsConfigured":true')
+    expect(printed.slice(before).some((line) => line.startsWith('EPCIS pull supplier-a/leak:') && line.includes('"credentialSent":true'))).toBe(true)
+
+    const leaks = seen.filter(([, text]) => forms.some((form) => text.includes(form))).map(([where]) => where)
+    expect(leaks).toEqual([])
+    // Nor is it anywhere this file's earlier tests printed.
+    expect(forms.some((form) => printed.join('\n').includes(form))).toBe(false)
   })
 })

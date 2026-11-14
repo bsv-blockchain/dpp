@@ -349,7 +349,7 @@ export type EpcisPullReason =
 export type EpcisPullCompletion = 'exhausted' | 'stopped-at-limit' | 'failed';
 
 /** A departure from the strict reading of the query interface that was accepted, and recorded where it was met. */
-export type EpcisPullLeniency = 'link-relation-unquoted' | 'next-page-token-numeric' | 'cbv-version-header-absent' | 'empty-final-page' | 'cursor-expiry-unreadable';
+export type EpcisPullLeniency = 'link-relation-unquoted' | 'next-page-token-numeric' | 'cbv-version-header-absent' | 'empty-final-page' | 'cursor-expiry-unreadable' | 'list-parameters-repeated';
 
 /** The query a pull makes, as it was configured. Lists are sorted and without repeats, so one definition has one form. */
 export interface EpcisPullQuery {
@@ -379,6 +379,8 @@ export interface EpcisPullSourceScope {
   credentialsConfigured: boolean;
   /** The versions sent in GS1-EPCIS-Version and GS1-CBV-Version. */
   wireVersions: { epcis: string; cbv: string };
+  /** Present, and true, when the source was configured to be sent each list value as its own parameter. A leniency: the interface description declares lists pipe-delimited. */
+  repeatListParameters?: true;
 }
 
 /** Where the next page is, as the source named it. */
@@ -561,7 +563,7 @@ export function pullKeyOf(pullId: string): string | undefined {
 
 export const pullPageKey = (pullKey: string, sequence: number): string => `${pullKey}.${padded(sequence, 10)}`;
 
-/** The digest a query name is bound to. Limits, permitted origins and credentials are not part of it: an operator may tighten those without making a new source. */
+/** The digest a query name is bound to. Limits, permitted origins, credentials, the versions sent and how a list is written into the address are not part of it: an operator may change those without making a new source. */
 export function epcisPullDefinitionDigest(definition: { sourceId: string; baseUrl: string; query: EpcisPullQuery; recordTimeOverlapSeconds: number }): string {
   return digestOf({ baseUrl: definition.baseUrl, query: definition.query, recordTimeOverlapSeconds: definition.recordTimeOverlapSeconds, sourceId: definition.sourceId });
 }

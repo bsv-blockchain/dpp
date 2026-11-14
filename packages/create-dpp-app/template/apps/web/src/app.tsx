@@ -5,6 +5,7 @@ import { Layout } from '@/components/layout'
 import { Accept } from '@/pages/accept'
 import { Brand } from '@/pages/brand'
 import { Brands } from '@/pages/brands'
+import { Events } from '@/pages/events'
 import { Home } from '@/pages/home'
 import { NewPassport } from '@/pages/new-passport'
 import { Operations } from '@/pages/operations'
@@ -42,6 +43,7 @@ export function App() {
         <Route path="01/:gtin/21/:serial" element={<PublicPassport />} />
         <Route path="verify" element={<Verify />} />
         <Route path="accept/:requestId" element={<Accept />} />
+        <Route path="events" element={<Events />} />
         <Route path="operations" element={<Operations />} />
         <Route path="wallet" element={<Wallet />} />
         <Route path="*" element={<NotFound />} />

@@ -166,6 +166,7 @@ To verify a partner's credential instead, follow [external credential verificati
 |---|---|
 | A source | `sourceId`, `baseUrl`, `permittedOrigins`, the `policy` with its limits, and `credentials`, a function that obtains the credential. `localTest` permits plain `http` and private addresses and is recorded in every result. |
 | A query | `matchAnyEPC`, `eventTypes`, `eventTime.from` and `until`, `recordTime.from`, `eventIds` and `perPage`, sent as `MATCH_anyEPC`, `eventType`, `GE_eventTime`, `LT_eventTime`, `GE_recordTime`, `EQ_eventID` and `perPage`. Nothing else is sent. |
+| Versions and lists | `GS1-EPCIS-Version: 2.0.1` and `GS1-CBV-Version: 2.0.0` by default, the pinned `EPCIS_VERSION` and `CBV_VERSION`, each configurable through `wireVersions`. A list is one pipe-delimited parameter, as GS1's interface description declares. `repeatListParameters` on a source sends one parameter per value, for a source that reads only that form. |
 | The transport | Handed in as `fetch`. The module never reaches for a transport of its own and opens no connection. Redirects are followed by hand, at most three. |
 | What a run retains | Each page as an import with `query` provenance, one page record per acknowledged page, and the pull record: scope, query, limits, status, checkpoint and watermark. |
 | The checkpoint | Moved only in the batch that records a page, and only after that page's import is durable. It never points past what is retained. |
@@ -175,7 +176,7 @@ To verify a partner's credential instead, follow [external credential verificati
 | Outcomes | One of the eight source outcomes, with a `reason` and a `completion` of `exhausted`, `stopped-at-limit` or `failed`. A run that stopped early never reads as complete. |
 | Limits | 2 MiB and 100 events a page, depth 64, 16 contexts totalling 1 MiB, a 10 second fetch timeout, and 10 pages, 20 MiB and 60 seconds a run. An override is refused past its ceiling and is recorded in the result. |
 | Credentials | Sent to the base address's origin only, held in memory for one run, and written to no record, result, log entry or error. An answer that carries the credential is refused. |
-| Leniencies | An unquoted `rel=next`, a numeric page token, a missing `GS1-CBV-Version`, an empty page after a full last page and an unreadable cursor expiry are accepted and recorded. None changes what is retained. |
+| Leniencies | An unquoted `rel=next`, a numeric page token, a missing `GS1-CBV-Version`, an empty page after a full last page and an unreadable cursor expiry are accepted and recorded. A list sent as repeated parameters is the one leniency an operator configures, recorded as `list-parameters-repeated` and in the pull record's `source.repeatListParameters`. None changes what is retained. |
 
 [Pull events from a source](../interoperability/epcis.md#pull-events-from-a-source) has the configuration, a runnable example, the durable steps, every outcome with its reasons, the limits with their ceilings and each leniency with the reason it weakens nothing. `scripts/epcis-pull-interop.mjs` runs one pull against an endpoint you name and writes a report; it is not part of `npm test`.
 

@@ -11,6 +11,9 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node'
 import { sessionFrom, type Auth, type Session } from './auth.js'
 import { EVENT_TYPES } from './claims.js'
+import type { EpcisExchange } from './epcis/exchange.js'
+import { epcisRoutes } from './epcis/routes.js'
+import { HttpError } from './http-error.js'
 import { isDemonstrationPolicy, mintPassportId } from './identifiers.js'
 import { sectorExamples } from './sector-examples.js'
 import type { Party } from './parties.js'
@@ -31,20 +34,12 @@ export interface ServerOptions {
   devSession?: Session
   /** The built web app to serve, when it exists. */
   webDist?: string
+  /** The EPCIS exchange, opened and recovered. Without it the /api/epcis routes are not served. */
+  exchange?: EpcisExchange
 }
 
 /** A JSON object from a request body, or nothing: a product document is always one object. */
 const objectOf = (value: unknown): Record<string, unknown> | undefined => (typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined)
-
-class HttpError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    detail: string
-  ) {
-    super(detail)
-  }
-}
 
 const sha256hex = (text: string): string => Utils.toHex(Hash.sha256(Utils.toArray(text, 'utf8')))
 /** A URL-safe slug from a name: lower-case letters and digits with single hyphens, at most 64 characters, built without backtracking. */
@@ -116,18 +111,22 @@ export function createServer(options: ServerOptions): express.Express {
 
   // Better Auth owns /api/auth; it must see the raw body, so it is mounted before the JSON parser.
   if (auth != null) app.all('/api/auth/{*splat}', toNodeHandler(auth))
+
+  const session = async (req: Request): Promise<Session | undefined> => (auth == null ? options.devSession : await sessionFrom(auth, req.headers))
+  const requireSession = async (req: Request): Promise<Session> => {
+    const s = await session(req)
+    if (s == null) throw new HttpError(401, 'sign-in-required', 'sign in first')
+    return s
+  }
+  // The EPCIS routes come before the JSON parser too: an import is taken as the exact bytes that arrived. They are handed
+  // the exchange and the sign-in check and nothing else of the platform, so no import or pull can reach the wallet or the writer.
+  if (options.exchange != null) app.use('/api/epcis', epcisRoutes({ exchange: options.exchange, requireSession }))
   app.use(express.json({ limit: '1mb' }))
 
   const wrap = (handler: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => {
     handler(req, res).then((body) => {
       if (!res.headersSent) res.json(body)
     }, next)
-  }
-  const session = async (req: Request): Promise<Session | undefined> => (auth == null ? options.devSession : await sessionFrom(auth, req.headers))
-  const requireSession = async (req: Request): Promise<Session> => {
-    const s = await session(req)
-    if (s == null) throw new HttpError(401, 'sign-in-required', 'sign in first')
-    return s
   }
   const requireMember = async (req: Request, brandId: string): Promise<Session> => {
     const s = await requireSession(req)
@@ -466,7 +465,7 @@ export function createServer(options: ServerOptions): express.Express {
 
   app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (error instanceof HttpError) {
-      res.status(error.status).json({ error: error.code, description: error.message })
+      res.status(error.status).json({ error: error.code, description: error.message, ...error.data })
       return
     }
     if (error instanceof WriteRefused) {

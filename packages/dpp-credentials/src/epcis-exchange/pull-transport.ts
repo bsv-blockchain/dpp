@@ -17,6 +17,7 @@
  * It retains nothing and interprets no event. A page is bytes and a media
  * type until the import path parses it.
  */
+import { CBV_VERSION, EPCIS_VERSION } from '../epcis-source.js';
 import type { EpcisPullCursor, EpcisPullLeniency, EpcisPullReason, EpcisPullServerVersions, EpcisSourceOutcome } from './records.js';
 
 /* ---------------------------------- shape -------------------------------- */
@@ -38,12 +39,14 @@ export type EpcisSourceCredential =
   | { scheme: 'header'; name: string; value: string };
 
 /**
- * The version the REST binding's headers carry for EPCIS 2.0. It is not the
- * release number of the standard's document, 2.0.1, which the pinned files
- * are named after.
+ * The versions sent in GS1-EPCIS-Version and GS1-CBV-Version unless a source
+ * is configured otherwise: the EPCIS and CBV versions this package pins.
+ * GS1's interface description gives a three-part version, and the files a
+ * page is validated against are those of EPCIS 2.0.1, so that is what a
+ * request names.
  */
-export const EPCIS_WIRE_VERSION = '2.0.0';
-export const CBV_WIRE_VERSION = '2.0.0';
+export const EPCIS_WIRE_VERSION = EPCIS_VERSION;
+export const CBV_WIRE_VERSION = CBV_VERSION;
 /** A source is followed through at most this many redirects for one page. */
 export const EPCIS_PULL_MAX_REDIRECTS = 3;
 /** The shortest secret that can be told from ordinary text when an answer is searched for it. */

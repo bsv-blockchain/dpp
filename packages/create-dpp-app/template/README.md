@@ -9,7 +9,7 @@ The application uses `@bsv/dpp-protocol` directly and pins the `dpp-release-2026
 | Part | Where | What it does |
 |---|---|---|
 | Web app | `apps/web` | React single-page app: brand dashboard, passport pages, hand-on acceptance, public verification |
-| API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, validates product data against its profile, keeps the journal and runs the unattended duties |
+| API | `apps/api` | Express service that owns the platform wallet, writes and reads passports with the `@bsv/dpp` packages, validates product data against its profile, keeps the journal and runs the unattended duties. It also imports, pulls and exports EPCIS events, as data kept apart from every passport |
 | Application database | `deploy/compose.yml` | MongoDB for application records, journal and sign-in |
 
 The API's routes are in [apps/api/API.md](apps/api/API.md).
@@ -18,13 +18,22 @@ For deployment, `npm run go-live` registers this app with the default hosted ind
 
 ## First run
 
-No wallet, funds, Docker or network:
+No wallet, funds or Docker:
 
 ```sh
 npm test
 ```
 
-This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. It also writes and reads a battery passport and a textile passport under the two sector profiles, and registers a profile from a folder. Then:
+This runs a whole passport lifecycle against an index in this process and a test wallet with made-up funding: issue, update, hand on with a claim code, retire, and a lifecycle claim, with the reader's report at the end. It also writes and reads a battery passport and a textile passport under the two sector profiles, and registers a profile from a folder.
+
+The EPCIS tests need two things the project does not carry, and the first run fetches each once and keeps it:
+
+| What | From | Kept in |
+|---|---|---|
+| The three EPCIS 2.0.1 files documents are checked against, which GS1 publishes under its own terms | `https://ref.gs1.org` | `node_modules/.cache/dpp-gs1`, or the folder `DPP_GS1_ARTEFACTS_DIR` names |
+| A MongoDB server binary, for the tests of the EPCIS store on one MongoDB node in memory | MongoDB's download site, by `mongodb-memory-server` | That package's own cache |
+
+Later runs use no network. A run that cannot obtain a GS1 file fails before any test and says which file. It never skips. Then:
 
 ```sh
 npm run dev
@@ -99,6 +108,56 @@ TRUSTED_BINDING_DIGESTS=<the SHA-256 of that folder's binding.json>
 
 Restricted values never reach the application's logs, its listings, the index or any public export: `apps/api/test/bound-http.test.ts` issues passports carrying a value that appears nowhere else and searches all of them for it.
 
+## EPCIS exchange
+
+The application imports EPCIS 2.0 documents, pulls events from a source you configure, and gives back exactly what it received. All of it is `@bsv/dpp-credentials/epcis-exchange`: the application supplies the storage, the routes and the pages, and does none of the module's work a second time.
+
+**What an event here is.** Data a source supplied. An import or a pull changes no custody, signs nothing, writes nothing on chain and never calls the wallet. A document that is **valid** passed a check of its format. It is not signed, and nothing verifies who observed an event or that it happened. The pages label every event that way, and a passport's page lists the events that name its product in a section of their own, apart from the states and claims that are the passport's own record.
+
+| You want to | Where |
+|---|---|
+| Upload a document and see whether it was refused or retained, with its findings | **Events**, then **Upload a document** |
+| Pull events from a configured source | **Events**, then **Pull from a source** |
+| Find the events that name an identifier | **Events**, or the section at the foot of a passport's page |
+| Download a document as it was received | **Download** beside an import or an event |
+| Do the same from a script | The routes under `/api/epcis` in [apps/api/API.md](apps/api/API.md#epcis-exchange) |
+
+**The GS1 files.** A document is checked against three files GS1 publishes under its own terms, which this project does not contain. The API obtains them at start, once, from `https://ref.gs1.org` into `DPP_GS1_ARTEFACTS_DIR` (`local/gs1`), checks every byte against a pinned digest, and logs one line saying whether they were present, fetched or unavailable. If they are unavailable the API still starts, and every import and pull is refused with how to provide them: start again with network access, run `npx dpp-gs1-artefacts fetch --dir <folder>`, or place the files in the folder yourself. With `DPP_GS1_ARTEFACTS_OFFLINE=true` the API never fetches.
+
+**Uploading.** The page sends the file as the bytes it is, with a request identifier it chose for that file. The API digests and keeps those bytes and never writes them out again from a parsed form, so an export is the original, byte for byte, under the media type it arrived with. Sending the same file again under the same identifier is the same request and keeps one import. The same identifier with other bytes is refused, and the first import stands. A transport that cannot be kept, such as a body that is not JSON, is over the size limit or has the wrong media type, is refused with a status that says why, and nothing of it is kept. A document that parses and fails validation is kept, with its findings, and reads **Invalid format**.
+
+**A source to pull from.** A source is configuration on the server. Nothing about it comes from a request. Name it in `.env`, then set its address and, if it needs one, its credential:
+
+```sh
+EPCIS_SOURCES=supplier-a
+EPCIS_SOURCE_SUPPLIER_A_URL=https://events.example.org/epcis
+EPCIS_SOURCE_SUPPLIER_A_BEARER_TOKEN=<the token the source gave you>
+```
+
+| Setting, after `EPCIS_SOURCE_<NAME>_` | Meaning |
+|---|---|
+| `URL` | The base address of the source's query interface. Events are asked for at `<URL>/events` |
+| `ORIGINS` | Every origin a request may go to, comma-separated. Empty permits the address's own origin only. A redirect or a next page anywhere else is refused before it is requested |
+| `BEARER_TOKEN`, or `BASIC_USER` with `BASIC_PASSWORD`, or `HEADER_NAME` with `HEADER_VALUE` | The credential, when the source needs one. At most one kind |
+| `LOCAL_TEST` | `true` permits plain `http` and private addresses. Off unless you set it, for a source on your own machine only. The API's description of the source and every result of a pull say when it is on |
+| `REPEAT_LISTS` | `true` sends each value of a list as its own parameter, for a source that does not read the pipe-delimited form. Recorded with each pull as a leniency |
+
+The credential stays in `.env` and the API's memory. It is sent to the address's own origin and to no other. It is never written to the database, an answer, a log line or the web app: `GET /api/epcis/sources` says that a credential is set and which kind, and `apps/api/test/bound-http.test.ts` pulls with a credential that appears nowhere else and searches everything the application answers, stores, exports and prints for it.
+
+**Pulling.** One pull is one bounded run: it reads a limited number of pages and stops. Give the query a name. Running it again under that name continues from where it stopped, also after a restart, and no page is lost or kept twice. The outcome is shown in the module's own words: its outcome, its reason and whether the source's pages were exhausted. A run that ended early says the history is partial, and no run says a source's history is complete.
+
+**The store.** With MongoDB the application keeps imports in four collections of the application database, through `apps/api/src/epcis/mongo-storage.ts`. Without MongoDB they are held in memory and are gone when the API stops. The module asks one hard thing of a store: a batch of records is written whole or not at all, also across a crash. One MongoDB node has no multi-document transaction, so the adapter does not use one:
+
+1. It checks what the batch expects, then replaces one log document with the whole batch, on the condition that no other batch was committed meanwhile. That one conditional update of one document is the commit, acknowledged from the journal.
+2. It applies the batch record by record and marks the log document idle.
+3. A store that stopped in between finds the committed batch when it is next opened and applies it again. That is safe: each write sets a whole value, and only on a record an earlier batch wrote last. A deleted record leaves a small marker so that an old batch applied late cannot bring it back.
+
+A reader takes its answer between two looks at the log document, and takes it again if a batch moved meanwhile, so it never sees part of a batch. `apps/api/test/epcis-mongo-storage.test.ts` runs the module's own adapter suite against one MongoDB node in memory, then stops the adapter at every step it takes in the database.
+
+Two things to know about that store. A batch is one MongoDB document until it is applied, so a single record or batch past 15 MiB is refused, with nothing written. The limits in force, 2 MiB a document and 100 events a page, keep an ordinary document far below that. A document made of hundreds of thousands of very short identifiers can pass it, and its import is then refused as `record-too-large`. And the markers deleted records leave are not removed: there is one small one for each finished import.
+
+**At start.** Before it accepts a request the API runs the module's recovery, which finishes or discards whatever a stopped process left, and logs what it did. Recovery assumes nothing else is writing to the store. Start one API process at a time, so that one is not importing while another recovers.
+
 ## Going live
 
 ```sh
@@ -146,7 +205,7 @@ docker build -t my-dpp .
 docker run -p 3000:3000 --env-file .env -v dpp-local:/app/local my-dpp
 ```
 
-One container serves the API and the web app. Run one instance with `WORKER=with-api` (the default), or several API instances with `WORKER=off` and exactly one with `WORKER=only`, so the unattended duties run once.
+One container serves the API and the web app. Run one instance with `WORKER=with-api` (the default), or several API instances with `WORKER=off` and exactly one with `WORKER=only`, so the unattended duties run once. Each API instance runs the EPCIS recovery when it starts, which assumes no other instance is importing at that moment: start them one at a time. The volume at `/app/local` holds the wallet file and the GS1 files.
 
 ## Next steps
 
@@ -156,7 +215,9 @@ Things this starter leaves to you, each a known path:
 - **A GS1 resolver at `PASSPORT_HOST`.** This starter answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so its host does not yet meet the standard's GS1 discovery profile (`spec/gs1-discovery.md` §1): the host a GS1 Digital Link identifier is minted under should be a GS1-Conformant Resolver for GTINs, and one that is not must redirect every `/01/` path with 307 to a resolver that is. To meet it, move the page to a path of its own and answer `/01/` paths with the resolver helpers in `@bsv/dpp-profiles`, naming the page under `gs1:dpp` as the item's default, or redirect them to a resolver that holds those records. Printed codes keep working either way, because the identifier does not change.
 - **Server-rendered passport pages.** The public page renders in the browser. If crawlers or no-JavaScript readers matter, serve a plain HTML view of it from the API at the page's own path, not at the identifier's.
 - **Self-custody.** Let a brand or a holder sign from their own BRC-100 wallet: implement a `Party` backed by a wallet connection in the browser, and let a transfer go to a key the holder's wallet derived.
-- **Credentials, EPCIS, federation.** The `@bsv/dpp-credentials` package, the interoperability profiles and a second index that synchronises with yours are all documented in the standard.
+- **Who sees which events.** Every signed-in user sees every import and may start a pull, as with the wallet and operations pages. Scope them to a brand if your users should not see each other's.
+- **More of EPCIS.** This starter imports files, pulls from the standard query interface and exports originals. It captures nothing, subscribes to nothing, reads no XML and maps no event to a passport state. A page for recording a decision on two bodies under one event identifier is yours to add: the route is `POST /api/epcis/conflicts/:conflictId/resolutions`.
+- **Credentials and federation.** The rest of `@bsv/dpp-credentials` and a second index that synchronises with yours are documented in the standard.
 - **A wallet storage server.** For several API instances, replace the SQLite file with the toolbox client against a wallet storage server.
 
 ## Versions

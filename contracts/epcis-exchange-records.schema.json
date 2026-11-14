@@ -132,7 +132,7 @@
     "parameters": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Standard query parameters of the REST binding's events query, by name. No other parameter is sent or recorded.",
+      "description": "Standard query parameters of the REST binding's events query, by name. No other parameter is sent or recorded. A list is recorded as one value with its entries separated by |, however it was written into the address.",
       "properties": {
         "MATCH_anyEPC": { "type": "string" },
         "eventType": { "type": "string" },
@@ -153,8 +153,8 @@
     "leniencies": {
       "type": "array",
       "uniqueItems": true,
-      "items": { "enum": ["link-relation-unquoted", "next-page-token-numeric", "cbv-version-header-absent", "empty-final-page", "cursor-expiry-unreadable"] },
-      "description": "Departures from the strict reading of the query interface that were accepted for a page. None changes what is retained."
+      "items": { "enum": ["link-relation-unquoted", "next-page-token-numeric", "cbv-version-header-absent", "empty-final-page", "cursor-expiry-unreadable", "list-parameters-repeated"] },
+      "description": "Departures from the strict reading of the query interface that were accepted for a page. None changes what is retained. list-parameters-repeated is the one the operator configures: the page belongs to a traversal whose list-valued parameters were sent as repeated parameters and not pipe-delimited."
     },
     "serverVersions": {
       "type": "object",
@@ -210,7 +210,8 @@
             "permittedOrigins": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/origin" }, "description": "Every origin a request of the pull may be made to." },
             "localTest": { "type": "boolean", "description": "True when plain http and private addresses were permitted, which is for local tests only." },
             "credentialsConfigured": { "type": "boolean", "description": "Whether a credential was configured. The credential itself is never recorded." },
-            "wireVersions": { "type": "object", "additionalProperties": false, "required": ["epcis", "cbv"], "properties": { "epcis": { "type": "string" }, "cbv": { "type": "string" } }, "description": "The versions sent in GS1-EPCIS-Version and GS1-CBV-Version." }
+            "wireVersions": { "type": "object", "additionalProperties": false, "required": ["epcis", "cbv"], "properties": { "epcis": { "type": "string" }, "cbv": { "type": "string" } }, "description": "The versions sent in GS1-EPCIS-Version and GS1-CBV-Version." },
+            "repeatListParameters": { "const": true, "description": "Present when the source was configured to be sent each value of a list as its own parameter. Absent when lists are sent pipe-delimited, which is the default." }
           }
         },
         "query": {

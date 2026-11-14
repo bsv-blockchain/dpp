@@ -192,6 +192,8 @@ for (const test of epcisStorageAdapterSuite(harness)) it(test.name, test.run)
 
 The suite holds an adapter to each promise, then runs imports, a conflict decision and an index rebuild over it. It stops the store before and after every durable call, reopens it, and checks that no acknowledged source was lost, that nothing is half recorded, and that finishing the work gives exactly the store an uninterrupted run gives. It uses `node:assert` and no test framework. `runEpcisStorageAdapterSuite` runs it from a script.
 
+For an adapter over a database, the application starter carries one for MongoDB on a single node, where no multi-document transaction is available, and runs this suite against it ([the MongoDB storage adapter](../packages/create-dpp-app.md#the-mongodb-storage-adapter)).
+
 ### Recovery
 
 An import takes these durable steps in order. Success is acknowledged only after the last.
@@ -254,8 +256,9 @@ A source is configuration on your server. Nothing in it comes from a request.
 | `credentials` | A function that obtains the credential, never the credential itself ([credentials](#credentials)). |
 | `localTest` | Permits plain `http` and private addresses. For a source on your own machine only. Every result records it. |
 | `wireVersions` | The values sent in `GS1-EPCIS-Version` and `GS1-CBV-Version`, when not the defaults ([what is sent](#what-is-sent-and-what-is-checked)). |
+| `repeatListParameters` | Sends each value of a list as its own parameter. Off by default, and a recorded leniency when on ([what is sent](#what-is-sent-and-what-is-checked)). |
 
-A pull is one configured query against one source. You name it with a `queryId`, unique within the `sourceId`, and the name is bound to the source, the base address, the query and the overlap margin. The same `queryId` with another definition is refused as `pull-conflict`. Limits, permitted origins and credentials are not part of the binding, so an operator can tighten them without making a new source.
+A pull is one configured query against one source. You name it with a `queryId`, unique within the `sourceId`, and the name is bound to the source, the base address, the query and the overlap margin. The same `queryId` with another definition is refused as `pull-conflict`. Limits, permitted origins, credentials, the versions sent and how a list is written are not part of the binding, so an operator can change them without making a new source.
 
 ```js
 import { openFileEpcisStorage, pullEpcisEvents, recoverEpcisExchange } from '@bsv/dpp-credentials/epcis-exchange'
@@ -422,11 +425,31 @@ An operator sets a limit in `source.policy.limits`. A value past its ceiling is 
 
 | Header | Sent | Checked on the answer |
 |---|---|---|
-| `GS1-EPCIS-Version` | `2.0.0` | Required, and must name 2.0 or a patch of it. A document's `schemaVersion` is never read in its place |
+| `GS1-EPCIS-Version` | `2.0.1` | Required, and must name 2.0 or a patch of it. A document's `schemaVersion` is never read in its place |
 | `GS1-CBV-Version` | `2.0.0` | Must name 2.0 or a patch of it when present |
 | `Accept` | `application/ld+json, application/json` | The answer's media type must be one of the two |
 
-A list, such as two identifiers for `MATCH_anyEPC`, is sent as one parameter with its values separated by `|`. A query with one value in each list does not depend on that.
+The two versions are the ones this package pins, exported as `EPCIS_VERSION` and `CBV_VERSION`, each with three parts as GS1's interface description gives them. The files a page is validated against are those of EPCIS 2.0.1, so that is what a request names. Set `wireVersions.epcis` or `wireVersions.cbv` on a source that needs another value. The pull record keeps what was sent in `source.wireVersions`.
+
+A list, such as two identifiers for `MATCH_anyEPC`, two event types for `eventType` or two identifiers for `EQ_eventID`, is sent as one parameter with its values separated by `|`. That is how GS1's interface description declares a list, and it is the default.
+
+Some sources read only a repeated parameter, `eventType=ObjectEvent&eventType=AggregationEvent`, and answer a server error to the pipe-delimited form. For such a source set `repeatListParameters: true`:
+
+```js
+source: {
+  sourceId: 'supplier-a',
+  baseUrl: 'https://events.example.org/epcis',
+  permittedOrigins: ['https://events.example.org'],
+  policy: { policyId: 'operator@1' },
+  repeatListParameters: true,
+}
+```
+
+- The option is per source and off by default.
+- It changes only how a list is written into the address of a query's first page. A next page is asked for at the address the source itself named.
+- What is recorded keeps one form. The query, the pass and each page's provenance hold a list as one value separated by `|`, whatever was sent.
+- The pull record says so in `source.repeatListParameters`, and each page and the result carry the leniency `list-parameters-repeated`.
+- A query with one value in each list is sent the same either way, so it records no leniency.
 
 ### Leniencies
 
@@ -439,8 +462,9 @@ Sources differ in small ways. These departures from a strict reading are accepte
 | `cbv-version-header-absent` | An answer without `GS1-CBV-Version` | The page is still validated against the pinned schema, and vocabulary values are retained as written |
 | `empty-final-page` | A full last page followed by an empty page | The empty page is retained like any other, and the pass ends where the source said it ends |
 | `cursor-expiry-unreadable` | A `GS1-Next-Page-Token-Expires` that is not a date | The cursor is used until the source rejects it, which leads to a replay |
+| `list-parameters-repeated` | Nothing from the source: you configured `repeatListParameters`, and a list of two or more values was sent as repeated parameters | The same values select the same events. Only their spelling in the address differs, and the record keeps the one form |
 
-None of them changes what is retained: every page is still held to the same limits, the same strict parse and the same schema, and its exact bytes are kept. An answer without `GS1-EPCIS-Version` is not accepted.
+The first five are met in what a source sends. The last is the one you switch on, for a source that reads only that form. None of them changes what is retained: every page is still held to the same limits, the same strict parse and the same schema, and its exact bytes are kept. An answer without `GS1-EPCIS-Version` is not accepted.
 
 ### Try it against your own endpoint
 
@@ -469,6 +493,7 @@ Retain the exact source bytes and their findings with anything derived from them
 |---|---|
 | Import/pull routes | Reference application routes under `/api/interoperability/epcis`, documented by the reference application. The standard fixes no import routes ([specification](https://github.com/bsv-blockchain/dpp/blob/588fbf7f23fd60122f515d47f2aa675d8a16f290/spec/epcis-interoperability.md), section 4). |
 | Availability and obligation | [Application service](../packages/application-service.md) source is private. These routes are not required by any conformance role. |
+| Application starter | The source candidate of `@bsv/create-dpp-app` serves import, a configured pull, retrieval, exact export and conflict decisions under `/api/epcis`, by calling `@bsv/dpp-credentials/epcis-exchange` over a MongoDB storage adapter ([EPCIS exchange](../packages/create-dpp-app.md#epcis-exchange)). The generated project's `apps/api/API.md` lists the routes. They are that application's own and no conformance role requires them. |
 | Own application | Design your own routes if offering EPCIS import over HTTP, and document them; what an import does is the specification's sections 1 to 3 and 7. |
 
 ## Parked: map events to SEALs

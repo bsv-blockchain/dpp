@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createAuth } from './auth.js'
 import { loadConfig } from './config.js'
+import { startEpcisExchange } from './epcis/exchange.js'
 import { openPlatform } from './platform.js'
 import { createServer } from './server.js'
 import { startWorker } from './worker.js'
@@ -24,12 +25,16 @@ if (devSession != null) {
   console.log('Sign-in is off: every request is the developer, a member of "Development brand". Configure MongoDB for sign-in and persistence.')
 }
 
+// The EPCIS exchange belongs to the API: its GS1 files are provisioned and its recovery has run before a request is accepted.
+// It is opened beside the platform and is never handed the wallet or the writer.
+const exchange = role === 'only' ? undefined : await startEpcisExchange({ config: config.epcis, db: platform.db, log: (line) => console.log(line) })
+
 let server: ReturnType<ReturnType<typeof createServer>['listen']> | undefined
 if (role !== 'only') {
   const here = dirname(fileURLToPath(import.meta.url))
   const candidates = [join(here, '..', '..', 'web', 'dist'), join(process.cwd(), 'apps', 'web', 'dist')]
   const webDist = candidates.find((path) => existsSync(join(path, 'index.html')))
-  const app = createServer({ platform, auth, devSession, webDist })
+  const app = createServer({ platform, auth, devSession, webDist, exchange })
   server = app.listen(config.port, () => {
     console.log(`API on http://localhost:${config.port}${webDist == null ? ' (no built web app; run the Vite dev server for the pages)' : ', serving the web app'}`)
   })
@@ -45,6 +50,9 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
     console.log(`${signal} received, stopping`)
     worker?.stop()
     server?.close()
-    void platform.close().finally(() => process.exit(0))
+    void (exchange?.close() ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(() => platform.close())
+      .finally(() => process.exit(0))
   })
 }

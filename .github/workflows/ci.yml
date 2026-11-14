@@ -135,8 +135,9 @@ jobs:
   # The starter: @bsv/create-dpp-app scaffolds an application from its bundled
   # template, pinned to the current release set. The CLI builds and tests,
   # then a scaffold in a temporary directory installs packed runtime candidates,
-  # typechecks, builds and runs the template's offline lifecycle test, on the
-  # oldest supported Node and the current LTS.
+  # typechecks, builds and runs the template's tests, on the oldest supported
+  # Node and the current LTS. The template's EPCIS tests fetch the pinned GS1
+  # files and a MongoDB test binary once.
   starter:
     runs-on: ubuntu-latest
     strategy:

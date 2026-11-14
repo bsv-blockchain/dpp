@@ -14,8 +14,10 @@ import type { JsonObject } from '../src/types.js';
 
 export interface FixtureRequest {
   path: string;
-  /** The query parameters, decoded. */
+  /** The query parameters, decoded. A parameter sent more than once is here with its last value. */
   query: Record<string, string>;
+  /** Every value of every query parameter, in the order sent. */
+  queryAll: Record<string, string[]>;
   headers: IncomingHttpHeaders;
 }
 
@@ -40,6 +42,13 @@ export interface FixtureBehaviour {
   mediaType: string;
   /** `changing` puts a new creationDate in every answer, as a live repository does, so a page read twice differs in its bytes. */
   creationDate: 'fixed' | 'changing';
+  /**
+   * How the source reads a list-valued parameter. `pipe`: one parameter whose
+   * values are separated by `|`, as the interface description declares.
+   * `repeated`: one parameter per value. Such a source takes a value with a
+   * `|` in it for a single value it cannot read, and answers a server error.
+   */
+  listParameters: 'pipe' | 'repeated';
   /** When the last page is full, name one more page, which is then empty. */
   emptyTailPage: boolean;
   /** The clock expiry is stated against. */
@@ -86,9 +95,11 @@ export const pullEvents = (count: number, from = 1): JsonObject[] => Array.from(
 /* --------------------------------- server -------------------------------- */
 
 const LISTS = ['epcList', 'childEPCs', 'inputEPCList', 'outputEPCList'];
+const LIST_PARAMETERS = ['MATCH_anyEPC', 'eventType', 'EQ_eventID'];
 
-function matches(event: JsonObject, query: Record<string, string>): boolean {
-  const any = (name: string): string[] | undefined => (query[name] == null ? undefined : query[name]!.split('|'));
+function matches(event: JsonObject, request: FixtureRequest, lists: 'pipe' | 'repeated'): boolean {
+  const { query } = request;
+  const any = (name: string): string[] | undefined => (query[name] == null ? undefined : lists === 'repeated' ? request.queryAll[name] : query[name]!.split('|'));
   const epcs = any('MATCH_anyEPC');
   if (epcs != null) {
     const named = [...LISTS.flatMap((list) => (Array.isArray(event[list]) ? (event[list] as unknown[]) : [])), event.parentID];
@@ -106,7 +117,7 @@ function matches(event: JsonObject, query: Record<string, string>): boolean {
 }
 
 export async function startEpcisFixtureServer(events: JsonObject[] = [], behaviour: Partial<FixtureBehaviour> = {}): Promise<FixtureServer> {
-  const settings: FixtureBehaviour = { linkRelation: 'quoted', linkTarget: 'absolute', tokenStyle: 'opaque', epcisVersion: '2.0.0', cbvVersion: '2.0.0', mediaType: 'application/ld+json', creationDate: 'fixed', emptyTailPage: false, clock: () => Date.now(), ...behaviour };
+  const settings: FixtureBehaviour = { linkRelation: 'quoted', linkTarget: 'absolute', tokenStyle: 'opaque', epcisVersion: '2.0.0', cbvVersion: '2.0.0', mediaType: 'application/ld+json', creationDate: 'fixed', listParameters: 'pipe', emptyTailPage: false, clock: () => Date.now(), ...behaviour };
   const requests: FixtureRequest[] = [];
   const tokens = new Map<string, number>();
   let answers = 0;
@@ -122,8 +133,13 @@ export async function startEpcisFixtureServer(events: JsonObject[] = [], behavio
       if (status != null || known == null || Number.isNaN(known)) { response.writeHead(status ?? 410, { 'content-type': 'application/problem+json' }).end('{"title":"the page token is not known"}'); return; }
       offset = known;
     }
+    // A source that reads lists as repeated parameters has no way to read a pipe-delimited one, and fails on it.
+    if (settings.listParameters === 'repeated' && LIST_PARAMETERS.some((name) => (request.queryAll[name] ?? []).some((value) => value.includes('|')))) {
+      response.writeHead(500, { 'content-type': 'application/problem+json' }).end('{"title":"the query could not be read"}');
+      return;
+    }
     const perPage = Math.max(1, Number(query.perPage ?? '30'));
-    const matched = fixture.events.filter((event) => matches(event, query));
+    const matched = fixture.events.filter((event) => matches(event, request, settings.listParameters));
     const slice = matched.slice(offset, offset + perPage);
     const more = offset + perPage < matched.length || (settings.emptyTailPage && slice.length === perPage && offset + perPage === matched.length);
     answers += 1;
@@ -134,7 +150,8 @@ export async function startEpcisFixtureServer(events: JsonObject[] = [], behavio
       const next = offset + perPage;
       const token = settings.tokenStyle === 'numeric' ? String(next) : `t${Buffer.from(`after-${next}`).toString('base64url')}`;
       tokens.set(token, next);
-      const parameters = new URLSearchParams(query);
+      // The next link carries the query as it was asked, repeats included.
+      const parameters = new URLSearchParams(Object.entries(request.queryAll).flatMap(([name, values]) => values.map((value) => [name, value])));
       parameters.set('nextPageToken', token);
       const target = settings.linkTarget === 'absolute' ? `${origin}/epcis/events?${parameters.toString()}` : `events?${parameters.toString()}`;
       headers.Link = settings.linkRelation === 'quoted' ? `<${target}>; rel="next"` : `<${target}>; rel=next`;
@@ -155,7 +172,9 @@ export async function startEpcisFixtureServer(events: JsonObject[] = [], behavio
   const server: Server = createServer((incoming, response) => {
     void (async () => {
       const url = new URL(incoming.url ?? '/', origin);
-      const request: FixtureRequest = { path: url.pathname, query: Object.fromEntries(url.searchParams), headers: incoming.headers };
+      const queryAll: Record<string, string[]> = {};
+      for (const [name, value] of url.searchParams) (queryAll[name] ??= []).push(value);
+      const request: FixtureRequest = { path: url.pathname, query: Object.fromEntries(url.searchParams), queryAll, headers: incoming.headers };
       requests.push(request);
       await settings.onRequest?.(request);
       if (settings.intercept != null && (await settings.intercept(request, response, incoming))) return;

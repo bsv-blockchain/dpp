@@ -8,10 +8,10 @@ Application developers can generate an editable passport app with `@bsv/create-d
 |---|---|
 | Create a project | Node 22 or later, npm, network access to install dependencies and a new or empty destination; non-empty directories are refused |
 | Check a source candidate | A DPP repository checkout and a new app directory; run the source commands below from the repository root |
-| Offline lifecycle exercise | The generated project and installed dependencies; no wallet, funds, Docker or network |
+| Offline lifecycle exercise | The generated project and installed dependencies; no wallet, funds, Docker or network. In the source candidate `npm test` also tests EPCIS exchange, and its first run fetches the three pinned GS1 files and a MongoDB test binary once ([EPCIS exchange](#epcis-exchange)) |
 | Activate live writes | Use the generated README to arrange wallet, funds and index admission. Stop before `npm run go-live` until these and write authority are established |
 
-**Run the starter once.** It already declares and pins `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/sdk` and, for the offline exercise only, `@bsv/dpp-overlay`. The source candidate also declares the three validation libraries a profile held by a binding needs, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`. Do not add any of them again.
+**Run the starter once.** It already declares and pins `@bsv/dpp-protocol`, `@bsv/dpp-profiles`, `@bsv/sdk` and, for the offline exercise only, `@bsv/dpp-overlay`. The source candidate also declares the three validation libraries a profile held by a binding needs, `jsonld@9.0.0`, `n3@2.13.12` and `shacl-engine@1.1.3`, and `@bsv/dpp-credentials` for EPCIS exchange. Do not add any of them again.
 
 | Part | What it does | Your action |
 | --- | --- | --- |
@@ -70,6 +70,7 @@ The source check installs the packed generator, creates the app, installs local 
 | A journal-driven worker for proofs and re-announcements | Scheduling and monitoring |
 | GS1 Digital Link identifiers under the demonstration prefix 952 | A licensed GS1 prefix |
 | In the source candidate: forms, validation and structured display for `eu-battery@1` and `eu-textile@1`, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
+| In the source candidate: EPCIS file import, a configured pull and exact export, over a MongoDB storage adapter | Your sources, and what you do with the events |
 
 **The starter's passport host is not yet a resolver.** It answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so it does not meet the rule in [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) that the host a GS1 Digital Link identifier is minted under be a GS1-Conformant Resolver or redirect every `/01/` request to one. The generated README's next steps say what to change.
 
@@ -115,11 +116,65 @@ The folder is registered at start with no source change. A folder whose digest i
 
 ### What the candidate does not do
 
-- It imports, pulls and exports no EPCIS events.
+- It captures no EPCIS events, subscribes to none, reads no EPCIS XML and maps no event to a passport state ([EPCIS exchange](#epcis-exchange)).
 - It writes nothing under a retired profile. `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are not offered, a write under one is refused with `profile-retired`, and a record that declares one reads as not checked, with the replacement named. `general@2` works as before ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)).
 - It converts nothing. A passport already in the journal under a retired profile stays there as written, and it gets no further state, hand-on or claim.
 - After a hand-on the restricted part stays sealed to the holder who wrote it. The new holder's authorised view is not checked until they write an update.
 - The web app has no test runner. Its form logic is tested by the API's tests, and its pages are type-checked by the build.
+
+## EPCIS exchange
+
+This section describes the source candidate `0.1.0-beta.2`. The published `0.1.0-beta.1` has no EPCIS exchange.
+
+The generated application imports EPCIS 2.0 documents, pulls events from a source you configure and exports what it received, byte for byte. It does this by calling `@bsv/dpp-credentials/epcis-exchange` ([durable EPCIS import](dpp-credentials.md#durable-epcis-import) and [EPCIS query pull](dpp-credentials.md#epcis-query-pull)). The application supplies the storage, the routes and the pages. It holds no second import, pull or export of its own.
+
+**An event is supplied data.** An import or a pull changes no custody, signs nothing, writes nothing on chain and never calls the wallet. A document that is valid passed a check of its format. It is not signed, and nothing verifies who observed an event or that it happened.
+
+| Part | What the application does |
+|---|---|
+| Start | Obtains the three pinned GS1 files into `DPP_GS1_ARTEFACTS_DIR`, checks each against its digest, and logs one line: present, fetched or unavailable. Without them it still starts, and refuses every import and pull with how to provide them. It then runs the module's recovery and logs what it did, before it accepts a request |
+| Import | Takes an uploaded document as the exact bytes that arrived, under a request identifier the client chose. The same identifier with the same bytes is the same request and keeps one import. With other bytes it is refused, and the first import stands |
+| Refusal | A transport that cannot be kept is answered with a status that says why, and nothing of it is kept. A document that parses and fails validation is kept, with its findings |
+| Export | Answers the retained bytes under the media type they arrived with. Never a document the application wrote |
+| Pull | One bounded run against a source configured on the server. A later run under the same query name continues from the checkpoint, also after a restart |
+| Sources | An identifier, a base address, permitted origins and a credential, all from the environment. The credential is never in the database, an answer, a log line or the web client. Plain `http` and private addresses need `LOCAL_TEST=true` for that source, and the API's description of the source says when it is on |
+| Store | MongoDB, through a storage adapter the template carries. Without MongoDB, memory |
+| Pages | An events page to upload, pull, search and download. A passport's page lists the events that name its product in a section of their own, labelled as supplied data and kept apart from the passport's record |
+
+1. Run `npm run dev` in the generated project and open **Events**.
+2. Choose an EPCIS 2.0 JSON or JSON-LD document and select **Upload**. The page says whether it was refused or retained, and lists its findings.
+3. Select **Download** beside the import. The file is the one you uploaded, byte for byte.
+4. Enter an identifier exactly as an event writes it under **Events that name an identifier**.
+5. To pull, name a source in the project's `.env` and start the API again:
+
+```sh
+EPCIS_SOURCES=supplier-a
+EPCIS_SOURCE_SUPPLIER_A_URL=https://events.example.org/epcis
+EPCIS_SOURCE_SUPPLIER_A_BEARER_TOKEN=<the token the source gave you>
+```
+
+6. Under **Pull from a source**, give the query a name and select **Run one pull**. The outcome is shown in the module's own words. A run that ended before the source named a last page says the history is partial.
+
+The generated README lists every setting of a source and every route under `/api/epcis`.
+
+### The MongoDB storage adapter
+
+The exchange asks one hard thing of a store: a batch of records is written whole or not at all, also across a crash. The reference deployment runs one MongoDB node, which has no multi-document transaction. The adapter, `apps/api/src/epcis/mongo-storage.ts` in the generated project, makes a batch atomic without one.
+
+| Step | What happens |
+|---|---|
+| Commit | The adapter checks what the batch expects, then replaces one log document with the whole batch, on the condition that no other batch was committed meanwhile. That conditional update of one document is the commit, and it is acknowledged from the journal |
+| Apply | Each record is written as a whole value, stamped with the batch's sequence number, and the log document is marked idle |
+| Reopen | A store that stopped between the two finds the committed batch and applies it again. A write lands only on a record an earlier batch wrote last, so applying twice, or late, changes nothing. A deleted record leaves a small marker, so an old batch cannot bring it back |
+| Read | An answer is taken between two looks at the log document, and taken again if a batch moved meanwhile. A reader in another process never sees part of a batch |
+
+The generated project's tests run `epcisStorageAdapterSuite`, the suite the module ships for any adapter, against one MongoDB node in memory. They then stop the adapter before every step it takes in the database, and run two writers over one store.
+
+| Limit | What it means |
+|---|---|
+| A batch is one MongoDB document until it is applied | A record or batch past 15 MiB is refused with nothing written. An ordinary document stays far below that. The file-system adapter has no such limit |
+| Markers of deleted records are kept | One small document for each finished import |
+| Recovery runs alone | The module's recovery assumes nothing else is writing. Start API instances one at a time |
 
 ## Automated setup
 
