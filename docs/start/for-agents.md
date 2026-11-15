@@ -61,7 +61,8 @@ Read relevant [limitations](../operate/limitations.md) before promising an outco
 | Runtime | Use the [support table](../packages/support-table.md). Node/ESM support does not establish browser module support. Declare the SDK if directly imported; follow profile asset-packaging instructions. |
 | Product data | Check its declared profile separately; a valid transaction report does not establish profile validity. Start with `node examples/sample-payload.mjs` and [profile validation](../packages/dpp-profiles.md#check-a-payload-against-its-profile), not an unchecked hosted sample. |
 | Services | Native lifecycle claims use core helpers without the credentials package. Readers need no funded wallet; HTTP index clients need no overlay hosting package. |
-| Index | Run it from the repository's Compose preset, `deploy/compose.yml` with `deploy/operator.env`; its image builds `@bsv/dpp-overlay`, so do not install the runtime separately. `@bsv/create-dpp-index` is retired. Custom alternative: direct runtime integration. |
+| Index | Run it from the repository's Compose preset, `deploy/compose.yml` with `deploy/operator.env`; its image is `@bsv/dpp-overlay`, so do not install the runtime separately. The preset pins its images by digest; while the current set's images are unpublished, add `-f deploy/compose.build.yml --env-file deploy/build.env` and `--build`. `@bsv/create-dpp-index` is retired. Custom alternative: direct runtime integration. |
+| Validator service | The preset runs it for applications that validate a product document under a profile held by a binding. The index never calls it. Protocol-only and index-only installations need neither it nor its engine libraries. |
 
 For a GS1 key lookup, use the selected index URL:
 

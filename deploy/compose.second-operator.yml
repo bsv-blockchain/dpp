@@ -7,11 +7,19 @@
 # (packages/dpp-overlay/README.md, Running two operators locally).
 #
 #   docker compose -f deploy/compose.second-operator.yml --env-file deploy/operator-b.env up -d
+#
+# Both images are named by digest, exactly as in deploy/compose.yml: the index
+# through DPP_IMAGE_REGISTRY and OVERLAY_IMAGE_DIGEST, which the env file
+# sets from the release set and which take no tag, and MongoDB by tag and
+# digest. To run the index built from a source checkout instead, add
+# deploy/compose.second-operator.build.yml and deploy/build.env
+# (deploy/README.md, Build from source). This file runs no validator service:
+# the first operator's preset has it.
 name: dpp-overlay-b
 
 services:
   mongo-b:
-    image: mongo:7
+    image: mongo:7.0.48@sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71
     restart: unless-stopped
     command: ["mongod", "--bind_ip_all"]
     volumes:
@@ -23,7 +31,7 @@ services:
       retries: 12
 
   overlay-b:
-    image: ${OVERLAY_IMAGE:-dpp-overlay:local}
+    image: ${DPP_IMAGE_REGISTRY:?set DPP_IMAGE_REGISTRY to the registry of this release set's images}/dpp-overlay@${OVERLAY_IMAGE_DIGEST:?set OVERLAY_IMAGE_DIGEST to the sha256 digest of the published dpp-overlay image. A tag is not accepted. To build from source see deploy/README.md}
     restart: unless-stopped
     depends_on:
       mongo-b:

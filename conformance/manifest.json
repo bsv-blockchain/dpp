@@ -2043,13 +2043,15 @@
       "evidenceRefs": [
         "scripts/validator-parity.mjs",
         "scripts/validator-image-check.mjs",
-        "packages/dpp-profiles/validator-image/image-check.json"
+        "packages/dpp-profiles/validator-image/image-check.json",
+        "scripts/delivery-parity.mjs",
+        "deploy/evidence/delivery-parity.json"
       ],
       "status": "tested",
       "reviewedAt": "2026-11-15",
       "reviewOwner": "dpp maintainers",
       "sourceDigest": "8505ce3e3ef12409625894582e6d82ba8fa307007df6ad9e6a615083b576559b",
-      "notes": "New on 2026-11-15 with the section. The sector bindings' and the example profiles' vectors, 49 answers, are identical with the engine in process, through the service started in the test in both of its arrangements, and through the built image with no network and from outside it; a second implementation of the contract, written for the test in a process of its own, decides every vector the same way, finding for finding. A stopped service, a service without SPARQL constraints and every malformed, oversized, late or redirected answer give unknown. An operation over the time limit is stopped by ending its thread, which a test shows with a pattern that never yields; an engine a caller supplies in place of the package's cannot be stopped, and the service says so in its answer. The image check is a script and a recorded result, not a unit test, and the continuous integration workflow runs it."
+      "notes": "New on 2026-11-15 with the section. The sector bindings' and the example profiles' vectors, 49 answers, are identical with the engine in process, through the service started in the test in both of its arrangements, and through the built image with no network and from outside it; a second implementation of the contract, written for the test in a process of its own, decides every vector the same way, finding for finding. A stopped service, a service without SPARQL constraints and every malformed, oversized, late or redirected answer give unknown. An operation over the time limit is stopped by ending its thread, which a test shows with a pattern that never yields; an engine a caller supplies in place of the package's cannot be stopped, and the service says so in its answer. The image check is a script and a recorded result, not a unit test, and the continuous integration workflow runs it. Re-read 2026-11-15 with the operator preset: the same 49 vectors give the identical answer through the validator client of a clean npm consumer, which installs no engine library, against the preset's validator service and against the dpp-validator command of the packed package; a client reconfigured to the second implementation decides every vector the same way; and with the preset's validator stopped, or no service at the configured address, nothing that needs the engine passes. The preset's index is on a network the validator is not on and never calls it. scripts/delivery-parity.mjs is the run and deploy/evidence/delivery-parity.json its record, made from images built on one machine for its own platform."
     },
     {
       "id": "VAL-1-validator-contract",
@@ -3740,6 +3742,47 @@
       "reviewedAt": "2026-11-12",
       "reviewOwner": "dpp maintainers",
       "notes": "The Engine's own deep eviction is private and would erase the lineage on a history-retaining topic, so retraction performs the first step through the same storage calls and stops, then reverses the spent marks so the same transaction can be re-announced. Under CHAIN_TRACKER=scripts-only the network check cannot run and the answer says so. Re-read 2026-11-12 against contract 0.14.0-draft, which adds a 403 for a per-publisher token of another key and says a retraction is local to the index; SVC-6-write-credentials and SVC-2-retraction cite the tests of those. The summary holds, and retract.test.ts also refuses a spent output. From 2026-11-12 this is the contract's retraction extension, version 1, optional and versioned apart from the core; its text is unchanged."
+    },
+    {
+      "id": "OVL-1-delivery-parity",
+      "sourceId": "contract-overlay",
+      "sourceUri": "contracts/overlay.yaml",
+      "sourceVersion": "0.14.0-draft",
+      "clause": "the whole contract, as the reference index answers it from its npm package and from its image",
+      "summary": "The reference index is one runtime delivered two ways, as the npm package with its dpp-index command and as an image the operator preset pins by digest. Both deliveries name the same source revision, release set, package versions and Node version, carry the same built files byte for byte, refuse the same configuration at start, answer the contract's routes the same way with a write refused until a token is issued, keep what they admitted across a stop and start, and export evidence the other restores. The preset names every image by digest and refuses to start without one; the index path needs no validator service and no validation engine.",
+      "layer": "reference",
+      "roles": [
+        "overlay"
+      ],
+      "applicability": "when the reference index is run from its npm package or from the operator preset's image",
+      "profileId": "core",
+      "implementationRefs": [
+        "packages/dpp-overlay/Dockerfile",
+        "packages/dpp-profiles/validator-image/Dockerfile",
+        "deploy/compose.yml",
+        "deploy/compose.build.yml",
+        "deploy/operator.env.example",
+        "release/dpp-release-2026-11.json (images)",
+        "scripts/lib/images.mjs",
+        "scripts/release-images.mjs",
+        "packages/dpp-overlay/src/index.ts (engineFromEnvironment)"
+      ],
+      "testRefs": [
+        "conformance/test/release-images.test.mjs",
+        "packages/dpp-overlay/test/bootRefusal.test.ts"
+      ],
+      "evidenceRefs": [
+        "scripts/delivery-parity.mjs",
+        "scripts/lib/index-contract.mjs",
+        "scripts/image-contents-check.mjs",
+        "scripts/consumer-check.mjs",
+        "deploy/evidence/delivery-parity.json",
+        "deploy/evidence/image-contents.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-15",
+      "reviewOwner": "dpp maintainers",
+      "notes": "New on 2026-11-15: a reference-layer row, never part of a claim. The overlay package's own contract tests run in the test process over stores in memory and cannot be pointed at an index somebody else started, so scripts/lib/index-contract.mjs asks the same routes from outside and scripts/delivery-parity.mjs runs it against an index a clean consumer started from the packed packages and against the preset, each over its own MongoDB, and compares what the two answered. The run is a script, a recorded result and a continuous integration job, not a unit test; the unit tests hold the image declaration, the preset's rendering and the start refusals. The first run found two differences, both corrected in the same change: the dpp-index command printed a refusal decided after the database connection was open and did not exit, where the image's entry point exited, and a fresh npm installation resolved the mongodb driver to a later version than the image installs, so @bsv/dpp-overlay now names 7.6.0 exactly. Other third-party packages named by range still resolve on the day a consumer installs, and the record lists the ones that differed from the image's lockfile. The record was made from images built on one machine for its own platform: the multi-platform build, the registry digests and the image publication workflow have not been run, and the preset's own images are unpublished."
     },
     {
       "id": "OVL-2-refusal-reason",

@@ -261,6 +261,8 @@ docker build -f packages/dpp-profiles/validator-image/Dockerfile -t dpp-validato
 docker run --rm -p 127.0.0.1:8090:8090 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true dpp-validator
 ```
 
+The [operator preset](../operate/README.md#give-an-application-the-validator) runs the same image as its `validator` service, pinned by digest, with no published port: an application joins the preset's `validation` network, or the operator publishes the port on purpose behind a token.
+
 Each prints one JSON line naming its address, engine and limits, then one line per request. Neither the command nor the image is published yet: both are in the unpublished candidate `dpp-release-2026-11`.
 
 2. Check it from another terminal:

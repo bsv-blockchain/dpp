@@ -366,6 +366,163 @@
         }
       }
     },
+    "images": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry",
+        "preset",
+        "own",
+        "thirdParty"
+      ],
+      "description": "The container images that belong to the set: the ones built from this repository, and the ones the operator preset names that somebody else publishes. The one place the registry, the names and the digests are written; the preset under deploy/ is rendered from it and the checker holds the preset to it. `image` is the earlier form, kept by the sets that predate this member.",
+      "properties": {
+        "registry": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9.-]*(:[0-9]+)?(/[a-z0-9][a-z0-9._-]*)*$",
+          "description": "The registry host and namespace the set's own images are published under, with no trailing slash. A name until the images are published."
+        },
+        "preset": {
+          "type": "string",
+          "description": "The Compose file that runs the images."
+        },
+        "own": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "service",
+              "package",
+              "dockerfile",
+              "runtime",
+              "platforms",
+              "digestVariable",
+              "digest"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9._-]*$",
+                "description": "The image's name under the registry."
+              },
+              "service": {
+                "type": "string",
+                "description": "The preset service that runs it."
+              },
+              "package": {
+                "type": "string",
+                "description": "The package of this set whose built code the image runs; the image is labelled with that package's version."
+              },
+              "dockerfile": {
+                "type": "string"
+              },
+              "runtime": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "node",
+                  "baseImage"
+                ],
+                "properties": {
+                  "node": {
+                    "type": "string",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "description": "The exact Node version the image runs, which its Dockerfile checks in every stage."
+                  },
+                  "baseImage": {
+                    "type": "string"
+                  }
+                }
+              },
+              "platforms": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^linux/[a-z0-9]+$"
+                }
+              },
+              "digestVariable": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*_IMAGE_DIGEST$",
+                "description": "The preset variable that carries the digest."
+              },
+              "digest": {
+                "oneOf": [
+                  {
+                    "const": "unpublished"
+                  },
+                  {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                ],
+                "description": "The digest of the published multi-platform image, or `unpublished` until the image publication workflow has pushed it. Never a tag."
+              }
+            }
+          }
+        },
+        "thirdParty": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "service",
+              "repository",
+              "tag",
+              "digest",
+              "resolvedAt",
+              "licence",
+              "distribution"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "service": {
+                "type": "string"
+              },
+              "repository": {
+                "type": "string",
+                "description": "The image repository as its publisher names it."
+              },
+              "tag": {
+                "type": "string",
+                "description": "The exact version tag the digest was resolved from, kept for the reader. The digest is what is pulled."
+              },
+              "digest": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "description": "The digest of the multi-platform image index the tag named on `resolvedAt`."
+              },
+              "resolvedAt": {
+                "type": "string",
+                "format": "date"
+              },
+              "platforms": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "licence": {
+                "type": "string",
+                "description": "The licence its publisher distributes it under, as an SPDX identifier where one exists. Not this repository's licence."
+              },
+              "distribution": {
+                "type": "string",
+                "description": "How it reaches a deployment."
+              }
+            }
+          }
+        }
+      }
+    },
     "selection": {
       "type": "string",
       "pattern": "^conformance/selections/[A-Za-z0-9.-]+\\.json$",

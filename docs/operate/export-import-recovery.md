@@ -40,7 +40,7 @@ The Compose preset backs up its MongoDB volume. Its [restart, back up and restor
 
 ```sh
 docker compose -f deploy/compose.yml --env-file deploy/operator.env stop
-docker run --rm -v dpp-overlay_mongo-data:/data -v "$PWD":/out mongo:7 tar czf /out/mongo-data.tgz /data
+docker run --rm -v dpp-overlay_mongo-data:/data -v "$PWD":/out "$(docker compose -f deploy/compose.yml --env-file deploy/operator.env config --images | grep '^mongo')" tar czf /out/mongo-data.tgz /data
 docker compose -f deploy/compose.yml --env-file deploy/operator.env start
 ```
 

@@ -489,5 +489,59 @@
     "dockerfile": "packages/dpp-overlay/Dockerfile",
     "preset": "deploy/compose.yml",
     "tag": "dpp-overlay:0.4.0"
+  },
+  "images": {
+    "registry": "ghcr.io/bsv-blockchain",
+    "preset": "deploy/compose.yml",
+    "own": [
+      {
+        "name": "dpp-overlay",
+        "service": "overlay",
+        "package": "@bsv/dpp-overlay",
+        "dockerfile": "packages/dpp-overlay/Dockerfile",
+        "runtime": {
+          "node": "22.23.4",
+          "baseImage": "node:22.23.4-slim"
+        },
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ],
+        "digestVariable": "OVERLAY_IMAGE_DIGEST",
+        "digest": "unpublished"
+      },
+      {
+        "name": "dpp-validator",
+        "service": "validator",
+        "package": "@bsv/dpp-profiles",
+        "dockerfile": "packages/dpp-profiles/validator-image/Dockerfile",
+        "runtime": {
+          "node": "22.23.4",
+          "baseImage": "node:22.23.4-slim"
+        },
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ],
+        "digestVariable": "VALIDATOR_IMAGE_DIGEST",
+        "digest": "unpublished"
+      }
+    ],
+    "thirdParty": [
+      {
+        "name": "mongo",
+        "service": "mongo",
+        "repository": "mongo",
+        "tag": "7.0.48",
+        "digest": "sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71",
+        "resolvedAt": "2026-11-15",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64"
+        ],
+        "licence": "SSPL-1.0",
+        "distribution": "MongoDB Community Server, named by the preset and pulled by the operator from its publisher. No image, package, bundle or mirror of this repository contains it."
+      }
+    ]
   }
 }

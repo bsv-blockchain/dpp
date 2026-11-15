@@ -250,11 +250,11 @@ Set these in `deploy/operator.env` and leave the rest as the example has them:
 ### 2.4 Start the index
 
 ```sh
-docker compose -f deploy/compose.yml --env-file deploy/operator.env up -d --build
+docker compose -f deploy/compose.yml -f deploy/compose.build.yml --env-file deploy/operator.env --env-file deploy/build.env up -d --build
 curl --fail http://localhost:8080/health
 ```
 
-Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. The first run builds the image, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run an index from source](../operate/README.md) shows.
+Your index is at `http://localhost:8080`, or the `OVERLAY_PORT` you set. This command builds the index and validator images from your checkout, because the images of the current release set are not published yet; once they are, the preset pulls them by digest and the two added files are not needed ([build from source](../operate/README.md#build-from-source)). The first run builds the images, so it is slower. If `curl` is refused, the index may still be starting: retry after a few seconds, and if it stays down, read the logs as [run an index from source](../operate/README.md) shows.
 
 ### 2.5 Confirm it names your key
 

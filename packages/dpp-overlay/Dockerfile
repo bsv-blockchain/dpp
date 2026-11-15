@@ -9,6 +9,21 @@
 # Configuration is environment only; the Configuration table in this
 # directory's README.md lists the variables and the root .dockerignore keeps
 # .env files out of the context.
+#
+# The image is one delivery of @bsv/dpp-overlay and the npm package is the
+# other: the same built files, started by the same code. Four build arguments
+# say which release an image belongs to, and the build writes them as labels
+# (scripts/release-images.mjs build passes them, and its inspect command
+# reads them back and holds them to the files inside the image):
+#
+#   SOURCE_REVISION   the commit the image was built from
+#   SOURCE_STATE      committed, or working-tree for a checkout with changes
+#   RELEASE_SET       the release set the revision belongs to
+#   PACKAGE_VERSION   the version of @bsv/dpp-overlay, which the build holds
+#                     to the package manifest it copied
+#
+# A build that names none of them still works and is labelled unknown, which
+# no release accepts.
 
 # The base image is a build argument so the same Docker Official Image can
 # come from a mirror: the repository workflows take it from the first of
@@ -70,6 +85,28 @@ COPY --from=build /repo/packages/dpp-profiles/frozen.json packages/dpp-profiles/
 
 # Informational: the service binds PORT when the platform injects one.
 EXPOSE 8080
+
+# Last, so that a new revision rebuilds no layer above. The licence label
+# names the licence of this repository's code in the image; the base image
+# and the installed dependencies keep their own terms, and the scope label
+# says so.
+ARG SOURCE_REVISION=unknown
+ARG SOURCE_STATE=unknown
+ARG RELEASE_SET=unknown
+ARG PACKAGE_VERSION=unknown
+RUN test "$PACKAGE_VERSION" = unknown \
+    || test "$(node -p "require('./packages/dpp-overlay/package.json').version")" = "$PACKAGE_VERSION"
+LABEL org.opencontainers.image.title="dpp-overlay" \
+      org.opencontainers.image.description="The DPP reference index: @bsv/dpp-overlay started by its own entry point" \
+      org.opencontainers.image.source="https://github.com/bsv-blockchain/dpp" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opencontainers.image.version="${PACKAGE_VERSION}" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      io.github.bsv-blockchain.dpp.package="@bsv/dpp-overlay" \
+      io.github.bsv-blockchain.dpp.release-set="${RELEASE_SET}" \
+      io.github.bsv-blockchain.dpp.source-state="${SOURCE_STATE}" \
+      io.github.bsv-blockchain.dpp.node="22.23.4" \
+      io.github.bsv-blockchain.dpp.licence-scope="Apache-2.0 covers this repository's code (LICENSE, NOTICE and PATENTS in /repo). The base image and every installed dependency keep their own terms and notices."
 
 # node directly, not npm: npm as PID 1 does not forward SIGTERM, so the
 # graceful shutdown in src/index.ts would never run and every stop would be a

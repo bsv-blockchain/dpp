@@ -28,6 +28,11 @@
 # src/validator-command.ts and in docs/packages/dpp-profiles.md. The image
 # runs as the unprivileged node user, needs no writable file system and no
 # capability, and makes no outbound connection.
+#
+# The build arguments SOURCE_REVISION, SOURCE_STATE, RELEASE_SET and
+# PACKAGE_VERSION say which release the image belongs to and are written as
+# labels, exactly as for the index image; PACKAGE_VERSION is the version of
+# @bsv/dpp-profiles, held to the package manifest the image carries.
 
 # The base image is a build argument so the same Docker Official Image can
 # come from a mirror, exactly as for the index image.
@@ -85,6 +90,28 @@ COPY --from=build /repo/packages/dpp-profiles/dist/validator-worker.js packages/
 ENV VALIDATOR_HOST=0.0.0.0
 ENV VALIDATOR_PORT=8090
 EXPOSE 8090
+
+# Last, so that a new revision rebuilds no layer above. The licence label
+# names the licence of this repository's code in the image; the base image
+# and the installed libraries keep their own terms, listed in
+# licence-inventory.json and reproduced in THIRD-PARTY-NOTICES.txt.
+ARG SOURCE_REVISION=unknown
+ARG SOURCE_STATE=unknown
+ARG RELEASE_SET=unknown
+ARG PACKAGE_VERSION=unknown
+RUN test "$PACKAGE_VERSION" = unknown \
+    || test "$(node -p "require('./packages/dpp-profiles/package.json').version")" = "$PACKAGE_VERSION"
+LABEL org.opencontainers.image.title="dpp-validator" \
+      org.opencontainers.image.description="The DPP validator service: the validation engine of @bsv/dpp-profiles behind the dpp-validator/1 contract" \
+      org.opencontainers.image.source="https://github.com/bsv-blockchain/dpp" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opencontainers.image.version="${PACKAGE_VERSION}" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      io.github.bsv-blockchain.dpp.package="@bsv/dpp-profiles" \
+      io.github.bsv-blockchain.dpp.release-set="${RELEASE_SET}" \
+      io.github.bsv-blockchain.dpp.source-state="${SOURCE_STATE}" \
+      io.github.bsv-blockchain.dpp.node="22.23.4" \
+      io.github.bsv-blockchain.dpp.licence-scope="Apache-2.0 covers this repository's code (LICENSE, NOTICE and PATENTS in /app). The base image and every installed library keep their own terms: licence-inventory.json and THIRD-PARTY-NOTICES.txt in /app."
 
 USER node
 

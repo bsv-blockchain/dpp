@@ -19,11 +19,19 @@
  * a strict TypeScript project. One sentence per assertion, naming what it
  * covered; never a score; exit 1 when any sentence does not hold.
  *
+ * Last, the two narrower installations, each in a project of its own: the
+ * protocol package alone, which runs the whole lifecycle offline, and the
+ * index with the two packages it depends on, whose dpp-index command is
+ * started, asked for its health and capabilities and stopped. Neither holds
+ * an engine library of the validator service, and neither needs that
+ * service to be running anywhere.
+ *
  *   node scripts/consumer-check.mjs                    # after scripts/release-candidates.mjs
  *   KEEP_CONSUMER=1 node scripts/consumer-check.mjs    # leave the temporary project behind
  */
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, cpSync } from 'node:fs'
+import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -250,6 +258,8 @@ console.log(JSON.stringify(out))
       }
     }
     say(existsSync(join(pkgDir, 'LICENSE')) || existsSync(join(pkgDir, 'LICENSE.md')), `${c.name} carries its licence file.`)
+    const notices = ['NOTICE', 'PATENTS'].filter((file) => !existsSync(join(pkgDir, file)) || !readFileSync(join(pkgDir, file)).equals(readFileSync(join(root, file))))
+    say(notices.length === 0, `${c.name} carries the repository's NOTICE and PATENTS, byte for byte${notices.length === 0 ? '' : `, but not ${notices.join(' or ')}`}.`)
   }
 
   // 4. The types: a strict TypeScript project importing every package and every credentials subpath, using a declaration from each.
@@ -316,6 +326,73 @@ export async function restore(storage: EpcisExchangeStorage, source: EpcisRecove
 } finally {
   if (process.env.KEEP_CONSUMER === '1') console.log(`consumer project kept at ${dir}`)
   else rmSync(dir, { recursive: true, force: true })
+}
+
+// 5. The two narrower installations: the protocol alone, and the index alone. Each is a project of its own, so
+// nothing the full installation above brought in can stand in for something these lack.
+const ENGINE_LIBRARIES = ['jsonld', 'n3', 'shacl-engine']
+const narrow = (label, names) => {
+  const project = mkdtempSync(join(tmpdir(), `dpp-consumer-${label}-`))
+  writeFileSync(join(project, 'package.json'), JSON.stringify({ name: `dpp-consumer-${label}`, private: true, type: 'module', version: '0.0.0' }, null, 2))
+  const specs = names.map((name) => { const c = record.candidates.find((x) => x.name === name); return fromRegistry ? `${c.name}@${c.version}` : join(candidateDir, c.filename) })
+  run(['npm', 'install', '--save-exact', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund', '--registry', NPM_REGISTRY, '--cache', join(project, '.npm-cache'), ...specs], project)
+  return { project, has: (name) => existsSync(join(project, 'node_modules', ...name.split('/'), 'package.json')) }
+}
+const freePort = () => new Promise((done, fail) => { const server = createServer(); server.once('error', fail); server.listen(0, '127.0.0.1', () => { const { port } = server.address(); server.close(() => done(port)) }) })
+const hasAll = (names) => names.every((name) => record.candidates.some((c) => c.name === name))
+
+if (hasAll(['@bsv/dpp-protocol'])) {
+  let protocolOnly
+  try {
+    protocolOnly = narrow('protocol', ['@bsv/dpp-protocol'])
+    const beside = ['@bsv/dpp-profiles', '@bsv/dpp-overlay', '@bsv/dpp-credentials', 'mongodb', ...ENGINE_LIBRARIES].filter((name) => protocolOnly.has(name))
+    say(protocolOnly.has('@bsv/dpp-protocol') && beside.length === 0, `protocol-only installation: @bsv/dpp-protocol installs with @bsv/sdk and no other package of the set, no database driver and no engine library of the validator service${beside.length === 0 ? '' : `, but it brought ${beside.join(', ')}`}.`)
+    cpSync(join(root, 'examples/lifecycle-v2.mjs'), join(protocolOnly.project, 'lifecycle-v2.mjs'))
+    run(['node', 'lifecycle-v2.mjs'], protocolOnly.project)
+    say(true, 'protocol-only installation: the lifecycle example issues, updates, transfers and retires a passport and verifies each step offline, with no index and no validator service.')
+  } catch (error) {
+    say(false, `the protocol-only installation could not be checked: ${error.stderr ?? error.message}`)
+  } finally {
+    if (protocolOnly != null && process.env.KEEP_CONSUMER !== '1') rmSync(protocolOnly.project, { recursive: true, force: true })
+  }
+}
+
+if (hasAll(['@bsv/dpp-protocol', '@bsv/dpp-profiles', '@bsv/dpp-overlay'])) {
+  let indexOnly
+  let child
+  try {
+    indexOnly = narrow('index', ['@bsv/dpp-protocol', '@bsv/dpp-profiles', '@bsv/dpp-overlay'])
+    const beside = ['@bsv/dpp-credentials', ...ENGINE_LIBRARIES].filter((name) => indexOnly.has(name))
+    say(indexOnly.has('@bsv/dpp-overlay') && beside.length === 0, `index-only installation: @bsv/dpp-overlay installs with the two packages it depends on, without the credentials package and without an engine library of the validator service${beside.length === 0 ? '' : `, but it brought ${beside.join(', ')}`}.`)
+    const driver = JSON.parse(readFileSync(join(indexOnly.project, 'node_modules', 'mongodb', 'package.json'), 'utf8')).version
+    const expectedDriver = set.runtime.dependencies.find((d) => d.name === 'mongodb')?.version
+    say(driver === expectedDriver, `index-only installation: the database driver resolved to mongodb@${driver}, the release set's runtime (${expectedDriver}), which is what the index image installs.`)
+    const port = await freePort()
+    const key = JSON.parse(readFileSync(join(root, 'fixtures', 'chain-v2.json'), 'utf8')).custodianKey
+    let output = ''
+    // A clean environment: none of this shell's settings, no database, and no validator address anywhere.
+    child = spawn(join(indexOnly.project, 'node_modules', '.bin', 'dpp-index'), [], { cwd: indexOnly.project, env: { PATH: process.env.PATH, HOME: process.env.HOME ?? tmpdir(), SERVICE_IDENTITY_KEY: key, NETWORK: 'test', CHAIN_TRACKER: 'scripts-only', HOST: '127.0.0.1', PORT: String(port) }, stdio: ['ignore', 'pipe', 'pipe'] })
+    child.stdout.on('data', (chunk) => { output += chunk })
+    child.stderr.on('data', (chunk) => { output += chunk })
+    const ended = new Promise((done) => child.once('exit', (code) => done(code)))
+    let health
+    for (let attempt = 0; attempt < 100 && health == null && child.exitCode == null; attempt++) {
+      try { const response = await fetch(`http://127.0.0.1:${port}/health`, { signal: AbortSignal.timeout(1000) }); if (response.status === 200) health = await response.json() } catch { await new Promise((wait) => setTimeout(wait, 200)) }
+    }
+    say(health?.status === 'ok' && health.topic === 'tm_dpp', `index-only installation: the dpp-index command starts from the installed package and answers GET /health${health == null ? `, but it did not: ${output.trim().split('\n').slice(-3).join(' | ')}` : ''}.`)
+    if (health != null) {
+      const capabilities = await (await fetch(`http://127.0.0.1:${port}/capabilities`)).json()
+      say(Array.isArray(capabilities.profiles) && capabilities.profiles.length > 0, 'index-only installation: it names its capabilities, with no validator service running and none configured.')
+    }
+    child.kill('SIGTERM')
+    const code = await ended
+    say(code === 0, `index-only installation: told to stop, the command closed with exit code ${code}.`)
+  } catch (error) {
+    say(false, `the index-only installation could not be checked: ${error.stderr ?? error.message}`)
+  } finally {
+    if (child != null && child.exitCode == null) child.kill('SIGKILL')
+    if (indexOnly != null && process.env.KEEP_CONSUMER !== '1') rmSync(indexOnly.project, { recursive: true, force: true })
+  }
 }
 console.log(failures === 0 ? 'Every sentence above holds.' : 'At least one sentence above does not hold.')
 process.exit(failures === 0 ? 0 : 1)

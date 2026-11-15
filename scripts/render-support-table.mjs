@@ -50,6 +50,26 @@ lines.push('Source: `conformance/licences.json` in the same source checkout. See
 lines.push('')
 for (const pkg of set.packages) lines.push(`- \`${pkg.name}\` ${pkg.version}: ${deps(pkg.name)}`)
 lines.push('')
+if (set.images != null) {
+  // The images that belong to the set, from its own declaration: what an operator pulls, beside what a developer installs.
+  lines.push('## Images')
+  lines.push('')
+  lines.push(`The index and the validator service are also delivered as images, run by the [operator preset](../operate/README.md). Registry: \`${set.images.registry}\`. An image is pinned by its digest and by nothing else; \`unpublished\` means the image has not been published and has no digest yet.`)
+  lines.push('')
+  lines.push('| Image | Runs | Dockerfile | Node | Platforms | Digest |')
+  lines.push('|---|---|---|---|---|---|')
+  for (const image of set.images.own) {
+    const pkg = set.packages.find((p) => p.name === image.package)
+    lines.push(`| \`${image.name}\` | \`${image.package}\` ${pkg?.version ?? ''} | \`${image.dockerfile}\` | ${image.runtime.node} | ${image.platforms.join(', ')} | \`${image.digest}\` |`)
+  }
+  lines.push('')
+  lines.push('The preset also runs images this repository does not build or contain, each under its publisher\'s own licence:')
+  lines.push('')
+  lines.push('| Image | Version | Licence | Digest | Resolved |')
+  lines.push('|---|---|---|---|---|')
+  for (const entry of set.images.thirdParty) lines.push(`| \`${entry.repository}\` | ${entry.tag} | ${entry.licence} | \`${entry.digest}\` | ${entry.resolvedAt} |`)
+  lines.push('')
+}
 lines.push('See [release sets](../reference/release-sets.md) for the compatibility declaration and [package installation](README.md) for candidate checks.')
 lines.push('')
 const out = lines.join('\n') + '\n'

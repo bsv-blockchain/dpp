@@ -121,12 +121,24 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:18080/health && break; sleep 2; done
           curl -fsS http://127.0.0.1:18080/capabilities | head -c 400
           docker rm -f smoke
-      # The operator preset: the Compose file resolves from its own example
-      # configuration, and the image's connection command writes the four
-      # settings an application reads.
+      # The operator preset pins its images by digest. From its own example
+      # configuration, whose images are unpublished, it must refuse to start;
+      # with a digest for each image it resolves; and with the build file it
+      # resolves to a build from this checkout. Then the image's connection
+      # command writes the four settings an application reads.
       - run: |
           set -euo pipefail
-          docker compose -f deploy/compose.yml --env-file deploy/operator.env.example config --quiet
+          digest="sha256:$(printf 'a%.0s' $(seq 1 64))"
+          if grep -q '^OVERLAY_IMAGE_DIGEST=$' deploy/operator.env.example; then
+            if docker compose -f deploy/compose.yml --env-file deploy/operator.env.example config --quiet; then
+              echo "The preset resolved with no digest for its images; it must refuse." >&2
+              exit 1
+            fi
+          else
+            docker compose -f deploy/compose.yml --env-file deploy/operator.env.example config --quiet
+          fi
+          OVERLAY_IMAGE_DIGEST="$digest" VALIDATOR_IMAGE_DIGEST="$digest" docker compose -f deploy/compose.yml --env-file deploy/operator.env.example config --quiet
+          docker compose -f deploy/compose.yml -f deploy/compose.build.yml --env-file deploy/operator.env.example --env-file deploy/build.env config --quiet
           docker run --rm --user node --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
             -e SERVICE_IDENTITY_KEY=02466d7fcae563e5cb09a0d1870bb580344804617879a14949cf22285f1bae3f27 \
             -e PUBLISHER_TOKENS_FILE=/tmp/publisher-tokens.json -e PUBLIC_URL=http://localhost:8080 -e NETWORK=test \
@@ -163,6 +175,40 @@ jobs:
           [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
           docker build --build-arg BASE_IMAGE="$base" -f packages/dpp-profiles/validator-image/Dockerfile -t dpp-validator:ci .
       - run: node scripts/validator-image-check.mjs --image dpp-validator:ci
+
+  # Delivery parity: the index and the validator service are each delivered
+  # as npm packages and as an image, and this job holds the two to one
+  # another. It packs the candidates, builds both images labelled with this
+  # revision and the release set, reads what each image and each archive
+  # contains, and then runs the same contract, refusal, restart and export
+  # checks against an index a clean consumer starts from the packed packages
+  # and against the operator preset started from the images, and the same
+  # profile vectors through the consumer's validator client against the
+  # preset's validator service, a replacement for it, and no service at all.
+  # Nothing is pushed.
+  delivery:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.23.4
+          cache: npm
+      - run: npm ci
+      - run: node scripts/release-candidates.mjs
+      - run: node scripts/release-images.mjs check
+      # The base image comes from the first registry that serves it, in the
+      # same order as the index image above.
+      - run: |
+          set -euo pipefail
+          base=""
+          for registry in mirror.gcr.io/library public.ecr.aws/docker/library docker.io/library; do
+            if docker pull -q "$registry/node:22.23.4-slim"; then base="$registry/node:22.23.4-slim"; break; fi
+          done
+          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
+          node scripts/release-images.mjs build --prefix ci- --tag parity --base-image "$base"
+      - run: node scripts/image-contents-check.mjs --overlay-image ci-dpp-overlay:parity --validator-image ci-dpp-validator:parity
+      - run: node scripts/delivery-parity.mjs --overlay-image ci-dpp-overlay:parity --validator-image ci-dpp-validator:parity
 
   # The starter: @bsv/create-dpp-app scaffolds an application from its bundled
   # template, pinned to the current release set. The CLI builds and tests,

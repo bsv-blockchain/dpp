@@ -1,0 +1,42 @@
+# Build from source: added to deploy/compose.yml by a contributor, or by an
+# operator before the images of a release set are published. It replaces the
+# two pinned references with images built from this checkout, and changes
+# nothing else: the same services, settings, networks and volumes.
+#
+#   docker compose -f deploy/compose.yml -f deploy/compose.build.yml \
+#     --env-file deploy/operator.env --env-file deploy/build.env up -d --build
+#
+# deploy/build.env is needed with it. deploy/compose.yml requires a digest
+# for each image before docker compose reads any other file, and build.env
+# gives it two words that are not digests, which this file then replaces.
+# Without this file those words name no image, so the pinned preset cannot
+# be started from them by mistake.
+#
+# The images are tagged locally and never pulled or pushed. The four build
+# arguments label them with what they were built from (the Dockerfiles say
+# how). Left unset they read unknown; scripts/release-images.mjs build sets
+# them from the checkout and the release set, and is what the checks use.
+services:
+  overlay:
+    image: ${OVERLAY_LOCAL_IMAGE:-dpp-overlay:local}
+    pull_policy: never
+    build:
+      context: ..
+      dockerfile: packages/dpp-overlay/Dockerfile
+      args:
+        SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+        SOURCE_STATE: ${SOURCE_STATE:-unknown}
+        RELEASE_SET: ${RELEASE_SET:-unknown}
+        PACKAGE_VERSION: ${OVERLAY_PACKAGE_VERSION:-unknown}
+
+  validator:
+    image: ${VALIDATOR_LOCAL_IMAGE:-dpp-validator:local}
+    pull_policy: never
+    build:
+      context: ..
+      dockerfile: packages/dpp-profiles/validator-image/Dockerfile
+      args:
+        SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+        SOURCE_STATE: ${SOURCE_STATE:-unknown}
+        RELEASE_SET: ${RELEASE_SET:-unknown}
+        PACKAGE_VERSION: ${VALIDATOR_PACKAGE_VERSION:-unknown}

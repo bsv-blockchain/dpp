@@ -1,6 +1,7 @@
 # The one npm publication path, run manually: npm trusted publishing through
 # GitHub OIDC, always with provenance. The dry run prints a deterministic plan
 # digest; execution must reproduce that exact plan from the same committed revision.
+# The set's images are published by publish-images.yaml under the same plan digest.
 name: Publish npm candidates
 on:
   workflow_dispatch:

@@ -101,7 +101,7 @@ Obtain each route's prerequisites from the owner or guide named below.
 
 ## Run an index
 
-1. [Run an index from source](../operate/README.md): configure the Compose preset, start it with Docker, check its configuration and write an application's connection file. The preset builds the runtime; do not separately install `@bsv/dpp-overlay`.
+1. [Run an index from source](../operate/README.md): configure the Compose preset, start it with Docker, check its configuration and write an application's connection file. The preset's index image is the runtime; do not separately install `@bsv/dpp-overlay`.
 2. [Wallet, broadcast and proofs](../operate/wallet-broadcast-proofs.md): how proofs reach your index.
 3. [Export, import and recovery](../operate/export-import-recovery.md): back up and restore.
 4. [Known limitations](../operate/limitations.md#index-host): what the index does not do yet.
