@@ -6,6 +6,17 @@ This file records what a consumer of the `@bsv/dpp-*` packages, the contracts an
 
 `dpp-release-2026-11` is the current candidate: `@bsv/dpp-protocol` and `@bsv/dpp-profiles` `0.3.0-beta.10`, `@bsv/dpp-overlay` `0.4.0-beta.13`, `@bsv/dpp-credentials` `0.2.0-beta.6` and `@bsv/create-dpp-app` `0.1.0-beta.2`. Each line below is a change since the last publication, `dpp-release-2026-10-10` on 16 October 2026. A step number is a step of [test the November source candidate](docs/migration.md#test-the-november-source-candidate).
 
+What this candidate adds, in short:
+
+- **Bound sector profiles.** `eu-battery@1` and `eu-textile@1` replace the retired hand-written battery and textile profiles. A product document is validated against its binding's schema, contexts and SHACL shapes, the product is checked against its passport, and the document is split into a public and a restricted part.
+- **EPCIS source exchange.** Events are imported from files or pulled from a standard query endpoint, retained byte for byte with their findings, exported unchanged, and moved to another store as an authorised recovery snapshot.
+- **Portable evidence and delivery.** Profiles travel in the evidence package. The engines run in-process or as a separate validator service. The index and the validator ship as npm packages and as images, and the operator preset pulls the images by digest.
+- **A whole-deployment inventory** with a recorded disposition for every part ([the whole deployment](docs/contribute/licence.md#the-whole-deployment)).
+
+What it does not change: **lifecycle events are still signed as native `dpp-lifecycle-v1` claims.** Importing an EPCIS event retains source evidence that nothing here signed; it does not replace a signed claim, and this candidate signs no EPCIS event.
+
+What it waits on before publication: each disposition the inventory lists as open, which `node scripts/deployment-inventory.mjs --release` names. The candidate keeps the version numbers above, none of which is on npm yet.
+
 - The W3C credentials context in `@bsv/dpp-credentials` now ships with the full W3C Software and Document License text and its copyright notice in `artifacts/w3c/NOTICE.md`, and the index image carries `NOTICE` and `PATENTS` beside `LICENSE`. No API changes.
 - `managed-custody@2` is the one custody profile: readers read `dpp-managed-acceptance@1` under its direct-signature rule and `@2` under the derived key, and nothing writes `@1` (step 1).
 - `signManagedAcceptance` takes the state-signing `DataSigner` in place of the removed `AcceptanceSigner` interface and writes `dpp-managed-acceptance@2` only, signed by the custodian's BRC-42 child for `[1, 'dpp managed record v1']`; `MANAGED_CUSTODY_PROFILE` is `managed-custody@2`, which the index declares, and `MANAGED_RECORD_PROTOCOL_ID`, `managedRecordVerificationKey`, `MANAGED_ACCEPTANCE_FORMAT_V1` and `MANAGED_CUSTODY_PROFILE_V1` are new (step 2).
