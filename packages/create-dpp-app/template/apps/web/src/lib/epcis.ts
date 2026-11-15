@@ -91,7 +91,7 @@ export interface EpcisSource {
 }
 
 export interface EpcisStatus {
-  storage: 'mongodb' | 'memory' | 'supplied'
+  storage: 'mongodb' | 'file' | 'memory' | 'supplied'
   artefacts: { dir: string; state: 'present' | 'fetched' | 'unavailable'; files: Array<{ fileName: string; outcome: string; reason?: string }>; remedy?: string }
   recovery: { actions: Array<{ action: string }>; remaining: number }
   sources: EpcisSource[]

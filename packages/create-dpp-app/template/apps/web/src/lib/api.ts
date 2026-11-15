@@ -64,8 +64,10 @@ export interface Health {
   publisherKey: string
   wallet: 'toolbox' | 'test'
   livePublishing: boolean
-  /** False when the validation libraries did not load: a profile held by a binding then cannot be written, and its readings say "not checked". */
+  /** False when the validation engine cannot be used: its libraries did not load, or the validator service did not answer. A profile held by a binding then cannot be written, and its readings say "not checked". */
   validationEngine: boolean
+  /** Where the engine runs: in the API's own process, or in the validator service its settings name. */
+  validationEngineKind?: 'in-process' | 'service'
   identifiers: { host: string; prefix: string; demonstration: boolean }
   signIn: boolean
   devSession?: { name: string; brandIds: string[] }
@@ -125,7 +127,7 @@ export interface BoundProfile extends ProfileSummary {
   access?: { policy: string; public: string[] }
   contexts: Array<{ path: string; uri: string }>
   prefixes: Record<string, string>
-  engine: { available: boolean; problem?: string }
+  engine: { available: boolean; kind?: 'in-process' | 'service'; problem?: string }
   /** Complete product documents of invented data, minted for this deployment's host and prefix. */
   examples: Array<{ title: string; itemReference: string; serial: string; passportId: string; product: Record<string, unknown> }>
   demonstration: boolean
@@ -322,8 +324,8 @@ export interface Duty {
 export interface Operations {
   duties: Duty[]
   passports: Array<{ passportId: string; brandId: string; status: string; journal: JournalSummary }>
-  /** What start-up could not load: the validation engine's problem, and each profile folder that was refused. */
-  profiles?: { engine: { available: boolean; problem?: string }; refused: Array<{ source: string; code: string; detail: string }> }
+  /** The validation engine's problem as it is now, where bound profiles are read from, and each profile folder or bundle that was refused at start. */
+  profiles?: { engine: { available: boolean; kind?: 'in-process' | 'service'; problem?: string }; source?: 'package' | 'bundle'; refused: Array<{ source: string; code: string; detail: string }> }
 }
 
 export interface WalletView {

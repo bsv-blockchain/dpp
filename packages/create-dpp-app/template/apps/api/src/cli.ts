@@ -9,6 +9,12 @@
 //   node apps/api/dist/cli.js connect-index --url <index> [--submit-token <t>] [--callback-token <t>]
 //   node apps/api/dist/cli.js connect-index --from <file>
 //                                                    the connection file an index operator wrote with dpp-index connection
+//   node apps/api/dist/cli.js export --out <folder> [--public]
+//                                                    the complete export of this application, as one signed evidence package
+//   node apps/api/dist/cli.js restore --from <folder> [--exporter-key <key>]
+//                                                    restore an authorised export into this deployment; verifies everything first
+//   node apps/api/dist/cli.js epcis-remap --source <name>
+//                                                    declare that an EPCIS source is now reached at its configured address
 import './env.js'
 import { existsSync, readFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
@@ -19,6 +25,7 @@ import { generateRootKey, ROOT_KEY_GENERATED } from './env-file.js'
 import { goLive } from './go-live.js'
 import { connectIndex } from './index-projects.js'
 import { openPlatform } from './platform.js'
+import { PORTABILITY_USAGE, runExportCommand, runRemapCommand, runRestoreCommand } from './portability/commands.js'
 import { pendingDuties, runDuties } from './worker.js'
 import { ANYONE_IDENTITY_KEY } from './wallet.js'
 
@@ -34,7 +41,12 @@ const manifest = ((): { name?: string } => {
 })()
 const projectName = manifest.name ?? basename(projectRoot)
 
-if (command === 'go-live' || command === 'connect-index') {
+if (command === 'export' || command === 'restore' || command === 'epcis-remap') {
+  // The export, the restore and the source remap are the operator's, run on the host with the API stopped (portability/commands.ts).
+  // npm names the directory it was called from in INIT_CWD; a relative folder is read from there.
+  const context = { env: process.env, out: (line: string) => console.log(line), cwd: process.env.INIT_CWD ?? process.cwd() }
+  process.exitCode = await (command === 'export' ? runExportCommand(rest, context) : command === 'restore' ? runRestoreCommand(rest, context) : runRemapCommand(rest, context))
+} else if (command === 'go-live' || command === 'connect-index') {
   const { values } = parseArgs({ args: rest, options: { url: { type: 'string' }, 'submit-token': { type: 'string' }, 'callback-token': { type: 'string' }, from: { type: 'string' } } })
   const shared = { env: process.env, envFile, projectName, out: (line: string) => console.log(line) }
   // npm names the directory it was called from in INIT_CWD; a relative --from is read from there.
@@ -81,7 +93,7 @@ async function operatorCommand(platform: Awaited<ReturnType<typeof openPlatform>
     for (const d of duties) console.log(`  ${d.op} ${d.txid.slice(0, 12)}... ${d.duty} (${d.passportId})`)
     for (const line of await runDuties({ store: platform.store, index: platform.index, writer: platform.writer })) console.log(`  ${line}`)
   } else {
-    console.error('usage: cli.js wallet | wallet fund <txid> <address> <prefix> <suffix> | operations | go-live | connect-index --url <index> [--submit-token <t>] [--callback-token <t>] | connect-index --from <connection file>')
+    console.error(`usage: cli.js wallet | wallet fund <txid> <address> <prefix> <suffix> | operations | go-live | connect-index --url <index> [--submit-token <t>] [--callback-token <t>] | connect-index --from <connection file> | ${PORTABILITY_USAGE}`)
     process.exitCode = 2
   }
 }

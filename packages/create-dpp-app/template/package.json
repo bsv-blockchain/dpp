@@ -21,7 +21,10 @@
     "wallet": "tsx apps/api/src/cli.ts wallet",
     "operations": "tsx apps/api/src/cli.ts operations",
     "go-live": "tsx apps/api/src/cli.ts go-live",
-    "connect-index": "tsx apps/api/src/cli.ts connect-index"
+    "connect-index": "tsx apps/api/src/cli.ts connect-index",
+    "export": "tsx apps/api/src/cli.ts export",
+    "restore": "tsx apps/api/src/cli.ts restore",
+    "epcis-remap": "tsx apps/api/src/cli.ts epcis-remap"
   },
   "dpp": {
     "releaseSet": "dpp-release-2026-11"

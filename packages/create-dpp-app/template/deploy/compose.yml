@@ -5,11 +5,23 @@
 # Connect the app to an existing index with INDEX_URL and its access tokens,
 # or operate one separately with the DPP repository's operator preset (deploy/).
 # This Compose file does not start an index. See README.md, Connect an index.
+#
+# It does not start a validator service either. By default the application
+# validates in its own process. To use a service instead, set VALIDATOR_URL to
+# one an operator runs, such as the validator of the DPP repository's operator
+# preset, or start one beside the app with `npx dpp-validator`. See README.md,
+# The validation engine.
+#
+# MongoDB is named by tag and digest: the tag says which version the digest
+# was resolved from, and the digest is what is pulled, so two machines run the
+# same image. It is the pin the DPP repository's operator preset uses. MongoDB
+# Community Server is its publisher's program under the Server Side Public
+# License, pulled from its publisher; it is not part of this project.
 name: dpp-platform
 
 services:
   mongo:
-    image: mongo:7
+    image: mongo:7.0.48@sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71
     restart: unless-stopped
     command: ["mongod", "--bind_ip_all"]
     ports:

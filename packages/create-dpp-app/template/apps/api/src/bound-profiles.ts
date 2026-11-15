@@ -1,26 +1,40 @@
 // Profiles held by a binding: a data model defined outside @bsv/dpp-profiles,
 // as JSON-LD contexts and SHACL shapes or as a JSON Schema, that the package
 // validates through one immutable binding file. This module is assembled once
-// at start-up: it loads the validation engine, registers the two bindings the
-// package ships and any folder the configuration names, and then answers for
-// the writer, the reader and the forms.
+// at start-up: it opens the validation engine the configuration chose
+// (validation-engine.ts), registers the profiles and any folder the
+// configuration names, and then answers for the writer, the reader and the
+// forms.
+//
+// Where the profiles come from is a setting. By default the two sector
+// bindings are read from the folder the profiles package ships. With
+// PROFILE_BUNDLE_DIR they are read from a profile bundle in that folder, as a
+// restore installs it, and the package's folder is not read. The bundle is a
+// second resolver for the same registry: the files come from somewhere else,
+// and every rule about them stays the same.
 //
 // Three rules hold throughout. Trust is a list of binding digests, and a
-// folder whose digest is not on it is refused. A check that could not run is
-// never a pass, so without the engine a bound profile cannot be written and a
-// reading says "not checked". Nothing here fetches anything: every context is
-// read from the binding's own folder.
+// folder or a bundle whose digest is not on it is refused. A check that could
+// not run is never a pass, so without the engine a bound profile cannot be
+// written and a reading says "not checked". No profile file is ever fetched:
+// every context is read from the binding's own folder or from the bundle.
 import { readFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  BUNDLED_BINDINGS,
   BUNDLED_BINDING_DIGESTS,
   authorisedPayloadValidator,
   bindingPayloadValidator,
+  bundledBindingLicenceTexts,
+  bundledBindingNotices,
   createProfileRegistry,
+  openProfileBundle,
   prepareBoundPayload,
   profileBindingDigest,
+  profileBundleDirectory,
   registerBundledBindings,
+  registerProfileBundle,
   type AuthorisedPayloadToValidate,
   type BindingProfile,
   type BindingStepOutcome,
@@ -34,8 +48,8 @@ import {
   type ValidationEngines,
   type WithheldCheck,
 } from '@bsv/dpp-profiles'
-import { VALIDATION_ENGINE_LIBRARIES, createValidationEngine } from '@bsv/dpp-profiles/validation-engine'
 import { ajv } from './profiles.js'
+import { openValidationEngine, type ValidationEngineSettings } from './validation-engine.js'
 
 type Json = Record<string, unknown>
 const isObject = (value: unknown): value is Json => value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -49,9 +63,25 @@ export interface BoundProfilesOptions {
   customProfileDirs?: string[]
   /** The digests of the custom bindings this deployment reviewed and chose to trust. */
   trustedBindingDigests?: string[]
+  /** A folder that holds a profile bundle. Set, bound profiles are registered from it and the package's own bindings folder is not read. */
+  profileBundleDir?: string
+  /** The validation engine: a validator service's address and token, or neither for the engine in this process. */
+  validator?: ValidationEngineSettings
   /** How a validation library is loaded. Tests pass one that fails, to stand in for libraries that are not installed. */
   loadEngineLibrary?: (name: string) => Promise<unknown>
+  /** The transport to a validator service. The platform's by default. */
+  fetch?: typeof globalThis.fetch
+  /** How long one exchange with a validator service may take, in milliseconds. */
+  validatorTimeoutMs?: number
   log?: (line: string) => void
+}
+
+/** A licence text as a profile bundle carries it. */
+export interface ProfileLicenceText {
+  licence: string
+  bytes: Uint8Array
+  mediaType?: string
+  fileName?: string
 }
 
 /** A profile that was not registered at start-up, and why. The API runs without it. */
@@ -104,15 +134,27 @@ export interface BoundProfileDescription {
   contexts: Array<{ path: string; uri: string }>
   /** Prefixes the contexts define, so a property's full name can be written the way documents write it. */
   prefixes: Record<string, string>
-  engine: { available: boolean; problem?: string }
+  engine: { available: boolean; kind: 'in-process' | 'service'; problem?: string }
 }
 
 export interface BoundProfiles {
-  registry: ProfileRegistry
+  readonly registry: ProfileRegistry
   engines: ValidationEngines
-  /** Why the JSON-LD and SHACL engines are absent, when they are. */
-  engineProblem?: string
-  refusals: ProfileRefusal[]
+  /** Where the JSON-LD and SHACL engines run: in this process, or in a validator service. */
+  engineKind: 'in-process' | 'service'
+  /** Why the JSON-LD and SHACL engines cannot be used, as last found. For a validator service this changes as the service comes and goes. */
+  readonly engineProblem: string | undefined
+  /** Look at the engine again. A validator service is asked what it is; the engine in this process answers what start-up found. */
+  checkEngine(): Promise<void>
+  /** Where bound profiles are resolved from: the folder the profiles package ships, or a profile bundle. */
+  source: 'package' | 'bundle'
+  readonly refusals: ProfileRefusal[]
+  /** Register every profile again from the configured sources, into a new registry. A restore calls it after it installed a bundle. */
+  reload(): Promise<void>
+  /** The bytes of a notice a registered binding lists, from wherever the binding was read. It is what an export of the profiles carries beside them. */
+  readNotice(profile: BindingProfile, path: string): Promise<Uint8Array | undefined>
+  /** The licence texts that travel with the registered profiles, where this deployment holds them. */
+  licenceTexts(): Promise<ProfileLicenceText[]>
   /** The registered binding for `id@version`, or nothing. */
   get(profile: string): BindingProfile | undefined
   list(): BindingProfile[]
@@ -128,10 +170,6 @@ export interface BoundProfiles {
   /** A validation as the API reports it, with each finding placed in the document where it can be. */
   viewCheck(view: ViewCheck['view'], validation: PayloadValidation, located?: { profile: BindingProfile; product: Json }): Promise<ViewCheck>
 }
-
-const ENGINE_INSTALL = Object.entries(VALIDATION_ENGINE_LIBRARIES)
-  .map(([name, version]) => `${name}@${version}`)
-  .join(' ')
 
 const detailOf = (validation: PayloadValidation): BindingValidationDetail | undefined => (isObject(validation.detail) ? (validation.detail as unknown as BindingValidationDetail) : undefined)
 
@@ -259,55 +297,112 @@ function valueAt(document: unknown, pointer: string): unknown {
 
 const findingKey = (finding: EngineFinding): string => JSON.stringify([finding.severity, finding.constraint, finding.path ?? null, finding.message ?? null, finding.value ?? null])
 
+/** What one pass over the configured sources registered: the registry, what was refused, and where each profile's notices are read from. */
+interface Registered {
+  registry: ProfileRegistry
+  refusals: ProfileRefusal[]
+  validatePublic: BoundProfiles['validatePublic']
+  validateAuthorised: BoundProfiles['validateAuthorised']
+  /** By binding digest: how a notice of that binding is read. */
+  notices: Map<string, (path: string) => Promise<Uint8Array | undefined>>
+  licenceTexts: () => Promise<ProfileLicenceText[]>
+}
+
 export async function openBoundProfiles(options: BoundProfilesOptions = {}): Promise<BoundProfiles> {
   const log = options.log ?? (() => {})
-  const refusals: ProfileRefusal[] = []
-  const refuse = (source: string, code: string, detail: string): void => {
-    refusals.push({ source, code, detail })
-    log(`Profile ${source} was not registered (${code}): ${detail} The API continues without it.`)
-  }
 
-  // The engine is built once. Without it the API still starts: a bound profile then cannot be written, and a reading says "not checked".
-  let engines: ValidationEngines = { jsonSchema: ajv }
-  let engineProblem: string | undefined
+  // The engine is opened once. Without it the API still starts: a bound profile then cannot be written, and a reading says "not checked".
   const loadLibrary = options.loadEngineLibrary ?? ((name: string): Promise<unknown> => import(name))
-  try {
-    engines = { ...engines, ...(await createValidationEngine({ load: loadLibrary })) }
-  } catch (cause) {
-    engineProblem = `${reasonOf(cause)}. Install ${ENGINE_INSTALL} in apps/api and restart.`
-    log(`The validation engine is not available: ${engineProblem} Until then a profile held by a binding cannot be written, and its readings say "not checked".`)
-  }
+  const engine = await openValidationEngine(options.validator ?? {}, {
+    load: loadLibrary,
+    ...(options.fetch == null ? {} : { fetch: options.fetch }),
+    ...(options.validatorTimeoutMs == null ? {} : { timeoutMs: options.validatorTimeoutMs }),
+    log,
+  })
+  const engines: ValidationEngines = { jsonSchema: ajv, ...engine.engines }
 
   const custom = options.customProfileDirs ?? []
-  const registry = createProfileRegistry({ trustedBindingDigests: [...BUNDLED_BINDING_DIGESTS, ...(options.trustedBindingDigests ?? [])] })
-  for (const result of await registerBundledBindings(registry)) {
-    if (!result.ok) refuse(result.profile ?? 'a bundled binding', result.code, result.detail)
-  }
-  for (const dir of custom) {
-    const folder = isAbsolute(dir) ? dir : resolve(PROJECT_ROOT, dir)
-    let bindingBytes: Uint8Array
-    try {
-      bindingBytes = new Uint8Array(readFileSync(join(folder, 'binding.json')))
-    } catch (cause) {
-      refuse(folder, 'binding-unavailable', `binding.json could not be read from the folder (${reasonOf(cause)}).`)
-      continue
+  const bundleDir = options.profileBundleDir == null ? undefined : isAbsolute(options.profileBundleDir) ? options.profileBundleDir : resolve(PROJECT_ROOT, options.profileBundleDir)
+  const source: BoundProfiles['source'] = bundleDir == null ? 'package' : 'bundle'
+
+  /** One pass over the configured sources, into a registry of its own. Trust is the same list whichever source the files come from. */
+  const register = async (): Promise<Registered> => {
+    const refusals: ProfileRefusal[] = []
+    const refuse = (from: string, code: string, detail: string): void => {
+      refusals.push({ source: from, code, detail })
+      log(`Profile ${from} was not registered (${code}): ${detail} The API continues without it.`)
     }
-    const result = await registry.register({ bindingBytes, resolveArtefact: (artefact) => new Uint8Array(readFileSync(join(folder, artefact.path))) })
-    if (result.ok) {
-      log(`Profile ${result.profile.profile} registered from ${folder} under binding digest ${result.profile.bindingDigest}.`)
-    } else if (result.code === 'binding-untrusted') {
-      // The digest is named so the operator can review the file and trust exactly these bytes. A changed file has another digest and stays refused.
-      refuse(folder, result.code, `Its binding.json has digest ${profileBindingDigest(bindingBytes)}, which is not in TRUSTED_BINDING_DIGESTS. Review the binding and every file it names, then add that digest to trust it. A binding that changed since you trusted it has a new digest.`)
+    const notices: Registered['notices'] = new Map()
+    let licenceTexts: Registered['licenceTexts'] = async () => []
+    const registry = createProfileRegistry({ trustedBindingDigests: [...BUNDLED_BINDING_DIGESTS, ...(options.trustedBindingDigests ?? [])] })
+
+    if (bundleDir == null) {
+      for (const result of await registerBundledBindings(registry)) {
+        if (!result.ok) refuse(result.profile ?? 'a bundled binding', result.code, result.detail)
+      }
+      const packaged = bundledBindingNotices()
+      for (const profile of registry.list()) if (profile.format === 'binding') notices.set(profile.bindingDigest, async (path) => packaged(profile, path))
+      licenceTexts = async () => bundledBindingLicenceTexts()
     } else {
-      refuse(folder, result.code, result.detail)
+      // The bundle is read from this deployment's own folder. A sector profile is expected under the digest the installed
+      // profiles package publishes for it, so a bundle that carries another definition under that name is refused whoever
+      // put it there, and every other binding must be on this deployment's own trusted list.
+      const opened = await openProfileBundle(profileBundleDirectory(bundleDir))
+      if (!opened.ok) {
+        refuse(`the profile bundle in ${bundleDir}`, opened.code, `${opened.detail} PROFILE_BUNDLE_DIR names the folder a restore installs a bundle into; until it holds one, no profile is registered from it.`)
+      } else {
+        const { bundle } = opened
+        for (const result of await registerProfileBundle(registry, bundle, { expected: BUNDLED_BINDINGS })) {
+          if (!result.ok) {
+            refuse(`${result.profile ?? 'a profile'} of the bundle in ${bundleDir}`, result.code, result.detail)
+            continue
+          }
+          const name = result.profile.profile
+          notices.set(result.profile.bindingDigest, (path) => bundle.noticeBytes(name, path))
+          log(`Profile ${name} registered from the bundle in ${bundleDir} under binding digest ${result.profile.bindingDigest}.`)
+        }
+        licenceTexts = () => bundle.licenceTexts()
+      }
     }
+
+    for (const dir of custom) {
+      const folder = isAbsolute(dir) ? dir : resolve(PROJECT_ROOT, dir)
+      let bindingBytes: Uint8Array
+      try {
+        bindingBytes = new Uint8Array(readFileSync(join(folder, 'binding.json')))
+      } catch (cause) {
+        refuse(folder, 'binding-unavailable', `binding.json could not be read from the folder (${reasonOf(cause)}).`)
+        continue
+      }
+      const result = await registry.register({ bindingBytes, resolveArtefact: (artefact) => new Uint8Array(readFileSync(join(folder, artefact.path))) })
+      if (result.ok) {
+        // The same bytes registered before, from the bundle, keep the notices the bundle carries.
+        if (!notices.has(result.profile.bindingDigest)) {
+          notices.set(result.profile.bindingDigest, async (path) => {
+            // A notice path is a relative file name with no dot or dot-dot segment, and it is checked here because it becomes part of a file name.
+            if (!/^[A-Za-z0-9_@-][A-Za-z0-9._@-]*(\/[A-Za-z0-9_@-][A-Za-z0-9._@-]*)*$/u.test(path)) return undefined
+            try {
+              return new Uint8Array(readFileSync(join(folder, path)))
+            } catch {
+              return undefined
+            }
+          })
+        }
+        log(`Profile ${result.profile.profile} registered from ${folder} under binding digest ${result.profile.bindingDigest}.`)
+      } else if (result.code === 'binding-untrusted') {
+        // The digest is named so the operator can review the file and trust exactly these bytes. A changed file has another digest and stays refused.
+        refuse(folder, result.code, `Its binding.json has digest ${profileBindingDigest(bindingBytes)}, which is not in TRUSTED_BINDING_DIGESTS. Review the binding and every file it names, then add that digest to trust it. A binding that changed since you trusted it has a new digest.`)
+      } else {
+        refuse(folder, result.code, result.detail)
+      }
+    }
+
+    const held = registry.list().filter((profile) => profile.format === 'binding')
+    log(`Profiles held by a binding, from ${source === 'package' ? 'the profiles package' : `the bundle in ${bundleDir}`}: ${held.length === 0 ? 'none' : held.map((profile) => profile.profile).join(', ')}.${engine.problem == null ? '' : ' None can be written until the validation engine is available.'}`)
+    return { registry, refusals, validatePublic: bindingPayloadValidator({ registry, engines }), validateAuthorised: authorisedPayloadValidator({ registry, engines }), notices, licenceTexts }
   }
 
-  const held = registry.list().filter((profile) => profile.format === 'binding')
-  log(`Profiles held by a binding: ${held.length === 0 ? 'none' : held.map((profile) => profile.profile).join(', ')}.${engineProblem == null ? '' : ' None can be written until the validation engine is available.'}`)
-
-  const validatePublic = bindingPayloadValidator({ registry, engines })
-  const validateAuthorised = authorisedPayloadValidator({ registry, engines })
+  let current = await register()
   const prefixCache = new Map<string, Record<string, string>>()
   const prefixesFor = (profile: BindingProfile): Record<string, string> => {
     const kept = prefixCache.get(profile.bindingDigest)
@@ -318,7 +413,7 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
   }
   const get = (profile: string): BindingProfile | undefined => {
     const parts = profileParts(profile)
-    const resolved = parts == null ? undefined : registry.resolve(parts.id, parts.version)
+    const resolved = parts == null ? undefined : current.registry.resolve(parts.id, parts.version)
     return resolved?.format === 'binding' ? resolved : undefined
   }
 
@@ -412,12 +507,28 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
   const viewStatus = (status: 'pass' | 'fail' | 'unknown'): ViewStatus => (status === 'unknown' ? 'not-checked' : status)
 
   return {
-    registry,
+    get registry() {
+      return current.registry
+    },
     engines,
-    ...(engineProblem == null ? {} : { engineProblem }),
-    refusals,
+    engineKind: engine.kind,
+    get engineProblem() {
+      return engine.problem
+    },
+    async checkEngine() {
+      await engine.check()
+    },
+    source,
+    get refusals() {
+      return current.refusals
+    },
+    async reload() {
+      current = await register()
+    },
+    readNotice: async (profile, path) => await current.notices.get(profile.bindingDigest)?.(path),
+    licenceTexts: () => current.licenceTexts(),
     get,
-    list: () => registry.list().filter((profile): profile is BindingProfile => profile.format === 'binding'),
+    list: () => current.registry.list().filter((profile): profile is BindingProfile => profile.format === 'binding'),
     describe: (profile) => ({
       id: profile.profile,
       format: 'binding',
@@ -428,11 +539,11 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
       ...(profile.binding.access == null ? {} : { access: { policy: profile.binding.access.policy, public: [...profile.binding.access.public] } }),
       contexts: profile.artefacts.filter((a) => a.artefact.role === 'context').map((a) => ({ path: a.artefact.path, uri: a.artefact.uri! })),
       prefixes: prefixesFor(profile),
-      engine: { available: engineProblem == null, ...(engineProblem == null ? {} : { problem: engineProblem }) },
+      engine: { available: engine.problem == null, kind: engine.kind, ...(engine.problem == null ? {} : { problem: engine.problem }) },
     }),
     async codeLists(profile, classes) {
       const out: Record<string, Array<{ value: string; label: string }>> = {}
-      if (engineProblem != null) return out
+      if (engine.problem != null) return out
       let all: Map<string, Array<{ value: string; label: string }>>
       try {
         all = await codesOf(profile)
@@ -442,9 +553,9 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
       for (const name of classes) out[name] = all.get(name) ?? []
       return out
     },
-    prepare: ({ profile, product, passportId, notice }) => prepareBoundPayload({ registry, engines, profile: profile.id, profileVersion: profile.version, product, passportId, ...(notice == null ? {} : { notice }) }),
-    validatePublic,
-    validateAuthorised,
+    prepare: ({ profile, product, passportId, notice }) => prepareBoundPayload({ registry: current.registry, engines, profile: profile.id, profileVersion: profile.version, product, passportId, ...(notice == null ? {} : { notice }) }),
+    validatePublic: (payload) => current.validatePublic(payload),
+    validateAuthorised: (payload) => current.validateAuthorised(payload),
     async viewCheck(view, validation, located) {
       const status = viewStatus(validation.status)
       const detail = detailOf(validation)
@@ -454,6 +565,7 @@ export async function openBoundProfiles(options: BoundProfilesOptions = {}): Pro
       const findings = located == null ? flat : await locate(located.profile, located.product, flat)
       const messages = typeof validation.detail === 'string' ? [validation.detail] : Array.isArray(validation.detail) ? validation.detail : []
       const replaced = cause === 'profile-retired' && detail?.replacedBy != null ? ` ${detail.replacedBy} replaces it.` : ''
+      const engineProblem = engine.problem
       const reason = status !== 'not-checked' ? '' : ` ${cause === 'validator-unavailable' && engineProblem != null ? `The validation engine is not available: ${engineProblem}` : (NOT_CHECKED_REASONS[cause ?? ''] ?? 'A check could not run.')}${replaced} A check that could not run is not a pass.`
       return {
         view,

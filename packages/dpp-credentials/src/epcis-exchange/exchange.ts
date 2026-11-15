@@ -1083,6 +1083,8 @@ export async function checkEpcisExchangeInvariants(storage: EpcisExchangeStorage
     const value = asObservation(held);
     const owner = imports.get(value.importId);
     if (owner == null) breaches.push(`observation ${held.key}: its import is not held`);
+    // An observation is one source scope's. An import of another scope never accounts for it, whatever identity and bytes the two share.
+    else if (owner.sourceId !== value.sourceId) breaches.push(`observation ${held.key}: it names the source scope ${JSON.stringify(value.sourceId)}, and its import belongs to ${JSON.stringify(owner.sourceId)}`);
     else if (!owner.events.some((event) => event.pointer === value.pointer && event.identity === value.identity && event.observation?.sequence === value.sequence && event.arrival !== 'duplicate')) breaches.push(`observation ${held.key}: its import does not name it`);
     const [scopeKey] = held.key.split('.');
     sequence = scopeKey === scope ? sequence + 1 : 1;
@@ -1107,7 +1109,10 @@ export async function checkEpcisExchangeInvariants(storage: EpcisExchangeStorage
     if (pages.length !== pull.pagesAcknowledged) breaches.push(`pull ${pull.pullId}: ${pull.pagesAcknowledged} pages acknowledged and ${pages.length} page records held`);
     pages.forEach((page, index) => {
       if (page.sequence !== index + 1) breaches.push(`pull ${pull.pullId}: page record ${page.sequence} where ${index + 1} was expected`);
-      if (imports.get(page.importId)?.sha256 !== page.sha256) breaches.push(`pull ${pull.pullId} page ${page.sequence}: its import is not held with those bytes`);
+      const owner = imports.get(page.importId);
+      if (owner?.sha256 !== page.sha256) breaches.push(`pull ${pull.pullId} page ${page.sequence}: its import is not held with those bytes`);
+      // A page is its pull's, and a pull is one source scope's: bytes two scopes both hold never make one scope's page out of the other's import.
+      else if (page.sourceId !== pull.sourceId || owner.sourceId !== pull.sourceId) breaches.push(`pull ${pull.pullId} page ${page.sequence}: the pull belongs to the source scope ${JSON.stringify(pull.sourceId)}, the page names ${JSON.stringify(page.sourceId)} and its import belongs to ${JSON.stringify(owner.sourceId)}`);
     });
     if (pull.cursor != null && pull.cursor.afterPage !== pull.pass.pagesAcknowledged) breaches.push(`pull ${pull.pullId}: the cursor was named by page ${pull.cursor.afterPage} and the pass has acknowledged ${pull.pass.pagesAcknowledged}`);
   }

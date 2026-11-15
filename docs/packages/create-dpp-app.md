@@ -71,6 +71,8 @@ The source check installs the packed generator, creates the app, installs local 
 | GS1 Digital Link identifiers under the demonstration prefix 952 | A licensed GS1 prefix |
 | In the source candidate: forms, validation and structured display for `eu-battery@1` and `eu-textile@1`, and registration of a bound profile from a folder | Your own forms, and the profiles you trust |
 | In the source candidate: EPCIS file import, a configured pull and exact export, over a MongoDB storage adapter | Your sources, and what you do with the events |
+| In the source candidate: a choice of validation engine by setting, in the API's process or in a validator service | Which service, and who runs it |
+| In the source candidate: `export` and `restore` commands that move the whole application as one signed evidence package | Where the package is kept, and the keys and credentials you carry separately |
 
 **The starter's passport host is not yet a resolver.** It answers each identifier's own path, `/01/<gtin>/21/<serial>`, with the passport page, so it does not meet the rule in [GS1 discovery](../interoperability/gs1-discovery.md#do-you-need-a-resolver) that the host a GS1 Digital Link identifier is minted under be a GS1-Conformant Resolver or redirect every `/01/` request to one. The generated README's next steps say what to change.
 
@@ -121,6 +123,7 @@ The folder is registered at start with no source change. A folder whose digest i
 - It converts nothing. A passport already in the journal under a retired profile stays there as written, and it gets no further state, hand-on or claim.
 - After a hand-on the restricted part stays sealed to the holder who wrote it. The new holder's authorised view is not checked until they write an update.
 - The web app has no test runner. Its form logic is tested by the API's tests, and its pages are type-checked by the build.
+- An export carries no key, credential, sign-in account, session or brand membership, and the API serves neither command over HTTP ([export and restore](#export-and-restore)).
 
 ## EPCIS exchange
 
@@ -175,6 +178,38 @@ The generated project's tests run `epcisStorageAdapterSuite`, the suite the modu
 | A batch is one MongoDB document until it is applied | A record or batch past 15 MiB is refused with nothing written. An ordinary document stays far below that. The file-system adapter has no such limit |
 | Markers of deleted records are kept | One small document for each finished import |
 | Recovery runs alone | The module's recovery assumes nothing else is writing. Start API instances one at a time |
+
+### Another store
+
+`EPCIS_STORAGE=file` keeps the exchange in a folder through the file-system adapter the module ships, which passes the same suite. It exists to show that the store is a boundary you can replace and is what the exit exercise restores into. It is one process on one disk with no replication. MongoDB is the store the application is built and tested on, and the file adapter is not offered as a second production database.
+
+## The validation engine
+
+In the source candidate the engine that checks a product document under a binding is chosen by two settings.
+
+| `VALIDATOR_URL` | Where the JSON-LD and SHACL engines run |
+|---|---|
+| Unset | In the API's process, from the three libraries the API depends on |
+| The address of a validator service | In that service, through `createValidatorClient` of `@bsv/dpp-profiles/validator-client`. `VALIDATOR_TOKEN` is its bearer token, when it requires one |
+
+The registry, the trusted binding digests, the access split and the identity comparison stay in the API either way. The service is sent the product document and its binding's rule files, so use only a service you would show a restricted product document to. A service can be the validator of the [operator preset](../operate/README.md), `npx dpp-validator` in the project, or any service that keeps the `dpp-validator/1` contract ([run the engines as a service](dpp-profiles.md#run-the-engines-as-a-service)).
+
+An engine that cannot be used is never a pass, in either mode. Libraries that did not load and a service that is stopped, slow, behind a wrong token or answering something else all block a write under a bound profile and make every reading say not checked. The API asks a service again when the health answer, the form or the Operations page is loaded, so a service that comes back is used with no restart. The generated project's `apps/api/test/validation-engine.test.ts` runs the same passports through both engines, then stops the service. `scripts/delivery-parity.mjs` runs the module that makes this choice, as the template holds it, against the operator preset's validator.
+
+## Export and restore
+
+In the source candidate the whole application can be exported as one `dpp-evidence-package@1` and restored into another deployment. Both are operator commands, run on the host with the API stopped. The API serves neither: it has no operator role, and a signed-in member of a brand is not the operator of the deployment.
+
+| Command | What it does |
+|---|---|
+| `npm run export -- --out <folder>` | Writes the authorised export: the index's signed evidence and the application's journal for each passport, the brands, offers and claims that belong to them, the profile bundle and the EPCIS recovery snapshot, under one manifest signed with a key derived from the publisher key |
+| `npm run export -- --out <folder> --public` | Writes the public form: the index's evidence, the readings, the profile files and the public form of the EPCIS source scopes named with `--public-source`. No journal, no owner tier, no operational record |
+| `npm run restore -- --from <folder> --exporter-key <key>` | Verifies the whole package before it writes anything, restores it, rebuilds what is derived and reports what it did. A second run changes nothing |
+| `npm run epcis-remap -- --source <name>` | Declares that a configured source is now reached at its configured address, keeping its identity and each pull's checkpoint |
+
+Neither form carries a key, a wallet file, a secret or a credential, and the files GS1 publishes are named by address and digest. A restore is a data operation: it writes no state and moves no custody. Continuing to write at the new deployment needs the wallet's keys, which travel by the wallet's own recovery, and the secrets brand and recipient keys are derived from. The restore accepts a profile only under the binding digests the new deployment trusts, so a correctly signed package that carries another definition under a profile's name is refused.
+
+The new deployment can keep the exchange in another store and read its profiles from the bundle the restore installs (`PROFILE_BUNDLE_DIR`) in place of the folder the profiles package ships. The generated project's `apps/api/test/exit-exercise.test.ts` does exactly that with the first deployment switched off, and [move an application to another provider](../operate/export-import-recovery.md#move-an-application-to-another-provider) is the operator's procedure, with what a package carries, every refusal and what cannot be recovered.
 
 ## Automated setup
 

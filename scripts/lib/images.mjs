@@ -35,6 +35,8 @@ export const SOURCE_REPOSITORY = 'https://github.com/bsv-blockchain/dpp'
 /** The Compose files the operator runs from pinned images, and the override files a contributor adds to build from source. */
 export const PRESET_FILES = ['deploy/compose.yml', 'deploy/compose.second-operator.yml']
 export const BUILD_FILES = ['deploy/compose.build.yml', 'deploy/compose.second-operator.build.yml']
+/** The Compose file the application starter scaffolds. It runs the generated application's database, at the pin the operator preset uses. */
+export const STARTER_COMPOSE = 'packages/create-dpp-app/template/deploy/compose.yml'
 export const ENV_EXAMPLE = 'deploy/operator.env.example'
 const BLOCK_START = '# >>> images'
 const BLOCK_END = '# <<< images'
@@ -141,6 +143,21 @@ export function presetFindings(set, root) {
     const tagOnly = named.filter(({ value }) => !value.includes('@'))
     say(tagOnly.length === 0, `${file} names no image by tag alone${tagOnly.length === 0 ? '' : `: ${tagOnly.map((n) => n.value).join(', ')}`}.`)
   }
+  // The starter's Compose file is scaffolded into every generated application, so a floating tag there would put a different
+  // database under each of them. It names third-party images only, each at the pin the release set records, and builds nothing.
+  if (!existsSync(join(root, STARTER_COMPOSE))) say(false, `${STARTER_COMPOSE} does not exist.`)
+  else {
+    const text = readFileSync(join(root, STARTER_COMPOSE), 'utf8')
+    const named = composeImages(text)
+    const pinned = new Map(images.thirdParty.map((entry) => [thirdPartyReference(entry), entry]))
+    say(named.length > 0, `${STARTER_COMPOSE} names ${named.length} image${named.length === 1 ? '' : 's'}.`)
+    for (const { service, value } of named) {
+      const entry = pinned.get(value)
+      say(entry != null && entry.service === service, `${STARTER_COMPOSE}: service ${service} runs ${entry != null && entry.service === service ? `${entry.name} ${entry.tag}, at the pin ${images.preset} uses` : `${value}, which is not the pin ${images.preset} uses for a ${service} service`}.`)
+    }
+    say(!/^\s+build:/m.test(text), `${STARTER_COMPOSE} builds nothing${/^\s+build:/m.test(text) ? ': it has a build section' : ''}.`)
+  }
+
   const preset = existsSync(join(root, images.preset)) ? composeImages(readFileSync(join(root, images.preset), 'utf8')) : []
   for (const image of images.own) say(preset.some((n) => n.service === image.service && n.value === presetImageValue(image)), `${images.preset} runs ${image.name} as its ${image.service} service.`)
   for (const entry of images.thirdParty) say(preset.some((n) => n.service === entry.service && n.value === thirdPartyReference(entry)), `${images.preset} runs ${entry.name} ${entry.tag} as its ${entry.service} service, at the digest resolved on ${entry.resolvedAt}.`)

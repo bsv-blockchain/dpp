@@ -23,6 +23,7 @@ import {
   getEpcisImport,
   getEpcisPull,
   importEpcisSource,
+  openFileEpcisStorage,
   listEpcisImports,
   listEpcisPullPages,
   pullEpcisEvents,
@@ -44,6 +45,7 @@ import {
   type EpcisRecoveryReport,
   type EpcisResolutionDisposition,
   type EpcisResolutionOutcome,
+  type FileEpcisStorage,
 } from '@bsv/dpp-credentials/epcis-exchange'
 import { openMongoEpcisStorage, type MongoEpcisStorage } from './mongo-storage.js'
 import { describeEpcisSource, type EpcisSourceConfig, type EpcisSourceDescription } from './sources.js'
@@ -57,9 +59,44 @@ export const EPCIS_UPLOAD_SOURCE = 'upload'
 /** How many imports the conflict listing reads before it says it stopped. */
 const CONFLICT_SCAN_LIMIT = 2000
 
+/** Which adapter holds the exchange's records: the configuration's `EPCIS_STORAGE`. */
+export type EpcisStorageSetting = { kind: 'mongodb' } | { kind: 'file'; dir: string }
+
+export interface OpenedExchangeStorage {
+  storage: EpcisExchangeStorage
+  kind: 'mongodb' | 'file' | 'memory'
+  close(): Promise<void>
+}
+
+/**
+ * Open the store the configuration chose. `mongodb` is the application
+ * database, or memory when there is none. `file` is the module's file-system
+ * adapter over a folder of this deployment. Both are handed to the module as
+ * the same six methods, and the module does not know which it was given.
+ * The exchange opens its store through this, and so do the export and the
+ * restore of this application, which run when the API does not.
+ */
+export async function openExchangeStorage(options: { setting?: EpcisStorageSetting; db?: Db; log: (line: string) => void }): Promise<OpenedExchangeStorage> {
+  const { log } = options
+  if (options.setting?.kind === 'file') {
+    const folder = isAbsolute(options.setting.dir) ? options.setting.dir : resolve(PROJECT_ROOT, options.setting.dir)
+    const file: FileEpcisStorage = await openFileEpcisStorage(folder)
+    log(`EPCIS store: the file-system adapter over ${folder}.`)
+    if (file.reopened.journalsApplied > 0) log('EPCIS store: a batch that was committed before the last stop was applied.')
+    return { storage: file, kind: 'file', close: () => file.close() }
+  }
+  if (options.db != null) {
+    const mongo: MongoEpcisStorage = await openMongoEpcisStorage(options.db)
+    if (mongo.reopened.batchesApplied > 0) log('EPCIS store: a batch that was committed before the last stop was applied.')
+    return { storage: mongo, kind: 'mongodb', close: () => mongo.close() }
+  }
+  log('EPCIS store: no MongoDB, so imports are held in memory and are gone when this process ends.')
+  return { storage: createMemoryEpcisStorage(), kind: 'memory', close: async () => undefined }
+}
+
 export interface EpcisExchangeOptions {
-  config: { gs1Dir: string; gs1Offline: boolean; sources: EpcisSourceConfig[] }
-  /** The application database. Without one, imports are held in memory and are gone when the process ends. */
+  config: { gs1Dir: string; gs1Offline: boolean; sources: EpcisSourceConfig[]; storage?: EpcisStorageSetting }
+  /** The application database. Without one, and without a folder chosen as the store, imports are held in memory and are gone when the process ends. */
   db?: Db
   /** A store to use in place of the one this would open. A test hands in one that stops where a crash would. */
   storage?: EpcisExchangeStorage
@@ -93,7 +130,9 @@ export interface EpcisEventEntry {
 
 export interface EpcisExchange {
   readonly storage: EpcisExchangeStorage
-  readonly storageKind: 'mongodb' | 'memory' | 'supplied'
+  readonly storageKind: 'mongodb' | 'file' | 'memory' | 'supplied'
+  /** The folder the pinned GS1 files are read from. */
+  readonly artefactsDir: string
   /** What start-up found. `status()` looks at the folder again. */
   readonly artefacts: EpcisArtefactState
   readonly recovery: EpcisRecoveryReport
@@ -144,19 +183,14 @@ export async function startEpcisExchange(options: EpcisExchangeOptions): Promise
 
   let storage: EpcisExchangeStorage
   let storageKind: EpcisExchange['storageKind']
-  let mongo: MongoEpcisStorage | undefined
+  let opened: OpenedExchangeStorage | undefined
   if (options.storage != null) {
     storage = options.storage
     storageKind = 'supplied'
-  } else if (options.db != null) {
-    mongo = await openMongoEpcisStorage(options.db)
-    storage = mongo
-    storageKind = 'mongodb'
-    if (mongo.reopened.batchesApplied > 0) log('EPCIS store: a batch that was committed before the last stop was applied.')
   } else {
-    storage = createMemoryEpcisStorage()
-    storageKind = 'memory'
-    log('EPCIS store: no MongoDB, so imports are held in memory and are gone when this process ends.')
+    opened = await openExchangeStorage({ ...(options.config.storage == null ? {} : { setting: options.config.storage }), ...(options.db == null ? {} : { db: options.db }), log })
+    storage = opened.storage
+    storageKind = opened.kind
   }
 
   // Recovery finishes or discards what a stopped process left. It runs alone, before any request.
@@ -175,6 +209,7 @@ export async function startEpcisExchange(options: EpcisExchangeOptions): Promise
   return {
     storage,
     storageKind,
+    artefactsDir: dir,
     artefacts,
     recovery,
     sources,
@@ -303,7 +338,7 @@ export async function startEpcisExchange(options: EpcisExchangeOptions): Promise
       }),
 
     async close() {
-      await mongo?.close()
+      await opened?.close()
     },
   }
 }

@@ -74,6 +74,50 @@ export class IndexClient {
     return chainFromBeef(merged, passportId)
   }
 
+  /** The identity key the index signs its evidence packages under, as its capability document names it, or nothing when it signs none. */
+  async exporterIdentityKey(): Promise<string | undefined> {
+    const key = (await this.capabilities()).exporterIdentityKey
+    return typeof key === 'string' && /^0[23][0-9a-f]{64}$/.test(key) ? key : undefined
+  }
+
+  /**
+   * The index's bounded evidence package for one passport (GET /evidence-package), exactly as it answered: the signed
+   * manifest and every file by path, base64. `absent` says why there is none: the index holds no state of the
+   * passport, signs no package, or could not be reached. Nothing here checks the package; the caller inspects it.
+   */
+  async evidencePackage(passportId: string): Promise<{ envelope: { manifest: unknown; files: Record<string, string> } } | { absent: 'not-held' | 'export-unavailable' | 'unreachable'; detail: string }> {
+    let response: Response
+    try {
+      response = await this.request(`/evidence-package?${new URLSearchParams({ passportId }).toString()}`)
+    } catch (cause) {
+      return { absent: 'unreachable', detail: `the index could not be reached (${cause instanceof Error ? cause.message : String(cause)})` }
+    }
+    if (response.status === 404) return { absent: 'not-held', detail: 'the index holds no state of the passport' }
+    if (response.status === 503) return { absent: 'export-unavailable', detail: 'the index signs no evidence package: its operator has not set an exporter key' }
+    if (!response.ok) return { absent: 'unreachable', detail: `the index answered HTTP ${response.status} to GET /evidence-package` }
+    return { envelope: (await response.json()) as { manifest: unknown; files: Record<string, string> } }
+  }
+
+  /**
+   * One part of the index's complete export for one passport (GET /evidence-export), exactly as it answered. The
+   * bearer is the index's EXPORT_TOKEN, where its operator set one. `absent` says why there is no part.
+   */
+  async evidenceExportPart(passportId: string, cursor: string | null, token?: string): Promise<{ part: Record<string, unknown> } | { absent: 'not-held' | 'export-unavailable' | 'unauthorised' | 'unreachable'; detail: string }> {
+    const query = new URLSearchParams({ passportId })
+    if (cursor != null) query.set('cursor', cursor)
+    let response: Response
+    try {
+      response = await this.request(`/evidence-export?${query.toString()}`, token == null ? undefined : { headers: { Authorization: `Bearer ${token}` } })
+    } catch (cause) {
+      return { absent: 'unreachable', detail: `the index could not be reached (${cause instanceof Error ? cause.message : String(cause)})` }
+    }
+    if (response.status === 401 || response.status === 403) return { absent: 'unauthorised', detail: 'the index wants its export token for the complete export: set INDEX_EXPORT_TOKEN to the one its operator gave you' }
+    if (response.status === 404) return { absent: 'not-held', detail: 'the index holds no state of the passport' }
+    if (response.status === 503) return { absent: 'export-unavailable', detail: 'the index signs no evidence package: its operator has not set an exporter key' }
+    if (!response.ok) return { absent: 'unreachable', detail: `the index answered HTTP ${response.status} to GET /evidence-export` }
+    return { part: (await response.json()) as Record<string, unknown> }
+  }
+
   /** Announce an unsent transaction (spec/writing.md section 3). */
   async announce(beef: number[]): Promise<Announcement> {
     this.lastRefusal = undefined

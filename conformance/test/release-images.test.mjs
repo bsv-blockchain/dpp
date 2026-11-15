@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import { currentReleaseSet, integrityOf, sha256 } from '../../scripts/lib/candidates.mjs'
-import { BUILD_FILES, ENV_EXAMPLE, PRESET_FILES, buildArguments, composeImages, imagesOf, pinnedReference, presetFindings, presetImageValue, renderEnvBlock, replaceEnvBlock, thirdPartyReference } from '../../scripts/lib/images.mjs'
+import { BUILD_FILES, ENV_EXAMPLE, PRESET_FILES, STARTER_COMPOSE, buildArguments, composeImages, imagesOf, pinnedReference, presetFindings, presetImageValue, renderEnvBlock, replaceEnvBlock, thirdPartyReference } from '../../scripts/lib/images.mjs'
 import { imagePublicationPlan } from '../../scripts/publish-images.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -29,7 +29,7 @@ const published = () => { const copy = structuredClone(set); copy.images.own[0].
 /** A copy of everything the preset is held to, in a directory a test may change. */
 function copyOfPreset() {
   const dir = mkdtempSync(join(tmpdir(), 'dpp-preset-'))
-  for (const file of [...PRESET_FILES, ...BUILD_FILES, ENV_EXAMPLE, ...images.own.map((image) => image.dockerfile)]) {
+  for (const file of [...PRESET_FILES, ...BUILD_FILES, STARTER_COMPOSE, ENV_EXAMPLE, ...images.own.map((image) => image.dockerfile)]) {
     mkdirSync(dirname(join(dir, file)), { recursive: true })
     cpSync(join(root, file), join(dir, file))
   }
@@ -135,6 +135,22 @@ test('a preset file that names an image by tag, floats MongoDB or builds is refu
     const sentences = failing(presetFindings(set, floating))
     assert.ok(sentences.some((s) => /compose\.second-operator\.yml: service mongo-b runs mongo:7, which is not a pinned image/.test(s)), sentences.join('\n'))
   } finally { rmSync(floating, { recursive: true, force: true }) }
+
+  // The file the application starter scaffolds is held to the same pin, so the two cannot drift apart.
+  const starter = copyOfPreset()
+  try {
+    const named = composeImages(readFileSync(join(starter, STARTER_COMPOSE), 'utf8'))
+    assert.deepEqual(named, composeImages(readFileSync(join(root, 'deploy/compose.yml'), 'utf8')).filter((n) => n.service === 'mongo'))
+    edit(starter, STARTER_COMPOSE, (text) => text.replace(/^( {4}image: )mongo:.*$/m, '$1mongo:7'))
+    let sentences = failing(presetFindings(set, starter))
+    assert.ok(sentences.some((s) => /create-dpp-app\/template\/deploy\/compose\.yml: service mongo runs mongo:7, which is not the pin deploy\/compose\.yml uses for a mongo service/.test(s)), sentences.join('\n'))
+    // Another digest under the same tag is a different image, and is refused as well.
+    edit(starter, STARTER_COMPOSE, (text) => text.replace(/^( {4}image: )mongo:.*$/m, `$1mongo:7.0.48@${DIGEST_A}`))
+    sentences = failing(presetFindings(set, starter))
+    assert.ok(sentences.some((s) => /template\/deploy\/compose\.yml: service mongo runs mongo:7\.0\.48@sha256:/.test(s)), sentences.join('\n'))
+    rmSync(join(starter, STARTER_COMPOSE))
+    assert.ok(failing(presetFindings(set, starter)).some((s) => /template\/deploy\/compose\.yml does not exist/.test(s)))
+  } finally { rmSync(starter, { recursive: true, force: true }) }
 
   const building = copyOfPreset()
   try {

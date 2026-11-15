@@ -36,6 +36,11 @@
  *      application consumer's validator client against the preset's
  *      validator service and against the dpp-validator command, then against
  *      a second implementation of the contract, then with no service at all.
+ *      The application starter chooses its engine from two settings,
+ *      VALIDATOR_URL and VALIDATOR_TOKEN. The module that makes that choice is
+ *      taken from the starter's template as it is and run in the application
+ *      consumer, against the same preset, so what is said of the consumer's
+ *      client is said of the starter's own configuration path.
  *
  * `--npm-runtime host` runs the npm consumers with the Node on this machine,
  * which is what a developer does and what continuous integration does on the
@@ -65,6 +70,7 @@ import { spawn, spawnSync } from 'node:child_process'
 import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync, cpSync, mkdirSync } from 'node:fs'
 import { createServer } from 'node:net'
+import * as nodeModule from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -205,6 +211,8 @@ const work = realpathSync(mkdtempSync(join(tmpdir(), `${project}-work-`)))
 created.directories.push(work)
 const recordedSource = { revision: record.sourceRevision, state: record.sourceState }
 let npmIndex, npmValidator, standIn, mongoNpm
+/** The starter's engine-choice module, as run in the application consumer, and the engine it opened against the preset's service. */
+let starter, starterPreset
 try {
   // 1. The images name what the npm candidates name.
   section('The images and the packed candidates name the same release')
@@ -569,6 +577,29 @@ try {
   if (npmRuntime === 'host') {
     reportVectors('through the application consumer\'s validator client, at the port published on purpose, every profile vector gives the answer the engine gives in process', vectors(application, published), identical)
   }
+
+  // The starter's own configuration path. Its engine is chosen by one module, from two settings, and that module is run here
+  // exactly as the template holds it: its types are removed and nothing else is changed. It runs in the application consumer,
+  // which has the profiles package and no engine library, so the only engine it can reach is the service its settings name.
+  const starterEngine = 'packages/create-dpp-app/template/apps/api/src/validation-engine.ts'
+  const starterEnv = readFileSync(join(repo, 'packages/create-dpp-app/template/_env.example'), 'utf8')
+  say(/^VALIDATOR_URL=/m.test(starterEnv) && /^VALIDATOR_TOKEN=/m.test(starterEnv), 'the starter\'s .env.example names the two settings its engine is chosen from, VALIDATOR_URL and VALIDATOR_TOKEN.')
+  if (typeof nodeModule.stripTypeScriptTypes !== 'function') {
+    say(false, `the starter's engine choice could not be run: Node ${process.version} cannot remove the types of ${starterEngine}.`)
+  } else {
+    writeFileSync(join(application.dir, 'starter-validation-engine.mjs'), nodeModule.stripTypeScriptTypes(readFileSync(join(repo, starterEngine), 'utf8'), { mode: 'strip' }))
+    starter = await import(pathToFileURL(join(application.dir, 'starter-validation-engine.mjs')).href)
+    const configured = await starter.openValidationEngine(starter.validationEngineSettings({ VALIDATOR_URL: published.base, VALIDATOR_TOKEN: validatorToken }), { timeoutMs: 5000 })
+    const expanded = await configured.engines.jsonLd.toRdf({ document: {}, contexts: [] })
+    starterPreset = configured
+    say(configured.kind === 'service' && configured.problem == null && !(expanded.ok === false && (expanded.reason === 'engine-error' || expanded.reason === 'timeout')) && isDeepStrictEqual([...configured.engines.shacl.capabilities].sort(), [...withToken.service.capabilities].sort()),
+      `the starter's own engine choice, given VALIDATOR_URL and VALIDATOR_TOKEN and run in the application consumer, reaches the preset's validator service: it is the ${configured.kind} engine, it reports ${configured.problem == null ? 'no problem' : 'a problem'}, and it names the capabilities the service names, ${[...configured.engines.shacl.capabilities].join(', ')}.`)
+    const mistaken = await starter.openValidationEngine(starter.validationEngineSettings({ VALIDATOR_URL: published.base, VALIDATOR_TOKEN: 'not-the-token' }), { timeoutMs: 5000 })
+    say(mistaken.kind === 'service' && typeof mistaken.problem === 'string' && !mistaken.problem.includes('not-the-token'), `given another token, the same choice says the engine cannot be used and does not repeat the token: ${mistaken.problem == null ? 'no problem was reported' : 'a problem is reported'}.`)
+    const unset = await starter.openValidationEngine(starter.validationEngineSettings({}), {})
+    say(unset.kind === 'in-process' && typeof unset.problem === 'string' && unset.engines.jsonLd == null && unset.engines.shacl == null, `with neither setting, the same choice is the engine in the application's own process, which this consumer cannot run because it holds no engine library: ${unset.problem == null ? 'no problem was reported' : 'it says which libraries to install'}. A missing engine is never a pass.`)
+    facts.starter = { module: starterEngine, settings: ['VALIDATOR_URL', 'VALIDATOR_TOKEN'], withService: { kind: configured.kind, problem: configured.problem ?? null, capabilities: [...configured.engines.shacl.capabilities] }, withAnotherToken: { kind: mistaken.kind, available: mistaken.problem == null }, withNeitherSetting: { kind: unset.kind, available: unset.problem == null } }
+  }
   measured.limits.validator = validatorResults[Object.keys(validatorResults)[0]]?.service?.limits
 
   section('The same vectors through the dpp-validator command of the npm package')
@@ -609,6 +640,13 @@ try {
   if (stopped.status !== 0) throw new Error(`the validator did not stop: ${stopped.stderr.trim()}`)
   const unavailable = (parsed) => parsed.mode === 'unavailable' && parsed.passingWithoutEngine === 0 && parsed.needingEngine > 0 && parsed.unknownThatPassedWithEngine === parsed.passedWithEngine && parsed.passedWithEngine > 0 && parsed.client === 'installed'
   reportVectors('with the preset\'s validator stopped, nothing that needs the engine passes and everything that passed with it is unknown', vectors(application, npmRuntime === 'host' ? published : inNetwork, ['--expect-unavailable']), unavailable)
+  if (starterPreset != null) {
+    // The engine the starter's choice opened while the service ran is asked again, as the starter's API asks it, with nothing restarted.
+    const problem = await starterPreset.check()
+    const expanded = await starterPreset.engines.jsonLd.toRdf({ document: {}, contexts: [] })
+    say(typeof problem === 'string' && expanded.ok === false && (expanded.reason === 'engine-error' || expanded.reason === 'timeout'), `with the preset's validator stopped, the starter's engine choice says the engine cannot be used, and an expansion asked of it answers ${expanded.ok ? 'a result' : expanded.reason}, which a validator reports as unknown.`)
+    if (facts.starter != null) facts.starter.withServiceStopped = { available: problem == null, expansion: expanded.ok ? 'ok' : expanded.reason }
+  }
   reportVectors('with no validator at the configured address at all, as on the index-only start, the answer is the same: nothing reads as a complete pass', vectors(application, { base: 'http://127.0.0.1:9', internal: 'http://127.0.0.1:9', network: npmNetwork }, ['--expect-unavailable']), unavailable)
   const stillServing = await askIndex(imageBase, '/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ service: 'ls_dpp', query: { passportId: states.shared.passportId } }) })
   say(stillServing.status === 200 && stillServing.body.outputs.length === 2, 'with the validator stopped the preset\'s index still serves: the index-only path needs no validator.')

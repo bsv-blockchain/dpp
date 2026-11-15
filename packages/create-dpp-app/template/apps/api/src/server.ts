@@ -163,19 +163,25 @@ export function createServer(options: ServerOptions): express.Express {
 
   app.get(
     '/api/health',
-    wrap(async () => ({
-      ok: true,
-      network: config.network,
-      index: { url: platform.index.url, joined: config.index.joined, inProcess: platform.devIndex != null, configured: config.index.url },
-      publisherKey: platform.wallet.identityKey,
-      wallet: platform.wallet.kind,
-      livePublishing: config.livePublishing,
-      // Without the engine a profile held by a binding cannot be written, and its readings say "not checked".
-      validationEngine: platform.profiles.engineProblem == null,
-      identifiers: { host: policy.host, prefix: policy.prefix, demonstration: demo },
-      signIn: auth != null,
-      devSession: auth == null && options.devSession != null ? { name: options.devSession.name, brandIds: options.devSession.brandIds } : undefined,
-    }))
+    wrap(async () => {
+      // A validator service is asked again each time, so one that was started or stopped since the last look is reported as it is now.
+      await platform.profiles.checkEngine()
+      return {
+        ok: true,
+        network: config.network,
+        index: { url: platform.index.url, joined: config.index.joined, inProcess: platform.devIndex != null, configured: config.index.url },
+        publisherKey: platform.wallet.identityKey,
+        wallet: platform.wallet.kind,
+        livePublishing: config.livePublishing,
+        // Without the engine a profile held by a binding cannot be written, and its readings say "not checked".
+        validationEngine: platform.profiles.engineProblem == null,
+        // Where the engine runs: in this process, or in the validator service VALIDATOR_URL names.
+        validationEngineKind: platform.profiles.engineKind,
+        identifiers: { host: policy.host, prefix: policy.prefix, demonstration: demo },
+        signIn: auth != null,
+        devSession: auth == null && options.devSession != null ? { name: options.devSession.name, brandIds: options.devSession.brandIds } : undefined,
+      }
+    })
   )
 
   app.get(
@@ -191,7 +197,11 @@ export function createServer(options: ServerOptions): express.Express {
       const id = param(req, 'id')
       const bound = platform.profiles.get(id)
       // A profile held by a binding has no field list: its product document is the profile's own data model, and the form asks for its code lists as it needs them.
-      if (bound != null) return { ...platform.profiles.describe(bound), examples: sectorExamples(bound, policy), demonstration: demo }
+      // The form is closed while the engine is unavailable, so the engine is looked at again here: a validator service that came back opens it.
+      if (bound != null) {
+        await platform.profiles.checkEngine()
+        return { ...platform.profiles.describe(bound), examples: sectorExamples(bound, policy), demonstration: demo }
+      }
       // Gone, not unknown: the profile was published and is retired, so no form, sample or schema is served for it.
       if (isRetiredProfile(id)) throw new HttpError(410, PROFILE_RETIRED, describeRetiredProfile(id))
       if (!isProfileId(id)) throw new HttpError(404, 'profile-unknown', `${id} is not a profile this platform knows`)
@@ -410,11 +420,12 @@ export function createServer(options: ServerOptions): express.Express {
     '/api/operations',
     wrap(async (req) => {
       await requireSession(req)
+      await platform.profiles.checkEngine()
       return {
         duties: await pendingDuties(store),
         passports: (await store.listPassports()).map((p) => ({ passportId: p.passportId, brandId: p.brandId, status: p.status, journal: summariseJournal(p) })),
-        // What start-up could not load: the engine's problem, and each profile folder that was refused.
-        profiles: { engine: { available: platform.profiles.engineProblem == null, problem: platform.profiles.engineProblem }, refused: platform.profiles.refusals },
+        // The engine's problem as it is now, where bound profiles are read from, and each profile folder or bundle that was refused.
+        profiles: { engine: { available: platform.profiles.engineProblem == null, kind: platform.profiles.engineKind, problem: platform.profiles.engineProblem }, source: platform.profiles.source, refused: platform.profiles.refusals },
       }
     })
   )

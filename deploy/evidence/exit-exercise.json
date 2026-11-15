@@ -1,0 +1,150 @@
+{
+  "check": "packages/create-dpp-app/template/apps/api/test/exit-exercise.test.ts",
+  "recordedAt": "2026-11-15",
+  "node": "v26.13.1",
+  "releaseSet": "dpp-release-2026-11",
+  "sourceRevision": "b611362c0bd98290b11ed29bd8d793c7df32c49b",
+  "sourceState": "working-tree",
+  "failures": 0,
+  "exercised": [
+    "Deployment A built two passports under eu-battery@1 and eu-textile@1, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.",
+    "A was exported with the export command, in the authorised form and in the public form, then switched off: its API, its database and its index were stopped.",
+    "Eleven packages that must be refused were refused by name with nothing written: a substituted and more permissive profile under a correct exporter signature, with and without its digest trusted, another exporter key, a pull checkpoint without its import, a conflict decision without its observation, an altered original under the genuine and under a re-signed manifest, a missing journal under the genuine and under a re-signed manifest, the public package, and a file the manifest does not list.",
+    "The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore wrote nothing.",
+    "In B both passports gave the reports they gave in A, check for check and finding for finding, the holder's view opened, and a document about another item was refused for the passport.",
+    "In B every original was returned byte for byte, every import record, observation, decision and pull page equalled A's, and the associations rebuilt at B equalled the ones A held.",
+    "A request A had acknowledged answered the same import in B with no new receipt, and the same request identifier with other content conflicted.",
+    "The pull was refused by the source until its credential was configured in B, then replayed from its retained bounds without a cursor and finished with no event held twice.",
+    "An UPDATE of the battery passport was written in B and the two-state lineage verified."
+  ],
+  "numbers": {
+    "export": {
+      "authorised": {
+        "files": 63,
+        "bytes": 1481726,
+        "inventoryEntries": 62,
+        "withheldLines": 12,
+        "absentLines": 2,
+        "snapshotDeclarations": 6
+      },
+      "public": {
+        "files": 37,
+        "bytes": 1371747,
+        "inventoryEntries": 36,
+        "valuesSearchedFor": 63
+      }
+    },
+    "restore": {
+      "first": {
+        "outcome": "restored",
+        "passports": 2,
+        "epcis": {
+          "originals": 6,
+          "imports": 6,
+          "observations": 9,
+          "resolutions": 1,
+          "pulls": 1,
+          "pullPages": 2
+        },
+        "relocations": 6,
+        "associationsRebuilt": 10,
+        "profileFiles": 18,
+        "statesAnnounced": 2,
+        "readingsSame": 2
+      },
+      "second": {
+        "outcome": "unchanged",
+        "statesAlreadyHeld": 2
+      }
+    },
+    "refusals": {
+      "substituted": "Refused (profile-refused)",
+      "substituted-trusted": "Refused (profile-refused)",
+      "other-exporter": "Refused (exporter-unexpected)",
+      "checkpoint-omitted": "Refused (epcis-refused)",
+      "resolution-omitted": "Refused (epcis-refused)",
+      "altered": "Refused (file-altered)",
+      "altered-resigned": "Refused (epcis-refused)",
+      "lacking": "Refused (package-incomplete)",
+      "lacking-resigned": "Refused (package-incomplete)",
+      "public": "Refused (not-a-recovery-package)",
+      "extra": "Refused (file-unlisted)"
+    },
+    "passports": {
+      "verified": 2,
+      "checksPerReport": [
+        16,
+        16
+      ],
+      "payloadChecks": [
+        1,
+        1
+      ]
+    },
+    "epcis": {
+      "originalsByteForByte": 6,
+      "importRecordsEqual": 6,
+      "associationsEqual": 10,
+      "observationsEqual": 9,
+      "decisionsEqual": 1,
+      "pullPagesEqual": 2,
+      "sourceScopes": 3
+    },
+    "pull": {
+      "pagesAcknowledgedBeforeExport": 2,
+      "requestsRefusedWithoutCredential": 1,
+      "cursor": "excluded from the package, so the pass replayed from its retained bounds",
+      "pageOffsetsAskedForInB": [
+        0,
+        2,
+        4,
+        6
+      ],
+      "eventsNewInB": 3,
+      "pageRecordsAfter": 6,
+      "importsThosePagesStandOn": 4,
+      "importsAddedInB": 2
+    },
+    "update": {
+      "op": "UPDATE",
+      "states": 2,
+      "indexAnswer": "admitted",
+      "networkAnswer": "dry-run",
+      "verified": true
+    },
+    "network": {
+      "attemptsRefused": 0,
+      "permitted": [
+        "deployment B's database",
+        "deployment B's index",
+        "deployment B's API",
+        "the fixture EPCIS source"
+      ]
+    },
+    "disabled": {
+      "database": "stopped",
+      "index": "stopped",
+      "api": "stopped"
+    }
+  },
+  "simulated": [
+    "Each index was the reference index's code in the test process, over in-memory storage, with its header checks off. It proves no inclusion: every reading in this exercise was made against scripts only, and nothing here is a statement that a state is in a block.",
+    "The wallet was the test wallet, with fixed keys and made-up funding. Nothing was sent to a network: each state's network answer is dry-run.",
+    "Both deployments held the same wallet key and the same secrets for brand and recipient keys, set by the test. That stands in for the wallet's own recovery and the operator's own handling of secrets. The package carried none of them.",
+    "Sign-in was the development session in both deployments. An export carries no account, session or membership.",
+    "The EPCIS source was the fixture server of the tests, on the loopback address, with a bearer credential.",
+    "MongoDB was a real server for each deployment, started in memory by the test set-up. The pinned GS1 files were provisioned for the test and read offline."
+  ],
+  "limits": {
+    "reached": "two passports of one state each, six retained EPCIS documents of at most two events, one pull of four pages. These are the sizes this run used, not a capacity.",
+    "notExercised": [
+      "A TRANSFER and its acceptance record, a lifecycle claim and a hand-on offer: the export carries them and this run held none.",
+      "A lineage longer than the bound of the index's package, which is carried as the parts of the index's complete export.",
+      "A source that moved to another address: the remap command was run against the unchanged address only.",
+      "A cursor carried at the operator's request (--cursors include).",
+      "The validator service as B's engine: B validated with the engine in its process.",
+      "A persistent index and a header source: inclusion was not checked by either deployment."
+    ]
+  },
+  "statement": "Profile validity is reported apart from the owner-tier check and is never a statement that disclosed data is what a state's payload_owner_hash commits to."
+}

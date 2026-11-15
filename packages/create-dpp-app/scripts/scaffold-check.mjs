@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+import { sourceState } from '../../../scripts/lib/images.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const repository = resolve(root, '../..')
@@ -20,6 +21,8 @@ const { values } = parseArgs({ options: {
   'registry-dependencies': { type: 'boolean', default: false },
   'prepare-only': { type: 'boolean', default: false },
   directory: { type: 'string' },
+  // Where the generated application's exit exercise writes the record of its run, such as deploy/evidence/exit-exercise.json.
+  'exit-record': { type: 'string' },
 } })
 if (values['prepare-only'] && !values.directory) throw new Error('--prepare-only requires --directory for the generated project')
 if (!existsSync(join(root, 'dist', 'index.js'))) throw new Error('build the packages first: npm run build')
@@ -37,6 +40,15 @@ const env = { ...process.env, NPM_CONFIG_CACHE: join(scratch, 'npm-cache'), NPM_
 // they are there the app reads them and fetches nothing. When they are not, the app's test set-up obtains them from GS1.
 const gs1Cache = join(repository, 'node_modules', '.cache', 'dpp-gs1')
 if (env.DPP_GS1_ARTEFACTS_DIR == null && existsSync(join(gs1Cache, 'epcis-json-schema-2.0.1.json'))) env.DPP_GS1_ARTEFACTS_DIR = gs1Cache
+// The exit exercise runs inside the generated application, which is not a checkout. It is told where to write its record and which
+// source it was generated from, so the record names the revision as the other evidence files do.
+if (values['exit-record'] != null) {
+  const source = sourceState(repository)
+  env.DPP_EXIT_EXERCISE_RECORD = resolve(values['exit-record'])
+  env.DPP_EXIT_EXERCISE_SOURCE_REVISION = source.revision
+  env.DPP_EXIT_EXERCISE_SOURCE_STATE = source.state
+  env.DPP_EXIT_EXERCISE_RELEASE_SET = pkg.dpp.releaseSet
+}
 const run = (command, args, cwd) => {
   console.log(`$ ${command} ${args.join(' ')}`)
   execFileSync(command, args, { cwd, env, stdio: 'inherit' })
@@ -132,7 +144,7 @@ try {
     run('npm', ['test'], target)
     await goLivePath(target)
     await connectionFilePath(target, freshEnv)
-    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests and the EPCIS exchange tests among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
+    console.log(`The packed app starter and its ${values['registry-dependencies'] ? 'public registry dependencies' : 'local runtime candidates'} install, build, typecheck and pass the generated application's tests without dpp-core, the sector and custom profile tests, the EPCIS exchange tests, the two validation engines and the exit exercise among them, with the validation libraries at their pinned versions; go-live registers with an index, and connect-index takes the connection file the index's own command writes.`)
   }
 } finally {
   for (const stop of stops) stop()
