@@ -131,9 +131,11 @@ The index and the validator service are each one runtime delivered two ways: as 
 |---|---|
 | Where is the registry named? | `images.registry` in the set, `ghcr.io/bsv-blockchain` in this candidate. It is a name until the images are published, and it is changed there and nowhere else: `node scripts/release-images.mjs render` writes it into `deploy/operator.env.example`, and `node scripts/release-images.mjs check` and the conformance checker hold the preset to the set. |
 | What pins an image? | Its digest. The preset has no setting that takes a tag, and refuses to start with a digest missing. |
+| What are the images built on? | The Docker Official Image `node:22.23.4-slim` at `sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d`, the multi-platform index the tag named on 15 November 2026. Each Dockerfile's default and the set's `runtime.baseImage` name it by that digest, and the contents check holds a built image's lowest layers to it. |
 | What does an image say about itself? | Its labels name the source revision, whether that source was committed, the release set, the package and its version, and the Node version. `node scripts/release-images.mjs inspect dpp-overlay=<image>` reads them back and holds them to the set and to the package manifest inside the image. |
 | How are the images published? | By the workflow `publish-images.yaml`, started by hand, under the same approved publication plan digest as the npm packages. It builds for `linux/amd64` and `linux/arm64`, pushes by digest and uploads the digests; recording them in the set is a reviewed change made with `node scripts/release-images.mjs pin`. It has never run. |
 | What was compared? | `deploy/evidence/delivery-parity.json` records the run of `scripts/delivery-parity.mjs` and `deploy/evidence/image-contents.json` the run of `scripts/image-contents-check.mjs`, both against images built on one machine for its own platform. They record what was run and the limits it reached, and what was not run. |
+| What is a deployment made of? | `conformance/deployment-inventory.json` lists the packages, files, images and services with the terms each is under and the disposition recorded for it ([the whole deployment](../contribute/licence.md#the-whole-deployment)). |
 
 ## Earlier sets
 

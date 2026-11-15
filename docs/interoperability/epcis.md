@@ -2,6 +2,8 @@
 
 Teams with EPCIS 2.0 events from manufacturing, logistics or traceability systems can use this guide to retain unchanged source evidence beside a passport. Imports never write passport states.
 
+Importing does not replace lifecycle signing. A lifecycle event of a passport is still stated by a signed native claim, `dpp-lifecycle-v1`, anchored beside the passport ([add a claim](../packages/add-a-claim.md)). An imported EPCIS event is source evidence that the importer retained and that nothing here signed, and this release signs no EPCIS event directly: `epcis-event-vc@1`, which would, is parked.
+
 Electronic Product Code Information Services (EPCIS) is the GS1 standard for observations such as making, packing or shipping an item. The profiles:
 
 | Profile | Result | Status |

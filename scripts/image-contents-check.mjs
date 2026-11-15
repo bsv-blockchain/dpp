@@ -28,9 +28,19 @@
  *     published. The MongoDB driver, which the index uses, is a separate
  *     Apache-2.0 library and is expected in the index image.
  *
+ *   - the base system is on record: the image's lowest layers are the
+ *     layers of the base image the release set names by digest, every
+ *     operating-system package keeps its copyright file, and the Node.js
+ *     distribution keeps its licence. The packages, with the licences their
+ *     copyright files name, are written to the record, because nothing in a
+ *     checkout can list them;
+ *   - the index image installs exactly the packages the deployment inventory
+ *     lists for @bsv/dpp-overlay, each at the version listed.
+ *
  * Files are compared by SHA-256, so a forbidden file is found under any
  * name. It needs Docker and packed candidates, pushes nothing and removes
- * the containers it starts. `--record` writes what it read to a file.
+ * the containers it starts. It pulls the base image when Docker does not
+ * hold it, to compare layers. `--record` writes what it read to a file.
  * Results print one sentence per check, never a score. The exit code is 1
  * when anything fails.
  */
@@ -131,12 +141,35 @@ walk('/')
 const root = process.argv[1]
 let installed = {}
 try { installed = JSON.parse(fs.readFileSync(path.join(root, 'node_modules/.package-lock.json'), 'utf8')).packages } catch {}
-const packages = Object.entries(installed).filter(([dir, entry]) => entry.link !== true && dir.startsWith('node_modules/')).map(([dir, entry]) => {
+// A workspace's own node_modules holds a package too, when the version it needs is not the one hoisted.
+const packages = Object.entries(installed).filter(([dir, entry]) => entry.link !== true && dir.includes('node_modules/')).map(([dir, entry]) => {
   let names = []
   try { names = fs.readdirSync(path.join(root, dir)) } catch {}
   return { dir, version: entry.version, licence: entry.license, hasLicenceFile: names.some((name) => /^(licen[cs]e|copying|notice)/i.test(name)) }
 })
-console.log(JSON.stringify({ files: out, bytes, packages }))`
+const text = (file) => { try { return fs.readFileSync(file, 'utf8') } catch { return undefined } }
+const system = []
+for (const block of (text('/var/lib/dpkg/status') || '').split('\\n\\n')) {
+  const field = (name) => (block.match(new RegExp('^' + name + ': (.*)$', 'm')) || [])[1]
+  if (field('Package') == null || !/ installed$/.test(field('Status') || '')) continue
+  const copyright = text('/usr/share/doc/' + field('Package') + '/copyright')
+  system.push({ name: field('Package'), version: field('Version'), source: (field('Source') || field('Package')).split(' ')[0], hasCopyright: copyright != null, licences: [...new Set([...(copyright || '').matchAll(/^License: (.+)$/gm)].map((m) => m[1].trim()))].sort() })
+}
+const versionOf = (file) => { try { return JSON.parse(fs.readFileSync(file, 'utf8')).version } catch { return undefined } }
+let yarn
+try { yarn = versionOf(path.join('/opt', fs.readdirSync('/opt').find((name) => name.startsWith('yarn')), 'package.json')) } catch {}
+const nodeLicence = out.find((f) => f.path === '/usr/local/LICENSE')
+const base = {
+  os: ((text('/etc/os-release') || '').match(/^PRETTY_NAME="?([^"\\n]*)"?$/m) || [])[1],
+  packages: system,
+  node: { version: process.version, licenceFile: nodeLicence ? '/usr/local/LICENSE' : null, licenceSha256: nodeLicence ? nodeLicence.sha256 : null, npm: versionOf('/usr/local/lib/node_modules/npm/package.json'), corepack: versionOf('/usr/local/lib/node_modules/corepack/package.json'), yarn },
+}
+console.log(JSON.stringify({ files: out, bytes, packages, base }))`
+
+/** The layers of a local image, lowest first, or undefined when Docker does not hold it. */
+const layersOf = (reference) => { const read = docker(['image', 'inspect', '--format', '{{json .RootFS.Layers}}', reference]); return read.status === 0 ? JSON.parse(read.stdout.trim()) : undefined }
+const inventoryPath = join(repo, 'conformance', 'deployment-inventory.json')
+const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, 'utf8')) : undefined
 
 for (const image of images.own) {
   const reference = given[image.name]
@@ -164,11 +197,41 @@ for (const image of images.own) {
   if (image.service === 'overlay') say(driver != null && driver.licence === 'Apache-2.0', `${image.name}: the one MongoDB software in it is the driver library, mongodb@${driver?.version} under ${driver?.licence}, which the index uses to reach a database that runs elsewhere.`)
   else say(driver == null, `${image.name}: it holds no MongoDB software at all, the driver included.`)
   console.log(`Measured: ${image.name} holds ${files.length} files, ${(listing.bytes / 1_000_000).toFixed(1)} MB, of which ${ownFiles.length} are under ${root} outside node_modules; ${listing.packages.length} installed packages, ${withLicence} with a licence or notice file of their own in place${without.length === 0 ? '' : ` and ${without.length} without one (${some(without.map((p) => `${p.dir.slice('node_modules/'.length)}@${p.version}, ${p.licence}`), 8)})`}.`)
+  // The base system, which no file of a checkout lists.
+  const base = listing.base
+  const layers = layersOf(reference) ?? []
+  const baseReference = image.runtime.baseImage
+  const pinned = /@sha256:[0-9a-f]{64}$/.test(baseReference)
+  // A build takes the base image's layers without leaving the image itself behind, so it is fetched here to be compared.
+  if (pinned && layersOf(baseReference) == null) docker(['pull', '-q', baseReference])
+  const baseLayers = pinned ? layersOf(baseReference) : undefined
+  say(pinned && baseLayers != null && baseLayers.length > 0 && baseLayers.every((layer, at) => layers[at] === layer), `${image.name}: its lowest ${baseLayers?.length ?? 0} layers are the layers of ${baseReference}, the base image the release set names by digest${!pinned ? ', but the release set names it by tag only' : baseLayers == null ? ', but Docker does not hold that base image to compare' : ''}.`)
+  const uncredited = base.packages.filter((p) => !p.hasCopyright).map((p) => p.name)
+  say(base.packages.length > 0 && uncredited.length === 0, `${image.name}: each of the ${base.packages.length} operating-system packages of ${base.os} keeps its copyright file under /usr/share/doc${uncredited.length === 0 ? '' : `, except ${some(uncredited)}`}.`)
+  say(base.node.licenceFile != null && base.node.version === `v${image.runtime.node}`, `${image.name}: the Node.js distribution, ${base.node.version}, keeps its licence at /usr/local/LICENSE.`)
+  const installed = listing.packages.map((p) => ({ name: p.dir.slice(p.dir.lastIndexOf('node_modules/') + 'node_modules/'.length), version: p.version, licence: p.licence })).sort((a, b) => a.name.localeCompare(b.name, 'en') || a.version.localeCompare(b.version, 'en'))
+  let beyond = []
+  if (image.service === 'overlay') {
+    // The image installs three workspaces: the index and the two packages it is built from.
+    const closureOf = (name) => (inventory?.npmPackages.find((p) => p.name === name)?.installs.packages ?? []).filter((p) => p.own !== true).map((p) => `${p.name}@${p.version}`)
+    const needed = [...new Set(['@bsv/dpp-overlay', '@bsv/dpp-protocol', '@bsv/dpp-profiles'].flatMap(closureOf))]
+    const recorded = new Set((inventory?.npmPackages ?? []).flatMap((p) => closureOf(p.name)))
+    const found = [...new Set(installed.map((p) => `${p.name}@${p.version}`))]
+    const absent = needed.filter((id) => !found.includes(id))
+    const unrecorded = found.filter((id) => !recorded.has(id))
+    beyond = found.filter((id) => !needed.includes(id))
+    say(inventory != null && absent.length === 0, `${image.name}: it installs each of the ${needed.length} third-party packages conformance/deployment-inventory.json lists for the index and the two packages it is built from, at the version listed${absent.length === 0 ? '' : `; listed and not installed: ${some(absent)}`}.`)
+    say(inventory != null && unrecorded.length === 0, `${image.name}: every package it installs is in that inventory with its licence and disposition${unrecorded.length === 0 ? '' : `; not recorded: ${some(unrecorded)}`}.`)
+    if (beyond.length > 0) console.log(`Measured: ${image.name} also installs ${beyond.length} packages the index does not use, which another package of the repository declares and the image's install does not leave out: ${some(beyond, 12)}.`)
+  }
   recorded.images[image.name] = {
     reference, id: inspected.id, platform: `${inspected.os}/${inspected.architecture}`, root, ...result, bytes: listing.bytes, ownFiles: ownFiles.length,
     installedPackages: listing.packages.length, packagesWithLicenceFile: withLicence, packagesWithoutLicenceFile: without.map((p) => ({ name: p.dir.slice('node_modules/'.length), version: p.version, licence: p.licence })),
     mongodbDriver: driver == null ? null : `${driver.version} (${driver.licence})`,
     top: [...new Set(ownFiles.map((f) => f.path.slice(root.length + 1).split('/').slice(0, 3).join('/')))].sort(),
+    baseImage: baseReference, layers: layers.length, baseLayers: baseLayers?.length ?? null,
+    baseSystem: { os: base.os, node: base.node, packageCount: base.packages.length, packages: base.packages.map(({ hasCopyright, ...rest }) => rest) },
+    ...(image.service === 'overlay' ? { packages: installed, installedAndNotUsed: beyond } : {}),
   }
 }
 

@@ -23,6 +23,8 @@ const { values } = parseArgs({ options: {
   directory: { type: 'string' },
   // Where the generated application's exit exercise writes the record of its run, such as deploy/evidence/exit-exercise.json.
   'exit-record': { type: 'string' },
+  // Where to write every package the generated application's install brought, with the licence each states, such as deploy/evidence/starter-dependencies.json.
+  'dependency-record': { type: 'string' },
 } })
 if (values['prepare-only'] && !values.directory) throw new Error('--prepare-only requires --directory for the generated project')
 if (!existsSync(join(root, 'dist', 'index.js'))) throw new Error('build the packages first: npm run build')
@@ -120,6 +122,27 @@ try {
   } else {
     run('npm', ['install', '--no-audit', '--no-fund'], target)
     const lock = read(join(target, 'package-lock.json'))
+    if (values['dependency-record']) {
+      // The generated application resolves its own dependencies, so what it installs is known only from an install. Development-only packages are left out: they do not run in the application.
+      const installed = Object.entries(lock.packages).filter(([path, entry]) => path.includes('node_modules/') && entry.link !== true && entry.dev !== true)
+        .map(([path, entry]) => ({ name: entry.name ?? path.slice(path.lastIndexOf('node_modules/') + 'node_modules/'.length), version: entry.version, licence: entry.license ?? 'not stated in the lockfile', ...(entry.optional === true ? { optional: true } : {}), ...(values['registry-dependencies'] || !archives.has(entry.name ?? path.slice(path.lastIndexOf('node_modules/') + 'node_modules/'.length)) ? {} : { from: 'the packed candidate of this repository' }) }))
+        .filter((p, at, all) => all.findIndex(q => q.name === p.name && q.version === p.version) === at)
+        .sort((a, b) => a.name.localeCompare(b.name, 'en') || a.version.localeCompare(b.version, 'en'))
+      const licences = {}
+      for (const p of installed) licences[p.licence] = (licences[p.licence] ?? 0) + 1
+      write(resolve(values['dependency-record']), {
+        check: 'packages/create-dpp-app/scripts/scaffold-check.mjs',
+        recordedAt: new Date().toLocaleDateString('en-CA'),
+        releaseSet: pkg.dpp.releaseSet,
+        sourceRevision: sourceState(repository).revision,
+        sourceState: sourceState(repository).state,
+        note: 'Every package one install of a generated application brought for use, development-only packages left out, with the licence each states. The application resolves its own ranges, so another install on another day may differ.',
+        packageCount: installed.length,
+        licences: Object.fromEntries(Object.entries(licences).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'en'))),
+        packages: installed,
+      })
+      console.log(`Wrote ${values['dependency-record']}: ${installed.length} packages.`)
+    }
     assert.ok(!Object.keys(lock.packages).some(path => path.endsWith('node_modules/@bsv/dpp-core')), 'the generated app must not install dpp-core transitively')
     for (const [name, version] of Object.entries(pkg.dpp.packages)) {
       const installed = lock.packages[`node_modules/${name}`] ?? lock.packages[`apps/api/node_modules/${name}`]

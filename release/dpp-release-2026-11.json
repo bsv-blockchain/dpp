@@ -15,7 +15,7 @@
       {
         "name": "@bsv/overlay",
         "version": "2.3.1",
-        "note": "resolves @bsv/gasp 1.3.6; consumed by @bsv/dpp-overlay only"
+        "note": "resolves @bsv/gasp 1.3.6 in this repository's lockfile and in the index image; a consumer's own install resolves its range, ^1.3.6, and may get a later version; consumed by @bsv/dpp-overlay only"
       },
       {
         "name": "mongodb",
@@ -131,7 +131,8 @@
         "manifests",
         "schemas",
         "generated",
-        "frozen.json"
+        "frozen.json",
+        "bindings"
       ],
       "nodeBuiltins": [
         "node:crypto",
@@ -501,7 +502,7 @@
         "dockerfile": "packages/dpp-overlay/Dockerfile",
         "runtime": {
           "node": "22.23.4",
-          "baseImage": "node:22.23.4-slim"
+          "baseImage": "node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"
         },
         "platforms": [
           "linux/amd64",
@@ -517,7 +518,7 @@
         "dockerfile": "packages/dpp-profiles/validator-image/Dockerfile",
         "runtime": {
           "node": "22.23.4",
-          "baseImage": "node:22.23.4-slim"
+          "baseImage": "node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"
         },
         "platforms": [
           "linux/amd64",

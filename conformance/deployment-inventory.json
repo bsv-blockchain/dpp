@@ -1,0 +1,1300 @@
+{
+  "inventory": "Everything a deployment of dpp-release-2026-11 is made of",
+  "description": "The npm packages of the release set with everything each installs, the application the starter generates, the third-party files that are copied or only named, the images and the services of the presets. Each part names the terms it is under and the disposition recorded for it. This repository's code is under Apache-2.0; third-party material keeps its own terms, and a deployment as a whole is under no single licence.",
+  "generatedBy": "scripts/deployment-inventory.mjs",
+  "releaseSet": "dpp-release-2026-11",
+  "releaseSetPath": "release/dpp-release-2026-11.json",
+  "lockfileSha256": "3ba125870bdb1bba26999f52701da82a16bd413baac8de18eb35673f512c1989",
+  "npmPackages": [
+    {
+      "name": "@bsv/dpp-protocol",
+      "version": "0.3.0-beta.10",
+      "licence": "Apache-2.0",
+      "notices": [
+        "LICENSE",
+        "NOTICE",
+        "PATENTS"
+      ],
+      "carries": [
+        "dist",
+        "schemas"
+      ],
+      "installs": {
+        "packageCount": 1,
+        "licences": {
+          "Open BSV License Version 6": 1
+        },
+        "packages": [
+          {
+            "name": "@bsv/sdk",
+            "version": "2.8.10",
+            "relation": "direct",
+            "licence": "Open BSV License Version 6",
+            "licenceFile": "LICENSE.txt",
+            "licenceFileOpens": "Open BSV License Version 6",
+            "disposition": "bsv-packages",
+            "integrity": "sha512-0KJxu772gbF2wKmD2dASciHYfAmo87ddXYknrMgYzGmI683l0trNcZHo0SYLWO5xZqJG5EB4ROyLuWXvhLCYFg=="
+          }
+        ]
+      }
+    },
+    {
+      "name": "@bsv/dpp-overlay",
+      "version": "0.4.0-beta.13",
+      "licence": "Apache-2.0",
+      "notices": [
+        "LICENSE",
+        "NOTICE",
+        "PATENTS"
+      ],
+      "carries": [
+        "dist",
+        "schemas"
+      ],
+      "installs": {
+        "packageCount": 45,
+        "licences": {
+          "MIT": 33,
+          "Apache-2.0": 6,
+          "Open BSV License Version 6": 4,
+          "BSD-2-Clause": 1,
+          "ISC": 1
+        },
+        "packages": [
+          {
+            "name": "@bsv/dpp-profiles",
+            "version": "0.3.0-beta.10",
+            "relation": "direct",
+            "licence": "Apache-2.0",
+            "own": true,
+            "disposition": "own-code"
+          },
+          {
+            "name": "@bsv/dpp-protocol",
+            "version": "0.3.0-beta.10",
+            "relation": "direct",
+            "licence": "Apache-2.0",
+            "own": true,
+            "disposition": "own-code"
+          },
+          {
+            "name": "@bsv/gasp",
+            "version": "1.3.6",
+            "relation": "transitive",
+            "licence": "Open BSV License Version 6",
+            "licenceFile": "LICENSE.txt",
+            "licenceFileOpens": "Open BSV License Version 6",
+            "disposition": "bsv-packages",
+            "integrity": "sha512-ma40fayQxQeQulgiP0awopkARvWOqcoVXoDUXYWCcArCxoeulGUY3OCRStE3uIseV9YYdvTSzeYKnuEKp+MXXA=="
+          },
+          {
+            "name": "@bsv/overlay",
+            "version": "2.3.1",
+            "relation": "direct",
+            "licence": "Open BSV License Version 6",
+            "licenceFile": "LICENSE.txt",
+            "licenceFileOpens": "Open BSV License Version 6",
+            "disposition": "bsv-packages",
+            "integrity": "sha512-db6e4E/xnwG/f8sRc8e4gPdoplsb1pX79PPsNzua2ahIRBeU2ecLblMo7O7H0TfLcW8PUaSoG2NgR3jI5gzmoA=="
+          },
+          {
+            "name": "@bsv/sdk",
+            "version": "2.8.10",
+            "relation": "direct",
+            "licence": "Open BSV License Version 6",
+            "licenceFile": "LICENSE.txt",
+            "licenceFileOpens": "Open BSV License Version 6",
+            "disposition": "bsv-packages",
+            "integrity": "sha512-0KJxu772gbF2wKmD2dASciHYfAmo87ddXYknrMgYzGmI683l0trNcZHo0SYLWO5xZqJG5EB4ROyLuWXvhLCYFg=="
+          },
+          {
+            "name": "@bsv/wallet-toolbox-client",
+            "version": "2.11.0",
+            "relation": "direct",
+            "optional": true,
+            "licence": "Open BSV License Version 6",
+            "licenceFile": "LICENSE.txt",
+            "licenceFileOpens": "Open BSV License Version 6",
+            "disposition": "bsv-packages",
+            "integrity": "sha512-2qr5+Nkw3gobMomwWxho18KvOE1JA416V3daZtNhmoCP4blkdI7Fyjwovg1Dyr7t8nbmj+W0QbLkJdFkEemT7g=="
+          },
+          {
+            "name": "@mongodb-js/saslprep",
+            "version": "1.5.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Hk1SKJCMcCos38+vqDnZzlIo4XRj9yCGzYkjB4LcqpeXRIYfia1UWTz+VrueLxoU+uSRJzgkufxoRZg8gi52YA=="
+          },
+          {
+            "name": "@noble/hashes",
+            "version": "2.4.0",
+            "relation": "transitive",
+            "optional": true,
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA=="
+          },
+          {
+            "name": "@types/webidl-conversions",
+            "version": "7.0.3",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-CiJJvcRtIgzadHCYXw7dqEnMNRjhGZlYK05Mj9OyktqV8uVT8fD2BFOB7S1uwBE3Kj2Z+4UyPmFw/Ixgw/LAlA=="
+          },
+          {
+            "name": "@types/whatwg-url",
+            "version": "13.0.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-N8WXpbE6Wgri7KUSvrmQcqrMllKZ9uxkYWMt+mCSGwNc0Hsw9VQTW7ApqI4XNrx6/SaM2QQJCzMPDEXE058s+Q=="
+          },
+          {
+            "name": "bson",
+            "version": "7.3.2",
+            "relation": "transitive",
+            "licence": "Apache-2.0",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-1w0ra+ho1cuE+w8jzwgzTFIimFtCfZeCoOsvIPQg6uyFCsp8M29U7bNNf5GrFh88TXbYg1g3TyKUGpd6O7q6zA=="
+          },
+          {
+            "name": "canonicalize",
+            "version": "5.0.0",
+            "relation": "transitive",
+            "licence": "Apache-2.0",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-O/NCg79G0/TWoD3Fo6scOMfP4p7/TsxRXVmRo9mEfD6h/5y5o1wtVbKyBO0E2i7FEcqe5tRijyAH/IWHIHMH4w=="
+          },
+          {
+            "name": "colorette",
+            "version": "2.0.19",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-3tlv/dIP7FWvj3BsbHrGLJ6l/oKh1O3TcgBqMn+yyCagOxc23fyzDS6HypQbgxWbkpDnf52p1LuR4eWDQ/K9WQ=="
+          },
+          {
+            "name": "commander",
+            "version": "10.0.1",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug=="
+          },
+          {
+            "name": "debug",
+            "version": "4.3.4",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ=="
+          },
+          {
+            "name": "es-errors",
+            "version": "1.3.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw=="
+          },
+          {
+            "name": "escalade",
+            "version": "3.2.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA=="
+          },
+          {
+            "name": "esm",
+            "version": "3.2.25",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA=="
+          },
+          {
+            "name": "function-bind",
+            "version": "1.1.2",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="
+          },
+          {
+            "name": "get-package-type",
+            "version": "0.1.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-pjzuKtY64GYfWizNAJ0fr9VqttZkNiK2iS430LtIHzjBEr6bX8Am2zm4sW4Ro5wjWW5cAlRL1qAMTcXbjNAO2Q=="
+          },
+          {
+            "name": "getopts",
+            "version": "2.3.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-5eDf9fuSXwxBL6q5HX+dhDj+dslFGWzU5thZ9kNKUkcPtaPdatmUFKwHFrLb/uf/WpA4BHET+AX3Scl56cAjpA=="
+          },
+          {
+            "name": "hash-wasm",
+            "version": "4.12.0",
+            "relation": "transitive",
+            "optional": true,
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ=="
+          },
+          {
+            "name": "hasown",
+            "version": "2.0.4",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A=="
+          },
+          {
+            "name": "idb",
+            "version": "8.0.4",
+            "relation": "transitive",
+            "optional": true,
+            "licence": "ISC",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-jd0ITCrN+Zah4J7R/Z2jnR3W7A4BXDAjmo62MwWuSjxCiueUAf7X5rbodEdidWzeknwXHmLpdZkoiiCppNi30Q=="
+          },
+          {
+            "name": "interpret",
+            "version": "2.2.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Ju0Bz/cEia55xDwUWEa8+olFpCiQoypjnQySseKtmjNrnps3P+xfpUmGr90T7yjlVJmOtybRvPXhKMbHr+fWnw=="
+          },
+          {
+            "name": "is-core-module",
+            "version": "2.16.2",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-evOr8xfXKxE6qSR0hSXL2r3sd7ALj8+7jQEUvPYcm5sgZFdJ+AYzT6yNmJenvIYQBgIGwfwz08sL8zoL7yq2BA=="
+          },
+          {
+            "name": "knex",
+            "version": "3.3.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-LgWl031hNuLv9Lhxdd9093zULa2aNcoP04Bk29e5NidgRcEr/T0rAr2WYi4BhjTiCDoQiRU56meUE5rppLKZzQ=="
+          },
+          {
+            "name": "lodash",
+            "version": "4.18.1",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q=="
+          },
+          {
+            "name": "memory-pager",
+            "version": "1.5.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ZS4Bp4r/Zoeq6+NLJpP+0Zzm0pR8whtGPf1XExKLJBAczGMnSi3It14OiNCStjQjM6NU1okjQGSxgEZN8eBYKg=="
+          },
+          {
+            "name": "mongodb",
+            "version": "7.6.0",
+            "relation": "direct",
+            "licence": "Apache-2.0",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-WbZ6OCjYw2c53LOjfkQa+reXr7kIiOVpXXglnASFuiMtif0BvsMwHe3ClJHLm1/r7wJFwaasfFtD6iYIktB01g=="
+          },
+          {
+            "name": "mongodb-connection-string-url",
+            "version": "7.0.2",
+            "relation": "transitive",
+            "licence": "Apache-2.0",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ZoS07RoFqpKYQwAk59qmrx8+jJHNHU30UjlU96QktiGn1ltvDr+vCznLX5DiUBLEpMAHatHNWV1nM/74ul66kA=="
+          },
+          {
+            "name": "ms",
+            "version": "2.1.2",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="
+          },
+          {
+            "name": "path-parse",
+            "version": "1.0.7",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw=="
+          },
+          {
+            "name": "pg-connection-string",
+            "version": "2.6.2",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA=="
+          },
+          {
+            "name": "punycode",
+            "version": "2.3.1",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="
+          },
+          {
+            "name": "rechoir",
+            "version": "0.8.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-/vxpCXddiX8NGfGO/mTafwjq4aFa/71pvamip0++IQk3zG8cbCj0fifNPrjjF1XMXUne91jL9OoxmdykoEtifQ=="
+          },
+          {
+            "name": "resolve",
+            "version": "1.22.12",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA=="
+          },
+          {
+            "name": "resolve-from",
+            "version": "5.0.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw=="
+          },
+          {
+            "name": "sparse-bitfield",
+            "version": "3.0.3",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-kvzhi7vqKTfkh0PZU+2D2PIllw2ymqJKujUcyPMd9Y75Nv4nPbGJZXNhxsgdQab2BmlDct1YnfQCguEvHr7VsQ=="
+          },
+          {
+            "name": "supports-preserve-symlinks-flag",
+            "version": "1.0.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w=="
+          },
+          {
+            "name": "tarn",
+            "version": "3.1.2",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-3RTvqKZcK/17jnJ8rMKFXbyNogywTs1z0gVPPwFsJGX46rkmUHOdIaSQ/aVO1rS7nH+soiXiWk7rvUXxndm8Dg=="
+          },
+          {
+            "name": "tildify",
+            "version": "2.0.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Cc+OraorugtXNfs50hU9KS369rFXCfgGLpfCfvlc+Ud5u6VWmUQsOAa9HbTvheQdYnrdJqqv1e5oIqXppMYnSw=="
+          },
+          {
+            "name": "tr46",
+            "version": "5.1.1",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw=="
+          },
+          {
+            "name": "webidl-conversions",
+            "version": "7.0.0",
+            "relation": "transitive",
+            "licence": "BSD-2-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g=="
+          },
+          {
+            "name": "whatwg-url",
+            "version": "14.2.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-De72GdQZzNTUBBChsXueQUnPKDkg/5A5zp7pFDuQAj5UFoENpiACU0wlCvzpAGnTkj++ihpKwKyYewn/XNUbKw=="
+          }
+        ]
+      }
+    },
+    {
+      "name": "@bsv/dpp-profiles",
+      "version": "0.3.0-beta.10",
+      "licence": "Apache-2.0",
+      "notices": [
+        "LICENSE",
+        "NOTICE",
+        "PATENTS"
+      ],
+      "carries": [
+        "dist",
+        "manifests",
+        "schemas",
+        "generated",
+        "frozen.json",
+        "bindings"
+      ],
+      "installs": {
+        "packageCount": 1,
+        "licences": {
+          "Apache-2.0": 1
+        },
+        "packages": [
+          {
+            "name": "canonicalize",
+            "version": "5.0.0",
+            "relation": "direct",
+            "licence": "Apache-2.0",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-O/NCg79G0/TWoD3Fo6scOMfP4p7/TsxRXVmRo9mEfD6h/5y5o1wtVbKyBO0E2i7FEcqe5tRijyAH/IWHIHMH4w=="
+          }
+        ]
+      }
+    },
+    {
+      "name": "@bsv/dpp-credentials",
+      "version": "0.2.0-beta.6",
+      "licence": "Apache-2.0",
+      "notices": [
+        "LICENSE",
+        "NOTICE",
+        "PATENTS"
+      ],
+      "carries": [
+        "dist",
+        "artifacts"
+      ],
+      "installs": {
+        "packageCount": 29,
+        "licences": {
+          "BSD-3-Clause": 13,
+          "MIT": 10,
+          "BSD-3-Clause for the package, and the W3C Software and Document License for the context files it carries": 2,
+          "ISC": 2,
+          "(MIT OR CC0-1.0)": 1,
+          "Apache-2.0": 1
+        },
+        "packages": [
+          {
+            "name": "@digitalbazaar/credentials-context",
+            "version": "3.2.0",
+            "relation": "direct",
+            "licence": "BSD-3-Clause for the package, and the W3C Software and Document License for the context files it carries",
+            "licenceFile": "LICENSE.md",
+            "licenceFileOpens": "Context data files in this repository are from the [vc-data-model][] spec",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-WruXZAF182pCYq/z2JPJ4N4mVDu6pd/hr7widdCqbKekA53BXHoX7XhL9tmRmQ8kfmkaStBfla67QHhkchWYBQ=="
+          },
+          {
+            "name": "@digitalbazaar/data-integrity",
+            "version": "2.5.0",
+            "relation": "direct",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ohIieLfgtPQU9BYfj0eKNiz55/ZDOk5YSE9FN/Hn0eXzI8WQzLkzRvC8pvBnzuzXDgCsjPdSqYvzok5PoClMBQ=="
+          },
+          {
+            "name": "@digitalbazaar/data-integrity-context",
+            "version": "2.0.1",
+            "relation": "direct",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-XpXUzId6ZIEaNq9R+Fv3LrArj1bRj0QX3yfYgxi2bGZGIMs8EkdwsQdzTq38cmHXBQz4DASVun7mBtwrEqjf3g=="
+          },
+          {
+            "name": "@digitalbazaar/ecdsa-multikey",
+            "version": "1.8.0",
+            "relation": "direct",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Xo4oBCb0bJv6PYNBrLBZfR/jA2uNd9Bi+YTnadFtxTbhMQrSN0nTw3OnTBOOC7zxtL3t4N00ZweQM4zhsV6gVQ=="
+          },
+          {
+            "name": "@digitalbazaar/ecdsa-rdfc-2019-cryptosuite",
+            "version": "1.3.0",
+            "relation": "direct",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Rhg++GnGWHJ29QyWTFW0tRqd/uGLADIsLVEq10zEIAY7D9ScoSLtyYzwZ/zBueBTXHXrtDUEL5SfrSvcKTLFyg=="
+          },
+          {
+            "name": "@digitalbazaar/http-client",
+            "version": "4.4.0",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ODhCGmElUPmR3IR+KZmBNkRAFyjJ01rxvk2E+/qQ2h2EGPJH5k6bz3N24ympGc5+i4YCGk/ipIpmkwc0+iSmRg=="
+          },
+          {
+            "name": "@digitalbazaar/multikey-context",
+            "version": "2.0.1",
+            "relation": "direct",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-fHuaJNWpHLZH20GQemS+iPUn7/GuZ62UGhpmD9aZuKvN62lrPTeBK1V6C1BvfdIIWRsCqa1CUda+PDZa6d6X1A=="
+          },
+          {
+            "name": "@digitalbazaar/security-context",
+            "version": "1.0.1",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-0WZa6tPiTZZF8leBtQgYAfXQePFQp2z5ivpCEN/iZguYYZ0TB9qRmWtan5XH6mNFuusHtMcyIzAcReyE6rZPhA=="
+          },
+          {
+            "name": "ajv",
+            "version": "8.20.0",
+            "relation": "direct",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA=="
+          },
+          {
+            "name": "ajv-formats",
+            "version": "3.0.1",
+            "relation": "direct",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ=="
+          },
+          {
+            "name": "base58-universal",
+            "version": "2.0.0",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-BgkgF8zVLOAygszG4W8NkLm7iXrw80VYAOcedrzANrIhS14+4W6zVqjyGTFUBM/FpqkHUt8aAYd4DbBBfn3zKg=="
+          },
+          {
+            "name": "base64url",
+            "version": "3.0.1",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A=="
+          },
+          {
+            "name": "base64url-universal",
+            "version": "2.0.0",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-6Hpg7EBf3t148C3+fMzjf+CHnADVDafWzlJUXAqqqbm4MKNXbsoPdOkWeRTjNlkYG7TpyjIpRO1Gk0SnsFD1rw=="
+          },
+          {
+            "name": "canonicalize",
+            "version": "2.1.0",
+            "relation": "transitive",
+            "licence": "Apache-2.0",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-F705O3xrsUtgt98j7leetNhTWPe+5S72rlL5O4jA1pKqBVQ/dT1O1D6PFxmSXvc0SUOinWS57DKx0I3CHrXJHQ=="
+          },
+          {
+            "name": "did-context",
+            "version": "3.1.1",
+            "relation": "direct",
+            "licence": "BSD-3-Clause for the package, and the W3C Software and Document License for the context files it carries",
+            "licenceFile": "LICENSE.md",
+            "licenceFileOpens": "Context data files in this repository are from the [did-spec][]",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-iFpszgSxc7d1kNBJWC+PAzNTpe5LPalzsIunTMIpbG3O37Q7Zi7u4iIaedaM7UhziBhT+Agr9DyvAiXSUyfepQ=="
+          },
+          {
+            "name": "fast-deep-equal",
+            "version": "3.1.3",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
+          },
+          {
+            "name": "fast-uri",
+            "version": "3.1.9",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ=="
+          },
+          {
+            "name": "json-schema-traverse",
+            "version": "1.0.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
+          },
+          {
+            "name": "jsonld",
+            "version": "9.0.0",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-pjMIdkXfC1T2wrX9B9i2uXhGdyCmgec3qgMht+TDj+S0qX3bjWMQUfL7NeqEhuRTi8G5ESzmL9uGlST7nzSEWg=="
+          },
+          {
+            "name": "jsonld-signatures",
+            "version": "11.6.0",
+            "relation": "direct",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-hzYNZXnfy4cUFf9aiFBtduUz+cknbfBLWtTKvoqVyP2ECPwqfsfkHWFlhccWfAKV/LJkPLyKZRwC1B4T5LO4ZQ=="
+          },
+          {
+            "name": "ky",
+            "version": "1.14.3",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-9zy9lkjac+TR1c2tG+mkNSVlyOpInnWdSMiue4F+kq8TwJSgv6o8jhLRg8Ho6SnZ9wOYUq/yozts9qQCfk7bIw=="
+          },
+          {
+            "name": "lru-cache",
+            "version": "6.0.0",
+            "relation": "transitive",
+            "licence": "ISC",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA=="
+          },
+          {
+            "name": "rdf-canonize",
+            "version": "5.0.0",
+            "relation": "transitive",
+            "licence": "BSD-3-Clause",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-g8OUrgMXAR9ys/ZuJVfBr05sPPoMA7nHIVs8VEvg9QwM5W4GR2qSFEEHjsyHF1eWlBaf8Ev40WNjQFQ+nJTO3w=="
+          },
+          {
+            "name": "require-from-string",
+            "version": "2.0.2",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="
+          },
+          {
+            "name": "serialize-error",
+            "version": "8.1.0",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-3NnuWfM6vBYoy5gZFvHiYsVbafvI9vZv/+jlIigFn4oP4zjNPK3LhcY0xSCgeb1a5L8jO71Mit9LlNoi2UfDDQ=="
+          },
+          {
+            "name": "setimmediate",
+            "version": "1.0.5",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA=="
+          },
+          {
+            "name": "type-fest",
+            "version": "0.20.2",
+            "relation": "transitive",
+            "licence": "(MIT OR CC0-1.0)",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ=="
+          },
+          {
+            "name": "undici",
+            "version": "6.29.1",
+            "relation": "transitive",
+            "licence": "MIT",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-EvRlUt/QqAEvXdQeRMYUfwOQsfzpDztykrG2owGEE/rBOBoYv9uF39ZzsNDh4lTFHhTr2XOZjKkYgueD12ZmGA=="
+          },
+          {
+            "name": "yallist",
+            "version": "4.0.0",
+            "relation": "transitive",
+            "licence": "ISC",
+            "disposition": "npm-permissive",
+            "integrity": "sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A=="
+          }
+        ]
+      }
+    }
+  ],
+  "starter": {
+    "package": "@bsv/create-dpp-app",
+    "note": "The starter package has no dependency of its own. The application it generates declares the dependencies below and resolves them at its own install, so their transitive closure is not fixed by this repository. The starter check installs a generated application and records every package that install brought, with its licence, in the evidence file named here.",
+    "manifests": [
+      {
+        "manifest": "packages/create-dpp-app/template/package.json",
+        "licence": "Apache-2.0",
+        "dependencies": []
+      },
+      {
+        "manifest": "packages/create-dpp-app/template/apps/api/package.json",
+        "licence": "Apache-2.0",
+        "dependencies": [
+          {
+            "name": "@bsv/dpp-credentials",
+            "range": "0.2.0-beta.6"
+          },
+          {
+            "name": "@bsv/dpp-overlay",
+            "range": "0.4.0-beta.13"
+          },
+          {
+            "name": "@bsv/dpp-profiles",
+            "range": "0.3.0-beta.10"
+          },
+          {
+            "name": "@bsv/dpp-protocol",
+            "range": "0.3.0-beta.10"
+          },
+          {
+            "name": "@bsv/overlay",
+            "range": "2.3.1"
+          },
+          {
+            "name": "@bsv/sdk",
+            "range": "2.8.10"
+          },
+          {
+            "name": "@bsv/wallet-toolbox",
+            "range": "2.14.6"
+          },
+          {
+            "name": "ajv",
+            "range": "8.20.0"
+          },
+          {
+            "name": "ajv-formats",
+            "range": "3.0.1"
+          },
+          {
+            "name": "better-auth",
+            "range": "1.7.7"
+          },
+          {
+            "name": "express",
+            "range": "5.3.0"
+          },
+          {
+            "name": "jsonld",
+            "range": "9.0.0"
+          },
+          {
+            "name": "mongodb",
+            "range": "7.7.0"
+          },
+          {
+            "name": "n3",
+            "range": "2.13.12"
+          },
+          {
+            "name": "shacl-engine",
+            "range": "1.1.3"
+          }
+        ]
+      },
+      {
+        "manifest": "packages/create-dpp-app/template/apps/web/package.json",
+        "licence": "Apache-2.0",
+        "dependencies": [
+          {
+            "name": "better-auth",
+            "range": "1.7.7"
+          },
+          {
+            "name": "class-variance-authority",
+            "range": "^0.7.1"
+          },
+          {
+            "name": "cn",
+            "range": "^0.4.0"
+          },
+          {
+            "name": "lucide-react",
+            "range": "^1.54.0"
+          },
+          {
+            "name": "radix-ui",
+            "range": "^1.7.0"
+          },
+          {
+            "name": "react",
+            "range": "19.3.0"
+          },
+          {
+            "name": "react-dom",
+            "range": "19.3.0"
+          },
+          {
+            "name": "react-router",
+            "range": "8.4.0"
+          }
+        ]
+      }
+    ],
+    "installedRecord": "deploy/evidence/starter-dependencies.json",
+    "hostedDefaults": [
+      "https://dpp-overlay-testnet.bsvb.net",
+      "https://dpp-resolver.bsvb.net"
+    ],
+    "disposition": "starter-application"
+  },
+  "copiedFiles": [
+    {
+      "path": "packages/dpp-profiles/bindings/eu-battery@1/dpp-core-context.jsonld",
+      "sha256": "96239fd7c8b867f3f15b64931889fa51104357d8edb29a1ac07ae03099673021",
+      "bytes": 15357,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/common/core/dpp-core-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-battery@1/assessment-context.jsonld",
+      "sha256": "29f093936b53d91561e5ae07822164b214213fa4833101244131763125f1f6af",
+      "bytes": 4463,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/common/assessment/assessment-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-battery@1/battery-context.jsonld",
+      "sha256": "a055e3e18f835df430517282ad9f53812132eaea0918f1b38309ec095050f117",
+      "bytes": 15493,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/eu/battery/battery-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-battery@1/gs1-shortcuts-context.jsonld",
+      "sha256": "d607f9ba803d5d760b9dbec78c531cfa77896963540dd3123c33be46be46da6b",
+      "bytes": 51869,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/common/core/gs1-shortcuts-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-battery@1/shapes.ttl",
+      "sha256": "a66aa6a97436e8dce5c5791971d439445f10297883bf72fe012d17ac03508b97",
+      "bytes": 55431,
+      "role": "shapes",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-battery@1/background.ttl",
+      "sha256": "3d160830445c550716c5e94607692c34156b881f9a165b332eaf8a0c886991b5",
+      "bytes": 556183,
+      "role": "background",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-battery@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-textile@1/dpp-core-context.jsonld",
+      "sha256": "96239fd7c8b867f3f15b64931889fa51104357d8edb29a1ac07ae03099673021",
+      "bytes": 15357,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/common/core/dpp-core-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-textile@1/assessment-context.jsonld",
+      "sha256": "29f093936b53d91561e5ae07822164b214213fa4833101244131763125f1f6af",
+      "bytes": 4463,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/common/assessment/assessment-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-textile@1/textile-context.jsonld",
+      "sha256": "32f98d76207a2b0dafc280c996a7ee60dfb4a51a38060039894eee0f4c4c1d80",
+      "bytes": 5547,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/eu/textile/textile-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-textile@1/gs1-shortcuts-context.jsonld",
+      "sha256": "d607f9ba803d5d760b9dbec78c531cfa77896963540dd3123c33be46be46da6b",
+      "bytes": 51869,
+      "role": "context",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": "https://ref.openepcis.org/extensions/common/core/gs1-shortcuts-context.jsonld",
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-textile@1/shapes.ttl",
+      "sha256": "85af353af8d89930da31d513c36f4f1c36de0384024d1027dfb6d63b4ea71d77",
+      "bytes": 56571,
+      "role": "shapes",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-profiles/bindings/eu-textile@1/background.ttl",
+      "sha256": "cedc73cab93ab40dc5cbf3d1e4903bef0c098b0b4d79dba8827c13d21c3ae8c4",
+      "bytes": 433252,
+      "role": "background",
+      "origin": "https://github.com/openepcis/openepcis-dpp-ready at 7a3f28d8869d2e5dd1fb31ace39f538fa04def4e (release 0.13.1)",
+      "address": null,
+      "licence": "Apache-2.0",
+      "modified": false,
+      "notice": "packages/dpp-profiles/bindings/eu-textile@1/NOTICE.md",
+      "distribution": "In the @bsv/dpp-profiles archive. In neither image.",
+      "disposition": "bundled-bindings"
+    },
+    {
+      "path": "packages/dpp-credentials/artifacts/w3c/credentials-v2.jsonld",
+      "sha256": "59955ced6697d61e03f2b2556febe5308ab16842846f5b586d7f1f7adec92734",
+      "bytes": 10131,
+      "role": "context",
+      "origin": "World Wide Web Consortium",
+      "address": null,
+      "licence": "W3C Software and Document License",
+      "modified": false,
+      "notice": "packages/dpp-credentials/artifacts/w3c/NOTICE.md",
+      "distribution": "In the @bsv/dpp-credentials archive. In neither image.",
+      "disposition": "w3c-context"
+    }
+  ],
+  "namedNotCarried": [
+    {
+      "address": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-json-schema.json",
+      "sha256": "0f46ff694efffd8d8ce840a33dfde84228add11b516b8b258f3200740ae210af",
+      "bytes": 55680,
+      "pinnedIn": "packages/dpp-credentials/src/gs1-artefacts.ts",
+      "origin": "GS1",
+      "licence": "GS1's own terms, which this repository does not reproduce",
+      "distribution": "Never carried in the repository, a package or an image. Each deployment obtains the file from GS1 and the package checks every byte against this digest.",
+      "disposition": "gs1-files"
+    },
+    {
+      "address": "https://ref.gs1.org/standards/epcis/2.0.1/epcis-context.jsonld",
+      "sha256": "5056c65f991425b1d3a35e35edf4f7d0c7ff56cf688c2912b930f93494713737",
+      "bytes": 20690,
+      "pinnedIn": "packages/dpp-credentials/src/gs1-artefacts.ts",
+      "origin": "GS1",
+      "licence": "GS1's own terms, which this repository does not reproduce",
+      "distribution": "Never carried in the repository, a package or an image. Each deployment obtains the file from GS1 and the package checks every byte against this digest.",
+      "disposition": "gs1-files"
+    },
+    {
+      "address": "https://ref.gs1.org/standards/epcis/2.0.1/query-schema.json",
+      "sha256": "4b5583c9a0a715324594617f3cf6744f4f930568484f7df8fb7aa81819355341",
+      "bytes": 27229,
+      "pinnedIn": "packages/dpp-credentials/src/gs1-artefacts.ts",
+      "origin": "GS1",
+      "licence": "GS1's own terms, which this repository does not reproduce",
+      "distribution": "Never carried in the repository, a package or an image. Each deployment obtains the file from GS1 and the package checks every byte against this digest.",
+      "disposition": "gs1-files"
+    },
+    {
+      "address": "https://ref.gs1.org/standards/resolver/1.2.1/linkset-schema",
+      "sha256": "d2e23510f17558c29f9d1baf9e112a70df42efd6557a49dc9a317048973669f2",
+      "bytes": 4696,
+      "pinnedIn": "packages/dpp-profiles/src/gs1-artefacts.ts",
+      "origin": "GS1",
+      "licence": "GS1's own terms, which this repository does not reproduce",
+      "distribution": "Never carried in the repository, a package or an image. Each deployment obtains the file from GS1 and the package checks every byte against this digest.",
+      "disposition": "gs1-files"
+    },
+    {
+      "address": "https://ref.gs1.org/standards/resolver/1.2.0/description-file-schema",
+      "sha256": "99d505c7aa2004cde3277651e8db0e019eab61d2746b2631ddab3fec8a13617e",
+      "bytes": 3593,
+      "pinnedIn": "packages/dpp-profiles/src/gs1-artefacts.ts",
+      "origin": "GS1",
+      "licence": "GS1's own terms, which this repository does not reproduce",
+      "distribution": "Never carried in the repository, a package or an image. Each deployment obtains the file from GS1 and the package checks every byte against this digest.",
+      "disposition": "gs1-files"
+    },
+    {
+      "address": "https://ref.gs1.org/standards/resolver/1.2.1/linkset-context",
+      "sha256": "05792d010165fa6f28cc9cc3463cc1668f522ac75c26abe5b2877ec4a37b1312",
+      "bytes": 838,
+      "pinnedIn": "packages/dpp-profiles/src/gs1-artefacts.ts",
+      "origin": "GS1",
+      "licence": "GS1's own terms, which this repository does not reproduce",
+      "distribution": "Never carried in the repository, a package or an image. Each deployment obtains the file from GS1 and the package checks every byte against this digest.",
+      "disposition": "gs1-files"
+    }
+  ],
+  "images": [
+    {
+      "name": "dpp-overlay",
+      "package": "@bsv/dpp-overlay",
+      "dockerfile": "packages/dpp-overlay/Dockerfile",
+      "baseImage": "node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d",
+      "node": "22.23.4",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "digest": "unpublished",
+      "ownFiles": {
+        "licence": "Apache-2.0",
+        "notices": [
+          "LICENSE",
+          "NOTICE",
+          "PATENTS"
+        ]
+      },
+      "npmPackages": {
+        "inventory": "the installs of @bsv/dpp-overlay above, development dependencies left out",
+        "notices": "the licence file each package publishes, in place under node_modules"
+      },
+      "baseSystem": {
+        "record": "deploy/evidence/image-contents.json",
+        "note": "The base image's layers, its operating-system packages with the licences their copyright files name, and the Node.js distribution, read from the built image.",
+        "disposition": "base-images"
+      },
+      "dispositions": [
+        "own-code",
+        "npm-permissive",
+        "bsv-packages",
+        "base-images",
+        "image-digests"
+      ]
+    },
+    {
+      "name": "dpp-validator",
+      "package": "@bsv/dpp-profiles",
+      "dockerfile": "packages/dpp-profiles/validator-image/Dockerfile",
+      "baseImage": "node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d",
+      "node": "22.23.4",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "digest": "unpublished",
+      "ownFiles": {
+        "licence": "Apache-2.0",
+        "notices": [
+          "LICENSE",
+          "NOTICE",
+          "PATENTS"
+        ]
+      },
+      "npmPackages": {
+        "inventory": "packages/dpp-profiles/validator-image/licence-inventory.json",
+        "sha256": "d94c312b2f05b570da1daba3ed696a3f90ccf00509fdc9febd8adcdc2ae31803",
+        "packageCount": 413,
+        "licences": {
+          "MIT": 383,
+          "ISC": 10,
+          "BSD-2-Clause": 7,
+          "BlueOak-1.0.0": 5,
+          "BSD-3-Clause": 4,
+          "Apache-2.0": 2,
+          "(WTFPL OR MIT)": 1,
+          "FreeBSD": 1
+        },
+        "notices": "/app/THIRD-PARTY-NOTICES.txt in the image",
+        "disposition": "validator-engines"
+      },
+      "baseSystem": {
+        "record": "deploy/evidence/image-contents.json",
+        "note": "The base image's layers, its operating-system packages with the licences their copyright files name, and the Node.js distribution, read from the built image.",
+        "disposition": "base-images"
+      },
+      "dispositions": [
+        "own-code",
+        "validator-engines",
+        "base-images",
+        "image-digests"
+      ]
+    }
+  ],
+  "services": [
+    {
+      "name": "mongo",
+      "image": "mongo:7.0.48",
+      "digest": "sha256:9896df581dfd0718b7abe112f4c37598d0986c54060e4ec1384997e6503c8c71",
+      "resolvedAt": "2026-11-15",
+      "licence": "SSPL-1.0",
+      "distribution": "MongoDB Community Server, named by the preset and pulled by the operator from its publisher. No image, package, bundle or mirror of this repository contains it.",
+      "presets": [
+        "deploy/compose.yml",
+        "deploy/compose.second-operator.yml",
+        "packages/create-dpp-app/template/deploy/compose.yml"
+      ],
+      "disposition": "mongodb"
+    }
+  ],
+  "dispositions": [
+    {
+      "id": "own-code",
+      "subject": "This repository's code, specifications, schemas and documentation, in every archive and both images",
+      "status": "held",
+      "basis": "Apache-2.0. LICENSE, NOTICE and PATENTS ship in each npm archive and each image, checked byte for byte by scripts/image-contents-check.mjs."
+    },
+    {
+      "id": "npm-permissive",
+      "subject": "Third-party npm packages under permissive licences",
+      "status": "held",
+      "basis": "Every package an npm package of this set installs is listed above with its licence. Each licence is in the reviewed list of scripts/deployment-inventory.mjs, which stops on any other. Two context packages name a licence file: BSD-3-Clause for the package and the W3C Software and Document License for the context files inside it. Each package publishes its own licence file, which npm installs in place."
+    },
+    {
+      "id": "bsv-packages",
+      "subject": "@bsv/sdk, @bsv/overlay, @bsv/gasp and @bsv/wallet-toolbox-client at the pinned versions",
+      "status": "open",
+      "basis": "The archives of these versions carry the Open BSV License Version 6, which among other conditions limits use to the BSV blockchains it defines. It is not Apache-2.0. The index image installs them and every install of @bsv/dpp-overlay brings them.",
+      "waitsOn": "Versions of these packages published under Apache-2.0 and adopted here after compatibility tests, or a recorded grant covering the pinned versions."
+    },
+    {
+      "id": "validator-engines",
+      "subject": "The three engine libraries of the validator image and what they install",
+      "status": "held",
+      "basis": "413 packages, all permissive, listed in packages/dpp-profiles/validator-image/licence-inventory.json, which stops on any other licence. The image carries the text of every licence and notice file those packages publish. Some publish none; for those the inventory records what the manifest states."
+    },
+    {
+      "id": "bundled-bindings",
+      "subject": "The contexts, shapes and ontology files of the bundled bindings",
+      "status": "held",
+      "basis": "Apache-2.0, unmodified, each held to its SHA-256 by its binding. The NOTICE.md beside each binding names the source, its revision and every file, and reproduces the one notice a file carries."
+    },
+    {
+      "id": "w3c-context",
+      "subject": "The W3C credentials context retained in @bsv/dpp-credentials",
+      "status": "open",
+      "basis": "Unmodified. The notice beside it names the licence and does not yet reproduce its full text, which that licence asks for on every copy.",
+      "waitsOn": "The full licence text beside the file."
+    },
+    {
+      "id": "gs1-files",
+      "subject": "GS1's EPCIS and resolver schemas and contexts",
+      "status": "held",
+      "basis": "Not redistributed. The packages name each file by address and SHA-256, and scripts/image-contents-check.mjs holds that no archive or image contains one."
+    },
+    {
+      "id": "mongodb",
+      "subject": "MongoDB Community Server in the presets",
+      "status": "conditional",
+      "basis": "Server Side Public License, version 1. A separate program reached over the network through the Apache-2.0 driver.",
+      "conditions": [
+        "No image, package, bundle or mirror of this repository contains the server.",
+        "The presets name the publisher's image by tag and digest.",
+        "The documentation states its licence and never describes a deployment as a whole as Apache-2.0.",
+        "An operator reads the SSPL for its own use; offering MongoDB's functionality to third parties as a service, or redistributing it, is the operator's own obligation.",
+        "MONGO_URL points the index at any other compatible database."
+      ]
+    },
+    {
+      "id": "base-images",
+      "subject": "The base image of both images: Debian and the Node.js distribution",
+      "status": "conditional",
+      "basis": "Published unmodified as the lower layers of each image, under their own licences, some of which are copyleft (the GNU GPL and LGPL among them). Every package's copyright file stays in the image under /usr/share/doc and Node.js's licence stays at /usr/local/LICENSE.",
+      "conditions": [
+        "The Dockerfiles name the base image by digest, so the packages recorded are the packages shipped.",
+        "Nothing in the base layers is modified, so the corresponding source is the source Debian and the Node.js project publish for those versions."
+      ]
+    },
+    {
+      "id": "image-digests",
+      "subject": "The digests of the two published images",
+      "status": "open",
+      "basis": "Neither image is published, so the release set records no digest and the pinned preset cannot start.",
+      "waitsOn": "Publication of both images and the pin that records their digests."
+    },
+    {
+      "id": "starter-application",
+      "subject": "The application the starter generates",
+      "status": "conditional",
+      "basis": "Its dependencies are declared in the template and resolved at its own install. The record of one such install lists each package with its licence.",
+      "conditions": [
+        "It installs @bsv packages that carry the Open BSV License Version 6 (see bsv-packages), @bsv/wallet-toolbox among them.",
+        "The tool chain that builds its web client installs lightningcss under MPL-2.0, a copyleft that applies file by file to changes made to lightningcss itself; the application does not change it.",
+        "Its defaults name hosted services that are offered for demonstration with no stated terms of service; a deployment replaces them with its own.",
+        "A generated application is its author's own project and takes its own licence decision."
+      ]
+    },
+    {
+      "id": "consumer-installs",
+      "subject": "What a consumer's own install resolves",
+      "status": "conditional",
+      "basis": "This inventory describes the lockfile of this repository, which is what both images install. An npm consumer resolves transitive ranges at install time and may get later versions of the same packages.",
+      "conditions": [
+        "Direct dependencies are pinned to exact versions.",
+        "scripts/delivery-parity.mjs records which transitive versions differ between the image and a fresh install."
+      ]
+    }
+  ],
+  "releaseDecision": {
+    "status": "blocked",
+    "openDispositions": [
+      "bsv-packages",
+      "w3c-context",
+      "image-digests"
+    ],
+    "note": "A release of these artefacts waits on each open disposition."
+  }
+}

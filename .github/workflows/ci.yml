@@ -98,15 +98,15 @@ jobs:
       # The base image comes from the first registry that serves it: Google's
       # Docker Hub mirror, Amazon ECR Public, then Docker Hub. All three serve
       # the same manifest digests, so one registry's anonymous pull limit or
-      # outage cannot fail this job; the Dockerfile default stays node:22.23.4-slim
-      # for platform and local builds.
+      # outage cannot fail this job. The image is named by the digest the
+      # Dockerfile default and the release set record.
       - run: |
           set -euo pipefail
           base=""
           for registry in mirror.gcr.io/library public.ecr.aws/docker/library docker.io/library; do
-            if docker pull -q "$registry/node:22.23.4-slim"; then base="$registry/node:22.23.4-slim"; break; fi
+            if docker pull -q "$registry/node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"; then base="$registry/node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"; break; fi
           done
-          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
+          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d" >&2; exit 1; }
           docker build --build-arg BASE_IMAGE="$base" -f packages/dpp-overlay/Dockerfile -t dpp-overlay:ci .
       # A versioned smoke of the image: it boots on configuration alone,
       # answers /health and names its capabilities, under the operator
@@ -170,9 +170,9 @@ jobs:
           set -euo pipefail
           base=""
           for registry in mirror.gcr.io/library public.ecr.aws/docker/library docker.io/library; do
-            if docker pull -q "$registry/node:22.23.4-slim"; then base="$registry/node:22.23.4-slim"; break; fi
+            if docker pull -q "$registry/node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"; then base="$registry/node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"; break; fi
           done
-          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
+          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d" >&2; exit 1; }
           docker build --build-arg BASE_IMAGE="$base" -f packages/dpp-profiles/validator-image/Dockerfile -t dpp-validator:ci .
       - run: node scripts/validator-image-check.mjs --image dpp-validator:ci
 
@@ -203,9 +203,9 @@ jobs:
           set -euo pipefail
           base=""
           for registry in mirror.gcr.io/library public.ecr.aws/docker/library docker.io/library; do
-            if docker pull -q "$registry/node:22.23.4-slim"; then base="$registry/node:22.23.4-slim"; break; fi
+            if docker pull -q "$registry/node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"; then base="$registry/node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d"; break; fi
           done
-          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim" >&2; exit 1; }
+          [ -n "$base" ] || { echo "No registry served node:22.23.4-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d" >&2; exit 1; }
           node scripts/release-images.mjs build --prefix ci- --tag parity --base-image "$base"
       - run: node scripts/image-contents-check.mjs --overlay-image ci-dpp-overlay:parity --validator-image ci-dpp-validator:parity
       - run: node scripts/delivery-parity.mjs --overlay-image ci-dpp-overlay:parity --validator-image ci-dpp-validator:parity
