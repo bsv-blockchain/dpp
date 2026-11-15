@@ -69,6 +69,8 @@ jobs:
       - run: node examples/custom-profile.mjs
       # The same profiles carried in a signed evidence package and validated from it with the network off.
       - run: node examples/portable-profile.mjs
+      # A binding checked against changed files: the report, the proposed next version and the registry's refusals.
+      - run: node examples/check-binding-update.mjs
       # The documentation site: navigation, links, pinned repository paths,
       # example commands, version references and the two generated pages.
       - run: node scripts/docs-check.mjs

@@ -205,6 +205,70 @@ describe('profiles over HTTP', () => {
   })
 })
 
+describe('the authorised view, asked by someone it does not belong to', () => {
+  let anonymous: Server
+  let open: string
+
+  beforeAll(async () => {
+    // The same platform behind a server that knows no session: what a request from someone who has not signed in meets.
+    anonymous = createServer({ platform }).listen(0, '127.0.0.1')
+    await once(anonymous, 'listening')
+    open = `http://127.0.0.1:${(anonymous.address() as AddressInfo).port}`
+  })
+
+  afterAll(() => {
+    anonymous.closeAllConnections()
+    anonymous.close()
+  })
+
+  const ask = async (passportId: string, body: unknown): Promise<{ status: number; text: string; body: any }> => {
+    const response = await fetch(`${open}/api/passports/${ref(passportId)}/authorised-view`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+    const text = await response.text()
+    return { status: response.status, text, body: JSON.parse(text) }
+  }
+
+  it('answers 401 to a request with no session while the brand holds the passport, and opens nothing', async () => {
+    const example = await exampleFor('eu-battery@1', 'HTTP-ANON-0001')
+    expect((await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: example.serial, product: example.product })).status).toBe(200)
+    for (const body of [{}, { claimCode: 'anything' }]) {
+      const answer = await ask(example.passportId, body)
+      expect(answer.status).toBe(401)
+      expect(answer.body).toEqual({ error: 'sign-in-required', description: 'sign in first' })
+      expect(answer.text).not.toContain('eubat:hasBatteryState')
+    }
+    // The control: the same request with the brand's session opens it.
+    const member = await post(`/api/passports/${ref(example.passportId)}/authorised-view`, {})
+    expect(member.status).toBe(200)
+    expect((member.body as AuthorisedReading).authorisedView.status).toBe('pass')
+    expect(member.text).toContain('eubat:hasBatteryState')
+  })
+
+  it('answers 403 to a request for a handed-on passport without the claim code it was accepted with, or with another one', async () => {
+    const example = await exampleFor('eu-textile@1', 'HTTP-RECIPIENT-0001')
+    expect((await post(`/api/brands/${brandId}/passports`, { profile: 'eu-textile@1', itemReference: example.itemReference, serial: example.serial, product: example.product })).status).toBe(200)
+    const offered = await post(`/api/passports/${ref(example.passportId)}/offer`, { terms: { word: 'Sold' } })
+    expect(offered.status).toBe(200)
+    const { offer, claimCode } = offered.body as { offer: { requestId: string }; claimCode: string }
+    expect((await post(`/api/offers/${encodeURIComponent(offer.requestId)}/accept`, { claimCode })).status).toBe(200)
+
+    for (const body of [{}, { claimCode: 'not-the-claim-code' }, { claimCode: `${claimCode}0` }]) {
+      const answer = await ask(example.passportId, body)
+      expect(answer.status).toBe(403)
+      expect(answer.body).toMatchObject({ error: 'claim-code-required' })
+      expect(answer.text).not.toContain('eutex:hasWaterUsage')
+    }
+    // The brand's session is no longer a way in either: the passport is the recipient's.
+    expect((await post(`/api/passports/${ref(example.passportId)}/authorised-view`, {})).status).toBe(403)
+
+    // The control: with the claim code the recipient is answered. The restricted part is still sealed to the brand that wrote it, so the view is not checked.
+    const holder = await ask(example.passportId, { claimCode })
+    expect(holder.status).toBe(200)
+    expect((holder.body as AuthorisedReading).ownerTier.status).toBe('pass')
+    expect((holder.body as AuthorisedReading).authorisedView.status).toBe('not-checked')
+    expect(holder.text).not.toContain('eutex:hasWaterUsage')
+  })
+})
+
 describe('a restricted value', () => {
   // A value that is in no fixture, no log line and no key: wherever it turns up, it was copied there.
   const canary = 'RESTRICTED-CANARY-7F3A91C2'

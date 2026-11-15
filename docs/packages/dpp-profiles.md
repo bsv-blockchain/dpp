@@ -652,6 +652,46 @@ In a repository checkout:
 | `node examples/portable-profile.mjs` | Exports the two example profiles into a signed package, switches the network off, restores them into a second registry from the package folder and gets the same answer for every payload vector. It then shows a correctly signed package refused for a substituted binding and for an altered shapes file, and an incomplete one answered `unknown` |
 | `node examples/portable-profile.mjs --keep <folder>` | The same, leaving the package in `<folder>` to look at |
 
+### Check a binding against new files
+
+A binding is immutable, so files its source publishes again with changes are never an edit to it. They are a candidate for the next version. `checkBindingUpdate` compares the active version with the candidate files and returns a report to review and a proposed binding. It registers nothing, fetches nothing and leaves the active version exactly as it was ([profiles](https://github.com/bsv-blockchain/dpp/blob/3f11c0b35300fe2169d7eb9f84d40c7b64a94c55/spec/profiles.md) section 7).
+
+```js
+import { checkBindingUpdate } from '@bsv/dpp-profiles'
+
+const active = registry.resolve('example-bottle', 1)
+// The whole set the next version would list: each file the active version lists, with the changed ones replaced.
+const artefacts = active.artefacts.map(({ artefact, bytes }) => ({ path: artefact.path, bytes: artefact.path === 'context.jsonld' ? newContextBytes : bytes }))
+const { report, proposal } = checkBindingUpdate({ active, candidate: { artefacts, source: { release: '1.1.0' } } })
+```
+
+| In `report` | What it says |
+|---|---|
+| `outcome` | `unchanged`: the candidate is the active files, byte for byte, and nothing is proposed. `proposed`: `proposal` holds the next version. `refused`: no valid binding can be written from the candidate, and `problems` says why |
+| `artefacts` | Every file of either version as `added`, `removed`, `changed` or `unchanged`, with role, licence, length and SHA-256 `before` and `after`. A listed file the candidate leaves out is `removed`, never carried over |
+| `artefacts[].context` | For a JSON-LD context, each term `added`, `removed` or `redefined`, and the other contexts it names that were added or removed. A removed or redefined term is `breaking`: a document that uses it reads differently under the proposal, or not at all. So is a context the active version lists that this one no longer names, because a document that names this one alone loses its terms. A context that could not be read says so and is not called unchanged |
+| `artefacts[].compared` | `terms` where a context's terms were compared, `digest` for every other file and for a file whose record is the same on both sides. A changed shapes file or schema is compared by length and digest only |
+| `breaking`, `review` | One sentence per change that affects documents written under the active version, and one per thing the check did not decide, such as a changed licence or a source revision left as it was |
+| `limits` | Fixed words in every report: it activates nothing, trust stays with the registry's digest list, only contexts are read term by term, and no acceptance vector was run |
+
+`proposal` holds `bindingBytes`, the proposed `binding.json` byte for byte, its `bindingDigest` and the files it lists. The version is the active one plus one unless you pass `candidate.version`. The same input always gives the same bytes, whatever order the candidate lists its files in, so two people who run the check review one digest. The report lists the active version's files in the binding's order, then any new file by path, and the proposal lists them the same way.
+
+Using the proposal is a separate step that you take after review. Run the profile's vectors under it first, in a registry made for the review, because the check runs none. Then add `proposal.bindingDigest` to the trusted digests of the deployment and register it like any binding:
+
+```js
+const registry = createProfileRegistry({ trustedBindingDigests: [...trusted, proposal.bindingDigest] })
+await registry.register({ bindingBytes: proposal.bindingBytes, resolveArtefact: (artefact) => proposal.artefacts.find((entry) => entry.artefact.path === artefact.path)?.bytes })
+```
+
+A registry that was not given the digest refuses it as `binding-untrusted`, and a binding that claims the active `id` and `version` with other bytes is refused as `binding-conflict`. Keep the earlier version registered beside the new one: a record is read under the version it declares.
+
+In a repository checkout:
+
+| Command | What it shows |
+|---|---|
+| `node examples/check-binding-update.mjs` | Checks the example profile against a changed context, prints the report, shows the active version unchanged and the proposal refused until its digest is trusted, then runs the profile's vectors under both versions in a review registry |
+| `node examples/check-binding-update.mjs <binding folder> <candidate folder> --out <folder>` | Checks a binding folder of your own against a folder of candidate files, prints the report as JSON and writes the proposed binding folder to review |
+
 ## Retired profiles
 
 The sector profiles first published as manifests are retired from 14 November 2026 ([profiles](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md), the section on versions, freezing, retirement and migration). Retiring a profile changes what the package does with it and nothing it says.

@@ -1,6 +1,6 @@
 {
   "ledgerVersion": "1",
-  "updatedAt": "2026-11-15",
+  "updatedAt": "2026-11-16",
   "sources": [
     {
       "id": "spec-record-model",
@@ -112,7 +112,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/profiles.md",
-      "digest": "ea3530351ef707ad9ffe3f269f151ba3eaf407a5f9c2da504a6f03efc8465698"
+      "digest": "aff33b253ac4f719bfc2e67771373d05b73f31f2ab9f2efa9e6baff9c15629bb"
     },
     {
       "id": "profiles-frozen",
@@ -2903,9 +2903,9 @@
         "packages/dpp-profiles/generated/index.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §2 gained the manifest version 2 paragraph; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired, and the example identifier of §2 became general@2; the manifest shape this row assesses is unchanged. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the manifest shape this row assesses is unchanged."
+      "notes": "Re-read 2026-11-12 after §2 gained the manifest version 2 paragraph; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the manifest shape this row assesses is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired, and the example identifier of §2 became general@2; the manifest shape this row assesses is unchanged. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the manifest shape this row assesses is unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the manifest shape this row assesses is unchanged."
     },
     {
       "id": "PROF-3-fields",
@@ -2935,9 +2935,9 @@
         "packages/dpp-profiles/generated/payload-schema/"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §3 took the composable rules, the evaluator and the shared shapes from the parked projection specification; the field rules this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the field rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the field rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the field rules are unchanged. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the field rules are unchanged."
+      "notes": "Re-read 2026-11-12 after §3 took the composable rules, the evaluator and the shared shapes from the parked projection specification; the field rules this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the field rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the field rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the field rules are unchanged. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the field rules are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the field rules are unchanged."
     },
     {
       "id": "PROF-3-access-tiers",
@@ -2961,9 +2961,9 @@
       ],
       "evidenceRefs": [],
       "status": "unassessed",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the tiers §3 gives a manifest profile are unchanged, the split a binding states is a separate rule of §7 that this row does not assess, and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the access tiers are unchanged and the row stays unassessed."
+      "notes": "The restricted schema covers the three tiers together; no test yet checks a per-tier subset against it. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the access tiers this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the tiers §3 gives a manifest profile are unchanged, the split a binding states is a separate rule of §7 that this row does not assess, and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the access tiers are unchanged and the row stays unassessed. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the access tiers are unchanged and the row stays unassessed."
     },
     {
       "id": "PROF-4-freeze",
@@ -2989,9 +2989,9 @@
         "packages/dpp-profiles/frozen.json"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-read 2026-11-12 after §4 named battery@4 the one draft successor, parked battery@3, textile@3 and textile@4 with their bytes frozen, and stated the additive freeze; no digest moved. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the freezing rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the freezing rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired: no digest moved, the retired manifests and their generated files stay frozen, and PROF-4-retirement assesses the rule. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the freezing rules are unchanged."
+      "notes": "Re-read 2026-11-12 after §4 named battery@4 the one draft successor, parked battery@3, textile@3 and textile@4 with their bytes frozen, and stated the additive freeze; no digest moved. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the freezing rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the freezing rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired: no digest moved, the retired manifests and their generated files stay frozen, and PROF-4-retirement assesses the rule. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the freezing rules are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the freezing rules are unchanged, and a binding update proposes a new version and never edits a frozen file."
     },
     {
       "id": "PROF-4-retirement",
@@ -3020,16 +3020,18 @@
         "packages/dpp-profiles/test/retired-profiles.test.ts",
         "packages/dpp-profiles/test/battery-lifecycle.test.ts",
         "packages/create-dpp-app/template/apps/api/test/retired-profiles.test.ts",
-        "conformance/test/retired-profiles-bytes.test.mjs"
+        "conformance/test/retired-profiles-bytes.test.mjs",
+        "packages/dpp-overlay/test/retired-profile-reset.test.ts"
       ],
       "evidenceRefs": [
         "packages/dpp-profiles/frozen.json",
-        "fixtures/battery-lifecycle-v1.json"
+        "fixtures/battery-lifecycle-v1.json",
+        "docs/operate/retired-profile-records.md"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Added 2026-11-14 with the rule. RETIRED_PROFILE_IDS is the one list; the refusal code and the cause are both profile-retired. The file readers, the field lists, the change report and the lifecycle mapping still accept a retired manifest, because they describe a frozen definition and judge no payload. The byte comparison with the main branch is skipped, and says so, in a checkout that does not hold that branch. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the retirement rule is unchanged. A retired profile resolves to nothing, so an export has nothing to carry under one and refuses it as not registered."
+      "notes": "Added 2026-11-14 with the rule. RETIRED_PROFILE_IDS is the one list; the refusal code and the cause are both profile-retired. The file readers, the field lists, the change report and the lifecycle mapping still accept a retired manifest, because they describe a frozen definition and judge no payload. The byte comparison with the main branch is skipped, and says so, in a checkout that does not hold that branch. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the retirement rule is unchanged. A retired profile resolves to nothing, so an export has nothing to carry under one and refuses it as not registered. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it. The rules for writers, readers and registries are unchanged. The new sentence of §4 states what an index already did: packages/dpp-overlay/test/retired-profile-reset.test.ts admits states that declare battery@2, battery@3 and textile@4 through the reference index's own topic manager, then runs the listing and removal commands of docs/operate/retired-profile-records.md against the index's and the application's databases and finds only the reviewed passports' rows removed."
     },
     {
       "id": "PROF-5-identifiers",
@@ -3055,9 +3057,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §5 is unchanged."
+      "notes": "The application's writer does not yet call these helpers; that integration is the GS1-check-digit-written row. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §5 is unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; §5 is unchanged."
     },
     {
       "id": "PROF-5-demonstration-notice",
@@ -3080,9 +3082,9 @@
         "docs/packages/what-an-application-offers.md"
       ],
       "status": "unassessed",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged, and the binding envelope of §7 permits the same notice; the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged and the row stays unassessed. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §5 is unchanged and the row stays unassessed."
+      "notes": "Every industry manifest declares the notice stamp; no reference check enforces the rule yet. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §5 is unchanged, and the binding envelope of §7 permits the same notice; the row stays unassessed. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §5 is unchanged and the row stays unassessed. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §5 is unchanged and the row stays unassessed. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §5 is unchanged and the row stays unassessed. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; §5 is unchanged and the row stays unassessed."
     },
     {
       "id": "PROF-6-generated-consumers",
@@ -3108,9 +3110,9 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check. Re-read 2026-11-12 after §6 said how the generator treats a version 2 manifest; the generation rule this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §6 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §6 is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §6 is unchanged, and the generated files of a retired profile stay as frozen. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §6 is unchanged."
+      "notes": "The registry serves the package's generated consumer documents byte for byte (test/profiles.test.ts). The application mirrors the package and its attribute registries are readers of the package's documents, held to the frozen digests and to a snapshot of the former hand-declared registries (packages/dpp-service/test/profile-mirror.test.ts, 17 tests); the former exporter is replaced by a mirror script with a drift check. Re-read 2026-11-12 after §6 said how the generator treats a version 2 manifest; the generation rule this row assesses is unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; §6 is unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; §6 is unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; §6 is unchanged, and the generated files of a retired profile stay as frozen. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; §6 is unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; §6 is unchanged."
     },
     {
       "id": "PROF-7-profile-bundle",
@@ -3145,9 +3147,41 @@
         "examples/custom-profile/"
       ],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Added 2026-11-15 with the rule. The descriptor has a JSON Schema and a hand-written check held to the same verdict. The offline test exports eu-battery@1 and eu-textile@1, fills a second registry from the bundle on disk with every fetch, name lookup and connection refused and the package's own bindings folder unread, and compares the two registries on four product documents and twenty-four negative cases, finding for finding. The trust test signs each package as its exporter would, inspects it as valid on structure, inventory and signature, and shows it refused for a substituted, more permissive binding and for an altered artefact. Neither bundled binding lists a file GS1 publishes, so the rule that such a file is named and not carried is tested with a binding written for the test, whose context sits at a GS1 address and holds bytes written for the test. No application assembles a bundle into the packages it exports yet, and none restores from one: the starter does neither, which the exit exercise is to add."
+      "notes": "Added 2026-11-15 with the rule. The descriptor has a JSON Schema and a hand-written check held to the same verdict. The offline test exports eu-battery@1 and eu-textile@1, fills a second registry from the bundle on disk with every fetch, name lookup and connection refused and the package's own bindings folder unread, and compares the two registries on four product documents and twenty-four negative cases, finding for finding. The trust test signs each package as its exporter would, inspects it as valid on structure, inventory and signature, and shows it refused for a substituted, more permissive binding and for an altered artefact. Neither bundled binding lists a file GS1 publishes, so the rule that such a file is named and not carried is tested with a binding written for the test, whose context sits at a GS1 address and holds bytes written for the test. No application assembles a bundle into the packages it exports yet, and none restores from one: the starter does neither, which the exit exercise is to add. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the bundle rules are unchanged. Each sector gained two negative cases the same day, a batch identity as the subject and a member beside product in the envelope, so the offline comparison covers twenty-eight."
+    },
+    {
+      "id": "PROF-7-binding-update-check",
+      "sourceId": "spec-profiles",
+      "sourceUri": "spec/profiles.md",
+      "sourceVersion": "working draft",
+      "clause": "§7, updating a binding",
+      "summary": "An update check compares the active version of a profile held by a binding with the candidate set of files the next version would list, and answers with a change report and a proposed binding. It registers nothing and leaves the active binding, its artefacts and what a registry answers for them unchanged. The report lists every artefact of either version as added, removed, changed or unchanged, with role, licence, byte length and SHA-256 on each side; for a JSON-LD context, every term added, removed or redefined, a removed or redefined term marked as breaking, as is a context that no longer names another the active version lists, and a context that could not be read reported as not compared, never as unchanged; every other artefact by length and digest only, saying so. A candidate that is the active files byte for byte reports no change and proposes nothing; otherwise the proposal keeps the id at a higher version with a binding digest of its own, or nothing is proposed and the reasons are given. A proposal registers only under the registration rules: its digest on the registry's trusted list, which the report never adds to, and never over the (id, version) it was derived from. The report states what the check did not do, the acceptance vectors among it, and the same input gives the same report and the same bytes, whatever order the candidate lists its files in.",
+      "layer": "role",
+      "roles": [
+        "passport-writer",
+        "passport-reader"
+      ],
+      "applicability": "when a profile held by a binding is checked against files its source publishes again",
+      "profileId": "core (when selected)",
+      "implementationRefs": [
+        "packages/dpp-profiles/src/binding-update-check.ts",
+        "packages/dpp-profiles/src/profile-registry.ts",
+        "examples/check-binding-update.mjs"
+      ],
+      "testRefs": [
+        "packages/dpp-profiles/test/binding-update-check.test.ts"
+      ],
+      "evidenceRefs": [
+        "docs/reference/publishing-profile-updates.md",
+        "packages/dpp-profiles/bindings/",
+        "examples/custom-profile/"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers",
+      "notes": "Added 2026-11-16 with the rule. The tests run the check on a binding written for the test and on the bundled eu-battery@1: after a check the active version resolves to the same object and the same bytes and nothing else is registered; a changed context lists the terms it removes, redefines and adds; the bundled core context without its import of the assessment context is breaking although none of its own terms changed, and a context that names another listed context now is listed for review; a changed shapes file is compared by length and digest and the report says so; a candidate of the active files reports no change and proposes nothing, in any order; the same files in another order, two new ones included, give the same report and the same proposed bytes; a proposal is refused as binding-untrusted until its digest is on the trusted list, its files are held to its own record, and a proposal written back under the active id and version is refused as binding-conflict even with that digest trusted. The check runs no acceptance vector, because the package carries no validation engine: examples/check-binding-update.mjs, which CI runs, runs the example profile's vectors under both versions in a review registry and shows the two that passed now failing for the term the report marked as breaking. A changed or new licence is listed for review, not decided. No application or index runs a check: it is a maintenance step, and nothing activates a proposal."
     },
     {
       "id": "GOV-independent-implementation",
@@ -3589,9 +3623,9 @@
       ],
       "evidenceRefs": [],
       "status": "implemented",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the value kinds are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the value kinds are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the value kinds are unchanged. battery@2 and textile@2 are retired, so the row now names general@2, the one current manifest profile; the retired manifests keep the kinds they declared. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the value kinds are unchanged."
+      "notes": "The manifest schema declares the four kinds; the field-level requirement is not enforced yet. The consumer rule (no upgrade by signature) is spec text checked nowhere yet; a test on the verification report follows with issuerAuthority policies. Re-read 2026-11-12 after §3 took the evaluator rules and the shared shapes; the value kinds this row assesses are unchanged. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the value kinds are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the value kinds are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the value kinds are unchanged. battery@2 and textile@2 are retired, so the row now names general@2, the one current manifest profile; the retired manifests keep the kinds they declared. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the value kinds are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the value kinds are unchanged."
     },
     {
       "id": "DOC-1-role-quick-starts",
@@ -4411,10 +4445,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "ea3530351ef707ad9ffe3f269f151ba3eaf407a5f9c2da504a6f03efc8465698",
-      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the evaluator rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the evaluator rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the evaluator rules are unchanged. Every published manifest version 2 profile is now retired, so the completeness check refuses them and applicability.test.ts holds the evaluator with a manifest of its own. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the evaluator rules are unchanged."
+      "sourceDigest": "aff33b253ac4f719bfc2e67771373d05b73f31f2ab9f2efa9e6baff9c15629bb",
+      "notes": "Re-read 2026-11-01 after the access-tier paragraph joined §3; the evaluator text is unchanged. Re-read 2026-11-12 after §3 took the evaluator rules from the parked projection specification, three outcomes and unresolved never a pass; the evaluator is unchanged. From 2026-11-12 profile-governance requires it. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the evaluator rules are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the evaluator rules are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the evaluator rules are unchanged. Every published manifest version 2 profile is now retired, so the completeness check refuses them and applicability.test.ts holds the evaluator with a manifest of its own. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the evaluator rules are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the evaluator rules are unchanged."
     },
     {
       "id": "PROF-3-shared-shapes",
@@ -4440,10 +4474,10 @@
       ],
       "evidenceRefs": [],
       "status": "tested",
-      "reviewedAt": "2026-11-15",
+      "reviewedAt": "2026-11-16",
       "reviewOwner": "dpp maintainers",
-      "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the shared shapes are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the shared shapes are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the shared shapes are unchanged. battery@4, which used three of them, is retired, and its frozen schema still embeds them. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the shared shapes are unchanged.",
-      "sourceDigest": "ea3530351ef707ad9ffe3f269f151ba3eaf407a5f9c2da504a6f03efc8465698"
+      "notes": "Re-pointed on 12 November 2026 from PROJ-6-shapes-language-dates, now in the ledger archive, when the shapes moved into spec/profiles.md from the parked projection specification. battery@4 uses measurement, relatedDocument and warrantyTerms. Re-read 2026-11-14 after §7 recognised profiles held by a binding and the former §7 became §8; the shared shapes are unchanged. Re-read 2026-11-14 once more after §7 gained the public and restricted tiers a binding may state, validation by view and the rejoin refusals; the shared shapes are unchanged. Re-read 2026-11-14 a third time after §4 gained the retirement rule and named the seven sector profiles retired; the shared shapes are unchanged. battery@4, which used three of them, is retired, and its frozen schema still embeds them. Re-read 2026-11-15 after §7 gained the profile bundle, which carries a binding and the files it lists in an evidence package, and the rules for restoring a profile from one; the shared shapes are unchanged. Re-read 2026-11-16 after §4 said that an index does not judge profiles and §7 gained the update check of a binding, which reports what new files would change and proposes the next version without registering it; the shared shapes are unchanged.",
+      "sourceDigest": "aff33b253ac4f719bfc2e67771373d05b73f31f2ab9f2efa9e6baff9c15629bb"
     },
     {
       "id": "PROF-4-frozen-unchanged",

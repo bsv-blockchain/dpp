@@ -82,6 +82,8 @@ npm run changes -w @bsv/dpp-profiles -- general@1 general@2
 
 The Node API is `compareProfiles(from, to)`. It reports added, changed and removed fields, all changed field properties, top-level metadata changes, source/target status and manifest byte digests. It does not infer safe conversions, send notifications or activate a writer. Include the report in the consumer upgrade proposal, then review the application's UI, backend and export changes.
 
+A profile held by a binding is reviewed with `checkBindingUpdate({ active, candidate })` (`spec/profiles.md` §7). It takes the active version as a registry resolves it and the files the next version would list, and returns a report and a proposed binding at the next version with a digest of its own. The report lists every file as added, removed, changed or unchanged with both lengths and digests, and for a JSON-LD context each term added, removed or redefined, the last two marked as breaking, as is a listed context it no longer names. It registers nothing, fetches nothing and runs no vector, and it says so in `limits`. The proposal is registered afterwards like any binding, only by a registry that trusts its digest, and never over the version it came from. `node examples/check-binding-update.mjs` shows the whole decision.
+
 ## Working on it
 
 ```

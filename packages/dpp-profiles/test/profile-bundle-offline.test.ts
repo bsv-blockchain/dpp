@@ -114,6 +114,7 @@ const checkOf = (sector: Sector, c: PayloadCase): Check => {
     case 'no-passport-identifier': return { payload: envelope(sector, base) }
     case 'engine-outage': return { payload: envelope(sector, base), passportId: passportIdOf(base), engines: outage }
     case 'wrong-binding-digest': return { payload: envelope(sector, base, sectors.find((other) => other !== sector)!.bindingDigest), passportId: passportIdOf(base) }
+    case 'member-beside-product': return { payload: { ...envelope(sector, base), 'gs1:gtin': base['gs1:gtin'] }, passportId: passportIdOf(base) }
     default: return { payload: envelope(sector, changed(base, c)), passportId: passportIdOf(c.passportOf == null ? base : positive(sector, c.passportOf)) }
   }
 }
@@ -247,7 +248,7 @@ describe('issued documents validate the same from the bundle as from the package
 
   it('covers two documents and every negative payload case of each sector', () => {
     expect(positives.length).toBe(4)
-    expect(negatives.length).toBe(24)
+    expect(negatives.length).toBe(28)
   })
 
   it.each(positives)('%s: a reader with both parts gets a pass from each, with the same steps and findings', async (_name, sector, path) => {

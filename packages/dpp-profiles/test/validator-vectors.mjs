@@ -113,6 +113,10 @@ export async function validatorVectors({ api, repo, compiler }) {
       const product = positive(sector, c.from)
       return authorised(sector, envelope(sector, product, sectors.find((s) => s !== sector).bindingDigest), passportIdOf(product))
     },
+    'member-beside-product': (sector, c) => {
+      const product = positive(sector, c.from)
+      return authorised(sector, { ...envelope(sector, product), 'gs1:gtin': product['gs1:gtin'] }, passportIdOf(product))
+    },
   }
   for (const sector of sectors) {
     for (const path of sector.binding.vectors.positive) {
