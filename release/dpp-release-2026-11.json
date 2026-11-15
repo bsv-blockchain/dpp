@@ -466,7 +466,7 @@
     },
     {
       "path": "contracts/registry.yaml",
-      "sha256": "46471932142ffd54e26eec92ed0dcb7eae8d272b89c7d1e980ec97bb8ec21a07",
+      "sha256": "6441dc1355d5c0cefee2fe4e5b632fbeee6d7c5227569d2d92d7bd8a9475dd25",
       "pins": "the registry contract, the minimum every registry serves, with the claim schema that refuses any recordId but an outpoint, the envelope of the parked epcis-event-vc@1, the refusal of the parked vsc-seal-json-v1, no legacy intake and no status list routes"
     }
   ],

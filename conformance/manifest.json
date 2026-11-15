@@ -24,7 +24,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/rules.md",
-      "digest": "82a2d78de2c7934dc0103535e4390d95a4d6060b48a7d5c7ebf80f9e1995f05a"
+      "digest": "dc2b1a772cfa893010a20c659fd1b8d8d10f54e841e34c047bc9f609e7983388"
     },
     {
       "id": "spec-identity",
@@ -72,7 +72,7 @@
       "version": "working draft",
       "kind": "local",
       "path": "spec/verification.md",
-      "digest": "7cbff3ada80b5dd8ea144e5a339f4351f1b1ead2e9aeefe166216b7d9d2b3b62"
+      "digest": "2c01030f5aeafe4327f35700e2695ba70c2a74c65db38c8203afc355503b8d48"
     },
     {
       "id": "spec-conformance",
@@ -104,7 +104,7 @@
       "version": "0.6.0",
       "kind": "local",
       "path": "contracts/registry.yaml",
-      "digest": "46471932142ffd54e26eec92ed0dcb7eae8d272b89c7d1e980ec97bb8ec21a07"
+      "digest": "6441dc1355d5c0cefee2fe4e5b632fbeee6d7c5227569d2d92d7bd8a9475dd25"
     },
     {
       "id": "spec-profiles",
@@ -344,7 +344,15 @@
       "version": "RFC 8785",
       "kind": "public",
       "attribution": "IETF",
-      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/dpp-credentials/src/jcs.ts)."
+      "notes": "JSON Canonicalization Scheme for the projection commitment (canonicalize 5.0.0) and the EPCIS event body digest (packages/dpp-credentials/src/jcs.ts), and the EPCIS lifecycle claim (packages/dpp-protocol/src/jcs.ts)."
+    },
+    {
+      "id": "spec-epcis-lifecycle-claim",
+      "uri": "spec/epcis-lifecycle-claim.md",
+      "version": "dpp-epcis-lifecycle@1",
+      "kind": "local",
+      "path": "spec/epcis-lifecycle-claim.md",
+      "digest": "23dbee65279945bb1043b531b25dc49c31feedcdb76d75fabb15971df895facd"
     }
   ],
   "requirements": [
@@ -2841,7 +2849,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Rewritten 2026-11-12, when the contract was cut to the minimum every registry serves: GET /capabilities, POST /validate, POST /attestations, the paged GET /attestations, GET /attestations/{id}/proof, GET /chain and GET /passports/{passportId}/evidence-package, still version 0.6.0, which no release set or receipt has published. The report, history, statistics, health, certification, profile, showcase and GS1 resolver and printed-label routes left the contract with the components only they used, and so did x-intentional-omissions, which listed what the reference registry serves beyond it; the reference registry documents those routes itself. The reference registry's contract test parses its own openapi.yaml and asserts documented routes are served and served routes are documented or listed as omissions with a reason; it serves every operation of this contract in the documented shape and more besides. contracts/registry.yaml carries additions the registry's copy does not yet: the recordId pattern of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation, which both documents list in the collection filter and the response enums. Re-read 2026-11-12 after the legacy intake left the contract: Capabilities has no legacyIntake and names legacy-uora-json under unsupported, POST /validate answers under attestation-registry/1 alone, and the legacy-uora result and the placeholder, SD-JWT and refusal shapes are gone, as they are from the registry's own openapi.yaml, which keeps NotImplemented and ValidateContract for its own use; this contract drops both, since none of its operations uses them. Contract 0.6.0 gives the report on POST /validate as report version 2, while the reference registry still emits report version 1: it pins the published @bsv/dpp-protocol 0.3.0-beta.9, whose reports are version 1, and its own openapi.yaml says version 1. Until it upgrades to a protocol release that carries version 2, its report does not match this contract's EvidenceReport. Re-read 2026-11-14, when epcis-event-vc@1 was parked: the contract marks the representation parked in its descriptions and keeps its envelopes, the collision rule and its enumerations with no change of shape, path or status code; EPEV-4-registry-intake is in the ledger archive with the profile's other rows."
+      "notes": "Rewritten 2026-11-12, when the contract was cut to the minimum every registry serves: GET /capabilities, POST /validate, POST /attestations, the paged GET /attestations, GET /attestations/{id}/proof, GET /chain and GET /passports/{passportId}/evidence-package, still version 0.6.0, which no release set or receipt has published. The report, history, statistics, health, certification, profile, showcase and GS1 resolver and printed-label routes left the contract with the components only they used, and so did x-intentional-omissions, which listed what the reference registry serves beyond it; the reference registry documents those routes itself. The reference registry's contract test parses its own openapi.yaml and asserts documented routes are served and served routes are documented or listed as omissions with a reason; it serves every operation of this contract in the documented shape and more besides. contracts/registry.yaml carries additions the registry's copy does not yet: the recordId pattern of NativeLifecycleClaim, the optional anchoredBy of Capabilities, the optional blockHeight and merklePath of an anchor reference and, from 0.6.0, the envelopes of the proposed epcis-event-vc@1 on POST /attestations and POST /validate, their per-issuer collision rule and the representation, application/vc+jwt and ES256K in its enumerations; the registry does not yet accept that representation (EPEV-4-registry-intake). A stored vc-di-ecdsa-rdfc-2019@1 record is served on the collection, proof and chain routes with its own representation, which both documents list in the collection filter and the response enums. Re-read 2026-11-12 after the legacy intake left the contract: Capabilities has no legacyIntake and names legacy-uora-json under unsupported, POST /validate answers under attestation-registry/1 alone, and the legacy-uora result and the placeholder, SD-JWT and refusal shapes are gone, as they are from the registry's own openapi.yaml, which keeps NotImplemented and ValidateContract for its own use; this contract drops both, since none of its operations uses them. Contract 0.6.0 gives the report on POST /validate as report version 2, while the reference registry still emits report version 1: it pins the published @bsv/dpp-protocol 0.3.0-beta.9, whose reports are version 1, and its own openapi.yaml says version 1. Until it upgrades to a protocol release that carries version 2, its report does not match this contract's EvidenceReport. Re-read 2026-11-14, when epcis-event-vc@1 was parked: the contract marks the representation parked in its descriptions and keeps its envelopes, the collision rule and its enumerations with no change of shape, path or status code; EPEV-4-registry-intake is in the ledger archive with the profile's other rows. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake)."
     },
     {
       "id": "STACK-vector-format",
@@ -3677,7 +3685,7 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged. Re-read 2026-11-12 after the contract dropped the legacy intake and its placeholder request; the insert-first order for the current representations is unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the insert-first order is unchanged, and EPEV-4-registry-intake is in the ledger archive."
+      "notes": "Mongo is exercised on mongodb-memory-server, not a replica set; the file store's append has no lock or fsync, so its guarantee is single-process. Re-read 2026-11-09 for contract 0.6.0, which refuses the parked vsc-seal-json-v1 before anything is stored or anchored and adds the epcis-event-vc@1 envelopes, which the reference registry does not yet accept (EPEV-4-registry-intake); the insert-first order for accepted submissions is unchanged. Re-read 2026-11-12 after the contract dropped the legacy intake and its placeholder request; the insert-first order for the current representations is unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the insert-first order is unchanged, and EPEV-4-registry-intake is in the ledger archive. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake)."
     },
     {
       "id": "VEC-1-publisher-policy-vectors",
@@ -4393,8 +4401,8 @@
       "status": "tested",
       "reviewedAt": "2026-11-14",
       "reviewOwner": "dpp maintainers",
-      "sourceDigest": "46471932142ffd54e26eec92ed0dcb7eae8d272b89c7d1e980ec97bb8ec21a07",
-      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type on the read routes; the external intake shapes are unchanged. Re-read 2026-11-12 after EvidenceReport moved to report version 2; the external intake shapes are unchanged. Re-read 2026-11-12 after the legacy intake left the contract; the external intake shapes are unchanged. Re-read 2026-11-12 after six descriptions, ExternalCredentialEnvelope.credential's among them, were quoted so that each parses as one string with no stray property; the external intake shapes are unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the external intake shapes are unchanged."
+      "sourceDigest": "6441dc1355d5c0cefee2fe4e5b632fbeee6d7c5227569d2d92d7bd8a9475dd25",
+      "notes": "All twenty vectors reproduce their outcomes through the registry's policy loader; a collision answers 409 and the earlier bytes stay; anchoring resumes from the persisted record after an uncertain submission (the sweep is typechecked and wired, not separately tested). Re-read 2026-11-01 after NativeLifecycleClaim gained the recordId pattern and the evidence object; the external intake shapes are unchanged. Re-read 2026-11-01 after the contract version moved to 0.5.0; unchanged otherwise. Re-read 2026-11-08 after the DigitalLinkResolution.passportId description was corrected; the external intake shapes are unchanged. Re-read 2026-11-09 after contract 0.6.0 refused the parked vsc-seal-json-v1, removed the status list routes, dropped vscProfile and vscConformance from the capability document and added the epcis-event-vc@1 envelopes with their per-issuer collision rule; the external intake shapes are unchanged. Re-read 2026-11-12 after UoraType admitted an external credential's own type on the read routes; the external intake shapes are unchanged. Re-read 2026-11-12 after EvidenceReport moved to report version 2; the external intake shapes are unchanged. Re-read 2026-11-12 after the legacy intake left the contract; the external intake shapes are unchanged. Re-read 2026-11-12 after six descriptions, ExternalCredentialEnvelope.credential's among them, were quoted so that each parses as one string with no stray property; the external intake shapes are unchanged. Re-read 2026-11-14 after the contract marked epcis-event-vc@1 parked in its descriptions, with no change of shape; the external intake shapes are unchanged. Re-read 2026-11-16 after the contract admitted dpp-epcis-lifecycle-json@1 in its intake, validation, collection and capability enumerations with its envelope and claim schema, still version 0.6.0; nothing this row states changed, and the reference registry does not yet accept the representation (ELC-REG-intake)."
     },
     {
       "id": "PROF-2-manifest-version-2",
@@ -4505,6 +4513,262 @@
       "reviewOwner": "dpp maintainers",
       "sourceDigest": "1a6a4116cd6aeed5bc996b5d111f33d3116a70ccd127ff7c5e647c8ae7ed252d",
       "notes": "From 2026-11-12 profile-governance requires it; §4 of spec/profiles.md now states the additive freeze it tests. Re-read 2026-11-14 when the sector profiles were retired: frozen.json is unchanged, and retirement moved no digest."
+    },
+    {
+      "id": "ELC-2-envelope",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§2",
+      "summary": "A dpp-epcis-lifecycle@1 claim is one object with exactly the envelope members: one faithful EPCIS 2.0.1 event, the pinned context and event profile digests, the passport bindings, the issuer and its key, the asserted role and authority scope, the issue time, optional required extension rules and an optional source link; DPP members sit beside the event, and any other member is refused.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#buildEpcisLifecycleClaim",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#parseEpcisLifecycleClaim"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-3-bytes",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§3",
+      "summary": "The covered bytes are the RFC 8785 form of the envelope without its signature, signed under [1, 'dpp epcis lifecycle v1'] with key identifier event and counterparty anyone; the exported and anchored bytes are the RFC 8785 form of the signed claim, and a reader refuses duplicate keys, lone surrogates, integers outside the safe range and any bytes that are not the canonical form of their own parse. The claim identity is urn:sha256: and the digest of those bytes.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/jcs.ts",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#signEpcisLifecycleClaim",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleClaimBytes"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/jcs.test.ts",
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#non-canonical-bytes",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#altered-secured-bytes"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-4-event",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§4",
+      "summary": "The event is exactly one of the five EPCIS 2.0.1 types under the structural rules of its type, carries its own eventID and names an observed object; nothing is built from a business step, sale label, metadata edit or token operation alone, no digest is relabelled as a CBV Event Hash ID, extensions are kept and reported apart from standard terms, and a required extension rule the verifier lacks leaves semantics unavailable. Without the pinned schema the structure is unknown, never passed.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#assertEpcisLifecycleClaim",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-5-binding",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§5",
+      "summary": "Each binding names a passport, the event field, the identifier exactly as written and its level; a verifier checks the identifier is in that field at that level and matches the passport through the caller's identity comparison, unknown without one, and a class-level reference never establishes an item's participation.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisIdentifierGranularity"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#class-reference-as-item",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#binding-to-another-passport"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-6-authority",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§6",
+      "summary": "Signature and authority are separate findings: authority is supported only when the caller's resolver confirms the asserted role for every passport in scope, unavailable without evidence, and refused for an importer signing as observer, an owner or custodian contradicted by the event's party roles, or a scope passport without a binding. Possession and ownership are separate findings of what the event states, never inferred from a business step or token transfer.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#valid-signature-unsupported-authority",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#importer-signing-as-observer",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#separate-ownership-and-possession",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#possession-without-ownership"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-7-corrections",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§7",
+      "summary": "Identical bytes are one claim; one issuer's two bodies under one eventID are a conflict, never merged; a correction is a new claim carrying the EPCIS errorDeclaration, the original is never altered, and the correction state is none, declared-in-error or unknown, honouring only the original issuer or one the resolver supports.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleClaimRelation",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#duplicate-and-conflicting-observations",
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#error-declaration-applies"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-8-anchoring",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§8",
+      "summary": "A claim is anchored with bsv-attestation-anchor-v1 over its complete bytes, one output per bound passport in one transaction with that passport as subject and the same digest and attestation identifier, tm_attestation unchanged; a verifier checks a supplied anchor's commitment and metadata and, with a merkle path and header source, its inclusion, and decides participation from the claim, never from an anchor's subject.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier",
+        "registry"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleAnchorMetadata",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#buildEpcisLifecycleAnchors"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json#transformation-event-manufacturing"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-9-findings",
+      "sourceId": "spec-epcis-lifecycle-claim",
+      "sourceUri": "spec/epcis-lifecycle-claim.md",
+      "sourceVersion": "dpp-epcis-lifecycle@1",
+      "clause": "§9",
+      "summary": "A verifier reports event structure, event semantics, product binding, signature, authority, possession, ownership, anchor commitment, inclusion and correction state each on its own, unknown or unavailable when not established; in the verification report, whose check names are frozen, they travel under the existing checks with the precise finding in detail.",
+      "layer": "profile",
+      "roles": [
+        "attestation-issuer",
+        "attestation-verifier"
+      ],
+      "applicability": "when the EPCIS lifecycle claim is selected",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "packages/dpp-protocol/src/lifecycleEvent.ts#verifyEpcisLifecycleClaim",
+        "packages/dpp-protocol/src/lifecycleEvent.ts#epcisLifecycleCredentialVerifierFor"
+      ],
+      "testRefs": [
+        "packages/dpp-protocol/test/lifecycleEvent.test.ts"
+      ],
+      "evidenceRefs": [
+        "fixtures/vectors/dpp/epcis-lifecycle/v1.json"
+      ],
+      "status": "tested",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers"
+    },
+    {
+      "id": "ELC-REG-intake",
+      "sourceId": "contract-registry",
+      "sourceUri": "contracts/registry.yaml",
+      "sourceVersion": "0.6.0",
+      "clause": "POST /attestations",
+      "summary": "A registry admits dpp-epcis-lifecycle-json@1 in its intake and validation enumerations through the EpcisLifecycleEnvelope, verifies the exact RFC 8785 text before storing it and anchors it once per bound passport.",
+      "layer": "role",
+      "roles": [
+        "registry"
+      ],
+      "applicability": "when a registry accepts the EPCIS lifecycle claim",
+      "profileId": "dpp-epcis-lifecycle@1",
+      "implementationRefs": [
+        "the reference registry (not published)"
+      ],
+      "testRefs": [],
+      "evidenceRefs": [],
+      "status": "gap",
+      "reviewedAt": "2026-11-16",
+      "reviewOwner": "dpp maintainers",
+      "notes": "The contract states the envelope, the claim schema and the enumerations; the reference registry does not yet accept the representation, so a registry claim for it cannot be made."
     }
   ],
   "claims": [

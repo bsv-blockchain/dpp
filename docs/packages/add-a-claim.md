@@ -208,6 +208,12 @@ Origin did:key:zQ3shueJ69UR claim held by this registry
 
 For your claim, select your passport, submission index and registry. Run [the full reader](dpp-protocol.md#gather-a-passports-evidence) with your DID in `claimIssuers` and anchoring key in `anchoringServices`. Expect `nativeAttestationSignature`, all three anchor checks and `issuerAuthority` to pass. An anchor without claim bytes leaves six checks `unknown`, listed on that page.
 
+## The EPCIS lifecycle claim
+
+`@bsv/dpp-protocol` also carries a second claim format, `dpp-epcis-lifecycle@1`, for a party that records what happened as EPCIS data. Instead of one of the four event types, the claim carries one EPCIS 2.0.1 event exactly as it was captured, with `eventID`, objects, business step, locations and party roles, and binds it to each passport whose product the event names. It states the role you sign in (`observer`, `owner`, `custodian` or `authorised-reporter`) and the passports you claim it for, and it is signed over its RFC 8785 bytes under `[1, 'dpp epcis lifecycle v1']` with key identifier `event`. `buildEpcisLifecycleClaim` refuses an event that names no object, so a business step, a sale or a token transfer alone is never issued as an event, and `signEpcisLifecycleClaim` signs through the same wallet call as the native claim. `verifyEpcisLifecycleClaim` reports structure, semantics, product binding, signature, authority, possession, ownership, anchor, inclusion and correction state each on its own, and the anchor is one output per bound passport. The rules are in `spec/epcis-lifecycle-claim.md` in the repository, and `fixtures/vectors/dpp/epcis-lifecycle/v1.json` holds worked examples.
+
+The native claim this page describes stays readable and verifiable, and existing claims keep their meaning. No release selection claims the EPCIS format yet, the starter application does not issue it, and the hosted registry does not accept it, so use it for trials and your own verification only.
+
 ## What is not settled
 
 - **Finding the registry.** No anchor, passport state, capability document or GS1 link names it, so a reader learns it from the passport's publisher, outside the standard.
