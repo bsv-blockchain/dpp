@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url'
 import type { Db } from 'mongodb'
 import { provisionGs1Artefacts, verifyGs1Artefacts, type Gs1ProvisionReport } from '@bsv/dpp-credentials'
 import {
+  EpcisStorageError,
   createMemoryEpcisStorage,
   deriveEpcisEventProjection,
   exportEpcisSource,
@@ -92,6 +93,54 @@ export async function openExchangeStorage(options: { setting?: EpcisStorageSetti
   }
   log('EPCIS store: no MongoDB, so imports are held in memory and are gone when this process ends.')
   return { storage: createMemoryEpcisStorage(), kind: 'memory', close: async () => undefined }
+}
+
+/**
+ * A call to the store did not complete: the database did not answer, a write
+ * failed, the disk is full. It is not a refusal of a document and not a fault
+ * in a request, and the routes answer it by its own name, as something that
+ * may be tried again. `cause` is the store's own error, which is logged for
+ * the operator and never sent to a caller: an error from a database driver
+ * can name hosts and paths.
+ */
+export class EpcisStoreFailure extends Error {
+  constructor(
+    /** The storage method that failed. */
+    readonly method: keyof EpcisExchangeStorage,
+    cause: unknown
+  ) {
+    super(`the EPCIS store did not complete ${method}`, { cause })
+    this.name = 'EpcisStoreFailure'
+  }
+}
+
+/**
+ * The same store, with every failure of one of its six methods named as a
+ * store failure. The module hands on whatever a store throws, unchanged, so
+ * this is the one place that can say for certain that an error came from the
+ * store and not from the module or a request. An `EpcisStorageError` passes
+ * as it is: it is already the store's own named refusal of a call or of a
+ * store it cannot use, and the routes read its code.
+ */
+export function namingStoreFailures(inner: EpcisExchangeStorage, log: (line: string) => void): EpcisExchangeStorage {
+  const named = <A extends unknown[], T>(method: keyof EpcisExchangeStorage, run: (...args: A) => Promise<T>) => async (...args: A): Promise<T> => {
+    try {
+      return await run(...args)
+    } catch (error) {
+      if (error instanceof EpcisStorageError) throw error
+      // For the operator: which call, and what the store said. No record, byte or credential is part of it.
+      log(`EPCIS store: ${method} did not complete (${error instanceof Error ? `${error.name}: ${error.message}` : String(error)}).`)
+      throw new EpcisStoreFailure(method, error)
+    }
+  }
+  return {
+    putBytes: named('putBytes', (sha256: string, bytes: Uint8Array) => inner.putBytes(sha256, bytes)),
+    getBytes: named('getBytes', (sha256: string) => inner.getBytes(sha256)),
+    deleteBytes: named('deleteBytes', (sha256: string) => inner.deleteBytes(sha256)),
+    get: named('get', (kind: string, key: string) => inner.get(kind, key)),
+    list: named('list', (kind: string, options: Parameters<EpcisExchangeStorage['list']>[1]) => inner.list(kind, options)),
+    commit: named('commit', (writes: Parameters<EpcisExchangeStorage['commit']>[0]) => inner.commit(writes)),
+  }
 }
 
 export interface EpcisExchangeOptions {
@@ -181,17 +230,19 @@ export async function startEpcisExchange(options: EpcisExchangeOptions): Promise
     log(`GS1 files for EPCIS validation: unavailable in ${dir}: ${failed.join(', ')}. The API runs, and every EPCIS import and pull is refused until they are provided. ${artefacts.remedy}`)
   }
 
-  let storage: EpcisExchangeStorage
+  let held: EpcisExchangeStorage
   let storageKind: EpcisExchange['storageKind']
   let opened: OpenedExchangeStorage | undefined
   if (options.storage != null) {
-    storage = options.storage
+    held = options.storage
     storageKind = 'supplied'
   } else {
     opened = await openExchangeStorage({ ...(options.config.storage == null ? {} : { setting: options.config.storage }), ...(options.db == null ? {} : { db: options.db }), log })
-    storage = opened.storage
+    held = opened.storage
     storageKind = opened.kind
   }
+  // One object for every call of this process, recovery included: the module takes calls on one storage object in turn.
+  const storage = namingStoreFailures(held, log)
 
   // Recovery finishes or discards what a stopped process left. It runs alone, before any request.
   const recovery = await recoverEpcisExchange(storage, { now: clock })

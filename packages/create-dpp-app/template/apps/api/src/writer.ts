@@ -216,7 +216,13 @@ export class Writer {
       authorisationCommitment: args.acceptance == null ? '' : acceptanceCommitment(args.acceptance),
     }
     if (tip != null && previousController != null && (await actor.controllerKey(passportId)) !== previousController) {
-      throw new WriteRefused('not-the-controller', `${actor.name} does not control ${passportId}; its controller key is held by ${record.holder.party}`)
+      // The holder itself under another key is a deployment that does not hold the secret its keys are derived from, such as one restored without it.
+      throw new WriteRefused(
+        'not-the-controller',
+        actor.name === record.holder.party
+          ? `${passportId} is controlled by ${record.holder.party} under the key ${previousController}, and the key this deployment derives for ${actor.name} is another one: it does not hold the secret the passport was written under (BRAND_ROOT_SECRET for a brand, MANAGED_IDENTITY_SECRET for a recipient). Nothing was signed.`
+          : `${actor.name} does not control ${passportId}; its controller key is held by ${record.holder.party}`
+      )
     }
     const state = (await completeState(data, actor.wallet, wallet.publisher)) as DppStateV2
     const lockingScript = buildLockingScript(state, await this.lockKey(passportId))

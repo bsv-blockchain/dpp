@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -51,6 +52,7 @@ const SECRET_FORMS = [SECRET, encodeURIComponent(SECRET), Buffer.from(`operator:
 const bearer = (): EpcisSourceCredential => ({ scheme: 'bearer', token: SECRET });
 
 const realFetch: EpcisFetch = (url, init) => fetch(url, init);
+const sha256Of = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
 
 const folders: string[] = [];
 const servers: FixtureServer[] = [];
@@ -157,6 +159,42 @@ function countingFetch(): { fetch: EpcisFetch; read(): number; calls(): number }
   };
 }
 
+/** The failure a store raises in these tests when a write does not complete. Its message stands for whatever an adapter's own error would say. */
+class StoreWriteFailed extends Error {
+  constructor(readonly call: number) { super(`the store did not complete durable call ${call}`); this.name = 'StoreWriteFailed'; }
+}
+
+/**
+ * A store whose durable call number `at` fails once, in a process that then
+ * carries on with the same store: a write that met a full disk or a database
+ * that did not answer. `before`: the call never reached the store. `after`:
+ * it was applied and its answer was lost. Every other call goes through.
+ */
+function failingOnce(inner: EpcisExchangeStorage, plan: { at: number; when: 'before' | 'after' }): { storage: EpcisExchangeStorage; calls(): number } {
+  let made = 0;
+  const durable = async <T>(run: () => Promise<T>): Promise<T> => {
+    made += 1;
+    if (made !== plan.at) return run();
+    if (plan.when === 'before') throw new StoreWriteFailed(made);
+    await run();
+    throw new StoreWriteFailed(made);
+  };
+  return {
+    calls: () => made,
+    storage: {
+      putBytes: (sha256, bytes) => durable(() => inner.putBytes(sha256, bytes)),
+      deleteBytes: (sha256) => durable(() => inner.deleteBytes(sha256)),
+      commit: (writes) => durable(() => inner.commit(writes)),
+      getBytes: (sha256) => inner.getBytes(sha256),
+      get: (kind, key) => inner.get(kind, key),
+      list: (kind, options) => inner.list(kind, options),
+    },
+  };
+}
+
+/** Synthetic events in any number: the fixture's own generator writes a minute and an identifier that hold two digits. */
+const manyEvents = (count: number): JsonObject[] => Array.from({ length: count }, (_, index) => pullEvent(1, { eventID: `urn:uuid:00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`, epcList: [`urn:epc:id:sgtin:9521234.012345.MANY-${index + 1}`] }));
+
 describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
   describe('a run against a source that behaves', () => {
     it('reads every page through the import path, with provenance that names the query, and says the pages were exhausted', async () => {
@@ -181,6 +219,13 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
         expect(record).toMatchObject({ sourceId: 'source-a', documentValidity: 'valid', state: 'evaluated', sha256: page.sha256, envelope: { type: 'EPCISQueryDocument' } });
         expect(record.progress).toMatchObject({ pagesRead: page.page, complete: false });
         expect((await exportEpcisSource(storage, page.importId))!.sha256).toBe(page.sha256);
+      }
+      // And those bytes are the ones the source wrote, which the fixture kept as it sent them: the digest above is the module's own on both sides, this is not.
+      expect(server.pagesSent).toHaveLength(3);
+      for (const [index, page] of result.pages.entries()) {
+        const sent = Buffer.from(server.pagesSent[index]!.body);
+        expect(Buffer.from((await exportEpcisSource(storage, page.importId))!.bytes).equals(sent), `page ${page.page}`).toBe(true);
+        expect([page.sha256, page.byteLength], `page ${page.page}`).toEqual([sha256Of(sent), sent.byteLength]);
       }
       expect(result.pages[0]!.query).toEqual({ perPage: '2' });
       expect(result.pages[1]!.query).toMatchObject({ perPage: '2', nextPageToken: expect.any(String) });
@@ -213,6 +258,31 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
       expect(result.pages[0]).toMatchObject({ page: 1, last: true, events: { total: 0 }, leniencies: [] });
       expect((await getEpcisImport(storage, result.pages[0]!.importId))!.events).toEqual([]);
       expect(result.pull!.watermark).toBeUndefined();
+    });
+
+    it.each([
+      ['as they are', {} as Partial<FixtureBehaviour>],
+      ['compressed', { gzip: true } as Partial<FixtureBehaviour>],
+    ])('retains each page as the exact bytes the source wrote, sent %s, where parsing and writing them out again would give other bytes', async (_how, behaviour) => {
+      const { storage, reopen } = await newStore();
+      // Tabs, carriage returns, an escaped character, a number written with an exponent, members out of their usual order and blank lines at the end.
+      const unusual = (json: string): string => `\r\n\t${json.replace('{"@context"', '{ "example:weight" :\t1.250e1,\r\n "example:label":"caf\\u00e9" ,"@context"').replaceAll('},{', '},\r\n\t{')}\n\n\n`;
+      const server = await serve(pullEvents(5), { pageText: unusual, ...behaviour });
+      const result = ran(await pull(storage, server));
+      expect(result).toMatchObject({ outcome: 'ok', reason: 'exhausted', events: { total: 5, new: 5 } });
+      expect(server.pagesSent).toHaveLength(3);
+      // A restarted process reads the same store: what it exports is still what was sent.
+      const again = await reopen();
+      for (const [index, page] of result.pages.entries()) {
+        const sent = Buffer.from(server.pagesSent[index]!.body);
+        // The fixture really did write something no serialiser here writes, so a store that kept a parsed form could not pass.
+        expect(sent.toString('utf8')).not.toBe(JSON.stringify(JSON.parse(sent.toString('utf8'))));
+        const exported = (await exportEpcisSource(again, page.importId))!;
+        expect(Buffer.from(exported.bytes).equals(sent), `page ${page.page}`).toBe(true);
+        expect([exported.sha256, exported.byteLength, page.sha256, page.byteLength], `page ${page.page}`).toEqual([sha256Of(sent), sent.byteLength, sha256Of(sent), sent.byteLength]);
+        expect(await getEpcisImport(again, page.importId)).toMatchObject({ documentValidity: 'valid', preservedExtensions: ['example:weight', 'example:label'] });
+      }
+      expect(await checkEpcisExchangeInvariants(again, { associations: true })).toEqual([]);
     });
 
     it('sends the filters the profile selects under their standard names', async () => {
@@ -330,6 +400,63 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
       expect(defaults.pull!.query.perPage).toBe(100);
     });
 
+    it('refuses every limit set above its ceiling, however far above, naming the limit and the ceiling, before anything is requested or written', async () => {
+      const { storage } = await newStore();
+      const server = await serve(pullEvents(1));
+      expect(Object.keys(EPCIS_PULL_LIMIT_CEILINGS).sort()).toEqual(Object.keys(EPCIS_DEFAULT_LIMITS).sort());
+      for (const [name, ceiling] of Object.entries(EPCIS_PULL_LIMIT_CEILINGS)) {
+        const limit = name as keyof typeof EPCIS_DEFAULT_LIMITS;
+        // A ceiling at or below its default would make the default a setting no operator could keep.
+        expect(ceiling, limit).toBeGreaterThan(EPCIS_DEFAULT_LIMITS[limit]);
+        for (const value of [ceiling + 1, ceiling * 2, Number.MAX_SAFE_INTEGER]) {
+          const outcome = await pull(storage, server, { queryId: `past-${limit.toLowerCase()}`, source: limited(server, { [limit]: value }) });
+          expect(outcome, `${limit} at ${value}`).toMatchObject({ outcome: 'refused', reason: 'invalid-request' });
+          if (outcome.outcome === 'refused') {
+            expect(outcome.detail, `${limit} at ${value}`).toContain(limit);
+            expect(outcome.detail, `${limit} at ${value}`).toContain(` past the ${ceiling} `);
+          }
+        }
+        // Nor is a value that is not a whole positive number read as one that is within the ceiling.
+        for (const value of [ceiling + 0.5, Number.POSITIVE_INFINITY, Number.NaN, -1, String(ceiling)]) {
+          expect(await pull(storage, server, { queryId: `past-${limit.toLowerCase()}`, source: limited(server, { [limit]: value as number }) }), `${limit} at ${String(value)}`).toMatchObject({ outcome: 'refused', reason: 'invalid-request' });
+        }
+        // A limit below its default, which is the operator's to set, does not let another one past its ceiling.
+        const lowered = Object.fromEntries(Object.keys(EPCIS_DEFAULT_LIMITS).filter((other) => other !== limit).map((other) => [other, 1]));
+        expect(await pull(storage, server, { queryId: `past-${limit.toLowerCase()}`, source: limited(server, { ...lowered, [limit]: ceiling + 1 }) }), limit).toMatchObject({ outcome: 'refused', reason: 'invalid-request' });
+      }
+      // Nothing was asked of the source and nothing was written: no pull record stands under any of those names.
+      expect(server.requests).toEqual([]);
+      expect(await dump(storage)).toEqual([]);
+    });
+
+    it('runs at the ceiling of events on a page and of pages in a run, and still says a history is partial one past either', async () => {
+      const { storage } = await newStore();
+      // One page of as many events as an operator may raise the page limit to.
+      const eventsCeiling = EPCIS_PULL_LIMIT_CEILINGS.maxEventsPerPage;
+      const wide = await serve(manyEvents(eventsCeiling));
+      const widest = ran(await pull(storage, wide, { queryId: 'events-ceiling', query: { perPage: eventsCeiling }, source: limited(wide, { maxEventsPerPage: eventsCeiling }) }));
+      expect(widest).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true, events: { total: eventsCeiling, new: eventsCeiling }, limits: { maxEventsPerPage: eventsCeiling } });
+      expect(widest.pages).toHaveLength(1);
+      expect(Buffer.from((await exportEpcisSource(storage, widest.pages[0]!.importId))!.bytes).equals(Buffer.from(wide.pagesSent[0]!.body))).toBe(true);
+      // A source that puts one more on a page than was asked for is refused at the ceiling, and nothing of the page is kept.
+      const over = await serve(manyEvents(eventsCeiling + 1), { pageDocument: (document) => ({ ...document, epcisBody: { queryResults: { queryName: 'SimpleEventQuery', resultsBody: { eventList: manyEvents(eventsCeiling + 1) } } } }) });
+      expect(ran(await pull(storage, over, { queryId: 'events-over', query: { perPage: eventsCeiling }, source: limited(over, { maxEventsPerPage: eventsCeiling }, { sourceId: 'source-over' }) }))).toMatchObject({ outcome: 'invalid-source', reason: 'import-refused', importRefusal: 'too-many-events', pages: [] });
+
+      // A run of as many pages as an operator may raise the run to, and a source that holds one page more.
+      const pagesCeiling = EPCIS_PULL_LIMIT_CEILINGS.maxPullPages;
+      const long = await serve(manyEvents(pagesCeiling + 1));
+      const raised = limited(long, { maxPullPages: pagesCeiling }, { sourceId: 'source-long' });
+      const longest = ran(await pull(storage, long, { queryId: 'pages-ceiling', query: { perPage: 1 }, source: raised }));
+      expect(longest).toMatchObject({ outcome: 'partial-history', reason: 'page-limit', completion: 'stopped-at-limit', exhausted: false, events: { total: pagesCeiling, new: pagesCeiling }, run: { pagesAcknowledged: pagesCeiling } });
+      expect(longest.pull).toMatchObject({ status: 'stopped-at-limit', pass: { exhausted: false } });
+      const rest = ran(await pull(storage, long, { queryId: 'pages-ceiling', query: { perPage: 1 }, source: raised }));
+      expect(rest).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true, events: { total: 1, new: 1 }, run: { resumed: true, pagesFetched: 1 } });
+      // Every page was asked for once, in order.
+      expect(long.pageRequests()).toHaveLength(pagesCeiling + 1);
+      expect((await listEpcisPullPages(storage, rest.pull!.pullId, { limit: 1000 })).map((page) => page.page)).toEqual(Array.from({ length: pagesCeiling + 1 }, (_, index) => index + 1));
+      expect(await checkEpcisExchangeInvariants(storage, { associations: true })).toEqual([]);
+    }, 60_000);
+
     it('refuses a page with more events than the limit, or nested too deep, through the import path, and keeps nothing of it', async () => {
       const { storage } = await newStore();
       const server = await serve(pullEvents(3), { pageDocument: (document) => ({ ...document, epcisBody: { queryResults: { queryName: 'SimpleEventQuery', resultsBody: { eventList: pullEvents(3) } } } }) });
@@ -420,6 +547,137 @@ describe.each(stores)('pullEpcisEvents over %s', (_name, newStore) => {
       // Page 1 was asked for once.
       expect(server.pageRequests().filter((request) => request.query.nextPageToken == null)).toHaveLength(1);
     });
+  });
+
+  describe('a source that goes away and comes back', () => {
+    it('continues after a refused connection from the page it had not acknowledged, with no page skipped and none held twice', async () => {
+      const { storage, reopen } = await newStore();
+      // The source goes away as the second page is asked for: that request is cut off, and every later one is refused by the system.
+      let leaving = true;
+      const server = await serve(pullEvents(5), { intercept: async (request) => { if (!leaving || request.query.nextPageToken == null) return false; leaving = false; await server.stop(); return true; } });
+      const first = ran(await pull(storage, server));
+      expect(first).toMatchObject({ outcome: 'source-unavailable', reason: 'network-error', completion: 'failed', exhausted: false, run: { run: 1, pagesAcknowledged: 1 }, events: { total: 2, new: 2 } });
+      expect(first.completenessLimits.join(' ')).toMatch(/ended as network-error before the source's pages were exhausted/);
+      const held = (await getEpcisPull(storage, 'source-a', 'query-1'))!;
+      expect(held).toMatchObject({ status: 'failed', pagesAcknowledged: 1, cursor: { afterPage: 1, token: expect.any(String) }, pass: { exhausted: false }, lastRun: { outcome: 'source-unavailable', reason: 'network-error', completion: 'failed' } });
+      expect(held.watermark).toBeUndefined();
+
+      // Still away. The connection is refused, the run says so, and what was acknowledged is as it was.
+      const refused = ran(await pull(storage, server));
+      expect(refused).toMatchObject({ outcome: 'source-unavailable', reason: 'network-error', completion: 'failed', exhausted: false, run: { run: 2, pagesAcknowledged: 0 }, pages: [], events: { total: 0 } });
+      const still = (await getEpcisPull(storage, 'source-a', 'query-1'))!;
+      expect(still).toMatchObject({ status: 'failed', pagesAcknowledged: 1, cursor: held.cursor, pass: { exhausted: false } });
+      expect(await listEpcisPullPages(storage, held.pullId)).toEqual(first.pages);
+      expect(await listEpcisImports(storage)).toHaveLength(1);
+      expect(await kindOf(storage, 'journal')).toEqual([]);
+
+      // The source is back at its address, and a restarted process runs the same query.
+      await server.listen();
+      const again = await reopen();
+      const resumed = ran(await pull(again, server));
+      expect(resumed).toMatchObject({ outcome: 'ok', reason: 'exhausted', completion: 'exhausted', exhausted: true, run: { run: 3, resumed: true, pagesFetched: 2, pagesAcknowledged: 2, replays: 0 }, events: { total: 3, new: 3, duplicate: 0 } });
+      expect(resumed.replay).toBeUndefined();
+      // Three pages, each with one receipt, and every event held once.
+      expect((await listEpcisPullPages(again, held.pullId)).map((page) => [page.sequence, page.page, page.run])).toEqual([[1, 1, 1], [2, 2, 3], [3, 3, 3]]);
+      expect(await listEpcisImports(again)).toHaveLength(3);
+      expect(await observedIds(again)).toEqual(pullEvents(5).map((event) => `source-a ${String(event.eventID)} 1`).sort());
+      // The page that was cut off is asked for again with the cursor the checkpoint held. The first page is never asked for twice.
+      const tokens = server.pageRequests().map((request) => request.query.nextPageToken);
+      expect(tokens).toHaveLength(4);
+      expect(tokens[0]).toBeUndefined();
+      expect([tokens[1], tokens[2]]).toEqual([held.cursor!.token, held.cursor!.token]);
+      expect(tokens[3]).not.toBe(tokens[2]);
+      // The source wrote each page once, and each is retained as it was written.
+      expect(server.pagesSent).toHaveLength(3);
+      for (const [index, page] of (await listEpcisPullPages(again, held.pullId)).entries()) expect(Buffer.from((await exportEpcisSource(again, page.importId))!.bytes).equals(Buffer.from(server.pagesSent[index]!.body))).toBe(true);
+      expect(await checkEpcisExchangeInvariants(again, { associations: true })).toEqual([]);
+    });
+
+    it('begins from the first page after a source that could not be reached at all', async () => {
+      const { storage } = await newStore();
+      const server = await serve(pullEvents(3));
+      await server.stop();
+      const first = ran(await pull(storage, server));
+      expect(first).toMatchObject({ outcome: 'source-unavailable', reason: 'network-error', completion: 'failed', exhausted: false, pages: [] });
+      // The run is on record as failed, with nothing acknowledged and nothing to continue from.
+      const held = (await getEpcisPull(storage, 'source-a', 'query-1'))!;
+      expect(held).toMatchObject({ status: 'failed', pagesAcknowledged: 0, runs: 1, pass: { exhausted: false }, lastRun: { outcome: 'source-unavailable', reason: 'network-error' } });
+      expect(held.cursor).toBeUndefined();
+      expect(await listEpcisImports(storage)).toEqual([]);
+      await server.listen();
+      const second = ran(await pull(storage, server));
+      expect(second).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true, run: { run: 2, pagesFetched: 2 }, events: { total: 3, new: 3, duplicate: 0 } });
+      expect(second.pages.map((page) => [page.sequence, page.page])).toEqual([[1, 1], [2, 2]]);
+      expect(server.pageRequests()).toHaveLength(2);
+      expect(await observedIds(storage)).toHaveLength(3);
+    });
+
+    it('keeps nothing of a page whose connection dropped while it was arriving, and continues with that page', async () => {
+      const { storage } = await newStore();
+      let dropping = true;
+      const server = await serve(pullEvents(5), {
+        intercept: (request, response) => {
+          if (!dropping || request.query.nextPageToken == null) return false;
+          dropping = false;
+          // The headers and the start of a page, then the connection is gone before the rest.
+          response.writeHead(200, { 'content-type': 'application/ld+json', 'GS1-EPCIS-Version': '2.0.0', 'content-length': '4096' });
+          response.write('{"type":"EPCISQueryDocument","epcisBody":{"queryResults":');
+          setTimeout(() => response.destroy(), 30);
+          return true;
+        },
+      });
+      const first = ran(await pull(storage, server));
+      expect(first).toMatchObject({ outcome: 'source-unavailable', reason: 'network-error', completion: 'failed', exhausted: false, run: { pagesAcknowledged: 1 } });
+      expect(first.detail).toMatch(/stopped arriving/);
+      expect(await listEpcisImports(storage)).toHaveLength(1);
+      expect(await kindOf(storage, 'journal')).toEqual([]);
+      const second = ran(await pull(storage, server));
+      expect(second).toMatchObject({ outcome: 'ok', reason: 'exhausted', exhausted: true, run: { resumed: true, pagesFetched: 2 }, events: { total: 3, new: 3, duplicate: 0 } });
+      expect((await listEpcisPullPages(storage, second.pull!.pullId)).map((page) => page.page)).toEqual([1, 2, 3]);
+      expect(await observedIds(storage)).toHaveLength(5);
+      expect(server.pageRequests().filter((request) => request.query.nextPageToken == null)).toHaveLength(1);
+    });
+  });
+
+  describe('a store that fails once and then works again', () => {
+    it('at any durable call of a run: the caller is given the store\'s own error, and the same query run again in the same process leaves the store an uninterrupted run leaves', async () => {
+      const server = await serve(pullEvents(5));
+      const control = await newStore();
+      const counted = failingOnce(control.storage, { at: 0, when: 'before' });
+      ran(await pull(counted.storage, server));
+      const expected = withoutRuns(await dump(control.storage));
+      const steps = counted.calls();
+      expect(steps).toBeGreaterThanOrEqual(3 * 7 + 2);
+
+      for (let at = 1; at <= steps; at += 1) {
+        for (const when of ['before', 'after'] as const) {
+          const where = `${when} durable call ${at} of ${steps}`;
+          const store = await newStore();
+          const failing = failingOnce(store.storage, { at, when });
+          // The error is the store's, unchanged, so a caller can name it. The run makes no further durable call once one has failed.
+          await expect(pull(failing.storage, server), where).rejects.toBeInstanceOf(StoreWriteFailed);
+          expect(failing.calls(), where).toBe(at);
+          // Whatever was acknowledged is retained: the checkpoint never points past it.
+          const state = await getEpcisPull(store.storage, 'source-a', 'query-1');
+          const acknowledged = state == null ? [] : await listEpcisPullPages(store.storage, state.pullId);
+          expect(acknowledged.length, where).toBe(state?.pagesAcknowledged ?? 0);
+          for (const page of acknowledged) expect((await exportEpcisSource(store.storage, page.importId))!.sha256, where).toBe(page.sha256);
+          if (state?.status === 'exhausted') {
+            // Only the answer of the last write was lost. A further call would begin the next pass.
+            expect(at === steps && when === 'after', where).toBe(true);
+            expect(withoutRuns(await dump(store.storage)), where).toEqual(expected);
+            continue;
+          }
+          // No restart and no recovery in between: the same process, the same store, the same query.
+          const again = ran(await pull(failing.storage, server));
+          expect(again, where).toMatchObject({ outcome: 'ok', reason: 'exhausted' });
+          expect(withoutRuns(await dump(store.storage)), where).toEqual(expected);
+          expect(await checkEpcisExchangeInvariants(store.storage, { associations: true }), where).toEqual([]);
+          expect(await observedIds(store.storage), where).toHaveLength(5);
+          expect((await listEpcisPullPages(store.storage, again.pull!.pullId)).map((page) => page.page), where).toEqual([1, 2, 3]);
+        }
+      }
+    }, 240_000);
   });
 
   describe('a crash', () => {

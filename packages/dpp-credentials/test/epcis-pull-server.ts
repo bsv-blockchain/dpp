@@ -8,6 +8,7 @@
  * the GS1 demonstration prefix 952.
  */
 import { createServer, type IncomingHttpHeaders, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import { gzipSync } from 'node:zlib';
 import type { AddressInfo } from 'node:net';
 import { EPCIS_CONTEXT_IRI } from '../src/epcis-source.js';
 import type { JsonObject } from '../src/types.js';
@@ -61,6 +62,21 @@ export interface FixtureBehaviour {
   pageHeaders?: (headers: Record<string, string>, request: FixtureRequest) => void;
   /** Change the body of an ordinary page before it is sent. */
   pageDocument?: (document: JsonObject, request: FixtureRequest) => JsonObject;
+  /**
+   * Write the body of an ordinary page another way than a serialiser would:
+   * it is handed the page as compact JSON and answers the text to send. A
+   * test uses it to send spacing, line endings and an order of members that
+   * parsing and writing out again would not give back.
+   */
+  pageText?: (json: string, request: FixtureRequest) => string;
+  /** Send each ordinary page compressed with gzip, under a Content-Encoding header. What is recorded as sent is the body before compression. */
+  gzip?: boolean;
+}
+
+/** One ordinary page as the fixture wrote it: the request it answered and the exact bytes of the body, before any content encoding. */
+export interface FixturePageSent {
+  request: FixtureRequest;
+  body: Uint8Array;
 }
 
 export interface FixtureServer {
@@ -74,6 +90,12 @@ export interface FixtureServer {
   requests: FixtureRequest[];
   /** The page requests among them: those for `/epcis/events`. */
   pageRequests(): FixtureRequest[];
+  /** Every ordinary page answered, in order, with the bytes that were written for it. */
+  pagesSent: FixturePageSent[];
+  /** Stop listening and drop every open connection, keeping everything else: a later request is refused by the system until `listen` is called. */
+  stop(): Promise<void>;
+  /** Listen again on the same port, after `stop`. */
+  listen(): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -122,7 +144,8 @@ export async function startEpcisFixtureServer(events: JsonObject[] = [], behavio
   const tokens = new Map<string, number>();
   let answers = 0;
   let origin = '';
-  const fixture: FixtureServer = { origin: '', baseUrl: '', events: [...events], behaviour: settings, requests, pageRequests: () => requests.filter((request) => request.path === '/epcis/events'), close: async () => undefined };
+  const pagesSent: FixturePageSent[] = [];
+  const fixture: FixtureServer = { origin: '', baseUrl: '', events: [...events], behaviour: settings, requests, pageRequests: () => requests.filter((request) => request.path === '/epcis/events'), pagesSent, stop: async () => undefined, listen: async () => undefined, close: async () => undefined };
 
   const page = (request: FixtureRequest, response: ServerResponse): void => {
     const { query } = request;
@@ -166,7 +189,11 @@ export async function startEpcisFixtureServer(events: JsonObject[] = [], behavio
     };
     settings.pageHeaders?.(headers, request);
     if (settings.pageDocument != null) document = settings.pageDocument(document, request);
-    response.writeHead(200, headers).end(JSON.stringify(document));
+    const json = JSON.stringify(document);
+    const body = Buffer.from(settings.pageText == null ? json : settings.pageText(json, request), 'utf8');
+    pagesSent.push({ request, body: new Uint8Array(body) });
+    if (settings.gzip === true) { response.writeHead(200, { ...headers, 'content-encoding': 'gzip' }).end(gzipSync(body)); return; }
+    response.writeHead(200, headers).end(body);
   };
 
   const server: Server = createServer((incoming, response) => {
@@ -185,9 +212,13 @@ export async function startEpcisFixtureServer(events: JsonObject[] = [], behavio
     })().catch(() => { if (!response.headersSent) response.writeHead(500); response.end(); });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-  origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const { port } = server.address() as AddressInfo;
+  origin = `http://127.0.0.1:${port}`;
   fixture.origin = origin;
   fixture.baseUrl = `${origin}/epcis`;
-  fixture.close = () => new Promise<void>((resolve) => { server.closeAllConnections(); server.close(() => resolve()); });
+  const stop = (): Promise<void> => new Promise<void>((resolve) => { if (!server.listening) { resolve(); return; } server.closeAllConnections(); server.close(() => resolve()); });
+  fixture.stop = stop;
+  fixture.listen = () => new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', () => { server.off('error', reject); resolve(); }); });
+  fixture.close = stop;
   return fixture;
 }

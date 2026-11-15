@@ -128,6 +128,10 @@ JS
 
 A document that parses safely and then fails the schema, an envelope check or an identifier check is retained as `invalid`, with its findings. It is evidence that was received. It is left out of the associations index and of anything described as valid. A refusal and a retained failure are different things: one leaves nothing, the other leaves the source and what was found in it. A record keeps at most 1000 findings. When a document produced more, validity was still decided on all of them, and the last finding kept says how many there were.
 
+Only a whole document is imported: an `EPCISDocument` or an `EPCISQueryDocument`. A bare event is not read as one. Handed to the import it parses safely, so its bytes are retained, as `invalid` with the finding `envelope-unrecognised`, and no event is observed or indexed from it. `parseEpcisSource` reads a bare event under its `singleEvent` option; `importEpcisSource` has no such option. Put the event in a document to import it.
+
+An event whose `type` is none of the five is an extension event. The pinned schema admits one when the type is written as a URI, such as `example:InspectionEvent` under a declared prefix. It is retained in the exact bytes, observed under its `eventID` or a local identity, and named by the warning `event-type-unsupported`. Nothing is read into it: its identifiers are not indexed, whatever its members are called.
+
 Refusals beyond those of [parse and validate](#parse-and-validate): `too-many-contexts` and `contexts-oversized` for the two context limits, `no-canonical-form` for a string with an unpaired surrogate, `gs1-artefact-unavailable`, and `invalid-request`. Nothing is fetched, so a context is counted as it is declared: each distinct one once, and an inline one by the bytes of its canonical form. The fetch and pull limits are recorded with the import and apply to nothing in a file import. Provenance is recorded as given, so the module accepts exactly two shapes and refuses an unknown member. A file has `kind: 'file'` and an optional file name, which is never an address or a query. A page of a query has `kind: 'query'`, the origin it was asked of, the standard query parameters that were sent and its page number. `pullEpcisEvents` writes the second; an import record of a page reads `complete: false`, because one page is never the whole answer.
 
 ### One request, one receipt
@@ -210,6 +214,10 @@ An import takes these durable steps in order. Success is acknowledged only after
 | 6. Journal cleared | Nothing is pending | The same request again answers the import |
 
 Call `recoverEpcisExchange(storage)` when you open a store, before you accept an import. It finishes or discards what a stopped process left and reports each action. It assumes no other call is in flight on the store, and it is the only place bytes are ever removed: an import never deletes any, because another import may be about to hold them.
+
+**When the store fails.** A store call that throws ends the import or the run there: the module hands on the store's own error, unchanged, and makes no further call. An import that failed was not acknowledged. A pull acknowledges page by page, so a run that failed keeps the pages it acknowledged before the failure. Nothing acknowledged earlier is touched. Make the same request again, in the same process or after a restart: an import is answered as the one import and finished from wherever it stopped, and a pull continues after the last page it acknowledged. Until then recovery finishes or discards what was left.
+
+**When another writer wins.** Four writes expect that another writer may get in first: the intake and receipt of an import, its event results, a decision on a conflict, and the release of the imports a decision covers. When another writer keeps winning one of these, the module tries it eight times and then throws `EpcisExchangeError` with the code `storage-contention`, which is recovered the same way. Every other write expects one writer at a time: the associations index, the journal, the records of a pull, a remap and a restore. The first time one of those is lost, the module throws `storage-contention` at once and does not try it again.
 
 One process writes to a store at a time. Calls on one storage object are taken in turn, and the file adapter locks its folder. Every batch carries expectations, so two writers that do share a database cannot record contradictory results: the one that loses classifies again, or answers the other's import. Run recovery only while no writer is active. `checkEpcisExchangeInvariants(storage)` lists every breach of these promises, and lists none on a sound store.
 
@@ -402,6 +410,19 @@ A page that is refused leaves nothing: no bytes, no record, no observation. A re
 | `maxPullSeconds`, a run | 60 | 600 |
 
 An operator sets a limit in `source.policy.limits`. A value past its ceiling is refused, not clamped. The ceilings are this package's own; the profile only says a raised limit is bounded. Every result carries `limits`, the limits in force, and `limitOverrides`, each limit set away from its default, and the pull record keeps both.
+
+Four bounds are not settings:
+
+| Bound | Value |
+|---|---|
+| Findings one import record keeps, `EPCIS_MAX_RECORDED_FINDINGS` | 1000 |
+| Redirects followed for one page, `EPCIS_PULL_MAX_REDIRECTS` | 3 |
+| Replays of a pass in one run, `EPCIS_PULL_MAX_REPLAYS_PER_RUN` | 1 |
+| Attempts at an import, event-results, decision or release write that another writer keeps winning, before `storage-contention`. Any other write is tried once | 8 |
+
+**What the ceilings bound.** The ceilings bound a pull. `importEpcisSource` applies none: a limit in its `policy.limits` must be a positive whole number and is otherwise taken as given, so a caller that raises `maxDocumentBytes` for a file import is bounded by nothing but that value. Set the policy yourself, never from a request, and cap the body your application reads. The application starter imports under the default limits and reads at most 1 KiB past the document limit from a request.
+
+**What was tested.** The package's tests run imports and pulls at the default limits. At a ceiling they run one page of 1000 events and one run of 100 pages. No test reads a 16 MiB page, a run of 200 MiB or a run of 600 seconds: those ceilings are settings the module accepts, not sizes it has been run at. No throughput or service level is claimed.
 
 ### Credentials
 

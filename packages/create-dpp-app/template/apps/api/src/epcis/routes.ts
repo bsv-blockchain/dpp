@@ -2,6 +2,11 @@
 // signed-in user. Every route calls the exchange (exchange.ts), which calls
 // the module, and none does the module's work again.
 //
+// With sign-in on, the signed-in user is looked up in the application's
+// database, which by default also holds the EPCIS store, and the lookup comes
+// first. A database that does not answer therefore fails the lookup before a
+// route reaches its store, and that failure is named here as well.
+//
 // These routes are mounted before the application's JSON parser, because an
 // import takes its body as the exact bytes that arrived: they are digested,
 // retained and exported as they are, and are never parsed here or written
@@ -10,18 +15,33 @@
 //
 // Nothing here reaches the wallet, the writer or the index. An import or a
 // pull retains data and changes no passport.
-import { EpcisStorageError } from '@bsv/dpp-credentials/epcis-exchange'
+import { EpcisExchangeError, EpcisStorageError } from '@bsv/dpp-credentials/epcis-exchange'
 import { EPCIS_DEFAULT_LIMITS } from '@bsv/dpp-credentials/epcis-source'
 import express, { Router, type NextFunction, type Request, type Response } from 'express'
 import type { Session } from '../auth.js'
 import { HttpError } from '../http-error.js'
-import { EPCIS_UPLOAD_SOURCE, type EpcisExchange } from './exchange.js'
+import { EPCIS_UPLOAD_SOURCE, EpcisStoreFailure, type EpcisExchange } from './exchange.js'
 import { describeEpcisSource } from './sources.js'
 
 export interface EpcisRoutesOptions {
   exchange: EpcisExchange
   /** The signed-in user behind a request. It throws the application's own 401 when there is none. */
   requireSession: (req: Request) => Promise<Session>
+  /** Where a failure of the sign-in lookup is written for the operator. The process's error output when none is given. */
+  log?: (line: string) => void
+}
+
+/**
+ * The signed-in user could not be looked up: the lookup threw something
+ * other than the application's own 401, which with sign-in on means the
+ * database it is kept in did not answer. `cause` is the lookup's own error,
+ * which is logged and never sent to a caller: it can name the database's host.
+ */
+class SignInUnavailable extends Error {
+  constructor(cause: unknown) {
+    super('the signed-in user could not be looked up', { cause })
+    this.name = 'SignInUnavailable'
+  }
 }
 
 /** The status each refusal of a transport is answered with. Anything not named is 422: the bytes arrived and cannot be read as an EPCIS document. */
@@ -48,6 +68,38 @@ async function withinStore<T>(what: string, run: () => Promise<T>): Promise<T> {
   }
 }
 
+const isPull = (req: Request): boolean => req.method === 'POST' && req.path.endsWith('/pulls')
+
+/** What a caller does after a store failure, by what it had asked for. */
+function afterStoreFailure(req: Request): string {
+  if (req.method === 'POST' && req.path === '/imports') return 'This upload was not acknowledged. Send it again with the same requestId: it is answered as one import, never a second.'
+  if (isPull(req)) return 'This run did not finish. The pages it acknowledged before the failure are kept. Run the same queryId again: it continues after the last page it acknowledged, and no page is kept twice.'
+  if (req.method === 'POST') return 'This request was not acknowledged. Send the same request again: it is recorded once.'
+  return 'Nothing was changed. Ask again.'
+}
+
+/**
+ * The answer to a failure of the store, or to a store that holds something
+ * it should not, by name. Undefined for any other error, which is not this
+ * file's to name. `retryable` says whether the same request may simply be
+ * sent again. The store's own error is never part of the answer.
+ */
+function storeFailureAnswer(error: unknown, req: Request): { status: number; body: Record<string, unknown> } | undefined {
+  // A pull acknowledges page by page, so a run that failed may have acknowledged some of its pages before it stopped. `acknowledged` is not said of it: the pull record says how far it got.
+  const unavailable = (code: string, what: string): { status: number; body: Record<string, unknown> } => ({ status: 503, body: { error: code, description: `${what} ${afterStoreFailure(req)}`, outcome: 'failed', retryable: true, ...(isPull(req) ? {} : { acknowledged: false }) } })
+  if (error instanceof SignInUnavailable) return unavailable('sign-in-unavailable', 'The signed-in user could not be looked up: the database sign-in is kept in did not answer, and nothing of this request reached the EPCIS store.')
+  if (error instanceof EpcisStoreFailure) return unavailable('storage-unavailable', 'The store that holds EPCIS imports did not complete a call.')
+  if (error instanceof EpcisStorageError && (error.code === 'closed' || error.code === 'locked')) return unavailable('storage-unavailable', 'The store that holds EPCIS imports is not open to this process.')
+  if (error instanceof EpcisExchangeError && error.code === 'storage-contention') return unavailable('storage-contention', 'Another writer kept changing the same records, and this process gave up after a bounded number of attempts.')
+  // What follows is not a passing failure: the store holds something other than what was recorded. Sending the request again will not help.
+  const damaged = (code: string): { status: number; body: Record<string, unknown> } => ({ status: 500, body: { error: code, description: 'The store holds something other than what was recorded for this request, and nothing was answered from it. Nothing was changed. This needs the operator: restore the store from a recovery export.', outcome: 'failed', retryable: false } })
+  if (error instanceof EpcisStorageError && error.code === 'corrupt') return damaged('storage-corrupt')
+  // A record this version does not read may be sound: written by another version of the module, which is then the one to run.
+  if (error instanceof EpcisExchangeError && error.code === 'record-unreadable') return { status: 500, body: { error: error.code, description: 'The store holds a record this version of the application does not read: it was written by another version, or it is damaged, and nothing was answered from it. Nothing was changed. This needs the operator: run the version that wrote it, or restore the store from a recovery export made by this version.', outcome: 'failed', retryable: false } }
+  if (error instanceof EpcisExchangeError) return damaged(error.code)
+  return undefined
+}
+
 const one = (value: unknown): string | undefined => (typeof value === 'string' && value !== '' ? value : undefined)
 const param = (req: Request, name: string): string => {
   const value = req.params[name]
@@ -57,6 +109,17 @@ const objectOf = (value: unknown): Record<string, unknown> => (typeof value === 
 
 export function epcisRoutes(options: EpcisRoutesOptions): Router {
   const { exchange, requireSession } = options
+  const log = options.log ?? ((line: string) => console.error(line))
+  // The application's own 401 passes as it is. Anything else the lookup throws is named, and its words go to the log only.
+  const signedIn = async (req: Request): Promise<Session> => {
+    try {
+      return await requireSession(req)
+    } catch (error) {
+      if (error instanceof HttpError) throw error
+      log(`EPCIS route: the signed-in user could not be looked up (${error instanceof Error ? `${error.name}: ${error.message}` : String(error)}).`)
+      throw new SignInUnavailable(error)
+    }
+  }
   const router = Router()
   const wrap = (handler: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => {
     handler(req, res).then((body) => {
@@ -70,7 +133,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/status',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       return exchange.status()
     })
   )
@@ -78,7 +141,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/sources',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       // What a source is, and whether a credential is set for it. Never the credential.
       return exchange.sources.map(describeEpcisSource)
     })
@@ -90,7 +153,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
     '/imports',
     exactBytes,
     wrap(async (req, res) => {
-      await requireSession(req)
+      await signedIn(req)
       const requestId = one(req.query.requestId)
       if (requestId == null) throw new HttpError(400, 'request-id-required', 'give requestId: an identifier you choose for this upload, so that sending it again is the same request')
       // The parser hands over a Buffer when there was a body. Anything else means none arrived.
@@ -120,7 +183,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/imports',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       const limit = Math.min(Math.max(Math.trunc(Number(one(req.query.limit) ?? 50)) || 50, 1), 200)
       const after = one(req.query.after)
       const records = await exchange.listImports({ ...(after == null ? {} : { after }), limit })
@@ -149,7 +212,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/imports/:importId',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       const record = await exchange.getImport(param(req, 'importId'))
       if (record == null) throw new HttpError(404, 'import-unknown', 'no import with that identifier is held')
       return record
@@ -158,7 +221,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
 
   router.get('/imports/:importId/original', (req, res, next) => {
     void (async () => {
-      await requireSession(req)
+      await signedIn(req)
       const original = await exchange.exportOriginal(param(req, 'importId'))
       if (original == null) throw new HttpError(404, 'import-unknown', 'no import with that identifier is held')
       // The retained bytes, under the media type they arrived with. A Buffer is sent as it is: nothing is parsed, formatted or given a character set.
@@ -180,7 +243,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
     '/sources/:sourceId/pulls',
     json,
     wrap(async (req, res) => {
-      await requireSession(req)
+      await signedIn(req)
       const body = objectOf(req.body)
       const queryId = one(body.queryId)
       if (queryId == null) throw new HttpError(400, 'query-id-required', 'give queryId: the name of this query, under which a later run continues it')
@@ -199,7 +262,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/sources/:sourceId/pulls/:queryId',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       const held = await exchange.getPull(param(req, 'sourceId'), param(req, 'queryId'))
       if (held == null) throw new HttpError(404, 'pull-unknown', 'that query has not been run against that source')
       return held
@@ -211,7 +274,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/events',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       const identifier = one(req.query.identifier)
       if (identifier == null || identifier.length > 2048) throw new HttpError(400, 'identifier-required', 'give identifier: the product identifier exactly as events write it')
       const granularity = one(req.query.granularity) ?? 'instance'
@@ -236,7 +299,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/conflicts',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       return await exchange.listConflicts()
     })
   )
@@ -244,7 +307,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
   router.get(
     '/conflicts/:conflictId',
     wrap(async (req) => {
-      await requireSession(req)
+      await signedIn(req)
       const conflict = await exchange.getConflict(param(req, 'conflictId'))
       if (conflict == null) throw new HttpError(404, 'conflict-unknown', 'no event identity with more than one body is held under that identifier')
       return conflict
@@ -255,7 +318,7 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
     '/conflicts/:conflictId/resolutions',
     json,
     wrap(async (req, res) => {
-      const session = await requireSession(req)
+      const session = await signedIn(req)
       const body = objectOf(req.body)
       const outcome = await exchange.resolveConflict({
         conflictId: param(req, 'conflictId'),
@@ -274,6 +337,13 @@ export function epcisRoutes(options: EpcisRoutesOptions): Router {
       return outcome
     })
   )
+
+  // A store that failed, a sign-in lookup that failed, or a store that holds something it should not: answered by name on every route here, never as an unnamed failure of the API.
+  router.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
+    const answer = storeFailureAnswer(error, req)
+    if (answer == null || res.headersSent) return next(error)
+    res.status(answer.status).json(answer.body)
+  })
 
   // A body the parsers refused: too large, or sent under a content encoding. The parser's own error can quote the body, so only its kind is answered.
   router.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {

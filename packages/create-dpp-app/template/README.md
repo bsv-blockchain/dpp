@@ -230,13 +230,13 @@ It ends with a report of what it wrote, what it left, what you still have to pro
 | The GS1 files | The API obtains them at start, or you place them |
 | Sign-in accounts, sessions and brand memberships | Not carried. See below |
 
-Without the keys the new deployment reads and verifies every passport and can write none of them. That is the custody rule and no export changes it: continuing to sign needs the authorised keys, and they travel by the wallet's own recovery, never in a package.
+Without the keys the new deployment reads every passport and can write none of them. It verifies each as before, except for the issuer's authority, which it reports as `authority-unconfirmed`: it takes the issuer's key from its own `BRAND_ROOT_SECRET`, never from the package. That is the custody rule and no export changes it: continuing to sign needs the authorised keys, and they travel by the wallet's own recovery, never in a package.
 
 **After a restore.** An unfinished pull continues once its source's credential is set. A cursor is left out of an export unless you pass `--cursors include`, so the pull asks again from its retained bounds and recognises what it already holds: no page is skipped and no event is kept twice. If the source is now reached at another address, set that address in `.env` and run `npm run epcis-remap -- --source <name>` once, which binds every pull of the source to it and keeps the source's identity. A request a client sends again answers the import it made before, with no new receipt.
 
 **What cannot be recovered this way.** A lost key. Sign-in: accounts, sessions and memberships are not exported, and a brand is tied to its sign-in organisation by its identifier, so a deployment that uses sign-in must move the sign-in collections of its database by its own means or attach members to the restored brands again. The index's own state beyond these passports. The daily spend counter. Anything the first deployment never retained.
 
-`apps/api/test/exit-exercise.test.ts` is the whole of this as a test: it builds a deployment on MongoDB with a battery and a textile passport and an EPCIS exchange, exports it, switches it off, restores into a deployment that keeps the exchange in the file adapter and reads profiles from the bundle, with every upstream host out of reach, and continues there.
+`apps/api/test/exit-exercise.test.ts` is the whole of this as a test: it builds a deployment on MongoDB with a battery and a textile passport and an EPCIS exchange, exports it, switches it off, restores into a deployment that keeps the exchange in the file adapter and reads profiles from the bundle, with every upstream host out of reach, and continues there. It runs `npm run export` and `npm run restore` as you would, and restores the same package into a deployment without the keys, which reads both passports and refuses an `UPDATE` by name.
 
 ## Going live
 

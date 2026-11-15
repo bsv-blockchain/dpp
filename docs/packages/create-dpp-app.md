@@ -178,6 +178,7 @@ The generated project's tests run `epcisStorageAdapterSuite`, the suite the modu
 | A batch is one MongoDB document until it is applied | A record or batch past 15 MiB is refused with nothing written. An ordinary document stays far below that. The file-system adapter has no such limit |
 | Markers of deleted records are kept | One small document for each finished import |
 | Recovery runs alone | The module's recovery assumes nothing else is writing. Start API instances one at a time |
+| A database that stops answering | The client waits 2 seconds to reach the server (`MONGO_SERVER_SELECTION_TIMEOUT_MS` in `apps/api/src/platform.ts`). Sign-in is kept in the same database and looked up first, so a signed-in request under `/api/epcis` then answers 503 `sign-in-unavailable`, and a call that does reach the EPCIS store answers 503 `storage-unavailable`, both with `retryable: true`. `/api/epcis/status` and `/api/epcis/sources` read no store. The generated tests stop the database under a running API that opened it with its own client, with sign-in on it and without, and hold the answer to an upload and to a pull to within four times that wait. The same request sent again once the database is back is answered as one request |
 
 ### Another store
 

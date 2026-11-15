@@ -14,11 +14,19 @@
 // folders of its own. The operator's `restore` command is given the package
 // and the key it must be signed under. From then on the network is kept to
 // B's own services and the one EPCIS source: any other attempt is refused and
-// recorded, and the record must be empty.
+// recorded, and the record must be empty. The guard holds this process only:
+// the second restore of B, run as `npm run restore` in a process of its own,
+// is outside it.
+//
+// Deployment C is restored from the same package with keys of its own, none
+// of them A's. It shows what the keys are for: C reads every passport and
+// verifies it as A did, except for the issuer's authority, which it does not
+// confirm without A's brand secret, and C is refused every write by name.
 //
 // What is real here and what stands in:
 //
-//   - MongoDB is a real server, one per deployment, started for the test.
+//   - MongoDB is a real server, started for the test: one for A and one for
+//     B. C keeps its own database on B's server.
 //   - Each index is the reference index's own code over in-memory storage,
 //     with its header checks off. It admits and serves and proves no
 //     inclusion: no reading here says a state is in a block.
@@ -26,8 +34,9 @@
 //     B holding the same keys stands in for the wallet's own recovery, which
 //     is what carries keys between deployments. The package carries none.
 //   - The EPCIS source is the small fixture server of these tests.
-//   - Sign-in is the development session in both deployments. Accounts and
-//     memberships are not carried by an export.
+//   - Sign-in is the development session in all three deployments. Accounts
+//     and memberships are not carried by an export.
+import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { once } from 'node:events'
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -135,10 +144,34 @@ async function start(env: Record<string, string>, onListen?: (port: number) => v
 const ref = (value: string): string => encodeURIComponent(value)
 const portOf = (address: string): string => new URL(address).port
 
-/** A command as the operator runs it: its exit code and every line it printed. */
+/** A command's function, called in this process: its exit code and every line it printed. */
 async function command(run: (args: string[], context: { env: NodeJS.ProcessEnv; out: (line: string) => void; cwd: string }) => Promise<number>, args: string[], env: Record<string, string>): Promise<{ code: number; lines: string[]; text: string }> {
   const lines: string[] = []
   const code = await run(args, { env, out: (line) => void lines.push(line), cwd: scratch })
+  return { code, lines, text: lines.join('\n') }
+}
+
+/** The generated project, whose package.json holds the operator's npm scripts. */
+const projectRoot = join(import.meta.dirname, '..', '..', '..')
+
+/**
+ * A command exactly as the operator runs it: `npm run <script> -- <args>` in
+ * the project, as a process of its own, through the script name, cli.js and
+ * its argument parser. The process is given the deployment's settings. cli.js
+ * reads the project's .env for any setting its environment does not hold, so
+ * every name .env or .env.example sets is passed as well, empty unless the
+ * deployment sets it: what the project's own .env holds never reaches the
+ * deployment under test.
+ */
+async function npmRun(script: string, args: string[], env: Record<string, string>): Promise<{ code: number | null; lines: string[]; text: string }> {
+  const named = ['.env', '.env.example'].flatMap((file) => (existsSync(join(projectRoot, file)) ? [...readFileSync(join(projectRoot, file), 'utf8').matchAll(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=/gm)].map((match) => match[1]!) : []))
+  // A command that hangs is stopped before the test that ran it times out, so no process outlives the test. npm passes the signal on to the command it runs, and the code is then null.
+  const child = spawn('npm', ['run', '--silent', script, '--', ...args], { cwd: projectRoot, env: { ...process.env, ...Object.fromEntries(named.map((name) => [name, ''])), ...env }, stdio: ['ignore', 'pipe', 'pipe'], timeout: 90_000 })
+  let output = ''
+  child.stdout.on('data', (chunk: Buffer) => void (output += chunk.toString('utf8')))
+  child.stderr.on('data', (chunk: Buffer) => void (output += chunk.toString('utf8')))
+  const [code] = (await once(child, 'close')) as [number | null]
+  const lines = output.split('\n').filter((line) => line !== '')
   return { code, lines, text: lines.join('\n') }
 }
 
@@ -377,12 +410,17 @@ describe('the exit exercise', () => {
   })
 
   it('exports A with the operator\'s command, in both forms, and neither holds a key or a credential', async () => {
-    const authorised = await command(runExportCommand, ['--out', AUTHORISED], envA)
+    // The package everything below is restored from is written by `npm run export`, the command the documentation gives, as its own process.
+    const authorised = await npmRun('export', ['--out', AUTHORISED], envA)
     expect(authorised.code, authorised.text).toBe(0)
+    expect(authorised.text).toContain(`Authorised export written to ${AUTHORISED}`)
     expect(authorised.text).toContain(`Exporter identity key, which a restore is given: ${PUBLISHER_KEY}`)
     // The command says when the signature is the test wallet's, which anyone can make.
     expect(authorised.text).toMatch(/signed by the test wallet, whose key is public/)
-    expect(await command(runExportCommand, ['--out', join(scratch, 'never-written'), '--no-such-option'], envA)).toMatchObject({ code: 2 })
+    // An option the command does not take stops it before anything is opened or written, through the same script.
+    const unknown = await npmRun('export', ['--out', join(scratch, 'never-written'), '--no-such-option'], envA)
+    expect(unknown.code, unknown.text).toBe(2)
+    expect(unknown.text).toMatch(/^usage: export --out <folder>/m)
     expect(existsSync(join(scratch, 'never-written'))).toBe(false)
     expect(authorised.text).not.toContain(SOURCE_SECRET)
     // An export never overwrites: the same folder is refused the second time.
@@ -623,10 +661,17 @@ describe('the exit exercise', () => {
     expect(first.provisionSeparately.join('\n')).toMatch(/wallet's own recovery/)
     expect(restored.text).not.toContain(SOURCE_SECRET)
 
-    // The same package restored again: nothing is written anywhere.
+    // The same package restored again, this time with `npm run restore`, the command the documentation gives, as its own process: nothing is written anywhere.
+    // That process is outside this one's network guard. It reaches B's database and index, which is all the first restore, inside the guard, reached.
     const before = { database: await databaseText(mongoB.getUri(), 'deployment_b'), store: digestsOf(join(scratch, 'b-epcis-store')), bundle: digestsOf(join(scratch, 'b-profile-bundle')) }
-    const again = await command(runRestoreCommand, ['--from', AUTHORISED, '--exporter-key', PUBLISHER_KEY, '--report', reportFile], envB)
+    const again = await npmRun('restore', ['--from', AUTHORISED, '--exporter-key', PUBLISHER_KEY, '--report', reportFile], envB)
     expect(again.code, again.text).toBe(0)
+    expect(again.text).toMatch(/^Restore unchanged: export /m)
+    expect(again.text).not.toContain(SOURCE_SECRET)
+    // A key that is not one is refused by the command's own argument check, before the package is read.
+    const malformed = await npmRun('restore', ['--from', AUTHORISED, '--exporter-key', 'not-a-key'], envB)
+    expect(malformed.code, malformed.text).toBe(2)
+    expect(malformed.text).toMatch(/^--exporter-key is a compressed public key/m)
     const second = JSON.parse(readFileSync(reportFile, 'utf8')) as RestoreReport
     expect(second).toMatchObject({
       outcome: 'unchanged',
@@ -838,9 +883,9 @@ describe('the exit exercise', () => {
       failures: 0,
       exercised: [
         'Deployment A built two passports under eu-battery@1 and eu-textile@1, each with a public and a restricted part, and an EPCIS exchange with three source scopes, two of which share an event identifier, one conflict decided with both observations kept, and a pull interrupted after two of four pages.',
-        'A was exported with the export command, in the authorised form and in the public form, then switched off: its API, its database and its index were stopped.',
+        'A was exported in the authorised form with npm run export, run as its own process, and in the public form with the same command called in the test process, then switched off: its API, its database and its index were stopped.',
         'Eleven packages that must be refused were refused by name with nothing written: a substituted and more permissive profile under a correct exporter signature, with and without its digest trusted, another exporter key, a pull checkpoint without its import, a conflict decision without its observation, an altered original under the genuine and under a re-signed manifest, a missing journal under the genuine and under a re-signed manifest, the public package, and a file the manifest does not list.',
-        'The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore wrote nothing.',
+        'The authorised package was restored with the restore command into deployment B, which keeps the exchange in the file-system adapter and resolves profiles from the installed bundle. A second restore, with npm run restore run as its own process, wrote nothing.',
         'In B both passports gave the reports they gave in A, check for check and finding for finding, the holder\'s view opened, and a document about another item was refused for the passport.',
         'In B every original was returned byte for byte, every import record, observation, decision and pull page equalled A\'s, and the associations rebuilt at B equalled the ones A held.',
         'A request A had acknowledged answered the same import in B with no new receipt, and the same request identifier with other content conflicted.',
@@ -869,6 +914,70 @@ describe('the exit exercise', () => {
       },
       statement: 'Profile validity is reported apart from the owner-tier check and is never a statement that disclosed data is what a state\'s payload_owner_hash commits to.',
     }
-    numbers.completed = true
+  }, 120_000)
+
+  it('restores into a deployment that holds none of A\'s keys, which reads every passport and verifies all but the issuer\'s authority, opens no restricted part and refuses an UPDATE by name', async () => {
+    // Deployment C is restored from the same package with keys of its own: another wallet root key, and other secrets for its brand and recipient keys.
+    // Its index admits states under the publisher key A wrote with, which is public. Nothing that would let C act for A's brand reaches it.
+    const indexC = await startDevIndex({ publisherKey: PUBLISHER_KEY, network: 'main' })
+    const envC = shared({ MONGO_URL: mongoB.getUri(), MONGO_DB: 'deployment_c', INDEX_URL: indexC.url, EPCIS_STORAGE: 'file', EPCIS_STORAGE_DIR: join(scratch, 'c-epcis-store'), PROFILE_BUNDLE_DIR: join(scratch, 'c-profile-bundle'), WALLET_ROOT_KEY: 'c3'.repeat(32), DPP_TEST_WALLET: '1', BRAND_ROOT_SECRET: 'c1'.repeat(32), MANAGED_IDENTITY_SECRET: 'c2'.repeat(32) })
+    let c: Deployment | undefined
+    try {
+      const reportFile = join(scratch, 'restore-report-c.json')
+      const restored = await command(runRestoreCommand, ['--from', AUTHORISED, '--exporter-key', PUBLISHER_KEY, '--report', reportFile], envC)
+      // Everything is restored, and the command ends with the code that says the operator has something to do: the passports read differently here, and the report says why.
+      expect(restored.code, restored.text).toBe(3)
+      const report = JSON.parse(readFileSync(reportFile, 'utf8')) as RestoreReport
+      expect(report).toMatchObject({ outcome: 'restored', passports: { written: kept.passports.map((passport) => passport.passportId).sort(), unchanged: [] }, index: { rebuilt: true, announced: 2, admitted: 2 }, readings: { compared: 2, same: 0 } })
+      expect(report.provisionSeparately.join('\n')).toMatch(/BRAND_ROOT_SECRET and MANAGED_IDENTITY_SECRET as they were: without them this deployment reads every passport and can write none of them/)
+      expect([...report.attention].sort()).toEqual(kept.passports.map((passport) => `${passport.passportId} reads differently here: issuerAuthority: pass where it was exported, fail (authority-unconfirmed) here.`).sort())
+
+      c = await start(envC)
+      expect(c.platform.wallet.identityKey).not.toBe(PUBLISHER_KEY)
+      for (const passport of kept.passports) {
+        // C verifies the passport: the same lineage, signatures, linkage and payload checks as A. One finding differs. C reads a passport in its own journal
+        // as issued by its own key for the brand, and its key is not the one the genesis was signed with, so the issuer's authority is not confirmed here.
+        const reading = (await c.get(`/api/verify?passportId=${ref(passport.passportId)}`)).body as PassportReading
+        expect(reading.lineage).toEqual(passport.reading.lineage)
+        expect(reading.payloadChecks).toEqual(passport.reading.payloadChecks)
+        expect(reading.product).toEqual(passport.reading.product)
+        expect(reading.checks.map((check) => check.name)).toEqual(passport.reading.checks.map((check) => check.name))
+        const differing = reading.checks.filter((check, at) => JSON.stringify(check) !== JSON.stringify(passport.reading.checks[at]))
+        expect(differing).toEqual([{ name: 'issuerAuthority', label: expect.any(String), status: 'fail', reasonCode: 'authority-unconfirmed' }])
+        expect(passport.reading.checks.find((check) => check.name === 'issuerAuthority')).toMatchObject({ status: 'pass' })
+
+        // C reads the passport as its journal holds it.
+        const view = await c.get(`/api/passports/${ref(passport.passportId)}`)
+        expect(view.status).toBe(200)
+        expect(view.body).toMatchObject({ passportId: passport.passportId, profile: passport.profile, holder: { party: 'brand:dev-brand' } })
+        expect(view.text).not.toContain(RESTRICTED)
+        // The restricted part is held and is the one the state commits to, but it is sealed to A's key. C does not open it, and says so: not checked, never a pass.
+        const authorised = (await c.post(`/api/passports/${ref(passport.passportId)}/authorised-view`, {})).body as AuthorisedReading
+        expect(authorised.ownerTier.status).toBe('pass')
+        expect(authorised.authorisedView.status).toBe('not-checked')
+        expect(authorised.authorisedView.summary).toMatch(/sealed to another key than brand:dev-brand's/)
+        expect(authorised.product).toBeUndefined()
+        expect(JSON.stringify(authorised)).not.toContain(RESTRICTED)
+      }
+
+      // C cannot write. An UPDATE or a RETIRE asked for by a member of the brand is refused by name before anything is signed, and the passport is as it was.
+      const battery = kept.passports[0]!
+      const product = { ...structuredClone(battery.product), 'gs1:productDescription': [{ '@value': 'Serviced and returned to use', '@language': 'en' }] }
+      for (const [path, body] of [['update', { product }], ['retire', { reason: 'end of life' }]] as const) {
+        const refused = await c.post(`/api/passports/${ref(battery.passportId)}/${path}`, body)
+        expect(refused.status, path).toBe(409)
+        expect(refused.body, path).toMatchObject({ error: 'not-the-controller' })
+        expect(refused.body.description, path).toMatch(/the key this deployment derives for brand:dev-brand is another one: it does not hold the secret the passport was written under/)
+      }
+      expect((await c.platform.store.getPassport(battery.passportId))!.states).toHaveLength(1)
+      expect(((await c.get(`/api/verify?passportId=${ref(battery.passportId)}`)).body as PassportReading).lineage).toEqual(battery.reading.lineage)
+    } finally {
+      await c?.close()
+      await indexC.close()
+    }
+    // The record is written only once this, the last step, has passed, and only with the record the UPDATE step assembled.
+    const record = numbers.record as { exercised: string[] } | undefined
+    record?.exercised.push('The same package was restored into deployment C, which holds none of A\'s keys. C verified both passports with every finding as in A except the issuer\'s authority, which it does not confirm, read them, did not open their restricted parts, and refused an UPDATE and a RETIRE by name with nothing written.')
+    numbers.completed = record != null
   }, 120_000)
 })

@@ -46,6 +46,9 @@ export interface PlatformOptions {
   loadEngineLibrary?: (name: string) => Promise<unknown>
 }
 
+/** How long a call waits for MongoDB to be reachable before it fails. It bounds start-up without a database, and every call made while the database is away. */
+export const MONGO_SERVER_SELECTION_TIMEOUT_MS = 2_000
+
 export async function openPlatform(options: PlatformOptions): Promise<Platform> {
   const { config, mode } = options
   const log = options.log ?? ((line: string) => console.log(line))
@@ -59,7 +62,7 @@ export async function openPlatform(options: PlatformOptions): Promise<Platform> 
     // MongoDB holds the records, the journal and sign-in. Without one, development
     // runs on memory: everything is forgotten on restart and sign-in is unavailable.
     try {
-      client = new MongoClient(config.mongoUrl, { serverSelectionTimeoutMS: 2_000 })
+      client = new MongoClient(config.mongoUrl, { serverSelectionTimeoutMS: MONGO_SERVER_SELECTION_TIMEOUT_MS })
       await client.connect()
       db = client.db(config.mongoDb)
       const mongo = new MongoStore(db)
