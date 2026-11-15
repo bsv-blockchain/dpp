@@ -61,6 +61,8 @@ jobs:
       - run: node examples/import-epcis.mjs
       # The query pull, against a stand-in source the example starts on the runner and stops again.
       - run: node examples/pull-epcis.mjs
+      # An exchange taken out of one store as a recovery snapshot and restored into another, with the refusals.
+      - run: node examples/recover-epcis.mjs
       - run: node examples/verify-external-credential.mjs
       - run: node examples/project-passport.mjs
       # A profile held by a binding, registered from its folder and checked against its own vectors.

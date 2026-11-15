@@ -86,6 +86,7 @@ import {
   type EpcisRetentionRecord,
 } from './records.js';
 import { sha256Hex, type EpcisExchangeStorage, type EpcisStorageWrite, type EpcisStoredRecord } from './storage.js';
+import { inTurn, listAll } from './turn.js';
 
 /* ---------------------------------- shape -------------------------------- */
 
@@ -221,12 +222,14 @@ export type EpcisRecoveryAction =
   | { action: 'import-finished'; importId: string; from: 'received' | 'results-recorded'; state: EpcisImportRecord['state'] }
   | { action: 'resolution-applied'; conflictId: string; resolutionId: string; importsUpdated: number }
   | { action: 'associations-rebuilt'; importsIndexed: number; associationsWritten: number }
+  /** A restore of a recovery snapshot was begun and not finished. Recovery leaves it as it is: run the restore again with the same snapshot. */
+  | { action: 'restore-pending'; snapshotId: string }
   | { action: 'journal-discarded'; key: string; detail: string };
 
 export interface EpcisRecoveryReport {
   /** What recovery did, in the order it did it. */
   actions: EpcisRecoveryAction[];
-  /** Unfinished work still journalled afterwards. 0 unless recovery itself was interrupted. */
+  /** Unfinished work still journalled afterwards. 0 unless recovery itself was interrupted, or a restore is unfinished, which only the restore can finish. */
   remaining: number;
 }
 
@@ -238,7 +241,6 @@ const SHA256 = /^[0-9a-f]{64}$/;
 const CONTROL = /[\u0000-\u001f\u007f]/;
 /** A batch never carries more index entries than this, so one very wide event cannot make one very large write. */
 const ASSOCIATION_BATCH = 128;
-const PAGE = 200;
 /** How often a batch is rebuilt when another writer got in first. More than a few means two writers are fighting, which one process never does. */
 const ATTEMPTS = 8;
 /**
@@ -253,14 +255,6 @@ const systemClock = (): string => new Date().toISOString();
 const mediaTypeBase = (value: string): string => value.split(';')[0]?.trim().toLowerCase() ?? '';
 const utf8Length = (text: string): number => new TextEncoder().encode(text).byteLength;
 
-/** One call at a time per store in this process, so two imports never interleave their reads and writes. Other processes are held off by the expectations each batch carries. */
-const turns = new WeakMap<object, Promise<unknown>>();
-function inTurn<T>(storage: EpcisExchangeStorage, run: () => Promise<T>): Promise<T> {
-  const next = (turns.get(storage) ?? Promise.resolve()).then(run, run);
-  turns.set(storage, next.catch(() => undefined));
-  return next;
-}
-
 function atPointer(document: unknown, pointer: string): unknown {
   let current = document;
   for (const raw of pointer.split('/').slice(1)) {
@@ -270,17 +264,6 @@ function atPointer(document: unknown, pointer: string): unknown {
     else return undefined;
   }
   return current;
-}
-
-async function listAll(storage: EpcisExchangeStorage, kind: string, prefix?: string): Promise<EpcisStoredRecord[]> {
-  const out: EpcisStoredRecord[] = [];
-  let after: string | undefined;
-  for (;;) {
-    const page = await storage.list(kind, { ...(prefix == null ? {} : { prefix }), ...(after == null ? {} : { after }), limit: PAGE });
-    out.push(...page);
-    if (page.length < PAGE) return out;
-    after = page[page.length - 1]!.key;
-  }
 }
 
 async function mustCommit(storage: EpcisExchangeStorage, writes: EpcisStorageWrite[], what: string): Promise<void> {
@@ -1009,6 +992,10 @@ export function rebuildEpcisAssociations(storage: EpcisExchangeStorage, options:
  *   complete.
  *
  * It needs no GS1 file: a receipt already holds its validation.
+ *
+ * One kind of unfinished work it cannot finish: a restore of a recovery
+ * snapshot (recovery.ts). It reports the restore as pending and leaves its
+ * entry, and the restore is run again with the same snapshot.
  */
 export function recoverEpcisExchange(storage: EpcisExchangeStorage, options: { now?: () => string } = {}): Promise<EpcisRecoveryReport> {
   const clock = options.now ?? systemClock;
@@ -1045,6 +1032,9 @@ export function recoverEpcisExchange(storage: EpcisExchangeStorage, options: { n
       } else if (entry.entry === 'rebuild') {
         const report = await rebuildAssociations(storage, clock);
         actions.push({ action: 'associations-rebuilt', importsIndexed: report.importsIndexed, associationsWritten: report.associationsWritten });
+      } else if (entry.entry === 'restore') {
+        // Only the restore holds the snapshot, so only it can finish. The entry stays, and the store says it is unfinished until the restore is run again.
+        actions.push({ action: 'restore-pending', snapshotId: entry.snapshotId });
       } else {
         await clear();
         actions.push({ action: 'journal-discarded', key: held.key, detail: 'it is not an entry this version writes' });

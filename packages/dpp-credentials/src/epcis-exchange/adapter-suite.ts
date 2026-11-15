@@ -7,7 +7,9 @@
  * index rebuild over the adapter, stops the store before and after every
  * durable call, reopens it, and checks that no acknowledged source was lost,
  * that nothing is half recorded, and that finishing the work gives exactly
- * the store an uninterrupted run gives.
+ * the store an uninterrupted run gives. Last, it takes a recovery snapshot of
+ * a store, restores it into a second store of the same adapter, and stops
+ * that restore at every durable call too.
  *
  * The package runs it against both adapters it ships. An application runs
  * it against its own:
@@ -33,6 +35,7 @@ import {
   type EpcisImportOutcome,
 } from './exchange.js';
 import { EPCIS_RECORD_KINDS, epcisConflictId, type EpcisImportRecord } from './records.js';
+import { epcisRecoveryFiles, exportEpcisRecovery, restoreEpcisRecovery, type ExportedEpcisRecovery } from './recovery.js';
 import { EpcisStorageError, EpcisStorageFault, faultInjectingEpcisStorage, sha256Hex, type EpcisExchangeStorage } from './storage.js';
 
 export interface EpcisStorageAdapterHarness {
@@ -423,6 +426,78 @@ export function epcisStorageAdapterSuite(newHarness: () => Promise<EpcisStorageA
       }
     }
   });
+
+  /* ---- recovery: out of one store of this adapter and into another ---- */
+
+  /** A store that has seen imports, a repeat, a conflict and its decision, and the snapshot taken of it. */
+  const snapshotOf = async (storage: EpcisExchangeStorage): Promise<ExportedEpcisRecovery> => {
+    await acknowledge(storage, 'first', FIRST);
+    await acknowledge(storage, 'second', SECOND);
+    const decided = await resolveEpcisConflict(storage, { conflictId: CONFLICT_ID, decision: 'The later body stands.', disposition: 'all-retained', decidedAt: AT, decidedBy: 'adapter suite', now: () => AT });
+    assert.equal(decided.outcome, 'recorded');
+    const exported = await exportEpcisRecovery({ storage, now: () => AT });
+    assert.equal(exported.ok, true, `the snapshot was refused: ${JSON.stringify(exported).slice(0, 400)}`);
+    return exported as ExportedEpcisRecovery;
+  };
+  const restore = (storage: EpcisExchangeStorage, exported: ExportedEpcisRecovery) => restoreEpcisRecovery({ storage, source: epcisRecoveryFiles(exported.files), inventory: exported.inventory, now: () => AT });
+  /** Everything a store holds: every record, and the retained bytes of every import. */
+  const everything = async (storage: EpcisExchangeStorage): Promise<unknown> => {
+    const records = await dump(storage);
+    const bytes: Array<[string, string]> = [];
+    for (const held of records) if (held.kind === EPCIS_RECORD_KINDS.import) bytes.push([String(held.value.sha256), sha256Hex((await storage.getBytes(String(held.value.sha256))) ?? new Uint8Array(0))]);
+    return [records, bytes];
+  };
+  /** The records a snapshot carries and the two kinds a restore rebuilds: what a restored store must share with the store it came from. */
+  const shared = async (storage: EpcisExchangeStorage): Promise<unknown> => (await dump(storage)).filter((held) => held.kind !== EPCIS_RECORD_KINDS.restore && held.kind !== EPCIS_RECORD_KINDS.relocation);
+
+  add('recovery: a snapshot of a store restores whole into an empty store, and a second restore changes nothing', () => withStore(async (_harness, source) => {
+    const exported = await snapshotOf(source);
+    await withStore(async (harness, destination) => {
+      const restored = await restore(destination, exported);
+      assert.equal(restored.ok, true, `the restore was refused: ${JSON.stringify(restored).slice(0, 400)}`);
+      assert.deepEqual(await shared(destination), await shared(source));
+      for (const held of await dump(source)) {
+        if (held.kind !== EPCIS_RECORD_KINDS.import) continue;
+        assert.deepEqual([...(await exportEpcisSource(destination, String(held.value.importId)))!.bytes], [...(await exportEpcisSource(source, String(held.value.importId)))!.bytes]);
+      }
+      assert.deepEqual(await checkEpcisExchangeInvariants(destination, { associations: true }), []);
+      // The request that was acknowledged at the source is the same request here: no second receipt.
+      const before = await everything(destination);
+      const retried = await importEpcisSource(request(destination, 'first', FIRST));
+      assert.equal(retried.outcome === 'retained' && retried.replayed && !retried.resumed, true);
+      const reopened = await reopen(harness, destination);
+      const again = await restore(reopened, exported);
+      assert.equal(again.ok && again.outcome, 'unchanged');
+      assert.deepEqual(await everything(reopened), before);
+    });
+  }));
+
+  add('recovery: a restore stopped before and after every durable step is run again and finishes to the same store', () => withStore(async (_harness, source) => {
+    const exported = await snapshotOf(source);
+    let controlStore: unknown;
+    let steps: string[] = [];
+    await withStore(async (_control, destination) => {
+      const counting = faultInjectingEpcisStorage(destination);
+      assert.equal((await restore(counting.storage, exported)).ok, true);
+      steps = counting.calls();
+      controlStore = await everything(destination);
+    });
+    assert.ok(steps.length >= 8 && steps.includes('putBytes'), `a restore makes its durable calls through the storage it was handed: ${steps.join(', ')}`);
+    for (let at = 1; at <= steps.length; at += 1) {
+      for (const when of ['before', 'after'] as const) {
+        const where = `${when} durable call ${at} of ${steps.length} (${steps[at - 1]})`;
+        await withStore(async (harness, destination) => {
+          await assert.rejects(restore(faultInjectingEpcisStorage(destination, { at, when }).storage, exported), (error: unknown) => error instanceof EpcisStorageFault, where);
+          const reopened = await reopen(harness, destination);
+          const again = await restore(reopened, exported);
+          assert.equal(again.ok, true, `${where}: ${JSON.stringify(again).slice(0, 400)}`);
+          assert.deepEqual(await everything(reopened), controlStore, where);
+          assert.deepEqual(await checkEpcisExchangeInvariants(reopened, { associations: true }), [], where);
+          assert.deepEqual(await recoverEpcisExchange(reopened, { now: () => AT }), { actions: [], remaining: 0 }, where);
+        });
+      }
+    }
+  }));
 
   return cases;
 }

@@ -45,6 +45,7 @@ import {
   credentialGuard,
   credentialProblem,
   fetchEpcisPage,
+  targetRefusal,
   type EpcisCredentialGuard,
   type EpcisFetch,
   type EpcisPageAnswer,
@@ -62,6 +63,7 @@ import {
   pullPageKey,
   type EpcisImportRecord,
   type EpcisPullCompletion,
+  type EpcisPullEndpointRemap,
   type EpcisPullEventCounts,
   type EpcisPullLeniency,
   type EpcisPullPageRecord,
@@ -298,6 +300,32 @@ function eventsAddress(baseUrl: string, parameters: Record<string, string>, repe
 
 /* ------------------------------- the request ----------------------------- */
 
+/**
+ * Where a source is reached, as it is recorded: the permitted origins sorted
+ * and without repeats, and the base address without a trailing slash. A
+ * sentence saying what is wrong when the configuration is refused. A pull and
+ * an endpoint remap hold a configuration to the same rules through this.
+ */
+function sourceEndpoint(givenBaseUrl: unknown, givenOrigins: unknown): string | { permittedOrigins: string[]; baseUrl?: string; baseOrigin?: string } {
+  if (!Array.isArray(givenOrigins) || givenOrigins.length > 16) return 'source.permittedOrigins is a list of at most 16 origins';
+  const permittedOrigins: string[] = [];
+  for (const origin of givenOrigins) {
+    let parsed: URL | undefined;
+    try { parsed = new URL(String(origin)); } catch { /* reported below */ }
+    if (typeof origin !== 'string' || parsed == null || parsed.origin !== origin || (parsed.protocol !== 'https:' && parsed.protocol !== 'http:')) return 'each permitted origin is exactly a scheme, a host and a port, such as https://events.example.org';
+    if (!permittedOrigins.includes(origin)) permittedOrigins.push(origin);
+  }
+  permittedOrigins.sort();
+  if (givenBaseUrl == null || givenBaseUrl === '') return { permittedOrigins };
+  let url: URL;
+  try { url = new URL(String(givenBaseUrl)); } catch { return 'source.baseUrl does not parse as an address'; }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return 'source.baseUrl is an https address, or an http one under the local-test option';
+  if (url.username !== '' || url.password !== '') return 'source.baseUrl carries user information; a credential is configured through source.credentials and never written into an address';
+  if (url.search !== '' || url.hash !== '') return 'source.baseUrl carries no query and no fragment';
+  if (!permittedOrigins.includes(url.origin)) return `source.permittedOrigins does not list ${url.origin}, the origin of the base address; every origin a request may go to is named`;
+  return { permittedOrigins, baseUrl: `${url.origin}${url.pathname.replace(/\/+$/, '')}`, baseOrigin: url.origin };
+}
+
 interface Prepared {
   key: string;
   sourceId: string;
@@ -344,28 +372,9 @@ function prepare(input: PullEpcisEventsInput): EpcisPullRefusal | Prepared {
   const wire = { epcis: source.wireVersions?.epcis ?? EPCIS_WIRE_VERSION, cbv: source.wireVersions?.cbv ?? CBV_WIRE_VERSION };
   if (typeof wire.epcis !== 'string' || typeof wire.cbv !== 'string' || !WIRE_VERSION.test(wire.epcis) || !WIRE_VERSION.test(wire.cbv)) return bad('source.wireVersions names versions as digits and dots, such as 2.0.1');
 
-  if (!Array.isArray(source.permittedOrigins) || source.permittedOrigins.length > 16) return bad('source.permittedOrigins is a list of at most 16 origins');
-  const permittedOrigins: string[] = [];
-  for (const origin of source.permittedOrigins) {
-    let parsed: URL | undefined;
-    try { parsed = new URL(String(origin)); } catch { /* reported below */ }
-    if (typeof origin !== 'string' || parsed == null || parsed.origin !== origin || (parsed.protocol !== 'https:' && parsed.protocol !== 'http:')) return bad('each permitted origin is exactly a scheme, a host and a port, such as https://events.example.org');
-    if (!permittedOrigins.includes(origin)) permittedOrigins.push(origin);
-  }
-  permittedOrigins.sort();
-
-  let baseUrl: string | undefined;
-  let baseOrigin: string | undefined;
-  if (source.baseUrl != null && source.baseUrl !== '') {
-    let url: URL;
-    try { url = new URL(String(source.baseUrl)); } catch { return bad('source.baseUrl does not parse as an address'); }
-    if (url.protocol !== 'https:' && url.protocol !== 'http:') return bad('source.baseUrl is an https address, or an http one under the local-test option');
-    if (url.username !== '' || url.password !== '') return bad('source.baseUrl carries user information; a credential is configured through source.credentials and never written into an address');
-    if (url.search !== '' || url.hash !== '') return bad('source.baseUrl carries no query and no fragment');
-    baseOrigin = url.origin;
-    baseUrl = `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
-    if (!permittedOrigins.includes(baseOrigin)) return bad(`source.permittedOrigins does not list ${baseOrigin}, the origin of the base address; every origin a request may go to is named`);
-  }
+  const endpoint = sourceEndpoint(source.baseUrl, source.permittedOrigins);
+  if (typeof endpoint === 'string') return bad(endpoint);
+  const { permittedOrigins, baseUrl, baseOrigin } = endpoint;
 
   const q = input.query as unknown;
   if (q == null || typeof q !== 'object' || Array.isArray(q)) return bad('query is an object');
@@ -763,6 +772,129 @@ async function run(input: PullEpcisEventsInput, prepared: Prepared): Promise<Epc
     const ended = await importAndAcknowledge(pending, answer.bytes);
     if (ended != null) return finish(ended.reason, ended.detail, ended.importRefusal == null ? {} : { importRefusal: ended.importRefusal });
   }
+}
+
+/* ------------------------------ endpoint remap --------------------------- */
+
+export interface RemapEpcisSourceEndpointInput {
+  storage: EpcisExchangeStorage;
+  /** The source scope whose address changed. It must be the same source: another source takes its own `sourceId` and is never remapped onto this one. */
+  sourceId: string;
+  /** The address the events query is now made under. Without user information, a query or a fragment. */
+  baseUrl: string;
+  /** Every origin a request may now be made to, the new base address's own included. */
+  permittedOrigins: string[];
+  /** Permits plain http and private addresses. For local tests only. */
+  localTest?: boolean;
+  /** When the operator declared the change, as an ISO 8601 date-time. */
+  remappedAt: string;
+  /** Who declared it, as the application names them. Never a credential. */
+  remappedBy?: string;
+  /** The addresses a host name resolves to, so that a cursor leading to a private address is dropped. */
+  resolveHost?: (hostname: string) => Promise<string[]>;
+  now?: () => string;
+}
+
+export interface EpcisRemappedPull {
+  pullId: string;
+  queryId: string;
+  /** False when the pull was already bound to this address and no cursor had to be dropped, so nothing was written. */
+  changed: boolean;
+  from: { baseUrl: string; definitionDigest: string };
+  to: { baseUrl: string; definitionDigest: string };
+  cursor: 'none' | 'kept' | 'dropped';
+}
+
+export type EpcisEndpointRemapOutcome =
+  /** Nothing was written. `no-pull`: no query was ever run under the source, so there is no address to change. */
+  | { outcome: 'refused'; reason: 'invalid-request' | 'no-pull'; detail: string }
+  | { outcome: 'remapped'; sourceId: string; pulls: EpcisRemappedPull[] };
+
+/**
+ * Declare that a configured source is now reached at another address.
+ *
+ * A query name is bound to the address it was first run against, so that the
+ * same name cannot quietly be pointed at another source. When the same source
+ * moves, or a deployment is restored somewhere the source is reached through
+ * another address, the operator says so here, once, and every pull of the
+ * source is bound to the new address. Nothing else changes: the source scope,
+ * the pull, its pages, its checkpoint and every import keep their identities,
+ * and each import keeps the origin it was really read from.
+ *
+ * A cursor is an address the old endpoint named. It is held to the new
+ * permitted origins here, as it is again before it is used: one that may
+ * still be requested is kept, and one that may not is dropped, so the pass
+ * replays from its retained bounds and what is already held is recognised as
+ * it arrives. A dropped cursor skips no page and begins no new source. That
+ * holds when the address itself is unchanged too: declaring the same address
+ * with other permitted origins drops a cursor those origins do not permit,
+ * and is recorded.
+ *
+ * No request is made, and no credential is read or written. The credential
+ * for the new address is configured where every credential is: in the source
+ * a pull is handed.
+ */
+export async function remapEpcisSourceEndpoint(input: RemapEpcisSourceEndpointInput): Promise<EpcisEndpointRemapOutcome> {
+  const bad = (detail: string): EpcisEndpointRemapOutcome => ({ outcome: 'refused', reason: 'invalid-request', detail });
+  const name = (value: unknown, what: string): string | undefined => (typeof value !== 'string' || value.length < 1 || value.length > 256 || CONTROL.test(value) ? `${what} is 1 to 256 characters without control characters` : undefined);
+  if (input == null || typeof input !== 'object') return bad('a remap is described by an object');
+  if (input.storage == null || typeof input.storage.commit !== 'function') return bad('a remap is handed the storage it writes to');
+  const problem = name(input.sourceId, 'sourceId') ?? (input.remappedBy === undefined ? undefined : name(input.remappedBy, 'remappedBy'));
+  if (problem != null) return bad(problem);
+  if (typeof input.remappedAt !== 'string' || !DATE_TIME.test(input.remappedAt) || Number.isNaN(Date.parse(input.remappedAt))) return bad('remappedAt is an ISO 8601 date-time with a zone');
+  if (input.localTest !== undefined && typeof input.localTest !== 'boolean') return bad('localTest is true or false');
+  const endpoint = sourceEndpoint(input.baseUrl, input.permittedOrigins);
+  if (typeof endpoint === 'string') return bad(endpoint);
+  if (endpoint.baseUrl == null) return bad('source.baseUrl is the address the source is now reached at');
+  const { baseUrl, permittedOrigins } = endpoint;
+  const { storage, sourceId } = input;
+  const clock = input.now ?? systemClock;
+  const policy: EpcisTargetPolicy = { permittedOrigins, localTest: input.localTest === true, ...(input.resolveHost == null ? {} : { resolveHost: input.resolveHost }) };
+
+  const keys: string[] = [];
+  for (let after: string | undefined; ;) {
+    const page = await storage.list(K.pull, { ...(after == null ? {} : { after }), limit: 100 });
+    for (const held of page) if ((held.value as unknown as EpcisPullRecord).sourceId === sourceId) keys.push(held.key);
+    if (page.length < 100) break;
+    after = page[page.length - 1]!.key;
+  }
+  if (keys.length === 0) return { outcome: 'refused', reason: 'no-pull', detail: `no query was ever run under ${sourceId}, so no pull is bound to an address; configure the source with its address and run the query` };
+
+  const pulls: EpcisRemappedPull[] = [];
+  for (const key of keys) {
+    pulls.push(await inTurn(storage, key, async (): Promise<EpcisRemappedPull> => {
+      const held = await storage.get(K.pull, key);
+      if (held == null) throw new EpcisExchangeError('record-unreadable', `the pull record ${key} is gone`);
+      const state = held.value as unknown as EpcisPullRecord;
+      if (state.recordType !== 'epcis-pull' || state.recordVersion !== EPCIS_PULL_VERSION) throw new EpcisExchangeError('record-unreadable', `the pull record of ${state.queryId} is version ${String(state.recordVersion)}, and this module reads and writes version ${EPCIS_PULL_VERSION}`);
+      const from = { baseUrl: state.source.baseUrl, definitionDigest: state.definitionDigest };
+      const to = { baseUrl, definitionDigest: epcisPullDefinitionDigest({ sourceId, baseUrl, query: state.query, recordTimeOverlapSeconds: state.recordTimeOverlapSeconds }) };
+      // The cursor of the checkpoint and the one a noted page carries are each an address the endpoint named before this declaration. They are held to the origins declared now, whether or not the base address changed.
+      let cursor: EpcisPullEndpointRemap['cursor'] = 'none';
+      if (state.cursor != null) {
+        if ((await targetRefusal(state.cursor.target, policy)) == null) cursor = 'kept';
+        else { delete state.cursor; cursor = 'dropped'; }
+      }
+      if (state.pending?.next != null) {
+        if ((await targetRefusal(state.pending.next.target, policy)) == null) cursor = cursor === 'dropped' ? 'dropped' : 'kept';
+        else { delete state.pending.next; cursor = 'dropped'; }
+      }
+      // The same address again, with every cursor still permitted: there is nothing to record.
+      if (from.definitionDigest === to.definitionDigest && cursor !== 'dropped') return { pullId: state.pullId, queryId: state.queryId, changed: false, from, to, cursor };
+      const remap: EpcisPullEndpointRemap = { remappedAt: input.remappedAt, ...(input.remappedBy === undefined ? {} : { remappedBy: input.remappedBy }), from, to, cursor };
+      const next: EpcisPullRecord = {
+        ...state,
+        definitionDigest: to.definitionDigest,
+        source: { ...state.source, baseUrl, permittedOrigins, localTest: policy.localTest },
+        endpointRemaps: [...(state.endpointRemaps ?? []), remap],
+        updatedAt: clock(),
+      };
+      const result = await storage.commit([{ op: 'put', kind: K.pull, key, value: toValue(next), expect: held.revision }]);
+      if (!result.committed) throw new EpcisExchangeError('storage-contention', `the pull record of ${state.queryId} could not be written: it was expected at ${String(result.failed.expected)} and is at ${String(result.failed.found)}; a run of the same pull is writing`);
+      return { pullId: state.pullId, queryId: state.queryId, changed: true, from, to, cursor };
+    }));
+  }
+  return { outcome: 'remapped', sourceId, pulls };
 }
 
 /* ---------------------------------- reading ------------------------------ */

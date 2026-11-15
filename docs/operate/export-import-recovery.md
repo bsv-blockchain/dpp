@@ -20,6 +20,7 @@ Index operators and teams replacing a provider can use this guide to back up an 
 | The bounded package, `GET /evidence-package` | One passport's newest 500 states: each raw transaction, its BEEF with the merkle path once the index has one, the publisher policy chain, spend observations and a report, inventoried in a signed manifest | States beyond the newest 500, which it declares absent; restricted tiers | Anyone, from an index that sets `EXPORTER_PRIVATE_KEY` (otherwise 503) |
 | The complete export, `GET /evidence-export`, a reference package feature | Every state of one passport, in signed parts over one snapshot | Restricted tiers; the report, which the reader produces over the joined parts | Anyone holding the source index's `EXPORT_TOKEN` when it sets one. The hosted reference sets one and does not give it to outsiders, so use this route on your own index or ask the source operator |
 | A registry export | The claims a registry holds and their evidence, under the [registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) | Token history, restricted material, keys | Depends on the registry |
+| An EPCIS recovery snapshot | Everything an EPCIS exchange holds for the source scopes it covers: every retained original, and the import records, observations, conflict decisions and pull state that no source can rebuild | Credentials, which the replacement's operator configures again; by default every cursor, so an unfinished pull replays from its bounds; token history, which is the index's | The operator of the application that runs the exchange, through `exportEpcisRecovery` |
 | The custody keys | The ability to spend or update the passport, which restoring public evidence does not recover | | Only their holder: no export recovers a lost key |
 
 | Term or limit | Meaning |
@@ -203,6 +204,30 @@ EXPORT_TOKEN=<source export token> EXPORTER_IDENTITY_KEY=<source exporter identi
 | `the export does not join:` | One sentence per coverage problem, such as `part 1: signed by <key>, not the expected <key>` or `part 2 is the last part received and is not final` | Do not restore. Fetch again from the start. |
 | `GET /evidence-export answered 410` (`snapshot-expired`) or `400` (`cursor-invalid`) | Snapshot older than ten minutes, or a source restart invalidated every cursor | Start again without a cursor. Never mix snapshots: that archive was complete at neither point. |
 
+## Move an EPCIS exchange to another store
+
+An application that imports or pulls EPCIS events through `@bsv/dpp-credentials/epcis-exchange` holds records an index does not: which request each import answers, how each event arrived, what was decided about a conflict and how far each pull got. They leave as a recovery snapshot and arrive through a restore. This is an authorised path for the operator of the exchange. A public evidence package never carries these records.
+
+1. **Quiesce the source.** Stop accepting imports and starting pulls. Run `recoverEpcisExchange(storage)`, which finishes or discards interrupted work. An export refuses as `unfinished-work` while anything is journalled.
+2. **Export.** `exportEpcisRecovery({ storage })` returns the files, one inventory entry for each and a descriptor. It refuses a store that is not consistent and names what is wrong. Pass the credentials the deployment was configured with as `credentials` and the export also refuses if any exported byte holds one.
+3. **Carry it.** Put the files in a `dpp-evidence-package@1` whose disclosure is `all-tiers` and which declares itself a recovery backup, list the entries in its manifest and sign it. Keep the package where you keep other restricted backups: it holds every source document and the operational history of the exchange.
+4. **Restore into an empty store.** At the replacement, verify the package as any package, then call `restoreEpcisRecovery({ storage, source, inventory })`. It checks the snapshot before it writes, reads every original back and holds it to its digest, rebuilds the index and checks the invariants of the exchange. If the process stops, run the same call again: it resumes.
+5. **Provision credentials and endpoints.** No credential is in a snapshot. Configure each source at the replacement: its address, its permitted origins and how its credential is obtained. If the same source is reached at another address there, declare it with `remapEpcisSourceEndpoint`.
+6. **Resume.** Accept imports again and run each pull with its own `queryId`. A retry of a request the old store acknowledged answers the same import. An interrupted pull continues, or replays from its retained bounds, and skips no page. A carried cursor at an origin you did not permit at the replacement is never requested: the run ends as `partial-history`, `pagination-target-refused`, until you declare the source's address and permitted origins with `remapEpcisSourceEndpoint`, which drops that cursor.
+
+| If the restore answers | Do this |
+|---|---|
+| `reconciliation-required` | The destination already holds a record that differs under the same identity. Nothing was written. Restore into an empty store, or reconcile each listed collision yourself; nothing is overwritten for you |
+| `destination-unfinished-work` | Run `recoverEpcisExchange` on the destination, or finish the restore that is pending there |
+| `checkpoint-imports-omitted`, `resolution-observations-omitted`, `original-missing`, `record-missing` | The snapshot is incomplete. Ask the source operator for a new export; a missing record cannot be rebuilt from the documents |
+| `original-altered`, `record-altered`, `descriptor-inventory-mismatch` | The package is not what its exporter assembled. Do not restore it |
+| `snapshot-inconsistent`, `record-misfiled` | The snapshot does not hold together: a record of one source scope stands on a record of another, the descriptor says something the records do not, or cursor material is carried that the descriptor says was left out. Do not restore it |
+| `not-a-recovery-snapshot` | You were given the public form. It restores nothing; ask for a recovery snapshot |
+
+The default snapshot leaves every cursor out. A snapshot taken with `cursors: 'include'` lets a pull resume without replaying, against the same endpoint, and holds page tokens: treat it as you treat the credentials it is used with. [Move an exchange to another store](../interoperability/epcis.md#move-an-exchange-to-another-store) has the layout, every refusal and a runnable example.
+
+The module's tests export from each of its two storage adapters and restore into the other, with the restore stopped before and after every durable call. No exit between two independently operated deployments has been exercised yet, and the starter application does not serve these calls over HTTP.
+
 ## Check the result
 
 1. Use the [passport lookup](../reference/contracts.md#find-passport-records) with `INDEX_URL` set to the replacement.
@@ -227,6 +252,7 @@ Inclusion across the chain: verified.
 - Keep custody keys in the recovery plan separately.
 - An export cannot recover evidence the source did not retain, and a package or export never carries the restricted tiers.
 - Registry claims are a separate archive with no token history, restricted material or keys, so replacing a provider can need an index export, a registry export and separately kept custody access.
+- An index's package and export do not hold what an EPCIS exchange retained. The application that runs the exchange exports that as [a recovery snapshot](#move-an-epcis-exchange-to-another-store), and no snapshot carries a credential.
 - An index's package and export hold token history. They do not hold the files that define a profile held by a binding, which a reader needs to validate a payload under that profile. An application carries those as a [profile bundle](../packages/dpp-profiles.md#carry-a-profile-to-another-deployment) in a package it assembles, and the replacement registers them against its own trusted binding digests.
 
 The complete export is a feature of the reference index package, outside the standard, and its tests are local and synthetic. The [ledger](https://github.com/bsv-blockchain/dpp/blob/dab99763c76e4ab192a50b8dc88fe0bcb4c5ee8d/conformance/manifest.json) marks durable independent publication a gap. Other known limits are on [known limitations](limitations.md).
@@ -237,6 +263,7 @@ The complete export is a feature of the reference index package, outside the sta
 |---|---|
 | One passport within the package bound | [Package operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/overlay.yaml), [package schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/evidence-package.schema.json) |
 | A longer history across parts | [Complete-export operation](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md), [part schema](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/schemas/evidence-export.schema.json), the [overlay package's description](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/README.md#get-evidence-packagepassportid) |
+| An EPCIS exchange | `spec/epcis-interoperability.md` section 8; `contracts/epcis-recovery.schema.json`; `packages/dpp-credentials/test/epcis-recovery.test.ts` |
 | Registry-held claims | [Registry contract](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/contracts/registry.yaml) |
 | The reference's own restore | [Package tests](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/test/evidenceExport.test.ts), [complete-export tests](https://github.com/bsv-blockchain/dpp/blob/ace901659baf2e4f6ec1d2ff610454eb63bc6faf/packages/dpp-overlay/test/evidenceExportParts.test.ts), which walk 505 states through two parts |
 

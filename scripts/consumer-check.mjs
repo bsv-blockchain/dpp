@@ -209,6 +209,10 @@ out.push(['dpp-credentials/epcis-exchange: an import without the provisioned GS1
 // A pull from a source with no base address requests nothing, and says so by name.
 const linkMissing = await epcisExchange.pullEpcisEvents({ storage: exchangeStore, source: { sourceId: 'consumer-check', permittedOrigins: [], policy: { policyId: 'consumer-check@1' } }, queryId: 'query-1', query: {}, fetch: () => { throw new Error('nothing may be requested') } })
 out.push(['dpp-credentials/epcis-exchange: a pull from a source with no base address answers source-link-missing, requests nothing and keeps nothing', linkMissing.outcome === 'source-link-missing' && linkMissing.completion === 'failed' && linkMissing.pull === undefined && exchangeStore.state.records.size === 0 && typeof epcisExchange.getEpcisPull === 'function'])
+// A recovery export of a store that holds no source scope says so by name, a restore with no descriptor is refused before anything is written, and neither changes the store.
+const nothingToCarry = await epcisExchange.exportEpcisRecovery({ storage: exchangeStore })
+const noSnapshot = await epcisExchange.restoreEpcisRecovery({ storage: exchangeStore, source: epcisExchange.epcisRecoveryFiles(new Map()), inventory: [] })
+out.push(['dpp-credentials/epcis-exchange: a recovery export of an empty store answers no-source-scope, a restore without a descriptor answers descriptor-missing, and neither writes anything', nothingToCarry.ok === false && nothingToCarry.code === 'no-source-scope' && noSnapshot.ok === false && noSnapshot.code === 'descriptor-missing' && exchangeStore.state.bytes.size === 0 && exchangeStore.state.records.size === 0 && typeof epcisExchange.verifyEpcisRecovery === 'function' && typeof epcisExchange.exportEpcisPublicEvidence === 'function'])
 out.push(['dpp-credentials: the root exports the GS1 provisioning functions and the three pinned EPCIS files', typeof credentials.provisionGs1Artefacts === 'function' && typeof credentials.verifyGs1Artefacts === 'function' && credentials.EPCIS_GS1_ARTEFACTS.length === 3 && credentials.verifyGs1Artefacts({ dir: join(process.cwd(), 'gs1-not-provisioned') }).ok === false])
 out.push(['dpp-credentials: the dpp-gs1-artefacts executable is installed', existsSync(join('node_modules', '.bin', 'dpp-gs1-artefacts'))])
 console.log(JSON.stringify(out))
@@ -247,7 +251,7 @@ import { readManifest, type ProfileManifest, type InteroperabilityProfileId, typ
 import { parseStrictJsonBytes, type Credential } from '@bsv/dpp-credentials'
 import { verifyExternalCredential, type ExternalVerification, type ExternalVerificationPolicy } from '@bsv/dpp-credentials/exchange'
 import { parseEpcisSource, type EpcisParseResult, type EpcisLimits } from '@bsv/dpp-credentials/epcis-source'
-import { importEpcisSource, pullEpcisEvents, type EpcisExchangeStorage, type EpcisFetch, type EpcisImportRecord, type EpcisImportOutcome, type EpcisPullOutcome, type EpcisPullSource } from '@bsv/dpp-credentials/epcis-exchange'
+import { exportEpcisRecovery, importEpcisSource, pullEpcisEvents, restoreEpcisRecovery, type EpcisExchangeStorage, type EpcisFetch, type EpcisImportRecord, type EpcisImportOutcome, type EpcisPullOutcome, type EpcisPullSource, type EpcisRecoveryExportRefusal, type EpcisRecoveryRefusal, type EpcisRecoverySource, type ExportedEpcisRecovery, type RestoredEpcisRecovery } from '@bsv/dpp-credentials/epcis-exchange'
 import type { Transaction } from '@bsv/sdk'
 export const hostOptions: OverlayHttpOptions = { host: '127.0.0.1', network: 'test' }
 export const startHost: typeof startOverlayService = startOverlayService
@@ -279,6 +283,13 @@ export async function retain(storage: EpcisExchangeStorage, bytes: Uint8Array): 
 export const transport: EpcisFetch = fetch
 export async function pull(storage: EpcisExchangeStorage, source: EpcisPullSource): Promise<EpcisPullOutcome> {
   return pullEpcisEvents({ storage, source, queryId: 'query', query: { perPage: 10 }, fetch })
+}
+// A snapshot's own inventory is what a restore is handed, when no larger manifest carries it.
+export async function snapshot(storage: EpcisExchangeStorage): Promise<ExportedEpcisRecovery | EpcisRecoveryExportRefusal> {
+  return exportEpcisRecovery({ storage })
+}
+export async function restore(storage: EpcisExchangeStorage, source: EpcisRecoverySource, taken: ExportedEpcisRecovery): Promise<RestoredEpcisRecovery | EpcisRecoveryRefusal> {
+  return restoreEpcisRecovery({ storage, source, inventory: taken.inventory })
 }
 `)
   writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions: { module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', strict: true, noEmit: true, skipLibCheck: false, types: ['node'] }, files: ['types.ts'] }))

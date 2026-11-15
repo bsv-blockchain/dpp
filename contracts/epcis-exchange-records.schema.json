@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bsv-blockchain.github.io/dpp/contracts/epcis-exchange-records.schema.json",
   "title": "DPP EPCIS exchange records, version 1",
-  "description": "The durable records an EPCIS source exchange keeps beside its import records (epcis-import.schema.json) under the epcis-json@1 profile (spec/epcis-interoperability.md sections 2, 3 and 6): each distinct observation of an event, each decision about a conflict, each entry of the associations index, which imports retain which bytes, work that has begun and is not finished, the state of each query pull and each page a pull acknowledged. Every record names its type and carries its own version, so that a recovery export can carry them as they are stored. A conflict decision and the state of a pull cannot be rebuilt from any source; an observation can be rebuilt only in the order the sources were received; the associations index and the retention entries can be rebuilt from the import records and the retained bytes. No record here is a token operation, none says who made a source or that an event happened, and none carries a credential.",
+  "description": "The durable records an EPCIS source exchange keeps beside its import records (epcis-import.schema.json) under the epcis-json@1 profile (spec/epcis-interoperability.md sections 2, 3 and 6): each distinct observation of an event, each decision about a conflict, each entry of the associations index, which imports retain which bytes, work that has begun and is not finished, the state of each query pull, each page a pull acknowledged, each recovery snapshot restored into the store and where each of its originals was placed. Every record names its type and carries its own version, so that a recovery export can carry them as they are stored. A conflict decision, the state of a pull and the record of a restore cannot be rebuilt from any source; an observation can be rebuilt only in the order the sources were received; the associations index and the retention entries can be rebuilt from the import records and the retained bytes. No record here is a token operation, none says who made a source or that an event happened, and none carries a credential.",
   "oneOf": [
     { "$ref": "#/$defs/observation" },
     { "$ref": "#/$defs/conflictResolution" },
@@ -10,7 +10,9 @@
     { "$ref": "#/$defs/retention" },
     { "$ref": "#/$defs/journal" },
     { "$ref": "#/$defs/pull" },
-    { "$ref": "#/$defs/pullPage" }
+    { "$ref": "#/$defs/pullPage" },
+    { "$ref": "#/$defs/restore" },
+    { "$ref": "#/$defs/relocation" }
   ],
   "$defs": {
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
@@ -330,8 +332,84 @@
         },
         "totals": { "type": "object", "additionalProperties": false, "required": ["bytes", "events"], "properties": { "bytes": { "type": "integer", "minimum": 0 }, "events": { "$ref": "#/$defs/eventCounts" } } },
         "completenessLimits": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Every reason the retained events are not the complete history of the source. Never empty once a run has ended." },
+        "endpointRemaps": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Every time an operator declared that this source is reached at another address, oldest first. Absent when the address never changed. A remap changes the address a query name is bound to and nothing else: the source scope, the pull and everything retained under them keep their identities.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["remappedAt", "from", "to", "cursor"],
+            "properties": {
+              "remappedAt": { "$ref": "#/$defs/dateTime" },
+              "remappedBy": { "$ref": "#/$defs/name", "description": "Who declared it, as the application names them. Never a credential." },
+              "from": { "$ref": "#/$defs/boundAddress" },
+              "to": { "$ref": "#/$defs/boundAddress" },
+              "cursor": { "enum": ["none", "kept", "dropped"], "description": "What became of the checkpoint's cursor. none: there was none. kept: its address is permitted under the new configuration. dropped: it is not, so the pass replays from its retained bounds." }
+            }
+          }
+        },
         "createdAt": { "$ref": "#/$defs/dateTime" },
         "updatedAt": { "$ref": "#/$defs/dateTime" }
+      }
+    },
+    "boundAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseUrl", "definitionDigest"],
+      "description": "An address a query name was bound to, and the definition digest it was bound under.",
+      "properties": {
+        "baseUrl": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "definitionDigest": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "restoreCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["originals", "imports", "observations", "resolutions", "pulls", "pullPages"],
+      "description": "How many records of each kind a recovery snapshot carried.",
+      "properties": {
+        "originals": { "type": "integer", "minimum": 0 },
+        "imports": { "type": "integer", "minimum": 0 },
+        "observations": { "type": "integer", "minimum": 0 },
+        "resolutions": { "type": "integer", "minimum": 0 },
+        "pulls": { "type": "integer", "minimum": 0 },
+        "pullPages": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "restore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "restoreId", "snapshotId", "descriptorSha256", "snapshotTakenAt", "sourceIds", "cursors", "counts", "startedAt", "restoredAt"],
+      "description": "One recovery snapshot restored into this store (epcis-recovery.schema.json). Written once, in the batch that ends the restore, so its presence says the restore finished. It is how a restored record is traced to the snapshot it came from; the snapshot itself is never changed. It is the history of this store and is not carried in a later snapshot.",
+      "properties": {
+        "recordType": { "const": "epcis-restore" },
+        "recordVersion": { "const": "1" },
+        "restoreId": { "type": "string", "pattern": "^urn:bsv:dpp:epcis:restore:sha256:[0-9a-f]{64}$" },
+        "snapshotId": { "$ref": "#/$defs/sha256", "description": "The snapshot's identity, as its descriptor gives it." },
+        "descriptorSha256": { "$ref": "#/$defs/sha256", "description": "The SHA-256 of the descriptor file the restore read." },
+        "snapshotTakenAt": { "$ref": "#/$defs/dateTime" },
+        "sourceIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/name" }, "description": "Every source scope the snapshot covered." },
+        "cursors": { "enum": ["excluded", "included"], "description": "Whether the snapshot carried the cursors of its pulls." },
+        "counts": { "$ref": "#/$defs/restoreCounts" },
+        "startedAt": { "$ref": "#/$defs/dateTime" },
+        "restoredAt": { "$ref": "#/$defs/dateTime" }
+      }
+    },
+    "relocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recordType", "recordVersion", "snapshotId", "sha256", "byteLength", "exportedRef", "path", "destinationRef"],
+      "description": "Where one original of a restored snapshot was placed. The snapshot names bytes by the reference its store used; this store names them its own way. The bytes were read back from this store and matched their digest before the record was written.",
+      "properties": {
+        "recordType": { "const": "epcis-relocation" },
+        "recordVersion": { "const": "1" },
+        "snapshotId": { "$ref": "#/$defs/sha256" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byteLength": { "type": "integer", "minimum": 0 },
+        "exportedRef": { "type": "string", "minLength": 1, "description": "The bytesRef the import records of the snapshot carry for these bytes." },
+        "path": { "type": "string", "minLength": 1, "maxLength": 512, "description": "The file of the snapshot that carried them, relative to its descriptor." },
+        "destinationRef": { "type": "string", "minLength": 1, "maxLength": 2048, "description": "The bytesRef the restored import records carry." }
       }
     },
     "pullPage": {
@@ -366,11 +444,11 @@
     "journal": {
       "type": "object",
       "required": ["recordType", "recordVersion", "entry", "startedAt"],
-      "description": "Work that has begun and is not finished. Recovery finishes or discards each entry and removes it. intake: a request was noted and has no receipt yet, so it was never acknowledged. import: a receipt is durable and its event results or index entries are not complete. resolution: a decision is recorded and the imports it releases are not all marked. rebuild: the associations index is being rebuilt. discard: bytes that an unacknowledged request left are to be removed, unless an import holds them.",
+      "description": "Work that has begun and is not finished. Recovery finishes or discards each entry and removes it. intake: a request was noted and has no receipt yet, so it was never acknowledged. import: a receipt is durable and its event results or index entries are not complete. resolution: a decision is recorded and the imports it releases are not all marked. rebuild: the associations index is being rebuilt. discard: bytes that an unacknowledged request left are to be removed, unless an import holds them. restore: a recovery snapshot is being restored; recovery leaves this entry, because only the restore holds the snapshot and can finish.",
       "properties": {
         "recordType": { "const": "epcis-journal" },
         "recordVersion": { "const": "1" },
-        "entry": { "enum": ["intake", "import", "resolution", "rebuild", "discard"] },
+        "entry": { "enum": ["intake", "import", "resolution", "rebuild", "discard", "restore"] },
         "startedAt": { "$ref": "#/$defs/dateTime" },
         "importId": { "type": "string", "minLength": 1 },
         "sourceId": { "$ref": "#/$defs/name" },
@@ -378,14 +456,16 @@
         "requestDigest": { "$ref": "#/$defs/sha256" },
         "sha256": { "$ref": "#/$defs/sha256" },
         "conflictId": { "type": "string", "minLength": 1 },
-        "resolutionId": { "type": "string", "minLength": 1 }
+        "resolutionId": { "type": "string", "minLength": 1 },
+        "snapshotId": { "$ref": "#/$defs/sha256" }
       },
       "additionalProperties": false,
       "allOf": [
         { "if": { "properties": { "entry": { "const": "intake" } } }, "then": { "properties": { "importId": true, "sourceId": true, "requestId": true, "requestDigest": true, "sha256": true }, "required": ["importId", "sourceId", "requestId", "requestDigest", "sha256"] } },
         { "if": { "properties": { "entry": { "const": "import" } } }, "then": { "properties": { "importId": true }, "required": ["importId"] } },
         { "if": { "properties": { "entry": { "const": "resolution" } } }, "then": { "properties": { "conflictId": true, "resolutionId": true }, "required": ["conflictId", "resolutionId"] } },
-        { "if": { "properties": { "entry": { "const": "discard" } } }, "then": { "properties": { "sha256": true }, "required": ["sha256"] } }
+        { "if": { "properties": { "entry": { "const": "discard" } } }, "then": { "properties": { "sha256": true }, "required": ["sha256"] } },
+        { "if": { "properties": { "entry": { "const": "restore" } } }, "then": { "properties": { "snapshotId": true }, "required": ["snapshotId"] } }
       ]
     }
   }
