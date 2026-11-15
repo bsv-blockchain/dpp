@@ -352,7 +352,7 @@
       "version": "dpp-epcis-lifecycle@1",
       "kind": "local",
       "path": "spec/epcis-lifecycle-claim.md",
-      "digest": "23dbee65279945bb1043b531b25dc49c31feedcdb76d75fabb15971df895facd"
+      "digest": "c4eadbc709d1c3726b2246e723d9b83d3598c502d2b2dd1b9d950e42db00e725"
     }
   ],
   "requirements": [

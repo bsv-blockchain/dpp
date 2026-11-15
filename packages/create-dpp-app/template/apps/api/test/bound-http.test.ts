@@ -328,7 +328,10 @@ describe('a restricted value', () => {
       // Everything another reader can ask for.
       keep(`journal view, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}`)).text)
       keep(`verify, ${profile}`, (await get(`/api/verify?passportId=${ref(example.passportId)}`)).text)
-      keep(`claim, ${profile}`, (await post(`/api/passports/${ref(example.passportId)}/claims`, { eventType: 'Origin' })).text)
+      const claim = await post(`/api/passports/${ref(example.passportId)}/claims`, { assertedRole: 'observer', event: { type: 'ObjectEvent', eventID: `urn:uuid:6c000000-0000-4000-8000-${profile === 'eu-battery@1' ? '0000000000b1' : '0000000000b2'}`, eventTime: '2026-11-04T07:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [example.passportId], action: 'OBSERVE', bizStep: 'inspecting', disposition: 'conformant' } })
+      expect(claim.status).toBe(200)
+      keep(`claim, ${profile}`, claim.text)
+      keep(`claim bytes, ${profile}`, (await get(`/api/lifecycle-claims/${ref(claim.body.attestationId)}`)).text)
       keep(`claims, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}/claims`)).text)
       const offer = await post(`/api/passports/${ref(example.passportId)}/offer`, { terms: { word: 'Sold' } })
       keep(`offer, ${profile}`, offer.text)

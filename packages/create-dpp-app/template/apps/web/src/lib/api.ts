@@ -3,6 +3,7 @@
 // Reads are open; writes carry the session cookie, which a same-origin fetch
 // sends by itself.
 import type { EpcisEventsAnswer, EpcisImportAnswer, EpcisImportRecord, EpcisImportSummary, EpcisPullPage, EpcisPullQuery, EpcisPullResult, EpcisPullState, EpcisSource, EpcisStatus } from './epcis'
+import type { LifecycleClaimView, PassportClaimsReading } from './lifecycle'
 
 export class ApiError extends Error {
   readonly code: string
@@ -257,18 +258,6 @@ export interface PassportView {
   acceptanceRecords: unknown[]
 }
 
-export interface ClaimView {
-  id: string
-  passportId: string
-  issuer: string
-  issuedBy: string
-  claim: { eventType: string; timestamp: string; recordId?: string; [key: string]: unknown }
-  registry?: { url: string; status: number; accepted: boolean; attestationId?: string; detail?: string }
-  createdAt: string
-  /** The signature check, on the list route only; the record a POST returns has none, and was refused if it did not verify. */
-  verified?: string
-}
-
 export type OfferStatus = 'open' | 'accepted' | 'transferred' | 'declined' | 'withdrawn' | 'expired'
 
 export interface OfferPreview {
@@ -343,8 +332,12 @@ export interface FundingAddress {
   senderIdentityKey: string
 }
 
-export type EventType = 'Origin' | 'Transfer' | 'Transformation' | 'Disposition'
-export const EVENT_TYPES: EventType[] = ['Origin', 'Transfer', 'Transformation', 'Disposition']
+/** What a member sends to sign an EPCIS lifecycle claim: the event they entered, one the EPCIS exchange retained, or a claim to declare in error. */
+export type IssueClaimRequest = ({ event: Record<string, unknown> } | { imported: { importId: string; pointer: string } } | { correctionOf: string; reason?: 'did_not_occur' | 'incorrect_data' }) & {
+  assertedRole?: string
+  issuerParty?: string
+  submit?: boolean
+}
 
 // ------------------------------------------------------------------ routes
 
@@ -355,7 +348,7 @@ export const api = {
   profileCodes: (id: string, classes: string[]) => (classes.length === 0 ? Promise.resolve<CodeLists>({}) : get<CodeLists>(`/api/profiles/${encodeURIComponent(id)}/codes?${classes.map((name) => `class=${encodeURIComponent(name)}`).join('&')}`)),
   verify: (passportId: string) => get<Verification>(`/api/verify?passportId=${encodeURIComponent(passportId)}`),
   passport: (passportId: string) => get<PassportView>(`/api/passports/${passportRef(passportId)}`),
-  passportClaims: (passportId: string) => get<ClaimView[]>(`/api/passports/${passportRef(passportId)}/claims`),
+  passportClaims: (passportId: string) => get<PassportClaimsReading>(`/api/passports/${passportRef(passportId)}/claims`),
   offer: (requestId: string) => get<OfferPreview>(`/api/offers/${encodeURIComponent(requestId)}`),
   acceptOffer: (requestId: string, claimCode: string) => post<AcceptResult>(`/api/offers/${encodeURIComponent(requestId)}/accept`, { claimCode }),
   declineOffer: (requestId: string, claimCode: string) => post<OfferView>(`/api/offers/${encodeURIComponent(requestId)}/decline`, { claimCode }),
@@ -374,7 +367,7 @@ export const api = {
   passportOffers: (passportId: string) => get<OfferView[]>(`/api/passports/${passportRef(passportId)}/offers`),
   withdrawOffer: (requestId: string, claimCode?: string) => post<OfferView>(`/api/offers/${encodeURIComponent(requestId)}/withdraw`, claimCode == null ? {} : { claimCode }),
   retirePassport: (passportId: string, body: { reason: string; claimCode?: string }) => post<PassportView>(`/api/passports/${passportRef(passportId)}/retire`, body),
-  addClaim: (passportId: string, body: { eventType: EventType; submit?: boolean }) => post<ClaimView>(`/api/passports/${passportRef(passportId)}/claims`, body),
+  issueClaim: (passportId: string, body: IssueClaimRequest) => post<LifecycleClaimView>(`/api/passports/${passportRef(passportId)}/claims`, body),
 
   operations: () => get<Operations>('/api/operations'),
   runOperations: () => post<{ done: string[] }>('/api/operations/run'),

@@ -57,7 +57,7 @@ A claim is a signed product statement separate from passport states. Four pieces
 
 | Piece | Contents or role |
 |---|---|
-| Claim | Native format `dpp-lifecycle-v1`: passport identifier, referenced state, event type (`Origin`, `Transfer`, `Transformation` or `Disposition`), time, issuer and issuer signature |
+| Claim | Native format `dpp-lifecycle-v1`: passport identifier, referenced state, event type (`Origin`, `Transfer`, `Transformation` or `Disposition`), time, issuer and issuer signature. Or the EPCIS lifecycle claim `dpp-epcis-lifecycle@1`: one EPCIS 2.0.1 event bound to the passports whose products it names, with the issuer's asserted role and signature ([the EPCIS lifecycle claim](../packages/add-a-claim.md#the-epcis-lifecycle-claim)). The application starter issues only the second and reads both |
 | Issuer | Signer named by a DID. At Ring 0, `did:key` of its identity key suffices ([BSV DIDs](dids.md)). |
 | Registry | Validates, stores and serves exact claim bytes |
 | Anchor | Small output in format `bsv-attestation-anchor-v1`, committing to exact claim bytes and signed by the anchoring service |

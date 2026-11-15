@@ -177,6 +177,29 @@ export interface EpcisEventEntry {
   body?: unknown
 }
 
+/** One retained event, read from the bytes as they were received. Reading it changes nothing: the import, its bytes and its records stay as they were. */
+export interface RetainedEvent {
+  record: EpcisImportRecord
+  event: EpcisImportEvent
+  /** The event object, exactly as the received document holds it. */
+  body: Record<string, unknown>
+  /** The document's inline `@context` objects whose every value is a namespace IRI: the prefixes its extension members are read under. */
+  inlineContexts: Array<Record<string, string>>
+}
+
+/** The value an RFC 6901 pointer names in a parsed document. */
+function atPointer(document: unknown, pointer: string): unknown {
+  if (pointer === '') return document
+  let at: unknown = document
+  for (const raw of pointer.split('/').slice(1)) {
+    const token = raw.replace(/~1/g, '/').replace(/~0/g, '~')
+    if (Array.isArray(at) && /^(0|[1-9][0-9]*)$/.test(token)) at = at[Number(token)]
+    else if (at != null && typeof at === 'object' && !Array.isArray(at) && Object.hasOwn(at, token)) at = (at as Record<string, unknown>)[token]
+    else return undefined
+  }
+  return at
+}
+
 export interface EpcisExchange {
   readonly storage: EpcisExchangeStorage
   readonly storageKind: 'mongodb' | 'file' | 'memory' | 'supplied'
@@ -195,6 +218,8 @@ export interface EpcisExchange {
   pull(input: { sourceId: string; queryId: string; query: EpcisPullQueryInput; window?: 'watermark' | 'query-bounds' }): Promise<EpcisPullOutcome | undefined>
   getPull(sourceId: string, queryId: string): Promise<{ pull: EpcisPullRecord; pages: EpcisPullPageRecord[] } | undefined>
   eventsFor(query: { identifier: string; granularity: EpcisAssociationGranularity; sourceId?: string; after?: string; limit?: number }): Promise<{ events: EpcisEventEntry[]; next?: string }>
+  /** One retained event as the original document holds it, read from the retained bytes, with the import record and the document's inline context declarations. Undefined when no import or no event is there. */
+  retainedEvent(importId: string, pointer: string): Promise<RetainedEvent | undefined>
   listConflicts(): Promise<{ conflicts: EpcisConflict[]; importsRead: number; truncated: boolean }>
   getConflict(conflictId: string): Promise<EpcisConflict | undefined>
   resolveConflict(input: { conflictId: string; decision: string; disposition: EpcisResolutionDisposition; selectedBodyDigest?: string; decidedAt?: string; decidedBy?: string }): Promise<EpcisResolutionOutcome>
@@ -348,6 +373,20 @@ export async function startEpcisExchange(options: EpcisExchangeOptions): Promise
         })
       }
       return { events, ...(page.next == null ? {} : { next: page.next }) }
+    },
+
+    async retainedEvent(importId, pointer) {
+      const record = await getEpcisImport(storage, importId)
+      const event = record?.events.find((candidate) => candidate.pointer === pointer)
+      if (record == null || event == null) return undefined
+      const original = await exportEpcisSource(storage, importId)
+      if (original == null) return undefined
+      const document = JSON.parse(new TextDecoder().decode(original.bytes)) as Record<string, unknown>
+      const body = atPointer(document, pointer)
+      if (body == null || typeof body !== 'object' || Array.isArray(body)) return undefined
+      const contexts = Array.isArray(document['@context']) ? document['@context'] : [document['@context']]
+      const inlineContexts = contexts.filter((entry): entry is Record<string, string> => entry != null && typeof entry === 'object' && !Array.isArray(entry) && Object.keys(entry).length > 0 && Object.values(entry).every((value) => typeof value === 'string'))
+      return { record, event, body: body as Record<string, unknown>, inlineContexts }
     },
 
     async listConflicts() {

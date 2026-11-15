@@ -30,11 +30,13 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Transaction, Utils } from '@bsv/sdk'
 import {
+  EPCIS_LIFECYCLE_REPRESENTATION,
   acceptanceCommitment,
   evidencePackageSigner,
   findDppOutputs,
   inspectEvidencePackage,
   verifyChain,
+  verifyEpcisLifecycleClaim,
   type EvidencePackageManifest,
   type InventoryEntry,
   type ManagedAcceptanceRecord,
@@ -45,7 +47,7 @@ import { epcisRecoveryFiles, restoreEpcisRecovery, verifyEpcisRecovery, type Epc
 import type { EpcisSourceConfig } from '../epcis/sources.js'
 import type { Platform } from '../platform.js'
 import { isProfileId } from '../profiles.js'
-import type { BrandRecord, ClaimRecord, OfferRecord, PassportRecord, StateEntry } from '../store.js'
+import { isEpcisLifecycleRecord, type BrandRecord, type ClaimRecord, type OfferRecord, type PassportRecord, type StateEntry } from '../store.js'
 import { declaredBindingDigest, summariseReading } from './export.js'
 import {
   APPLICATION_EXPORT_DESCRIPTOR,
@@ -258,7 +260,23 @@ export async function verifyApplicationPackage(pkg: { manifestText?: string; fil
     if (!brands.some((brand) => brand.id === record.brandId) && !declaredAbsent) refuse('package-incomplete', `The package is incomplete: it does not carry the brand record of ${record.brandId}, which holds ${record.passportId}.`, { brandId: record.brandId })
   }
   for (const offer of offers) if (!journals.some((record) => record.passportId === offer.passportId)) refuse('records-inconsistent', `The offer ${offer.requestId} is about a passport the package does not carry.`)
-  for (const claim of claims) if (!journals.some((record) => record.passportId === claim.passportId)) refuse('records-inconsistent', `The claim ${claim.id} is about a passport the package does not carry.`)
+  for (const claim of claims) {
+    const about = isEpcisLifecycleRecord(claim) ? claim.boundPassports : [claim.passportId]
+    if (!journals.some((record) => about.includes(record.passportId))) refuse('records-inconsistent', `The claim ${claim.id} is about a passport the package does not carry.`)
+    if (!isEpcisLifecycleRecord(claim)) continue
+    // An EPCIS lifecycle claim travels as its exact signed bytes, and is restored only when those bytes verify as the claim the record names.
+    const path = `application/lifecycle-claims/${sha256Hex(claim.id)}.json`
+    if (listed.get(path)?.representation !== EPCIS_LIFECYCLE_REPRESENTATION) refuse('package-incomplete', `The package is incomplete: it does not carry the signed bytes of the claim ${claim.id} (${path}).`, { missing: [path] })
+    const carried = decoder.decode(need(path, `the signed bytes of the claim ${claim.id}`))
+    accounted.add(path)
+    const verified = await verifyEpcisLifecycleClaim(carried)
+    if (carried !== claim.bytes || verified.attestationId !== claim.attestationId || verified.findings.signature.status !== 'pass' || verified.findings.eventStructure.status === 'fail') {
+      refuse('claim-invalid', `The claim ${claim.id} does not verify from the bytes the package carries: ${carried !== claim.bytes ? 'the record and the signed bytes differ' : verified.findings.signature.status !== 'pass' ? 'its signature does not hold' : verified.attestationId !== claim.attestationId ? 'the bytes are not the claim the record names' : 'its event is refused'}.`, { claim: claim.id })
+    }
+  }
+  for (const entry of manifest.inventory) {
+    if (entry.path.startsWith('application/lifecycle-claims/') && !accounted.has(entry.path)) refuse('records-inconsistent', `${entry.path} carries the bytes of a claim no record of the package names.`, { path: entry.path })
+  }
 
   /* ---- the profiles, under this deployment's trust ---- */
 

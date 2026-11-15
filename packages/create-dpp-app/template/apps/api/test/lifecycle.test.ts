@@ -5,14 +5,16 @@
 // the code the live platform runs: the writer's six steps, the index's real
 // admission rules, managed custody, claims, and the reader's report.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { verifyLifecycleClaim } from '@bsv/dpp-protocol'
+import { verifyEpcisLifecycleClaim } from '@bsv/dpp-protocol'
 import { loadConfig } from '../src/config.js'
 import { mintPassportId } from '../src/identifiers.js'
+import { eventSchemaCheck } from '../src/lifecycle.js'
 import { openPlatform, type Platform } from '../src/platform.js'
 import { samplePayload } from '../src/profiles.js'
 import type { PassportRecord } from '../src/store.js'
 import { pendingDuties, runDuties } from '../src/worker.js'
 import { WriteRefused } from '../src/writer.js'
+import { gs1Dir } from './epcis-fixtures.js'
 
 const config = loadConfig({ NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' })
 let platform: Platform
@@ -126,11 +128,16 @@ describe('a passport lifecycle under managed custody', () => {
     await expect(platform.writer.update({ record: await latest(), actor: recipient, payload, ownerFields: {} })).rejects.toMatchObject({ code: 'retired' })
   })
 
-  it('signs a lifecycle claim on the other rail, by the recycler, without touching the passport', async () => {
+  it('signs a lifecycle claim on the other rail, by the recycler, from the EPCIS event it observed, without touching the passport', async () => {
     const recycler = platform.parties.member('recycler-line-3')
-    const claim = await platform.claims.sign({ passport: await latest(), issuer: recycler, eventType: 'Disposition' })
-    expect(verifyLifecycleClaim(claim.claim).signature).toBe('verified')
-    expect(claim.claim.issuer).toBe(recycler.did)
+    const before = JSON.stringify(await latest())
+    const event = { type: 'ObjectEvent', eventID: 'urn:uuid:6c000000-0000-4000-8000-00000000c011', eventTime: '2026-03-02T08:00:00.000Z', eventTimeZoneOffset: '+00:00', epcList: [passportId], action: 'OBSERVE', bizStep: 'collecting', disposition: 'in_progress' }
+    const claim = await platform.claims.issue({ event, issuer: recycler, assertedRole: 'observer', expectedPassport: passportId, schemaCheck: eventSchemaCheck(gs1Dir()) })
+    const verified = await verifyEpcisLifecycleClaim(claim.bytes)
+    expect(verified.findings.signature.status).toBe('pass')
+    expect(verified.boundPassports).toEqual([passportId])
+    expect(claim.issuer).toBe(recycler.did)
     expect((await platform.store.listClaims({ passportId })).length).toBe(1)
+    expect(JSON.stringify(await latest())).toBe(before)
   })
 })
