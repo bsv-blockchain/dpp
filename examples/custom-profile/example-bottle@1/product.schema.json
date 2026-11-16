@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://profiles.example/bottle/v1/product.schema.json",
+  "title": "Example bottle, version 1: the product document",
+  "description": "The structure of the product document a passport carries under example-bottle@1. Which contexts the document may name is the binding's rule, and whether the document describes the passport's own item is the identity rule, so this schema decides neither.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["@context", "id", "type", "name", "gtin", "serialNumber", "capacityMillilitres", "dishwasherSafe", "parts"],
+  "properties": {
+    "@context": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      ]
+    },
+    "id": { "type": "string", "minLength": 1 },
+    "type": { "const": "Bottle" },
+    "name": { "type": "string", "minLength": 1 },
+    "gtin": { "type": "string", "pattern": "^([0-9]{8}|[0-9]{12,14})$" },
+    "serialNumber": { "type": "string", "minLength": 1, "maxLength": 20 },
+    "granularity": { "enum": ["item", "batch", "model"] },
+    "model": { "type": "string", "minLength": 1 },
+    "batch": { "type": "string", "minLength": 1 },
+    "capacityMillilitres": { "type": "integer", "minimum": 100, "maximum": 5000 },
+    "recycledContentPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+    "dishwasherSafe": { "type": "boolean" },
+    "careNote": { "type": "string", "minLength": 1 },
+    "parts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "name", "material"],
+        "properties": {
+          "type": { "const": "Part" },
+          "name": { "type": "string", "minLength": 1 },
+          "material": { "enum": ["stainless-steel", "glass", "polypropylene", "silicone", "bamboo", "cork"] },
+          "massGrams": { "type": "number", "exclusiveMinimum": 0 }
+        }
+      }
+    }
+  }
+}

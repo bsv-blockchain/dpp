@@ -372,6 +372,62 @@ describe('the schema check over token payloads (spec/verification.md §4, spec/p
     expect(schema.evidenceRefs).toEqual([`${chain[0].id('hex')}:0`])
   })
 
+  // A second state that spends the first, so the validator is asked about a
+  // genesis and about a state that follows one.
+  async function lineageOfTwo(first: { passportId: string; payloadPublic: string }, second: { passportId: string; payloadPublic: string }): Promise<Transaction[]> {
+    const s0 = await signedState(makeData(first))
+    const tx0 = stateTx(s0, serverPriv.toPublicKey())
+    const s1 = await signedState(makeData({ ...second, op: 'SOLD', timestamp: '2026-06-12T09:30:00Z', previousTxid: tx0.id('hex') }))
+    return [tx0, stateTx(s1, serverPriv.toPublicKey(), { tx: tx0, outputIndex: 0 })]
+  }
+
+  it('hands the validator the passportId of the decoded state, for the genesis and for a later state', async () => {
+    const seen: Array<{ stateIndex: number; passportId: string }> = []
+    const chain = await lineageOfTwo({ passportId: asked.passportId, payloadPublic: declared }, { passportId: asked.passportId, payloadPublic: declared })
+    const report = await verifyPassportEvidence({ tokenHistory: chain }, asked, {
+      checkedAt: CHECKED_AT, chainTracker: 'scripts only',
+      payloadValidator: async (p) => { seen.push({ stateIndex: p.stateIndex, passportId: p.passportId }); return { status: 'pass' } },
+    })
+    expect(seen).toEqual([{ stateIndex: 0, passportId: asked.passportId }, { stateIndex: 1, passportId: asked.passportId }])
+    expect(statuses(report).linkage).toBe('pass')
+    expect(statuses(report).schema).toBe('pass')
+  })
+
+  it('takes the passportId from each decoded state, never from the payload, the question asked or the outpoint', async () => {
+    // Four different identifiers, so each wrong source gives a different wrong
+    // answer: the genesis names one passport, its payload claims another, the
+    // second state names a third and the caller asks about a fourth.
+    const inGenesis = 'https://dpp.bsvb.net/01/09521000000018/21/STATE-0'
+    const inPayload = 'https://dpp.bsvb.net/01/09521000000018/21/PAYLOAD'
+    const inSecondState = 'https://dpp.bsvb.net/01/09521000000018/21/STATE-1'
+    const question: ExpectedSubject = { passportId: 'https://dpp.bsvb.net/01/09521000000018/21/ASKED', source: 'request-context' }
+    const decoy = JSON.stringify({ profile: 'general', profile_version: 2, name: 'Chair', passportId: inPayload, passport_id: inPayload })
+    const chain = await lineageOfTwo({ passportId: inGenesis, payloadPublic: decoy }, { passportId: inSecondState, payloadPublic: decoy })
+    const seen: Array<{ stateIndex: number; passportId: string; ref: string }> = []
+    const report = await verifyPassportEvidence({ tokenHistory: chain }, question, {
+      checkedAt: CHECKED_AT, chainTracker: 'scripts only',
+      payloadValidator: async (p) => { seen.push({ stateIndex: p.stateIndex, passportId: p.passportId, ref: p.ref }); return { status: 'pass' } },
+    })
+    expect(seen.map((s) => s.passportId)).toEqual([inGenesis, inSecondState])
+    expect(seen.map((s) => s.ref)).toEqual([`${chain[0].id('hex')}:0`, `${chain[1].id('hex')}:0`])
+    // The second state is examined although it does not continue the first,
+    // and the report says so on its own checks: the validator's input never
+    // stands in for linkage or subject binding.
+    expect(statuses(report).linkage).toMatch(/^fail:/)
+    expect(statuses(report).subjectBinding).toMatch(/^fail:/)
+  })
+
+  it('reports the same for a validator that reads only the profile and the payload', async () => {
+    const chain = await lineage(declared)
+    const policy = { checkedAt: CHECKED_AT, chainTracker: 'scripts only' as const }
+    // The shape a validator written before passportId existed takes.
+    const older = async (p: { profile: string; profileVersion: number; payloadPublic: string }): Promise<{ status: 'pass' | 'fail' }> =>
+      p.profile === 'general' && p.profileVersion === 2 && p.payloadPublic === declared ? { status: 'pass' } : { status: 'fail' }
+    const report = await verifyPassportEvidence({ tokenHistory: chain }, asked, { ...policy, payloadValidator: older })
+    expect(statuses(report).schema).toBe('pass')
+    expect(report).toEqual(await verifyPassportEvidence({ tokenHistory: chain }, asked, { ...policy, payloadValidator: async () => ({ status: 'pass' }) }))
+  })
+
   it('passes when the validator passes, and reads schema-unavailable without one', async () => {
     const chain = await lineage(declared)
     const passed = await verifyPassportEvidence({ tokenHistory: chain }, asked, { checkedAt: CHECKED_AT, chainTracker: 'scripts only', payloadValidator: async () => ({ status: 'pass' }) })

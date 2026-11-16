@@ -36,6 +36,22 @@ describe('profilePayloadValidator', () => {
     expect(result).toMatchObject({ status: 'unknown', reasonCode: 'schema-unavailable' })
   })
 
+  it('answers the same whether or not the verifier names the passport', async () => {
+    // The schema check is about the payload alone, so the passport's identity
+    // changes no answer: not a pass, not a refusal and not an unknown profile.
+    const passportId = 'https://id.example.test/01/09521000000018/21/0001'
+    const cases: Array<[string, string, number]> = [
+      [JSON.stringify({ profile: 'general', profile_version: 2, colour: 'red' }), 'general', 2],
+      [JSON.stringify({ profile: 'toaster', profile_version: 9 }), 'toaster', 9],
+      ['{not json', 'general', 2],
+    ]
+    for (const [payloadPublic, profile, profileVersion] of cases) {
+      const without = await validate({ profile, profileVersion, payloadPublic })
+      expect(await validate({ profile, profileVersion, payloadPublic, passportId })).toEqual(without)
+      expect(await validate({ profile, profileVersion, payloadPublic, passportId: 'https://elsewhere.example/01/09521000000025/21/0002' })).toEqual(without)
+    }
+  })
+
   it('fails a payload that is not JSON rather than guessing at it', async () => {
     const result = await at('{not json')
     expect(result).toMatchObject({ status: 'fail', reasonCode: 'schema-invalid' })

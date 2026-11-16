@@ -30,4 +30,8 @@ export * from './publisherPolicy.js'
 export * from './evidencePackage.js'
 export * from './acceptance.js'
 export * from './registration.js'
-export * from './epcisEvent.js'
+// `./epcisEvent.js`, the directly signed EPCIS event profile `epcis-event-vc@1`,
+// is deliberately absent: the profile is parked while its representation is
+// reconsidered (`spec/epcis-event-profile.md`). The module, its tests and its
+// vectors stay in the repository as the parked record, and nothing here
+// exports it.

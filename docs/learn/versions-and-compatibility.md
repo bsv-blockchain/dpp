@@ -32,9 +32,9 @@ The candidate inventory below gives each release-set field and the exact spellin
 | Verification report | Version `2`; the published sets name version `1` | `wire.verificationReport` | Not advertised; each report carries `reportVersion` |
 | Index contract | `0.14.0-draft` | `wire.overlayContract` | `protocols`: `overlay-http` version `0.14.0-draft` |
 | Custody profile | `managed-custody@2`; the published October set selects `managed-custody@1` | `custody.selected` | `profiles`: the entry of kind `custody`, id `managed-custody`, version `2`, with its options |
-| Industry profiles | Current: `general@2`, `battery@2`, `textile@2`. Draft: `battery@4`. Parked drafts, still readable: `battery@3`, `textile@3`, `textile@4` | The frozen manifests in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
+| Industry profiles | Current: `general@2`, and `eu-battery@1` and `eu-textile@1`, held by bindings. Retired from 14 November 2026: `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4`, whose records read as unsupported | The frozen manifests and the bundled bindings in `@bsv/dpp-profiles` | Not advertised by an index; each state's payload declares its own `profile` and `profile_version` |
 
-Versions move independently. Installing a package never selects a record format or industry profile, or rewrites stored records. Its prerelease number is not a specification, wire-format or profile version. A reader may need both record decoders within one release set; a draft battery profile does not select a different blockchain format.
+Versions move independently. Installing a package never selects a record format or industry profile, or rewrites stored records. Its prerelease number is not a specification, wire-format or profile version. A reader may need both record decoders within one release set; an industry profile does not select a different blockchain format.
 
 ## Record versions 1 and 2
 

@@ -1,0 +1,13 @@
+{
+  "description": "The binding registered with a registry whose trusted list does not hold its digest.",
+  "kind": "registration",
+  "trustedBindingDigests": [],
+  "register": [
+    {
+      "binding": "binding.json"
+    }
+  ],
+  "expected": {
+    "refusal": "binding-untrusted"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "selectionVersion": "1",
   "selectionId": "dpp-release-2026-11",
-  "purpose": "The claims required for the November 2026 candidate set from 12 November 2026: one component claim per role under native-baseline@2, the one baseline a claim names, whose rows are exactly the baseline's requires list for the role, and gs1-identifier-discipline and profile-governance, which guard live records. Every other claim the selection names is withheld, each with its reason: a claim scoped to the historical native-baseline@1, or an optional profile or governance condition this release does not claim.",
+  "purpose": "The claims required for the November 2026 candidate set from 12 November 2026: one component claim per role under native-baseline@2, the one baseline a claim names, whose rows are exactly the baseline's requires list for the role, and gs1-identifier-discipline and profile-governance, which guard live records. From 14 November 2026 profile-governance also requires the retirement rule of spec/profiles.md section 4, and no claim the selection names rests on a retired sector profile: the one row that applied to battery@2 is in the ledger archive. Every other claim the selection names is withheld, each with its reason: a claim scoped to the historical native-baseline@1, or an optional profile or governance condition this release does not claim.",
   "releaseSet": "dpp-release-2026-11",
   "claims": [
     {
@@ -115,16 +115,10 @@
       "kind": "governance",
       "disposition": "withheld",
       "rationale": "No implementation by another implementing party has passed every fixture, and the plan that would demonstrate one is parked at docs/reference/parked/independent-implementation-2026-09.json until such an implementer appears."
-    },
-    {
-      "id": "epcis-event-signing-1",
-      "kind": "component",
-      "disposition": "withheld",
-      "rationale": "epcis-event-vc@1 is a proposed optional profile this release does not claim."
     }
   ],
   "exclusions": [],
-  "reviewedAt": "2026-11-12",
+  "reviewedAt": "2026-11-14",
   "reviewOwner": "dpp maintainers",
   "notes": "The qualification of this selection says which claims the ledger's evidence supports for the packages of the candidate set. It is not a statement about the deployed index, the registry runtime, the application, product compliance or any European standard."
 }

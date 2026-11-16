@@ -18,8 +18,15 @@
  * not, and `unknown` with `schema-unavailable` for a profile this package
  * does not publish, because an unknown profile selects no schema here and
  * guessing one would be a pass nobody earned.
+ *
+ * A retired profile (`RETIRED_PROFILE_IDS`) is `unknown` as well, and says
+ * so: its frozen schema is still in the package, and it is not applied. The
+ * payload is neither passed nor failed, because the profile's rules are no
+ * longer something this package checks.
  */
-import { PROFILE_IDS, readPublicPayloadSchema, type ProfileId } from './index.js'
+import type { BindingValidationDetail } from './binding-validator.js'
+import { SUPPORTED_PROFILE_IDS, readPublicPayloadSchema, type SupportedProfileId } from './index.js'
+import { PROFILE_RETIRED, RETIRED_PROFILE_REPLACEMENTS, isRetiredProfile, type RetiredProfileId } from './retired-profiles.js'
 
 /** One problem a compiled validator reports, in the shape Ajv gives. */
 export interface SchemaProblem {
@@ -33,6 +40,8 @@ export interface SchemaProblem {
 export interface CompiledSchema {
   (data: unknown): boolean
   errors?: SchemaProblem[] | null
+  /** The schema the validator was compiled from, as Ajv exposes it. `bindingPayloadValidator` reads it to tell whether a schema the compiler already holds is the one it was about to compile. */
+  schema?: unknown
 }
 
 /** The compiler the caller supplies: an Ajv 2020 instance with formats added, structurally. */
@@ -46,16 +55,39 @@ export interface PayloadToValidate {
   profile: string
   profileVersion: number
   payloadPublic: string
+  /**
+   * The passport the payload sits in, as `verifyPassportEvidence` reads it
+   * from the decoded state. Optional, so a caller that validates a payload
+   * outside a report need not invent one. `profilePayloadValidator` ignores
+   * it: a schema says nothing about which passport carries the payload.
+   */
+  passportId?: string
 }
 
-/** The validator's answer, in the report's own words: a partial check for `schema`. */
+/**
+ * The validator's answer, in the report's own words: a partial check for
+ * `schema`. `detail` is text from `profilePayloadValidator`. From
+ * `bindingPayloadValidator`, for a profile held by a binding, it is the
+ * step-by-step record, which names the precise cause. For a retired profile
+ * both validators give that record, with the cause `profile-retired` and no
+ * step, because none ran.
+ */
 export interface PayloadValidation {
   status: 'pass' | 'fail' | 'unknown'
   reasonCode?: 'schema-invalid' | 'schema-unavailable'
-  detail?: string | string[]
+  detail?: string | string[] | BindingValidationDetail
 }
 
-const isProfileId = (value: string): value is ProfileId => (PROFILE_IDS as readonly string[]).includes(value)
+const isSupportedProfileId = (value: string): value is SupportedProfileId => (SUPPORTED_PROFILE_IDS as readonly string[]).includes(value)
+
+/**
+ * The answer for a payload that declares a retired profile: `unknown`, with
+ * the cause and the replacement named. It is the same whatever the payload
+ * holds, since nothing in it was read.
+ */
+export function retiredProfileValidation(profile: RetiredProfileId): PayloadValidation {
+  return { status: 'unknown', reasonCode: 'schema-unavailable', detail: { profile, cause: PROFILE_RETIRED, replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile], steps: [] } }
+}
 
 /** One sentence per schema problem, naming the field, as `examples/sample-payload.mjs` prints them. */
 export function describeSchemaProblems(errors: SchemaProblem[] | null | undefined): string[] {
@@ -75,8 +107,8 @@ export function describeSchemaProblems(errors: SchemaProblem[] | null | undefine
  * compiled twice, which Ajv refuses.
  */
 export function profilePayloadValidator(compiler: SchemaCompiler): (payload: PayloadToValidate) => Promise<PayloadValidation> {
-  const compiled = new Map<ProfileId, CompiledSchema>()
-  const validatorFor = (profile: ProfileId): CompiledSchema => {
+  const compiled = new Map<SupportedProfileId, CompiledSchema>()
+  const validatorFor = (profile: SupportedProfileId): CompiledSchema => {
     const kept = compiled.get(profile)
     if (kept != null) return kept
     const schema = readPublicPayloadSchema(profile)
@@ -87,7 +119,9 @@ export function profilePayloadValidator(compiler: SchemaCompiler): (payload: Pay
   }
   return async ({ profile, profileVersion, payloadPublic }) => {
     const id = `${profile}@${profileVersion}`
-    if (!isProfileId(id)) return { status: 'unknown', reasonCode: 'schema-unavailable', detail: `${id} is not a published industry profile` }
+    // Before the payload is parsed: a retired profile's payload is not failed for being malformed either.
+    if (isRetiredProfile(id)) return retiredProfileValidation(id)
+    if (!isSupportedProfileId(id)) return { status: 'unknown', reasonCode: 'schema-unavailable', detail: `${id} is not a published industry profile` }
     let parsed: unknown
     try { parsed = JSON.parse(payloadPublic) } catch { return { status: 'fail', reasonCode: 'schema-invalid', detail: ['the payload is not JSON.'] } }
     const validate = validatorFor(id)

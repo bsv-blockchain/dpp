@@ -17,7 +17,7 @@ Passport writers and readers can use this page to choose an industry profile and
 
 | Version kind | Meaning |
 |---|---|
-| Profile | `id@version`, such as `battery@2`; the number is the **profile version** |
+| Profile | `id@version`, such as `general@2`; the number is the **profile version** |
 | Record | the **record version** is version 1 or 2 of the passport format; it fixes what an on-chain [state](../README.md#words-you-will-meet) holds |
 | Manifest | The **manifest format**, `manifestVersion` (`1` or `2`), defines the manifest file's shape |
 
@@ -29,29 +29,36 @@ Passport writers and readers can use this page to choose an industry profile and
 
 ## Choose a profile
 
-| Your product | Profile page | Current version | Other versions | `category` values |
-|---|---|---|---|---|
-| A battery | [Battery](battery.md) | `battery@2` | Draft `battery@4`; parked draft `battery@3` | `lmt` (light transport), `ev` (vehicle), `industrial`, `stationary` (stationary storage); a closed list |
-| Clothing, footwear, home textiles and textile accessories | [Textile](textile.md) | `textile@2` | Parked drafts `textile@3` and `textile@4`; superseded `textile@1` | `apparel`, `footwear`, `home`, `accessory`; an open list |
-| Anything else, such as a bicycle, watch, musical instrument, piece of furniture, luggage, jewellery, appliance, tool, sports equipment or artwork | [General](general.md) | `general@2` | Superseded `general@1` | `bicycle`, `watch`, `instrument`, `furniture`, `luggage`, `jewellery`, `appliance`, `sportsEquipment`, `artwork`; an open list |
+| Your product | Profile | Page | How it is defined |
+|---|---|---|---|
+| A battery, as one serialised item | `eu-battery@1` | [EU battery and textile bindings](eu-sector-bindings.md) | A binding the package ships: a JSON-LD product document checked by SHACL shapes, split into a public and a restricted part |
+| Clothing, footwear, home textiles and textile accessories, as one serialised item | `eu-textile@1` | [EU battery and textile bindings](eu-sector-bindings.md) | The same |
+| Anything else, such as a bicycle, watch, musical instrument, piece of furniture, luggage, jewellery, appliance, tool, sports equipment or artwork | `general@2` | [General](general.md) | A manifest, with generated JSON Schemas. `category` is an open list. The superseded `general@1` is read and never written |
 
-1. **Write under the current version.** Select a draft by name only for evaluation; no conformance claim can rest on it ([the battery@4 draft](version-4-drafts.md)). The parked drafts `battery@3`, `textile@3` and `textile@4` are for reading records that declare them. Superseded versions remain readable, but `checkSelection` refuses new writes under them.
-2. **Set `category`.** Closed lists accept only listed values. Open lists accept any non-empty text, but other readers can label only listed values. Battery categories also determine applicable fields.
-3. **Read the mapping's assessment status.** A mapping is not an assessment; each profile page states what remains unassessed.
+1. **Write under the profile's current version.** A superseded version remains readable, but `checkSelection` refuses new writes under it.
+2. **Under `general@2`, set `category`.** The list is open: any non-empty text is accepted, but other readers can label only listed values.
+3. **Read the profile's assessment status.** A profile is a data model, not an assessment. `general@2` claims no regulation, and neither binding claims that a product complies with any law ([what the names claim](eu-sector-bindings.md)).
 
-| Profile | Regulation mapped |
-|---|---|
-| `battery@2` | Regulation (EU) 2023/1542 (Batteries Regulation), Annex XIII |
-| `textile@2` | Regulation (EU) 2024/1781 (ecodesign) and Regulation (EU) 1007/2011 (textile fibre names and labelling) |
-| `general@2` | Claims no regulation |
+The rest of this page is about manifest profiles, which today means `general@2`. For a battery or a textile, continue on the [bindings page](eu-sector-bindings.md).
+
+### Retired profiles
+
+The sector profiles first published as manifests are retired from 14 November 2026. Nothing is issued or validated under them, and a record that declares one is reported as unsupported.
+
+| Retired | Use instead | Page |
+|---|---|---|
+| `battery@2`, `battery@3`, `battery@4` | `eu-battery@1` | [Battery, retired](battery.md) |
+| `textile@1`, `textile@2`, `textile@3`, `textile@4` | `eu-textile@1` | [Textile, retired](textile.md) |
+
+There is no converter: a replacement is another data model under its own identifier, and a product moves to it as a newly issued passport. [Move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles) gives the steps, and [the specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/spec/profiles.md) states the rule in its section on versions, freezing, retirement and migration.
 
 ### If no profile fits
 
-Use `general@2`, which fits any product and claims no regulation. Other applications cannot read your own profile until `@bsv/dpp-profiles` publishes it: readers accept only the fixed `PROFILE_IDS` list and refuse others with `"<identifier>" is not a published industry profile`. Follow [author and propose a profile](authoring.md) to add one.
+Use `general@2`, which fits any product and claims no regulation. Other applications cannot read your own manifest profile until `@bsv/dpp-profiles` publishes it: the readers accept only the fixed `PROFILE_IDS` list and refuse others with `"<identifier>" is not a published industry profile`. Follow [author and propose a profile](authoring.md) to add one. A deployment can instead hold a data model of its own by a binding, which an application reads once it registers the same binding: see [validate a profile defined outside the package](../packages/dpp-profiles.md#validate-a-profile-defined-outside-the-package).
 
 ## Check a payload
 
-These commands use `general@2`; substitute your selected profile.
+These commands use `general@2`. For a retired profile the script stops with `profile-retired` and names the replacement.
 
 1. Generate a sample for a test or demonstration with no real product:
 
@@ -104,20 +111,21 @@ Besides its profile's public fields, every public schema accepts these five stam
 | `object_did` | Optional physical-object DID |
 | `dataCarrier` | Data-carrier identifier, such as a chip UID; an index can look it up beside the passport identifier |
 
-Schema validity establishes shape, not truth, completeness or fulfilment of product obligations. Each profile page uses `fieldsFor` to list applicable fields and those needing human review. Keep passport verification, profile validation and product qualification separate.
+Schema validity establishes shape, not truth, completeness or fulfilment of product obligations. [The general page](general.md) uses `fieldsFor` to list applicable fields and those needing human review. Keep passport verification, profile validation and product qualification separate.
 
 ## Read a stored payload under its profile
 
 Read product data under its declared profile:
 
-1. Read `profile` and `profile_version` from the public payload and join them, such as `battery@4`.
-2. Check that the identifier is in `PROFILE_IDS`. `readManifest` and the schema readers throw for any other identifier, but `readManifestAny` checks only the `id@version` form, so make this check yourself before you call it.
-3. Read the manifest with `readManifestAny`, which types both manifest formats, and label each value with its field's `label`.
-4. Say so when the manifest's `status` is `draft`, and show `notice`, when the payload has one, before the product data.
-
-[Read a record that declares a draft](version-4-drafts.md#read-a-record-that-declares-a-draft) provides a complete live example for any declared profile. Never substitute a newer version.
+1. Read `profile` and `profile_version` from the public payload and join them, such as `general@2`.
+2. Check the identifier against `RETIRED_PROFILE_IDS` first. For a retired profile, stop: say that the record declares a retired profile, name its replacement from `RETIRED_PROFILE_REPLACEMENTS`, and show the payload only as the unchecked text it is. Do not label its values from the retired manifest as if the profile were supported.
+3. Check that the identifier is in `SUPPORTED_PROFILE_IDS`. `readManifest` and the schema readers throw for an identifier the package never published, but `readManifestAny` checks only the `id@version` form, so make this check yourself before you call it.
+4. Read the manifest with `readManifestAny`, which types both manifest formats, and label each value with its field's `label`.
+5. Show `notice`, when the payload has one, before the product data. Never substitute a newer version.
 
 For reports from `@bsv/dpp-protocol`, set the policy's `payloadValidator` to `profilePayloadValidator(ajv)` to check `payload_public` against its declared profile. Otherwise `schema` reads `unknown`. Missing `profile` and `profile_version` stamps produce `unknown` with `profile-undeclared` either way ([known limitations](../operate/limitations.md)).
+
+A state that declares a retired profile answers `unknown` with `schema-unavailable`, and its `detail` carries the cause `profile-retired` and the replacement. It is never `pass` and never `fail`, whatever the payload holds, and every other check of the report is unaffected ([retired profiles in the package](../packages/dpp-profiles.md#retired-profiles)).
 
 ## Not defined yet
 
@@ -130,10 +138,12 @@ Both are gaps in the standard ([known limitations](../operate/limitations.md)).
 
 | Task | Page |
 |---|---|
-| Try a draft before it becomes current | [Evaluate the battery@4 draft](version-4-drafts.md) |
+| Move an application off a retired sector profile | [Move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles) |
+| Read what the retired drafts were | [Retired draft profiles](version-4-drafts.md) |
 | Adopt a new profile version in an application | [Update profiles and consuming applications](updating-applications.md) |
 | Compare a profile and an application with regulations, standards or an external validator | [Review profile and application readiness](reviewing-readiness.md) |
 | Add or revise a profile | [Author and propose a profile](authoring.md) |
+| Write and check a battery or textile product document | [EU battery and textile bindings](eu-sector-bindings.md) |
 | Publish a profile package update (maintainers) | [Publish a profile package update](../reference/publishing-profile-updates.md) |
 | Show one product view that combines model, batch and item sources | [Passport projections](../interoperability/projections.md) |
 
@@ -143,4 +153,4 @@ The [profile specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a6
 
 ## Next
 
-Open your profile's page, [general](general.md), [battery](battery.md) or [textile](textile.md), to start from its sample and inspect its fields. Then put the payload in a passport with [build an application](../packages/build-an-application.md).
+Open your profile's page, [general](general.md) or the [EU battery and textile bindings](eu-sector-bindings.md), to start from its sample and inspect its fields. Then put the payload in a passport with [build an application](../packages/build-an-application.md).

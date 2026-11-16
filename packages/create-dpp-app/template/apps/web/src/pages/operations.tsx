@@ -68,6 +68,25 @@ function OperationsPage() {
         <ErrorNotice error={ops.error ?? new Error('no answer')} title="Could not load the operations" />
       ) : (
         <>
+          {ops.data.profiles == null || (ops.data.profiles.engine.available && ops.data.profiles.refused.length === 0) ? null : (
+            <Section title="Profiles">
+              {ops.data.profiles.engine.available ? null : <ErrorNotice error={new Error(ops.data.profiles.engine.problem ?? 'The validation libraries did not load.')} title="The validation engine is not available" />}
+              {ops.data.profiles.refused.length === 0 ? null : (
+                <ul className="divide-y rounded-lg border text-sm">
+                  {ops.data.profiles.refused.map((refusal) => (
+                    <li key={refusal.source} className="space-y-1 p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <ToneBadge tone="fail">Not registered</ToneBadge>
+                        <Mono>{refusal.source}</Mono>
+                        <Mono className="text-muted-foreground">{refusal.code}</Mono>
+                      </div>
+                      <p className="text-muted-foreground">{refusal.detail}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
+          )}
           <Section title="Duties">
             {ops.data.duties.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nothing is owed.</p>

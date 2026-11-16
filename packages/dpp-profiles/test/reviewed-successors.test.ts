@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { checkSelection, compareProfiles, fieldsForV2, missingRequiredV2, readManifestAny, readPublicPayloadSchema, reviewProfileData, type ProfileManifestV2, type ProfileFieldV2 } from '../src/index.js'
+import { ProfileRetiredError, checkSelection, compareProfiles, fieldsForV2, readManifestAny, readPublicPayloadSchema, reviewProfileData, type ProfileManifestV2, type ProfileFieldV2 } from '../src/index.js'
+
+// battery@4 and textile@4 are retired (spec/profiles.md section 4). What is
+// held here is what their frozen definitions say, read as history: the
+// manifests, the generated schemas and the field lists. No payload is
+// checked for writing under them, and the data review they had is refused.
 
 const battery = readManifestAny('battery@4') as ProfileManifestV2
 const textile = readManifestAny('textile@4') as ProfileManifestV2
@@ -29,11 +34,11 @@ function sample(f: ProfileFieldV2): unknown {
   return f.cardinality === 'many' && f.valueType !== 'multi' ? [one()] : one()
 }
 
-describe('reviewed version 4 drafts', () => {
+describe('the retired version 4 drafts, as frozen', () => {
   it.each([battery, textile])('validates $profile and accounts for each predecessor field', manifest => {
     expect(validateManifest(manifest), JSON.stringify(validateManifest.errors)).toBe(true)
     expect(manifest.status).toBe('draft')
-    expect(checkSelection({ baseline: 'native-baseline@2', industry: manifest.profile, purpose: 'claim' }).conflicts.map(c => c.code)).toContain('industry-draft')
+    expect(checkSelection({ baseline: 'native-baseline@2', industry: manifest.profile, purpose: 'claim' }).conflicts.map(c => c.code)).toEqual(['industry-retired'])
     const previous = readManifestAny(manifest.succession!.of)
     for (const f of previous.fields) expect(manifest.succession!.migration.filter(m => m.from === f.key)).toHaveLength(1)
   })
@@ -43,12 +48,10 @@ describe('reviewed version 4 drafts', () => {
     for (const key of schema.required) if (!(key in payload)) payload[key] = sample(field(battery, key))
     expect(payload).not.toHaveProperty('manufacturingDate')
     expect(validate(payload), JSON.stringify(validate.errors)).toBe(true)
-    expect(missingRequiredV2(battery, payload, { category: 'ev' }).missing.map(f => f.key)).not.toContain('manufacturingDate')
+    expect(schema.required).toContain('manufacturingMonth')
+    expect(schema.required).not.toContain('manufacturingDate')
     expect(validate({ ...payload, manufacturingMonth: '2026-13' })).toBe(false)
     expect(validate({ ...payload, profile_version: 3 })).toBe(false)
-    expect(reviewProfileData('battery@4', { manufacturingMonth: '2026-09', manufacturingDate: '2026-08-31' })).toContainEqual(expect.objectContaining({ outcome: 'invalid', field: 'manufacturingDate' }))
-    expect(reviewProfileData('battery@4', { manufacturingMonth: '2026-02', manufacturingDate: '2026-02-30' })[0]?.outcome).toBe('invalid')
-    expect(reviewProfileData('battery@4', { manufacturingMonth: '2026-09', manufacturingDate: '2026-09-16' })).toEqual([])
   })
 
   it('rejects city/country-only contact and preserves alternative postal systems', () => {
@@ -63,8 +66,9 @@ describe('reviewed version 4 drafts', () => {
     expect(fragment('originalPowerCapability', incomplete)).toBe(false)
     expect(fragment('originalPowerCapability', 1200)).toBe(false)
     expect(fragment('originalPowerCapability', { ...power, at80PercentSocW: -1 })).toBe(false)
-    for (const category of ['ev', 'industrial', 'stationary']) expect(missingRequiredV2(battery, {}, { category }).missing.map(f => f.key)).toContain('originalPowerCapability')
-    expect(missingRequiredV2(battery, {}, { category: 'lmt' }).missing.map(f => f.key)).toContain('powerOriginal')
+    expect(field(battery, 'originalPowerCapability').obligation).toBe('required')
+    for (const category of ['ev', 'industrial', 'stationary']) expect(fieldsForV2(battery, { category }).applies.map(f => f.key)).toContain('originalPowerCapability')
+    expect(fieldsForV2(battery, { category: 'lmt' }).applies.map(f => f.key)).toContain('powerOriginal')
     expect(fieldsForV2(battery, { category: 'lmt' }).notApplicable.map(f => f.key)).toContain('originalPowerCapability')
   })
 
@@ -73,11 +77,6 @@ describe('reviewed version 4 drafts', () => {
     expect(ev.notApplicable.map(f => f.key)).toEqual(expect.arrayContaining(['powerRemaining', 'resistanceCurrentOhm']))
     expect(ev.applies.map(f => f.key)).toEqual(expect.arrayContaining(['powerAtStatusChange', 'resistanceAtStatusChange']))
     expect(ev.unresolved.map(u => u.field.key)).toContain('roundTripEfficiencyAtStatusChange')
-    const item = { property: 'power', value: 820.5, unit: 'W', subject: { id: 'urn:example:item', granularity: 'item' } }
-    expect(reviewProfileData('battery@4', { powerAtStatusChange: [item] })[0]?.outcome).toBe('needs-review')
-    expect(reviewProfileData('battery@4', { powerAtStatusChange: [{ ...item, subject: { id: 'model', granularity: 'model' } }] }).some(f => f.outcome === 'invalid')).toBe(true)
-    expect(reviewProfileData('battery@4', { powerAtStatusChange: [{ ...item, unit: 'kW' }] }).some(f => f.outcome === 'invalid')).toBe(true)
-    expect(reviewProfileData('battery@4', { powerAtStatusChange: [{ ...item, measuredAt: { date: '2026-09-16', precision: 'day' }, method: { id: 'urn:example:method' }, evidence: [{ property: 'power', subject: item.subject, source: { kind: 'document', id: 'urn:example:report' } }] }] })).toEqual([])
   })
 
   it('records enacted due-diligence dates without claiming scope or evidence are settled', () => {
@@ -91,20 +90,19 @@ describe('reviewed version 4 drafts', () => {
     for (const key of ['name', 'category', 'modelIdentifier', 'batch', 'manufacturerContact']) expect(field(textile, key).requirement.status).toBe('anticipated')
     for (const key of ['manufacturingPlace', 'care', 'expectedLifetime', 'collection', 'chemicalCompliance']) expect(field(textile, key).requirement.status).toBe('none')
     expect(field(textile, 'componentFibres').requirement).toMatchObject({ status: 'enacted', clause: 'Article 11' })
-    expect(missingRequiredV2(textile, {}, {}).unresolved.map(u => u.field.key)).toContain('componentFibres')
+    expect(fieldsForV2(textile, {}).unresolved.map(u => u.field.key)).toContain('componentFibres')
     expect(field(textile, 'certifications').requirement.note).toContain('public authorities')
     expect(fieldsForV2(textile, { asOf: '2026-09-26' }).notApplicable.map(f => f.key)).toContain('certifications')
     expect(fieldsForV2(textile, { asOf: '2026-09-27' }).unresolved.map(u => u.field.key)).toContain('certifications')
     expect(textile.identity.modelIdentifier).toBe('modelIdentifier')
   })
 
-  it('reviews component shares separately instead of accepting a whole-product average', () => {
+  it('has no data review any more: the cross-field review the drafts had is refused with them', () => {
     const components = [{ component: 'shell' }, { component: 'lining' }]
-    const componentFibres = [{ component: 'shell', percent: 60 }, { component: 'shell', percent: 40 }, { component: 'lining', percent: 100 }]
-    expect(reviewProfileData('textile@4', { components, componentFibres })).toEqual([])
-    expect(reviewProfileData('textile@4', { components, componentFibres: [{ component: 'shell', percent: 60 }, { component: 'lining', percent: 40 }] })).toHaveLength(2)
-    expect(reviewProfileData('textile@4', { componentFibres: [{ component: 'unknown', percent: 100 }] })[0]?.reason).toContain('Identify component')
-    expect(() => reviewProfileData('textile@3', {})).toThrow(/not implemented/)
+    const componentFibres = [{ component: 'shell', percent: 60 }, { component: 'lining', percent: 40 }]
+    expect(() => reviewProfileData('battery@4', { manufacturingMonth: '2026-09', manufacturingDate: '2026-08-31' })).toThrow(ProfileRetiredError)
+    expect(() => reviewProfileData('textile@4', { components, componentFibres })).toThrow(ProfileRetiredError)
+    expect(() => reviewProfileData('textile@3', {})).toThrow(ProfileRetiredError)
   })
 })
 

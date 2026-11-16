@@ -48,7 +48,7 @@ The demonstration is not a service for real products or a conformance reference 
 
 A valid signature identifies the key that signed the bytes. It does not establish product authenticity, the statement's truth or the signer's authority.
 
-Battery and textile profiles include these field mappings:
+The battery and textile profiles name these regulations, and no mapping to either is assessed:
 
 | Regulation | Mapping status |
 |---|---|

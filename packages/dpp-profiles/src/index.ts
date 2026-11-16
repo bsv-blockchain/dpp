@@ -3,8 +3,10 @@
  *
  * The package is data first. `manifests/` holds the immutable profile
  * manifests, `schemas/` their JSON Schema, `generated/` what the deterministic
- * generator derives from them (payload schemas and consumer documents), and
- * `frozen.json` the digests a published version is held to. This module gives
+ * generator derives from them (payload schemas and consumer documents),
+ * `frozen.json` the digests a published version is held to, and `bindings/`
+ * the profiles defined elsewhere that the package ships, each with the files
+ * its binding pins and a notice of where they come from. This module gives
  * a consumer typed access to those files and the GS1 identifier helpers a
  * writer needs. Its one runtime dependency is the RFC 8785 canonicaliser the
  * projection digest uses; it reads its data files through the Node file
@@ -12,6 +14,7 @@
  * portable surface for everything else.
  */
 import { readFileSync } from 'node:fs'
+import { assertProfileNotRetired } from './retired-profiles.js'
 
 export * from './identifiers.js'
 export * from './mapping.js'
@@ -25,6 +28,15 @@ export * from './profile-data-review.js'
 export * from './gs1-resolution.js'
 export * from './gs1-artefacts.js'
 export * from './payload-validator.js'
+export * from './strict-json.js'
+export * from './profile-binding.js'
+export * from './product-identity.js'
+export * from './profile-registry.js'
+export * from './binding-validator.js'
+export * from './bundled-bindings.js'
+export { assembleProduct, splitProductByAccess, type AccessBinding, type ProductAssembly, type ProductAssemblyRefusal, type ProductAssemblyRefusalCode, type SplitProduct } from './access-tiers.js'
+export * from './bound-payload.js'
+export * from './retired-profiles.js'
 
 export type ValueType = 'id' | 'text' | 'enum' | 'multi' | 'decimal' | 'integer' | 'percent' | 'monthYear' | 'date' | 'url' | 'document' | 'graphic' | 'country' | 'record' | 'any'
 export type AccessTier = 'public' | 'owner' | 'legitimate' | 'authority'
@@ -94,14 +106,26 @@ export interface ProfileManifest {
 }
 
 /**
- * Current versions first, then the draft successors under manifest version 2
- * (opt-in by explicit version; `readManifestAny` reads them with their version
- * 2 fields), then the superseded versions. `readManifest` is typed for version
- * 1; a draft successor read through it carries version 2 keys the type does
- * not name.
+ * Every manifest-format profile this package publishes, the retired ones
+ * included, because a published manifest stays in the package for good. This
+ * is the list the file readers below check an identifier against. It is not
+ * the list of profiles a payload may be written or validated under: that is
+ * `SUPPORTED_PROFILE_IDS`.
+ *
+ * `readManifest` is typed for manifest version 1. A version 2 manifest read
+ * through it carries keys the type does not name, and `readManifestAny` types
+ * both.
  */
 export const PROFILE_IDS = ['battery@2', 'textile@2', 'general@2', 'battery@4', 'textile@4', 'battery@3', 'textile@3', 'textile@1', 'general@1'] as const
 export type ProfileId = (typeof PROFILE_IDS)[number]
+
+/**
+ * The manifest-format profiles a payload is written and validated under: the
+ * published ones that are not retired (`RETIRED_PROFILE_IDS`). The current
+ * version first, then the superseded one, which is read and never written.
+ */
+export const SUPPORTED_PROFILE_IDS = ['general@2', 'general@1'] as const
+export type SupportedProfileId = (typeof SUPPORTED_PROFILE_IDS)[number]
 
 const packageRoot = new URL('../', import.meta.url)
 
@@ -122,7 +146,11 @@ function published<T extends string>(ids: readonly T[], profile: string, kind: s
   return profile as T
 }
 
-/** The immutable manifest of one published profile. */
+/**
+ * The immutable manifest of one published profile. For a retired profile
+ * this and the three readers below are historical: they return the frozen
+ * file for inspection, and nothing in the package applies it to a payload.
+ */
 export function readManifest(profile: ProfileId): ProfileManifest {
   return readJson<ProfileManifest>(`manifests/${published(PROFILE_IDS, profile, 'industry')}.json`)
 }
@@ -186,7 +214,8 @@ export function readFrozen(): { frozenAt: string; manifests: Record<string, stri
  * `spec/profiles.md` §3 sets: `always` applies, `category-in` applies to the
  * named categories, and `needs-review` is returned separately because no code
  * can decide it. The caller shows the review list rather than treating it as
- * satisfied or as universally required.
+ * satisfied or as universally required. It describes a definition and takes
+ * no payload, so it also answers for a retired manifest, as history.
  */
 export function fieldsFor(manifest: ProfileManifest, category?: string): { applies: ProfileField[]; needsReview: ProfileField[]; notApplicable: ProfileField[] } {
   const applies: ProfileField[] = []
@@ -206,9 +235,12 @@ export function fieldsFor(manifest: ProfileManifest, category?: string): { appli
  * Which required fields a public payload is missing, under the same three-way
  * rule: a field under review is listed separately and never blocks. Values are
  * read at the field's pointer; a value counts as present when it is not
- * undefined, null, an empty string or an empty array.
+ * undefined, null, an empty string or an empty array. Throws
+ * `ProfileRetiredError` for a retired manifest.
  */
 export function missingRequired(manifest: ProfileManifest, payload: Record<string, unknown>, category?: string): { missing: ProfileField[]; needsReview: ProfileField[] } {
+  // This is a check a writer makes before it issues, so it is not made under a retired profile.
+  assertProfileNotRetired(manifest.profile)
   const { applies, needsReview } = fieldsFor(manifest, category)
   const present = (field: ProfileField): boolean => {
     const value = payload[field.key]

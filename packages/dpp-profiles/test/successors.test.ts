@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
-import { fieldsForV2, isManifestV2, missingRequiredV2, readConsumerDocument, readFrozen, readManifestAny, readPublicPayloadSchema, readRestrictedPayloadSchema, type ProfileFieldV2, type ProfileManifestV2 } from '../src/index.js'
+import { ProfileRetiredError, fieldsForV2, isManifestV2, missingRequiredV2, readConsumerDocument, readFrozen, readManifestAny, readPublicPayloadSchema, readRestrictedPayloadSchema, type ProfileFieldV2, type ProfileManifestV2 } from '../src/index.js'
 
 /**
  * The draft successors battery@3 and textile@3 (`spec/profiles.md` §4):
@@ -13,7 +13,14 @@ import { fieldsForV2, isManifestV2, missingRequiredV2, readConsumerDocument, rea
  * conditional is unresolved, not failed and not passed, until the record
  * declares it inapplicable or supplies it; the state-of-health category
  * sets are the guidance's; every predecessor field has a migration outcome;
- * and the two current versions keep every byte they were frozen at.
+ * and the two versions they followed keep every byte they were frozen at.
+ *
+ * Both drafts are retired, and so are the versions they followed. The
+ * crosswalk is read here as the frozen manifests state it: through the
+ * field lists, each field's requirement and the generated schemas. The
+ * completeness check a writer ran against them is refused, and its
+ * behaviour is held in applicability.test.ts with a manifest of the test's
+ * own.
  */
 const root = join(import.meta.dirname, '..')
 const sha256 = (text: string | Buffer): string => createHash('sha256').update(text).digest('hex')
@@ -67,44 +74,40 @@ describe('battery@3, the draft successor to battery@2', () => {
     expect(battery.fields).toHaveLength(predecessor.fields.length + 12)
   })
 
-  it('(a) never reports the twenty-one anticipated fields missing, for any category, even when absent', () => {
+  it('(a) marks twenty-one fields anticipated, and the generated schema requires none of them', () => {
     expect(anticipated).toHaveLength(21)
     expect(anticipated.sort()).toEqual([
       'carbonAbsolute', 'carbonClass', 'carbonDistribution', 'carbonEndOfLife', 'carbonFootprint', 'carbonFootprintLabel', 'carbonGeneralInfo', 'carbonProduction', 'carbonRawMaterials', 'carbonStudyUrl',
       'dueDiligenceAssurances', 'dueDiligenceReport',
       'recycledCobaltPost', 'recycledCobaltPre', 'recycledLeadPost', 'recycledLeadPre', 'recycledLithiumPost', 'recycledLithiumPre', 'recycledNickelPost', 'recycledNickelPre', 'recycledShareTotal',
     ].sort())
-    for (const category of CATEGORIES) {
-      const gaps = missingRequiredV2(battery, { category }, { category })
-      for (const key of anticipated) expect(gaps.missing.map((f) => f.key), `${key} for ${category}`).not.toContain(key)
-      const deferred = gaps.deferred.filter((d) => anticipated.includes(d.field.key))
-      // Every anticipated field the profile itself requires is deferred by name, never silently satisfied.
-      expect(deferred.map((d) => d.field.key).sort()).toEqual(anticipated.filter((k) => field(battery, k).obligation === 'required').sort())
-      for (const d of deferred) expect(d.status).toBe('anticipated')
-    }
+    // Some of them the profile itself requires. The requirement status on the field is what defers each: an anticipated requirement is never a gap.
+    expect(anticipated.filter((k) => field(battery, k).obligation === 'required').length).toBeGreaterThan(0)
+    // The completeness check itself is not run under a retired profile.
+    for (const category of CATEGORIES) expect(() => missingRequiredV2(battery, { category }, { category })).toThrow(ProfileRetiredError)
     // The generated schema requires none of them.
     const required = (readPublicPayloadSchema('battery@3') as { required: string[] }).required
     for (const key of anticipated) expect(required).not.toContain(key)
   })
 
-  it('(b) leaves capacityFade unresolved for industrial and stationary, missing for ev and lmt, and not applicable when declared', () => {
+  it('(b) leaves capacityFade unresolved for industrial and stationary, applicable for ev and lmt, and not applicable when declared', () => {
+    expect(field(battery, 'capacityFade').obligation).toBe('required')
     for (const category of ['ev', 'lmt'] as const) {
-      const gaps = missingRequiredV2(battery, { category }, { category })
-      expect(gaps.missing.map((f) => f.key), category).toContain('capacityFade')
-      expect(gaps.unresolved.map((u) => u.field.key), category).not.toContain('capacityFade')
+      const lists = fieldsForV2(battery, { category })
+      expect(lists.applies.map((f) => f.key), category).toContain('capacityFade')
+      expect(lists.unresolved.map((u) => u.field.key), category).not.toContain('capacityFade')
     }
     for (const category of ['industrial', 'stationary'] as const) {
-      const gaps = missingRequiredV2(battery, { category }, { category })
-      expect(gaps.missing.map((f) => f.key), category).not.toContain('capacityFade')
-      expect(gaps.unresolved.map((u) => u.field.key), category).toContain('capacityFade')
-      expect(gaps.unresolved.find((u) => u.field.key === 'capacityFade')?.reasons[0]).toMatch(/only applicable for some industrial batteries/)
-      const declared = missingRequiredV2(battery, { category, inapplicableFields: [{ field: 'capacityFade', reason: 'a non-cycle application', declaredBy: 'the maker' }] }, { category })
-      expect(declared.missing.map((f) => f.key), category).not.toContain('capacityFade')
+      const lists = fieldsForV2(battery, { category })
+      expect(lists.applies.map((f) => f.key), category).not.toContain('capacityFade')
+      expect(lists.unresolved.map((u) => u.field.key), category).toContain('capacityFade')
+      expect(lists.unresolved.find((u) => u.field.key === 'capacityFade')?.reasons[0]).toMatch(/only applicable for some industrial batteries/)
+      const declared = fieldsForV2(battery, { category, declaredNotApplicable: ['capacityFade'] })
       expect(declared.unresolved.map((u) => u.field.key), category).not.toContain('capacityFade')
-      expect(fieldsForV2(battery, { category, declaredNotApplicable: ['capacityFade'] }).notApplicable.map((f) => f.key)).toContain('capacityFade')
+      expect(declared.notApplicable.map((f) => f.key)).toContain('capacityFade')
     }
     // A declaration cannot switch off an unconditional enacted field.
-    expect(missingRequiredV2(battery, { category: 'ev', inapplicableFields: [{ field: 'massKg', reason: 'no' }] }, { category: 'ev' }).missing.map((f) => f.key)).toContain('massKg')
+    expect(fieldsForV2(battery, { category: 'ev', declaredNotApplicable: ['massKg'] }).applies.map((f) => f.key)).toContain('massKg')
   })
 
   it('(c) scopes remainingCapacityAh to the guidance: applies for lmt, unresolved for industrial and stationary, not applicable for ev', () => {
@@ -118,8 +121,6 @@ describe('battery@3, the draft successor to battery@2', () => {
     expect(outcome('ev')).toBe('not-applicable')
     // Captured over life, not at registration: absent at registration is never a registration gap, and for industrial it is listed as unresolved.
     expect(field(battery, 'remainingCapacityAh').provenance.capture).toBe('event')
-    expect(missingRequiredV2(battery, { category: 'lmt' }, { category: 'lmt' }).missing.map((f) => f.key)).not.toContain('remainingCapacityAh')
-    expect(missingRequiredV2(battery, { category: 'industrial' }, { category: 'industrial' }).unresolved.map((u) => u.field.key)).toContain('remainingCapacityAh')
     for (const key of ['powerRemaining', 'roundTripRemaining', 'selfDischargeEvolution', 'resistanceCurrentOhm']) {
       expect(fieldsForV2(battery, { category: 'ev' }).notApplicable.map((f) => f.key), key).toContain(key)
       expect(fieldsForV2(battery, { category: 'lmt' }).applies.map((f) => f.key), key).toContain(key)
@@ -136,10 +137,10 @@ describe('battery@3, the draft successor to battery@2', () => {
   })
 
   it('(e) leaves warrantyUntil unresolved unless the record declares that no commercial warranty is envisaged', () => {
-    const gaps = missingRequiredV2(battery, { category: 'ev' }, { category: 'ev' })
-    expect(gaps.unresolved.map((u) => u.field.key)).toContain('warrantyUntil')
-    expect(gaps.missing.map((f) => f.key)).not.toContain('warrantyUntil')
-    const declared = missingRequiredV2(battery, { category: 'ev', inapplicableFields: [{ field: 'warrantyUntil', reason: 'no commercial warranty is envisaged' }] }, { category: 'ev' })
+    const lists = fieldsForV2(battery, { category: 'ev' })
+    expect(lists.unresolved.map((u) => u.field.key)).toContain('warrantyUntil')
+    expect(lists.applies.map((f) => f.key)).not.toContain('warrantyUntil')
+    const declared = fieldsForV2(battery, { category: 'ev', declaredNotApplicable: ['warrantyUntil'] })
     expect(declared.unresolved.map((u) => u.field.key)).not.toContain('warrantyUntil')
     expect(field(battery, 'warrantyTerms').valueType).toBe('warrantyTerms')
   })
@@ -231,14 +232,19 @@ describe('battery@3, the draft successor to battery@2', () => {
 })
 
 describe('textile@3, the draft successor to textile@2', () => {
-  it('never blocks on an anticipated ESPR field and keeps the binding labelling fields required', () => {
-    const gaps = missingRequiredV2(textile, { category: 'apparel' }, { category: 'apparel' })
+  it('marks the ESPR fields anticipated and keeps the binding labelling fields required and applicable', () => {
+    const lists = fieldsForV2(textile, { category: 'apparel' })
     const required = (readPublicPayloadSchema('textile@3') as { required: string[] }).required.filter((k) => k !== 'profile' && k !== 'profile_version')
-    // The record carries the category, so every other schema-required field is missing and nothing anticipated is.
-    expect(gaps.missing.map((f) => f.key).sort()).toEqual(required.filter((k) => k !== 'category').sort())
+    // Every schema-required field applies to apparel, is required by the profile and is not anticipated.
+    for (const key of required) {
+      expect(lists.applies.map((f) => f.key), key).toContain(key)
+      expect(field(textile, key).obligation, key).toBe('required')
+      expect(field(textile, key).requirement.status, key).not.toBe('anticipated')
+    }
     expect(required.sort()).toEqual(['batch', 'care', 'category', 'collection', 'fibres', 'manufacturer', 'manufacturerContact', 'manufacturingPlace', 'modelIdentifier', 'name'])
-    expect(gaps.deferred.map((d) => `${d.field.key}:${d.status}`)).toContain('substancesOfConcern:anticipated')
-    expect(gaps.unresolved.map((u) => u.field.key)).toContain('nonTextileParts')
+    expect(field(textile, 'substancesOfConcern').requirement.status).toBe('anticipated')
+    expect(lists.unresolved.map((u) => u.field.key)).toContain('nonTextileParts')
+    expect(() => missingRequiredV2(textile, { category: 'apparel' }, { category: 'apparel' })).toThrow(ProfileRetiredError)
     for (const key of ['recycledContent', 'washCycles', 'carbonFootprint', 'supplyChain', 'footprintClass', 'repairability', 'microplasticRelease']) {
       expect(field(textile, key).requirement.status, key).toBe('anticipated')
     }

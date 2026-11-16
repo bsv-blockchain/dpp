@@ -23,24 +23,38 @@ import {
   type DppStateV2,
   type ManagedAcceptanceRecord,
 } from '@bsv/dpp-protocol'
-import type { ProfileId } from '@bsv/dpp-profiles'
-import { identifierProblems, type IdentifierPolicy } from './identifiers.js'
+import { PROFILE_RETIRED, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile, type BindingProfile, type BindingValidationDetail, type PayloadValidation } from '@bsv/dpp-profiles'
+import type { BoundProfiles, ViewCheck } from './bound-profiles.js'
+import { identifierProblems, isDemonstrationPolicy, type IdentifierPolicy } from './identifiers.js'
 import type { IndexClient } from './index-client.js'
 import type { Party } from './parties.js'
-import { validatePayload } from './profiles.js'
+import { DEMONSTRATION_NOTICE, isProfileId, validatePayload, type ManifestProfileId } from './profiles.js'
 import type { PassportRecord, StateEntry, Store } from './store.js'
 import type { PlatformWallet, Tip } from './wallet.js'
 
 /** BRC-43 protocol the owner tier is encrypted under (spec/record-model.md section 7). */
-const OWNER_DATA_PROTOCOL: WalletProtocol = [2, 'dpp owner data v1']
+export const OWNER_DATA_PROTOCOL: WalletProtocol = [2, 'dpp owner data v1']
 
 export class WriteRefused extends Error {
   constructor(
     readonly code: string,
-    detail: string
+    detail: string,
+    /** What the API adds to its answer beside the code and the sentence: for a product document that was refused, the validation with its findings. It goes to the caller that sent the document and is never logged. */
+    readonly data?: Record<string, unknown>
   ) {
     super(detail)
   }
+}
+
+/**
+ * Refuse a write under a retired profile, by the one code every such
+ * refusal carries. It covers a new payload and equally a state that would
+ * carry an old payload forward, since that state would declare the retired
+ * profile too. Called before anything is derived, signed or asked of the
+ * index.
+ */
+export function refuseRetiredProfile(profile: string): void {
+  if (isRetiredProfile(profile)) throw new WriteRefused(PROFILE_RETIRED, `${describeRetiredProfile(profile)} Nothing was signed.`, { replacedBy: RETIRED_PROFILE_REPLACEMENTS[profile] })
 }
 
 export interface WriterOptions {
@@ -48,6 +62,8 @@ export interface WriterOptions {
   wallet: PlatformWallet
   index: IndexClient
   identifiers: IdentifierPolicy
+  /** The profiles held by a binding, with the validation engine. */
+  bound: BoundProfiles
   /** Whether writes may reach the chain. False builds, checks and journals a state and then stops before the send. */
   livePublishing: boolean
   spendCapSatoshis: number
@@ -59,6 +75,10 @@ export interface WriteOutcome {
   state: DppStateV2
   record: PassportRecord
 }
+
+/** The precise cause a binding validation names, or a word for an answer that names none. */
+const causeOf = (validation: PayloadValidation): string =>
+  typeof validation.detail === 'object' && validation.detail != null && !Array.isArray(validation.detail) ? ((validation.detail as BindingValidationDetail).cause ?? validation.status) : validation.status
 
 const instant = (): string => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 const short = (hex: string): string => `${hex.slice(0, 12)}...`
@@ -83,9 +103,20 @@ export class Writer {
     return { tx: Transaction.fromAtomicBEEF(beef), txid: last.txid, outputIndex: last.outputIndex, beef }
   }
 
-  private async sealOwnerTier(controller: Party, passportId: string, profile: ProfileId, fields: Record<string, unknown>): Promise<{ hash: string; ciphertext: number[] }> {
+  /** The owner tier of a manifest profile: checked against the profile's restricted schema, then sealed. */
+  private async sealOwnerTier(controller: Party, passportId: string, profile: ManifestProfileId, fields: Record<string, unknown>): Promise<{ hash: string; ciphertext: number[] }> {
     const check = validatePayload(profile, 'restricted', fields)
     if (!check.valid) throw new WriteRefused('owner-tier-invalid', `the owner tier is refused by the restricted schema of ${profile}: ${check.problems.join('; ')}`)
+    return await this.seal(controller, passportId, fields)
+  }
+
+  /**
+   * One owner tier, sealed: encrypted to the controller's own key for this
+   * passport and committed to by the hash of the ciphertext, which is what
+   * field 11 carries (spec/record-model.md section 7). Every profile's
+   * restricted data goes through here, whatever checked it first.
+   */
+  private async seal(controller: Party, passportId: string, fields: Record<string, unknown>): Promise<{ hash: string; ciphertext: number[] }> {
     const plaintext = Utils.toArray(JSON.stringify(fields), 'utf8') as number[]
     const { ciphertext } = await controller.wallet.encrypt({ plaintext, protocolID: OWNER_DATA_PROTOCOL, keyID: passportId, counterparty: 'self' })
     const hash = ownerBlobHash(ciphertext)
@@ -109,16 +140,20 @@ export class Writer {
     op: StateEntry['op']
     actor: Party
     controller: Party
-    profile: ProfileId
+    profile: string
     /** A new public payload and owner tier; absent, the tip's are carried unchanged, which RETIRE requires and a hand-on keeps simple. */
     payload?: Record<string, unknown>
     ownerFields?: Record<string, unknown>
+    /** Under a profile held by a binding: the complete product document, in place of `payload` and `ownerFields`. */
+    product?: Record<string, unknown>
     eventData?: Record<string, unknown>
     acceptance?: ManagedAcceptanceRecord
   }): Promise<WriteOutcome> {
     const { record, op, actor, controller, profile } = args
     const { store, wallet, index } = this.options
     const passportId = record.passportId
+    // Every operation, RETIRE included: each would sign a state whose payload declares the retired profile.
+    refuseRetiredProfile(profile)
     const tip = this.tipOf(record)
     if (op === 'ISSUE' && tip != null) throw new WriteRefused('already-issued', `${passportId} already has ${record.states.length} state(s); a second genesis is never written`)
     if (op !== 'ISSUE' && tip == null) throw new WriteRefused('not-issued', `${passportId} has no genesis to follow`)
@@ -129,7 +164,20 @@ export class Writer {
     const tipEntry = record.states.at(-1)
     let payloadPublic: string
     let sealed: { hash: string; ciphertext: number[] }
-    if (args.payload != null) {
+    const bound = this.options.bound.get(profile)
+    const writesData = args.payload != null || args.product != null
+    if (writesData && bound == null && !isProfileId(profile)) throw new WriteRefused('profile-unknown', `${profile} is not a profile this platform holds: it is neither a published industry profile nor a binding registered at start-up`)
+    if (writesData && bound != null) {
+      if (args.product == null || args.payload != null || args.ownerFields != null) {
+        throw new WriteRefused('product-required', `${profile} is held by a binding: send the complete product document as product, and neither payload nor ownerFields. The API splits it into its public and restricted parts.`)
+      }
+      // The identifier the document is checked against is this state's own, the one written into field 3 and signed below.
+      const prepared = await this.prepareBound(bound, args.product, passportId)
+      payloadPublic = prepared.payloadPublic
+      sealed = await this.seal(controller, passportId, prepared.restrictedProduct ?? {})
+    } else if (args.payload != null) {
+      if (args.product != null) throw new WriteRefused('payload-required', `${profile} is a manifest profile: send payload and ownerFields, not product`)
+      if (!isProfileId(profile)) throw new WriteRefused('profile-unknown', `${profile} is not a profile this platform holds`)
       const publicCheck = validatePayload(profile, 'public', args.payload)
       if (!publicCheck.valid) throw new WriteRefused('payload-invalid', `the public payload is refused by the ${profile} schema: ${publicCheck.problems.join('; ')}`)
       payloadPublic = JSON.stringify(args.payload)
@@ -138,6 +186,8 @@ export class Writer {
         args.ownerFields == null && tipEntry?.ownerTier != null
           ? { hash: tipEntry.ownerTier.hash, ciphertext: Utils.toArray(tipEntry.ownerTier.ciphertext, 'base64') as number[] }
           : await this.sealOwnerTier(controller, passportId, profile, args.ownerFields ?? {})
+    } else if (args.product != null) {
+      throw new WriteRefused('payload-required', `${profile} is a manifest profile: send payload and ownerFields, not product`)
     } else {
       if (tipEntry?.ownerTier == null) throw new WriteRefused('nothing-to-carry', `${passportId} has no tip whose payload and owner tier this ${op} could carry`)
       payloadPublic = tipEntry.payloadPublic
@@ -214,6 +264,16 @@ export class Writer {
     const lineage = record.states.slice(0, -1).map((s) => Transaction.fromHex(s.rawTx))
     const checked = await verifyChain([...lineage, built.tx], { chainTracker: 'scripts only', serverIdentityKey: wallet.identityKey, managedAcceptance: true })
     if (!checked.valid) await abandon('own-check-refused', `the writer's own check refuses the unsent ${op}: ${checked.error ?? 'no reason given'}`)
+    // Under a binding the reader's payload check runs here too, on the state as the unsent transaction carries it:
+    // the public payload and the passport identifier are read back from the signed bytes, never from what was prepared.
+    if (bound != null && writesData) {
+      const signed = findDppOutputs(built.tx)[0]?.state
+      const view = signed == null ? undefined : await this.options.bound.validatePublic({ profile: bound.id, profileVersion: bound.version, payloadPublic: signed.payloadPublic, passportId: signed.passportId })
+      const cause = view == null ? 'no state was decoded' : causeOf(view)
+      if (view == null || view.status === 'fail' || (view.status === 'unknown' && cause !== 'restricted-tier-withheld')) {
+        await abandon('own-check-refused', `the writer's own check refuses the unsent ${op}: its public payload does not validate under ${profile} for the passport identifier it signs (${cause})`)
+      }
+    }
 
     // Section 3: a state after the genesis spends the tip the index returns for the passport.
     if (tip != null) {
@@ -313,8 +373,37 @@ export class Writer {
     return true
   }
 
+  /**
+   * A product document under a binding, validated whole, split and built into
+   * the exact public payload, before anything is signed. A document that
+   * fails, that could not be checked or whose public part is too large is
+   * refused here, with the validation in the refusal for the form to show.
+   */
+  private async prepareBound(bound: BindingProfile, product: Record<string, unknown>, passportId: string) {
+    const { identifiers } = this.options
+    const prepared = await this.options.bound.prepare({ profile: bound, product, passportId, ...(isDemonstrationPolicy(identifiers) ? { notice: DEMONSTRATION_NOTICE } : {}) })
+    if (prepared.ok) return prepared
+    const views: { validation?: ViewCheck; publicView?: ViewCheck } = {}
+    if (prepared.validation != null) views.validation = await this.options.bound.viewCheck('whole', prepared.validation, { profile: bound, product })
+    if (prepared.publicView != null) views.publicView = await this.options.bound.viewCheck('public', prepared.publicView)
+    const failed = (views.publicView ?? views.validation)?.steps.filter((step) => step.status !== 'pass').flatMap((step) => step.messages) ?? []
+    const said = failed.length === 0 ? '' : ` ${failed.slice(0, 5).join(' ')}${failed.length > 5 ? ` And ${failed.length - 5} more.` : ''}`
+    const engine = this.options.bound.engineProblem
+    if (prepared.code === 'validation-failed') throw new WriteRefused('product-invalid', `${prepared.detail} Nothing was signed.${said}`, { ...views, cause: views.validation?.cause })
+    if (prepared.code === 'validation-unavailable') {
+      throw new WriteRefused('product-not-validated', `${prepared.detail} Nothing was signed.${engine == null ? said : ` The validation engine is not available: ${engine}`}`, { ...views, cause: views.validation?.cause })
+    }
+    if (prepared.code === 'public-payload-too-large') {
+      throw new WriteRefused('public-payload-too-large', `${prepared.detail} Nothing was signed. Move data out of the public properties or shorten it: the restricted part does not count towards the limit.`, { byteLength: prepared.byteLength, limit: prepared.limit })
+    }
+    if (prepared.code === 'public-view-failed') throw new WriteRefused('public-view-failed', `${prepared.detail} Nothing was signed.${said}`, { ...views, cause: views.publicView?.cause })
+    throw new WriteRefused(prepared.code, `${prepared.detail} Nothing was signed.`)
+  }
+
   /** The first state: the brand opens the passport under its own controller key. */
-  async issue(args: { brandId: string; brand: Party; passportId: string; profile: ProfileId; payload: Record<string, unknown>; ownerFields: Record<string, unknown> }): Promise<WriteOutcome> {
+  async issue(args: { brandId: string; brand: Party; passportId: string; profile: string; payload?: Record<string, unknown>; ownerFields?: Record<string, unknown>; product?: Record<string, unknown> }): Promise<WriteOutcome> {
+    // Before the identifier is checked or the index asked: the answer does not depend on either.
+    refuseRetiredProfile(args.profile)
     const problems = identifierProblems(args.passportId, this.options.identifiers)
     if (problems.length > 0) throw new WriteRefused('identifier-refused', `${args.passportId} cannot be written because ${problems.join('; and ')}`)
     const existing = await this.options.store.getPassport(args.passportId)
@@ -331,21 +420,24 @@ export class Writer {
       states: [],
       acceptanceRecords: [],
     }
-    return await this.writeState({ record, op: 'ISSUE', actor: args.brand, controller: args.brand, profile: args.profile, payload: args.payload, ownerFields: args.ownerFields })
+    // A manifest profile's genesis always carries a payload and an owner tier; a bound profile's carries the product document.
+    const data = args.product != null ? { product: args.product } : { payload: args.payload ?? {}, ownerFields: args.ownerFields ?? {} }
+    return await this.writeState({ record, op: 'ISSUE', actor: args.brand, controller: args.brand, profile: args.profile, ...data })
   }
 
   /** A later state that changes the data, by the party that controls the passport. */
-  async update(args: { record: PassportRecord; actor: Party; payload: Record<string, unknown>; ownerFields?: Record<string, unknown>; eventData?: Record<string, unknown> }): Promise<WriteOutcome> {
-    return await this.writeState({ record: args.record, op: 'UPDATE', actor: args.actor, controller: args.actor, profile: args.record.profile as ProfileId, payload: args.payload, ownerFields: args.ownerFields, eventData: args.eventData })
+  async update(args: { record: PassportRecord; actor: Party; payload?: Record<string, unknown>; ownerFields?: Record<string, unknown>; product?: Record<string, unknown>; eventData?: Record<string, unknown> }): Promise<WriteOutcome> {
+    const data = args.product != null ? { product: args.product } : { payload: args.payload ?? {}, ownerFields: args.ownerFields }
+    return await this.writeState({ record: args.record, op: 'UPDATE', actor: args.actor, controller: args.actor, profile: args.record.profile, ...data, eventData: args.eventData })
   }
 
   /** The hand-on: the holder acts, control moves to the recipient's key, field 15 commits to the custodian-signed acceptance record, and the payload and owner tier travel unchanged. */
   async transfer(args: { record: PassportRecord; holder: Party; recipient: Party; acceptance: ManagedAcceptanceRecord; eventData?: Record<string, unknown> }): Promise<WriteOutcome> {
-    return await this.writeState({ record: args.record, op: 'TRANSFER', actor: args.holder, controller: args.recipient, profile: args.record.profile as ProfileId, eventData: args.eventData, acceptance: args.acceptance })
+    return await this.writeState({ record: args.record, op: 'TRANSFER', actor: args.holder, controller: args.recipient, profile: args.record.profile, eventData: args.eventData, acceptance: args.acceptance })
   }
 
   /** The end of the lineage; nothing may follow it. The payload and owner tier do not change on RETIRE (record model version 2, rule 8). */
   async retire(args: { record: PassportRecord; actor: Party; reason: string }): Promise<WriteOutcome> {
-    return await this.writeState({ record: args.record, op: 'RETIRE', actor: args.actor, controller: args.actor, profile: args.record.profile as ProfileId, eventData: { reason: args.reason } })
+    return await this.writeState({ record: args.record, op: 'RETIRE', actor: args.actor, controller: args.actor, profile: args.record.profile, eventData: { reason: args.reason } })
   }
 }

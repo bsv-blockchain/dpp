@@ -1,0 +1,19 @@
+{
+  "description": "A second binding for example-bottle@1 with other bytes, registered after the first. Both digests are trusted, and the version is already taken.",
+  "kind": "registration",
+  "trustedBindingDigests": [
+    "5c63b1ad50c8c6fc299199fa80fccf47029d76db616213cd671d86844e204456",
+    "4017a5a8b08d1a227671effa6c930f24f07d3c1ddf6e28ebe63053435fcc3dee"
+  ],
+  "register": [
+    {
+      "binding": "binding.json"
+    },
+    {
+      "binding": "vectors/registration/conflicting-binding.json"
+    }
+  ],
+  "expected": {
+    "refusal": "binding-conflict"
+  }
+}

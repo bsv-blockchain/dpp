@@ -13,6 +13,8 @@ npm run dev
 
 You get a working application: a React web app with a brand dashboard, passport pages, hand-on acceptance and public verification; an Express API that owns a platform wallet, writes and reads passports with the `@bsv/dpp` packages, keeps a journal and runs the unattended duties; and a Compose service for the application database. The first run is an offline test of a whole passport lifecycle, with no wallet, funds, Docker or network. The template's README explains the rest, including the route to writing real passports.
 
+It writes and reads passports under the manifest profile `general@2` and under profiles held by a binding: the two the profiles package ships, `eu-battery@1` and `eu-textile@1`, each with a form for its nested product data, and a profile of your own registered from a folder whose binding digest you trust. Under a binding the product document is split into a public part, on chain for good, and a restricted part, sealed off chain. The earlier sector manifest profiles are retired: the application offers none of them and refuses a write under one with `profile-retired`. The generated README's **Product documents under a binding** section covers the forms, the two views a reader is shown and the validation engine.
+
 ## Choose the index connection
 
 | You want to | What to use |
@@ -31,6 +33,7 @@ The app's Compose file starts only its database, so connecting a separately oper
 - Wallet: `@bsv/wallet-toolbox` as a library, service-owned, keys in a SQLite file.
 - Custody: managed, the platform signs for signed-in users; the party interface keeps self-custody open.
 - Identifiers: GS1 Digital Links under the demonstration prefix 952 until you set a licensed one.
+- Validation: Ajv for manifest profiles; `jsonld`, `n3` and `shacl-engine`, at the versions `@bsv/dpp-profiles` is tested with, for profiles held by a binding. Nothing is fetched while validating.
 
 Every opinion is a file you can change. The standard itself prefers none of them.
 
@@ -68,6 +71,13 @@ This mode uses a fresh npm cache, installs the template's exact versions from pu
 For the CI image check, `--prepare-only --directory /tmp/my-app` creates the app and candidate archives without installing or testing. Its `.candidate.Dockerfile` adds the archive copy before the template's existing dependency installation; the bundled Dockerfile is unchanged. The image check builds that file and checks the API health endpoint.
 
 The template lives in `template/`; files that tooling treats specially ship with a leading underscore (`_gitignore`, `_env.example`) and are renamed when scaffolded. Make template changes there, then regenerate and check a fresh app.
+
+Two things in the template are copies or inventions, and the package's tests hold them to their sources:
+
+- `template/apps/api/test/fixtures/custom-profile/` is a byte-for-byte copy of the repository's `examples/custom-profile/`, so a generated app can test a profile registered from a folder with no checkout beside it.
+- The battery and textile examples in `template/apps/api/src/sector-examples.ts` were written for the starter: invented organisations and values, under the GS1 demonstration prefix 952. The template carries no third-party product document.
+
+The web app has no test runner. The modules that decide what a form writes and where a finding is shown, under `template/apps/web/src/lib/bound/`, touch neither the page nor the network, and the API's tests exercise them (`apps/api/test/sector-forms.test.ts`). The pages themselves are type-checked by the build.
 
 ## Licence
 

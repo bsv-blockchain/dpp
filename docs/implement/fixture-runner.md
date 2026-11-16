@@ -121,7 +121,7 @@ The formats that have no top-level file are published in the BSV stack's cross-l
 
 | Form | Files |
 |---|---|
-| Top-level only | The record, chain, historical anchor, acceptance and registration files, `evidence-v1.json`, `evidence-v2.json` and `battery-lifecycle-v1.json` |
+| Top-level only | The record, chain, historical anchor, acceptance and registration files, `evidence-v1.json`, `evidence-v2.json` and `battery-lifecycle-v1.json`, a historical fixture under the retired `battery@2` |
 | Both | `attestation-anchor-v1.json` and `attestation-anchor/v1.json`, which also carries the six refusals the top-level file does not |
 | Vector form only | `publisher-policy/v1.json`, `evidence-package/v1.json`, `exchange/epcis-event-vc/v1.json` and everything under `interoperability/` |
 

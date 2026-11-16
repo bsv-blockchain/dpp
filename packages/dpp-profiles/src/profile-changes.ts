@@ -34,7 +34,9 @@ const changedKeys = (a: object, b: object): string[] => {
 /**
  * A deterministic impact report for two explicit versions of one industry.
  * Rename intent remains in succession metadata; no values are migrated and
- * no semantic-version compatibility is inferred from a structural diff.
+ * no semantic-version compatibility is inferred from a structural diff. It
+ * compares two frozen files, so it also compares retired manifests, as
+ * history.
  */
 export function compareProfiles(from: string, to: string): ProfileChangeReport {
   // Validate identifiers through the existing reader before using them as paths.

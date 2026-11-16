@@ -75,7 +75,9 @@ const packageRoot = new URL('../', import.meta.url)
 /**
  * The manifest of any published profile, version 1 or 2, by its `id@version`.
  * The identifier is checked against the manifest grammar before it names a
- * file, so nothing outside `manifests/` can be read through it.
+ * file, so nothing outside `manifests/` can be read through it. A retired
+ * profile is read too, as history: the file is returned as it was frozen,
+ * with the `status` it had then, and `isRetiredProfile` says it is retired.
  */
 export function readManifestAny(profile: string): AnyProfileManifest {
   if (!/^[a-z][a-z0-9-]*@[0-9]+$/.test(profile)) throw new Error(`${profile} is not a profile identifier of the form id@version`)

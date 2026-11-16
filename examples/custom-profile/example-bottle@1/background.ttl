@@ -1,0 +1,33 @@
+# Background facts for the example bottle profile, version 1: the materials a
+# part may be made of and whether each withstands a dishwasher. The shapes
+# read these facts beside the product document.
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix bottle: <https://profiles.example/bottle/v1#> .
+
+bottle:Material a rdfs:Class ;
+  rdfs:label "Material"@en .
+
+bottle:stainless-steel a bottle:Material ;
+  rdfs:label "Stainless steel"@en ;
+  bottle:withstandsDishwasher true .
+
+bottle:glass a bottle:Material ;
+  rdfs:label "Glass"@en ;
+  bottle:withstandsDishwasher true .
+
+bottle:polypropylene a bottle:Material ;
+  rdfs:label "Polypropylene"@en ;
+  bottle:withstandsDishwasher true .
+
+bottle:silicone a bottle:Material ;
+  rdfs:label "Silicone"@en ;
+  bottle:withstandsDishwasher true .
+
+bottle:bamboo a bottle:Material ;
+  rdfs:label "Bamboo"@en ;
+  bottle:withstandsDishwasher false .
+
+bottle:cork a bottle:Material ;
+  rdfs:label "Cork"@en ;
+  bottle:withstandsDishwasher false .

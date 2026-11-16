@@ -71,7 +71,7 @@ The checks form four groups. The second column uses the short labels from `@bsv/
 
 | Check | Passes when | Otherwise, usually |
 |---|---|---|
-| `externalCredentialProof` | Every credential verifies under its own proof suite | `not-applicable` `no-external-credential` when you supplied none; `unknown` `verifier-not-supplied`; for a signed EPCIS event, `fail` `event-hash-mismatch`, `event-hash-unsupported` or `error-declaration-unsupported` when the subject does not hash to the credential's `id` |
+| `externalCredentialProof` | Every credential verifies under its own proof suite | `not-applicable` `no-external-credential` when you supplied none; `unknown` `verifier-not-supplied`; for a signed EPCIS event, whose profile is parked, `fail` `event-hash-mismatch`, `event-hash-unsupported` or `error-declaration-unsupported` when the subject does not hash to the credential's `id` |
 | `credentialTime` | Every credential is within its validity period | `unknown` `no-evidence` |
 | `credentialStatus` | No credential is revoked or suspended | `not-applicable` `format-defines-no-status` for native claims; `unknown` `no-evidence` |
 
@@ -91,6 +91,7 @@ State and claim results are independent. Passing state checks with `unknown` cla
 | Declared profile and caller-supplied payload validator, such as `profilePayloadValidator(ajv)` from `@bsv/dpp-profiles` | Checks the state's `payload_public` against its industry profile |
 | No payload validator | `unknown` with `schema-unavailable` |
 | Payload declares no profile | `unknown` with `profile-undeclared`, with or without a validator |
+| Payload declares a retired profile, such as `battery@2`, in the source candidate | `unknown` with `schema-unavailable`. The validator's detail names the cause `profile-retired` and the replacement. The payload is neither passed nor failed, and every other check is made as usual ([retired profiles](../profiles/README.md#retired-profiles)) |
 
 ## Results you will see first
 

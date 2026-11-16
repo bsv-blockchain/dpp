@@ -6,6 +6,7 @@ import { Link } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { CheckBadge, CopyButton, DefinitionList, ErrorNotice, Mono, Section, ToneBadge, entriesOf } from '@/components/bits'
+import { PublicReading, boundPayload } from '@/components/bound/readings'
 import type { Check, ClaimView, PassportView, Verification } from '@/lib/api'
 import { STAMP_KEYS, formatTime, humanise, isRecord, publicPathOf, shortTxid } from '@/lib/format'
 
@@ -47,6 +48,9 @@ export function PassportReading({ passportId, verification, verifyError, journal
   const profile = journal?.profile ?? (payload?.profile == null ? undefined : `${String(payload.profile)}@${String(payload.profile_version ?? '')}`)
   const history = verification?.lineage.map((entry) => ({ op: entry.op, txid: entry.txid, timestamp: entry.timestamp })) ?? journal?.states.map((s) => ({ op: s.op, txid: s.txid, timestamp: s.timestamp })) ?? []
   const path = publicPathOf(passportId)
+  // The report's own reading of the product document, or the journal's payload when no report was read.
+  const envelope = boundPayload(payload)
+  const product = verification?.product ?? (envelope == null ? undefined : { profile: envelope.profile, bindingDigest: envelope.bindingDigest, publicProduct: envelope.product })
 
   return (
     <div className="space-y-10">
@@ -72,9 +76,14 @@ export function PassportReading({ passportId, verification, verifyError, journal
         </div>
       </div>
 
-      <Section title="Product">
-        {payload == null ? <p className="text-sm text-muted-foreground">No payload was read.</p> : <DefinitionList entries={entriesOf(payload, STAMP_KEYS, humanise)} />}
-      </Section>
+      {product != null ? (
+        // A product document under a binding: its public part as structure, and the check of that part, kept apart from anything about restricted data.
+        <PublicReading product={product} verification={verification} />
+      ) : (
+        <Section title="Product">
+          {payload == null ? <p className="text-sm text-muted-foreground">No payload was read.</p> : <DefinitionList entries={entriesOf(payload, STAMP_KEYS, humanise)} />}
+        </Section>
+      )}
 
       <Section title="Verification">
         {verifyError != null ? <ErrorNotice error={verifyError} title="The reader could not verify this passport" /> : null}

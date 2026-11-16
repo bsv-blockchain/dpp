@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { test } from 'node:test'
@@ -67,5 +67,48 @@ test('writes .env with fresh secrets and the default testnet index, and never a 
     assert.match(out, /npm run go-live/)
   } finally {
     rmSync(scratch, { recursive: true, force: true })
+  }
+})
+
+const filesUnder = (dir, base = dir) => readdirSync(dir).flatMap((name) => {
+  const path = join(dir, name)
+  return statSync(path).isDirectory() ? filesUnder(path, base) : [path.slice(base.length + 1)]
+}).sort()
+
+test('the custom profile folders in the template are the repository examples, byte for byte', () => {
+  const source = join(root, '../../examples/custom-profile')
+  const copy = join(root, 'template/apps/api/test/fixtures/custom-profile')
+  assert.deepEqual(filesUnder(copy), filesUnder(source))
+  for (const file of filesUnder(source)) assert.ok(readFileSync(join(copy, file)).equals(readFileSync(join(source, file))), `${file} differs from examples/custom-profile`)
+  // The scaffold renames a file that starts with an underscore and a letter, which would change a folder a binding pins.
+  for (const file of filesUnder(copy)) assert.ok(!file.split('/').some((part) => /^_[a-z]/i.test(part)), `${file} would be renamed when scaffolded`)
+})
+
+test('the template installs the validation libraries at the versions the profiles package is tested with', async () => {
+  const api = JSON.parse(readFileSync(join(root, 'template/apps/api/package.json'), 'utf8'))
+  const { VALIDATION_ENGINE_LIBRARIES } = await import('@bsv/dpp-profiles/validation-engine')
+  const pinned = JSON.parse(readFileSync(join(root, '../dpp-credentials/package.json'), 'utf8')).devDependencies
+  for (const [name, version] of Object.entries(VALIDATION_ENGINE_LIBRARIES)) {
+    assert.equal(api.dependencies[name], version, `${name} is installed at the version the engine adapter names`)
+    assert.equal(pinned[name], version, `${name} is the version the repository pins`)
+  }
+  assert.deepEqual(Object.keys(VALIDATION_ENGINE_LIBRARIES).sort(), ['jsonld', 'n3', 'shacl-engine'])
+})
+
+test('the template carries no third-party product document and does not name the source of the bundled bindings', () => {
+  const template = join(root, 'template')
+  const sources = filesUnder(template).filter((file) => !file.includes('node_modules/') && !file.startsWith('apps/api/dist/') && !file.startsWith('apps/web/dist/'))
+  assert.deepEqual(sources.filter((file) => file.endsWith('.jsonld') && !file.startsWith('apps/api/test/fixtures/custom-profile/')), [])
+  // The names come from the bindings themselves, which are where their source is credited.
+  const names = new Set()
+  for (const profile of readdirSync(join(root, '../dpp-profiles/bindings'))) {
+    const { source } = JSON.parse(readFileSync(join(root, '../dpp-profiles/bindings', profile, 'binding.json'), 'utf8'))
+    names.add(source.name.split(/\s+/)[0].toLowerCase())
+    names.add(new URL(source.repository).pathname.split('/')[1].toLowerCase())
+  }
+  assert.ok(names.size > 0)
+  for (const file of sources) {
+    const text = readFileSync(join(template, file), 'utf8').toLowerCase()
+    for (const name of names) assert.ok(!text.includes(name), `${file} names ${name}`)
   }
 })

@@ -93,6 +93,8 @@ npm run starter:check -- --directory ../my-app
 
 The candidate check installs the packed generator, creates the app at the chosen directory, installs local runtime archives, then builds, typechecks and tests it. The application starter pins `dpp-release-2026-11`, including `@bsv/dpp-protocol`; keep those versions together. Local archives test unpublished source independently of the public npm command.
 
+The candidate application also writes and reads product documents under `eu-battery@1`, `eu-textile@1` and a bound profile of your own, with the document split into a public and a restricted part ([product documents under a binding](create-dpp-app.md#product-documents-under-a-binding)).
+
 For deployment, connect a compatible index or [run your own](../operate/README.md) from the repository's Compose preset. The app's Compose file starts its database; the preset builds the maintained index runtime and needs no additional overlay installation. Offline success does not establish production readiness: complete the generated guide and [production checks](../operate/production-readiness.md).
 
 ## What you are building

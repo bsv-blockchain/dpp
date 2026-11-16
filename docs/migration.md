@@ -1,6 +1,6 @@
 # Migration
 
-Application teams and index operators can use this guide to rehearse and roll out a package upgrade, record version 2 writes or a new industry profile. Treat each as a separate migration: package upgrades never rewrite existing records.
+Application teams and index operators can use this guide to rehearse and roll out a package upgrade, record version 2 writes, a new industry profile or the move off a retired one. Treat each as a separate migration: package upgrades never rewrite existing records.
 
 ## Before you start
 
@@ -41,8 +41,9 @@ Record the running configuration and obtain these inputs before changing it:
 9. **Sign evidence packages from the exporter identity.** Every exporter names its identity key as `exporter.id` and signs each passport's package with that key's BRC-42 child for `[1, 'dpp evidence package v1']` and the passport identifier; `evidencePackageSigner` and `evidencePackageSigningKey` in the candidate protocol package compute it. An index refuses to boot with `EXPORT_SIGNING_KEY`: move its value to `EXPORTER_PRIVATE_KEY`, which keeps the exporter identity readers hold, or set a new key there. The capability document names its public key as `exporterIdentityKey`, and readers pass `evidencePackageSigner(exporterIdentityKey, passportId)` as `expectedSigner`. A package an index on an earlier release signed names its raw key as both `exporter.id` and `signature.signer` and still inspects with that key as `expectedSigner`, so keep publishing the key while readers hold such packages. `startOverlayService` takes `exportIdentityKey` in place of `exportSigningKey`. The complete export, `GET /evidence-export`, and `GET /history` are reference features of the overlay package, outside the contract; the part schema moved from `contracts/` to `packages/dpp-overlay/schemas/evidence-export.schema.json`, which the overlay package ships under `schemas/`, so `@bsv/dpp-protocol/schemas/` no longer carries it.
 10. **Read the contracts as minimums.** The overlay contract has a core, `x-dpp-core-version` 1, and versioned extensions; `X-Admission-Refusal` codes are informative. The registry contract lists the seven operations every registry serves, and a client that uses a registry's other routes relies on that registry's own documentation. The application interoperability contract is gone: EPCIS import routes are the reference application's own.
 11. **Accept report version 2.** `reportVersion` is `2`, and the shared reason codes nothing produces any more are gone: `carrier-prefix-invalid`, `token-id-mismatch`, `consent-not-proven` and `resource-limit`. A consumer that checks `reportVersion` accepts `2` and validates each report under its own version's schema; a stored version 1 report validates against `contracts/verification-report-v1.schema.json`, also shipped as `@bsv/dpp-protocol/schemas/verification-report-v1.schema.json`.
-12. **Find the projection schemas in the profiles package.** Passport projections are a reference feature of `@bsv/dpp-profiles`, outside the standard ([parked specification](reference/parked/passport-projections/README.md)). `projectPassport` and its helpers are unchanged, but `passport-source.schema.json` and `passport-projection.schema.json` moved from `contracts/` to the profiles package's `schemas/`, so `@bsv/dpp-protocol/schemas/` no longer carries them and `@bsv/dpp-profiles/schemas/` does. No export changed. The drafts `battery@3`, `textile@3` and `textile@4` are parked and still readable, and the publisher policy chain, write tokens, registration operations and synchronisation are reference features the [overlay package guide](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md#operator-features) documents. The `federated-operators@1` manifest now has the status `parked`, which the operator profile schema admits, and `checkSelection` names it parked in a note; a claim on it is refused as before.
+12. **Find the projection schemas in the profiles package.** Passport projections are a reference feature of `@bsv/dpp-profiles`, outside the standard ([parked specification](reference/parked/passport-projections/README.md)). `projectPassport` and its helpers are unchanged, but `passport-source.schema.json` and `passport-projection.schema.json` moved from `contracts/` to the profiles package's `schemas/`, so `@bsv/dpp-protocol/schemas/` no longer carries them and `@bsv/dpp-profiles/schemas/` does. No export changed. The drafts `battery@3`, `textile@3` and `textile@4` were parked on 12 November 2026 and are retired with the other sector profiles in step 14, and the publisher policy chain, write tokens, registration operations and synchronisation are reference features the [overlay package guide](https://github.com/bsv-blockchain/dpp/blob/1d610d7a66ab571756cb406b8654f0751e924036/packages/dpp-overlay/README.md#operator-features) documents. The `federated-operators@1` manifest now has the status `parked`, which the operator profile schema admits, and `checkSelection` names it parked in a note; a claim on it is refused as before.
 13. **Provision the GS1 files before validating EPCIS.** GS1 publishes its EPCIS and resolver schemas and contexts under its own terms, so the candidate packages no longer contain them. Run `npx dpp-gs1-artefacts fetch` once per deployment, or call `await provisionGs1Artefacts()` from `@bsv/dpp-credentials` before the first `validateEpcisDocument`. Until the pinned schema is in the folder, `validateEpcisDocument` throws `Gs1ArtefactUnavailableError` and returns no findings. Code that read `artifacts/epcis/*` from the credentials package or `schemas/gs1/*` from the profiles package reads the provisioned folder through `readGs1Artefact`, and `EPCIS_ARTEFACTS` entries carry `fileName` and `provisioned` in place of `path` and `carried`. [GS1 files](packages/dpp-credentials.md#gs1-files) covers the folder, `DPP_GS1_ARTEFACTS_DIR` and the route without network access.
+14. **Move off the retired sector profiles.** `battery@2`, `battery@3`, `battery@4` and `textile@1` to `textile@4` are retired. The candidate issues and validates nothing under them and reports a record that declares one as `unknown` with the cause `profile-retired`. Write battery and textile data under `eu-battery@1` and `eu-textile@1`, and follow [move off the retired sector profiles](#move-off-the-retired-sector-profiles). There is no converter. `general@1` and `general@2` are unaffected.
 
 From the built candidate checkout root, run the [offline exercises](quick-start.md#check-the-test-passports-offline):
 
@@ -54,6 +55,51 @@ node examples/lifecycle-v2.mjs
 Expect no `FAIL:` or `FAILS:` lines and exit status 0. The lifecycle exercise ends `Every sentence above holds.` No wallet, funds or network is needed; fixture inclusion remains pending or `unknown`. Stop on an unexpected failure before changing the deployment.
 
 The [managed-custody specification](https://github.com/bsv-blockchain/dpp/blob/b60cfb8eb2a71a82765c64ade9e10cb42c3b2af1/spec/managed-custody.md) records the signature rules and compatibility boundary. The second implementing party's written acceptance of the version 2 signed shape remains outstanding. Testing these changes does not upgrade the hosted services or establish a completed cross-implementation trial.
+
+## Move off the retired sector profiles
+
+The manifest profiles `battery@2`, `battery@3`, `battery@4`, `textile@1`, `textile@2`, `textile@3` and `textile@4` are retired from 14 November 2026, in the candidate `dpp-release-2026-11`. The cutover is clean: no converter, no compatibility layer and no reader of the retired rules. `general@1` and `general@2` are unaffected.
+
+| Retired | Use instead |
+|---|---|
+| `battery@2`, `battery@3`, `battery@4` | `eu-battery@1` |
+| `textile@1`, `textile@2`, `textile@3`, `textile@4` | `eu-textile@1` |
+
+Each replacement is a profile held by a binding that `@bsv/dpp-profiles` ships: a JSON-LD product document for one serialised item, checked by SHACL shapes and split into a public and a restricted part ([EU battery and textile bindings](profiles/eu-sector-bindings.md)). It is another data model under its own identifier, not a later version of the retired profile.
+
+### What breaks
+
+| If your code does this | With the candidate it gets this |
+|---|---|
+| Validates a state's payload with `profilePayloadValidator` or `bindingPayloadValidator` and the payload declares a retired profile | `unknown`, `schema-unavailable`, with `detail.cause` `profile-retired` and `detail.replacedBy`. It was `pass` or `fail` before. Every other check of the report is unchanged |
+| Calls `missingRequired`, `missingRequiredV2`, `reviewProfileData` or `projectPassport` with a retired profile | A thrown `ProfileRetiredError`, whose `code` is `profile-retired` |
+| Calls `prepareBoundPayload` with a retired identifier, or registers a binding under one | `{ ok: false, code: 'profile-retired' }` |
+| Calls `registry.resolve('battery', 2)` or reads `registry.list()` | `undefined`, and the profile is not listed. `registry.status('battery', 2)` answers `{ state: 'retired', profile, replacedBy }` |
+| Calls `checkSelection` with a retired `industry` | The conflict `industry-retired`, for reading, writing and a claim alike |
+| Iterates `PROFILE_IDS` to decide what to offer or validate | The list still holds every published manifest, the retired ones included. Use `SUPPORTED_PROFILE_IDS`, and `RETIRED_PROFILE_IDS` for the retired ones |
+| Reads a retired manifest's `status` to decide whether it is current | The member still reads `current` or `draft`, because a frozen file never changes. Use `isRetiredProfile` |
+| Runs `node examples/sample-payload.mjs` with a retired profile | `profile-retired`, the replacement, and exit status 2 |
+| Issues, updates, hands on or retires a passport under a retired profile in an application from the starter, or signs a claim for one | A refusal with `profile-retired`, HTTP 409 over the API, before anything is signed. `GET /api/profiles/<retired>` answers 410, and the profile is not offered |
+
+### What does not change
+
+| Unchanged | Detail |
+|---|---|
+| The retired definitions | The manifests, generated schemas, consumer documents and mapping inventories stay in the package byte for byte, and `frozen.json` still verifies every file. `readManifest`, `readManifestAny`, the schema readers, `fieldsFor`, `fieldsForV2`, `compareProfiles` and `mapNativeOperation` still read them, as history |
+| Signed records | A state or claim that declares a retired profile keeps its bytes and its signatures still verify. A record on the blockchain cannot be erased |
+| The verification report | No reason code and no report schema changed. Signatures, linkage, inclusion and anchors are checked as before |
+| `general@1`, `general@2` and every binding | Written, read and validated as before |
+
+### Steps
+
+1. **Find what you hold.** List the passports whose payload declares a retired profile: the `profile` and `profile_version` stamps of each state, or the `profile` member of each journal record in an application from the starter ([list what would be affected](operate/retired-profile-records.md#list-what-would-be-affected)).
+2. **Decide what each record is.** A demonstration record is disposable: leave it, or clear it from your own deployment with [clear retired-profile demonstration records](operate/retired-profile-records.md). For a real product, keep the record. It stays verifiable in every respect but its profile.
+3. **Upgrade readers first.** Deploy the candidate packages to readers and check that a retired record now shows `unknown` under `schema` with the cause `profile-retired`, and that your interface says the profile is retired where it used to show a pass or labelled fields.
+4. **Change what you offer.** Replace `PROFILE_IDS` with `SUPPORTED_PROFILE_IDS` wherever you list profiles to write under, and remove the retired profiles from forms, defaults and configuration.
+5. **Write under the replacement.** Install the three engine libraries, register the bundled bindings and build each product document in the replacement's data model ([register a profile and validate a payload](packages/dpp-profiles.md#register-a-profile-and-validate-a-payload)). A product you still issue for gets a new passport under `eu-battery@1` or `eu-textile@1`, written from the product's own data. Nothing maps the old fields onto the new document for you, and an identifier already issued is not issued again.
+6. **Remove the retired code paths.** Delete calls to `reviewProfileData` and to `missingRequired` or `missingRequiredV2` for the retired manifests. Under a binding, `prepareBoundPayload` validates the whole document before it is split.
+
+An application generated by an earlier starter keeps its journal. After the upgrade it shows a passport under a retired profile as it was written and refuses every further state, hand-on and claim for it.
 
 ## Rename dpp-overlay-topics to dpp-overlay, and vsc to dpp-credentials
 
@@ -237,7 +283,7 @@ Installing definitions does not activate a successor. Read every payload under i
 2. Implement readers for retained and proposed versions, update writers and interfaces, and rehearse with representative data.
 3. Deploy and verify compatible readers first. Then explicitly enable the selected writer profile through the server and record the activation decision.
 
-[Battery](profiles/battery.md) and [textile](profiles/textile.md) link current and draft manifests.
+No draft is open today. The sector profiles `battery@2` and `textile@2` and their drafts are retired, so a selection of one is refused: [move off the retired sector profiles](#move-off-the-retired-sector-profiles).
 
 ## Roll back
 

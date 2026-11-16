@@ -9,7 +9,6 @@ import {
   base64UrlDecode,
   base64UrlEncode,
   buildEpcisEventCredential,
-  didKeyFromIdentityKey,
   epcisEventAnchorMetadata,
   epcisEventCredentialKey,
   epcisEventHashId,
@@ -19,7 +18,8 @@ import {
   verifyEpcisEventCredential,
   type EpcisEventCredential,
   type EpcisEventVerification,
-} from '../src/index.js'
+} from '../src/epcisEvent.js'
+import { didKeyFromIdentityKey } from '../src/index.js'
 
 /**
  * The published vectors of the `epcis-event-vc@1` profile

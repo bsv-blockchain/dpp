@@ -34,7 +34,7 @@ New passports use record version 2, with four operations:
 | Part | Contents |
 |---|---|
 | Passport identifier | Product web address, unchanged across states ([identifiers](../identifiers.md)) |
-| Public payload, `payload_public` | Public JSON on chain; industry profiles such as battery or textile define fields ([profiles](../profiles/README.md)) |
+| Public payload, `payload_public` | Public JSON on chain; an industry profile defines its content, such as `general@2` or the battery and textile bindings ([profiles](../profiles/README.md)) |
 | Owner-tier hash, `payload_owner_hash` | SHA-256 of restricted data encrypted off chain. Checks a copy; reveals and recovers nothing itself. |
 | Keys and signatures | Actor key and signature, controller key, publisher countersignature ([four keys](custody.md#the-four-keys)) |
 | Links | Previous state spent and lineage genesis |

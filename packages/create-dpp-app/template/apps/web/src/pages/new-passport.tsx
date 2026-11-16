@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ErrorNotice, Field, Loading, PageTitle } from '@/components/bits'
+import { BoundPassportForm, type BoundSubmission } from '@/components/bound/bound-passport-form'
 import { RequireAccount } from '@/components/layout'
 import { PassportForm, type PassportFormValues } from '@/components/passport-form'
 import { api, passportRef, type Profile } from '@/lib/api'
@@ -42,6 +43,20 @@ function NewPassportPage() {
     }
   }
 
+  /** A profile held by a binding: the whole product document goes to the API, which splits it. */
+  async function issueBound(submission: BoundSubmission) {
+    setBusy(true)
+    setError(undefined)
+    try {
+      const view = await api.issuePassport(brandId, { profile: profileId, ...submission })
+      navigate(`/passports/${passportRef(view.passportId)}`)
+    } catch (cause) {
+      setError(cause)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const chosen = profiles.data?.find((p) => p.id === profileId)
   const prefix = health?.identifiers.prefix ?? '952'
   const digits = Math.max(0, 12 - prefix.length)
@@ -66,7 +81,13 @@ function NewPassportPage() {
           ) : profiles.error != null || profiles.data == null ? (
             <ErrorNotice error={profiles.error ?? new Error('no answer')} title="Could not load the profiles" />
           ) : (
-            <Select value={profileId} onValueChange={setProfileId}>
+            <Select
+              value={profileId}
+              onValueChange={(id) => {
+                setProfileId(id)
+                setError(undefined)
+              }}
+            >
               <SelectTrigger id="profile" className="w-full">
                 <SelectValue placeholder="Choose a profile" />
               </SelectTrigger>
@@ -85,6 +106,8 @@ function NewPassportPage() {
         <Loading what="Loading the profile" />
       ) : profile.error != null || profile.data == null ? (
         <ErrorNotice error={profile.error ?? new Error('no answer')} title={`Could not load ${profileId}`} />
+      ) : profile.data.format === 'binding' ? (
+        <BoundPassportForm key={profileId} profile={profile.data} policy={{ host: health?.identifiers.host ?? window.location.host, prefix }} submitLabel="Issue the passport" busy={busy} error={error} onSubmit={issueBound} />
       ) : (
         <PassportForm
           key={profileId}

@@ -9,7 +9,7 @@ import { PrivateKey, Utils } from '@bsv/sdk'
 import { lifecycleClaimDigest, signLifecycleClaim, verifyLifecycleClaim, type LifecycleClaim, type LifecycleEventType, type SignedLifecycleClaim } from '@bsv/dpp-protocol'
 import type { Party } from './parties.js'
 import type { ClaimRecord, PassportRecord, Store } from './store.js'
-import { WriteRefused } from './writer.js'
+import { WriteRefused, refuseRetiredProfile } from './writer.js'
 
 export interface ClaimsOptions {
   store: Store
@@ -25,6 +25,8 @@ export class Claims {
   async sign(args: { passport: PassportRecord; issuer: Party; eventType: LifecycleEventType; keyId?: string }): Promise<ClaimRecord> {
     const tip = args.passport.states.at(-1)
     if (tip == null) throw new WriteRefused('not-issued', `${args.passport.passportId} has no state to claim about`)
+    // A claim names the profile it is made under, so a new one is not signed under a retired profile.
+    refuseRetiredProfile(args.passport.profile)
     const [profile, version] = args.passport.profile.split('@')
     const claim: LifecycleClaim = {
       claimFormat: 'dpp-lifecycle-v1',

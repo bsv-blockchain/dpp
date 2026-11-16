@@ -31,6 +31,7 @@ import type { AccessTier, Granularity, ProfileField } from './index.js'
 import { isFieldV2, isManifestV2, type AnyProfileField, type AnyProfileManifest } from './manifest-v2.js'
 import { categoryOf, declaredInapplicable, evaluateFieldApplicability, type ApplicabilityContext, type ApplicabilityOutcome } from './applicability.js'
 import { selectLanguage, type LanguageSelection, type LocalisedValue, type MeasurementConversion } from './evidence-shapes.js'
+import { assertProfileNotRetired } from './retired-profiles.js'
 
 export const PROJECTION_VERSION = '1' as const
 export const PROJECTION_ID_PREFIX = 'urn:bsv:dpp:projection:sha256:'
@@ -239,10 +240,13 @@ interface Node { id: string; granularity: ProjectionGranularity; depth: number }
 
 /**
  * Derive one passport's projection. Throws only for a caller error: a
- * non-finite number in a payload or a measurement, or a date that is not one.
- * Every other difficulty is a finding in the output.
+ * non-finite number in a payload or a measurement, a date that is not one,
+ * or a retired profile, whose records are unsupported and are not read into
+ * a view (`ProfileRetiredError`). Every other difficulty is a finding in the
+ * output.
  */
 export function projectPassport(input: ProjectionInput): ProjectionOutput {
+  assertProfileNotRetired(input.profile.profile)
   const limits = { maxDepth: input.limits?.maxDepth ?? DEFAULT_PROJECTION_LIMITS.maxDepth, maxRefs: input.limits?.maxRefs ?? DEFAULT_PROJECTION_LIMITS.maxRefs }
   const findings: ProjectionFinding[] = []
   const finding = (code: string, detail: string, field?: string): void => { findings.push({ code, ...(field == null ? {} : { field }), detail }) }

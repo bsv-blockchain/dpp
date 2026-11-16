@@ -25,10 +25,10 @@ See [versions and dates](#keep-the-versions-and-dates-separate) before comparing
 
 ### 2. See what changed
 
-Compare your version with the proposal in the built checkout:
+Compare your version with the proposal in the built checkout. This example compares the two versions of the general profile:
 
 ```sh
-npm run changes -w @bsv/dpp-profiles -- battery@2 battery@4
+npm run changes -w @bsv/dpp-profiles -- general@1 general@2
 ```
 
 In your own project, `compareProfiles(from, to)` returns the same report:
@@ -36,7 +36,7 @@ In your own project, `compareProfiles(from, to)` returns the same report:
 ```sh
 node --input-type=module <<'JS'
 import { compareProfiles } from '@bsv/dpp-profiles'
-const report = compareProfiles('battery@2', 'battery@4')
+const report = compareProfiles('general@1', 'general@2')
 const count = (kind) => report.fields.filter((field) => field.kind === kind).length
 console.log(`${report.from.profile} (${report.from.status}) to ${report.to.profile} (${report.to.status}): ${count('added')} fields added, ${count('changed')} changed, ${count('removed')} removed`)
 console.log('Other changes:', report.profileChanges.map((change) => change.property).join(', '))
@@ -46,14 +46,14 @@ JS
 Expected output:
 
 ```
-battery@2 (current) to battery@4 (draft): 21 fields added, 105 changed, 0 removed
-Other changes: applicability, baseline, description, manifestVersion, profile, regulatoryLine, restrictedSchemaUri, schemaUri, sourceRefs, stamps, status, succession, version
+general@1 (superseded) to general@2 (current): 40 fields added, 0 changed, 0 removed
+Other changes: applicability, description, groups, identity, profile, regulatoryLine, restrictedSchemaUri, schemaUri, sourceRefs, stamps, status, supersededBy, title, version
 ```
 
 | Report content | Interpretation |
 |---|---|
 | Manifest status, SHA-256 digest and top-level changes | Identify the compared definitions. |
-| Added, changed and removed fields with changed properties | Every field changes here because format 2 adds `requirement`. Read each entry's `properties`. |
+| Added, changed and removed fields with changed properties | Every field is added here because `general@1` defines none. For a changed field, read the entry's `properties`. |
 | Structural comparison | Does not infer safe conversions, notify consumers or activate writers. Reviewers supply operational impact and source interpretation. |
 
 ### 3. Adopt it, step by step
@@ -142,7 +142,7 @@ Follow [publish a profile package update](../reference/publishing-profile-update
 | Selection | What it changes |
 |---|---|
 | Package version, such as `0.3.0-beta.4` | Installed code and available profile artefacts |
-| Industry profile and version, such as `battery@2` | Product data's declared meaning and validation rules; version is the number after `@` |
+| Industry profile and version, such as `general@2` | Product data's declared meaning and validation rules; version is the number after `@` |
 | Record format version and service contract | Record encoding and service communication; separate from package and profile versions |
 | Application revision and configuration | Definitions the UI and backend support and select |
 
@@ -154,8 +154,8 @@ The [profile specification](https://github.com/bsv-blockchain/dpp/blob/1d610d7a6
 
 The reference application's source is not public. It follows step 3, declaring exact dependencies in its web application and service. After updating the reviewed selection and lockfile, it runs a mirror script to generate profile documents and reference content from installed artefacts, inspects the diff and checks the copies against the package. Those steps establish neither UI support nor writer activation.
 
-Its service selects `battery@2` and `textile@2`. Its adapter has explicit limits on richer value shapes, so mirrored draft documentation does not establish workflow compatibility. Successor adoption includes the required adapters, forms, backend rules and tests.
+Its service was built on `battery@2` and `textile@2`, which are retired from 14 November 2026. Adopting this candidate there therefore includes moving its sector workflows to `eu-battery@1` and `eu-textile@1` ([move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles)). That is a separate application change, with its own adapters, forms, backend rules and tests, and mirrored documentation does not establish workflow compatibility.
 
 ## Next
 
-[Evaluate the battery@4 draft](version-4-drafts.md), follow [migration](../migration.md) for a whole release, or [publish a profile package update](../reference/publishing-profile-updates.md) as a profile owner.
+Follow [migration](../migration.md) for a whole release, [move off the retired sector profiles](../migration.md#move-off-the-retired-sector-profiles), or [publish a profile package update](../reference/publishing-profile-updates.md) as a profile owner.

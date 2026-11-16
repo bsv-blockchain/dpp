@@ -1,0 +1,260 @@
+// The HTTP surface for profiles held by a binding, and the one promise it
+// has to keep above all: a restricted value of a product document reaches
+// the holder who may open it and nobody else. The last test issues passports
+// carrying a value that appears nowhere else, then searches everything this
+// application prints, lists, indexes and exports for it.
+import { once } from 'node:events'
+import type { AddressInfo } from 'node:net'
+import type { Server } from 'node:http'
+import { format } from 'node:util'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import type { ViewCheck } from '../src/bound-profiles.js'
+import { loadConfig } from '../src/config.js'
+import { openPlatform, type Platform } from '../src/platform.js'
+import type { AuthorisedReading, PassportReading } from '../src/reader.js'
+import { createServer } from '../src/server.js'
+
+type Json = Record<string, unknown>
+
+const config = loadConfig({ NETWORK: 'main', PASSPORT_HOST: 'passports.example.com', GS1_PREFIX: '952', LIVE_PUBLISHING: 'false' })
+const brandId = 'dev-brand'
+const printed: string[] = []
+let platform: Platform
+let server: Server
+let base: string
+const spies: Array<{ mockRestore: () => void }> = []
+
+beforeAll(async () => {
+  // Everything the process prints is kept: the platform's own log, the console and the two streams under it.
+  for (const method of ['log', 'info', 'warn', 'error', 'debug'] as const) spies.push(vi.spyOn(console, method).mockImplementation((...args: unknown[]) => void printed.push(format(...args))))
+  for (const stream of [process.stdout, process.stderr]) {
+    const write = stream.write.bind(stream)
+    spies.push(
+      vi.spyOn(stream, 'write').mockImplementation(((chunk: unknown, ...rest: unknown[]) => {
+        printed.push(typeof chunk === 'string' ? chunk : Buffer.from(chunk as Uint8Array).toString('utf8'))
+        return (write as (...args: unknown[]) => boolean)(chunk, ...rest)
+      }) as typeof stream.write)
+    )
+  }
+  platform = await openPlatform({ config, mode: 'test', log: (line) => printed.push(line) })
+  const party = platform.parties.brand(brandId)
+  await platform.store.saveBrand({ id: brandId, name: 'Development brand', identityKey: party.identityKey, did: party.did, createdAt: new Date().toISOString() })
+  const app = createServer({ platform, devSession: { userId: 'developer', email: 'developer@localhost', name: 'Developer', brandIds: [brandId] } })
+  server = app.listen(0, '127.0.0.1')
+  await once(server, 'listening')
+  base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+})
+
+afterAll(async () => {
+  server.close()
+  await platform.close()
+  for (const spy of spies) spy.mockRestore()
+})
+
+const get = async (path: string): Promise<{ status: number; text: string; body: any }> => {
+  const response = await fetch(`${base}${path}`)
+  const text = await response.text()
+  return { status: response.status, text, body: text === '' ? undefined : JSON.parse(text) }
+}
+const post = async (path: string, body: unknown, raw?: string): Promise<{ status: number; text: string; body: any }> => {
+  const response = await fetch(`${base}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: raw ?? JSON.stringify(body) })
+  const text = await response.text()
+  return { status: response.status, text, body: text === '' ? undefined : JSON.parse(text) }
+}
+const ref = (passportId: string): string => encodeURIComponent(passportId)
+
+/** The profile's example as the API serves it, under a serial of the test's own. */
+async function exampleFor(profile: string, serial: string): Promise<{ itemReference: string; serial: string; passportId: string; product: Json }> {
+  const { body } = await get(`/api/profiles/${encodeURIComponent(profile)}`)
+  const example = body.examples[0] as { itemReference: string; serial: string; passportId: string; product: Json }
+  const swap = (value: string): string => value.replaceAll(example.serial, serial)
+  return { itemReference: example.itemReference, serial, passportId: swap(example.passportId), product: JSON.parse(swap(JSON.stringify(example.product))) as Json }
+}
+
+describe('profiles over HTTP', () => {
+  it('lists the manifest profiles and the bound profiles, each with its format', async () => {
+    const { body } = await get('/api/profiles')
+    const formats = Object.fromEntries((body as Array<{ id: string; format: string }>).map((p) => [p.id, p.format]))
+    // The retired sector profiles are not among them: the bound profiles replace them.
+    expect(formats).toEqual({ 'general@2': 'manifest', 'eu-battery@1': 'binding', 'eu-textile@1': 'binding' })
+    expect((await get('/api/health')).body.validationEngine).toBe(true)
+  })
+
+  it('describes a bound profile: its split, its contexts and an example for this deployment', async () => {
+    const { body } = await get('/api/profiles/eu-battery%401')
+    expect(body).toMatchObject({ id: 'eu-battery@1', format: 'binding', engine: { available: true }, demonstration: true })
+    expect(body.access.public).toContain('gs1:gtin')
+    expect(body.access.public).not.toContain('eubat:hasBatteryState')
+    expect(body.contexts.map((c: { path: string }) => c.path)).toContain('battery-context.jsonld')
+    expect(body.prefixes.gs1).toBe('https://ref.gs1.org/voc/')
+    const example = body.examples[0]
+    expect(example.passportId).toMatch(/^https:\/\/passports\.example\.com\/01\/0952\d{10}\/21\//)
+    expect(example.product.id).toBe(example.passportId)
+    expect(example.product['@context']).toEqual(body.contexts.filter((c: { path: string }) => ['dpp-core-context.jsonld', 'battery-context.jsonld'].includes(c.path)).map((c: { uri: string }) => c.uri))
+    // A manifest profile is described as before.
+    const general = (await get('/api/profiles/general%402')).body
+    expect(general.format).toBe('manifest')
+    expect(general.fields.length).toBeGreaterThan(0)
+  })
+
+  it('serves the code lists the profile\'s own vocabulary defines', async () => {
+    const { body } = await get('/api/profiles/eu-textile%401/codes?class=eutex:CareSymbolCode&class=eutex:FabricType&class=nothing:Here')
+    expect(body['eutex:CareSymbolCode'].map((c: { value: string }) => c.value)).toContain('eutex:Wash30')
+    expect(body['eutex:CareSymbolCode'].find((c: { value: string }) => c.value === 'eutex:Wash30').label).not.toBe('')
+    expect(body['eutex:FabricType'].map((c: { value: string }) => c.value).sort()).toEqual(['eutex:Denim', 'eutex:Knitted', 'eutex:WovenNonDenim'])
+    expect(body['nothing:Here']).toEqual([])
+    const battery = (await get('/api/profiles/eu-battery%401/codes?class=oec:OperatorRole&class=eubat:BatteryCategory')).body
+    expect(battery['oec:OperatorRole']).toHaveLength(11)
+    expect(battery['eubat:BatteryCategory'].map((c: { value: string }) => c.value)).toContain('eubat:IndustrialBattery')
+  })
+
+  it('issues from a product document, and refuses one whose serial is not the passport\'s', async () => {
+    const example = await exampleFor('eu-battery@1', 'HTTP-BAT-0001')
+    const wrong = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: 'HTTP-BAT-0002', product: example.product })
+    expect(wrong.status).toBe(409)
+    expect(wrong.body).toMatchObject({ error: 'product-invalid', cause: 'product-identity-mismatch' })
+    expect((wrong.body.validation as ViewCheck).steps.at(-1)).toMatchObject({ step: 'passport-identity', status: 'fail' })
+    expect((await get(`/api/passports/${ref(example.passportId.replace('0001', '0002'))}`)).status).toBe(404)
+
+    const issued = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: example.serial, product: example.product })
+    expect(issued.status).toBe(200)
+    expect(issued.body).toMatchObject({ passportId: example.passportId, profile: 'eu-battery@1' })
+    expect(issued.body.payload.product['eubat:batteryModelIdentifier']).toBe('HC-LFP-48-100')
+    expect(issued.body.payload.product['eubat:hasBatteryState']).toBeUndefined()
+
+    const missing = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: example.itemReference, serial: 'HTTP-BAT-0003', payload: {} })
+    expect(missing.body.error).toBe('product-required')
+  })
+
+  it('reports the two views apart: the public one to anyone, the authorised one to the holder', async () => {
+    const example = await exampleFor('eu-battery@1', 'HTTP-BAT-0001')
+    const reading = (await get(`/api/verify?passportId=${ref(example.passportId)}`)).body as PassportReading
+    expect(reading.payloadChecks[0].publicView).toMatchObject({ view: 'public', status: 'pass' })
+    expect(reading.product?.publicProduct['eubat:hasBatteryState']).toBeUndefined()
+    // A public reading carries no authorised view and no restricted part at all.
+    expect(reading).not.toHaveProperty('authorisedView')
+    expect(reading).not.toHaveProperty('restrictedProduct')
+
+    const authorised = (await post(`/api/passports/${ref(example.passportId)}/authorised-view`, {})).body as AuthorisedReading
+    expect(authorised.ownerTier.status).toBe('pass')
+    expect(authorised.authorisedView).toMatchObject({ view: 'authorised', status: 'pass' })
+    expect(authorised.product).toEqual(example.product)
+
+    // A passport under a manifest profile has no such view, and a passport of another brand is not this session's to open.
+    const general = (await get('/api/profiles/general%402')).body.sample as Json
+    const other = await post(`/api/brands/${brandId}/passports`, { profile: 'general@2', itemReference: '100000055', serial: 'HTTP-GEN-0001', payload: general, ownerFields: {} })
+    expect(other.status).toBe(200)
+    expect((await post(`/api/passports/${ref(other.body.passportId)}/authorised-view`, {})).body.error).toBe('profile-not-bound')
+    const foreign = await exampleFor('eu-battery@1', 'HTTP-BAT-0009')
+    await platform.writer.issue({ brandId: 'someone-else', brand: platform.parties.brand('someone-else'), passportId: foreign.passportId, profile: 'eu-battery@1', product: foreign.product })
+    expect((await post(`/api/passports/${ref(foreign.passportId)}/authorised-view`, {})).status).toBe(403)
+  })
+})
+
+describe('a restricted value', () => {
+  // A value that is in no fixture, no log line and no key: wherever it turns up, it was copied there.
+  const canary = 'RESTRICTED-CANARY-7F3A91C2'
+
+  const withCanary = (profile: string, product: Json): Json => {
+    const copy = structuredClone(product)
+    if (profile === 'eu-battery@1') {
+      copy['eubat:manufacturerIdentifier'] = canary
+      ;(copy['eubat:hasSupplyChainDueDiligence'] as Json)['eubat:auditBody'] = `${canary} audit body`
+      ;((copy['eubat:hasMaterialComposition'] as Json[])[0]['schema:name'] as Json)['@value'] = `${canary} material`
+    } else {
+      ;(copy['eutex:hasSubstancesOfConcern'] as Json[])[0]['oec:substanceLocation'] = `${canary} location`
+      ;(copy['oec:hasOperatorInformation'] as Json)['gs1:organizationName'] = `${canary} operator`
+      copy['eutex:hasCutAndSewFacility'] = { ...(copy['eutex:hasCutAndSewFacility'] as Json), 'schema:name': `${canary} facility` }
+    }
+    return copy
+  }
+
+  it('reaches the holder who opens it, and nothing this application prints, lists, indexes or exports', async () => {
+    const seen: Array<[string, string]> = []
+    const keep = (where: string, text: string): string => {
+      seen.push([where, text])
+      return text
+    }
+    const passports: string[] = []
+
+    for (const [profile, serial] of [
+      ['eu-battery@1', 'LEAK-BAT-0001'],
+      ['eu-textile@1', 'LEAK-TEX-0001'],
+    ] as const) {
+      const example = await exampleFor(profile, serial)
+      const product = withCanary(profile, example.product)
+      passports.push(example.passportId)
+
+      // Issued, then updated, so the value passes through both write paths.
+      const issued = await post(`/api/brands/${brandId}/passports`, { profile, itemReference: example.itemReference, serial, product })
+      expect(issued.status).toBe(200)
+      keep(`issue response, ${profile}`, issued.text)
+      const updated = await post(`/api/passports/${ref(example.passportId)}/update`, { product: { ...product, 'oec:lastUpdated': '2026-11-04T08:00:00Z' } })
+      expect(updated.status).toBe(200)
+      keep(`update response, ${profile}`, updated.text)
+
+      // A write that is refused, with the value inside the document: the refusal is answered and not printed.
+      const refused = await post(`/api/brands/${brandId}/passports`, { profile, itemReference: example.itemReference, serial: `${serial}-X`, product })
+      expect(refused.status).toBe(409)
+      // A body that is not JSON, with the value in it: the parser's own error quotes the body.
+      const garbled = await post(`/api/brands/${brandId}/passports`, undefined, `{"profile":"${profile}","product":{"x":"${canary}"`)
+      expect(garbled.status).toBe(400)
+      expect(garbled.body.error).toBe('body-not-json')
+      keep(`garbled body response, ${profile}`, garbled.text)
+
+      // The control: the holder's view does carry the value, so this search can find it where it is.
+      const authorised = await post(`/api/passports/${ref(example.passportId)}/authorised-view`, {})
+      expect(authorised.text).toContain(canary)
+      expect((authorised.body as AuthorisedReading).authorisedView.status).toBe('pass')
+
+      // Everything another reader can ask for.
+      keep(`journal view, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}`)).text)
+      keep(`verify, ${profile}`, (await get(`/api/verify?passportId=${ref(example.passportId)}`)).text)
+      keep(`claim, ${profile}`, (await post(`/api/passports/${ref(example.passportId)}/claims`, { eventType: 'Origin' })).text)
+      keep(`claims, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}/claims`)).text)
+      const offer = await post(`/api/passports/${ref(example.passportId)}/offer`, { terms: { word: 'Sold' } })
+      keep(`offer, ${profile}`, offer.text)
+      keep(`offers, ${profile}`, (await get(`/api/passports/${ref(example.passportId)}/offers`)).text)
+      keep(`offer preview, ${profile}`, (await get(`/api/offers/${encodeURIComponent(offer.body.offer.requestId)}`)).text)
+
+      // The index this process runs: its lookup, and its public history and evidence exports.
+      const lookup = await fetch(`${platform.index.url}/lookup`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ service: 'ls_dpp', query: { passportId: example.passportId } }) })
+      const answer = (await lookup.json()) as { outputs: Array<{ beef: number[] }> }
+      expect(answer.outputs.length).toBeGreaterThan(0)
+      for (const output of answer.outputs) keep(`index lookup bytes, ${profile}`, Buffer.from(output.beef).toString('latin1'))
+      for (const path of ['/history', '/evidence-package', '/evidence-export']) {
+        keep(`index ${path}, ${profile}`, await (await fetch(`${platform.index.url}${path}?passportId=${ref(example.passportId)}`)).text())
+      }
+    }
+
+    keep('passport list', (await get(`/api/brands/${brandId}/passports`)).text)
+    keep('operations', (await get('/api/operations')).text)
+    keep('operations run', (await post('/api/operations/run', {})).text)
+    keep('health', (await get('/api/health')).text)
+    keep('profiles', (await get('/api/profiles')).text)
+    // The journal as the store holds it, which is what a database dump would show.
+    keep('journal', JSON.stringify(await platform.store.listPassports()))
+    keep('everything printed', printed.join('\n'))
+
+    // The listings did return the passports, so an empty answer is not what kept the value out.
+    for (const passportId of passports) expect(seen.find(([where]) => where === 'passport list')![1]).toContain(passportId)
+    expect(seen.find(([where]) => where === 'journal')![1]).toContain('ciphertext')
+    expect(printed.length).toBeGreaterThan(0)
+
+    const leaks = seen.filter(([, text]) => text.includes(canary)).map(([where]) => where)
+    expect(leaks).toEqual([])
+  })
+
+  it('is not echoed in an error the API did not expect', async () => {
+    // An error object can carry the request among its properties; only its name and stack are printed.
+    const error = Object.assign(new Error('unexpected'), { body: `{"secret":"${canary}"}` })
+    const spy = vi.spyOn(platform.store, 'getBrand').mockRejectedValueOnce(error)
+    const before = printed.length
+    const answer = await post(`/api/brands/${brandId}/passports`, { profile: 'eu-battery@1', itemReference: '100200300', serial: 'LEAK-ERR-0001', product: {} })
+    spy.mockRestore()
+    expect(answer.status).toBe(500)
+    const lines = printed.slice(before).join('\n')
+    expect(lines).toMatch(/request failed: Error: unexpected/)
+    expect(lines).not.toContain(canary)
+  })
+})

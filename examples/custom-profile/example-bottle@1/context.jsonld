@@ -1,0 +1,36 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "id": "@id",
+    "type": "@type",
+    "bottle": "https://profiles.example/bottle/v1#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "Bottle": "bottle:Bottle",
+    "Part": "bottle:Part",
+    "name": "bottle:name",
+    "gtin": "bottle:gtin",
+    "serialNumber": "bottle:serialNumber",
+    "granularity": "bottle:granularity",
+    "model": { "@id": "bottle:model", "@type": "@id" },
+    "batch": "bottle:batch",
+    "capacityMillilitres": "bottle:capacityMillilitres",
+    "recycledContentPercent": "bottle:recycledContentPercent",
+    "dishwasherSafe": "bottle:dishwasherSafe",
+    "careNote": "bottle:careNote",
+    "parts": { "@id": "bottle:part", "@container": "@set" },
+    "massGrams": "bottle:massGrams",
+    "material": {
+      "@id": "bottle:material",
+      "@type": "@vocab",
+      "@context": {
+        "stainless-steel": "bottle:stainless-steel",
+        "glass": "bottle:glass",
+        "polypropylene": "bottle:polypropylene",
+        "silicone": "bottle:silicone",
+        "bamboo": "bottle:bamboo",
+        "cork": "bottle:cork"
+      }
+    }
+  }
+}

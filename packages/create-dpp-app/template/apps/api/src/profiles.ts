@@ -2,33 +2,47 @@
 // the profile's published JSON schema before anything is written. The
 // schemas and manifests come from @bsv/dpp-profiles; this module only
 // chooses the current ones and runs the validator.
+//
+// The earlier sector profiles are retired (RETIRED_PROFILE_IDS in the
+// package). None is offered here, and a payload is neither started nor
+// checked under one: each function below refuses a retired profile by name,
+// whatever its frozen manifest still says about its status.
 import { Ajv2020 } from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
 import {
-  PROFILE_IDS,
+  SUPPORTED_PROFILE_IDS,
+  assertProfileNotRetired,
   readManifest,
   readPublicPayloadSchema,
   readRestrictedPayloadSchema,
-  type ProfileId,
   type ProfileManifest,
+  type SupportedProfileId,
 } from '@bsv/dpp-profiles'
 
-const ajv = new Ajv2020({ allErrors: true, strict: false })
+/** The one JSON Schema compiler of the application. A profile held by a binding compiles its own schema into it. */
+export const ajv = new Ajv2020({ allErrors: true, strict: false })
 ;(addFormats as unknown as (instance: Ajv2020) => void)(ajv)
 
-/** The profiles a brand may choose: every published version whose manifest says it is current. */
-export function currentProfiles(): Array<{ id: ProfileId; title: string; description?: string }> {
-  return PROFILE_IDS.filter((id) => readManifest(id).status === 'current').map((id) => {
+/** The sentence a record under the demonstration prefix carries first (spec/profiles.md section 5). */
+export const DEMONSTRATION_NOTICE = 'Demonstration record. Nothing here describes a real product.'
+
+/** A manifest profile this application writes and reads under. A retired profile is not one, though the package still publishes its files. */
+export type ManifestProfileId = SupportedProfileId
+
+/** The manifest profiles a brand may choose: every supported version whose manifest says it is current. No retired profile is among them. */
+export function currentProfiles(): Array<{ id: ManifestProfileId; title: string; description?: string }> {
+  return SUPPORTED_PROFILE_IDS.filter((id) => readManifest(id).status === 'current').map((id) => {
     const manifest = readManifest(id)
     return { id, title: manifest.title, description: manifest.description }
   })
 }
 
-export function isProfileId(value: string): value is ProfileId {
-  return (PROFILE_IDS as readonly string[]).includes(value)
+export function isProfileId(value: unknown): value is ManifestProfileId {
+  return typeof value === 'string' && (SUPPORTED_PROFILE_IDS as readonly string[]).includes(value)
 }
 
-export function manifestFor(profile: ProfileId): ProfileManifest {
+export function manifestFor(profile: ManifestProfileId): ProfileManifest {
+  assertProfileNotRetired(profile)
   return readManifest(profile)
 }
 
@@ -40,7 +54,9 @@ export interface Validation {
 }
 
 /** Check a payload against the profile's public or restricted schema. The problems name the field and what is wrong. */
-export function validatePayload(profile: ProfileId, tier: Tier, payload: unknown): Validation {
+export function validatePayload(profile: ManifestProfileId, tier: Tier, payload: unknown): Validation {
+  // The types already exclude a retired profile. A string that arrived from a request or a stored record is held to the same rule here.
+  assertProfileNotRetired(profile)
   const schema = (tier === 'public' ? readPublicPayloadSchema(profile) : readRestrictedPayloadSchema(profile)) as { $id?: string }
   const validate = (schema.$id != null ? ajv.getSchema(schema.$id) : undefined) ?? ajv.compile(schema)
   const valid = validate(payload) as boolean
@@ -85,16 +101,17 @@ function placeholder(node: Record<string, unknown>, name: string): unknown {
  * that describes no real product carries. Replace every value with the
  * product's own data; a placeholder is never a statement about a product.
  */
-export function samplePayload(profile: ProfileId, demonstration: boolean): Record<string, unknown> {
+export function samplePayload(profile: ManifestProfileId, demonstration: boolean): Record<string, unknown> {
   const { payload, problems } = sampleWithProblems(profile, demonstration)
   if (problems.length > 0) throw new Error(`the generated ${profile} sample is refused by its own schema: ${problems.join('; ')}`)
   return payload
 }
 
 /** The same sample, with whatever its own schema still refuses, so a form can start from it and show what to fix. */
-export function sampleWithProblems(profile: ProfileId, demonstration: boolean): { payload: Record<string, unknown>; problems: string[] } {
+export function sampleWithProblems(profile: ManifestProfileId, demonstration: boolean): { payload: Record<string, unknown>; problems: string[] } {
+  assertProfileNotRetired(profile)
   const schema = readPublicPayloadSchema(profile) as Record<string, unknown>
   const required = placeholder(schema, 'payload') as Record<string, unknown>
-  const payload = demonstration ? { notice: 'Demonstration record. Nothing here describes a real product.', ...required } : required
+  const payload = demonstration ? { notice: DEMONSTRATION_NOTICE, ...required } : required
   return { payload, problems: validatePayload(profile, 'public', payload).problems }
 }

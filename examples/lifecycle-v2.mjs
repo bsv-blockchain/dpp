@@ -235,7 +235,7 @@ const lifecycleClaim = await signLifecycleClaim(
     timestamp: instant(),
     issuer: didKeyFromIdentityKey(idKey(recyclerPriv)),
     issuerKeyId: 'recycler line 3',
-    profile: 'battery',
+    profile: 'general',
     profile_version: 2,
   },
   recyclerWallet

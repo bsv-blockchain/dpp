@@ -6,12 +6,13 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Hash, Utils } from '@bsv/sdk'
 import { verifyLifecycleClaim } from '@bsv/dpp-protocol'
-import { readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
+import { PROFILE_RETIRED, ProfileRetiredError, RETIRED_PROFILE_REPLACEMENTS, describeRetiredProfile, isRetiredProfile, readPublicPayloadSchema, readRestrictedPayloadSchema } from '@bsv/dpp-profiles'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node'
 import { sessionFrom, type Auth, type Session } from './auth.js'
 import { EVENT_TYPES } from './claims.js'
 import { isDemonstrationPolicy, mintPassportId } from './identifiers.js'
+import { sectorExamples } from './sector-examples.js'
 import type { Party } from './parties.js'
 import type { Platform } from './platform.js'
 import { currentProfiles, isProfileId, manifestFor, sampleWithProblems } from './profiles.js'
@@ -31,6 +32,9 @@ export interface ServerOptions {
   /** The built web app to serve, when it exists. */
   webDist?: string
 }
+
+/** A JSON object from a request body, or nothing: a product document is always one object. */
+const objectOf = (value: unknown): Record<string, unknown> | undefined => (typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined)
 
 class HttpError extends Error {
   constructor(
@@ -78,6 +82,8 @@ function publicView(record: PassportRecord, policyIsDemo: boolean) {
     passportId: record.passportId,
     brandId: record.brandId,
     profile: record.profile,
+    // Present only for a passport journalled under a retired profile: the page then offers no write and names the replacement.
+    ...(isRetiredProfile(record.profile) ? { profileRetired: { replacedBy: RETIRED_PROFILE_REPLACEMENTS[record.profile] } } : {}),
     status: record.status,
     demonstration: policyIsDemo,
     holder: record.holder,
@@ -165,21 +171,35 @@ export function createServer(options: ServerOptions): express.Express {
       publisherKey: platform.wallet.identityKey,
       wallet: platform.wallet.kind,
       livePublishing: config.livePublishing,
+      // Without the engine a profile held by a binding cannot be written, and its readings say "not checked".
+      validationEngine: platform.profiles.engineProblem == null,
       identifiers: { host: policy.host, prefix: policy.prefix, demonstration: demo },
       signIn: auth != null,
       devSession: auth == null && options.devSession != null ? { name: options.devSession.name, brandIds: options.devSession.brandIds } : undefined,
     }))
   )
 
-  app.get('/api/profiles', wrap(async () => currentProfiles()))
+  app.get(
+    '/api/profiles',
+    wrap(async () => [
+      ...currentProfiles().map((profile) => ({ ...profile, format: 'manifest' })),
+      ...platform.profiles.list().map((profile) => ({ id: profile.profile, title: profile.binding.title, description: profile.binding.scope, format: 'binding' })),
+    ])
+  )
   app.get(
     '/api/profiles/:id',
     wrap(async (req) => {
       const id = param(req, 'id')
+      const bound = platform.profiles.get(id)
+      // A profile held by a binding has no field list: its product document is the profile's own data model, and the form asks for its code lists as it needs them.
+      if (bound != null) return { ...platform.profiles.describe(bound), examples: sectorExamples(bound, policy), demonstration: demo }
+      // Gone, not unknown: the profile was published and is retired, so no form, sample or schema is served for it.
+      if (isRetiredProfile(id)) throw new HttpError(410, PROFILE_RETIRED, describeRetiredProfile(id))
       if (!isProfileId(id)) throw new HttpError(404, 'profile-unknown', `${id} is not a profile this platform knows`)
       const manifest = manifestFor(id)
       return {
         id,
+        format: 'manifest',
         title: manifest.title,
         description: manifest.description,
         fields: manifest.fields.map((f) => ({ key: f.key, label: f.label, valueType: f.valueType, unit: f.unit, accessTier: f.accessTier, obligation: f.obligation, cardinality: f.cardinality, codeList: f.codeList, constraints: f.constraints, note: f.note, group: f.group })),
@@ -190,6 +210,17 @@ export function createServer(options: ServerOptions): express.Express {
           return { sample: payload, sampleProblems: problems }
         })(),
       }
+    })
+  )
+
+  app.get(
+    '/api/profiles/:id/codes',
+    wrap(async (req) => {
+      const bound = platform.profiles.get(param(req, 'id'))
+      if (bound == null) throw new HttpError(404, 'profile-unknown', `${param(req, 'id')} is not a profile held by a binding here`)
+      const asked = req.query.class
+      const classes = (Array.isArray(asked) ? asked : [asked]).filter((name): name is string => typeof name === 'string').slice(0, 64)
+      return await platform.profiles.codeLists(bound, classes)
     })
   )
 
@@ -264,10 +295,23 @@ export function createServer(options: ServerOptions): express.Express {
       const brandRecord = await store.getBrand(brandId)
       if (brandRecord == null) throw new HttpError(404, 'brand-unknown', `no brand ${brandId}`)
       const { profile, itemReference, serial, payload, ownerFields } = req.body ?? {}
-      if (!isProfileId(profile)) throw new HttpError(400, 'profile-unknown', `${profile} is not a profile this platform knows`)
+      const bound = typeof profile === 'string' ? platform.profiles.get(profile) : undefined
+      if (typeof profile === 'string' && isRetiredProfile(profile)) throw new HttpError(409, PROFILE_RETIRED, `${describeRetiredProfile(profile)} Nothing was signed.`)
+      if (bound == null && !isProfileId(profile)) throw new HttpError(400, 'profile-unknown', `${String(profile)} is not a profile this platform knows`)
       if (typeof itemReference !== 'string' || typeof serial !== 'string') throw new HttpError(400, 'identifier-required', 'give itemReference (digits) and serial')
-      const passportId = mintPassportId(policy, itemReference, serial)
-      const outcome = await writer.issue({ brandId, brand: parties.brand(brandId), passportId, profile, payload: payload ?? {}, ownerFields: ownerFields ?? {} })
+      let passportId: string
+      try {
+        passportId = mintPassportId(policy, itemReference, serial)
+      } catch (cause) {
+        throw new HttpError(400, 'identifier-refused', cause instanceof Error ? cause.message : String(cause))
+      }
+      // Under a binding the body carries the complete product document. It is validated against the identifier minted here, which is the one the state signs.
+      const product = objectOf(req.body?.product)
+      if (bound != null && product == null) throw new HttpError(400, 'product-required', `${bound.profile} is held by a binding: send the complete product document as product`)
+      const outcome =
+        bound != null
+          ? await writer.issue({ brandId, brand: parties.brand(brandId), passportId, profile: bound.profile, product })
+          : await writer.issue({ brandId, brand: parties.brand(brandId), passportId, profile, payload: payload ?? {}, ownerFields: ownerFields ?? {} })
       return publicView(outcome.record, demo)
     })
   )
@@ -279,8 +323,21 @@ export function createServer(options: ServerOptions): express.Express {
       const actor = await actorFor(req, record)
       // ownerFields absent carries the current owner tier unchanged; {} seals an empty one.
       const ownerFields = typeof req.body?.ownerFields === 'object' && req.body.ownerFields != null ? req.body.ownerFields : undefined
-      const outcome = await writer.update({ record, actor, payload: req.body?.payload ?? {}, ownerFields, eventData: req.body?.eventData })
+      const product = objectOf(req.body?.product)
+      // Under a binding the body carries the complete product document; the writer refuses the wrong one of the two for the passport's profile.
+      const outcome = await writer.update({ record, actor, ...(product == null ? { payload: req.body?.payload ?? {}, ownerFields } : { product }), eventData: req.body?.eventData })
       return publicView(outcome.record, demo)
+    })
+  )
+
+  // The holder's view of a passport under a profile held by a binding. A POST, because a recipient proves they hold it with the claim code in the body.
+  app.post(
+    '/api/passports/:ref/authorised-view',
+    wrap(async (req) => {
+      const record = await passportFrom(param(req, 'ref'))
+      const holder = await actorFor(req, record)
+      if (platform.profiles.get(record.profile) == null) throw new HttpError(409, 'profile-not-bound', `${record.profile} is not held by a binding this application registered: this view exists for product documents that are split into a public and a restricted part`)
+      return await platform.readAuthorised(record, holder)
     })
   )
 
@@ -354,7 +411,12 @@ export function createServer(options: ServerOptions): express.Express {
     '/api/operations',
     wrap(async (req) => {
       await requireSession(req)
-      return { duties: await pendingDuties(store), passports: (await store.listPassports()).map((p) => ({ passportId: p.passportId, brandId: p.brandId, status: p.status, journal: summariseJournal(p) })) }
+      return {
+        duties: await pendingDuties(store),
+        passports: (await store.listPassports()).map((p) => ({ passportId: p.passportId, brandId: p.brandId, status: p.status, journal: summariseJournal(p) })),
+        // What start-up could not load: the engine's problem, and each profile folder that was refused.
+        profiles: { engine: { available: platform.profiles.engineProblem == null, problem: platform.profiles.engineProblem }, refused: platform.profiles.refusals },
+      }
     })
   )
   app.post(
@@ -408,11 +470,23 @@ export function createServer(options: ServerOptions): express.Express {
       return
     }
     if (error instanceof WriteRefused) {
-      res.status(error.code.endsWith('-unknown') ? 404 : 409).json({ error: error.code, description: error.message })
+      res.status(error.code.endsWith('-unknown') ? 404 : 409).json({ error: error.code, description: error.message, ...error.data })
+      return
+    }
+    // The package's own refusal of a retired profile, from a helper that checks or starts a payload.
+    if (error instanceof ProfileRetiredError) {
+      res.status(409).json({ error: error.code, description: error.message, replacedBy: error.replacedBy })
+      return
+    }
+    // A body the JSON parser refused. Its error quotes the body, and a body may hold restricted product data, so neither is logged or sent back.
+    const parser = error as { type?: unknown; status?: unknown }
+    if (typeof parser?.type === 'string' && parser.type.startsWith('entity.') && typeof parser.status === 'number') {
+      res.status(parser.status).json({ error: parser.type === 'entity.too.large' ? 'body-too-large' : 'body-not-json', description: parser.type === 'entity.too.large' ? 'the request body is larger than this API takes' : 'the request body is not JSON' })
       return
     }
     const description = error instanceof Error ? error.message : String(error)
-    console.error('request failed:', error)
+    // The name and the stack only. An error object can carry the request body among its properties, and printing the object would print them.
+    console.error(`request failed: ${error instanceof Error ? (error.stack ?? `${error.name}: ${error.message}`) : description}`)
     res.status(500).json({ error: 'internal', description })
   })
 
