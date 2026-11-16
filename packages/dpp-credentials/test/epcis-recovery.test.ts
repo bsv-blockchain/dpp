@@ -908,7 +908,7 @@ describe('a snapshot that is refused, each by its own name', () => {
     // The same record in another spelling, with every digest made to agree: an export writes one spelling, and this is not it.
     const respelt = rewritten(exported, (snapshot) => { const relative = snapshot.paths('resolution')[0]!; snapshot.files.set(`epcis/${relative}`, utf8(JSON.stringify(snapshot.read(relative), null, 2))); });
     expect(await refusedRestore(respelt)).toMatchObject({ code: 'record-altered', path });
-    const twice = rewritten(exported, (snapshot) => { const relative = snapshot.paths('resolution')[0]!; snapshot.files.set(`epcis/${relative}`, utf8(new TextDecoder().decode(snapshot.files.get(`epcis/${relative}`)!).replace('{', '{"decision":"Another decision.",'))); });
+    const twice = rewritten(exported, (snapshot) => { const relative = snapshot.paths('resolution')[0]!; snapshot.files.set(`epcis/${relative}`, utf8(`{"decision":"Another decision.",${new TextDecoder().decode(snapshot.files.get(`epcis/${relative}`)!).slice(1)}`)); });
     expect(await refusedRestore(twice)).toMatchObject({ code: 'record-altered', path });
   });
 
